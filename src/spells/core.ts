@@ -69,6 +69,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1) {
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
+      if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
       const landed = damageMob(m, dmg, id);
       if (landed && SPELLS[id].cls !== 'frost' && SPELLS[id].cls !== 'arcane') hitSparkFx(m.pos, SPELLS[id].cls);   // mobs.ts sprüht sonst Frost
       return landed;

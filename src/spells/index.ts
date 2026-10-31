@@ -14,8 +14,11 @@ import { hellfire } from './hellfire';
 import { hurricane } from './hurricane';
 import { frostorb } from './frostorb';
 import { chain } from './chain';
+import { voidorb } from './voidorb';
+import { whirl } from './whirl';
+import { arc } from './arc';
 
-Object.assign(SPELLS, { nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, hurricane, frostorb, chain });
+Object.assign(SPELLS, { nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, hurricane, frostorb, chain, voidorb, whirl, arc });
 // input.ts und gamepad.ts prüfen SPELLS[aktion]. Die neuen Tasten zählen dort als Zauber, ohne selbst einer zu sein.
 for (const action of SPELL_ACTIONS) if (!SPELLS[action]) Object.defineProperty(SPELLS, action, { value: { alias: true }, enumerable: false });
 resetSpells();
