@@ -6,9 +6,11 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - chore(docs): Spec abgelegt. Nicht gebaut: —
 - feat(spells): Tags, 8 Slots, Actionbar 1–8. `src/spells.ts` wird zu `src/spells/` (ein Spell pro Datei, `core.ts`, `index.ts`). Nicht gebaut: kein Umbau von `input.ts`/`gamepad.ts`, kein Pad-Button für Slot 7–8.
 - feat(cards): 4+ Karten, Seltenheit, Glück, Ersatz-Auswahl bei vollen Slots. Nicht gebaut: kein Abbruch im Ersetzen-Dialog (Spec: Spieler wählt).
+- feat(spells): Runen-System, 15 Start-Kit-Runen, Dauerflächen (`addField`), Ladungen, `pullMob`/`knockbackMob` in `mobs.ts`. Nicht gebaut: keine Ladungsanzeige auf der Actionbar.
 
 ## Struktur
-- `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`)
+- `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`), Runen, Ladungen, Dauerflächen
+- `src/spells/fx.ts`: Bausteine für Flächen, Blitze, Explosionen
 - `src/spells/<id>.ts`: Werte und Wirkung eines Spells; `index.ts` registriert sie in `SPELLS`
 - Die Tasten-Aktionen behalten ihre IDs (`nova` = Slot 1 …). `cast(aktion)` sucht den Spell im Slot, `castSpell(id)` zaubert direkt.
 

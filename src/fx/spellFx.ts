@@ -53,13 +53,13 @@ const ARCANE = [1.5, 0.45, 2.1], ARCANE_PINK = [1.9, 0.7, 1.6], GOLD = [2.2, 1.6
 const SCHOOL_COLOR = { frost: FROST, arcane: ARCANE };
 
 // Heller Lichtblitz (Sprite, wächst und verblasst)
-function flashFx(pos, color, size, dur) {
+export function flashFx(pos, color, size, dur) {
   const sp = glowSprite(color, 0.1);
   sp.position.copy(pos);
   addEffect(sp, dur, t => { sp.scale.setScalar(size * (0.3 + t * 0.7)); sp.material.opacity = 0.6 * (1 - t); });
 }
 // Schockwellen-Ring am Boden
-function ringFx(pos, radius, color, dur) {
+export function ringFx(pos, radius, color, dur) {
   const mesh = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 64).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: new THREE.Color(...color), transparent: true, depthWrite: false,
       blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
@@ -280,7 +280,7 @@ export function ambientParticles(dt) {
   }
 }
 
-function addEffect(mesh, dur, update) {
+export function addEffect(mesh, dur, update) {
   scene.add(mesh);
   effects.push({ mesh, start: performance.now(), dur, update });
 }

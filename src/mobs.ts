@@ -285,3 +285,22 @@ export function sinkCorpse(mob) {
   }
   mob.pos.y = heightAt(mob.pos.x, mob.pos.z) - t * 1.4;
 }
+
+// Zug zu einem Punkt. Eingefrorene bleiben stehen.
+export function pullMob(mob, center, amount) {
+  if (mob.rootUntil > state.now || mob.state === 'evade') return;
+  const dx = center.x - mob.pos.x, dz = center.z - mob.pos.z, d = Math.hypot(dx, dz);
+  if (d < 0.5) return;
+  const step = Math.min(amount, d - 0.5);
+  mob.pos.x += dx / d * step;
+  mob.pos.z += dz / d * step;
+}
+
+// Rückschlag im Bogen, weg vom Punkt
+export function knockbackMob(mob, center, dist, dur = 450) {
+  if (mob.dead || mob.leap) return;
+  const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
+  const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
+  collide(target, 0.7);
+  startLeap(mob, target, dur, () => {});
+}

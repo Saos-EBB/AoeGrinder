@@ -5,7 +5,7 @@ import { CFG, SPELLS, SPELL_ACTIONS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
-import { castSpell } from '../spells/core';
+import { castSpell, cdEnd as spellCdEnd } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 
 export const overlay = $('overlay');
@@ -131,12 +131,12 @@ export function updateHud() {
   } else $('castbar').style.display = 'none';
 
   for (const [id, sl] of Object.entries<any>(slots)) {
-    const cdEnd = Math.max(player.cds[id] || 0, player.gcdUntil);
-    const total = (player.cds[id] || 0) > player.gcdUntil ? spellCd(id) : CFG.gcd;
-    const left = Math.max(0, cdEnd - state.now);
+    const own = spellCdEnd(id);
+    const total = own > player.gcdUntil ? spellCd(id) : CFG.gcd;
+    const left = Math.max(0, Math.max(own, player.gcdUntil) - state.now);
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
-    sl.cdText.textContent = (player.cds[id] || 0) - state.now > 1500 ? Math.ceil(left / 1000) : '';
+    sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
     sl.el.classList.toggle('nomana', player.mana < manaCost(id));
     sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
   }

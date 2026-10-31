@@ -40,6 +40,22 @@ function newSpellCards() {
   }));
 }
 
+function runeCards() {
+  const list = [];
+  for (const id of state.slots) {
+    if (!id) continue;
+    for (const r of SPELLS[id].runes ?? []) {
+      if (state.runes[id] === r.id) continue;
+      list.push({
+        kind: 'rune', id: `rune-${id}-${r.id}`, spell: id, name: r.name, src: `Rune · ${SPELLS[id].name}`,
+        desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.${state.runes[id] ? ' Ersetzt die aktive Rune.' : ''}`,
+        apply: m => { state.runes[id] = r.id; stat(id).dmg += CARD_SPELL_DMG * m; },
+      });
+    }
+  }
+  return list;
+}
+
 function talentCards() {
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max).map(c => {
     const rank = state.cardRanks[c.id] || 0;
@@ -59,7 +75,7 @@ function luckCards() {
   }];
 }
 
-const POOLS = { rang: rankCards, spell: newSpellCards, talent: talentCards, luck: luckCards };
+const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, talent: talentCards, luck: luckCards };
 
 // Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
 export function rollRarity(minTier = 0) {

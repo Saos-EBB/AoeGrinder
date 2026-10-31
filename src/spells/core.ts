@@ -13,13 +13,41 @@ import { spendMana } from '../player';
 export function resetSpells() {
   state.slots = [...SPELL_START, ...Array(SPELL_SLOTS - SPELL_START.length).fill(null)];
   state.spellStats = {};
+  state.runes = {};
   player.luck = 0;
+  player.charges = {};
+  player.spellCounts = {};
+  clearSpellEffects();
+}
+
+// Dauerflächen und verzögerte Wirkungen enden mit dem Run oder dem Zonenwechsel
+export function clearSpellEffects() {
+  for (const f of state.fields ?? []) f.visual?.remove();
+  state.fields = [];
+  state.scheduled = [];
 }
 
 export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
 export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
 export const hasSpell = id => state.slots.includes(id);
-export const isGround = id => !!SPELLS[id].ground;
+export const rune = id => SPELLS[id].runes?.find(r => r.id === state.runes[id]);
+export const hasRune = (id, runeId) => state.runes[id] === runeId;
+export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
+
+// Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
+export function cdEnd(id) {
+  const n = rune(id)?.charges;
+  if (!n) return player.cds[id] || 0;
+  player.charges[id] ??= Array(n).fill(0);
+  return Math.min(...player.charges[id]);
+}
+function startCd(id) {
+  const cd = spellCd(id);
+  if (!cd) return;
+  if (!rune(id)?.charges) { player.cds[id] = state.now + cd; return; }
+  const c = player.charges[id];
+  c[c.indexOf(Math.min(...c))] = state.now + cd;
+}
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor
 export function makeCtx(id, scale = 1, radiusScale = 1) {
@@ -65,21 +93,23 @@ export function castSpell(id, point?) {
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
-  if (state.now < player.gcdUntil || (player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (state.now < player.gcdUntil || cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
   if (player.mana < cost) return showError('Nicht genug Mana');
-  if (isGround(id) && dist2d(player.pos, point) > s.range) return showError('Außer Reichweite');
+  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
   stopChannel(true);
   stopDrink();
   spendMana(cost);
   player.gcdUntil = state.now + CFG.gcd;
-  if (s.cd) player.cds[id] = state.now + spellCd(id);
+  startCd(id);
   player.targeting = false;
   blizCursor.visible = false;
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
-  s.effect(makeCtx(id), point);
+  const c: any = makeCtx(id);
+  c.cost = cost;
+  s.effect(c, point);
 }
 
 // input.ts setzt für Taste 3 nur player.targeting = true. Erst hier steht fest, welcher Spell im Slot liegt.
@@ -93,11 +123,42 @@ function resolveSlot3() {
   castSpell(id);
 }
 
+// Fläche mit Ticks und optionalem onUpdate pro Frame
+export function addField(c, f) {
+  const field = { c, tickMs: 1000, ...f, pos: f.pos.clone(), start: state.now, end: state.now + c.duration(f.dur), nextTick: state.now + (f.tickMs ?? 1000) };
+  state.fields.push(field);
+  field.visual?.update(field.pos, field.radius);
+  return field;
+}
+
+export const schedule = (delay, fn) => state.scheduled.push({ at: state.now + delay, fn });
+
+function updateFields(dt) {
+  for (const f of [...state.fields]) {
+    f.onUpdate?.(f, dt);
+    while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
+    if (state.now >= f.end) {
+      f.onEnd?.(f);
+      f.visual?.remove();
+      state.fields.splice(state.fields.indexOf(f), 1);
+    } else f.visual?.update(f.pos, f.radius);
+  }
+  const due = state.scheduled.filter(e => e.at <= state.now);
+  state.scheduled = state.scheduled.filter(e => e.at > state.now);
+  for (const e of due) e.fn();
+}
+
+// Läuft einmal pro Frame aus updatePlayer
+let lastUpdate = 0;
 export function updateChannel() {
+  const dt = Math.max(0, state.now - lastUpdate);
+  lastUpdate = state.now;
   resolveSlot3();
+  updateFields(dt);
   const ch = player.channel;
   if (!ch) return;
   const s = SPELLS[ch.id];
+  s.channelUpdate?.(ch, dt);
   while (player.channel === ch && ch.nextTick <= state.now && ch.nextTick <= ch.end) {
     ch.nextTick += 1000;
     s.tick(ch);
@@ -112,7 +173,7 @@ export function startChannel(c, point, dur) {
 
 export function stopChannel(force = false) {
   const ch = player.channel;
-  if (!ch) return;
+  if (!ch || (ch.mobile && !force)) return;   // Rune "laufen erlaubt": Bewegung bricht nicht ab
   player.channel = null;
   SPELLS[ch.id].onChannelEnd?.(ch);
 }

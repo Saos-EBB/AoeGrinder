@@ -3,7 +3,7 @@
 import { player } from './state';
 import { rand, clamp } from './util';
 import { CFG, SPELLS, mods } from './config';
-import { stat } from './spells/core';
+import { stat, rune } from './spells/core';
 
 // Spec §1
 export function aggroRadius(mob) {
@@ -65,9 +65,12 @@ export function manaCost(id) {
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {
+  return (rune(id)?.cdMul ?? 1) * baseCd(id);
+}
+function baseCd(id) {
   return id === 'nova' ? Math.max(1000, SPELLS.nova.cd - mods.novaCd) : SPELLS[id].cd;   // PH: Untergrenze
 }
 export const blizRadius = () => {          // auch Zielkreis: gilt für den Spell, der gerade zielt
   const id = typeof player.targeting === 'string' ? player.targeting : 'bliz';
-  return (SPELLS[id].radius + (id === 'bliz' ? mods.blizRadius : 0)) * stat(id).radius;
+  return ((rune(id)?.radius ?? SPELLS[id].radius) + (id === 'bliz' ? mods.blizRadius : 0)) * stat(id).radius;
 };

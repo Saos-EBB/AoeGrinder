@@ -4,7 +4,7 @@ import { SPELLS, CARD_RARITIES } from '../config';
 import { rollOffer } from '../cards';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, togglePerf, perfEnabled } from '../ui/hud';
-import { resetSpells, learnSpell } from '../spells/core';
+import { resetSpells, learnSpell, stopChannel, clearSpellEffects } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
 import { ZONES } from '../zones';
@@ -126,7 +126,7 @@ function renderDevZones() {
     const b = document.createElement('button');
     b.className = 'bindBtn' + (id === zoneId ? ' selected' : '');
     b.textContent = z.name;
-    b.addEventListener('click', () => { switchZone(id); closeBinds(); });
+    b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); switchZone(id); closeBinds(); });
     box.appendChild(b);
   }
 }
@@ -152,6 +152,7 @@ function ding() {
 $('startBtn').addEventListener('click', () => { $('startModal').classList.remove('show'); state.paused = false; ding(); });
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
+  stopChannel(true);
   resetGame();
   resetSpells();
   renderActionbar();
