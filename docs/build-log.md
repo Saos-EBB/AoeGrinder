@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand v8 in handoff.md
+**Was:** Branch `maps` per Fast-Forward in `main`, Artifact auf v8; die Einzelschritte von Punkte und Draw Calls stehen in `docs/status-maps.md`.
+**Nicht gebaut:** Punkte Teil 2.
+
 ## 2026-10-31 — chore(docs): Stand v7 und offene Leistungsmessung in handoff.md
 **Was:** Artifact auf v7 aktualisiert; der Optimierungsplan steht unter Offen, samt dem, was davon schon gebaut ist.
 **Nicht gebaut:** keine Optimierung.
