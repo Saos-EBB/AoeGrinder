@@ -1,10 +1,12 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
 import { state, player } from './state';
-import { clamp } from './util';
-import { CFG } from './config';
+import { $, clamp } from './util';
+import { CFG, SPELLS } from './config';
 import { cam } from './camera';
 import { showError } from './ui/hud';
+import { pressSpell } from './input';
+import { openBinds, closeBinds } from './ui/menus';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -12,6 +14,46 @@ export const pad = {
   down: [] as boolean[],
   prev: [] as boolean[],
 };
+
+// Aktion -> Button-Index im Standard-Mapping
+export const PAD_ACTIONS = [
+  { id: 'jump',      label: 'Springen',            btn: 0 },
+  { id: 'coc',       label: 'Cone of Cold',        btn: 1 },
+  { id: 'ae',        label: 'Arcane Explosion',    btn: 2 },
+  { id: 'nova',      label: 'Frost Nova',          btn: 3 },
+  { id: 'blink',     label: 'Blink',               btn: 4 },
+  { id: 'bliz',      label: 'Blizzard',            btn: 5 },
+  { id: 'help',      label: 'Hilfe',               btn: 8 },
+  { id: 'menu',      label: 'Pause und Belegung',  btn: 9 },
+  { id: 'autorun',   label: 'Autorun',             btn: 10 },
+  { id: 'camBehind', label: 'Kamera hinter Figur', btn: 11 },
+  { id: 'zoomIn',    label: 'Zoom rein',           btn: 12 },
+  { id: 'zoomOut',   label: 'Zoom raus',           btn: 13 },
+  { id: 'drink',     label: 'Trinken',             btn: 14 },
+];
+const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
+export const padBinds: Record<string, number> = padDefaults();
+
+const pressed = i => pad.down[i] && !pad.prev[i];   // Flanke: ein Druck löst genau einmal aus
+
+const PAD_EFFECTS = {
+  jump() { state.jumpQueued = true; },
+  autorun() { state.autorun = !state.autorun; },
+  help() { const h = $('help'); h.style.display = h.style.display === 'none' ? '' : 'none'; },
+  camBehind() { cam.offset = 0; },
+  zoomIn() { cam.dist = clamp(cam.dist - 1.5, 3, 35); },
+  zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
+};
+
+function gameButtons() {
+  if (pressed(padBinds.menu)) return openBinds();
+  for (const { id } of PAD_ACTIONS) {
+    if (!pressed(padBinds[id])) continue;
+    if (SPELLS[id]) pressSpell(id);
+    else PAD_EFFECTS[id]?.();
+  }
+  if (Math.abs(pad.move.y) > 0.5) state.autorun = false;   // wie W/S an der Tastatur
+}
 
 // Radiale Deadzone, danach auf 0..1 neu skaliert
 function deadzone(x, y) {
@@ -36,6 +78,8 @@ export function pollGamepad() {
   const left = gp ? deadzone(gp.axes[0], gp.axes[1]) : { x: 0, y: 0 };
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
+  if (!state.paused) gameButtons();
+  else if (pressed(padBinds.menu) && $('bindModal').classList.contains('show')) closeBinds();
 }
 
 // Im Stand kreist die Kamera, beim Laufen dreht sich der Charakter mit (wie rechte Maustaste)
@@ -55,4 +99,5 @@ addEventListener('gamepadconnected', (e: any) => {
 });
 addEventListener('gamepaddisconnected', () => {
   showError('Pad getrennt');
+  state.autorun = false;
 });

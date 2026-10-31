@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Zauber, Sprung, Trinken, Autorun, Zoom auf die Tasten
+**Was:** Einzeldrücke rufen dieselben Funktionen wie die Tastatur; Belegung in eigenem `padBinds`, damit gespeicherte Tastatur-Belegungen unberührt bleiben (statt zweitem Feld in `binds`).
+**Nicht gebaut:** L2-Modifier, weil noch keine zweite Zauberebene da ist.
+
 ## 2026-10-31 — feat(gamepad): Laufen mit linkem Stick, Kamera mit rechtem Stick
 **Was:** Stick und Tastatur laufen in einen Vektor, gedeckelt auf Länge 1; unter 0,5 Ausschlag Gehen mit 2,5 yd/s (belegt), die Laufanimation folgt dem Tempo.
 **Nicht gebaut:** kein eigener Geh-Animationszustand, `run` läuft einfach langsamer.
