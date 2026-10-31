@@ -70,7 +70,7 @@ export function refreshKeyLabels() {
     $('help').innerHTML =
       `<b>Linker Stick</b> laufen · <b>Rechter Stick</b> Kamera<br>` +
       `${p('jump')} springen · ${p('autorun')} Autorun · ${p('camBehind')} Kamera hinter Figur<br>` +
-      `${p('bliz')} halten: Slot 3 zielen · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
+      `Bodenziel: Taste halten, rechter Stick zielt · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
     return;
   }
   const b = id => `<b>${binds[id].key}</b>`;

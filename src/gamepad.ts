@@ -3,11 +3,11 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { CFG, SPELLS } from './config';
+import { CFG, SPELLS, SPELL_ACTIONS } from './config';
 import { cam } from './camera';
 import { heightAt } from './world';
 import { blizCursor } from './fx/spellFx';
-import { cast, isGround } from './spells';
+import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
 import { openBinds, closeBinds, renderBinds } from './ui/menus';
@@ -34,6 +34,8 @@ export const PAD_ACTIONS = [
   { id: 'zoomIn',    label: 'Zoom rein',           btn: 12 },
   { id: 'zoomOut',   label: 'Zoom raus',           btn: 13 },
   { id: 'drink',     label: 'Trinken',             btn: 14 },
+  { id: 'slot7',     label: 'Slot 7',              btn: 7 },
+  { id: 'slot8',     label: 'Slot 8',              btn: 15 },
 ];
 const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
 const PAD_STORE = 'frostgrind.padbinds.v1';
@@ -65,8 +67,9 @@ const PAD_EFFECTS = {
   zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
 };
 
-// Blizzard: halten zum Zielen, loslassen zum Zaubern
+// Bodenziel-Spells in jedem Slot: halten zum Zielen, loslassen zum Zaubern
 const CANCEL_BTN = 1;
+let aimAction = null;   // Aktion, deren Taste gerade gehalten wird
 
 function cancelAim() {
   state.padAim = null;
@@ -74,7 +77,8 @@ function cancelAim() {
   blizCursor.visible = false;
 }
 
-function startAim(id) {
+function startAim(action, id) {
+  aimAction = action;
   const x = player.pos.x + Math.sin(player.facing) * CFG.blizAimStart;
   const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
   state.padAim = new THREE.Vector3(x, heightAt(x, z), z);
@@ -93,15 +97,16 @@ function gameButtons() {
   if (pressed(padBinds.menu)) return openBinds();
   const cancelled = player.targeting && pressed(CANCEL_BTN);
   if (cancelled) cancelAim();
-  const b = padBinds.bliz;
+  const b = padBinds[aimAction];
   if (state.padAim && pad.prev[b] && !pad.down[b]) {
-    const point = state.padAim;
+    const point = state.padAim, id = player.targeting;
     cancelAim();
-    cast('bliz', point);
+    castSpell(id, point);
   }
   for (const { id } of PAD_ACTIONS) {
     if (!pressed(padBinds[id]) || (cancelled && padBinds[id] === CANCEL_BTN)) continue;
-    if (id === 'bliz' && isGround(state.slots[2])) startAim(state.slots[2]);
+    const spell = state.slots[SPELL_ACTIONS.indexOf(id)];
+    if (spell && isGround(spell)) startAim(id, spell);
     else if (SPELLS[id]) pressSpell(id);
     else PAD_EFFECTS[id]?.();
   }

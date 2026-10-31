@@ -22,23 +22,23 @@ Symbole sind PlayStation, ohne automatisches Umschalten. Index = Button im Stand
 | Quadrat | 2 | Arcane Explosion |
 | Dreieck | 3 | Frost Nova |
 | L1 | 4 | Blink |
-| R1 | 5 | Blizzard: halten zum Zielen, loslassen zum Zaubern |
+| R1 | 5 | Slot 3 (Start: Blizzard) |
 | L2 | 6 | Modifier für eine zweite Ebene (später) |
-| R2 | 7 | frei |
+| R2 | 7 | Slot 7 |
 | Share | 8 | Hilfe ein/aus |
 | Options | 9 | Pause und Tastenbelegung |
 | L3 | 10 | Autorun an/aus |
 | R3 | 11 | Kamera hinter den Charakter setzen |
 | Steuerkreuz oben / unten | 12, 13 | Zoom rein / raus |
 | Steuerkreuz links | 14 | Trinken |
-| Steuerkreuz rechts | 15 | frei |
+| Steuerkreuz rechts | 15 | Slot 8 |
 
 Der Home-Button (16) bleibt frei, weil Betriebssystem und Steam ihn oft abfangen.
 
-## Blizzard zielen
+## Bodenziel zielen (jeder Slot, Beispiel R1)
 1. R1 drücken: Der Zielkreis erscheint 12 yd vor dem Charakter.
 2. Solange R1 gehalten ist, verschiebt der rechte Stick den Zielkreis statt der Kamera (25 yd/s bei vollem Ausschlag). Der linke Stick läuft weiter.
-3. R1 loslassen: Blizzard wird gezaubert. Über 30 yd ist der Kreis rot und es kommt „Außer Reichweite“.
+3. R1 loslassen: Der Spell wird gezaubert. Über 30 yd ist der Kreis rot und es kommt „Außer Reichweite“.
 4. Kreis während R1 gehalten: abbrechen.
 
 Kein Schnellzauber: R1 kurz antippen zaubert 12 yd vor dem Charakter. Die Maus-Variante bleibt unverändert.

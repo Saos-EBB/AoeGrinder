@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Slot 7/8 und Zielmodus in jedem Slot
+**Was:** Bodenziel-Spells lagen außerhalb von Slot 3 fest 12 yd vor der Figur. Jetzt gilt überall: halten, rechter Stick verschiebt, loslassen zaubert, Kreis bricht ab.
+**Nicht gebaut:** keine eigene Zielgeschwindigkeit pro Spell.
+
 ## 2026-10-31 — fix(input): Taste 3 nicht mehr fest auf Blizzard
 **Was:** Taste 3 lief über einen Sonderfall und wurde erst in `resolveSlot3()` aufgelöst. Jetzt geht sie den Weg aller Slots über `cast()`.
 **Nicht gebaut:** kein neuer Zielmodus am Pad, der folgt im nächsten Schritt.

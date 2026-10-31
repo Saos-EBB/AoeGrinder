@@ -27,8 +27,6 @@ Alle Commits des Spec bis auf den entfallenen Publish sind drin. Geprüft im Hea
 ## Abweichungen und offene Punkte
 - `mobs.ts` bleibt unangetastet, deshalb: Treffer-Funken der neuen Schulen kommen zusätzlich zum Frost-Funken aus `damageMob`; „schlagen langsamer“ schiebt `nextSwing` pro Frame (`slowSwing`).
 - Pushback beim Zaubern erkennt Treffer am Lebensverlust (`player.ts` nicht angefasst), Gift-Ticks zählen also mit.
-- Mit Pad: Bodenziel außerhalb von Slot 3 liegt fest 12 yd vor der Figur.
 - `formulas.ts` und `fx/spellFx.ts` standen nicht auf der Dateiliste, mussten aber kleine Änderungen bekommen.
 - Die bisherigen Upgrades (Shatter, Arcane Mind …) laufen als sechste Art "Talent" weiter, die Karte "Glück" als siebte. Die Spec nennt keine Verteilung der Arten: `CARD_KIND_WEIGHTS` ist PH.
 - Trinken belegt Slot 6 und ist nicht ersetzbar, sonst gäbe es keine Mana-Quelle mehr.
-- Pad: Slot 7–8 haben keinen Knopf (`gamepad.ts` nicht angefasst).

@@ -4,3 +4,4 @@ Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Nich
 
 ## Steps
 - fix(input): Taste 3 sucht den Spell im Slot wie jede andere Taste, `resolveSlot3()` ist weg. Nicht gebaut: —
+- feat(gamepad): Slot 7 auf R2/RT, Slot 8 auf Steuerkreuz rechts, Zielmodus für Bodenziel-Spells in jedem Slot. Nicht gebaut: —

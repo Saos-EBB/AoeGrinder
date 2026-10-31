@@ -4,7 +4,6 @@ import { state, player } from '../state';
 import { dist2d } from '../util';
 import { CFG, SPELLS, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
-import { heightAt } from '../world';
 import { blizCursor, crystalBurst, hitSparkFx } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
@@ -99,13 +98,8 @@ export function applySlow(mob, pct, dur) {
   mob.slowUntil = Math.max(mob.slowUntil, state.now + dur);
 }
 
-// Bodenziel: Maus wählt per Klick, am Pad liegt das Ziel vor der Figur
+// Bodenziel: Maus wählt per Klick. Das Pad zielt selbst (gamepad.ts) und kommt mit fertigem Punkt.
 function startTargeting(id) {
-  if (state.lastInput === 'pad') {
-    const x = player.pos.x + Math.sin(player.facing) * CFG.blizAimStart;
-    const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
-    return castSpell(id, { x, y: heightAt(x, z), z, clone() { return { ...this }; } });
-  }
   player.targeting = player.targeting === id ? false : id;
   blizCursor.visible = !!player.targeting;
 }
