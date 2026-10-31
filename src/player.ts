@@ -4,7 +4,7 @@ import { $, clamp } from './util';
 import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
-import { heightAt, collide, zone, buildWorld } from './world';
+import { heightAt, collide, zone, zoneId, buildWorld } from './world';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
@@ -64,6 +64,17 @@ export function switchZone(id) {
   player.poison = null;
   cam.offset = 0;
   while (state.mobs.length < zone.packs.initialMobs) spawnPack();
+}
+
+// Dev: Level setzen. Mobs kommen neu, damit die Freischaltung sofort zu sehen ist; Karten bleiben
+export function setLevel(level) {
+  const fromLevel = player.level;
+  player.level = level;
+  player.xp = 0;
+  player.hp = maxHp();
+  player.mana = maxMana();
+  switchZone(zoneId);
+  announceNewMobs(fromLevel);
 }
 
 export function damagePlayer(amount, dot = false) {

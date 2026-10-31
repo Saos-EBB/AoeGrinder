@@ -1,7 +1,8 @@
 // Modus-Auswahl, Run-Ergebnis und Ranglisten-Ansicht. Hängt sich selbst ein, damit menus.ts und index.html unberührt bleiben.
 
 import { MODES, MODIFIERS, modeId, setMode, toggleCustomMod, activeModIds, scoreMult } from '../modifiers';
-import { resetGame } from '../player';
+import { resetGame, setLevel } from '../player';
+import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
 import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns } from '../leaderboard';
 
@@ -16,6 +17,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #modeMods label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
   #modeInfo { margin-top: 6px; font-size: 13px; color: #c9b88a; }
   #deathModal .panel { max-height: 96vh; overflow: auto; }
+  #devLevels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 4px; }
   #runResult { margin-bottom: 14px; }
   #runResult table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   #runResult td { padding: 2px 0; text-align: left; color: #ddd; }
@@ -243,3 +245,13 @@ const boardButton = (cls, style) => {
 $('startBtn').after(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
 $('restartBtn').after(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
 document.querySelector('#bindModal .row2').prepend(boardButton('smallBtn', 'width:auto;padding:6px 14px'));
+
+// Dev: Level setzen
+$('devZones').insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin-bottom:6px">Dev: Level setzen</div><div id="devLevels"></div>`);
+for (const level of [1, 15, 16, 30, 31, 45, 46, 60, 61, 100]) {
+  const b = document.createElement('button');
+  b.className = 'bindBtn';
+  b.textContent = String(level);
+  b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('bindsClose').click(); });
+  $('devLevels').appendChild(b);
+}
