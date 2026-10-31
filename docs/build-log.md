@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand Branch gruen-polish
+**Was:** Prüfstand und offene Punkte in `docs/status-gruen.md`.
+**Nicht gebaut:** —
+
 ## 2026-10-31 — feat(spells): Echte Cast-ID
 **Was:** Multi-Kills zählten pro Spell, zwei getrennte Casts galten also als einer. Jetzt hat jeder Cast und Kanal eine eigene ID.
 **Nicht gebaut:** keine Änderung an `score.ts`, Fähigkeiten und Lava bleiben ohne ID.
