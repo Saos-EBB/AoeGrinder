@@ -12,6 +12,8 @@ import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
 import { spawnPack, removeMob } from './mobs';
 import { clearAbilities } from './abilities';
+import { resetScore } from './score';
+import './ui/scoreHud';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 
@@ -20,6 +22,7 @@ export function resetGame() {
   clearAbilities();
   state.mobs = [];
   resetMods();
+  resetScore();
   state.cardRanks = {};
   state.now = 0;
   state.pendingLevelUps = 0;

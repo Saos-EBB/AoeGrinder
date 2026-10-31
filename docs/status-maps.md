@@ -35,3 +35,6 @@ Altfehler in `models/creatures.ts`, nicht behoben, weil Animationen gleich bleib
 
 # Punkte, Rangliste, Modi (Teil 1)
 Spec: `docs/score-spec.md`. Build-Log dieses Auftrags steht hier, um Merge-Konflikte in `build-log.md` zu vermeiden.
+
+## Build-Log
+- **feat(score): Punkte, Kill-Ereignis, HUD.** `killMob` meldet XP und `mob.castKey`; in `damageMob` kommt dafür eine zweite Zeile dazu, weil `killMob` die Quelle sonst nicht kennt. HUD läuft in eigener Schleife, weil `main.ts` nicht freigegeben ist. Nicht gebaut: Bonus-Anzeige im HUD, die kommt am Run-Ende.

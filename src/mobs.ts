@@ -7,6 +7,7 @@ import { scene } from './render';
 import { heightAt, collide, zone } from './world';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
+import { reportKill } from './score';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
@@ -226,6 +227,7 @@ export function damageMob(mob, amount, source) {
 
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
+  mob.castKey = source;
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
     if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }
@@ -265,6 +267,7 @@ function killMob(mob) {
   mob.rootUntil = 0;
   mob.plate.style.display = 'none';
   player.kills++;
+  reportKill(mob, mob.type.noXp ? 0 : xpForKill(mob.level));
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
   if (mob.type.noXp) return;
   const xp = xpForKill(mob.level);
