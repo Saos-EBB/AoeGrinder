@@ -8,7 +8,7 @@ import { cam } from './camera';
 import { heightAt } from './world';
 import { blizCursor } from './fx/spellFx';
 import { cast } from './spells';
-import { showError } from './ui/hud';
+import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
 import { openBinds, closeBinds, renderBinds } from './ui/menus';
 
@@ -146,6 +146,7 @@ function captureRebind() {
   state.padRebinding = null;
   setPadBind(id, btn);
   renderBinds();
+  refreshKeyLabels();
 }
 
 function menuButtons() {
@@ -185,6 +186,10 @@ export function pollGamepad() {
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
   if (!player.targeting || !gp || state.paused) { if (state.padAim) cancelAim(); }
+  if (state.lastInput !== 'pad' && (pad.down.some(Boolean) || pad.move.x || pad.move.y || pad.look.x || pad.look.y)) {
+    state.lastInput = 'pad';
+    refreshKeyLabels();
+  }
   if (state.padRebinding) captureRebind();
   else if (!state.paused) gameButtons();
   else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();

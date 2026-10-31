@@ -10,6 +10,7 @@ import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
 import { openBinds, closeBinds, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
+import { refreshKeyLabels } from './ui/hud';
 
 export const ACTIONS = [
   { group: 'Bewegung' },
@@ -65,6 +66,7 @@ export function pressSpell(id) {
 }
 
 addEventListener('keydown', e => {
+  if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }
   if (state.rebinding) {
     e.preventDefault();
     if (e.code !== 'Escape') setBind(state.rebinding, e);

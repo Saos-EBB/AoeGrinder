@@ -5,6 +5,7 @@ import { CFG, SPELLS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera } from '../render';
 import { binds, pressSpell } from '../input';
+import { padBinds, padLabel } from '../gamepad';
 
 export const overlay = $('overlay');
 
@@ -48,7 +49,16 @@ for (const [id, s] of Object.entries(SPELLS)) {
 }
 
 export function refreshKeyLabels() {
-  for (const id in slots) slots[id].key.textContent = binds[id].key;
+  const onPad = state.lastInput === 'pad';
+  for (const id in slots) slots[id].key.textContent = onPad ? padLabel(padBinds[id]) : binds[id].key;
+  if (onPad) {
+    const p = id => `<b>${padLabel(padBinds[id])}</b>`;
+    $('help').innerHTML =
+      `<b>Linker Stick</b> laufen · <b>Rechter Stick</b> Kamera<br>` +
+      `${p('jump')} springen · ${p('autorun')} Autorun · ${p('camBehind')} Kamera hinter Figur<br>` +
+      `${p('bliz')} halten: Blizzard zielen · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
+    return;
+  }
   const b = id => `<b>${binds[id].key}</b>`;
   $('help').innerHTML =
     `${b('forward')} ${b('back')} vor/zurück · ${b('turnLeft')} ${b('turnRight')} drehen<br>` +

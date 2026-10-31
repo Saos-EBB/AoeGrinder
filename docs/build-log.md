@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Tasten-Symbole je nach letzter Eingabe
+**Was:** Actionbar und Hilfe zeigen PlayStation-Symbole, sobald das Pad zuletzt benutzt wurde, und Tastaturnamen nach dem nächsten Tastendruck.
+**Nicht gebaut:** keine Xbox-Symbole, kein automatisches Umschalten nach Pad-Typ (entschieden).
+
 ## 2026-10-31 — feat(gamepad): Pad-Neubelegung im Tastenbelegungs-Menü
 **Was:** Dritte Spalte im Menü, Speicherung unter `frostgrind.padbinds.v1`; Bestätigen, Abbrechen und Steuerkreuz im Menü bleiben fest, damit man sich nicht aussperrt.
 **Nicht gebaut:** Pad-Bedienung für die Knöpfe Standard und Schließen, Kreis schließt das Menü bereits.

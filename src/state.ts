@@ -9,6 +9,7 @@ export const state: any = {
   autorun: false,
   jumpQueued: false,
   rebinding: null,      // Aktion, die gerade neu belegt wird
+  lastInput: 'key',     // 'key' oder 'pad', bestimmt die Tasten-Symbole
   padRebinding: null,   // dasselbe fürs Pad
   padAim: null,         // Blizzard-Zielpunkt am Pad, solange R1 gehalten ist
 };
