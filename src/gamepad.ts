@@ -92,6 +92,42 @@ function gameButtons() {
   if (Math.abs(pad.move.y) > 0.5) state.autorun = false;   // wie W/S an der Tastatur
 }
 
+// Menüs: Kreuz bestätigt, Steuerkreuz oder linker Stick wählt
+const CONFIRM_BTN = 0, DPAD = { up: 12, down: 13, left: 14, right: 15 };
+const isOpen = id => $(id).classList.contains('show');
+let stickNav = { x: 0, y: 0 };
+
+function navStep() {
+  const now = { x: Math.abs(pad.move.x) > 0.5 ? Math.sign(pad.move.x) : 0, y: Math.abs(pad.move.y) > 0.5 ? -Math.sign(pad.move.y) : 0 };
+  const step = {
+    x: (pressed(DPAD.right) ? 1 : 0) - (pressed(DPAD.left) ? 1 : 0) || (now.x !== stickNav.x ? now.x : 0),
+    y: (pressed(DPAD.down) ? 1 : 0) - (pressed(DPAD.up) ? 1 : 0) || (now.y !== stickNav.y ? now.y : 0),
+  };
+  stickNav = now;
+  return step;
+}
+
+// Hebt den gewählten Eintrag der Liste hervor; ohne Auswahl den ersten (auch nach Neuaufbau der Liste)
+function moveSelection(items, step) {
+  const n = items.length, cur = items.findIndex(el => el.classList.contains('selected'));
+  const next = cur < 0 ? 0 : (cur + step + n) % n;
+  items[cur]?.classList.remove('selected');
+  items[next]?.classList.add('selected');
+  return items[next];
+}
+
+function menuButtons() {
+  const step = navStep();
+  if (isOpen('cardModal') && !isOpen('bindModal')) {
+    const card = moveSelection([...document.querySelectorAll('#cards .card')], step.x);
+    if (pressed(CONFIRM_BTN)) card?.click();
+  } else if (isOpen('deathModal') && !isOpen('bindModal')) {
+    if (pressed(CONFIRM_BTN)) $('restartBtn').click();
+  } else if (isOpen('startModal') && !isOpen('bindModal')) {
+    if (pressed(CONFIRM_BTN)) $('startBtn').click();
+  }
+}
+
 // Radiale Deadzone, danach auf 0..1 neu skaliert
 function deadzone(x, y) {
   const len = Math.hypot(x, y);
@@ -117,7 +153,8 @@ export function pollGamepad() {
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
   if (!player.targeting || !gp || state.paused) { if (state.padAim) cancelAim(); }
   if (!state.paused) gameButtons();
-  else if (pressed(padBinds.menu) && $('bindModal').classList.contains('show')) closeBinds();
+  else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();
+  else menuButtons();
 }
 
 // Im Stand kreist die Kamera, beim Laufen dreht sich der Charakter mit (wie rechte Maustaste)

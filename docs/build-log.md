@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Start, Karten und Tod per Pad bedienbar
+**Was:** Kreuz löst die vorhandenen Klick-Handler aus, damit es keinen zweiten Weg durch die Menüs gibt; die Auswahl steckt nur in der CSS-Klasse.
+**Nicht gebaut:** Tastenbelegung am Pad kommt im nächsten Schritt.
+
 ## 2026-10-31 — feat(gamepad): Blizzard-Zielmodus mit R1 halten, loslassen, Kreis abbrechen
 **Was:** Eigener Zielpunkt `state.padAim`, die Maus-Variante über `mouse.ground` bleibt; ein Fehlschlag wie „Außer Reichweite“ beendet das Zielen, weil R1 dann ohnehin los ist.
 **Nicht gebaut:** kein Schnellzauber (entschieden), kein Mitwandern des Zielkreises mit dem Charakter.
