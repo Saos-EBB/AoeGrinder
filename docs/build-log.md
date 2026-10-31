@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(score): Feld build der Rangliste
+**Was:** `recordRun` speichert mit leerem `build`, und `leaderboard.ts` gehört Blau. Darum schreibt `saveRunBuild()` in `core.ts` den Text einen Frame nach dem Tod in den letzten Eintrag.
+**Nicht gebaut:** keine Anzeige. Der Speicherschlüssel steht dadurch doppelt im Code; sauberer wäre `build: buildText()` direkt in `recordRun`.
+
 ## 2026-10-31 — feat(modes): Modi Teil 2
 **Was:** Fünf Modifikatoren und drei Presets als Daten. Das Start-Kit wird beim Klick auf Start gesetzt, weil die Modus-Auswahl davor nur `resetGame` aufruft.
 **Nicht gebaut:** keine Vorschau des Start-Kits im Startmenü.

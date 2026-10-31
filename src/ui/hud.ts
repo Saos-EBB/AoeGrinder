@@ -5,7 +5,7 @@ import { CFG, SPELLS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
-import { castSpell, paysLife, cdEnd as spellCdEnd } from '../spells/core';
+import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 
 export const overlay = $('overlay');
@@ -101,6 +101,7 @@ export function updatePerf(t) {
 }
 
 export function updateHud() {
+  saveRunBuild();
   const hpMax = maxHp(), manaMax = maxMana();
   $('lvl').textContent = player.level;
   $('luck').textContent = String(player.luck).replace('.', ',');

@@ -10,6 +10,7 @@ import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
 import { MODIFIERS, activeModIds } from '../modifiers';
+import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
@@ -251,6 +252,27 @@ export function stopChannel(force = false) {
 }
 export function stopDrink() {
   player.drink = null;
+}
+
+// Build des Runs als Text: Spells mit aktiver Rune · Supports · Relikt
+function buildText() {
+  const owned = state.slots.filter(id => id && !SPELLS[id].fixed);
+  const spells = owned.filter(id => !SPELLS[id].relic).map(id => rune(id) ? `${SPELLS[id].name} (${rune(id).name})` : SPELLS[id].name);
+  const supports = SUPPORTS.filter(x => state.supports[x.id]).map(x => x.name);
+  const relic = owned.find(id => SPELLS[id].relic);
+  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`].filter(Boolean).join(' · ');
+}
+
+// recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.
+let buildSaved = false;
+export function saveRunBuild() {
+  if (!player.dead) { buildSaved = false; return; }
+  if (buildSaved) return;
+  buildSaved = true;
+  const runs = loadRuns(), last = runs[runs.length - 1];
+  if (!last) return;
+  last.build = buildText();
+  try { localStorage.setItem('frostgrind.runs.v1', JSON.stringify(runs)); } catch { /* kein Storage */ }
 }
 
 export function learnSpell(id, slot) {

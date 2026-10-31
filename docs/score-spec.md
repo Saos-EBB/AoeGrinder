@@ -40,6 +40,9 @@ Auswahl im Startbildschirm. Teil 2 (nach dem Spells-Merge, nicht jetzt): Frost o
 - Export: Button kopiert JSON in die Zwischenablage. Import: Textfeld zum Einfügen. Kein Datei-Download.
 - Aufrufbar im Start- und Esc-Menü.
 
+## Feld build
+Text: `Frost Nova (Tiefes Eis), Blizzard · Echo, Weite · Relikt: Frostatem`. Spells mit aktiver Rune, ohne Trinken, dann Supports, dann Relikt. Teile ohne Inhalt fallen weg. Runs vor diesem Stand haben `build: ''`.
+
 ## Modi Teil 2
 Einträge in `modifiers.ts`, Regeln in `spells/core.ts` (`modRule`, `tagsAllowed`). Punkte `// PH`.
 
