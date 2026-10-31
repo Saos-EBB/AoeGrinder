@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Elvyn, der Wald vom Anfang mit Ebern
+**Was:** Die erste Welt kommt als fünfte Zone zurück: gleiches Licht, Gelände, Nadelwald und nur Wildeber, wählbar im Esc-Menü.
+**Nicht gebaut:** keine weiteren Mob-Typen, der Eber bleibt der einzige Mob dort.
+
 ## 2026-10-31 — chore(docs): Stand v6 in handoff.md
 **Was:** Artifact auf v6 aktualisiert (gebündelter Build), Stand festgehalten.
 **Nicht gebaut:** —

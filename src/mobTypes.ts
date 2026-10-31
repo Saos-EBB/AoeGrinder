@@ -1,10 +1,13 @@
 // Mob-Typen: Name, Modell und Fähigkeit (Schlüssel in abilities.ts oder null).
 
+import { buildBoar } from './models/boar';
 import { humanoid, quadruped, bat, raptor, bug, glowMat } from './models/creatures';
 
 const DWARF = { skin: 0xb07a5a, scale: [1.22, 0.78, 1.22], lean: 0.08 };
 
 export const MOB_TYPES: any = {
+  wildeber: { name: 'Wildeber', build: buildBoar, ability: null },
+
   // Tirisfal (Werte PH)
   skelett: { name: 'Klapperskelett', ability: null,
     build: humanoid({ skin: 0xc9bf9f, bones: true, weapon: 'sword', eye: glowMat(0.4, 1.8, 0.6), lean: 0.12 }) },

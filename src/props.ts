@@ -77,3 +77,16 @@ export function rocks(ctx, n, color, rMin = 12, rMax = 90, ok?) {
   });
   ctx.place([{ geo, mat: lambert(color, { flatShading: true }) }], list);
 }
+
+// Elvyn: Nadelwald, Steine, Gras
+export function forestProps(ctx) {
+  const pine = prefab([
+    [lambert(0x5a3d22), [cyl(0.35, 0.55, 3, 0, 1.5, 0)]],
+    [lambert(0x2f5a2c), [cone(2.6, 5, 0, 4, 0, 0, 0, 0, 8), cone(1.8, 3.5, 0, 6.4, 0, 0, 0, 0, 8)]],
+  ]);
+  const inside = scatter(40, 18, 88).map(p => ({ ...p, s: rand(0.9, 1.4) }));
+  for (const t of inside) ctx.obstacle(t.x, t.z, 0.6 * t.s, 2.4 * t.s);
+  ctx.place(pine, [...inside, ...scatter(190, 100, 160).map(p => ({ ...p, s: rand(1, 1.8) }))]);
+  rocks(ctx, 30, 0x8a857a);
+  grass(ctx, 6000, 0.27, 0.5, 0.24);
+}
