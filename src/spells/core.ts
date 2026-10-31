@@ -73,18 +73,20 @@ export const paysLife = id => supported('blood', id);
 export const radiusMult = id => stat(id).radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
-// Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor
+// Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
-export function makeCtx(id, scale = 1, radiusScale = 1) {
+let castCounter = 0;
+export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
   const c = {
     id,
+    castKey,
     hit(m, amount) {
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
-      return damageMob(m, dmg, id);
+      return damageMob(m, dmg, id, castKey);
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {
@@ -160,7 +162,7 @@ function release(id, point) {
   const c: any = makeCtx(id);
   c.cost = cost;
   s.effect(c, point);
-  scheduleEchoes(id, point);
+  scheduleEchoes(id, point, c.castKey);
 }
 
 // damagePlayer trägt diese Quellen ein, wenn der letzte Schaden ein Tick war
@@ -184,12 +186,12 @@ function updateCast() {
 }
 
 // PH: Faktoren von Großes Echo. Ein Kanal würde sich selbst abbrechen, deshalb wiederholt keins der Echos ihn.
-function scheduleEchoes(id, point) {
+function scheduleEchoes(id, point, key) {
   if (SPELLS[id].channel) return;
   if (supported('bigEcho', id)) {
-    schedule(500, () => SPELLS[id].effect(makeCtx(id, 1.2, 1.2), point));
-    schedule(1000, () => SPELLS[id].effect(makeCtx(id, 1.4, 1.4), point));
-  } else if (supported('echo', id)) schedule(500, () => SPELLS[id].effect(makeCtx(id, 0.7), point));
+    schedule(500, () => SPELLS[id].effect(makeCtx(id, 1.2, 1.2, key), point));
+    schedule(1000, () => SPELLS[id].effect(makeCtx(id, 1.4, 1.4, key), point));
+  } else if (supported('echo', id)) schedule(500, () => SPELLS[id].effect(makeCtx(id, 0.7, 1, key), point));
 }
 
 // Fläche mit Ticks und optionalem onUpdate pro Frame

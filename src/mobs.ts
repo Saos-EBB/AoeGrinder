@@ -229,7 +229,7 @@ export function applyRoot(mob, dur) {
 }
 
 // Gibt true zurück, wenn der Zauber getroffen hat
-export function damageMob(mob, amount, source) {
+export function damageMob(mob, amount, source, castKey?) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
@@ -238,7 +238,7 @@ export function damageMob(mob, amount, source) {
 
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
-  mob.castKey = source;
+  mob.castKey = castKey ?? source;
   amount *= modFactor('dmg');
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);

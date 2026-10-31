@@ -5,7 +5,7 @@ Alle Zahlen sind Design-Werte (`// PH`).
 ## Punkte
 Punkte pro Kill = XP × M_multi × M_combo × M_modus
 - XP: wie bisher (Classic-Formel), graue Mobs = 0
-- Multi-Kill: Kills mit gleicher source-ID (Spell-ID aus damageMob), die höchstens 1,2 s auseinanderliegen, zählen als ein Cast. M_multi = 1 + 0,1 × (n − 1), max ×5. Später ersetzt der Spells-Agent das durch eine echte Cast-ID; score.ts liest nur ein Feld "castKey".
+- Multi-Kill: Kills mit gleicher source-ID (Spell-ID aus damageMob), die höchstens 1,2 s auseinanderliegen, zählen als ein Cast. M_multi = 1 + 0,1 × (n − 1), max ×5. Seit Teil 2 ist das eine echte Cast-ID (Zähler in `makeCtx`, Echos und Flächen behalten die ID ihres Casts); score.ts liest nur das Feld "castKey".
 - Combo: Kill innerhalb 4 s nach dem letzten → Combo +1. M_combo = 1 + Combo/50, max ×3. Trinken oder 4 s ohne Kill → Combo 0.
 - M_modus: Produkt der aktiven Modifikatoren
 - Run-Ende: + größter Pull (max. gleichzeitig kämpfende Mobs) × 100, + 50 pro Minute

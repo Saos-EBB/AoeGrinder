@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(spells): Echte Cast-ID
+**Was:** Multi-Kills zählten pro Spell, zwei getrennte Casts galten also als einer. Jetzt hat jeder Cast und Kanal eine eigene ID.
+**Nicht gebaut:** keine Änderung an `score.ts`, Fähigkeiten und Lava bleiben ohne ID.
+
 ## 2026-10-31 — feat(score): Feld build der Rangliste
 **Was:** `recordRun` speichert mit leerem `build`, und `leaderboard.ts` gehört Blau. Darum schreibt `saveRunBuild()` in `core.ts` den Text einen Frame nach dem Tod in den letzten Eintrag.
 **Nicht gebaut:** keine Anzeige. Der Speicherschlüssel steht dadurch doppelt im Code; sauberer wäre `build: buildText()` direkt in `recordRun`.

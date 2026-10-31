@@ -10,3 +10,4 @@ Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Nich
 - feat(fx): Canvas-Texturen für alle Dauerflächen der neuen Spells. Nicht gebaut: keine Texturen für Effekte ohne Bodenfläche (Feuerring, Feuernova: nur Partikel).
 - feat(modes): Nur Frost, Nur Feuer, Kein Trinken, Classic pur, Kein Glück und drei Presets (`docs/score-spec.md`). Nicht gebaut: keine Vorschau des Start-Kits im Startmenü.
 - feat(score): Feld `build` der Rangliste wird beim Run-Ende gefüllt. Nicht gebaut: keine Anzeige, die gehört Blau.
+- feat(spells): Jeder Cast und Kanal hat eine eigene ID, `damageMob` setzt sie als `mob.castKey`. Nicht gebaut: keine Änderung an `score.ts`.
