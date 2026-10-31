@@ -15,7 +15,7 @@ import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import { modFactor } from './modifiers';
 import './ui/scoreHud';
-import './ui/leaderboardView';
+import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 
@@ -68,6 +68,8 @@ export function switchZone(id) {
 export function damagePlayer(amount, dot = false) {
   if (player.dead) return;
   player.hp -= amount;
+  // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
+  player.lastHitBy = dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava';
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
@@ -123,6 +125,7 @@ export function gainXp(xp) {
 export function die() {
   player.dead = true;
   player.hp = 0;
+  showRunResult();
   stopChannel(); stopDrink();
   state.paused = true;
   setTimeout(() => {
