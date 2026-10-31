@@ -4,7 +4,7 @@ import { $, rand, clamp, dist2d } from '../util';
 import { CFG, SPELLS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera } from '../render';
-import { binds, pressSpell } from '../main';
+import { binds, pressSpell } from '../input';
 
 export const overlay = $('overlay');
 

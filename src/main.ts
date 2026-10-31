@@ -3,7 +3,7 @@ import { state, player } from './state';
 import { $, rand, randInt, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, mods, resetMods } from './config';
 import { aggroRadius, hitChance, xpForKill, xpNeeded, maxHp, maxMana, spirit, dmgMult, mobMaxHp, mobHitDmg, manaCost, spellCd, blizRadius } from './formulas';
-import { renderer, scene, camera, composer } from './render';
+import { scene, composer } from './render';
 import { heightAt, collide, drape } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
@@ -11,54 +11,10 @@ import { buildBoar } from './models/boar';
 import { blizCursor, blizFx, FROST_WHITE, novaFx, arcaneExplosionFx, coneOfColdFx, blinkFx, hitSparkFx, crystalBurst, levelUpFx, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
 import { cam, shakeCamera, updateCamera } from './camera';
 import { overlay, combatText, showError, fmtTime, refreshKeyLabels, updateHud } from './ui/hud';
-import { showCards, openBinds, closeBinds, renderBinds, setBind } from './ui/menus';
+import { showCards } from './ui/menus';
+import { binds, mouseBtn, mouse, act, pressSpell, pickGround } from './input';
+import './input';
 import './ui/menus';
-
-export const ACTIONS = [
-  { group: 'Bewegung' },
-  { id: 'forward',     label: 'Vorwärts',          code: 'KeyW',   key: 'W' },
-  { id: 'back',        label: 'Rückwärts',         code: 'KeyS',   key: 'S' },
-  { id: 'turnLeft',    label: 'Links drehen',      code: 'KeyA',   key: 'A' },
-  { id: 'turnRight',   label: 'Rechts drehen',     code: 'KeyD',   key: 'D' },
-  { id: 'strafeLeft',  label: 'Seitwärts links',   code: 'KeyQ',   key: 'Q' },
-  { id: 'strafeRight', label: 'Seitwärts rechts',  code: 'KeyE',   key: 'E' },
-  { id: 'jump',        label: 'Springen',          code: 'Space',  key: 'Leertaste' },
-  { id: 'autorun',     label: 'Autorun',           code: 'KeyR',   key: 'R' },
-  { group: 'Zauber' },
-  { id: 'nova',  label: 'Frost Nova',       code: 'Digit1', key: '1', spell: true },
-  { id: 'ae',    label: 'Arcane Explosion', code: 'Digit2', key: '2', spell: true },
-  { id: 'bliz',  label: 'Blizzard',         code: 'Digit3', key: '3', spell: true },
-  { id: 'coc',   label: 'Cone of Cold',     code: 'Digit4', key: '4', spell: true },
-  { id: 'blink', label: 'Blink',            code: 'Digit5', key: '5', spell: true },
-  { id: 'drink', label: 'Trinken',          code: 'Digit6', key: '6', spell: true },
-];
-const BIND_STORE = 'frostgrind.binds.v1';
-export let binds = loadBinds();
-
-function defaultBinds() {
-  const b = {};
-  for (const a of ACTIONS) if (a.id) b[a.id] = { code: a.code, key: a.key };
-  return b;
-}
-function loadBinds() {
-  const b = defaultBinds();
-  try { Object.assign(b, JSON.parse(localStorage.getItem(BIND_STORE) || '{}')); } catch { /* kein Storage */ }
-  return b;
-}
-export function saveBinds() {
-  try { localStorage.setItem(BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
-}
-export function resetBinds() {
-  binds = defaultBinds();
-}
-export const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
-export const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
-
-// Eingabe
-const held = new Set();      // gedrückte Tasten (e.code)
-const mouseBtn = { left: false, right: false };
-const mouse = { ndc: new THREE.Vector2(), ground: new THREE.Vector3(), dragged: false, downX: 0, downY: 0 };
-const act = id => held.has(binds[id].code);
 
 export function resetGame() {
   for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
@@ -388,7 +344,7 @@ function updatePlayer(dt) {
   regenerate(dt);
 }
 
-function cast(id, point?) {
+export function cast(id, point?) {
   if (state.paused || player.dead) return;
   if (state.now < player.gcdUntil || (player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
@@ -480,90 +436,6 @@ function stopChannel() {
 }
 function stopDrink() {
   player.drink = null;
-}
-
-export function pressSpell(id) {
-  if (state.paused || player.dead) return;
-  if (id === 'bliz') {                       // erst Zielmodus, Cast per Klick
-    player.targeting = !player.targeting;
-    blizCursor.visible = player.targeting;
-    return;
-  }
-  cast(id);
-}
-
-addEventListener('keydown', e => {
-  if (state.rebinding) {
-    e.preventDefault();
-    if (e.code !== 'Escape') setBind(state.rebinding, e);
-    state.rebinding = null;
-    renderBinds();
-    return;
-  }
-  if (e.code === 'Escape') {
-    if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
-    else if ($('bindModal').classList.contains('show')) closeBinds();
-    else if (!state.paused) openBinds();
-    return;
-  }
-  const id = actionForCode(e.code);
-  if (id) e.preventDefault();
-  held.add(e.code);
-  if (e.repeat || !id) return;
-  if (SPELLS[id]) pressSpell(id);
-  if (id === 'jump') state.jumpQueued = true;
-  if (id === 'autorun') state.autorun = !state.autorun;
-  if (id === 'back' || id === 'forward') state.autorun = false;
-});
-addEventListener('keyup', e => held.delete(e.code));
-addEventListener('blur', () => { held.clear(); mouseBtn.left = mouseBtn.right = false; });
-
-const canvas = renderer.domElement;
-canvas.addEventListener('mousedown', e => {
-  if (e.button === 0) mouseBtn.left = true;
-  if (e.button === 2) {
-    mouseBtn.right = true;
-    player.facing += cam.offset;               // Charakter dreht sich in Kamerarichtung
-    cam.offset = 0;
-  }
-  mouse.dragged = false;
-  mouse.downX = e.clientX; mouse.downY = e.clientY;
-});
-addEventListener('mouseup', e => {
-  const wasClick = !mouse.dragged;
-  if (e.button === 0) mouseBtn.left = false;
-  if (e.button === 2) mouseBtn.right = false;
-  if (document.pointerLockElement && !mouseBtn.left && !mouseBtn.right) document.exitPointerLock();
-  if (!wasClick || !player.targeting || e.target !== canvas) return;
-  if (e.button === 0) cast('bliz', mouse.ground.clone());
-  else { player.targeting = false; blizCursor.visible = false; }
-});
-addEventListener('mousemove', e => {
-  if (mouseBtn.left || mouseBtn.right) {
-    if (!mouse.dragged && Math.hypot(e.clientX - mouse.downX, e.clientY - mouse.downY) > 4) {
-      mouse.dragged = true;
-      try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch { /* ohne Lock geht's auch */ }
-    }
-    if (mouse.dragged) {
-      const yaw = -e.movementX * 0.005;
-      if (mouseBtn.right) player.facing += yaw; else cam.offset += yaw;
-      cam.pitch = clamp(cam.pitch + e.movementY * 0.004, -0.2, 1.35);
-    }
-  }
-  if (!document.pointerLockElement) mouse.ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
-});
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-addEventListener('wheel', e => { cam.dist = clamp(cam.dist + Math.sign(e.deltaY) * 1.5, 3, 35); });
-// Mauszeiger auf den Boden projizieren (Ray-Marching über die Höhenfunktion)
-const raycaster = new THREE.Raycaster();
-function pickGround() {
-  raycaster.setFromCamera(mouse.ndc, camera);
-  const { origin, direction } = raycaster.ray;
-  const p = new THREE.Vector3();
-  for (let t = 0; t < 150; t += 0.5) {
-    p.copy(origin).addScaledVector(direction, t);
-    if (p.y <= heightAt(p.x, p.z)) { mouse.ground.set(p.x, heightAt(p.x, p.z), p.z); return; }
-  }
 }
 
 function update(dt) {

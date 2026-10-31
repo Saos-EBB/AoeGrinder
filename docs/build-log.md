@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(input): Tasten, Maus, Keybinds auslagern
+**Was:** Eingaben und gespeicherte Belegung; resetBinds ist neu, weil menus die Variable binds nicht mehr selbst zuweisen kann.
+**Nicht gebaut:** kein Gamepad, kein Action-Mapping-Layer.
+
 ## 2026-10-31 — refactor(ui): Menüs auslagern
 **Was:** Start, Karten, Tod, Tastenbelegung und Ding-Sound.
 **Nicht gebaut:** kein Sound-Modul für einen einzigen Sound.

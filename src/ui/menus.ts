@@ -3,7 +3,8 @@ import { $ } from '../util';
 import { CARDS } from '../config';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels } from '../ui/hud';
-import { ACTIONS, binds, saveBinds, resetBinds, keyName, actionForCode, resetGame } from '../main';
+import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
+import { resetGame } from '../main';
 
 // Level-Up-Karten
 export function showCards() {
