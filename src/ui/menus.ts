@@ -46,7 +46,9 @@ export function openBinds() {
   renderBinds();
   $('bindModal').classList.add('show');
 }
+export function closeResetConfirm() { $('resetModal').classList.remove('show'); }
 export function closeBinds() {
+  closeResetConfirm();
   state.rebinding = null;
   state.padRebinding = null;
   $('bindModal').classList.remove('show');
@@ -116,4 +118,7 @@ $('restartBtn').addEventListener('click', () => {
 });
 $('bindsOpen').addEventListener('click', openBinds);
 $('bindsClose').addEventListener('click', closeBinds);
-$('bindsReset').addEventListener('click', () => { resetBinds(); resetPadBinds(); saveBinds(); savePadBinds(); refreshKeyLabels(); renderBinds(); });
+// Abbrechen hat den Fokus, damit Enter oder Leertaste nichts löscht
+$('bindsReset').addEventListener('click', () => { state.rebinding = null; state.padRebinding = null; renderBinds(); $('resetModal').classList.add('show'); $('resetNo').focus(); });
+$('resetNo').addEventListener('click', closeResetConfirm);
+$('resetYes').addEventListener('click', () => { resetBinds(); resetPadBinds(); saveBinds(); savePadBinds(); refreshKeyLabels(); renderBinds(); closeResetConfirm(); });

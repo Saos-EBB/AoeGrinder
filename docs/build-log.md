@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(ui): Rückfrage vor dem Zurücksetzen der Belegung
+**Was:** „Standard“ liegt direkt neben „Schließen“, ein Fehlklick löschte bisher alle eigenen Tasten; Abbrechen hat den Fokus.
+**Nicht gebaut:** keine Pad-Bedienung des Fensters, „Standard“ ist am Pad ohnehin nicht erreichbar.
+
 ## 2026-10-31 — fix(input): mittlere Maustaste und Seitentasten belegbar
 **Was:** Das Menü hörte nur auf `keydown`; die drei Maustasten laufen jetzt über denselben Weg wie Tasten und lösen kein Browser-Zurück mehr aus.
 **Nicht gebaut:** linke und rechte Maustaste bleiben fest, sie bedienen Menü und Kamera.

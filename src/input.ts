@@ -8,7 +8,7 @@ import { renderer, camera } from './render';
 import { heightAt } from './world';
 import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
-import { openBinds, closeBinds, renderBinds, setBind } from './ui/menus';
+import { openBinds, closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
 import { refreshKeyLabels } from './ui/hud';
 
@@ -72,6 +72,10 @@ addEventListener('keydown', e => {
     if (e.code !== 'Escape') setBind(state.rebinding, e);
     state.rebinding = null;
     renderBinds();
+    return;
+  }
+  if ($('resetModal').classList.contains('show')) {   // Fenster fängt alle Tasten ab, Enter löst den fokussierten Knopf aus
+    if (e.code === 'Escape') closeResetConfirm();
     return;
   }
   if (e.code === 'Escape') {
