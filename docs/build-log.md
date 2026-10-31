@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(fx): Partikelsystem auslagern
+**Was:** Ein Draw-Call; das Limit kommt aus PERF. glowTex liegt hier, weil auch der Kristall des Mage sie nutzt.
+**Nicht gebaut:** kein Pooling, kein GPU-Update.
+
 ## 2026-10-31 — refactor(world): Terrain, Hindernisse, Kollision
 **Was:** heightAt bleibt einzige Quelle für Bodenhöhe; terrainDecal und drape liegen hier, weil sie der Höhe folgen.
 **Nicht gebaut:** kein Chunking, kein Spatial Grid für Kollision.
