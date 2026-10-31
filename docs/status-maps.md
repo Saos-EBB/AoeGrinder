@@ -41,3 +41,18 @@ Spec: `docs/score-spec.md`. Build-Log dieses Auftrags steht hier, um Merge-Konfl
 - **feat(score): Modifikatoren, Modi, Auswahl im Startbildschirm.** Daten in `modifiers.ts`. Halbe Werte läuft über `mods.hpMult`/`manaMult` in `resetGame`, weil `maxHp` in `formulas.ts` liegt und die Datei nicht freigegeben ist; Karten addieren dort weiter auf die halbierte Basis. Die Auswahl hängt sich selbst in den Startbildschirm, `menus.ts` und `index.html` bleiben unberührt. Nicht gebaut: Moduswechsel auf dem Todesbildschirm, die Wahl gilt bis zum Neuladen.
 - **feat(score): Rangliste und Ergebnis auf dem Todesbildschirm.** `leaderboard.ts` speichert unter `frostgrind.runs.v1`, `build` bleibt leer. Die Todesursache kommt aus `damagePlayer`, ohne dass Aufrufer sich ändern: `hitPlayer` setzt `attackAt` direkt davor. Nicht gebaut: Trennung von Lava und Lavaflächen, beides heißt „Lava“.
 - **feat(score): Ranglisten-Ansicht, Export und Import.** Tabs pro Modus, Eigene Mischungen und Alle, Top 10, Bestleistung markiert, Filter Spielversion, Details per Klick; Aufruf aus Start, Esc und Tod. Importierte Texte laufen nur über `textContent`. Nicht gebaut: Einträge löschen, Pad-Bedienung der Ansicht.
+
+## Stand Teil 1
+Alle vier Bausteine sind fertig: Punkte mit HUD, Modifikatoren und Modi, Rangliste, Ansicht mit Export und Import. Nichts gepusht, nichts veröffentlicht.
+
+**Getestet:** Punkte-Rechnung, Modifikator-Wirkung, Zeitlimit, Todesbildschirm, Tabs, Filter, Details, Import mit kaputten Daten und Dubletten, Export; Ability-, Pad- und Smoke-Test. `maps` zusammen mit `spells` gemergt: keine Konflikte, `tsc` und Build sauber, Modus, Punkte, Tod und Neustart laufen im gebauten Spiel.
+
+**Abweichungen vom Auftrag:**
+- `ui/menus.ts` blieb unberührt. Start- und Todesbildschirm werden aus `ui/leaderboardView.ts` erweitert, so gibt es dort keine Konflikte mit Spells. Auch der Esc-Menü-Knopf kommt von dort.
+- `damageMob` hat zwei neue Zeilen statt einer: `mob.castKey = source` und der Schadensfaktor.
+- `moveMob` und `spawnPack` tragen je einen Faktor für Wilde Mobs und Große Packs.
+- Halbe Werte setzt `mods.hpMult` und `mods.manaMult` in `resetGame`, weil `maxHp` in `formulas.ts` liegt. Eine Karte mit +15 % Leben bringt im Hardmode deshalb relativ +30 %.
+
+**Offen für später:**
+- Kills durch Lava zählen unter der letzten Spell-Quelle des Mobs, ohne eigene Quelle unter `env`.
+- Rangliste und Modus-Auswahl sind nur mit der Maus bedienbar.
