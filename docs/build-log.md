@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(mage): neues Rig mit 48 Gelenken und gebückter Haltung
+**Was:** Rig aus dem Mockup übernommen: dreiteiliger Rücken, Finger, Zehen, Kiefer, Stoffkette, Gehen und Laufen als eigene Gangarten, Spinnen-Pose am Sprung-Zenit; Haltung über `CFG.mageHunch`.
+**Nicht gebaut:** keine Größenänderung, keine Fußanpassung an Hänge.
+
 ## 2026-10-31 — chore(docs): Stand v5 in handoff.md
 **Was:** Artifact auf v5 aktualisiert (gebündelter Build), Stand und offene Pad-Prüfung festgehalten.
 **Nicht gebaut:** —

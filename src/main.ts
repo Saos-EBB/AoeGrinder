@@ -40,7 +40,7 @@ function updateVisuals(dt) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   mage.update(dt, {
     state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : player.moveState,
-    speed: player.moveSpeed,
+    speed: player.moveSpeed, vy: player.vel.y,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI),
   });
 
@@ -96,4 +96,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage };
