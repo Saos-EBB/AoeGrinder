@@ -13,7 +13,6 @@ import { mouseBtn, act } from './input';
 import { spawnPack, removeMob, announceNewMobs } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
-import { modFactor } from './modifiers';
 import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
@@ -24,8 +23,6 @@ export function resetGame() {
   clearAbilities();
   state.mobs = [];
   resetMods();
-  mods.hpMult *= modFactor('hp');
-  mods.manaMult *= modFactor('mana');
   resetScore();
   state.cardRanks = {};
   state.now = 0;
