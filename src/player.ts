@@ -24,7 +24,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(0, heightAt(0, 0), 0), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, moveState: 'idle', moveSpeed: CFG.runSpeed, level: CFG.startLevel, xp: 0,
+    facing: Math.PI, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
   });
@@ -145,7 +145,7 @@ export function updatePlayer(dt) {
   } else {
     player.vel.y -= CFG.gravity * s;
     player.pos.y += player.vel.y * s;
-    if (player.pos.y <= ground) { player.pos.y = ground; player.vel.y = 0; player.grounded = true; }
+    if (player.pos.y <= ground) { player.pos.y = ground; player.vel.y = 0; player.grounded = true; player.landAt = state.now; }
   }
 
   if (moved) {

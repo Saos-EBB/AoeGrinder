@@ -38,9 +38,11 @@ function updateVisuals(dt) {
   mage.root.position.copy(player.pos);
   mage.root.rotation.y = player.facing;
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
+  const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
+  const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
   mage.update(dt, {
     state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : player.moveState,
-    speed: player.moveSpeed, vy: player.vel.y,
+    speed: player.moveSpeed, vy: player.vel.y, squat,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI),
   });
 

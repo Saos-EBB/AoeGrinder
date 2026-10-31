@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(mage): Einknicken bei der Landung
+**Was:** `player.landAt` merkt den Aufsetz-Zeitpunkt, die Knie federn 300 ms nach.
+**Nicht gebaut:** kein Ausholen vor dem Sprung: Springen muss sofort auf den Tastendruck reagieren.
+
 ## 2026-10-31 — feat(mage): neues Rig mit 48 Gelenken und gebückter Haltung
 **Was:** Rig aus dem Mockup übernommen: dreiteiliger Rücken, Finger, Zehen, Kiefer, Stoffkette, Gehen und Laufen als eigene Gangarten, Spinnen-Pose am Sprung-Zenit; Haltung über `CFG.mageHunch`.
 **Nicht gebaut:** keine Größenänderung, keine Fußanpassung an Hänge.
