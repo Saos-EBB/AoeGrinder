@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(score): Spielversion v9
+**Was:** Runs des neuen Builds liefen sonst in der Rangliste als v8, obwohl Level und Modi anders sind.
+**Nicht gebaut:** —
+
 ## 2026-11-01 — fix(cards): Keine Talente für verlernte Spells
 **Was:** Improved Blizzard, Improved Frost Nova und Weiter Sturm kamen auch ohne den Spell im Slot und hätten dann nichts bewirkt. Sie verlangen ihn jetzt über `needs`.
 **Nicht gebaut:** kein Zurücksetzen von Rängen und Runen beim Verlernen; ein verlernter Spell kann weiter als Neuer Spell kommen.
