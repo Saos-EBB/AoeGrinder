@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(util): Helfer in util.ts auslagern
+**Was:** rand, clamp, part, joint usw. brauchen fast alle Module. Modul steht nicht in der handoff-Liste, verhindert aber doppelte Helfer.
+**Nicht gebaut:** keine Typ-Generics für die Helfer.
+
 ## 2026-10-31 — refactor(state): gemeinsamen Spielzustand in state.ts bündeln
 **Was:** Module können fremde `let`-Variablen nicht zuweisen; now, paused, mobs usw. liegen deshalb in einem Objekt. Modul steht nicht in der handoff-Liste, ist aber für die Aufteilung nötig.
 **Nicht gebaut:** keine Getter/Setter, kein Store, nur ein Objekt.

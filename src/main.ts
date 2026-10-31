@@ -5,6 +5,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { state, player } from './state';
+import { $, rand, randInt, clamp, dist2d, lerpTo, part, joint, pick, perFrame } from './util';
 
 const CFG = {
   startLevel: 20,
@@ -103,13 +104,6 @@ function resetBinds() {
 }
 const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
 const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
-
-const $ = id => document.getElementById(id);
-const rand = (a, b) => a + Math.random() * (b - a);
-const randInt = (a, b) => Math.floor(rand(a, b + 1));
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const dist2d = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-const lerpTo = (cur, target, k) => cur + (target - cur) * k;
 
 function aggroRadius(mob) {
   const diff = Math.max(player.level - mob.level, -CFG.aggroLevelCap);
@@ -337,18 +331,6 @@ function collide(pos, radius) {
   }
   const r = Math.hypot(pos.x, pos.z);
   if (r > CFG.playRadius) { pos.x *= CFG.playRadius / r; pos.z *= CFG.playRadius / r; }
-}
-
-function part(geo, mat, x = 0, y = 0, z = 0) {
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(x, y, z);
-  return mesh;
-}
-function joint(parent, x = 0, y = 0, z = 0) {
-  const g = new THREE.Group();
-  g.position.set(x, y, z);
-  parent.add(g);
-  return g;
 }
 
 // Glow-Textur (weicher Kreis) für Partikel und Leuchteffekte
@@ -1150,10 +1132,6 @@ const particles = (() => {
   }
   return { spawn, update };
 })();
-const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-// Anzahl Partikel pro Frame für eine Rate (pro Sekunde)
-const perFrame = (rate, dt) => { const n = rate * dt / 1000; return Math.floor(n) + (Math.random() < n % 1 ? 1 : 0); };
-
 // Heller Lichtblitz (Sprite, wächst und verblasst)
 function flashFx(pos, color, size, dur) {
   const sp = glowSprite(color, 0.1);
