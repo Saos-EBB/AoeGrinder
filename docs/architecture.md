@@ -7,6 +7,7 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - `src/main.ts`: Einstieg: Bootstrap und Loop
 - `src/state.ts`: Spielzustand (`state`, `player`), von allen Modulen geteilt
 - `src/util.ts`: Kleine Helfer und Rig-Bausteine
+- `src/config.ts`: CFG, SPELLS, CARDS, mods, PERF
 
 ## Entscheidungen
 - 2026-10-31: `strict` ist aus. Der Code ist 1:1 aus dem untypisierten Artifact übernommen, `tsc` prüft Imports und offensichtliche Typfehler.

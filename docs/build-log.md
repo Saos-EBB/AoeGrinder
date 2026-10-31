@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(config): CFG, SPELLS, CARDS und Performance-Schalter
+**Was:** Alle Zahlen an einem Ort; PERF schaltet Bloom, Partikel-Limit und Pixel-Ratio, Standardwerte entsprechen v4.
+**Nicht gebaut:** keine Qualitätsstufen, kein Menü für die Schalter.
+
 ## 2026-10-31 — refactor(util): Helfer in util.ts auslagern
 **Was:** rand, clamp, part, joint usw. brauchen fast alle Module. Modul steht nicht in der handoff-Liste, verhindert aber doppelte Helfer.
 **Nicht gebaut:** keine Typ-Generics für die Helfer.
