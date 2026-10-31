@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand v5 in handoff.md
+**Was:** Artifact auf v5 aktualisiert (gebündelter Build), Stand und offene Pad-Prüfung festgehalten.
+**Nicht gebaut:** —
+
 ## 2026-10-31 — feat(gamepad): Vibration bei Crits und schweren Treffern
 **Was:** Rumble nur, wenn der Browser dual-rumble meldet.
 **Nicht gebaut:** keine Einstellung zum Abschalten, nicht verlangt.

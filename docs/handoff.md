@@ -1,7 +1,7 @@
 # Frost Grind – Stand & Übergabe (Chat ↔ Claude Code)
 
 **Artifact:** „Frost Grind – Prototyp“ · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v4 (`1793417937-48fc`, 2026-10-31). Eine Datei `index.html` (~2000 Zeilen), Three.js 0.170 via jsDelivr-Importmap.
+Stand: v5 (`1793454733-f137`, 2026-10-31), gebündelter Build aus diesem Repo. Quelle ist das Repo, das Artifact wird nicht mehr direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 
 ## Regeln für beide Seiten
@@ -22,6 +22,7 @@ Stand: v4 (`1793417937-48fc`, 2026-10-31). Eine Datei `index.html` (~2000 Zeilen
 - Test-Hook: `window.__game`.
 
 ## Stand
+- v5 – Erster Build aus dem Repo, mit Controller-Steuerung (`src/gamepad.ts`, Spec: `docs/gamepad-spec.md`): Laufen/Gehen analog, Kamera, Zauber, Blizzard mit R1 halten, Menüs, Neubelegung, PlayStation-Symbole, Vibration. Getestet mit simuliertem Pad; `mapping === "standard"` am echten PS-Pad steht noch aus. Im Artifact kann die Gamepad-API am iframe scheitern, dann läuft das Spiel nur ohne Pad weiter.
 - Repo-Migration (Basis v4 `1793417937-48fc`) – Vite + TypeScript, Module laut Liste unten plus `state.ts` und `util.ts`; `PERF` in `config.ts` (Bloom, Partikel-Limit, Pixel-Ratio); `npm run build` erzeugt eine einzelne `dist/index.html`. Verhalten wie v4, Artifact noch nicht aktualisiert, nichts gepusht.
 - v4 – Abendlicht (tiefe Sonne, warmer Dunst, Sonnenscheibe, Vignette); Nova legt Eisfläche mit Rissen; AE mit Runenkreis; Blizzard-Wolke; Treffer-Blitz, Kamera-Wackeln bei Crits, Leichen versinken; Kamera weicht Baumkronen aus.
 - v3 – Skelett-Mage mit rotem Lendenschurz + Kristallstab; Schatten aus; Partikel + Bloom; Leben ×2 (1040 @20), Mana = Leben × 4/3; Bewegung belegt aus baseMoveSpeed (7 / 4,5 / π).
