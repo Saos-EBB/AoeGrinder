@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand v7 und offene Leistungsmessung in handoff.md
+**Was:** Artifact auf v7 aktualisiert; der Optimierungsplan steht unter Offen, samt dem, was davon schon gebaut ist.
+**Nicht gebaut:** keine Optimierung.
+
 ## 2026-10-31 — feat(ui): Leistungsanzeige im Dev-Menü
 **Was:** FPS, Draw Calls und Mob-Anzahl oben rechts, damit die Mob-Rigs auf dem echten Rechner messbar sind. Draw Calls zählen über den ganzen Frame, sonst zeigt `renderer.info` wegen des Composers nur den letzten Durchgang.
 **Nicht gebaut:** keine Optimierung, erst wird gemessen.
