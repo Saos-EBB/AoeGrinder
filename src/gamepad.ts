@@ -1,6 +1,9 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
+import { state, player } from './state';
+import { clamp } from './util';
 import { CFG } from './config';
+import { cam } from './camera';
 import { showError } from './ui/hud';
 
 export const pad = {
@@ -33,6 +36,18 @@ export function pollGamepad() {
   const left = gp ? deadzone(gp.axes[0], gp.axes[1]) : { x: 0, y: 0 };
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
+}
+
+// Im Stand kreist die Kamera, beim Laufen dreht sich der Charakter mit (wie rechte Maustaste)
+export function updatePadCamera(dt) {
+  const moving = pad.move.x || pad.move.y;
+  if (!moving && !pad.look.x && !pad.look.y) return;
+  const s = dt / 1000, yaw = -pad.look.x * CFG.padYaw * s;
+  if (moving || state.autorun) {
+    player.facing += cam.offset + yaw;
+    cam.offset = 0;
+  } else cam.offset += yaw;
+  cam.pitch = clamp(cam.pitch + pad.look.y * CFG.padPitch * s, -0.2, 1.35);
 }
 
 addEventListener('gamepadconnected', (e: any) => {

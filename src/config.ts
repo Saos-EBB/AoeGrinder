@@ -28,7 +28,8 @@ export const CFG = {
   meleeRange: 2.2, swingTime: 2000,
   playRadius: 98,
   packCount: 9,
-  padDeadzone: 0.15,                                // PH: docs/gamepad-spec.md
+  padDeadzone: 0.15, padWalkBelow: 0.5,             // PH: docs/gamepad-spec.md
+  padYaw: 2.5, padPitch: 1.5,                       // PH: Kamera am Pad (rad/s bei vollem Ausschlag)
 };
 
 // Rang-1-Werte laut Wowhead Classic. Radien PH (stehen nicht im Tooltip).

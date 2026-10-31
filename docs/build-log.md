@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Laufen mit linkem Stick, Kamera mit rechtem Stick
+**Was:** Stick und Tastatur laufen in einen Vektor, gedeckelt auf Länge 1; unter 0,5 Ausschlag Gehen mit 2,5 yd/s (belegt), die Laufanimation folgt dem Tempo.
+**Nicht gebaut:** kein eigener Geh-Animationszustand, `run` läuft einfach langsamer.
+
 ## 2026-10-31 — feat(gamepad): Pad erkennen, Achsen und Buttons pro Frame lesen
 **Was:** Abfrage mit radialer Deadzone; die API ist in try/catch, weil sie in einem fremden iframe per Permissions-Policy werfen kann und sonst die Spielschleife stirbt.
 **Nicht gebaut:** noch keine Wirkung im Spiel.

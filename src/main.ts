@@ -13,10 +13,11 @@ import { binds, mouse, pressSpell, pickGround } from './input';
 import { spawnPack, updateMob, separateMobs, sinkCorpse } from './mobs';
 import { cast } from './spells';
 import { resetGame, updatePlayer } from './player';
-import { pad, pollGamepad } from './gamepad';
+import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 
 function update(dt) {
+  updatePadCamera(dt);
   updatePlayer(dt);
   for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
@@ -39,7 +40,7 @@ function updateVisuals(dt) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   mage.update(dt, {
     state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : player.moveState,
-    speed: player.moveState === 'back' ? CFG.backSpeed : CFG.runSpeed,
+    speed: player.moveSpeed,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI),
   });
 

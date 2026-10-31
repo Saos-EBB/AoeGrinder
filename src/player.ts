@@ -12,6 +12,7 @@ import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
 import { spawnPack } from './mobs';
 import { updateChannel, stopChannel, stopDrink } from './spells';
+import { pad } from './gamepad';
 
 export function resetGame() {
   for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
@@ -23,7 +24,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(0, heightAt(0, 0), 0), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, moveState: 'idle', level: CFG.startLevel, xp: 0,
+    facing: Math.PI, moveState: 'idle', moveSpeed: CFG.runSpeed, level: CFG.startLevel, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
   });
@@ -110,16 +111,21 @@ export function updatePlayer(dt) {
   let strafe = (act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0);
   if (mouseBtn.right) strafe -= turn;
   strafe = clamp(strafe, -1, 1);
+  fwd += pad.move.y;
+  strafe += pad.move.x;
 
   if (player.grounded) {
     const f = player.facing;
     let vx = Math.sin(f) * fwd - Math.cos(f) * strafe;
     let vz = Math.cos(f) * fwd + Math.sin(f) * strafe;
     const len = Math.hypot(vx, vz);
-    const speed = fwd < 0 ? CFG.backSpeed : CFG.runSpeed;
+    // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
+    const amount = Math.min(1, Math.hypot(fwd, strafe));
+    const speed = amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed;
     player.vel.x = len ? vx / len * speed : 0;
     player.vel.z = len ? vz / len * speed : 0;
     player.moveState = len ? (fwd < 0 ? 'back' : 'run') : 'idle';
+    player.moveSpeed = len ? speed : CFG.runSpeed;
     if (state.jumpQueued) {
       player.vel.y = CFG.jumpSpeed;
       player.grounded = false;
