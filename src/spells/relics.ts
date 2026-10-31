@@ -11,7 +11,7 @@ import { shakeCamera } from '../camera';
 import { applyRoot, knockbackMob } from '../mobs';
 import { mobsInRadius, addField, schedule } from './core';
 import { runChain, nearestMob } from './chain';
-import { fieldDecal, areaParticles, burstFx, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE, BONE } from './fx';
+import { fieldDecal, areaParticles, burstFx, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
 
 export const ragnaros = {
   name: 'Zorn des Ragnaros', relic: true, desc: 'Feuerschlag 15 yd, alle fliegen weg.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
@@ -94,7 +94,7 @@ export const firenova = {
 
 const boneGeo = new THREE.ConeGeometry(0.35, 3.2, 5);
 function boneRing(pos, radius) {
-  const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(...BONE) }), n = Math.ceil(radius * 3);
+  const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.95, 0.88, 0.7) }), n = Math.ceil(radius * 3);
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2, x = pos.x + Math.cos(a) * radius, z = pos.z + Math.sin(a) * radius;
     const bone = new THREE.Mesh(boneGeo, mat);

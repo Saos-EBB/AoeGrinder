@@ -13,6 +13,7 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - feat(spells): Leerenkugel, Wirbel, Bogenblitz; Schock wirkt auf allen Schaden der Spells. Nicht gebaut: —
 - feat(spells): sechs Relikte in `relics.ts`, Kartenart Relikt. Nicht gebaut: Relikte haben keine Runen (Spec nennt keine); entgegen "ein Spell pro Datei" liegen sie gesammelt in einer Datei.
 - feat(ui): Dev im Esc-Menü: Karte erzwingen (Art + Seltenheit), Glück +25. Nicht gebaut: —
+- fix(spells): Knochenring ohne Bloom, er überstrahlte das Bild. Nicht gebaut: —
 
 ## Struktur
 - `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`), Runen, Ladungen, Dauerflächen
@@ -20,7 +21,13 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - `src/spells/<id>.ts`: Werte und Wirkung eines Spells; `index.ts` registriert sie in `SPELLS`
 - Die Tasten-Aktionen behalten ihre IDs (`nova` = Slot 1 …). `cast(aktion)` sucht den Spell im Slot, `castSpell(id)` zaubert direkt.
 
+## Stand
+Alle Commits des Spec bis auf den entfallenen Publish sind drin. Geprüft im Headless-Browser (Dev-Server): alle 20 zauberbaren Spells mit jeder Rune ohne Laufzeitfehler, dazu gezielt Stichproben der Wirkungen, Kartenregeln, Ersetzen-Dialog, Neustart. `tsc` und `vite build` laufen. Nicht geprüft: Spielbalance, echtes Pad.
+
 ## Abweichungen und offene Punkte
+- `mobs.ts` bleibt unangetastet, deshalb: Treffer-Funken der neuen Schulen kommen zusätzlich zum Frost-Funken aus `damageMob`; „schlagen langsamer“ schiebt `nextSwing` pro Frame (`slowSwing`).
+- Pushback beim Zaubern erkennt Treffer am Lebensverlust (`player.ts` nicht angefasst), Gift-Ticks zählen also mit.
+- Mit Pad: Bodenziel außerhalb von Slot 3 liegt fest 12 yd vor der Figur.
 - `input.ts` ist bis auf die Tasten 7–8 unverändert. Dort steht `pressSpell` weiter fest auf `bliz`; `resolveSlot3()` in `core.ts` fängt das ab.
 - `formulas.ts` und `fx/spellFx.ts` standen nicht auf der Dateiliste, mussten aber kleine Änderungen bekommen.
 - Die bisherigen Upgrades (Shatter, Arcane Mind …) laufen als sechste Art "Talent" weiter, die Karte "Glück" als siebte. Die Spec nennt keine Verteilung der Arten: `CARD_KIND_WEIGHTS` ist PH.
