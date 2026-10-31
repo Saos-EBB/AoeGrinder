@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(player): Bewegung, Physik, Mana auslagern
+**Was:** Danach bleiben in main.ts nur Bootstrap und Loop.
+**Nicht gebaut:** keine Player-Klasse.
+
 ## 2026-10-31 — refactor(spells): cast und Spell-Logik auslagern
 **Was:** Cast-Prüfung, Zauberwirkung, Channel, Slow.
 **Nicht gebaut:** kein Rang-System, das ist der Spec-Schritt danach.

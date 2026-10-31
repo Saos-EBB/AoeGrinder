@@ -6,7 +6,7 @@ import { heightAt, collide, drape } from './world';
 import { blizCursor, blizFx, novaFx, arcaneExplosionFx, coneOfColdFx, blinkFx, crystalBurst, resetShard } from './fx/spellFx';
 import { showError } from './ui/hud';
 import { damageMob } from './mobs';
-import { spendMana } from './main';
+import { spendMana } from './player';
 
 export function cast(id, point?) {
   if (state.paused || player.dead) return;

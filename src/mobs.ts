@@ -10,7 +10,7 @@ import { buildBoar } from './models/boar';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
 import { overlay, combatText } from './ui/hud';
-import { damagePlayer, gainXp } from './main';
+import { damagePlayer, gainXp } from './player';
 
 export function spawnPack() {
   let center;
