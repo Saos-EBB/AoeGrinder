@@ -10,6 +10,8 @@ import { spendMana } from './player';
 
 export function cast(id, point?) {
   if (state.paused || player.dead) return;
+  if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
+  if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (state.now < player.gcdUntil || (player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
   if (player.mana < cost) return showError('Nicht genug Mana');

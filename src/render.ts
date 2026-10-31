@@ -30,18 +30,22 @@ composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.4, 1.5);
 if (PERF.bloom) composer.addPass(bloom);
 // Vignette + leichte Farbtönung (warme Lichter, kühle Schatten)
-composer.addPass(new ShaderPass({
-  uniforms: { tDiffuse: { value: null } },
+const post = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, heat: { value: 0 }, time: { value: 0 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-  fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float heat; uniform float time; varying vec2 vUv;
     void main() {
-      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      // Hitzeflirren, nur in Zonen mit heat > 0, stärker unten im Bild
+      vec2 uv = vUv + vec2(sin(vUv.y * 90.0 + time * 3.0) * 0.0016 * heat * smoothstep(0.75, 0.3, vUv.y), 0.0);
+      vec3 c = texture2D(tDiffuse, uv).rgb;
       float lum = dot(c, vec3(0.299, 0.587, 0.114));
       c *= mix(vec3(0.92, 0.97, 1.08), vec3(1.06, 1.0, 0.92), clamp(lum, 0.0, 1.0));
       float v = smoothstep(0.95, 0.35, distance(vUv, vec2(0.5)));
       gl_FragColor = vec4(c * mix(0.62, 1.0, v), 1.0);
     }`,
-}));
+});
+const postUniforms = post.uniforms;
+composer.addPass(post);
 composer.addPass(new OutputPass());
 
 // Himmel als Farbverlauf-Kuppel
@@ -68,7 +72,20 @@ scene.add(new THREE.Mesh(
       }`,
   })));
 
+// Blendet Nebel und Himmel zur Sturmfarbe, k = 0..1
+export function blendFog(e, k, color, near, far) {
+  fog.color.set(e.fog).lerp(tmpColor.set(color), k);
+  fog.near = e.fogNear + (near - e.fogNear) * k; fog.far = e.fogFar + (far - e.fogFar) * k;
+  skyUniforms.horizon.value.copy(fog.color);
+  skyUniforms.top.value.set(e.top).lerp(tmpColor, k);
+  skyUniforms.mid.value.set(e.mid).lerp(tmpColor, k);
+}
+const tmpColor = new THREE.Color();
+
+export function tickHeat(t) { postUniforms.time.value = t / 1000; }
+
 export function setEnv(e) {
+  postUniforms.heat.value = e.heat ?? 0;
   fog.color.set(e.fog); fog.near = e.fogNear; fog.far = e.fogFar;
   hemi.color.set(e.sky); hemi.groundColor.set(e.ground); hemi.intensity = e.hemi;
   sun.color.set(e.sun); sun.intensity = e.sunPower; sun.position.set(...(e.sunPos as [number, number, number]));

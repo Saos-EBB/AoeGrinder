@@ -2,8 +2,8 @@ import { state, player } from './state';
 import { rand, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, mods } from './config';
 import { blizRadius } from './formulas';
-import { scene, composer } from './render';
-import { heightAt, drape, zone } from './world';
+import { scene, composer, tickHeat } from './render';
+import { heightAt, drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
@@ -23,6 +23,7 @@ function update(dt) {
   for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
   updateAbilities(dt);
+  updateZoneEvent(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {
@@ -90,6 +91,7 @@ function loop(t) {
   pollGamepad();
   if (!state.paused) { state.now += dt; update(dt); }
   updateVisuals(dt);
+  tickHeat(t);
   composer.render();
   updateHud();
   requestAnimationFrame(loop);

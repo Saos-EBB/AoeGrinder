@@ -295,3 +295,70 @@ export const raptor = o => level => {
     lL.foot.rotation.x = j.lK * 0.5 - j.lH * 0.4; lR.foot.rotation.x = j.rK * 0.5 - j.rH * 0.4;
   }, level, o.scale ?? [1, 1, 1], [1.2, 2.1, 2.6], 1);
 };
+
+// Insekt: Segmente, sechs Beine, Beißzangen. o: shell, dark, tail (Skorpion-Stachel), pincers, scale
+export const bug = o => level => {
+  const { M, mats } = kit();
+  const shell = M(o.shell), dark = M(o.dark);
+  const eye = glowMat(2, 0.5, 0.3);
+  const root = new THREE.Group();
+  const body = joint(root, 0, 0.55, 0);
+  const seg = (r, z, sy = 0.65, sz = 1.15) => { const m = part(Ball(r), shell, 0, 0, z); m.scale.set(1, sy, sz); body.add(m); };
+  seg(0.36, 0.05); seg(0.32, -0.45); seg(0.25, -0.82);
+  for (const z of [-0.25, 0.25]) body.add(part(Box(0.5, 0.04, 0.07), dark, 0, 0.21, z - 0.05));
+  const head = joint(body, 0, 0.03, 0.42);
+  const hm = part(Ball(0.22), dark, 0, 0, 0.12); hm.scale.set(1.1, 0.75, 1); head.add(hm);
+  for (const sx of [-0.11, 0.11]) {
+    head.add(part(Ball(0.04), eye, sx, 0.07, 0.25));
+    const man = part(Cone(0.04, 0.28), dark, sx * 0.7, -0.04, 0.38); man.rotation.x = Math.PI / 2; man.rotation.z = -sx * 2; head.add(man);
+  }
+  const legs = [];
+  for (const side of [1, -1]) for (const z of [0.25, -0.1, -0.45]) {
+    const hip = joint(body, side * 0.26, -0.03, z);
+    hip.rotation.z = side * 1.1;
+    hip.add(part(Cyl(0.035, 0.03, 0.45), dark, 0, -0.2, 0));
+    const knee = joint(hip, 0, -0.42, 0);
+    knee.rotation.z = -side * 1.15;
+    knee.add(part(Cone(0.03, 0.42), dark, 0, -0.2, 0)).rotation.x = Math.PI;
+    legs.push(hip);
+  }
+  const claws = [];
+  if (o.pincers) for (const side of [1, -1]) {
+    const arm = joint(body, side * 0.28, 0, 0.3);
+    arm.rotation.y = side * 0.45;
+    const a = part(Box(0.08, 0.08, 0.55), dark, 0, 0, 0.27); arm.add(a);
+    arm.add(part(Box(0.2, 0.13, 0.28), shell, 0, 0, 0.6));
+    arm.add(part(Cone(0.05, 0.28), shell, side * 0.07, 0, 0.82)).rotation.x = Math.PI / 2;
+    arm.add(part(Cone(0.05, 0.28), shell, -side * 0.07, 0, 0.82)).rotation.x = Math.PI / 2;
+    claws.push(arm);
+  }
+  const tail = [];
+  if (o.tail) {
+    let parent = body, y = 0.04, z = -1;
+    for (let i = 0; i < 4; i++) {
+      const g = joint(parent, 0, y, z);
+      g.rotation.x = -0.55;
+      g.add(part(Ball(0.14 - i * 0.015), i % 2 ? dark : shell, 0, 0.12, 0));
+      tail.push(g);
+      parent = g; y = 0.22; z = 0;
+    }
+    const stinger = joint(parent, 0, 0.22, 0);
+    stinger.add(part(Cone(0.06, 0.28), glowMat(1.5, 1.8, 0.3), 0, 0.1, 0.05));
+    tail.push(stinger);
+  }
+  let phase = rand(0, 6);
+  const j = { y: 0.55, roll: 0, head: 0, strike: 0, leg: 0 };
+  return finish(root, mats, (dt, a) => {
+    const s = dt / 1000;
+    const t: any = { y: 0.55, roll: 0, head: 0, strike: 0, leg: 0 };
+    if (a.state === 'run') { phase += s * a.speed * 4; t.leg = 1; t.y = 0.56; }
+    else if (a.state === 'idle') { phase += s * 1.2; t.head = Math.sin(phase) * 0.12; }
+    else if (a.state === 'dead') { t.roll = Math.PI; t.y = 0.32; }
+    if (a.attack > 0) { const v = Math.sin(a.attack * Math.PI); t.head = 0.35 * v; t.strike = v; }
+    ease(j, t, Math.min(1, s * 14));
+    body.position.y = j.y; body.rotation.z = j.roll; head.rotation.x = j.head;
+    legs.forEach((l, i) => { l.rotation.x = Math.sin(phase + i * 2.1) * 0.5 * j.leg; });
+    claws.forEach((c, i) => { c.rotation.x = -0.15 - j.strike * 0.3 + Math.sin(phase * 0.5 + i) * 0.06; });
+    tail.forEach((g, i) => { if (i < 4) g.rotation.x = -0.55 + j.strike * (i === 0 ? 0.9 : 0.25); });
+  }, level, o.scale ?? [1, 1, 1], [1.3, 1.3, 2.3], 0.6);
+};

@@ -26,7 +26,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, slowUntil: 0, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
+    facing: Math.PI, slowUntil: 0, stunUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
   });
@@ -52,19 +52,22 @@ export function switchZone(id) {
   player.vel.set(0, 0, 0);
   player.grounded = true;
   player.facing = Math.PI;
-  player.slowUntil = 0;
+  player.slowUntil = player.stunUntil = 0;
+  player.poison = null;
   cam.offset = 0;
   while (state.mobs.length < zone.packs.initialMobs) spawnPack();
 }
 
-export function damagePlayer(amount) {
+export function damagePlayer(amount, dot = false) {
   if (player.dead) return;
   player.hp -= amount;
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
-  if (player.drink) stopDrink();
-  pushbackChannel();
+  if (!dot) {                            // Gift-Ticks brechen weder Trinken noch Channel
+    if (player.drink) stopDrink();
+    pushbackChannel();
+  }
   if (player.hp <= 0) die();
 }
 
@@ -128,6 +131,8 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
+  const stunned = player.stunUntil > state.now;
+  if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
   let strafe = (act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0);
@@ -135,6 +140,7 @@ export function updatePlayer(dt) {
   strafe = clamp(strafe, -1, 1);
   fwd += pad.move.y;
   strafe += pad.move.x;
+  if (stunned) fwd = strafe = 0;
 
   if (player.grounded) {
     const f = player.facing;
@@ -174,6 +180,14 @@ export function updatePlayer(dt) {
     if (player.channel) stopChannel();   // Bewegung bricht Channel und Trinken ab
     if (player.drink) stopDrink();
     if (!mouseBtn.left) cam.offset -= cam.offset * Math.min(1, s * 3);   // Kamera dreht sich langsam hinter den Spieler
+  }
+  if (player.poison) {
+    const pz = player.poison;
+    if (state.now >= pz.until) player.poison = null;
+    else if (state.now >= pz.nextTick) {
+      pz.nextTick += 2000;
+      damagePlayer(4 * pz.stacks, true);   // PH
+    }
   }
   updateChannel();
   regenerate(dt);

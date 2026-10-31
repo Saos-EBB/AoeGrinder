@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import { CFG } from './config';
-import { scene, setEnv } from './render';
+import { scene, setEnv, blendFog } from './render';
+import { state, player } from './state';
+import { rand, clamp } from './util';
+import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
+let nextStorm = 0, stormEnd = 0;
 
 export function heightAt(x, z) {
   let h = zone.height(x, z);
@@ -34,6 +38,8 @@ export function buildWorld(id) {
   zoneId = id;
   zone = ZONES[id];
   setEnv(zone.env);
+  state.stormK = 0;
+  nextStorm = state.now + (zone.storm?.every ?? 0);
 
   const geo = terrain.geometry, pos = geo.attributes.position, colors = [], c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
@@ -52,6 +58,21 @@ export function buildWorld(id) {
   zone.props(makeCtx(props, obstacles, heightAt));
 }
 buildWorld(zoneId);
+
+// Sandsturm: alle paar Minuten Sicht zu, danach wieder klar
+export function updateZoneEvent(dt) {
+  const st = zone.storm;
+  if (!st) return;
+  if (state.now >= nextStorm) { nextStorm = state.now + st.every; stormEnd = state.now + st.dur; }
+  const want = state.now < stormEnd ? 1 : 0;
+  const k = state.stormK = clamp(state.stormK + Math.sign(want - state.stormK) * dt / 3000, 0, 1);
+  blendFog(zone.env, k, st.color, st.near, st.far);
+  if (k < 0.05) return;
+  for (let i = Math.round(dt * 0.12 * k); i > 0; i--) {
+    particles.spawn({ x: player.pos.x + rand(-16, 16), y: player.pos.y + rand(0.2, 7), z: player.pos.z + rand(-16, 16),
+      vx: rand(11, 18), vy: rand(-0.5, 0.5), vz: rand(3, 7), life: rand(0.4, 0.9), color: [0.34, 0.26, 0.14], size: rand(0.2, 0.55) });
+  }
+}
 
 // Spieler/Mobs aus Hindernissen herausschieben
 export function collide(pos, radius) {

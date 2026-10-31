@@ -10,9 +10,12 @@ import { dist2d } from './util';
 import { collide } from './world';
 import { particles } from './fx/particles';
 import { combatText } from './ui/hud';
-import { moveMob, faceMob, hitPlayer, startLeap } from './mobs';
+import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat } from './mobs';
+import { stopChannel, stopDrink } from './spells';
+import { maxMana } from './formulas';
+import { CFG } from './config';
 
-const SHADOW = [1.1, 0.3, 2.0], AXE = [1.6, 0.9, 0.3];
+const SHADOW = [1.1, 0.3, 2.0], AXE = [1.6, 0.9, 0.3], DUST = [0.5, 0.4, 0.25];
 
 // Geschoss als Partikelspur, fliegt auf den Spieler zu und trifft immer
 const projectiles = [];
@@ -117,6 +120,51 @@ export const ABILITIES: any = {
       mob.pounced = true;
       startLeap(mob, { x: player.pos.x, z: player.pos.z }, 380, () => { if (dist2d(mob.pos, player.pos) < 4) hitPlayer(mob, 1.6); });   // PH
       return true;
+    },
+  },
+  // Jeder Treffer stiehlt 5 % max. Mana
+  manaThief: {
+    onHit(mob) {
+      const stolen = Math.round(maxMana() * 0.05);              // PH
+      player.mana = Math.max(0, player.mana - stolen);
+      combatText(player.pos, `-${stolen} Mana`, 'info', 2.6);
+    },
+  },
+  // Stampfer im Nahkampf: 3 s Betäubung, bricht Blizzard; Blink löst
+  stomp: {
+    onUpdate(mob) {
+      if (dist2d(mob.pos, player.pos) > CFG.meleeRange + 1 || mob.rootUntil > state.now || !ready(mob, 'nextStomp', 12000)) return false;   // PH
+      hitPlayer(mob, 1.2);                                      // PH
+      player.stunUntil = state.now + 3000;                      // PH
+      stopChannel();
+      stopDrink();
+      combatText(player.pos, 'Betäubt!', 'hurt', 2.6);
+      for (let i = 0; i < 40; i++) {
+        const a = i / 40 * Math.PI * 2;
+        particles.spawn({ x: mob.pos.x, y: mob.pos.y + 0.2, z: mob.pos.z, vx: Math.cos(a) * 12, vy: 0.5, vz: Math.sin(a) * 12, drag: 2.5, life: 0.5, color: DUST, size: 0.7 });
+      }
+      return true;
+    },
+  },
+  // Ruft einmal 4 Schwärmlinge
+  swarm: {
+    onCombatStart(mob) {
+      if (mob.swarmed) return;
+      mob.swarmed = true;
+      for (let i = 0; i < 4; i++) {                             // PH
+        const a = i / 4 * Math.PI * 2;
+        const pos = mob.pos.clone();
+        pos.x += Math.cos(a) * 1.6; pos.z += Math.sin(a) * 1.6;
+        enterCombat(spawnMob('schwaermling', pos, mob.level, mob.packId), false);
+      }
+    },
+  },
+  // Gift stapelt bis 5×, Ticks laufen in player.ts und brechen Trinken nicht
+  poison: {
+    onHit() {
+      const stacks = Math.min(5, (player.poison?.stacks ?? 0) + 1);    // PH
+      player.poison = { stacks, until: state.now + 12000, nextTick: player.poison?.nextTick ?? state.now + 2000 };   // PH
+      combatText(player.pos, `Gift ×${stacks}`, 'info', 2.6);
     },
   },
   // Ruft alle Mobs in 20 yd statt 10

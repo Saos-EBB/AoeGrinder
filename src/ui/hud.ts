@@ -75,7 +75,7 @@ export function updateHud() {
   $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}`;
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
-  $('status').textContent = player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
 
   const need = xpNeeded();
   $('xpFill').style.transform = `scaleX(${player.xp / need})`;
@@ -109,7 +109,8 @@ export function updateHud() {
   // Nameplates
   for (const m of state.mobs) {
     if (m.dead) continue;
-    const show = !m.hidden && (m.state !== 'idle' || dist2d(m.pos, player.pos) < 35);
+    const d = dist2d(m.pos, player.pos);
+    const show = !m.hidden && (state.stormK > 0.5 ? d < 20 : m.state !== 'idle' || d < 35);   // PH: Sandsturm
     const p = show && screenPos(m.pos, 2.3);
     if (!p) { m.plate.style.display = 'none'; continue; }
     m.plate.style.display = 'block';

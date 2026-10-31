@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Tanaris mit fünf Mobs und Sandsturm
+**Was:** Dünen, Ruinen mit Brunnenturm, Schlund im Süden, Hitzeflirren im Nachbild; Insekten-Rig; Manaraub, Stampfer mit Betäubung, Schwärmlinge, stapelndes Gift; Sandsturm alle 3 Minuten. Gift-Ticks brechen Trinken nicht, gelesen aus „tickt weiter, auch beim Trinken“.
+**Nicht gebaut:** Schwärmlinge geben keine XP, damit das Beschwören nicht zum XP-Quell wird.
+
 ## 2026-10-31 — feat(zones): Schlingendorntal mit fünf Mobs
 **Was:** Dschungel mit Zikkurat, Fluss, Strand und Pfaden zwischen vielen Bäumen; Raptor-Rig; Rudelwut, Axtwurf, Fluch, getarnter Panther. Der Fluch bremst über `player.slowUntil`, Nameplates respektieren `mob.hidden`.
 **Nicht gebaut:** keine Tarnung nach dem Zurücklaufen: einmal entdeckt bleibt der Panther sichtbar.
