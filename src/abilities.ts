@@ -5,9 +5,12 @@
 //   onDamaged(mob, amount, source)   vor dem Schaden; gibt den neuen Betrag zurück, 0 = immun
 // Alle Zahlen sind Design-Werte (PH).
 
+import * as THREE from 'three';
 import { state, player } from './state';
-import { dist2d } from './util';
-import { collide } from './world';
+import { dist2d, rand, perFrame } from './util';
+import { collide, zone, terrainDecal, drape } from './world';
+import { scene } from './render';
+import { damagePlayer } from './player';
 import { particles } from './fx/particles';
 import { combatText } from './ui/hud';
 import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat } from './mobs';
@@ -16,6 +19,14 @@ import { maxMana } from './formulas';
 import { CFG } from './config';
 
 const SHADOW = [1.1, 0.3, 2.0], AXE = [1.6, 0.9, 0.3], DUST = [0.5, 0.4, 0.25];
+const HEAL = [0.4, 2, 0.6], GOLD = [2.2, 1.7, 0.5], EMBER = [2.4, 0.8, 0.15];
+
+// Partikel rund um den Mob
+function emit(mob, rate, dt, color) {
+  for (let i = perFrame(rate, dt); i > 0; i--) {
+    particles.spawn({ x: mob.pos.x + rand(-0.7, 0.7), y: mob.pos.y + rand(0.2, 1.8), z: mob.pos.z + rand(-0.7, 0.7), vy: rand(0.8, 2), life: rand(0.4, 0.8), color, size: rand(0.14, 0.3) });
+  }
+}
 
 // Geschoss als Partikelspur, fliegt auf den Spieler zu und trifft immer
 const projectiles = [];
@@ -23,7 +34,31 @@ function shoot(mob, color, speed, onArrive) {
   mob.attackAt = state.now;
   projectiles.push({ x: mob.pos.x, y: mob.pos.y + 1.6, z: mob.pos.z, color, speed, onArrive });
 }
+// Schadenszonen: Lava der Zone und Lavaflächen, ticken einmal pro Sekunde
+const pools = [];
+let hazardClock = 0;
+function updateHazards(dt) {
+  for (let i = pools.length - 1; i >= 0; i--) {
+    if (pools[i].until <= state.now) removePool(i);
+  }
+  hazardClock += dt;
+  if (hazardClock < 1000) return;
+  hazardClock -= 1000;
+  if (!player.grounded) return;
+  let dmg = zone.hazard?.(player.pos.x, player.pos.z) ?? 0;
+  for (const p of pools) if (dist2d(p, player.pos) <= p.r) dmg += p.dps;
+  if (dmg > 0) damagePlayer(dmg);
+}
+function removePool(i) {
+  const { mesh } = pools[i];
+  scene.remove(mesh);
+  mesh.geometry.dispose();
+  mesh.material.dispose();
+  pools.splice(i, 1);
+}
+
 export function updateAbilities(dt) {
+  updateHazards(dt);
   const s = dt / 1000;
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
@@ -34,7 +69,10 @@ export function updateAbilities(dt) {
     for (let k = 0; k < 3; k++) particles.spawn({ x: p.x, y: p.y, z: p.z, life: 0.25, color: p.color, size: 0.35 });
   }
 }
-export function clearAbilities() { projectiles.length = 0; }
+export function clearAbilities() {
+  projectiles.length = 0;
+  while (pools.length) removePool(0);
+}
 
 // Hält Abstand: näher ran über max, zurück unter min
 function holdRange(mob, dt, min, max) {
@@ -165,6 +203,54 @@ export const ABILITIES: any = {
       const stacks = Math.min(5, (player.poison?.stacks ?? 0) + 1);    // PH
       player.poison = { stacks, until: state.now + 12000, nextTick: player.poison?.nextTick ?? state.now + 2000 };   // PH
       combatText(player.pos, `Gift ×${stacks}`, 'info', 2.6);
+    },
+  },
+  // Heilt das verletzteste Pack-Mitglied, flieht bei 15 % (fleeChance im Typ)
+  medic: {
+    onUpdate(mob) {
+      if ((mob.nextHeal ?? 0) > state.now) return false;
+      const hurt = state.mobs.filter(m => !m.dead && m.packId === mob.packId && m.hp < m.maxHp * 0.95 && dist2d(m.pos, mob.pos) < 30)   // PH
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (!hurt) return false;
+      mob.nextHeal = state.now + 3500;                          // PH
+      mob.attackAt = state.now;
+      const amount = Math.round(hurt.maxHp * 0.18);             // PH
+      hurt.hp = Math.min(hurt.maxHp, hurt.hp + amount);
+      combatText(hurt.pos, `+${amount}`, 'heal', 2.4);
+      for (let i = 0; i < 16; i++) particles.spawn({ x: hurt.pos.x + rand(-0.6, 0.6), y: hurt.pos.y + rand(0, 1.6), z: hurt.pos.z + rand(-0.6, 0.6), vy: rand(1, 2.5), life: 0.6, color: HEAL, size: 0.3 });
+      return false;
+    },
+  },
+  // Gottesschild bei 30 %: 6 s immun
+  divineShield: {
+    onDamaged(mob, amount) {
+      if (!mob.shieldUsed && mob.hp < mob.maxHp * 0.3) {        // PH
+        mob.shieldUsed = true;
+        mob.shieldUntil = state.now + 6000;                     // PH
+        combatText(mob.pos, 'Gottesschild!', 'info', 2.6);
+      }
+      return mob.shieldUntil > state.now ? 0 : amount;
+    },
+    onUpdate(mob, dt) {
+      if (mob.shieldUntil > state.now) emit(mob, 30, dt, GOLD);
+      return false;
+    },
+  },
+  // Hitzeaura: Frostschaden halbiert (Nova-Dauer über rootMax im Typ)
+  heatAura: {
+    onDamaged(mob, amount, source) { return source === 'ae' ? amount : amount * 0.5; },   // PH
+    onUpdate(mob, dt) { emit(mob, 14, dt, EMBER); return false; },
+  },
+  // Alle 8 s Lavafläche unter dem Spieler
+  lavaPool: {
+    onUpdate(mob) {
+      if (!ready(mob, 'nextPool', 8000)) return false;          // PH
+      mob.attackAt = state.now;
+      const mesh = terrainDecal(new THREE.CircleGeometry(1, 28), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.8, 0.8, 0.12), transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
+      drape(mesh, player.pos, 4);                               // PH: Radius
+      scene.add(mesh);
+      pools.push({ x: player.pos.x, z: player.pos.z, r: 4, until: state.now + 6000, dps: 30, mesh });   // PH
+      return false;
     },
   },
   // Ruft alle Mobs in 20 yd statt 10

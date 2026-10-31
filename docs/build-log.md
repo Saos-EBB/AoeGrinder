@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Blackrock Depths mit fünf Mobs
+**Was:** Basalt, Lavaflüsse als Schadenszone, Brücken, Korridore, Schmiede; Sanitäter in jedem größeren Pack (`packAlways`), Heilung, Gottesschild, Hitzeaura, Lavaflächen. Eber und Platzhalter-Welt sind damit überflüssig und gelöscht.
+**Nicht gebaut:** keine Wegfindung um Lava: Mobs laufen durch und nehmen keinen Schaden.
+
 ## 2026-10-31 — feat(zones): Tanaris mit fünf Mobs und Sandsturm
 **Was:** Dünen, Ruinen mit Brunnenturm, Schlund im Süden, Hitzeflirren im Nachbild; Insekten-Rig; Manaraub, Stampfer mit Betäubung, Schwärmlinge, stapelndes Gift; Sandsturm alle 3 Minuten. Gift-Ticks brechen Trinken nicht, gelesen aus „tickt weiter, auch beim Trinken“.
 **Nicht gebaut:** Schwärmlinge geben keine XP, damit das Beschwören nicht zum XP-Quell wird.

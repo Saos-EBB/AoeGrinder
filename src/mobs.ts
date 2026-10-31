@@ -21,12 +21,12 @@ export function spawnPack() {
     center = new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
     const farFromPlayer = dist2d(center, player.pos) > 40;
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
-    if (farFromPlayer && farFromPacks) break;
+    if (farFromPlayer && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
   }
   const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10);
   const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
-    const typeId = Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
+    const typeId = i === 0 && size >= 3 && zone.packAlways ? zone.packAlways : Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
     spawnMob(typeId, pos, level, packId);

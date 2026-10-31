@@ -1,4 +1,4 @@
-// Baukasten für Mob-Rigs: gleiche Schnittstelle wie boar.ts, { root, update(dt, anim) }.
+// Baukasten für Mob-Rigs: Schnittstelle { root, update(dt, anim) }.
 // anim = { state: 'idle'|'run'|'dead', speed, frozen, slowed, attack, flash }
 
 import * as THREE from 'three';

@@ -3,35 +3,7 @@
 
 import * as THREE from 'three';
 import { clamp, rand, lerpTo } from './util';
-import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
-
-const placeholder = {
-  env: {   // PH
-    fog: 0xe8c9a4, fogNear: 45, fogFar: 185,
-    top: 0x2c4f8c, mid: 0x9fb4d0, sunDisc: 1,
-    sky: 0xb8c8ff, ground: 0x6a4a2a, hemi: 1.25,
-    sun: 0xffb070, sunPower: 2.1, sunPos: [120, 45, -60],
-  },
-  height(x, z) {
-    return 2.2 * Math.sin(x * 0.035) * Math.cos(z * 0.03)
-         + 1.2 * Math.sin(x * 0.08 + z * 0.06)
-         + 0.6 * Math.sin(z * 0.13 - x * 0.05);
-  },
-  ground: (() => {
-    const grassA = new THREE.Color(0x3f6e22), grassB = new THREE.Color(0x86a83e),
-          dirt = new THREE.Color(0x8a6a42), rock = new THREE.Color(0x7d766a);
-    return (c, x, z, h) => {
-      const n = Math.sin(x * 0.11) * Math.cos(z * 0.09) + Math.sin(x * 0.031 + z * 0.047);
-      c.copy(grassA).lerp(grassB, clamp(0.5 + n * 0.3 + h * 0.05 + rand(-0.06, 0.06), 0, 1));
-      if (n > 1.3) c.lerp(dirt, 0.65);
-      if (h > 6) c.lerp(rock, clamp((h - 6) / 10, 0, 0.9));
-    };
-  })(),
-  props: forestProps,
-  spawn: { x: 0, z: 0 },
-  mobs: ['wildeber'],
-  packs: { count: 9, initialMobs: 30, sizeBonus: 0 },   // PH
-};
+import { lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
 
 const near = (x, z, cx, cz, r) => Math.hypot(x - cx, z - cz) < r;
 // Abstand zum Polygonzug, für Wege und Flüsse
@@ -316,9 +288,121 @@ const tanaris = {
   storm: { every: 180000, dur: 35000, color: 0xc9a468, near: 5, far: 20 },   // PH
 };
 
+// ---------- Blackrock Depths: Die Schwarze Schmiede ----------
+const BRD = {   // PH
+  forge: [0, -17], lavaY: -1,
+  rivers: [[[-120, 34], [-52, 26], [0, 37], [56, 24], [120, 34]], [[-120, -54], [-46, -45], [10, -58], [62, -43], [120, -52]]],
+  corridors: [[[-16, 10], [-22, 60], [-34, 100]], [[16, 10], [40, 60], [62, 92]], [[16, -14], [24, -72], [32, 100 * -1]], [[-14, -14], [-32, -72], [-40, 100 * -1]]],
+};
+const brdRiver = (x, z) => pathsDist(x, z, BRD.rivers);
+const brdCorr = (x, z) => pathsDist(x, z, BRD.corridors);
+
+function brdProps(ctx) {
+  const basalt = lambert(0x5f565a, { flatShading: true }), iron = lambert(0x75716f), soot = lambert(0x3a3333, { flatShading: true }), stone = lambert(0x8a8080, { flatShading: true });
+  const fire = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.7, 0.6, 0.12), fog: false });
+
+  // Lava: Fläche unter dem Gelände, sichtbar wo die Flüsse eingegraben sind
+  const lavaGeo = new THREE.PlaneGeometry(340, 340, 110, 110).rotateX(-Math.PI / 2);
+  const pos = lavaGeo.attributes.position, cols = [], hot = new THREE.Color(2.3, 0.62, 0.08), crust = new THREE.Color(0.5, 0.08, 0.02), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    c.copy(crust).lerp(hot, clamp(0.5 + Math.sin(x * 0.5 + z * 0.2) * Math.cos(z * 0.45 - x * 0.1) * 0.9 + rand(-0.2, 0.2), 0, 1));
+    cols.push(c.r, c.g, c.b);
+  }
+  lavaGeo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  const lava = new THREE.Mesh(lavaGeo, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }));
+  lava.position.y = BRD.lavaY;
+  ctx.add(lava);
+
+  // Korridore: hohe Felswände, über der Lava niedrige Brüstung (die Brücke)
+  const rock = prefab([[basalt, [box(3.6, 9, 3.2, 0, 4.5, 0)]], [soot, [box(4, 1.2, 3.6, 0, 9, 0)]]]);
+  const rail = prefab([[stone, [box(3.1, 1, 0.6, 0, 0.5, 0)]]]);
+  const walls = [], rails = [], decks = [];
+  for (const line of BRD.corridors) for (let i = 0; i < line.length - 1; i++) {
+    const [ax, az] = line[i], [bx, bz] = line[i + 1], len = Math.hypot(bx - ax, bz - az), nx = -(bz - az) / len, nz = (bx - ax) / len, ry = Math.atan2(-(bz - az), bx - ax);
+    for (let d = 0; d < len; d += 3) {
+      const cx = ax + (bx - ax) * d / len, cz = az + (bz - az) * d / len;
+      const onBridge = brdRiver(cx, cz) < 9;
+      if (onBridge) decks.push({ x: cx, z: cz, ry });
+      for (const side of [-1, 1]) {
+        const x = cx + nx * side * 5, z = cz + nz * side * 5;
+        if (Math.hypot(x, z - BRD.forge[1]) < 21) continue;
+        if (onBridge) { rails.push({ x, z, ry }); ctx.obstacle(x, z, 0.8); }
+        else if (brdRiver(x, z) > 8 && Math.random() < 0.9) { walls.push({ x, z, ry: ry + rand(-0.1, 0.1), sy: rand(0.75, 1.25), s: rand(0.95, 1.15) }); ctx.obstacle(x, z, 1.8); }
+      }
+    }
+  }
+  ctx.place(rock, walls);
+  ctx.place(rail, rails);
+  ctx.place(prefab([[stone, [box(3.2, 0.4, 10, 0, -0.1, 0)]]]), decks);
+
+  // Schmiede in der Mitte
+  const [fx, fz] = BRD.forge;
+  ctx.place(prefab([
+    [basalt, [box(13, 6, 9, 0, 3, 0), cyl(2.2, 3.4, 13, 0, 11, 0, 0, 0, 0, 8), cyl(2.6, 2.2, 1, 0, 17.6, 0, 0, 0, 0, 8)]],
+    [iron, [box(14, 0.7, 10, 0, 6.2, 0), box(1, 6, 1, -6.6, 3, 4.7), box(1, 6, 1, 6.6, 3, 4.7)]],
+    [fire, [box(7, 3.4, 0.4, 0, 2, 4.55), cyl(1.6, 1.6, 0.4, 0, 17.9, 0, 0, 0, 0, 8)]],
+  ]), [{ x: fx, z: fz }]);
+  ctx.obstacle(fx, fz, 7.5);
+  const glow = new THREE.PointLight(0xff7a30, 90, 40, 1.6);
+  glow.position.set(fx, 4, fz + 7);
+  ctx.add(glow);
+  const anvil = prefab([[iron, [box(0.7, 0.5, 0.5, 0, 0.25, 0), box(0.4, 0.4, 0.34, 0, 0.7, 0), box(1.5, 0.3, 0.55, 0.1, 1.05, 0), cone(0.22, 0.6, 1.1, 1.05, 0, 0, 0, -Math.PI / 2)]]]);
+  const anvils = [];
+  for (let i = 0; i < 7; i++) {
+    const a = -0.5 + i * 0.75, r = 12 + (i % 2) * 2;
+    const p = { x: fx + Math.sin(a) * r, z: fz + Math.cos(a) * r, ry: rand(0, 6), s: 1.4 };
+    if (Math.hypot(p.x, p.z) < 5) continue;
+    anvils.push(p); ctx.obstacle(p.x, p.z, 1);
+  }
+  ctx.place(anvil, anvils);
+
+  // Säulen in den Hallen, Felsbrocken
+  const free = (x, z) => brdRiver(x, z) > 9 && brdCorr(x, z) > 7 && Math.hypot(x, z - BRD.forge[1]) > 22;
+  const pillar = prefab([[basalt, [cyl(1.5, 1.9, 16, 0, 8, 0, 0, 0, 0, 7)]], [iron, [cyl(2.1, 2.1, 0.6, 0, 6, 0, 0, 0, 0, 7)]]]);
+  const pillars = scatter(26, 22, 90, free).map(p => ({ ...p, s: rand(0.9, 1.3), ry: rand(0, 6) }));
+  for (const p of pillars) ctx.obstacle(p.x, p.z, 2 * p.s);
+  ctx.place(pillar, pillars);
+  ctx.place(pillar, scatter(120, 98, 150).map(p => ({ ...p, s: rand(2, 4), sy: 3, ry: rand(0, 6) })));
+  rocks(ctx, 26, 0x38322f, 14, 92, free);
+}
+
+const brd = {
+  name: 'Blackrock Depths',
+  env: {   // PH
+    fog: 0x4a1409, fogNear: 25, fogFar: 115, heat: 0.45,
+    top: 0x040202, mid: 0x0b0403, sunDisc: 0,
+    sky: 0x9a7c70, ground: 0xff7a3a, hemi: 2.5,
+    sun: 0xff8a40, sunPower: 1.6, sunPos: [25, -60, 15],
+  },
+  height(x, z) {
+    let h = 0.5 * Math.sin(x * 0.07) * Math.cos(z * 0.06) + 0.25 * Math.sin(x * 0.17 + z * 0.13);
+    const r = brdRiver(x, z);
+    if (r < 9 && brdCorr(x, z) > 5.2) h = lerpTo(h, -2.4, clamp((9 - r) / 4, 0, 1));
+    return h;
+  },
+  ground: (() => {
+    const a = new THREE.Color(0x34302f), b = new THREE.Color(0x524a48), floor = new THREE.Color(0x706666), ember = new THREE.Color(0xa83a10);
+    return (c, x, z, h) => {
+      c.copy(a).lerp(b, clamp(0.5 + Math.sin(x * 0.4) * Math.cos(z * 0.33) * 0.4 + rand(-0.15, 0.15), 0, 1));
+      if (brdCorr(x, z) < 5) c.lerp(floor, 0.6);
+      const r = brdRiver(x, z);
+      if (r < 11 && brdCorr(x, z) > 5) c.lerp(ember, clamp((11 - r) / 5, 0, 1));
+    };
+  })(),
+  // Lava: Schaden pro Sekunde, wo das Gelände unter der Lava liegt
+  hazard(x, z) { return brdRiver(x, z) < 7.2 && brdCorr(x, z) > 5.2 ? 40 : 0; },   // PH
+  spawnOk(x, z) { return brdRiver(x, z) > 13; },
+  props: brdProps,
+  spawn: { x: 0, z: 0 },
+  mobs: ['bauer', 'sanitaeter', 'offizier', 'feuerwache', 'abgesandter'],
+  packAlways: 'sanitaeter',
+  packs: { count: 9, initialMobs: 30, sizeBonus: 0 },   // PH
+};
+
 export const ZONES: any = {
   tirisfal,
-  brd: { ...placeholder, name: 'Blackrock Depths' },
+  brd,
   stv,
   tanaris,
 };

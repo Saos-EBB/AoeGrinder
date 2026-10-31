@@ -1,11 +1,10 @@
 // Mob-Typen: Name, Modell und Fähigkeit (Schlüssel in abilities.ts oder null).
 
-import { buildBoar } from './models/boar';
 import { humanoid, quadruped, bat, raptor, bug, glowMat } from './models/creatures';
 
-export const MOB_TYPES: any = {
-  wildeber: { name: 'Wildeber', build: buildBoar, ability: null },
+const DWARF = { skin: 0xb07a5a, scale: [1.22, 0.78, 1.22], lean: 0.08 };
 
+export const MOB_TYPES: any = {
   // Tirisfal (Werte PH)
   skelett: { name: 'Klapperskelett', ability: null,
     build: humanoid({ skin: 0xc9bf9f, bones: true, weapon: 'sword', eye: glowMat(0.4, 1.8, 0.6), lean: 0.12 }) },
@@ -15,6 +14,18 @@ export const MOB_TYPES: any = {
     build: humanoid({ skin: 0xb5ac92, bones: true, body: 0x2b1f3d, robe: true, hood: true, weapon: 'staff', eye: glowMat(1.2, 0.4, 2.2), lean: 0.1 }) },
   fledermaus: { name: 'Vampir-Fledermaus', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.1,
     build: bat({ fur: 0x3a2a2a, wing: 0x241a22 }) },
+  // Blackrock Depths (Werte PH)
+  bauer: { name: 'Shadowforge-Bauer', ability: null,
+    build: humanoid({ ...DWARF, body: 0x4a443c, trim: 0x2c2822, beard: 0x7a3a18, weapon: 'pick' }) },
+  sanitaeter: { name: 'Anvilrage-Sanitäter', ability: 'medic', hpMul: 0.8, fleeChance: 1,
+    build: humanoid({ ...DWARF, body: 0xb8ad90, robe: true, trim: 0x70161a, beard: 0xc0b8a8, weapon: 'staff', glow: glowMat(0.6, 2, 0.8) }) },
+  offizier: { name: 'Anvilrage-Offizier', ability: 'divineShield', hpMul: 1.25,
+    build: humanoid({ ...DWARF, body: 0x6e2a22, tabard: 0x2c2822, trim: 0x8f9299, helm: 0x8f9299, sleeve: 0x8f9299, beard: 0x3a2214, weapon: 'hammer', shield: 0x6e2a22 }) },
+  feuerwache: { name: 'Feuerwache', ability: 'heatAura', rootMax: 2000, hpMul: 1.15,   // PH: Nova hält nur 2 s
+    build: humanoid({ ...DWARF, skin: 0x5c2a1c, body: 0x2a1a14, trim: 0x8a3a12, helm: 0x3c2a22, beard: 0xd6541a, weapon: 'axe', eye: glowMat(3, 1.2, 0.2) }) },
+  abgesandter: { name: 'Zwielicht-Abgesandter', ability: 'lavaPool', hpMul: 0.9,
+    build: humanoid({ skin: 0x5f4a6a, body: 0x35224f, trim: 0x1c1230, robe: true, hood: true, sleeve: 0x35224f, weapon: 'staff', glow: glowMat(2.4, 0.5, 2), eye: glowMat(2, 0.5, 2.2), scale: [0.95, 1.12, 0.95], lean: 0.05 }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },
