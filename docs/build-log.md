@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — fix(cards): Keine Talente für verlernte Spells
+**Was:** Improved Blizzard, Improved Frost Nova und Weiter Sturm kamen auch ohne den Spell im Slot und hätten dann nichts bewirkt. Sie verlangen ihn jetzt über `needs`.
+**Nicht gebaut:** kein Zurücksetzen von Rängen und Runen beim Verlernen; ein verlernter Spell kann weiter als Neuer Spell kommen.
+
 ## 2026-10-31 — chore(docs): Stand Branch gruen-polish
 **Was:** Prüfstand und offene Punkte in `docs/status-gruen.md`.
 **Nicht gebaut:** —
