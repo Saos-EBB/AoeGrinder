@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(render): Renderer, Composer, Himmel, Licht
+**Was:** Render-Setup unabhängig vom Spiel; die Schalter aus PERF greifen hier.
+**Nicht gebaut:** keine Schatten, kein Bloom-Umbau.
+
 ## 2026-10-31 — refactor(formulas): Formeln mit Spec-Verweisen auslagern
 **Was:** Aggro, Treffer, XP und Farben getrennt von der Welt, mit Verweis auf den Spec-Abschnitt.
 **Nicht gebaut:** keine Tests für die Formeln, nicht beauftragt.
