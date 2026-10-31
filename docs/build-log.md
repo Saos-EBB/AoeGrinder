@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — fix(mobs): Sanitäter nur in jedem zweiten größeren Pack
+**Was:** In jedem Pack ab 3 Mobs lag der Sanitäter bei einem Drittel aller BRD-Spawns und drückte die 50-%-Regel für den Start-Mob.
+**Nicht gebaut:** —
+
 ## 2026-10-31 — feat(zones): Blackrock Depths mit fünf Mobs
 **Was:** Basalt, Lavaflüsse als Schadenszone, Brücken, Korridore, Schmiede; Sanitäter in jedem größeren Pack (`packAlways`), Heilung, Gottesschild, Hitzeaura, Lavaflächen. Eber und Platzhalter-Welt sind damit überflüssig und gelöscht.
 **Nicht gebaut:** keine Wegfindung um Lava: Mobs laufen durch und nehmen keinen Schaden.

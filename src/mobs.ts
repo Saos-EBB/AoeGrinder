@@ -26,7 +26,7 @@ export function spawnPack() {
   const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10);
   const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
-    const typeId = i === 0 && size >= 3 && zone.packAlways ? zone.packAlways : Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
+    const typeId = i === 0 && size >= 3 && zone.packAlways && Math.random() < 0.5 ? zone.packAlways : Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
     spawnMob(typeId, pos, level, packId);
