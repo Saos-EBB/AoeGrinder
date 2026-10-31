@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { state, player } from './state';
-import { rand, randInt, clamp, dist2d } from './util';
+import { rand, randInt, clamp, dist2d, lerpTo } from './util';
 import { CFG, mods } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { heightAt, collide, zone } from './world';
 import { MOB_TYPES } from './mobTypes';
+import { ABILITIES } from './abilities';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
@@ -25,36 +26,45 @@ export function spawnPack() {
   const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10);
   const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
-    const type = MOB_TYPES[Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0]];
+    const typeId = Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
-    collide(pos, 0.7);
-    pos.y = heightAt(pos.x, pos.z);
-    const model = type.build(level);
-    model.root.position.copy(pos);
-    model.root.rotation.y = rand(0, Math.PI * 2);
-    scene.add(model.root);
-    const plate = document.createElement('div');
-    plate.className = 'plate';
-    plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
-    overlay.appendChild(plate);
-    state.mobs.push({
-      type, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
-      pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
-      level, hp: mobMaxHp(level), maxHp: mobMaxHp(level),
-      state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
-      fleeRolled: false, fleeTarget: null, fleeUntil: 0, lastLeashExt: 0, dead: false, deathAt: 0, moving: false,
-    });
+    spawnMob(typeId, pos, level, packId);
   }
 }
 
-function enterCombat(mob, callForHelp) {
+export function spawnMob(typeId, pos, level, packId) {
+  const type = MOB_TYPES[typeId];
+  collide(pos, 0.7);
+  pos.y = heightAt(pos.x, pos.z);
+  const model = type.build(level);
+  model.root.position.copy(pos);
+  model.root.rotation.y = rand(0, Math.PI * 2);
+  scene.add(model.root);
+  const plate = document.createElement('div');
+  plate.className = 'plate';
+  plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
+  overlay.appendChild(plate);
+  const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1));
+  const mob = {
+    type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
+    pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
+    level, hp, maxHp: hp, speedMul: type.speedMul ?? 1,
+    state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
+    fleeRolled: false, fleeTarget: null, fleeUntil: 0, lastLeashExt: 0, dead: false, deathAt: 0, moving: false, leap: null,
+  };
+  state.mobs.push(mob);
+  return mob;
+}
+
+export function enterCombat(mob, callForHelp) {
   if (mob.dead || mob.state === 'combat') return;
   mob.state = 'combat';
   mob.combatStart.copy(mob.pos);
   mob.lastLeashExt = state.now;
   mob.nextSwing = state.now + 500;
   mob.assistAt = 0;
+  mob.ability?.onCombatStart?.(mob);
   if (!callForHelp) return;
   for (const other of state.mobs) {                 // Social Aggro: 10 yd, Helfer nach 1,5 s
     if (other === mob || other.dead || other.state !== 'idle' || other.assistAt) continue;
@@ -87,9 +97,9 @@ function startFlee(mob) {
   combatText(mob.pos, 'läuft in Panik davon!', 'info', 2.5);
 }
 
-function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
+export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
-  let speed = CFG.mobSpeed * speedMul;
+  let speed = CFG.mobSpeed * mob.speedMul * speedMul;
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
@@ -101,28 +111,55 @@ function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   mob.speed = speed;
 }
 
-function faceMob(mob, target) {
+export function faceMob(mob, target) {
   const want = Math.atan2(target.x - mob.pos.x, target.z - mob.pos.z);
   if (mob.rootUntil > state.now) return;
   mob.model.root.rotation.y = want;
 }
 
+// Mob trifft den Spieler, von Nahkampf und Fähigkeiten genutzt
+export function hitPlayer(mob, mul = 1) {
+  mob.attackAt = state.now;
+  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * mul);
+  damagePlayer(dmg);
+  mob.ability?.onHit?.(mob, dmg);
+}
+
+// Sprung im Bogen auf ein Ziel, onLand läuft bei der Landung
+export function startLeap(mob, target, dur, onLand) {
+  mob.leap = { x0: mob.pos.x, z0: mob.pos.z, x1: target.x, z1: target.z, start: state.now, dur, onLand };
+  mob.moving = true;
+  mob.speed = CFG.mobSpeed;
+}
+
+function updateLeap(mob) {
+  const l = mob.leap, t = clamp((state.now - l.start) / l.dur, 0, 1);
+  mob.pos.x = lerpTo(l.x0, l.x1, t);
+  mob.pos.z = lerpTo(l.z0, l.z1, t);
+  mob.pos.y = heightAt(mob.pos.x, mob.pos.z) + Math.sin(t * Math.PI) * 2;
+  faceMob(mob, { x: l.x1, z: l.z1 });
+  if (t < 1) return;
+  mob.leap = null;
+  l.onLand();
+}
+
 export function updateMob(mob, dt) {
   if (mob.dead) return;
   mob.moving = false;
+  if (mob.leap) return updateLeap(mob);
   const d = dist2d(mob.pos, player.pos);
 
   if (mob.state === 'idle') {
-    if (!player.dead && d < aggroRadius(mob)) enterCombat(mob, true);
+    if (!player.dead && d < (mob.type.aggro ?? aggroRadius(mob))) enterCombat(mob, true);
     else if (mob.assistAt && state.now >= mob.assistAt) enterCombat(mob, false);
   }
   else if (mob.state === 'combat') {
     if (player.dead || isOutOfThreatArea(mob)) { startEvade(mob); return; }
-    if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
+    if (mob.ability?.onUpdate?.(mob, dt)) { /* Fähigkeit steuert selbst */ }
+    else if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
     else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
       mob.nextSwing = state.now + CFG.swingTime;
-      mob.attackAt = state.now;
-      damagePlayer(mobHitDmg(mob.level));
+      hitPlayer(mob);
     }
     faceMob(mob, player.pos);
   }
@@ -165,6 +202,12 @@ export function separateMobs() {
   }
 }
 
+// Root mit Typ-Regeln: manche Mobs sind immun, manche halten nur kurz
+export function applyRoot(mob, dur) {
+  if (mob.type.rootImmune) { combatText(mob.pos, 'Immun', 'miss'); return; }
+  mob.rootUntil = state.now + Math.min(dur, mob.type.rootMax ?? dur);
+}
+
 // Gibt true zurück, wenn der Zauber getroffen hat
 export function damageMob(mob, amount, source) {
   if (mob.dead) return false;
@@ -174,6 +217,11 @@ export function damageMob(mob, amount, source) {
   mob.lastLeashExt = state.now;
 
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
+
+  if (mob.ability?.onDamaged) {
+    amount = mob.ability.onDamaged(mob, amount, source);
+    if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }
+  }
 
   const frozen = mob.rootUntil > state.now;
   const crit = Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
@@ -189,7 +237,7 @@ export function damageMob(mob, amount, source) {
   if (mob.hp <= 0) { killMob(mob); return true; }
   if (!mob.fleeRolled && mob.hp < mob.maxHp * CFG.fleeHpPct) {
     mob.fleeRolled = true;
-    if (Math.random() < CFG.fleeChance) startFlee(mob);
+    if (Math.random() < (mob.type.fleeChance ?? CFG.fleeChance)) startFlee(mob);
   }
   return true;
 }
@@ -201,6 +249,8 @@ function killMob(mob) {
   mob.rootUntil = 0;
   mob.plate.style.display = 'none';
   player.kills++;
+  state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
+  if (mob.type.noXp) return;
   const xp = xpForKill(mob.level);
   if (xp > 0) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
 }

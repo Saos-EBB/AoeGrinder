@@ -4,6 +4,7 @@ export const state: any = {
   paused: true,
   mobs: [],
   packCounter: 0,
+  packDeaths: {},
   pendingLevelUps: 0,
   cardRanks: {},
   autorun: false,

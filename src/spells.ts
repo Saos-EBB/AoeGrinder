@@ -5,7 +5,7 @@ import { manaCost, spellCd, blizRadius } from './formulas';
 import { heightAt, collide, drape } from './world';
 import { blizCursor, blizFx, novaFx, arcaneExplosionFx, coneOfColdFx, blinkFx, crystalBurst, resetShard } from './fx/spellFx';
 import { showError } from './ui/hud';
-import { damageMob } from './mobs';
+import { damageMob, applyRoot } from './mobs';
 import { spendMana } from './player';
 
 export function cast(id, point?) {
@@ -31,7 +31,7 @@ const SPELL_EFFECTS = {
   nova() {
     const s = SPELLS.nova;
     for (const m of mobsInRadius(player.pos, s.radius)) {
-      if (damageMob(m, rand(s.min, s.max), 'nova') && !m.dead) m.rootUntil = state.now + s.root;
+      if (damageMob(m, rand(s.min, s.max), 'nova') && !m.dead) applyRoot(m, s.root);
     }
     novaFx(player.pos, s.radius);
   },
