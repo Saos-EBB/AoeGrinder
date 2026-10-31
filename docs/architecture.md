@@ -19,6 +19,7 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - `src/ui/hud.ts`: Frames, Actionbar, Castbar, Nameplates, Kampftext
 - `src/ui/menus.ts`: Start, Karten, Tod, Tastenbelegung, Ding
 - `src/input.ts`: Tasten, Maus, Keybinds, Bodenziel
+- `src/gamepad.ts`: Gamepad-Abfrage pro Frame, Deadzone, Flanken; `main.ts` ruft `pollGamepad()` vor dem Update
 - `src/mobs.ts`: Spawn, KI, Leash, Flee, Schaden, Kill
 - `src/spells.ts`: cast, Zauberwirkung, Channel, Slow
 - `src/player.ts`: Bewegung, Physik, Mana/Regeneration, XP, resetGame

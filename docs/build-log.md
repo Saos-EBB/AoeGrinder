@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Pad erkennen, Achsen und Buttons pro Frame lesen
+**Was:** Abfrage mit radialer Deadzone; die API ist in try/catch, weil sie in einem fremden iframe per Permissions-Policy werfen kann und sonst die Spielschleife stirbt.
+**Nicht gebaut:** noch keine Wirkung im Spiel.
+
 ## 2026-10-31 — chore(docs): Controller-Spec ablegen
 **Was:** Spec samt Entscheidungen (PlayStation-Symbole, kein Schnellzauber, keine Addition von Tastatur und Stick) liegt im Repo.
 **Nicht gebaut:** noch kein Code.

@@ -22,11 +22,13 @@ export const CFG = {
   gcd: 1500,                                        // PH (StartRecoveryTime aus Spelldaten)
   novaBreakChance: 0.25,                            // PH
   runSpeed: 7, backSpeed: 4.5, turnSpeed: 3.141594, // baseMoveSpeed[] in Unit.cpp (yd/s, rad/s)
+  walkSpeed: 2.5,                                   // VMaNGOS src/game/Objects/Unit.cpp, baseMoveSpeed[MOVE_WALK], Zeile 69
   jumpSpeed: 8, gravity: 20,                        // PH: Sprungphysik läuft im Client, nicht im Server
   mobSpeed: 6.2,                                    // PH: steht pro Mob in creature_template.speed_run (DB)
   meleeRange: 2.2, swingTime: 2000,
   playRadius: 98,
   packCount: 9,
+  padDeadzone: 0.15,                                // PH: docs/gamepad-spec.md
 };
 
 // Rang-1-Werte laut Wowhead Classic. Radien PH (stehen nicht im Tooltip).

@@ -13,6 +13,7 @@ import { binds, mouse, pressSpell, pickGround } from './input';
 import { spawnPack, updateMob, separateMobs, sinkCorpse } from './mobs';
 import { cast } from './spells';
 import { resetGame, updatePlayer } from './player';
+import { pad, pollGamepad } from './gamepad';
 import './ui/menus';
 
 function update(dt) {
@@ -80,6 +81,7 @@ let last = performance.now();
 function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
+  pollGamepad();
   if (!state.paused) { state.now += dt; update(dt); }
   updateVisuals(dt);
   composer.render();
@@ -92,4 +94,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad };
