@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — fix(fx): Treffer-Funken nur in der eigenen Schule
+**Was:** `damageMob` sprühte bei allem außer Arcane Frost, die neuen Schulen kamen obendrauf. Jetzt sucht `hitSparkFx` die Farbe über die Spell-ID.
+**Nicht gebaut:** —
+
 ## 2026-10-31 — feat(gamepad): Slot 7/8 und Zielmodus in jedem Slot
 **Was:** Bodenziel-Spells lagen außerhalb von Slot 3 fest 12 yd vor der Figur. Jetzt gilt überall: halten, rechter Stick verschiebt, loslassen zaubert, Kreis bricht ab.
 **Nicht gebaut:** keine eigene Zielgeschwindigkeit pro Spell.

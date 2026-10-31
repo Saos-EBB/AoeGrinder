@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from '../state';
 import { rand, lerpTo, pick, perFrame } from '../util';
+import { SPELLS } from '../config';
 import { blizRadius } from '../formulas';
 import { scene } from '../render';
 import { heightAt, terrainDecal, drape } from '../world';
@@ -210,8 +211,9 @@ export function blinkFx(from, to) {
   }
 }
 
-export function hitSparkFx(pos, school) {
-  const color = SCHOOL_COLOR[school] || FROST_WHITE;
+// Funken in der Farbe der Schule des Spells, der getroffen hat
+export function hitSparkFx(pos, spellId) {
+  const color = SCHOOL_COLOR[SPELLS[spellId]?.cls] || FROST;
   for (let i = 0; i < 10; i++) {
     particles.spawn({ x: pos.x, y: pos.y + 0.9, z: pos.z, vx: rand(-4, 4), vy: rand(1, 5), vz: rand(-4, 4),
       grav: 9, drag: 1, life: rand(0.25, 0.5), color, size: rand(0.15, 0.3) });

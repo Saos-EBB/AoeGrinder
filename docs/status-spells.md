@@ -25,7 +25,7 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Per Fast-Forwa
 Alle Commits des Spec bis auf den entfallenen Publish sind drin. Geprüft im Headless-Browser (Dev-Server): alle 20 zauberbaren Spells mit jeder Rune ohne Laufzeitfehler, dazu gezielt Stichproben der Wirkungen, Kartenregeln, Ersetzen-Dialog, Neustart. `tsc` und `vite build` laufen. Nicht geprüft: Spielbalance, echtes Pad.
 
 ## Abweichungen und offene Punkte
-- `mobs.ts` bleibt unangetastet, deshalb: Treffer-Funken der neuen Schulen kommen zusätzlich zum Frost-Funken aus `damageMob`; „schlagen langsamer“ schiebt `nextSwing` pro Frame (`slowSwing`).
+- `mobs.ts` bleibt unangetastet, deshalb: „schlagen langsamer“ schiebt `nextSwing` pro Frame (`slowSwing`).
 - Pushback beim Zaubern erkennt Treffer am Lebensverlust (`player.ts` nicht angefasst), Gift-Ticks zählen also mit.
 - `formulas.ts` und `fx/spellFx.ts` standen nicht auf der Dateiliste, mussten aber kleine Änderungen bekommen.
 - Die bisherigen Upgrades (Shatter, Arcane Mind …) laufen als sechste Art "Talent" weiter, die Karte "Glück" als siebte. Die Spec nennt keine Verteilung der Arten: `CARD_KIND_WEIGHTS` ist PH.

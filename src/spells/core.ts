@@ -4,7 +4,7 @@ import { state, player } from '../state';
 import { dist2d } from '../util';
 import { CFG, SPELLS, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
-import { blizCursor, crystalBurst, hitSparkFx } from '../fx/spellFx';
+import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
@@ -71,9 +71,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1) {
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
-      const landed = damageMob(m, dmg, id);
-      if (landed && SPELLS[id].cls !== 'frost' && SPELLS[id].cls !== 'arcane') hitSparkFx(m.pos, SPELLS[id].cls);   // mobs.ts sprüht sonst Frost
-      return landed;
+      return damageMob(m, dmg, id);
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {

@@ -252,7 +252,7 @@ export function damageMob(mob, amount, source) {
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
   combatText(mob.pos, dmg, crit ? 'crit' : 'dmg');
-  hitSparkFx(mob.pos, source === 'ae' ? 'arcane' : 'frost');
+  hitSparkFx(mob.pos, source);
 
   if (frozen && source !== 'nova' && Math.random() < CFG.novaBreakChance) mob.rootUntil = 0;
 
