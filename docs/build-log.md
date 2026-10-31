@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(mobs): Spawn, KI, Leash, Flee auslagern
+**Was:** Mob-Logik inkl. Schaden und Kill.
+**Nicht gebaut:** keine Mob-Klasse, keine weiteren Mob-Typen.
+
 ## 2026-10-31 — refactor(input): Tasten, Maus, Keybinds auslagern
 **Was:** Eingaben und gespeicherte Belegung; resetBinds ist neu, weil menus die Variable binds nicht mehr selbst zuweisen kann.
 **Nicht gebaut:** kein Gamepad, kein Action-Mapping-Layer.
