@@ -121,8 +121,12 @@ export function updateHud() {
   $('iCombat').textContent = String(state.mobs.filter(m => !m.dead && (m.state === 'combat' || m.state === 'flee')).length);
 
   // Castbar (Channel läuft von rechts nach links wie in WoW)
-  const ch = player.channel, dr = player.drink;
-  if (ch || dr) {
+  const ch = player.channel, dr = player.drink, ct = player.casting;
+  if (ct) {                                 // Zauber füllt von links nach rechts
+    $('castbar').style.display = 'block';
+    $('castFill').style.transform = `scaleX(${clamp(1 - (ct.end - state.now) / ct.total, 0, 1)})`;
+    $('castText').textContent = `${SPELLS[ct.id].name} ${((ct.end - state.now) / 1000).toFixed(1)}`;
+  } else if (ch || dr) {
     const bar = ch || dr;
     const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
     $('castbar').style.display = 'block';
@@ -138,7 +142,7 @@ export function updateHud() {
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
-    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
   }
 
   // Nameplates

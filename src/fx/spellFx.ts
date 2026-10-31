@@ -50,7 +50,7 @@ const effects = [];
 // ---------- Partikelsystem (ein Draw-Call, additiv, HDR-Farben > 1 erzeugen Bloom) ----------
 export const FROST = [0.35, 1.0, 2.1], FROST_WHITE = [1.1, 1.5, 2.1], MIST = [0.05, 0.1, 0.15];
 const ARCANE = [1.5, 0.45, 2.1], ARCANE_PINK = [1.9, 0.7, 1.6], GOLD = [2.2, 1.6, 0.5];
-const SCHOOL_COLOR = { frost: FROST, arcane: ARCANE };
+const SCHOOL_COLOR = { frost: FROST, arcane: ARCANE, fire: [2.4, 0.9, 0.15], shadow: [0.8, 0.15, 1.5], nature: [0.5, 2, 0.8], lightning: [1.3, 1.7, 2.8], bone: [1.9, 1.75, 1.3] };
 
 // Heller Lichtblitz (Sprite, wächst und verblasst)
 export function flashFx(pos, color, size, dur) {

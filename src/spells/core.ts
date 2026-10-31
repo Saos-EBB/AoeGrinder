@@ -5,7 +5,7 @@ import { dist2d } from '../util';
 import { CFG, SPELLS, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { heightAt } from '../world';
-import { blizCursor, crystalBurst } from '../fx/spellFx';
+import { blizCursor, crystalBurst, hitSparkFx } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
@@ -20,6 +20,8 @@ export function resetSpells() {
   player.luck = 0;
   player.charges = {};
   player.spellCounts = {};
+  player.casting = null;
+  player.lastBlink = -1e9;
   clearSpellEffects();
 }
 
@@ -67,7 +69,9 @@ export function makeCtx(id, scale = 1, radiusScale = 1) {
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
-      return damageMob(m, dmg, id);
+      const landed = damageMob(m, dmg, id);
+      if (landed && SPELLS[id].cls !== 'frost' && SPELLS[id].cls !== 'arcane') hitSparkFx(m.pos, SPELLS[id].cls);   // mobs.ts sprüht sonst Frost
+      return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {
@@ -123,18 +127,49 @@ export function castSpell(id, point?) {
   if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
+  const fail = s.canCast?.();
+  if (fail) return showError(fail);
+
   stopChannel(true);
   stopDrink();
-  if (life) player.hp -= cost; else spendMana(cost);
+  player.casting = null;
   player.gcdUntil = state.now + CFG.gcd;
-  startCd(id);
   player.targeting = false;
   blizCursor.visible = false;
+  const castTime = s.instantCast?.() ? 0 : s.castTime;
+  if (!castTime) return release(id, point);
+  player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp };
+}
+
+// Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
+function release(id, point) {
+  const s = SPELLS[id], cost = manaCost(id);
+  const life = paysLife(id);
+  if (life ? player.hp <= cost : player.mana < cost) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
+  if (life) player.hp -= cost; else spendMana(cost);
+  startCd(id);
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
   const c: any = makeCtx(id);
   c.cost = cost;
   s.effect(c, point);
   scheduleEchoes(id, point);
+}
+
+// Zauber läuft: Bewegung bricht ab, Treffer schieben auf (Spec §7: maximal bis zur vollen Castzeit)
+function updateCast() {
+  const ct = player.casting;
+  if (!ct) return;
+  if (Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded) { player.casting = null; return; }
+  if (player.hp < ct.hp) {
+    const delay = ct.delays < 5 ? 1000 - ct.delays * 200 : 200;
+    ct.delays++;
+    ct.end = Math.min(ct.end + delay, state.now + ct.total);
+  }
+  ct.hp = player.hp;
+  player.castAnimUntil = state.now + 200;
+  if (state.now < ct.end) return;
+  player.casting = null;
+  release(ct.id, ct.point);
 }
 
 // PH: Faktoren von Großes Echo. Ein Kanal würde sich selbst abbrechen, deshalb wiederholt keins der Echos ihn.
@@ -191,6 +226,7 @@ export function updateChannel() {
   lastUpdate = state.now;
   resolveSlot3();
   updateFields(dt);
+  updateCast();
   const ch = player.channel;
   if (!ch) return;
   const s = SPELLS[ch.id];

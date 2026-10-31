@@ -1,5 +1,5 @@
 import { rand } from '../util';
-import { player } from '../state';
+import { state, player } from '../state';
 import { heightAt, collide } from '../world';
 import { blinkFx, novaFx } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
@@ -28,6 +28,7 @@ export const blink = {
   ],
   effect(c, point) {
     const from = player.pos.clone();
+    player.lastBlink = state.now;
     if (point) {
       player.pos.x = point.x;
       player.pos.z = point.z;
