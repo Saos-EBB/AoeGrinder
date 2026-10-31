@@ -4,7 +4,7 @@ import { $, clamp } from './util';
 import { CFG, SPELLS, mods, resetMods } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
-import { heightAt, collide } from './world';
+import { heightAt, collide, zone, buildWorld } from './world';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
@@ -23,7 +23,7 @@ export function resetGame() {
   state.pendingLevelUps = 0;
   state.autorun = false;
   Object.assign(player, {
-    pos: new THREE.Vector3(0, heightAt(0, 0), 0), vel: new THREE.Vector3(), grounded: true,
+    pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
     facing: Math.PI, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
@@ -33,7 +33,24 @@ export function resetGame() {
   player.mana = maxMana();
   blizCursor.visible = false;
   stopChannel();
-  while (state.mobs.length < 30) spawnPack();
+  while (state.mobs.length < zone.packs.initialMobs) spawnPack();
+}
+
+// Dev: Zone wechseln. Mobs weg, Welt neu, Spieler in die Mitte; Level und Karten bleiben
+export function switchZone(id) {
+  for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
+  state.mobs = [];
+  state.autorun = false;
+  stopChannel(); stopDrink();
+  player.targeting = false;
+  blizCursor.visible = false;
+  buildWorld(id);
+  player.pos.set(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z);
+  player.vel.set(0, 0, 0);
+  player.grounded = true;
+  player.facing = Math.PI;
+  cam.offset = 0;
+  while (state.mobs.length < zone.packs.initialMobs) spawnPack();
 }
 
 export function damagePlayer(amount) {

@@ -109,7 +109,8 @@
   .keys b { color: #f2c94c; }
 
   /* Tastenbelegung */
-  #bindList { display: grid; grid-template-columns: 1fr 110px 70px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 60vh; overflow: auto; }
+  #bindList { display: grid; grid-template-columns: 1fr 110px 70px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 45vh; overflow: auto; }
+  #devZones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
   #bindList .group { grid-column: 1 / -1; margin-top: 8px; color: #f2c94c; font-family: Cinzel, serif; }
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
     border: 1px solid #6b5426; border-radius: 3px; cursor: pointer; }
@@ -180,6 +181,8 @@
     <h1 class="title" style="font-size:26px">Tastenbelegung</h1>
     <p style="margin:6px 0 0;font-size:13px">Feld anklicken, dann neue Taste drücken. Esc bricht ab.</p>
     <div id="bindList"></div>
+    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Zone wechseln</div>
+    <div id="devZones"></div>
     <div class="row2">
       <button class="smallBtn" id="bindsReset" style="width:auto;padding:6px 14px">Standard</button>
       <button class="smallBtn" id="bindsClose" style="width:auto;padding:6px 14px">Schließen</button>

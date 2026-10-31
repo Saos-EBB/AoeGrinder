@@ -14,17 +14,15 @@ renderer.toneMappingExposure = 1.1;
 document.body.prepend(renderer.domElement);
 
 export const scene = new THREE.Scene();
-const FOG_COLOR = 0xe8c9a4;                         // warmer Abenddunst
-scene.fog = new THREE.Fog(FOG_COLOR, 45, 185);
+const fog = scene.fog = new THREE.Fog(0xffffff, 45, 185);
 
 export const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.3, 700);
 
-// Tief stehende Abendsonne: warmes Hauptlicht, bläulicher Himmel als Fülllicht
-scene.add(new THREE.HemisphereLight(0xb8c8ff, 0x6a4a2a, 1.25));
-const sun = new THREE.DirectionalLight(0xffb070, 2.1);
-sun.position.set(120, 45, -60);
+// Hauptlicht und Fülllicht, Werte kommen aus der Zone (setEnv)
+const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 1);
 scene.add(sun);
-const SUN_DIR = sun.position.clone().normalize();
 
 // Bloom: nur sehr helle Farben (Zauber-Partikel, Kristall) leuchten
 export const composer = new EffectComposer(renderer);
@@ -47,27 +45,36 @@ composer.addPass(new ShaderPass({
 composer.addPass(new OutputPass());
 
 // Himmel als Farbverlauf-Kuppel
+const skyUniforms = {
+  top: { value: new THREE.Color() }, mid: { value: new THREE.Color() },
+  horizon: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3() }, sunAmt: { value: 1 },
+};
 scene.add(new THREE.Mesh(
   new THREE.SphereGeometry(500, 32, 16),
   new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: {
-      top: { value: new THREE.Color(0x2c4f8c) }, mid: { value: new THREE.Color(0x9fb4d0) },
-      horizon: { value: new THREE.Color(FOG_COLOR) }, sunDir: { value: SUN_DIR },
-    },
+    uniforms: skyUniforms,
     vertexShader: 'varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; uniform vec3 sunDir; varying vec3 vPos;
+    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; uniform vec3 sunDir; uniform float sunAmt; varying vec3 vPos;
       void main() {
         vec3 d = normalize(vPos);
         float h = clamp(d.y, 0.0, 1.0);
         vec3 col = mix(horizon, mid, smoothstep(0.0, 0.25, h));
         col = mix(col, top, smoothstep(0.25, 0.9, h));
         float s = max(dot(d, sunDir), 0.0);
-        col += vec3(1.0, 0.6, 0.3) * pow(s, 8.0) * 0.45;      // Sonnenhof
-        col += vec3(3.0, 2.2, 1.3) * pow(s, 900.0);            // Sonnenscheibe (blüht)
+        col += vec3(1.0, 0.6, 0.3) * pow(s, 8.0) * 0.45 * sunAmt;      // Sonnenhof
+        col += vec3(3.0, 2.2, 1.3) * pow(s, 900.0) * sunAmt;            // Sonnenscheibe (blüht)
         gl_FragColor = vec4(col, 1.0);
       }`,
   })));
+
+export function setEnv(e) {
+  fog.color.set(e.fog); fog.near = e.fogNear; fog.far = e.fogFar;
+  hemi.color.set(e.sky); hemi.groundColor.set(e.ground); hemi.intensity = e.hemi;
+  sun.color.set(e.sun); sun.intensity = e.sunPower; sun.position.set(...(e.sunPos as [number, number, number]));
+  skyUniforms.top.value.set(e.top); skyUniforms.mid.value.set(e.mid); skyUniforms.horizon.value.set(e.fog);
+  skyUniforms.sunDir.value.copy(sun.position).normalize(); skyUniforms.sunAmt.value = e.sunDisc;
+}
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;

@@ -4,7 +4,9 @@ import { CARDS } from '../config';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels } from '../ui/hud';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
-import { resetGame } from '../player';
+import { resetGame, switchZone } from '../player';
+import { ZONES } from '../zones';
+import { zoneId } from '../world';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 // Level-Up-Karten
@@ -44,6 +46,7 @@ let selectedPad = null;   // bleibt beim Neuaufbau der Liste gewählt
 export function openBinds() {
   state.paused = true;
   renderBinds();
+  renderDevZones();
   $('bindModal').classList.add('show');
 }
 export function closeResetConfirm() { $('resetModal').classList.remove('show'); }
@@ -90,6 +93,19 @@ export function setBind(id, e) {
   binds[id] = { code: e.code, key: keyName(e) };
   saveBinds();
   refreshKeyLabels();
+}
+
+// Dev: Zonenwechsel
+function renderDevZones() {
+  const box = $('devZones');
+  box.innerHTML = '';
+  for (const [id, z] of Object.entries<any>(ZONES)) {
+    const b = document.createElement('button');
+    b.className = 'bindBtn' + (id === zoneId ? ' selected' : '');
+    b.textContent = z.name;
+    b.addEventListener('click', () => { switchZone(id); closeBinds(); });
+    box.appendChild(b);
+  }
 }
 
 // Ding-Sound

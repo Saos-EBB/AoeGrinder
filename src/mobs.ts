@@ -4,9 +4,9 @@ import { rand, randInt, clamp, dist2d } from './util';
 import { CFG, mods } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
-import { heightAt, collide } from './world';
+import { heightAt, collide, zone } from './world';
+import { MOB_TYPES } from './mobTypes';
 import { particles } from './fx/particles';
-import { buildBoar } from './models/boar';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
@@ -22,23 +22,24 @@ export function spawnPack() {
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
     if (farFromPlayer && farFromPacks) break;
   }
-  const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1), 2, 10);
+  const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10);
   const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
+    const type = MOB_TYPES[Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0]];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
     collide(pos, 0.7);
     pos.y = heightAt(pos.x, pos.z);
-    const model = buildBoar(level);
+    const model = type.build(level);
     model.root.position.copy(pos);
     model.root.rotation.y = rand(0, Math.PI * 2);
     scene.add(model.root);
     const plate = document.createElement('div');
     plate.className = 'plate';
-    plate.innerHTML = `<span class="lv"></span> Wildeber<div class="hp"><div></div></div>`;
+    plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
     overlay.appendChild(plate);
     state.mobs.push({
-      model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
+      type, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
       pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
       level, hp: mobMaxHp(level), maxHp: mobMaxHp(level),
       state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,

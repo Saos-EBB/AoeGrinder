@@ -3,7 +3,7 @@ import { rand, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, mods } from './config';
 import { blizRadius } from './formulas';
 import { scene, composer } from './render';
-import { heightAt, drape } from './world';
+import { heightAt, drape, zone } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
@@ -28,7 +28,7 @@ function update(dt) {
     return true;
   });
   const activePacks = new Set(state.mobs.filter(m => !m.dead).map(m => m.packId)).size;
-  if (activePacks < CFG.packCount) spawnPack();
+  if (activePacks < zone.packs.count) spawnPack();
 }
 
 function updateVisuals(dt) {
@@ -98,4 +98,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, get zone() { return zone; } };

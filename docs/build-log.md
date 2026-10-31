@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Zonen und Mob-Typen datengetrieben, Dev-Zonenwechsel
+**Was:** Welt, Licht und Mob-Auswahl kommen aus `ZONES` und `MOB_TYPES`; bisherige Welt ist Platzhalter für alle vier Zonen, das Esc-Menü wechselt die Zone. Die Gras- und Baumfarben sind jetzt pro Instanz statt Einzelfarbe nur noch beim Gras.
+**Nicht gebaut:** kein Zonen-Fortschritt im Spiel, der Wechsel bleibt ein Dev-Knopf.
+
 ## 2026-10-31 — chore(docs): Zonen-Spec ablegen
 **Was:** Auftrag für vier Zonen mit je fünf Mobs liegt als Quelle im Repo.
 **Nicht gebaut:** noch kein Code.
