@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand v6 in handoff.md
+**Was:** Artifact auf v6 aktualisiert (gebündelter Build), Stand festgehalten.
+**Nicht gebaut:** —
+
 ## 2026-10-31 — fix(mobs): Sanitäter nur in jedem zweiten größeren Pack
 **Was:** In jedem Pack ab 3 Mobs lag der Sanitäter bei einem Drittel aller BRD-Spawns und drückte die 50-%-Regel für den Start-Mob.
 **Nicht gebaut:** —
