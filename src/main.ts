@@ -8,7 +8,7 @@ import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
 import { cam, updateCamera } from './camera';
-import { refreshKeyLabels, updateHud } from './ui/hud';
+import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
 import { spawnPack, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
@@ -93,6 +93,7 @@ function loop(t) {
   updateVisuals(dt);
   tickHeat(t);
   composer.render();
+  updatePerf(t);
   updateHud();
   requestAnimationFrame(loop);
 }

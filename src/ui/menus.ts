@@ -2,7 +2,7 @@ import { state, player } from '../state';
 import { $ } from '../util';
 import { CARDS } from '../config';
 import { maxHp, maxMana } from '../formulas';
-import { refreshKeyLabels } from '../ui/hud';
+import { refreshKeyLabels, togglePerf, perfEnabled } from '../ui/hud';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
 import { ZONES } from '../zones';
@@ -97,6 +97,7 @@ export function setBind(id, e) {
 
 // Dev: Zonenwechsel
 function renderDevZones() {
+  $('devPerf').textContent = `Leistungsanzeige: ${perfEnabled() ? 'an' : 'aus'}`;
   const box = $('devZones');
   box.innerHTML = '';
   for (const [id, z] of Object.entries<any>(ZONES)) {
@@ -132,6 +133,7 @@ $('restartBtn').addEventListener('click', () => {
   resetGame();
   state.paused = false;
 });
+$('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
 $('bindsOpen').addEventListener('click', openBinds);
 $('bindsClose').addEventListener('click', closeBinds);
 // Abbrechen hat den Fokus, damit Enter oder Leertaste nichts löscht

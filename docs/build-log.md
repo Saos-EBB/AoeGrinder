@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(ui): Leistungsanzeige im Dev-Menü
+**Was:** FPS, Draw Calls und Mob-Anzahl oben rechts, damit die Mob-Rigs auf dem echten Rechner messbar sind. Draw Calls zählen über den ganzen Frame, sonst zeigt `renderer.info` wegen des Composers nur den letzten Durchgang.
+**Nicht gebaut:** keine Optimierung, erst wird gemessen.
+
 ## 2026-10-31 — feat(mobs): Lava schadet auch Mobs
 **Was:** Entscheidung: Mobs laufen weiter gerade durch die Lava und nehmen dort denselben Schaden wie der Spieler; das macht Lava zu einem Werkzeug beim Pullen.
 **Nicht gebaut:** kein Pathfinding, kein Schaden durch die Lavaflächen des Abgesandten.

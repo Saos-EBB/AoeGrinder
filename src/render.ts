@@ -11,6 +11,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, PERF.maxPixelRatio));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
+renderer.info.autoReset = false;   // der Composer rendert mehrmals pro Frame, gezählt und zurückgesetzt wird in ui/hud.ts
 document.body.prepend(renderer.domElement);
 
 export const scene = new THREE.Scene();

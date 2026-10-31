@@ -3,7 +3,7 @@ import { state, player } from '../state';
 import { $, rand, clamp, dist2d } from '../util';
 import { CFG, SPELLS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
-import { camera } from '../render';
+import { camera, renderer } from '../render';
 import { binds, pressSpell } from '../input';
 import { padBinds, padLabel } from '../gamepad';
 
@@ -64,6 +64,26 @@ export function refreshKeyLabels() {
     `${b('forward')} ${b('back')} vor/zurück · ${b('turnLeft')} ${b('turnRight')} drehen<br>` +
     `${b('strafeLeft')} ${b('strafeRight')} seitwärts · ${b('jump')} springen · ${b('autorun')} Autorun<br>` +
     `<b>LMB ziehen</b> Kamera · <b>RMB ziehen</b> Charakter<br><b>Mausrad</b> Zoom`;
+}
+
+// Dev: Leistungsanzeige. Draw Calls über den ganzen Frame, inklusive Bloom-Durchgänge
+let perfOn = false, perfFrames = 0, perfSince = performance.now();
+export const perfEnabled = () => perfOn;
+export function togglePerf() {
+  perfOn = !perfOn;
+  $('perf').hidden = !perfOn;
+  perfFrames = 0;
+  perfSince = performance.now();
+}
+export function updatePerf(t) {
+  const calls = renderer.info.render.calls;
+  renderer.info.reset();
+  if (!perfOn) return;
+  perfFrames++;
+  if (t - perfSince < 500) return;
+  $('perf').textContent = `${Math.round(perfFrames * 1000 / (t - perfSince))} FPS · ${calls} Calls · ${state.mobs.length} Mobs`;
+  perfFrames = 0;
+  perfSince = t;
 }
 
 export function updateHud() {
