@@ -250,6 +250,14 @@ export function damageMob(mob, amount, source) {
   return true;
 }
 
+// Fester Umgebungsschaden: kein Trefferwurf, keine Spieler-Boni, zieht keine Aggro
+export function burnMob(mob, amount) {
+  mob.hp -= amount;
+  mob.hitAt = state.now;
+  combatText(mob.pos, amount, 'dmg');
+  if (mob.hp <= 0) killMob(mob);
+}
+
 function killMob(mob) {
   mob.dead = true;
   mob.deathAt = state.now;

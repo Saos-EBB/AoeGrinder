@@ -30,6 +30,7 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - `src/player.ts`: Bewegung, Physik, Mana/Regeneration, XP, resetGame
 
 ## Entscheidungen
+- 2026-10-31: Lava schadet Mobs wie dem Spieler, kein Pathfinding; Kills dort zählen wie eigene. Gift bricht Trinken nicht, Schwärmlinge geben keine XP, der Panther bleibt nach Entdeckung sichtbar.
 - 2026-10-31: `state.ts` und `util.ts` ergänzen die handoff-Liste. ES-Module können fremde `let`-Variablen nicht zuweisen, und die Helfer werden fast überall gebraucht.
 - 2026-10-31: `strict` ist aus. Der Code ist 1:1 aus dem untypisierten Artifact übernommen, `tsc` prüft Imports und offensichtliche Typfehler.
 - 2026-10-31: Basis ist Artifact v4 (`1793417937-48fc`); das Verhalten bleibt gleich, Abweichungen von der Spec kommen in einem eigenen Schritt danach.

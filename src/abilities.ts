@@ -13,7 +13,7 @@ import { scene } from './render';
 import { damagePlayer } from './player';
 import { particles } from './fx/particles';
 import { combatText } from './ui/hud';
-import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat } from './mobs';
+import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat, burnMob } from './mobs';
 import { stopChannel, stopDrink } from './spells';
 import { maxMana } from './formulas';
 import { CFG } from './config';
@@ -44,6 +44,12 @@ function updateHazards(dt) {
   hazardClock += dt;
   if (hazardClock < 1000) return;
   hazardClock -= 1000;
+  // Lava trifft Mobs wie den Spieler (PH); Lavaflächen des Abgesandten nur den Spieler
+  if (zone.hazard) for (const m of [...state.mobs]) {
+    if (m.dead || m.leap || m.state === 'evade') continue;
+    const lava = zone.hazard(m.pos.x, m.pos.z);
+    if (lava > 0) burnMob(m, lava);
+  }
   if (!player.grounded) return;
   let dmg = zone.hazard?.(player.pos.x, player.pos.z) ?? 0;
   for (const p of pools) if (dist2d(p, player.pos) <= p.r) dmg += p.dps;

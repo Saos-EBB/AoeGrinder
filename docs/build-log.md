@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(mobs): Lava schadet auch Mobs
+**Was:** Entscheidung: Mobs laufen weiter gerade durch die Lava und nehmen dort denselben Schaden wie der Spieler; das macht Lava zu einem Werkzeug beim Pullen.
+**Nicht gebaut:** kein Pathfinding, kein Schaden durch die Lavaflächen des Abgesandten.
+
 ## 2026-10-31 — feat(zones): Elvyn, der Wald vom Anfang mit Ebern
 **Was:** Die erste Welt kommt als fünfte Zone zurück: gleiches Licht, Gelände, Nadelwald und nur Wildeber, wählbar im Esc-Menü.
 **Nicht gebaut:** keine weiteren Mob-Typen, der Eber bleibt der einzige Mob dort.
