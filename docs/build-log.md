@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(formulas): Formeln mit Spec-Verweisen auslagern
+**Was:** Aggro, Treffer, XP und Farben getrennt von der Welt, mit Verweis auf den Spec-Abschnitt.
+**Nicht gebaut:** keine Tests für die Formeln, nicht beauftragt.
+
 ## 2026-10-31 — refactor(config): CFG, SPELLS, CARDS und Performance-Schalter
 **Was:** Alle Zahlen an einem Ort; PERF schaltet Bloom, Partikel-Limit und Pixel-Ratio, Standardwerte entsprechen v4.
 **Nicht gebaut:** keine Qualitätsstufen, kein Menü für die Schalter.

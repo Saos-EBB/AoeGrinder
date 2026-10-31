@@ -1,7 +1,6 @@
 // Werte aus docs/mechanics-spec.md (VMaNGOS-Code + Wowhead-Tooltips).
 // "PH" = Platzhalter, nicht belegt.
 
-import { blizRadius, bloom } from './main';
 
 // Performance-Schalter (Rechner ohne dedizierte GPU). Standardwerte entsprechen Artifact v4.
 export const PERF = {
