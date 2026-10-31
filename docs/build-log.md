@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(ui): Menüs auslagern
+**Was:** Start, Karten, Tod, Tastenbelegung und Ding-Sound.
+**Nicht gebaut:** kein Sound-Modul für einen einzigen Sound.
+
 ## 2026-10-31 — refactor(ui): HUD auslagern
 **Was:** Frames, Actionbar, Castbar, Nameplates, Kampftext.
 **Nicht gebaut:** kein UI-Framework, Markup bleibt in index.html.

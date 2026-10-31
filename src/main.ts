@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, rand, randInt, clamp, dist2d, lerpTo } from './util';
-import { CFG, SPELLS, mods, resetMods, CARDS } from './config';
+import { CFG, SPELLS, mods, resetMods } from './config';
 import { aggroRadius, hitChance, xpForKill, xpNeeded, maxHp, maxMana, spirit, dmgMult, mobMaxHp, mobHitDmg, manaCost, spellCd, blizRadius } from './formulas';
 import { renderer, scene, camera, composer } from './render';
 import { heightAt, collide, drape } from './world';
@@ -11,8 +11,10 @@ import { buildBoar } from './models/boar';
 import { blizCursor, blizFx, FROST_WHITE, novaFx, arcaneExplosionFx, coneOfColdFx, blinkFx, hitSparkFx, crystalBurst, levelUpFx, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
 import { cam, shakeCamera, updateCamera } from './camera';
 import { overlay, combatText, showError, fmtTime, refreshKeyLabels, updateHud } from './ui/hud';
+import { showCards, openBinds, closeBinds, renderBinds, setBind } from './ui/menus';
+import './ui/menus';
 
-const ACTIONS = [
+export const ACTIONS = [
   { group: 'Bewegung' },
   { id: 'forward',     label: 'Vorwärts',          code: 'KeyW',   key: 'W' },
   { id: 'back',        label: 'Rückwärts',         code: 'KeyS',   key: 'S' },
@@ -43,14 +45,14 @@ function loadBinds() {
   try { Object.assign(b, JSON.parse(localStorage.getItem(BIND_STORE) || '{}')); } catch { /* kein Storage */ }
   return b;
 }
-function saveBinds() {
+export function saveBinds() {
   try { localStorage.setItem(BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
 }
-function resetBinds() {
+export function resetBinds() {
   binds = defaultBinds();
 }
-const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
-const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
+export const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+export const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
 
 // Eingabe
 const held = new Set();      // gedrückte Tasten (e.code)
@@ -58,7 +60,7 @@ const mouseBtn = { left: false, right: false };
 const mouse = { ndc: new THREE.Vector2(), ground: new THREE.Vector3(), dragged: false, downX: 0, downY: 0 };
 const act = id => held.has(binds[id].code);
 
-function resetGame() {
+export function resetGame() {
   for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
   state.mobs = [];
   resetMods();
@@ -480,89 +482,6 @@ function stopDrink() {
   player.drink = null;
 }
 
-// Level-Up-Karten
-function showCards() {
-  state.paused = true;
-  const available = CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max);
-  const picks = available.sort(() => Math.random() - 0.5).slice(0, 3);
-  $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
-  $('cards').innerHTML = '';
-  for (const c of picks) {
-    const rank = state.cardRanks[c.id] || 0;
-    const el = document.createElement('div');
-    el.className = 'card frame';
-    el.innerHTML = `<h3 class="title">${c.name}</h3>
-      <div class="src">${c.verified ? 'Classic-Talent (Wert belegt)' : 'Prototyp-Upgrade'}</div>
-      <p>${c.desc(rank)}</p><div class="rank">Rang ${rank + 1} / ${c.max}</div>`;
-    el.addEventListener('click', () => pickCard(c));
-    $('cards').appendChild(el);
-  }
-  $('cardModal').classList.add('show');
-  ding();
-}
-
-function pickCard(card) {
-  card.apply(state.cardRanks[card.id] || 0);
-  state.cardRanks[card.id] = (state.cardRanks[card.id] || 0) + 1;
-  state.pendingLevelUps--;
-  player.hp = maxHp();                 // Ding füllt auf
-  player.mana = maxMana();
-  $('cardModal').classList.remove('show');
-  if (state.pendingLevelUps > 0) showCards();
-  else state.paused = false;
-}
-
-// Tastenbelegung-Menü
-function openBinds() {
-  state.paused = true;
-  renderBinds();
-  $('bindModal').classList.add('show');
-}
-function closeBinds() {
-  state.rebinding = null;
-  $('bindModal').classList.remove('show');
-  state.paused = $('startModal').classList.contains('show') || $('cardModal').classList.contains('show') || player.dead;
-}
-function renderBinds() {
-  const list = $('bindList');
-  list.innerHTML = '';
-  for (const a of ACTIONS) {
-    if (a.group) { list.insertAdjacentHTML('beforeend', `<div class="group">${a.group}</div>`); continue; }
-    const label = document.createElement('span');
-    label.textContent = a.label;
-    const btn = document.createElement('button');
-    btn.className = 'bindBtn' + (state.rebinding === a.id ? ' waiting' : '');
-    btn.textContent = state.rebinding === a.id ? 'Taste drücken …' : binds[a.id].key;
-    btn.addEventListener('click', () => { state.rebinding = a.id; renderBinds(); });
-    list.append(label, btn);
-  }
-}
-function setBind(id, e) {
-  const other = actionForCode(e.code);
-  if (other && other !== id) binds[other] = { code: '', key: '–' };   // Doppelbelegung aufheben
-  binds[id] = { code: e.code, key: keyName(e) };
-  saveBinds();
-  refreshKeyLabels();
-}
-
-// Ding-Sound
-let audio;
-function ding() {
-  try {
-    audio = audio || new AudioContext();
-    const t = audio.currentTime;
-    for (const [freq, delay] of [[784, 0], [1175, 0.12]]) {
-      const osc = audio.createOscillator(), gain = audio.createGain();
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, t + delay);
-      gain.gain.exponentialRampToValueAtTime(0.25, t + delay + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.9);
-      osc.connect(gain).connect(audio.destination);
-      osc.start(t + delay); osc.stop(t + delay + 1);
-    }
-  } catch { /* kein Audio – egal */ }
-}
-
 export function pressSpell(id) {
   if (state.paused || player.dead) return;
   if (id === 'bliz') {                       // erst Zielmodus, Cast per Klick
@@ -635,16 +554,6 @@ addEventListener('mousemove', e => {
 });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 addEventListener('wheel', e => { cam.dist = clamp(cam.dist + Math.sign(e.deltaY) * 1.5, 3, 35); });
-$('startBtn').addEventListener('click', () => { $('startModal').classList.remove('show'); state.paused = false; ding(); });
-$('restartBtn').addEventListener('click', () => {
-  $('deathModal').classList.remove('show');
-  resetGame();
-  state.paused = false;
-});
-$('bindsOpen').addEventListener('click', openBinds);
-$('bindsClose').addEventListener('click', closeBinds);
-$('bindsReset').addEventListener('click', () => { resetBinds(); saveBinds(); refreshKeyLabels(); renderBinds(); });
-
 // Mauszeiger auf den Boden projizieren (Ray-Marching über die Höhenfunktion)
 const raycaster = new THREE.Raycaster();
 function pickGround() {
