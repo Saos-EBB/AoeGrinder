@@ -28,6 +28,7 @@ export const CFG = {
   meleeRange: 2.2, swingTime: 2000,
   playRadius: 98,
   packCount: 9,
+  curseSlow: 0.3,                                   // PH: Kurzen-Fluch
   mageHunch: 0.65,                                  // PH: gebückte Haltung des Magiers, 0 = aufrecht, 1 = stark
   padDeadzone: 0.15, padWalkBelow: 0.5,             // PH: docs/gamepad-spec.md
   blizAimStart: 12, blizAimSpeed: 25,               // PH: Blizzard-Zielkreis am Pad (yd, yd/s)

@@ -58,8 +58,9 @@ export function spawnMob(typeId, pos, level, packId) {
     pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
     level, hp, maxHp: hp, speedMul: type.speedMul ?? 1,
     state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
-    fleeRolled: false, fleeTarget: null, fleeUntil: 0, lastLeashExt: 0, dead: false, deathAt: 0, moving: false, leap: null,
+    fleeRolled: false, fleeTarget: null, fleeUntil: 0, lastLeashExt: 0, dead: false, deathAt: 0, moving: false, leap: null, hidden: false,
   };
+  if (type.stealth) { mob.hidden = true; model.root.visible = false; }
   state.mobs.push(mob);
   return mob;
 }

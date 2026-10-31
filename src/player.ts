@@ -26,7 +26,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
+    facing: Math.PI, slowUntil: 0, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
   });
@@ -52,6 +52,7 @@ export function switchZone(id) {
   player.vel.set(0, 0, 0);
   player.grounded = true;
   player.facing = Math.PI;
+  player.slowUntil = 0;
   cam.offset = 0;
   while (state.mobs.length < zone.packs.initialMobs) spawnPack();
 }
@@ -143,10 +144,11 @@ export function updatePlayer(dt) {
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
     const speed = amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed;
-    player.vel.x = len ? vx / len * speed : 0;
-    player.vel.z = len ? vz / len * speed : 0;
+    const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
+    player.vel.x = len ? vx / len * slowed : 0;
+    player.vel.z = len ? vz / len * slowed : 0;
     player.moveState = len ? (fwd < 0 ? 'back' : 'run') : 'idle';
-    player.moveSpeed = len ? speed : CFG.runSpeed;
+    player.moveSpeed = len ? slowed : CFG.runSpeed;
     if (state.jumpQueued) {
       player.vel.y = CFG.jumpSpeed;
       player.grounded = false;

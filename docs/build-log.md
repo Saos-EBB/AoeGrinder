@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Schlingendorntal mit fünf Mobs
+**Was:** Dschungel mit Zikkurat, Fluss, Strand und Pfaden zwischen vielen Bäumen; Raptor-Rig; Rudelwut, Axtwurf, Fluch, getarnter Panther. Der Fluch bremst über `player.slowUntil`, Nameplates respektieren `mob.hidden`.
+**Nicht gebaut:** keine Tarnung nach dem Zurücklaufen: einmal entdeckt bleibt der Panther sichtbar.
+
 ## 2026-10-31 — feat(zones): Tirisfal mit fünf Mobs
 **Was:** Erste echte Zone: grüner Nebel, Windmühle, Friedhof, See, Wachturm, Kürbisfelder; Baukasten `creatures.ts` für die Mob-Rigs; Sprungbiss, Schattenblitze, Lebensraub, Alarm. Mob-Modelle werden beim Entfernen freigegeben, sonst läuft der Speicher voll.
 **Nicht gebaut:** keine Tierfallen- oder Wegfindung: Mobs laufen weiter gerade auf den Spieler zu.

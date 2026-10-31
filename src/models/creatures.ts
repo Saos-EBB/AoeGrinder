@@ -225,3 +225,73 @@ export const bat = o => level => {
     wL.outer.rotation.z = flap * 0.6; wR.outer.rotation.z = -flap * 0.6;
   }, level, o.scale ?? [1, 1, 1], [1.6, 1.2, 1.2], 1.6);
 };
+
+// Raptor: Körper waagerecht, Kopf mit Kiefer, Schwanz in Gliedern. o: skin, stripe, tail (Anzahl Glieder), scale
+export const raptor = o => level => {
+  const { M, mats } = kit();
+  const skin = M(o.skin), stripe = M(o.stripe), belly = M(o.belly ?? 0xc8b98a), tooth = M(0xe8e2cc);
+  const eye = glowMat(1.8, 1.2, 0.2);
+  const root = new THREE.Group();
+  const body = joint(root, 0, 1.02, 0);
+  body.add(part(Box(0.46, 0.5, 1.15), skin));
+  body.add(part(Box(0.4, 0.14, 0.95), belly, 0, -0.26, 0));
+  for (const z of [-0.35, 0, 0.35]) body.add(part(Box(0.48, 0.3, 0.1), stripe, 0, 0.13, z));
+  const neck = joint(body, 0, 0.12, 0.55);
+  const neckMesh = part(Box(0.26, 0.26, 0.55), skin, 0, 0.14, 0.2);
+  neckMesh.rotation.x = -0.6;
+  neck.add(neckMesh);
+  const head = joint(neck, 0, 0.32, 0.42);
+  head.add(part(Box(0.27, 0.22, 0.56), skin, 0, 0.02, 0.22));
+  for (const sx of [-0.13, 0.13]) head.add(part(Ball(0.04), eye, sx, 0.1, 0.18));
+  head.add(part(Box(0.05, 0.14, 0.4), stripe, 0, 0.17, 0.05));
+  const jaw = joint(head, 0, -0.09, 0.05);
+  jaw.add(part(Box(0.22, 0.07, 0.48), belly, 0, 0, 0.22));
+  for (const sx of [-0.08, 0.08]) { const t = part(Cone(0.025, 0.09), tooth, sx, 0.06, 0.38); jaw.add(t); }
+  const tail = [];
+  let parent = body, off = -0.55;
+  const n = o.tail ?? 3;
+  for (let i = 0; i < n; i++) {
+    const g = joint(parent, 0, i ? 0 : 0.08, off);
+    const w = 0.3 * (1 - i / (n + 0.5));
+    g.add(part(Box(w, w * 0.9, 0.5), i % 2 ? stripe : skin, 0, 0, -0.25));
+    tail.push(g);
+    parent = g; off = -0.48;
+  }
+  for (const side of [1, -1]) { const a = part(Box(0.06, 0.28, 0.06), skin, side * 0.25, -0.2, 0.42); a.rotation.x = -0.8; body.add(a); }
+  const leg = side => {
+    const hip = joint(body, side * 0.27, -0.05, -0.1);
+    hip.add(part(Box(0.2, 0.52, 0.28), skin, 0, -0.22, 0.02));
+    const knee = joint(hip, 0, -0.45, 0.06);
+    knee.add(part(Box(0.1, 0.42, 0.11), stripe, 0, -0.2, 0));
+    const foot = joint(knee, 0, -0.43, 0);
+    foot.add(part(Box(0.16, 0.05, 0.34), belly, 0, -0.1, 0.1));
+    return { hip, knee, foot };
+  };
+  const lL = leg(1), lR = leg(-1);
+  let phase = rand(0, 6);
+  const j = { y: 1.02, lH: 0.35, rH: 0.35, lK: -0.75, rK: -0.75, neck: 0, jaw: 0.05, roll: 0, tail: 0, pitch: 0 };
+  return finish(root, mats, (dt, a) => {
+    const s = dt / 1000;
+    const t: any = { y: 1.02, lH: 0.35, rH: 0.35, lK: -0.75, rK: -0.75, neck: 0, jaw: 0.05, roll: 0, pitch: 0, tail: Math.sin(performance.now() / 500) * 0.2 };
+    if (a.state === 'run') {
+      phase += s * a.speed * 2.1;
+      const sw = Math.sin(phase);
+      t.lH = 0.35 - sw * 0.75; t.rH = 0.35 + sw * 0.75;
+      t.lK = -0.75 - Math.max(0, Math.cos(phase)) * 0.7; t.rK = -0.75 - Math.max(0, -Math.cos(phase)) * 0.7;
+      t.y = 1.0 + Math.abs(Math.cos(phase)) * 0.09; t.pitch = 0.08; t.tail = sw * 0.3; t.neck = Math.sin(phase * 2) * 0.07;
+    } else if (a.state === 'idle') {
+      phase += s * 1.3;
+      t.neck = Math.sin(phase) * 0.1; t.y = 1.02 + Math.sin(phase * 2) * 0.01;
+    } else if (a.state === 'dead') {
+      t.roll = Math.PI / 2; t.y = 0.3; t.tail = 0;
+    }
+    if (a.attack > 0) { const v = Math.sin(a.attack * Math.PI); t.neck = 0.55 * v; t.jaw = 0.8 * v; t.pitch = 0.2 * v; }
+    ease(j, t, Math.min(1, s * 14));
+    body.position.y = j.y; body.rotation.z = j.roll; body.rotation.x = j.pitch;
+    neck.rotation.x = j.neck; jaw.rotation.x = j.jaw;
+    for (const g of tail) g.rotation.y = j.tail;
+    lL.hip.rotation.x = j.lH; lR.hip.rotation.x = j.rH; lL.knee.rotation.x = -j.lK; lR.knee.rotation.x = -j.rK;
+    lL.hip.rotation.x -= 0.0;
+    lL.foot.rotation.x = j.lK * 0.5 - j.lH * 0.4; lR.foot.rotation.x = j.rK * 0.5 - j.rH * 0.4;
+  }, level, o.scale ?? [1, 1, 1], [1.2, 2.1, 2.6], 1);
+};

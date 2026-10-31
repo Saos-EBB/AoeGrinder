@@ -12,7 +12,7 @@ import { particles } from './fx/particles';
 import { combatText } from './ui/hud';
 import { moveMob, faceMob, hitPlayer, startLeap } from './mobs';
 
-const SHADOW = [1.1, 0.3, 2.0];
+const SHADOW = [1.1, 0.3, 2.0], AXE = [1.6, 0.9, 0.3];
 
 // Geschoss als Partikelspur, fliegt auf den Spieler zu und trifft immer
 const projectiles = [];
@@ -77,6 +77,46 @@ export const ABILITIES: any = {
     onHit(mob, dmg) {
       mob.hp = Math.min(mob.maxHp, mob.hp + dmg);
       combatText(mob.pos, `+${dmg}`, 'heal', 2.4);
+    },
+  },
+  // +15 % Tempo pro totem Pack-Mitglied
+  packFury: {
+    onUpdate(mob) {
+      mob.speedMul = 1 + 0.15 * (state.packDeaths[mob.packId] || 0);   // PH
+      return false;
+    },
+  },
+  // Wirft aus 25 yd, weicht unter 10 yd zurück
+  axeThrower: {
+    onUpdate(mob, dt) {
+      const d = holdRange(mob, dt, 10, 25);                     // PH
+      if (d <= 26 && ready(mob, 'nextAxe', 2600)) shoot(mob, AXE, 26, () => hitPlayer(mob, 0.9));   // PH
+      return true;
+    },
+  },
+  // Fluch: Spieler 30 % langsamer für 10 s
+  curse: {
+    onUpdate(mob) {
+      if (dist2d(mob.pos, player.pos) <= 30 && ready(mob, 'nextCurse', 14000)) {   // PH
+        mob.attackAt = state.now;
+        player.slowUntil = state.now + 10000;                   // PH, Stärke in CFG.curseSlow
+        combatText(player.pos, 'Fluch!', 'hurt', 2.6);
+      }
+      return false;
+    },
+  },
+  // Getarnt bis 6 yd (aggro im Typ), dann Ansprung
+  pounce: {
+    onCombatStart(mob) {
+      mob.hidden = false;
+      mob.model.root.visible = true;
+    },
+    onUpdate(mob) {
+      const d = dist2d(mob.pos, player.pos);
+      if (mob.pounced || d > 10 || mob.rootUntil > state.now) return false;   // PH
+      mob.pounced = true;
+      startLeap(mob, { x: player.pos.x, z: player.pos.z }, 380, () => { if (dist2d(mob.pos, player.pos) < 4) hitPlayer(mob, 1.6); });   // PH
+      return true;
     },
   },
   // Ruft alle Mobs in 20 yd statt 10
