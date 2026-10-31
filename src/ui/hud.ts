@@ -143,7 +143,7 @@ export function updateHud() {
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
-    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || (id === 'drink' && !!dr));
   }
 
   // Nameplates

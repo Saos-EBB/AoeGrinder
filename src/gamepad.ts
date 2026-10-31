@@ -7,7 +7,7 @@ import { CFG, SPELLS } from './config';
 import { cam } from './camera';
 import { heightAt } from './world';
 import { blizCursor } from './fx/spellFx';
-import { cast } from './spells';
+import { cast, isGround } from './spells';
 import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
 import { openBinds, closeBinds, renderBinds } from './ui/menus';
@@ -74,11 +74,11 @@ function cancelAim() {
   blizCursor.visible = false;
 }
 
-function startAim() {
+function startAim(id) {
   const x = player.pos.x + Math.sin(player.facing) * CFG.blizAimStart;
   const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
   state.padAim = new THREE.Vector3(x, heightAt(x, z), z);
-  player.targeting = true;
+  player.targeting = id;
   blizCursor.visible = true;
 }
 
@@ -101,7 +101,7 @@ function gameButtons() {
   }
   for (const { id } of PAD_ACTIONS) {
     if (!pressed(padBinds[id]) || (cancelled && padBinds[id] === CANCEL_BTN)) continue;
-    if (id === 'bliz') startAim();
+    if (id === 'bliz' && isGround(state.slots[2])) startAim(state.slots[2]);
     else if (SPELLS[id]) pressSpell(id);
     else PAD_EFFECTS[id]?.();
   }

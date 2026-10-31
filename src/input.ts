@@ -59,11 +59,6 @@ export const act = id => held.has(binds[id].code);
 
 export function pressSpell(id) {
   if (state.paused || player.dead) return;
-  if (id === 'bliz') {                       // erst Zielmodus, Cast per Klick
-    player.targeting = !player.targeting;
-    blizCursor.visible = player.targeting;
-    return;
-  }
   cast(id);
 }
 

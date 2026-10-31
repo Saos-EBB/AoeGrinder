@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — fix(input): Taste 3 nicht mehr fest auf Blizzard
+**Was:** Taste 3 lief über einen Sonderfall und wurde erst in `resolveSlot3()` aufgelöst. Jetzt geht sie den Weg aller Slots über `cast()`.
+**Nicht gebaut:** kein neuer Zielmodus am Pad, der folgt im nächsten Schritt.
+
 ## 2026-11-01 — chore(docs): Stand v9 Teil Blau in handoff.md
 **Was:** Branch `blau-levels` per Fast-Forward in `main`; die Einzelschritte stehen in `docs/status-blau.md`.
 **Nicht gebaut:** kein Publish, Artifact bleibt auf v8.

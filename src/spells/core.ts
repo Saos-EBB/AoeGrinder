@@ -184,17 +184,6 @@ function scheduleEchoes(id, point) {
   } else if (supported('echo', id)) schedule(500, () => SPELLS[id].effect(makeCtx(id, 0.7), point));
 }
 
-// input.ts setzt für Taste 3 nur player.targeting = true. Erst hier steht fest, welcher Spell im Slot liegt.
-function resolveSlot3() {
-  if (player.targeting !== true) return;
-  const id = state.slots[2];
-  if (isGround(id)) { player.targeting = id; return; }
-  player.targeting = false;
-  state.padAim = null;
-  blizCursor.visible = false;
-  castSpell(id);
-}
-
 // Fläche mit Ticks und optionalem onUpdate pro Frame
 export function addField(c, f) {
   const field = { c, tickMs: 1000, ...f, pos: f.pos.clone(), start: state.now, end: state.now + c.duration(f.dur), nextTick: state.now + (f.tickMs ?? 1000) };
@@ -227,7 +216,6 @@ let lastUpdate = 0;
 export function updateChannel() {
   const dt = Math.max(0, state.now - lastUpdate);
   lastUpdate = state.now;
-  resolveSlot3();
   updateFields(dt);
   updateCast();
   const ch = player.channel;
