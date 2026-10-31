@@ -220,7 +220,7 @@ export function hitSparkFx(pos, school) {
 
 export function crystalBurst(school) {
   const c = new THREE.Vector3();
-  mage.anchors.crystal.getWorldPosition(c);
+  mage.anchors.handR.getWorldPosition(c);   // der Stab hängt auf dem Rücken, gezaubert wird aus der Hand
   const color = SCHOOL_COLOR[school] || FROST;
   for (let i = 0; i < 25; i++) {
     const dir = new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize();
@@ -242,8 +242,8 @@ export function levelUpFx() {
 const tmpV = new THREE.Vector3();
 export function ambientParticles(dt) {
   if (!dt) return;
-  mage.anchors.crystal.getWorldPosition(tmpV);
   const channeling = !!player.channel;
+  (channeling ? mage.anchors.handR : mage.anchors.crystal).getWorldPosition(tmpV);
   for (let i = perFrame(channeling ? 45 : 5, dt); i > 0; i--) {
     const a = rand(0, Math.PI * 2), r = channeling ? 0.35 : 0.1;
     particles.spawn({ x: tmpV.x + Math.cos(a) * r, y: tmpV.y, z: tmpV.z + Math.sin(a) * r,

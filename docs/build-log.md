@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(mage): Stab auf den Rücken
+**Was:** Griff und waagerechtes Tragen haben nicht gefallen; der Stab hängt jetzt quer am Rücken, der rechte Arm schwingt frei wie der linke, Zauber-Partikel kommen aus der rechten Hand.
+**Nicht gebaut:** keine Animation zum Ziehen des Stabs.
+
 ## 2026-10-31 — feat(mage): Griff im oberen Stabdrittel, beim Laufen waagerecht
 **Was:** Griff sitzt ein Drittel von oben, die Hand ist dafür höher, damit der Stab nicht im Boden steckt; beim Laufen wirkte er aufrecht zu steif und liegt jetzt waagerecht.
 **Nicht gebaut:** keine eigene Haltung für Rückwärts, dort bleibt er fast aufrecht.
