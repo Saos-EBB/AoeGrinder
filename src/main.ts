@@ -4,6 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { state, player } from './state';
 
 const CFG = {
   startLevel: 20,
@@ -96,6 +97,9 @@ function loadBinds() {
 }
 function saveBinds() {
   try { localStorage.setItem(BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
+}
+function resetBinds() {
+  binds = defaultBinds();
 }
 const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
 const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
@@ -653,16 +657,9 @@ const blizFx = (() => {
   return { g, disc, shards, cloud, cloudMat };
 })();
 
-const player: any = {};
 const mage = buildMage();
 scene.add(mage.root);
 
-let now = 0;                 // Spielzeit in ms (läuft nur, wenn nicht pausiert)
-let paused = true;
-let mobs = [];
-let packCounter = 0;
-let pendingLevelUps = 0;
-let cardRanks = {};
 const effects = [];
 const overlay = $('overlay');
 
@@ -673,19 +670,16 @@ const cam = { offset: 0, pitch: 0.45, dist: 16, shake: 0 };
 const held = new Set();      // gedrückte Tasten (e.code)
 const mouseBtn = { left: false, right: false };
 const mouse = { ndc: new THREE.Vector2(), ground: new THREE.Vector3(), dragged: false, downX: 0, downY: 0 };
-let autorun = false;
-let jumpQueued = false;
-let rebinding = null;        // Aktion, die gerade neu belegt wird
 const act = id => held.has(binds[id].code);
 
 function resetGame() {
-  for (const m of mobs) { scene.remove(m.model.root); m.plate.remove(); }
-  mobs = [];
+  for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
+  state.mobs = [];
   resetMods();
-  cardRanks = {};
-  now = 0;
-  pendingLevelUps = 0;
-  autorun = false;
+  state.cardRanks = {};
+  state.now = 0;
+  state.pendingLevelUps = 0;
+  state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(0, heightAt(0, 0), 0), vel: new THREE.Vector3(), grounded: true,
     facing: Math.PI, moveState: 'idle', level: CFG.startLevel, xp: 0,
@@ -697,7 +691,7 @@ function resetGame() {
   player.mana = maxMana();
   blizCursor.visible = false;
   stopChannel();
-  while (mobs.length < 30) spawnPack();
+  while (state.mobs.length < 30) spawnPack();
 }
 
 function spawnPack() {
@@ -706,11 +700,11 @@ function spawnPack() {
     const a = rand(0, Math.PI * 2), r = rand(15, 85);
     center = new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
     const farFromPlayer = dist2d(center, player.pos) > 40;
-    const farFromPacks = mobs.every(m => m.dead || dist2d(m.home, center) > 18);
+    const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
     if (farFromPlayer && farFromPacks) break;
   }
   const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1), 2, 10);
-  const packId = ++packCounter;
+  const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
@@ -724,7 +718,7 @@ function spawnPack() {
     plate.className = 'plate';
     plate.innerHTML = `<span class="lv"></span> Wildeber<div class="hp"><div></div></div>`;
     overlay.appendChild(plate);
-    mobs.push({
+    state.mobs.push({
       model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
       pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
       level, hp: mobMaxHp(level), maxHp: mobMaxHp(level),
@@ -738,13 +732,13 @@ function enterCombat(mob, callForHelp) {
   if (mob.dead || mob.state === 'combat') return;
   mob.state = 'combat';
   mob.combatStart.copy(mob.pos);
-  mob.lastLeashExt = now;
-  mob.nextSwing = now + 500;
+  mob.lastLeashExt = state.now;
+  mob.nextSwing = state.now + 500;
   mob.assistAt = 0;
   if (!callForHelp) return;
-  for (const other of mobs) {                 // Social Aggro: 10 yd, Helfer nach 1,5 s
+  for (const other of state.mobs) {                 // Social Aggro: 10 yd, Helfer nach 1,5 s
     if (other === mob || other.dead || other.state !== 'idle' || other.assistAt) continue;
-    if (dist2d(other.pos, mob.pos) <= CFG.socialRadius) other.assistAt = now + CFG.socialDelay;
+    if (dist2d(other.pos, mob.pos) <= CFG.socialRadius) other.assistAt = state.now + CFG.socialDelay;
   }
 }
 
@@ -757,26 +751,26 @@ function startEvade(mob) {
 function isOutOfThreatArea(mob) {
   const area = Math.max(aggroRadius(mob) * 1.5, CFG.leashRadius);
   const out = dist2d(mob.pos, mob.combatStart) > area && dist2d(player.pos, mob.combatStart) > area;
-  return out && now - mob.lastLeashExt > CFG.leashGrace;
+  return out && state.now - mob.lastLeashExt > CFG.leashGrace;
 }
 
 function startFlee(mob) {
   let helper = null, best = CFG.fleeAssistRadius;
-  for (const other of mobs) {
+  for (const other of state.mobs) {
     if (other === mob || other.dead || other.state !== 'idle') continue;
     const d = dist2d(other.pos, mob.pos);
     if (d < best) { best = d; helper = other; }
   }
   mob.state = 'flee';
   mob.fleeTarget = helper;
-  mob.fleeUntil = now + CFG.fleeDuration;
+  mob.fleeUntil = state.now + CFG.fleeDuration;
   combatText(mob.pos, 'läuft in Panik davon!', 'info', 2.5);
 }
 
 function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
-  if (!ignoreCC && mob.rootUntil > now) return;
+  if (!ignoreCC && mob.rootUntil > state.now) return;
   let speed = CFG.mobSpeed * speedMul;
-  if (!ignoreCC && mob.slowUntil > now) speed *= 1 - mob.slowPct;
+  if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.01) return;
@@ -789,7 +783,7 @@ function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
 
 function faceMob(mob, target) {
   const want = Math.atan2(target.x - mob.pos.x, target.z - mob.pos.z);
-  if (mob.rootUntil > now) return;
+  if (mob.rootUntil > state.now) return;
   mob.model.root.rotation.y = want;
 }
 
@@ -800,14 +794,14 @@ function updateMob(mob, dt) {
 
   if (mob.state === 'idle') {
     if (!player.dead && d < aggroRadius(mob)) enterCombat(mob, true);
-    else if (mob.assistAt && now >= mob.assistAt) enterCombat(mob, false);
+    else if (mob.assistAt && state.now >= mob.assistAt) enterCombat(mob, false);
   }
   else if (mob.state === 'combat') {
     if (player.dead || isOutOfThreatArea(mob)) { startEvade(mob); return; }
     if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
-    else if (now >= mob.nextSwing && mob.rootUntil <= now) {
-      mob.nextSwing = now + CFG.swingTime;
-      mob.attackAt = now;
+    else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
+      mob.nextSwing = state.now + CFG.swingTime;
+      mob.attackAt = state.now;
       damagePlayer(mobHitDmg(mob.level));
     }
     faceMob(mob, player.pos);
@@ -822,7 +816,7 @@ function updateMob(mob, dt) {
       const away = mob.pos.clone().multiplyScalar(2).sub(player.pos);
       moveMob(mob, away, dt);
       faceMob(mob, away);
-      if (now >= mob.fleeUntil) mob.state = 'combat';
+      if (state.now >= mob.fleeUntil) mob.state = 'combat';
     }
   }
   else if (mob.state === 'evade') {
@@ -837,15 +831,15 @@ function updateMob(mob, dt) {
 
 // Mobs im Kampf schieben sich leicht auseinander
 function separateMobs() {
-  const active = mobs.filter(m => !m.dead && m.state !== 'idle');
+  const active = state.mobs.filter(m => !m.dead && m.state !== 'idle');
   for (let i = 0; i < active.length; i++) {
     for (let k = i + 1; k < active.length; k++) {
       const a = active[i].pos, b = active[k].pos;
       const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
       if (d > 0.001 && d < 1.3) {
         const push = (1.3 - d) / 2;
-        if (active[i].rootUntil <= now) { a.x -= dx / d * push; a.z -= dz / d * push; }
-        if (active[k].rootUntil <= now) { b.x += dx / d * push; b.z += dz / d * push; }
+        if (active[i].rootUntil <= state.now) { a.x -= dx / d * push; a.z -= dz / d * push; }
+        if (active[k].rootUntil <= state.now) { b.x += dx / d * push; b.z += dz / d * push; }
       }
     }
   }
@@ -856,16 +850,16 @@ function damageMob(mob, amount, source) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
-  player.lastCombat = now;
-  mob.lastLeashExt = now;
+  player.lastCombat = state.now;
+  mob.lastLeashExt = state.now;
 
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
-  const frozen = mob.rootUntil > now;
+  const frozen = mob.rootUntil > state.now;
   const crit = Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
   const dmg = Math.round(amount * dmgMult() * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
-  mob.hitAt = now;
+  mob.hitAt = state.now;
   if (crit) shakeCamera(0.18);
   combatText(mob.pos, dmg, crit ? 'crit' : 'dmg');
   hitSparkFx(mob.pos, source === 'ae' ? 'arcane' : 'frost');
@@ -882,7 +876,7 @@ function damageMob(mob, amount, source) {
 
 function killMob(mob) {
   mob.dead = true;
-  mob.deathAt = now;
+  mob.deathAt = state.now;
   mob.hp = 0;
   mob.rootUntil = 0;
   mob.plate.style.display = 'none';
@@ -894,7 +888,7 @@ function killMob(mob) {
 function damagePlayer(amount) {
   if (player.dead) return;
   player.hp -= amount;
-  player.lastCombat = now;
+  player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   if (player.drink) stopDrink();
   pushbackChannel();
@@ -908,28 +902,28 @@ function pushbackChannel() {
   const delay = ch.delays < 5 ? 1000 - ch.delays * 200 : 200;
   ch.delays++;
   ch.end -= delay;
-  if (ch.end <= now) stopChannel();
+  if (ch.end <= state.now) stopChannel();
 }
 
 function spendMana(cost) {
   if (cost <= 0) return;
   player.mana -= cost;
-  player.lastManaUse = now;              // startet die 5-Sekunden-Regel
+  player.lastManaUse = state.now;              // startet die 5-Sekunden-Regel
 }
 
 function regenerate(dt) {
-  if (now >= player.nextRegen) {         // Tick alle 2 s
+  if (state.now >= player.nextRegen) {         // Tick alle 2 s
     player.nextRegen += CFG.regenTick;
     let mana = spirit() / 4 + 12.5;
-    if (now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
+    if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
     player.mana = Math.min(maxMana(), player.mana + mana);
-    if (now - player.lastCombat > 5000) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH
+    if (state.now - player.lastCombat > 5000) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH
   }
   if (player.drink) {                    // PH: 90 % Mana + 50 % HP über 18 s
     player.mana = Math.min(maxMana(), player.mana + maxMana() * 0.9 * dt / SPELLS.drink.dur);
     player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.5 * dt / SPELLS.drink.dur);
     const full = player.mana >= maxMana() && player.hp >= maxHp();
-    if (now >= player.drink.end || full) stopDrink();
+    if (state.now >= player.drink.end || full) stopDrink();
   }
 }
 
@@ -938,18 +932,18 @@ function gainXp(xp) {
   while (player.xp >= xpNeeded()) {
     player.xp -= xpNeeded();
     player.level++;
-    pendingLevelUps++;
+    state.pendingLevelUps++;
   }
-  if (pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
+  if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
 }
 
 function die() {
   player.dead = true;
   player.hp = 0;
   stopChannel(); stopDrink();
-  paused = true;
+  state.paused = true;
   setTimeout(() => {
-    $('deathStats').innerHTML = `Level <b>${player.level}</b> · <b>${player.kills}</b> Kills · Zeit <b>${fmtTime(now)}</b>`;
+    $('deathStats').innerHTML = `Level <b>${player.level}</b> · <b>${player.kills}</b> Kills · Zeit <b>${fmtTime(state.now)}</b>`;
     $('deathModal').classList.add('show');
   }, 900);
 }
@@ -961,7 +955,7 @@ function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  let fwd = (act('forward') || autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
+  let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
   let strafe = (act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0);
   if (mouseBtn.right) strafe -= turn;
@@ -976,12 +970,12 @@ function updatePlayer(dt) {
     player.vel.x = len ? vx / len * speed : 0;
     player.vel.z = len ? vz / len * speed : 0;
     player.moveState = len ? (fwd < 0 ? 'back' : 'run') : 'idle';
-    if (jumpQueued) {
+    if (state.jumpQueued) {
       player.vel.y = CFG.jumpSpeed;
       player.grounded = false;
     }
   }
-  jumpQueued = false;
+  state.jumpQueued = false;
 
   const moved = Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded;
   player.pos.x += player.vel.x * s;
@@ -1007,8 +1001,8 @@ function updatePlayer(dt) {
 }
 
 function cast(id, point?) {
-  if (paused || player.dead) return;
-  if (now < player.gcdUntil || (player.cds[id] || 0) > now) return showError('Fähigkeit ist noch nicht bereit');
+  if (state.paused || player.dead) return;
+  if (state.now < player.gcdUntil || (player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
   if (player.mana < cost) return showError('Nicht genug Mana');
   if (id === 'bliz' && dist2d(player.pos, point) > SPELLS.bliz.range) return showError('Außer Reichweite');
@@ -1017,19 +1011,19 @@ function cast(id, point?) {
   stopChannel();
   stopDrink();
   spendMana(cost);
-  player.gcdUntil = now + CFG.gcd;
-  if (SPELLS[id].cd) player.cds[id] = now + spellCd(id);
-  if (id !== 'drink' && id !== 'bliz') { player.castAnimUntil = now + 450; crystalBurst(SPELLS[id].cls); }
+  player.gcdUntil = state.now + CFG.gcd;
+  if (SPELLS[id].cd) player.cds[id] = state.now + spellCd(id);
+  if (id !== 'drink' && id !== 'bliz') { player.castAnimUntil = state.now + 450; crystalBurst(SPELLS[id].cls); }
   SPELL_EFFECTS[id](point);
 }
 
-const mobsInRadius = (center, r) => mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r);
+const mobsInRadius = (center, r) => state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r);
 
 const SPELL_EFFECTS = {
   nova() {
     const s = SPELLS.nova;
     for (const m of mobsInRadius(player.pos, s.radius)) {
-      if (damageMob(m, rand(s.min, s.max), 'nova') && !m.dead) m.rootUntil = now + s.root;
+      if (damageMob(m, rand(s.min, s.max), 'nova') && !m.dead) m.rootUntil = state.now + s.root;
     }
     novaFx(player.pos, s.radius);
   },
@@ -1039,7 +1033,7 @@ const SPELL_EFFECTS = {
     arcaneExplosionFx(player.pos, s.radius);
   },
   bliz(point) {
-    player.channel = { id: 'bliz', point: point.clone(), start: now, end: now + SPELLS.bliz.channel, nextTick: now + 1000, delays: 0 };
+    player.channel = { id: 'bliz', point: point.clone(), start: state.now, end: state.now + SPELLS.bliz.channel, nextTick: state.now + 1000, delays: 0 };
     player.targeting = false;
     blizCursor.visible = false;
     blizFx.g.position.copy(point);
@@ -1069,27 +1063,27 @@ const SPELL_EFFECTS = {
     blinkFx(from, player.pos);
   },
   drink() {
-    player.drink = { start: now, end: now + SPELLS.drink.dur };
+    player.drink = { start: state.now, end: state.now + SPELLS.drink.dur };
   },
 };
 
 // Stärkerer Slow gewinnt; abgelaufener Slow zählt nicht mehr
 function applySlow(mob, pct, dur) {
-  if (mob.slowUntil <= now) mob.slowPct = 0;
+  if (mob.slowUntil <= state.now) mob.slowPct = 0;
   mob.slowPct = Math.max(mob.slowPct, pct);
-  mob.slowUntil = Math.max(mob.slowUntil, now + dur);
+  mob.slowUntil = Math.max(mob.slowUntil, state.now + dur);
 }
 
 function updateChannel() {
   const ch = player.channel;
   if (!ch) return;
-  while (ch.nextTick <= now && ch.nextTick <= ch.end) {
+  while (ch.nextTick <= state.now && ch.nextTick <= ch.end) {
     ch.nextTick += 1000;
     for (const m of mobsInRadius(ch.point, blizRadius())) {
       if (damageMob(m, SPELLS.bliz.tick, 'bliz') && !m.dead && mods.blizSlow > 0) applySlow(m, mods.blizSlow, 1500);
     }
   }
-  if (now >= ch.end) stopChannel();
+  if (state.now >= ch.end) stopChannel();
 }
 
 function stopChannel() {
@@ -1379,8 +1373,8 @@ function ambientParticles(dt) {
         vy: rand(0.8, 1.6), life: rand(0.8, 1.3), color: [0.6, 1.2, 2.6], size: rand(0.12, 0.22) });
     }
   }
-  for (const m of mobs) {
-    if (m.dead || m.rootUntil <= now) continue;
+  for (const m of state.mobs) {
+    if (m.dead || m.rootUntil <= state.now) continue;
     for (let i = perFrame(4, dt); i > 0; i--) {
       particles.spawn({ x: m.pos.x + rand(-0.7, 0.7), y: m.pos.y + rand(0.3, 1.6), z: m.pos.z + rand(-0.9, 0.9),
         vy: rand(0.3, 0.8), life: rand(0.6, 1), color: FROST, size: rand(0.12, 0.22) });
@@ -1464,41 +1458,41 @@ function updateHud() {
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
   $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}`;
-  const fsrLeft = clamp(1 - (now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
+  const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
-  $('status').textContent = player.drink ? 'Trinkt …' : autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+  $('status').textContent = player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
 
   const need = xpNeeded();
   $('xpFill').style.transform = `scaleX(${player.xp / need})`;
   $('xpText').textContent = `XP ${player.xp} / ${need}`;
 
-  $('iTime').textContent = fmtTime(now);
+  $('iTime').textContent = fmtTime(state.now);
   $('iKills').textContent = player.kills;
-  $('iCombat').textContent = String(mobs.filter(m => !m.dead && (m.state === 'combat' || m.state === 'flee')).length);
+  $('iCombat').textContent = String(state.mobs.filter(m => !m.dead && (m.state === 'combat' || m.state === 'flee')).length);
 
   // Castbar (Channel läuft von rechts nach links wie in WoW)
   const ch = player.channel, dr = player.drink;
   if (ch || dr) {
     const bar = ch || dr;
-    const left = clamp((bar.end - now) / (bar.end - bar.start), 0, 1);
+    const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
     $('castbar').style.display = 'block';
     $('castFill').style.transform = `scaleX(${left})`;
-    $('castText').textContent = `${ch ? 'Blizzard' : 'Trinken'} ${((bar.end - now) / 1000).toFixed(1)}`;
+    $('castText').textContent = `${ch ? 'Blizzard' : 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
   } else $('castbar').style.display = 'none';
 
   for (const [id, sl] of Object.entries<any>(slots)) {
     const cdEnd = Math.max(player.cds[id] || 0, player.gcdUntil);
     const total = (player.cds[id] || 0) > player.gcdUntil ? spellCd(id) : CFG.gcd;
-    const left = Math.max(0, cdEnd - now);
+    const left = Math.max(0, cdEnd - state.now);
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
-    sl.cdText.textContent = (player.cds[id] || 0) - now > 1500 ? Math.ceil(left / 1000) : '';
+    sl.cdText.textContent = (player.cds[id] || 0) - state.now > 1500 ? Math.ceil(left / 1000) : '';
     sl.el.classList.toggle('nomana', player.mana < manaCost(id));
     sl.el.classList.toggle('active', (id === 'bliz' && (player.targeting || !!ch)) || (id === 'drink' && !!dr));
   }
 
   // Nameplates
-  for (const m of mobs) {
+  for (const m of state.mobs) {
     if (m.dead) continue;
     const show = m.state !== 'idle' || dist2d(m.pos, player.pos) < 35;
     const p = show && screenPos(m.pos, 2.3);
@@ -1514,13 +1508,13 @@ function updateHud() {
 
 // Level-Up-Karten
 function showCards() {
-  paused = true;
-  const available = CARDS.filter(c => (cardRanks[c.id] || 0) < c.max);
+  state.paused = true;
+  const available = CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max);
   const picks = available.sort(() => Math.random() - 0.5).slice(0, 3);
-  $('cardLvl').textContent = String(player.level - pendingLevelUps + 1);
+  $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
   $('cards').innerHTML = '';
   for (const c of picks) {
-    const rank = cardRanks[c.id] || 0;
+    const rank = state.cardRanks[c.id] || 0;
     const el = document.createElement('div');
     el.className = 'card frame';
     el.innerHTML = `<h3 class="title">${c.name}</h3>
@@ -1534,26 +1528,26 @@ function showCards() {
 }
 
 function pickCard(card) {
-  card.apply(cardRanks[card.id] || 0);
-  cardRanks[card.id] = (cardRanks[card.id] || 0) + 1;
-  pendingLevelUps--;
+  card.apply(state.cardRanks[card.id] || 0);
+  state.cardRanks[card.id] = (state.cardRanks[card.id] || 0) + 1;
+  state.pendingLevelUps--;
   player.hp = maxHp();                 // Ding füllt auf
   player.mana = maxMana();
   $('cardModal').classList.remove('show');
-  if (pendingLevelUps > 0) showCards();
-  else paused = false;
+  if (state.pendingLevelUps > 0) showCards();
+  else state.paused = false;
 }
 
 // Tastenbelegung-Menü
 function openBinds() {
-  paused = true;
+  state.paused = true;
   renderBinds();
   $('bindModal').classList.add('show');
 }
 function closeBinds() {
-  rebinding = null;
+  state.rebinding = null;
   $('bindModal').classList.remove('show');
-  paused = $('startModal').classList.contains('show') || $('cardModal').classList.contains('show') || player.dead;
+  state.paused = $('startModal').classList.contains('show') || $('cardModal').classList.contains('show') || player.dead;
 }
 function renderBinds() {
   const list = $('bindList');
@@ -1563,9 +1557,9 @@ function renderBinds() {
     const label = document.createElement('span');
     label.textContent = a.label;
     const btn = document.createElement('button');
-    btn.className = 'bindBtn' + (rebinding === a.id ? ' waiting' : '');
-    btn.textContent = rebinding === a.id ? 'Taste drücken …' : binds[a.id].key;
-    btn.addEventListener('click', () => { rebinding = a.id; renderBinds(); });
+    btn.className = 'bindBtn' + (state.rebinding === a.id ? ' waiting' : '');
+    btn.textContent = state.rebinding === a.id ? 'Taste drücken …' : binds[a.id].key;
+    btn.addEventListener('click', () => { state.rebinding = a.id; renderBinds(); });
     list.append(label, btn);
   }
 }
@@ -1596,7 +1590,7 @@ function ding() {
 }
 
 function pressSpell(id) {
-  if (paused || player.dead) return;
+  if (state.paused || player.dead) return;
   if (id === 'bliz') {                       // erst Zielmodus, Cast per Klick
     player.targeting = !player.targeting;
     blizCursor.visible = player.targeting;
@@ -1606,17 +1600,17 @@ function pressSpell(id) {
 }
 
 addEventListener('keydown', e => {
-  if (rebinding) {
+  if (state.rebinding) {
     e.preventDefault();
-    if (e.code !== 'Escape') setBind(rebinding, e);
-    rebinding = null;
+    if (e.code !== 'Escape') setBind(state.rebinding, e);
+    state.rebinding = null;
     renderBinds();
     return;
   }
   if (e.code === 'Escape') {
     if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
     else if ($('bindModal').classList.contains('show')) closeBinds();
-    else if (!paused) openBinds();
+    else if (!state.paused) openBinds();
     return;
   }
   const id = actionForCode(e.code);
@@ -1624,9 +1618,9 @@ addEventListener('keydown', e => {
   held.add(e.code);
   if (e.repeat || !id) return;
   if (SPELLS[id]) pressSpell(id);
-  if (id === 'jump') jumpQueued = true;
-  if (id === 'autorun') autorun = !autorun;
-  if (id === 'back' || id === 'forward') autorun = false;
+  if (id === 'jump') state.jumpQueued = true;
+  if (id === 'autorun') state.autorun = !state.autorun;
+  if (id === 'back' || id === 'forward') state.autorun = false;
 });
 addEventListener('keyup', e => held.delete(e.code));
 addEventListener('blur', () => { held.clear(); mouseBtn.left = mouseBtn.right = false; });
@@ -1674,15 +1668,15 @@ addEventListener('resize', () => {
   composer.setSize(innerWidth, innerHeight);
 });
 
-$('startBtn').addEventListener('click', () => { $('startModal').classList.remove('show'); paused = false; ding(); });
+$('startBtn').addEventListener('click', () => { $('startModal').classList.remove('show'); state.paused = false; ding(); });
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
   resetGame();
-  paused = false;
+  state.paused = false;
 });
 $('bindsOpen').addEventListener('click', openBinds);
 $('bindsClose').addEventListener('click', closeBinds);
-$('bindsReset').addEventListener('click', () => { binds = defaultBinds(); saveBinds(); refreshKeyLabels(); renderBinds(); });
+$('bindsReset').addEventListener('click', () => { resetBinds(); saveBinds(); refreshKeyLabels(); renderBinds(); });
 
 // Mauszeiger auf den Boden projizieren (Ray-Marching über die Höhenfunktion)
 const raycaster = new THREE.Raycaster();
@@ -1698,15 +1692,15 @@ function pickGround() {
 
 function update(dt) {
   updatePlayer(dt);
-  for (const m of mobs) updateMob(m, dt);
+  for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
-  mobs = mobs.filter(m => {
-    if (m.dead && now - m.deathAt > 4000) { scene.remove(m.model.root); m.plate.remove(); return false; }
+  state.mobs = state.mobs.filter(m => {
+    if (m.dead && state.now - m.deathAt > 4000) { scene.remove(m.model.root); m.plate.remove(); return false; }
     return true;
   });
-  const activePacks = new Set(mobs.filter(m => !m.dead).map(m => m.packId)).size;
+  const activePacks = new Set(state.mobs.filter(m => !m.dead).map(m => m.packId)).size;
   if (activePacks < CFG.packCount) spawnPack();
 }
 
@@ -1715,7 +1709,7 @@ function shakeCamera(amount) { cam.shake = Math.max(cam.shake || 0, amount); }
 
 // Leiche versinkt nach 1,5 s im Boden, mit Staubwolke
 function sinkCorpse(mob) {
-  const t = clamp((now - mob.deathAt - 1500) / 2000, 0, 1);
+  const t = clamp((state.now - mob.deathAt - 1500) / 2000, 0, 1);
   if (t > 0 && !mob.dusted) {
     mob.dusted = true;
     for (let i = 0; i < 18; i++) {
@@ -1770,20 +1764,20 @@ function updateVisuals(dt) {
 
   mage.root.position.copy(player.pos);
   mage.root.rotation.y = player.facing;
-  const castT = clamp((player.castAnimUntil - now) / 450, 0, 1);
+  const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   mage.update(dt, {
     state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : player.moveState,
     speed: player.moveState === 'back' ? CFG.backSpeed : CFG.runSpeed,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI),
   });
 
-  for (const m of mobs) {
-    const attackT = (now - m.attackAt) / 400;
+  for (const m of state.mobs) {
+    const attackT = (state.now - m.attackAt) / 400;
     m.model.update(dt, {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
-      frozen: !m.dead && m.rootUntil > now, slowed: m.slowUntil > now,
+      frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
-      flash: clamp(1 - (now - (m.hitAt ?? -1e9)) / 140, 0, 1),
+      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1),
     });
     if (m.dead) sinkCorpse(m);
   }
@@ -1797,7 +1791,7 @@ function updateVisuals(dt) {
     cl.rotation.y += dt / 1000 * 0.4;
     cl.scale.setScalar(lerpTo(cl.scale.x, blizRadius() / 8, Math.min(1, dt / 150)));   // Wolke baut sich auf
     for (const sh of blizFx.shards) {
-      sh.position.y -= sh.userData.speed * (paused ? 0 : dt) / 1000;
+      sh.position.y -= sh.userData.speed * (state.paused ? 0 : dt) / 1000;
       if (sh.position.y < 0) {
         const wx = blizFx.g.position.x + sh.position.x, wz = blizFx.g.position.z + sh.position.z;
         for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: heightAt(wx, wz) + 0.1, z: wz,
@@ -1806,8 +1800,8 @@ function updateVisuals(dt) {
       }
     }
   }
-  ambientParticles(paused ? 0 : dt);
-  particles.update(paused ? 0 : dt);
+  ambientParticles(state.paused ? 0 : dt);
+  particles.update(state.paused ? 0 : dt);
   updateEffects();
 }
 
@@ -1815,7 +1809,7 @@ let last = performance.now();
 function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
-  if (!paused) { now += dt; update(dt); }
+  if (!state.paused) { state.now += dt; update(dt); }
   updateVisuals(dt);
   composer.render();
   updateHud();
@@ -1827,4 +1821,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds };

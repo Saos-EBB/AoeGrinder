@@ -4,7 +4,8 @@
 Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Three.js, Vite + TypeScript. `npm run dev` startet das Spiel, `npm run build` erzeugt eine einzelne `dist/index.html`. Das Markup und CSS liegen in `index.html`.
 
 ## Module
-- `src/main.ts`: Das ganze Spiel, unverändert aus Artifact v4
+- `src/main.ts`: Einstieg: Bootstrap und Loop
+- `src/state.ts`: Spielzustand (`state`, `player`), von allen Modulen geteilt
 
 ## Entscheidungen
 - 2026-10-31: `strict` ist aus. Der Code ist 1:1 aus dem untypisierten Artifact übernommen, `tsc` prüft Imports und offensichtliche Typfehler.
