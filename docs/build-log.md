@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(ui): HUD auslagern
+**Was:** Frames, Actionbar, Castbar, Nameplates, Kampftext.
+**Nicht gebaut:** kein UI-Framework, Markup bleibt in index.html.
+
 ## 2026-10-31 — refactor(camera): Orbit-Kamera, Kollision, Shake
 **Was:** Kamera-Logik getrennt vom Render-Setup.
 **Nicht gebaut:** keine Kamera-Klasse.

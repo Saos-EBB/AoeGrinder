@@ -1,0 +1,112 @@
+import * as THREE from 'three';
+import { state, player } from '../state';
+import { $, rand, clamp, dist2d } from '../util';
+import { CFG, SPELLS } from '../config';
+import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
+import { camera } from '../render';
+import { binds, pressSpell } from '../main';
+
+export const overlay = $('overlay');
+
+function screenPos(pos, height) {
+  const p = new THREE.Vector3(pos.x, pos.y + height, pos.z).project(camera);
+  if (p.z > 1) return null;
+  return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight };
+}
+
+export function combatText(pos, text, cls, height = 2) {
+  const p = screenPos(pos, height);
+  if (!p) return;
+  const el = document.createElement('div');
+  el.className = `ct ${cls}`;
+  el.textContent = text;
+  el.style.left = `${p.x + rand(-18, 18)}px`;
+  el.style.top = `${p.y}px`;
+  overlay.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+export function showError(msg) {
+  const el = $('err');
+  el.textContent = msg;
+  el.classList.remove('show');
+  void el.offsetWidth;               // Animation neu starten
+  el.classList.add('show');
+}
+
+export const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+
+// Actionbar
+const slots: any = {};
+for (const [id, s] of Object.entries(SPELLS)) {
+  const el = document.createElement('div');
+  el.className = `slot ${s.cls}`;
+  el.innerHTML = `<span class="key"></span>${s.name}<div class="cd"></div><div class="cdText"></div>`;
+  el.addEventListener('click', () => pressSpell(id));
+  $('actionbar').appendChild(el);
+  slots[id] = { el, key: el.querySelector('.key'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
+}
+
+export function refreshKeyLabels() {
+  for (const id in slots) slots[id].key.textContent = binds[id].key;
+  const b = id => `<b>${binds[id].key}</b>`;
+  $('help').innerHTML =
+    `${b('forward')} ${b('back')} vor/zurück · ${b('turnLeft')} ${b('turnRight')} drehen<br>` +
+    `${b('strafeLeft')} ${b('strafeRight')} seitwärts · ${b('jump')} springen · ${b('autorun')} Autorun<br>` +
+    `<b>LMB ziehen</b> Kamera · <b>RMB ziehen</b> Charakter<br><b>Mausrad</b> Zoom`;
+}
+
+export function updateHud() {
+  const hpMax = maxHp(), manaMax = maxMana();
+  $('lvl').textContent = player.level;
+  $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax, 0, 1)})`;
+  $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
+  $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
+  $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}`;
+  const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
+  $('fsrFill').style.width = `${fsrLeft * 100}%`;
+  $('status').textContent = player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+
+  const need = xpNeeded();
+  $('xpFill').style.transform = `scaleX(${player.xp / need})`;
+  $('xpText').textContent = `XP ${player.xp} / ${need}`;
+
+  $('iTime').textContent = fmtTime(state.now);
+  $('iKills').textContent = player.kills;
+  $('iCombat').textContent = String(state.mobs.filter(m => !m.dead && (m.state === 'combat' || m.state === 'flee')).length);
+
+  // Castbar (Channel läuft von rechts nach links wie in WoW)
+  const ch = player.channel, dr = player.drink;
+  if (ch || dr) {
+    const bar = ch || dr;
+    const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
+    $('castbar').style.display = 'block';
+    $('castFill').style.transform = `scaleX(${left})`;
+    $('castText').textContent = `${ch ? 'Blizzard' : 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
+  } else $('castbar').style.display = 'none';
+
+  for (const [id, sl] of Object.entries<any>(slots)) {
+    const cdEnd = Math.max(player.cds[id] || 0, player.gcdUntil);
+    const total = (player.cds[id] || 0) > player.gcdUntil ? spellCd(id) : CFG.gcd;
+    const left = Math.max(0, cdEnd - state.now);
+    const pct = left > 0 ? left / total * 100 : 0;
+    sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
+    sl.cdText.textContent = (player.cds[id] || 0) - state.now > 1500 ? Math.ceil(left / 1000) : '';
+    sl.el.classList.toggle('nomana', player.mana < manaCost(id));
+    sl.el.classList.toggle('active', (id === 'bliz' && (player.targeting || !!ch)) || (id === 'drink' && !!dr));
+  }
+
+  // Nameplates
+  for (const m of state.mobs) {
+    if (m.dead) continue;
+    const show = m.state !== 'idle' || dist2d(m.pos, player.pos) < 35;
+    const p = show && screenPos(m.pos, 2.3);
+    if (!p) { m.plate.style.display = 'none'; continue; }
+    m.plate.style.display = 'block';
+    m.plate.style.left = `${p.x}px`;
+    m.plate.style.top = `${p.y - 24}px`;
+    m.plateHp.style.width = `${m.hp / m.maxHp * 100}%`;
+    m.plateLv.textContent = m.level;
+    m.plateLv.style.color = xpColor(m.level);
+  }
+}
