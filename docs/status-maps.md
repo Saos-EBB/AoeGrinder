@@ -32,3 +32,6 @@ Die Dreiecke bleiben gleich. FPS sind hier nicht aussagekräftig, gemessen werde
 
 ## Offen, außerhalb dieses Auftrags
 Altfehler in `models/creatures.ts`, nicht behoben, weil Animationen gleich bleiben sollen: `x.add(part(...)).rotation.x = ...` dreht das Gelenk statt des Teils, weil `add` das Gelenk zurückgibt. Betroffen sind Bart beim Humanoid sowie Klauen und Unterschenkel beim Insekt.
+
+# Punkte, Rangliste, Modi (Teil 1)
+Spec: `docs/score-spec.md`. Build-Log dieses Auftrags steht hier, um Merge-Konflikte in `build-log.md` zu vermeiden.
