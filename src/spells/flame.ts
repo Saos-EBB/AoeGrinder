@@ -1,5 +1,6 @@
 import { rand } from '../util';
 import { state, player } from '../state';
+import { burnTex } from '../fx/spellFx';
 import { mobsInRadius, addField, hasRune } from './core';
 import { fieldDecal, areaParticles, burstFx, FIRE, EMBER } from './fx';
 
@@ -18,7 +19,7 @@ export const flame = {
     const wide = hasRune('flame', 'wide'), radius = c.radius(wide ? 16 : flame.radius), k = wide ? 0.5 : 1;
     for (const m of mobsInRadius(point, radius)) c.hit(m, rand(flame.min, flame.max) * k);
     burstFx(point, radius, [FIRE, EMBER], 0xff9a40);
-    addField(c, { pos: point, radius, dur: flame.burnDur, visual: fieldDecal(EMBER, 0.28),
+    addField(c, { pos: point, radius, dur: flame.burnDur, visual: fieldDecal(burnTex, EMBER, 0.6, 0.05),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, flame.burn * k); },
       onUpdate: (f, dt) => {
         areaParticles(f.pos, f.radius, 45, dt, [FIRE, EMBER], { up: 4, size: 0.4 });

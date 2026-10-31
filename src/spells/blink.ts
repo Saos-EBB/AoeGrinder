@@ -1,7 +1,7 @@
 import { rand } from '../util';
 import { state, player } from '../state';
 import { heightAt, collide } from '../world';
-import { blinkFx, novaFx } from '../fx/spellFx';
+import { blinkFx, novaFx, iceTex } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
@@ -12,7 +12,7 @@ const NOVA = { radius: 8, min: 19, max: 21, root: 6000 };              // PH
 function coldGround(c, pos) {
   const radius = c.radius(COLD.radius);
   for (const m of mobsInRadius(pos, radius)) c.hit(m, rand(COLD.min, COLD.max));
-  addField(c, { pos, radius, dur: COLD.dur, visual: fieldDecal(ICE, 0.25), tickMs: 500,
+  addField(c, { pos, radius, dur: COLD.dur, visual: fieldDecal(iceTex, ICE, 0.45), tickMs: 500,
     onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) applySlow(m, COLD.slow, 700); },
     onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 14, dt, [ICE, ICE_WHITE], { up: 1.5, size: 0.25 }),
   });

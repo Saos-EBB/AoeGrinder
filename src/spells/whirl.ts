@@ -1,14 +1,14 @@
 import { rand } from '../util';
 import { player } from '../state';
 import { pullMob } from '../mobs';
-import { novaFx } from '../fx/spellFx';
+import { novaFx, galeTex } from '../fx/spellFx';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
 
 const FOLLOW_SPEED = 5, PULL_PER_S = 2, SMALL_OFFSET = 5;   // PH
 
 function spawnWhirl(c, pos, radius, k) {
-  addField(c, { pos, radius, dur: whirl.dur, visual: fieldDecal(ICE, 0.2), tickMs: 1000,
+  addField(c, { pos, radius, dur: whirl.dur, visual: fieldDecal(galeTex, ICE, 0.3, 2.4), tickMs: 1000,
     onUpdate(f, dt) {
       if (hasRune('whirl', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);

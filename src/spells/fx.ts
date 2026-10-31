@@ -12,13 +12,20 @@ export const NATURE = [0.5, 2, 0.8], BOLT = [1.3, 1.7, 2.8], BOLT_WHITE = [2.2, 
 export const ICE = [0.35, 1, 2.1], ICE_WHITE = [1.1, 1.5, 2.1];
 
 // Bodenfläche, die dem Gelände folgt. Bleibt, bis remove() läuft.
-export function fieldDecal(color, opacity = 0.3) {
+// Gedreht wird die Textur, nicht das Mesh, sonst passt die Höhe der Ecken nicht mehr zum Gelände.
+export function fieldDecal(tex, color, opacity = 0.5, spin = 0) {
+  const map = tex.clone();
+  map.center.set(0.5, 0.5);
+  map.needsUpdate = true;
   const mesh = terrainDecal(new THREE.RingGeometry(0, 1, 40, 5), new THREE.MeshBasicMaterial({
-    color: new THREE.Color(...color), transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending }));
+    map, color: new THREE.Color(...color), transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(mesh);
   return {
-    update: (pos, radius) => drape(mesh, pos, radius),
-    remove() { scene.remove(mesh); mesh.geometry.dispose(); (mesh.material as any).dispose(); },
+    update(pos, radius) {
+      drape(mesh, pos, radius);
+      map.rotation = performance.now() / 1000 * spin;
+    },
+    remove() { scene.remove(mesh); mesh.geometry.dispose(); (mesh.material as any).dispose(); map.dispose(); },
   };
 }
 

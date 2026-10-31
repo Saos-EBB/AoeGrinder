@@ -77,7 +77,7 @@ function canvasTex(draw) {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const iceTex = canvasTex((g, r) => {                      // Eisfläche mit Rissen
+export const iceTex = canvasTex((g, r) => {                      // Eisfläche mit Rissen
   const grd = g.createRadialGradient(r, r, 0, r, r, r);
   grd.addColorStop(0, 'rgba(220,245,255,0.75)');
   grd.addColorStop(0.75, 'rgba(170,220,255,0.55)');
@@ -114,6 +114,80 @@ const runeTex = canvasTex((g, r) => {                     // Arkaner Runenkreis
     for (let k = 0; k < 3; k++) { g.moveTo(rand(-9, 9), rand(-11, 11)); g.lineTo(rand(-9, 9), rand(-11, 11)); }
     g.stroke(); g.restore();
   }
+});
+
+// Risse von der Mitte nach außen, für Glut und Entweihung
+function cracks(g, r, n, step) {
+  for (let i = 0; i < n; i++) {
+    let a = Math.random() * Math.PI * 2, x = r, y = r;
+    g.lineWidth = rand(2, 5);
+    g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 8; k++) {
+      a += rand(-0.5, 0.5);
+      x += Math.cos(a) * rand(step * 0.6, step); y += Math.sin(a) * rand(step * 0.6, step);
+      g.lineTo(x, y);
+    }
+    g.stroke();
+  }
+}
+function softDisc(g, r, inner, outer) {
+  const grd = g.createRadialGradient(r, r, 0, r, r, r);
+  grd.addColorStop(0, inner);
+  grd.addColorStop(0.8, outer);
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 2 * r, 2 * r);
+}
+// Spiralarme, die zur Mitte laufen
+function spiral(g, r, arms, turns, width) {
+  for (let i = 0; i < arms; i++) {
+    const a0 = i / arms * Math.PI * 2;
+    g.lineWidth = width * rand(0.6, 1.2);
+    g.beginPath();
+    for (let t = 0; t <= 1; t += 0.02) {
+      const a = a0 + t * turns * Math.PI * 2, d = r * 0.97 * (1 - t);
+      g.lineTo(r + Math.cos(a) * d, r + Math.sin(a) * d);
+    }
+    g.stroke();
+  }
+}
+export const burnTex = canvasTex((g, r) => {              // Glut mit hellen Rissen und Brandflecken
+  softDisc(g, r, 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.25)');
+  g.fillStyle = 'rgba(255,255,255,0.3)';
+  for (let i = 0; i < 40; i++) {
+    const a = rand(0, Math.PI * 2), d = r * 0.9 * Math.sqrt(Math.random());
+    g.beginPath(); g.arc(r + Math.cos(a) * d, r + Math.sin(a) * d, rand(8, 30), 0, Math.PI * 2); g.fill();
+  }
+  g.strokeStyle = 'rgba(255,255,255,0.95)';
+  cracks(g, r, 22, 34);
+});
+export const galeTex = canvasTex((g, r) => {              // Wind: viele dünne Spiralen
+  softDisc(g, r, 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)');
+  g.strokeStyle = 'rgba(255,255,255,0.7)';
+  spiral(g, r, 14, 1.1, 5);
+});
+export const voidTex = canvasTex((g, r) => {              // Leere: breite Arme, Mitte leuchtet nicht
+  softDisc(g, r, 'rgba(255,255,255,0)', 'rgba(255,255,255,0.25)');
+  g.strokeStyle = 'rgba(255,255,255,0.75)';
+  spiral(g, r, 5, 0.8, 16);
+  g.globalCompositeOperation = 'destination-out';
+  const hole = g.createRadialGradient(r, r, r * 0.08, r, r, r * 0.35);
+  hole.addColorStop(0, 'rgba(0,0,0,1)');
+  hole.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = hole; g.fillRect(0, 0, 2 * r, 2 * r);
+  g.globalCompositeOperation = 'source-over';
+});
+export const blightTex = canvasTex((g, r) => {            // Entweihter Boden: Siegel und Risse
+  softDisc(g, r, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.2)');
+  g.strokeStyle = 'rgba(255,255,255,0.9)';
+  g.lineWidth = 5; g.beginPath(); g.arc(r, r, r * 0.9, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 4; g.beginPath();
+  for (let i = 0; i <= 5; i++) {                          // Pentagramm
+    const a = i * 2 / 5 * Math.PI * 2 - Math.PI / 2;
+    g.lineTo(r + Math.cos(a) * r * 0.88, r + Math.sin(a) * r * 0.88);
+  }
+  g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.5)';
+  cracks(g, r, 12, 28);
 });
 
 // Bodeneffekt, der sich ans Gelände legt, sich dreht/skaliert und ausblendet

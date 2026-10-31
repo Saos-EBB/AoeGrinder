@@ -6,7 +6,7 @@ import { state, player } from '../state';
 import { scene } from '../render';
 import { heightAt, obstacles } from '../world';
 import { particles } from '../fx/particles';
-import { ringFx } from '../fx/spellFx';
+import { ringFx, blightTex } from '../fx/spellFx';
 import { shakeCamera } from '../camera';
 import { applyRoot, knockbackMob } from '../mobs';
 import { mobsInRadius, addField, schedule } from './core';
@@ -28,7 +28,7 @@ export const desecrate = {
   name: 'Entweihen', relic: true, desc: 'Schattenfläche aufs Bodenziel 10 s, wächst mit jedem Tick, der trifft.', ranks: ['dmg', 'mana', 'radius'], tags: ['Schatten', 'Fläche'], cls: 'shadow',
   mana: 250, cd: 40000, dur: 10000, tickDmg: 20, range: 30, radius: 6, grow: 0.6, ground: true,
   effect(c, point) {
-    addField(c, { pos: point, radius: c.radius(desecrate.radius), dur: desecrate.dur, visual: fieldDecal(SHADOW, 0.3),
+    addField(c, { pos: point, radius: c.radius(desecrate.radius), dur: desecrate.dur, visual: fieldDecal(blightTex, SHADOW, 0.55, 0.15),
       onTick(f) {
         const hits = mobsInRadius(f.pos, f.radius).filter(m => c.hit(m, desecrate.tickDmg));
         if (hits.length) f.radius += desecrate.grow;

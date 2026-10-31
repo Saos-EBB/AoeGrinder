@@ -1,13 +1,14 @@
 import { clamp, dist2d } from '../util';
 import { player } from '../state';
 import { pullMob } from '../mobs';
+import { voidTex } from '../fx/spellFx';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { fieldDecal, orbVisual, visuals, areaParticles, burstFx, SHADOW, VOID } from './fx';
 
 const PULL_PER_S = 4, MAX_SLOW = 0.4, FOLLOW_SPEED = 3, IMPLODE = 25, TWIN_OFFSET = 6;   // PH
 
 function spawnOrb(c, pos, radius, k) {
-  addField(c, { pos, radius, dur: voidorb.dur, visual: visuals(fieldDecal(VOID, 0.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
+  addField(c, { pos, radius, dur: voidorb.dur, visual: visuals(fieldDecal(voidTex, VOID, 0.8, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
     onUpdate(f, dt) {
       if (hasRune('voidorb', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);

@@ -1,6 +1,7 @@
 import { pick } from '../util';
 import { player } from '../state';
 import { slowSwing, pullMob } from '../mobs';
+import { galeTex } from '../fx/spellFx';
 import { mobsInRadius, startChannel, hasRune } from './core';
 import { fieldDecal, areaParticles, boltFx, NATURE, BOLT } from './fx';
 
@@ -18,7 +19,7 @@ export const hurricane = {
     const ch = startChannel(c, point.clone(), hurricane.channel);
     ch.mobile = hasRune('hurricane', 'follow');   // Folgen hieße sonst: stehen bleiben
     ch.radius = c.radius(hurricane.radius);
-    ch.visual = fieldDecal(NATURE, 0.16);
+    ch.visual = fieldDecal(galeTex, NATURE, 0.4, 1.8);
   },
   tick(ch) {
     const targets = mobsInRadius(ch.point, ch.radius);

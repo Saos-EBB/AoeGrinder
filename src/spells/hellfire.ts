@@ -1,5 +1,6 @@
 import { player } from '../state';
 import { maxHp } from '../formulas';
+import { burnTex } from '../fx/spellFx';
 import { combatText } from '../ui/hud';
 import { mobsInRadius, startChannel, stopChannel, hasRune } from './core';
 import { fieldDecal, areaParticles, FIRE, SHADOW } from './fx';
@@ -19,7 +20,7 @@ export const hellfire = {
     const ch = startChannel(c, player.pos, hellfire.channel);
     ch.mobile = hasRune('hellfire', 'walk');
     ch.radius = c.radius(hellfire.radius);
-    ch.visual = fieldDecal(FIRE, 0.22);
+    ch.visual = fieldDecal(burnTex, FIRE, 0.3, -0.3);
   },
   tick(ch) {
     if (player.hp <= hellfire.lifePerTick) return stopChannel(true);   // Der Kanal bringt dich nicht selbst um
