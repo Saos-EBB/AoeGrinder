@@ -13,7 +13,9 @@ import { mouseBtn, act } from './input';
 import { spawnPack, removeMob } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
+import { modFactor } from './modifiers';
 import './ui/scoreHud';
+import './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 
@@ -22,6 +24,8 @@ export function resetGame() {
   clearAbilities();
   state.mobs = [];
   resetMods();
+  mods.hpMult *= modFactor('hp');
+  mods.manaMult *= modFactor('mana');
   resetScore();
   state.cardRanks = {};
   state.now = 0;
@@ -116,7 +120,7 @@ export function gainXp(xp) {
   if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
 }
 
-function die() {
+export function die() {
   player.dead = true;
   player.hp = 0;
   stopChannel(); stopDrink();

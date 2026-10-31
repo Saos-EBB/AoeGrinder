@@ -8,6 +8,7 @@ import { heightAt, collide, zone } from './world';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
 import { reportKill } from './score';
+import { modFactor } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
@@ -24,7 +25,7 @@ export function spawnPack() {
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
     if (farFromPlayer && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
   }
-  const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10);
+  const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10) * modFactor('packSize');
   const packId = ++state.packCounter;
   for (let i = 0; i < size; i++) {
     const typeId = i === 0 && size >= 3 && zone.packAlways && Math.random() < 0.5 ? zone.packAlways : Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
@@ -108,7 +109,7 @@ function startFlee(mob) {
 
 export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
-  let speed = CFG.mobSpeed * mob.speedMul * speedMul;
+  let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
@@ -228,6 +229,7 @@ export function damageMob(mob, amount, source) {
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
   mob.castKey = source;
+  amount *= modFactor('dmg');
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
     if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }

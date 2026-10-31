@@ -1,6 +1,8 @@
 // Punkte oben Mitte, Combo mit 4-s-Balken, MULTI-KILL. Bringt Markup und Stil selbst mit und läuft in eigener Schleife.
 
-import { state } from '../state';
+import { state, player } from '../state';
+import { timeLimit } from '../modifiers';
+import { die } from '../player';
 import { run, tickScore } from '../score';
 import { SCORE_COMBO_WINDOW, SCORE_MULTI_BANNER } from '../config';
 
@@ -17,7 +19,14 @@ document.body.insertAdjacentHTML('beforeend', `<div id="scoreHud"><div id="score
 const pts = document.getElementById('scorePts'), combo = document.getElementById('scoreCombo'), bar = document.getElementById('scoreBar'), multi = document.getElementById('scoreMulti');
 
 function frame() {
-  if (!state.paused) tickScore();
+  if (!state.paused) {
+    tickScore();
+    const limit = timeLimit();
+    if (limit && state.now >= limit && !player.dead) {
+      player.lastHitBy = 'Zeitlimit';
+      die();
+    }
+  }
   pts.textContent = run.killPoints.toLocaleString('de-DE');
   const left = 1 - (state.now - run.lastKill) / SCORE_COMBO_WINDOW, live = run.combo > 0 && left > 0;
   combo.textContent = live ? `Combo ${run.combo}` : '';
