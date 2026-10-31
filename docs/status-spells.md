@@ -1,6 +1,6 @@
 # Status Branch spells
 
-Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, kein Push; Rebase auf main macht Kevin mit dem Agenten danach.
+Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Per Fast-Forward in main gemerged und als v7 (`1793479590-bf7f`) ins Artifact gepublisht, nicht gepusht.
 
 ## Steps
 - chore(docs): Spec abgelegt. Nicht gebaut: —
