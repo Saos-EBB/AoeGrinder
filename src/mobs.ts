@@ -9,6 +9,7 @@ import { particles } from './fx/particles';
 import { buildBoar } from './models/boar';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
+import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
 import { damagePlayer, gainXp } from './player';
 
@@ -178,7 +179,7 @@ export function damageMob(mob, amount, source) {
   const dmg = Math.round(amount * dmgMult() * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   mob.hitAt = state.now;
-  if (crit) shakeCamera(0.18);
+  if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
   combatText(mob.pos, dmg, crit ? 'crit' : 'dmg');
   hitSparkFx(mob.pos, source === 'ae' ? 'arcane' : 'frost');
 

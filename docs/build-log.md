@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Vibration bei Crits und schweren Treffern
+**Was:** Rumble nur, wenn der Browser dual-rumble meldet.
+**Nicht gebaut:** keine Einstellung zum Abschalten, nicht verlangt.
+
 ## 2026-10-31 — feat(gamepad): Tasten-Symbole je nach letzter Eingabe
 **Was:** Actionbar und Hilfe zeigen PlayStation-Symbole, sobald das Pad zuletzt benutzt wurde, und Tastaturnamen nach dem nächsten Tastendruck.
 **Nicht gebaut:** keine Xbox-Symbole, kein automatisches Umschalten nach Pad-Typ (entschieden).

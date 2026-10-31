@@ -170,6 +170,15 @@ function deadzone(x, y) {
   return { x: x * scale, y: y * scale };
 }
 
+// Kurzer Rumble, nur wenn der Browser dual-rumble für das Pad meldet
+let activePad = null;
+export function rumble(strong, weak, ms) {
+  const v = activePad?.vibrationActuator;
+  if (v?.type === 'dual-rumble' || v?.effects?.includes('dual-rumble')) {
+    v.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak })?.catch(() => {});
+  }
+}
+
 function readPad() {
   try {
     return [...navigator.getGamepads()].find(p => p && p.mapping === 'standard') || null;
@@ -180,6 +189,7 @@ function readPad() {
 
 export function pollGamepad() {
   const gp = readPad();
+  activePad = gp;
   pad.prev = pad.down;
   pad.down = gp ? gp.buttons.map(b => b.pressed) : [];
   const left = gp ? deadzone(gp.axes[0], gp.axes[1]) : { x: 0, y: 0 };

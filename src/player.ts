@@ -12,7 +12,7 @@ import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
 import { spawnPack } from './mobs';
 import { updateChannel, stopChannel, stopDrink } from './spells';
-import { pad } from './gamepad';
+import { pad, rumble } from './gamepad';
 
 export function resetGame() {
   for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
@@ -41,6 +41,7 @@ export function damagePlayer(amount) {
   player.hp -= amount;
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
+  if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
   if (player.drink) stopDrink();
   pushbackChannel();
   if (player.hp <= 0) die();
