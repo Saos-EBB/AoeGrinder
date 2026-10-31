@@ -3,7 +3,8 @@
 import { state, player } from './state';
 import { pick } from './util';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT } from './config';
-import { stat, hasSpell } from './spells/core';
+import { stat, hasSpell, hasTag } from './spells/core';
+import { SUPPORTS } from './spells/supports';
 
 const pct = v => `${Math.round(v * 100)} %`;
 const num = v => String(v).replace('.', ',');
@@ -56,6 +57,17 @@ function runeCards() {
   return list;
 }
 
+function supportCards() {
+  return SUPPORTS.filter(x => !state.supports[x.id]).map(x => ({
+    kind: 'support', id: `support-${x.id}`, tags: x.tags, name: x.name, src: `Support · ${x.tags.join(', ')}`,
+    desc: m => `${x.desc} +${pct(CARD_SPELL_DMG * m)} Schaden auf diese Spells.`,
+    apply: m => {
+      state.supports[x.id] = true;
+      for (const id of Object.keys(SPELLS)) if (x.tags.some(t => hasTag(id, t))) stat(id).dmg += CARD_SPELL_DMG * m;
+    },
+  }));
+}
+
 function talentCards() {
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max).map(c => {
     const rank = state.cardRanks[c.id] || 0;
@@ -75,7 +87,7 @@ function luckCards() {
   }];
 }
 
-const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, talent: talentCards, luck: luckCards };
+const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, talent: talentCards, luck: luckCards };
 
 // Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
 export function rollRarity(minTier = 0) {
@@ -94,7 +106,7 @@ function pickKind(pools) {
   return kinds[0];
 }
 
-const concernsOwnedSpell = c => !!c.spell;
+const concernsOwnedSpell = c => !!c.spell || !!c.tags?.some(t => state.slots.some(id => id && hasTag(id, t)));
 
 export function rollOffer() {
   const pools: any = {};

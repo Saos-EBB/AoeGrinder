@@ -9,11 +9,14 @@ import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
+import { boltFx, ICE_WHITE } from './fx';
+import { SUPPORTS } from './supports';
 
 export function resetSpells() {
   state.slots = [...SPELL_START, ...Array(SPELL_SLOTS - SPELL_START.length).fill(null)];
   state.spellStats = {};
   state.runes = {};
+  state.supports = {};
   player.luck = 0;
   player.charges = {};
   player.spellCounts = {};
@@ -49,13 +52,33 @@ function startCd(id) {
   c[c.indexOf(Math.min(...c))] = state.now + cd;
 }
 
+const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
+export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
+export const paysLife = id => supported('blood', id);
+export const radiusMult = id => stat(id).radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
+const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
+
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor
+let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
 export function makeCtx(id, scale = 1, radiusScale = 1) {
   const c = {
     id,
-    hit: (m, amount) => damageMob(m, amount * stat(id).dmg * scale, id),
-    radius: base => base * stat(id).radius * radiusScale,
-    duration: base => base,
+    hit(m, amount) {
+      let dmg = amount * stat(id).dmg * scale * damageMult(id);
+      if (inTick && state.supports.potency) dmg *= 1.2;
+      if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
+      return damageMob(m, dmg, id);
+    },
+    // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
+    hitProjectile(m, amount) {
+      const landed = c.hit(m, amount);
+      if (!landed || !supported('chain', id)) return landed;
+      const next = mobsInRadius(m.pos, 10).filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, 2);
+      for (const o of next) { boltFx(m.pos, o.pos, ICE_WHITE); c.hit(o, amount); }
+      return landed;
+    },
+    radius: base => base * radiusMult(id) * radiusScale,
+    duration: base => base * (state.supports.potency ? 1.4 : 1),
   };
   return c;
 }
@@ -95,13 +118,14 @@ export function castSpell(id, point?) {
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (state.now < player.gcdUntil || cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
-  if (player.mana < cost) return showError('Nicht genug Mana');
+  const life = paysLife(id);
+  if (life ? player.hp <= cost : player.mana < cost) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
   if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
   stopChannel(true);
   stopDrink();
-  spendMana(cost);
+  if (life) player.hp -= cost; else spendMana(cost);
   player.gcdUntil = state.now + CFG.gcd;
   startCd(id);
   player.targeting = false;
@@ -110,6 +134,16 @@ export function castSpell(id, point?) {
   const c: any = makeCtx(id);
   c.cost = cost;
   s.effect(c, point);
+  scheduleEchoes(id, point);
+}
+
+// PH: Faktoren von Großes Echo. Ein Kanal würde sich selbst abbrechen, deshalb wiederholt keins der Echos ihn.
+function scheduleEchoes(id, point) {
+  if (SPELLS[id].channel) return;
+  if (supported('bigEcho', id)) {
+    schedule(500, () => SPELLS[id].effect(makeCtx(id, 1.2, 1.2), point));
+    schedule(1000, () => SPELLS[id].effect(makeCtx(id, 1.4, 1.4), point));
+  } else if (supported('echo', id)) schedule(500, () => SPELLS[id].effect(makeCtx(id, 0.7), point));
 }
 
 // input.ts setzt für Taste 3 nur player.targeting = true. Erst hier steht fest, welcher Spell im Slot liegt.
@@ -136,7 +170,9 @@ export const schedule = (delay, fn) => state.scheduled.push({ at: state.now + de
 function updateFields(dt) {
   for (const f of [...state.fields]) {
     f.onUpdate?.(f, dt);
+    inTick = true;
     while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
+    inTick = false;
     if (state.now >= f.end) {
       f.onEnd?.(f);
       f.visual?.remove();
@@ -161,7 +197,9 @@ export function updateChannel() {
   s.channelUpdate?.(ch, dt);
   while (player.channel === ch && ch.nextTick <= state.now && ch.nextTick <= ch.end) {
     ch.nextTick += 1000;
+    inTick = true;
     s.tick(ch);
+    inTick = false;
   }
   if (player.channel === ch && state.now >= ch.end) stopChannel(true);
 }

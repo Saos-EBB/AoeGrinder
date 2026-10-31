@@ -3,7 +3,7 @@
 import { player } from './state';
 import { rand, clamp } from './util';
 import { CFG, SPELLS, mods } from './config';
-import { stat, rune } from './spells/core';
+import { stat, rune, echoCost, radiusMult } from './spells/core';
 
 // Spec §1
 export function aggroRadius(mob) {
@@ -61,7 +61,7 @@ export const mobMaxHp = lvl => 8 * lvl + 60;
 export const mobHitDmg = lvl => Math.round(lvl * rand(0.9, 1.3));
 
 export function manaCost(id) {
-  const base = SPELLS[id].mana * stat(id).mana;
+  const base = SPELLS[id].mana * stat(id).mana * (echoCost(id) ? 1.5 : 1);
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {
@@ -72,5 +72,5 @@ function baseCd(id) {
 }
 export const blizRadius = () => {          // auch Zielkreis: gilt für den Spell, der gerade zielt
   const id = typeof player.targeting === 'string' ? player.targeting : 'bliz';
-  return ((rune(id)?.radius ?? SPELLS[id].radius) + (id === 'bliz' ? mods.blizRadius : 0)) * stat(id).radius;
+  return ((rune(id)?.radius ?? SPELLS[id].radius) + (id === 'bliz' ? mods.blizRadius : 0)) * radiusMult(id);
 };

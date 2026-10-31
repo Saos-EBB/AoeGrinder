@@ -7,6 +7,7 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - feat(spells): Tags, 8 Slots, Actionbar 1–8. `src/spells.ts` wird zu `src/spells/` (ein Spell pro Datei, `core.ts`, `index.ts`). Nicht gebaut: kein Umbau von `input.ts`/`gamepad.ts`, kein Pad-Button für Slot 7–8.
 - feat(cards): 4+ Karten, Seltenheit, Glück, Ersatz-Auswahl bei vollen Slots. Nicht gebaut: kein Abbruch im Ersetzen-Dialog (Spec: Spieler wählt).
 - feat(spells): Runen-System, 15 Start-Kit-Runen, Dauerflächen (`addField`), Ladungen, `pullMob`/`knockbackMob` in `mobs.ts`. Nicht gebaut: keine Ladungsanzeige auf der Actionbar.
+- feat(spells): acht Supports. Nicht gebaut: Großes Echo wiederholt keine Kanäle (der Kanal würde sich selbst abbrechen), die Spec schließt das nur bei Echo aus.
 
 ## Struktur
 - `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`), Runen, Ladungen, Dauerflächen

@@ -5,7 +5,7 @@ import { CFG, SPELLS, SPELL_ACTIONS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
-import { castSpell, cdEnd as spellCdEnd } from '../spells/core';
+import { castSpell, paysLife, cdEnd as spellCdEnd } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 
 export const overlay = $('overlay');
@@ -137,7 +137,7 @@ export function updateHud() {
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
-    sl.el.classList.toggle('nomana', player.mana < manaCost(id));
+    sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
     sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
   }
 
