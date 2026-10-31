@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, clamp, dist2d, lerpTo } from './util';
-import { CFG, mods } from './config';
+import { CFG, mods, LEVEL_MAX } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { heightAt, collide, zone } from './world';
@@ -273,7 +273,7 @@ function killMob(mob) {
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
   if (mob.type.noXp) return;
   const xp = xpForKill(mob.level);
-  if (xp > 0) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
+  if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
 }
 
 // Leiche versinkt nach 1,5 s im Boden, mit Staubwolke

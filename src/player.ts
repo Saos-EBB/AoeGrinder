@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { CFG, SPELLS, mods, resetMods } from './config';
+import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
 import { heightAt, collide, zone, buildWorld } from './world';
@@ -33,7 +33,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, slowUntil: 0, stunUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: CFG.startLevel, xp: 0,
+    facing: Math.PI, slowUntil: 0, stunUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
   });
@@ -114,11 +114,12 @@ function regenerate(dt) {
 
 export function gainXp(xp) {
   player.xp += xp;
-  while (player.xp >= xpNeeded()) {
+  while (player.level < LEVEL_MAX && player.xp >= xpNeeded()) {
     player.xp -= xpNeeded();
     player.level++;
     state.pendingLevelUps++;
   }
+  if (player.level >= LEVEL_MAX) player.xp = 0;
   if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
 }
 

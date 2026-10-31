@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from '../state';
 import { $, rand, clamp, dist2d } from '../util';
-import { CFG, SPELLS, SPELL_ACTIONS } from '../config';
+import { CFG, SPELLS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
@@ -113,8 +113,9 @@ export function updateHud() {
   $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
 
   const need = xpNeeded();
-  $('xpFill').style.transform = `scaleX(${player.xp / need})`;
-  $('xpText').textContent = `XP ${player.xp} / ${need}`;
+  const atMax = player.level >= LEVEL_MAX;
+  $('xpFill').style.transform = `scaleX(${atMax ? 1 : player.xp / need})`;
+  $('xpText').textContent = atMax ? 'Max-Level' : `XP ${player.xp} / ${need}`;
 
   $('iTime').textContent = fmtTime(state.now);
   $('iKills').textContent = player.kills;

@@ -2,7 +2,7 @@
 
 import { player } from './state';
 import { rand, clamp } from './util';
-import { CFG, SPELLS, mods } from './config';
+import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP } from './config';
 import { stat, rune, echoCost, radiusMult } from './spells/core';
 
 // Spec §1
@@ -51,13 +51,15 @@ export function xpColor(mobLevel) {
 
 // PH: Werte für Level-Skalierung, Spielerstats und XP-Bedarf
 export const xpNeeded = () => (player.level * 5 + 45) * 10;
-const baseHp = () => (520 + 30 * (player.level - 20)) * 2;
+const baseHp = () => LEVEL_HP_AT_20 + LEVEL_HP_STEP * (player.level - 20);
 const MANA_PER_HP = 4 / 3;                       // Mana = Leben + 1/3
 export const maxHp = () => Math.round(baseHp() * mods.hpMult);
 export const maxMana = () => Math.round(baseHp() * MANA_PER_HP * mods.manaMult);
 export const spirit = () => 45 + 2 * (player.level - 20);
-export const dmgMult = () => mods.dmg * (1 + 0.05 * (player.level - 20));
-export const mobMaxHp = lvl => 8 * lvl + 60;
+// Schaden und Mob-Leben wachsen gleich: Ein gleichstufiger Start-Mob braucht auf jedem Level 3 Treffer
+const levelFactor = lvl => 1 + LEVEL_DMG_STEP * (lvl - 1);
+export const dmgMult = () => mods.dmg * levelFactor(player.level);
+export const mobMaxHp = lvl => Math.round(LEVEL_MOB_HP * levelFactor(lvl));
 export const mobHitDmg = lvl => Math.round(lvl * rand(0.9, 1.3));
 
 export function manaCost(id) {

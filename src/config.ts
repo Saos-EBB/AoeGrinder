@@ -15,8 +15,13 @@ export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
 export const SCORE_VERSION = 'v8';
 
+// LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
+export const LEVEL_START = 1, LEVEL_MAX = 100;
+export const LEVEL_HP_AT_20 = 1040, LEVEL_HP_STEP = 39;   // Leben auf Level 20, plus pro Level
+export const LEVEL_DMG_STEP = 0.05;                       // Schaden und Mob-Leben: +5 % des Level-1-Werts pro Level
+export const LEVEL_MOB_HP = 100;                          // Start-Mob auf Level 1: 3 Arcane Explosions (34–38 Schaden)
+
 export const CFG = {
-  startLevel: 20,
   aggroBase: 18, aggroMin: 5, aggroLevelCap: 25,     // Creature::GetAttackDistance
   socialRadius: 10, socialDelay: 1500,              // CreatureFamilyAssistance*
   fleeAssistRadius: 30, fleeDuration: 7000,         // DoFleeToGetAssistance
