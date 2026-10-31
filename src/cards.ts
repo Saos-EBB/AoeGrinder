@@ -2,7 +2,7 @@
 
 import { state, player } from './state';
 import { pick } from './util';
-import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT } from './config';
+import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
 import { stat, hasSpell, hasTag } from './spells/core';
 import { SUPPORTS } from './spells/supports';
 
@@ -68,6 +68,16 @@ function supportCards() {
   }));
 }
 
+// Nur lila oder orange, max. 1 pro Run, ab Level 30
+function relicCards() {
+  if (state.relicTaken || player.level < CARD_RELIC_LEVEL) return [];
+  return Object.keys(SPELLS).filter(id => SPELLS[id].relic).map(id => ({
+    kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
+    desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
+    apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },
+  }));
+}
+
 function talentCards() {
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max).map(c => {
     const rank = state.cardRanks[c.id] || 0;
@@ -87,7 +97,7 @@ function luckCards() {
   }];
 }
 
-const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, talent: talentCards, luck: luckCards };
+const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: relicCards, talent: talentCards, luck: luckCards };
 
 // Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
 export function rollRarity(minTier = 0) {
