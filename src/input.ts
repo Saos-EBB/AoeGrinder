@@ -9,7 +9,7 @@ import { heightAt } from './world';
 import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
 import { openBinds, closeBinds, renderBinds, setBind } from './ui/menus';
-import { cast } from './main';
+import { cast } from './spells';
 
 export const ACTIONS = [
   { group: 'Bewegung' },

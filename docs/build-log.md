@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(spells): cast und Spell-Logik auslagern
+**Was:** Cast-Prüfung, Zauberwirkung, Channel, Slow.
+**Nicht gebaut:** kein Rang-System, das ist der Spec-Schritt danach.
+
 ## 2026-10-31 — refactor(mobs): Spawn, KI, Leash, Flee auslagern
 **Was:** Mob-Logik inkl. Schaden und Kill.
 **Nicht gebaut:** keine Mob-Klasse, keine weiteren Mob-Typen.
