@@ -48,24 +48,42 @@ export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1 });
 }
 
-// "verified: true" = Wert belegt (Wowhead-Tooltip). Sonst Prototyp-Erfindung.
+// CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
+export const CARD_RARITIES = [
+  { name: 'grau',   color: '#b0b0b0', mult: 0.5, weight: 30 },
+  { name: 'weiß',   color: '#ffffff', mult: 1,   weight: 35 },
+  { name: 'grün',   color: '#3fe05a', mult: 2,   weight: 20 },
+  { name: 'blau',   color: '#4aa3ff', mult: 3,   weight: 10 },
+  { name: 'lila',   color: '#c573ff', mult: 4,   weight: 4 },
+  { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
+];
+export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
+export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10 };   // PH
+export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spell, Rune, Support, Relikt
+export const CARD_LUCK = 5;
+export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
+export const CARD_RELIC_LEVEL = 30;
+
+// Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.
 export const CARDS = [
-  { id: 'ibliz', name: 'Improved Blizzard', verified: true, max: 2,
-    desc: r => `Blizzard verlangsamt Gegner um ${[30, 50][r]} % für 1,5 s.`, apply: r => mods.blizSlow = [0.3, 0.5][r] },
-  { id: 'ifn', name: 'Improved Frost Nova', verified: true, max: 2,
-    desc: r => `Frost Nova Abklingzeit ${[23, 21][r]} s statt ${[25, 23][r]} s.`, apply: r => mods.novaCd = [2000, 4000][r] },
+  { id: 'ibliz', name: 'Improved Blizzard', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
+    desc: (r, m) => `Blizzard verlangsamt Gegner um ${Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100)} % für 1,5 s.`,
+    apply: (r, m) => { mods.blizSlow = Math.max(mods.blizSlow, Math.min(0.9, [0.3, 0.5][r] * m)); } },
+  { id: 'ifn', name: 'Improved Frost Nova', max: 2,   // 2 s je Rang belegt (Wowhead) bei ×1
+    desc: (r, m) => `Frost Nova Abklingzeit −${String(2 * m).replace('.', ',')} s.`,
+    apply: (r, m) => { mods.novaCd += 2000 * m; } },
   { id: 'shatter', name: 'Shatter', max: 3,
-    desc: () => '+10 % kritische Trefferchance gegen eingefrorene Ziele.', apply: () => mods.shatter += 0.10 },
+    desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
   { id: 'power', name: 'Arkane Macht', max: 5,
-    desc: () => '+12 % Zauberschaden.', apply: () => mods.dmg += 0.12 },
+    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
   { id: 'amind', name: 'Arcane Mind', max: 3,
-    desc: () => '+10 % maximales Mana.', apply: () => mods.manaMult += 0.10 },
+    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
   { id: 'amed', name: 'Arcane Meditation', max: 3,
-    desc: () => '+5 % Mana-Regeneration während der 5-Sekunden-Regel.', apply: () => mods.castRegen += 0.05 },
+    desc: (r, m) => `+${Math.round(5 * m)} % Mana-Regeneration während der 5-Sekunden-Regel.`, apply: (r, m) => { mods.castRegen += 0.05 * m; } },
   { id: 'storm', name: 'Weiter Sturm', max: 2,
-    desc: () => 'Blizzard-Radius +2 yd.', apply: () => mods.blizRadius += 2 },
+    desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
   { id: 'aecost', name: 'Arkane Effizienz', max: 2,
-    desc: () => 'Arcane Explosion kostet 15 % weniger Mana.', apply: () => mods.aeCost -= 0.15 },
+    desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
   { id: 'armor', name: 'Frostrüstung', max: 3,
-    desc: () => '+15 % maximale Gesundheit.', apply: () => mods.hpMult += 0.15 },
+    desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
 ];

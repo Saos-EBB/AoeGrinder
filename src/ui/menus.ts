@@ -1,9 +1,10 @@
 import { state, player } from '../state';
 import { $ } from '../util';
-import { CARDS } from '../config';
+import { SPELLS, CARD_RARITIES } from '../config';
+import { rollOffer } from '../cards';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, togglePerf, perfEnabled } from '../ui/hud';
-import { resetSpells } from '../spells/core';
+import { resetSpells, learnSpell } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
 import { ZONES } from '../zones';
@@ -13,17 +14,17 @@ import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '..
 // Level-Up-Karten
 export function showCards() {
   state.paused = true;
-  const available = CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max);
-  const picks = available.sort(() => Math.random() - 0.5).slice(0, 3);
   $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
+  $('cardHint').textContent = '';
   $('cards').innerHTML = '';
-  for (const c of picks) {
-    const rank = state.cardRanks[c.id] || 0;
+  for (const c of rollOffer()) {
+    const r = CARD_RARITIES[c.tier];
     const el = document.createElement('div');
     el.className = 'card frame';
-    el.innerHTML = `<h3 class="title">${c.name}</h3>
-      <div class="src">${c.verified ? 'Classic-Talent (Wert belegt)' : 'Prototyp-Upgrade'}</div>
-      <p>${c.desc(rank)}</p><div class="rank">Rang ${rank + 1} / ${c.max}</div>`;
+    el.style.borderColor = r.color;
+    el.innerHTML = `<h3 class="title" style="color:${r.color}">${c.name}</h3>
+      <div class="src">${c.src}</div>
+      <p>${c.desc(r.mult)}</p><div class="rank" style="color:${r.color}">${r.name} ×${String(r.mult).replace('.', ',')}</div>`;
     el.addEventListener('click', () => pickCard(c));
     $('cards').appendChild(el);
   }
@@ -32,8 +33,28 @@ export function showCards() {
 }
 
 function pickCard(card) {
-  card.apply(state.cardRanks[card.id] || 0);
-  state.cardRanks[card.id] = (state.cardRanks[card.id] || 0) + 1;
+  card.apply(CARD_RARITIES[card.tier].mult);
+  if (!card.learn) return finishCard();
+  const free = state.slots.indexOf(null);
+  if (free >= 0) { learnSpell(card.learn, free); return finishCard(); }
+  chooseReplacement(card.learn);
+}
+
+// Alle Slots voll: Spieler wählt, welcher Spell ersetzt wird
+function chooseReplacement(id) {
+  $('cardHint').textContent = `${SPELLS[id].name} ersetzt welchen Spell?`;
+  $('cards').innerHTML = '';
+  state.slots.forEach((old, slot) => {
+    if (SPELLS[old].fixed) return;
+    const el = document.createElement('div');
+    el.className = 'card frame';
+    el.innerHTML = `<h3 class="title">${SPELLS[old].name}</h3><div class="src">Slot ${slot + 1}</div><p>${SPELLS[old].desc}</p>`;
+    el.addEventListener('click', () => { learnSpell(id, slot); finishCard(); });
+    $('cards').appendChild(el);
+  });
+}
+
+function finishCard() {
   state.pendingLevelUps--;
   player.hp = maxHp();                 // Ding füllt auf
   player.mana = maxMana();

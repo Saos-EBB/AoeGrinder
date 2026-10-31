@@ -13,10 +13,12 @@ import { spendMana } from '../player';
 export function resetSpells() {
   state.slots = [...SPELL_START, ...Array(SPELL_SLOTS - SPELL_START.length).fill(null)];
   state.spellStats = {};
+  player.luck = 0;
 }
 
 export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
 export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
+export const hasSpell = id => state.slots.includes(id);
 export const isGround = id => !!SPELLS[id].ground;
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor

@@ -3,7 +3,7 @@ import { heightAt, collide } from '../world';
 import { blinkFx } from '../fx/spellFx';
 
 export const blink = {
-  name: 'Blink', cls: 'arcane', tags: ['Arkan', 'Bewegung'],
+  name: 'Blink', cls: 'arcane', desc: '20 yd vorwärts, löst Betäubung.', ranks: ['mana'], tags: ['Arkan', 'Bewegung'],
   mana: 80, cd: 15000, dist: 20,   // Mana PH
   effect() {
     const from = player.pos.clone();

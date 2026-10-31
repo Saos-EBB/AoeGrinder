@@ -1,0 +1,99 @@
+// Kartenarten, Seltenheit, Glück. Zahlen in config.ts unter CARD_*.
+
+import { state, player } from './state';
+import { pick } from './util';
+import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT } from './config';
+import { stat, hasSpell } from './spells/core';
+
+const pct = v => `${Math.round(v * 100)} %`;
+const num = v => String(v).replace('.', ',');
+
+const RANK_TEXT = {
+  dmg: (name, m) => `${name}: +${pct(CARD_RANK.dmg * m)} Schaden.`,
+  mana: (name, m) => `${name}: −${pct(CARD_RANK.mana * m)} Mana.`,
+  radius: (name, m) => `${name}: +${pct(CARD_RANK.radius * m)} Radius.`,
+};
+const RANK_APPLY = {
+  dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
+  mana: (s, m) => { s.mana = Math.max(0.1, s.mana - CARD_RANK.mana * m); },   // PH: Untergrenze
+  radius: (s, m) => { s.radius += CARD_RANK.radius * m; },
+};
+
+function rankCards() {
+  const list = [];
+  for (const id of state.slots) {
+    if (!id) continue;
+    for (const key of SPELLS[id].ranks ?? []) list.push({
+      kind: 'rang', id: `rang-${id}-${key}`, spell: id, name: SPELLS[id].name, src: 'Rang',
+      desc: m => RANK_TEXT[key](SPELLS[id].name, m),
+      apply: m => RANK_APPLY[key](stat(id), m),
+    });
+  }
+  return list;
+}
+
+function newSpellCards() {
+  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic).map(id => ({
+    kind: 'spell', id: `spell-${id}`, learn: id, name: SPELLS[id].name, src: `Neuer Spell · ${SPELLS[id].tags.join(', ')}`,
+    desc: m => `${SPELLS[id].desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
+    apply: m => { stat(id).dmg += CARD_SPELL_DMG * m; },
+  }));
+}
+
+function talentCards() {
+  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max).map(c => {
+    const rank = state.cardRanks[c.id] || 0;
+    return {
+      kind: 'talent', id: c.id, name: c.name, src: `Talent · Rang ${rank + 1} / ${c.max}`,
+      desc: m => c.desc(rank, m),
+      apply: m => { c.apply(rank, m); state.cardRanks[c.id] = rank + 1; },
+    };
+  });
+}
+
+function luckCards() {
+  return [{
+    kind: 'luck', id: 'luck', name: 'Glück', src: 'Glück',
+    desc: m => `Glück +${num(CARD_LUCK * m)}: bessere und mehr Karten.`,
+    apply: m => { player.luck += CARD_LUCK * m; },
+  }];
+}
+
+const POOLS = { rang: rankCards, spell: newSpellCards, talent: talentCards, luck: luckCards };
+
+// Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
+export function rollRarity(minTier = 0) {
+  const tiers = CARD_RARITIES.map((r, tier) => ({ tier, w: tier < minTier ? 0 : r.weight * (1 + player.luck / 100) ** tier }));
+  let roll = Math.random() * tiers.reduce((sum, t) => sum + t.w, 0);
+  for (const t of tiers) { roll -= t.w; if (roll < 0) return t.tier; }
+  return minTier;
+}
+
+export const cardCount = () => Math.min(CARD_COUNT.max, CARD_COUNT.base + Math.floor(player.luck / CARD_COUNT.luckPerCard));
+
+function pickKind(pools) {
+  const kinds = Object.keys(pools).filter(k => pools[k].length);
+  let roll = Math.random() * kinds.reduce((sum, k) => sum + CARD_KIND_WEIGHTS[k], 0);
+  for (const k of kinds) { roll -= CARD_KIND_WEIGHTS[k]; if (roll < 0) return k; }
+  return kinds[0];
+}
+
+const concernsOwnedSpell = c => !!c.spell;
+
+export function rollOffer() {
+  const pools: any = {};
+  for (const k in POOLS) pools[k] = POOLS[k]();
+  const offer = [];
+  for (let n = cardCount(); n > 0; n--) {
+    const kind = pickKind(pools);
+    if (!kind) break;
+    const card = pick(pools[kind]);
+    pools[kind] = pools[kind].filter(c => c !== card);
+    offer.push({ ...card, tier: rollRarity(card.minTier) });
+  }
+  if (!offer.some(concernsOwnedSpell)) {         // Mindestens eine Karte betrifft einen eigenen Spell
+    const card = pick(rankCards());
+    offer[offer.length - 1] = { ...card, tier: rollRarity() };
+  }
+  return offer;
+}

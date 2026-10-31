@@ -65,7 +65,7 @@ export function manaCost(id) {
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {
-  return id === 'nova' ? SPELLS.nova.cd - mods.novaCd : SPELLS[id].cd;
+  return id === 'nova' ? Math.max(1000, SPELLS.nova.cd - mods.novaCd) : SPELLS[id].cd;   // PH: Untergrenze
 }
 export const blizRadius = () => {          // auch Zielkreis: gilt für den Spell, der gerade zielt
   const id = typeof player.targeting === 'string' ? player.targeting : 'bliz';

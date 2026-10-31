@@ -4,7 +4,7 @@ import { player } from '../state';
 import { mobsInRadius, applySlow } from './core';
 
 export const coc = {
-  name: 'Cone of Cold', cls: 'frost', tags: ['Frost', 'Fläche'],
+  name: 'Cone of Cold', cls: 'frost', desc: 'Kegel vor dir, verlangsamt um 50 %.', ranks: ['dmg','mana','radius'], tags: ['Frost', 'Fläche'],
   mana: 210, cd: 10000, min: 98, max: 108, range: 10, angle: Math.PI / 3, slow: 0.5, slowDur: 8000,   // Rang 1 Wowhead, Reichweite PH
   effect(c) {
     const range = c.radius(coc.range);

@@ -5,7 +5,7 @@ import { blizFx, resetShard } from '../fx/spellFx';
 import { mobsInRadius, applySlow, startChannel } from './core';
 
 export const bliz = {
-  name: 'Blizzard', cls: 'frost', tags: ['Frost', 'Fläche', 'Kanal'],
+  name: 'Blizzard', cls: 'frost', desc: 'Kanal aufs Bodenziel, 8 Ticks.', ranks: ['dmg','mana','radius'], tags: ['Frost', 'Fläche', 'Kanal'],
   mana: 320, cd: 0, tickDmg: 26, channel: 8000, range: 30, radius: 8, ground: true,   // Rang 1 Wowhead, Radius PH
   effect(c, point) {
     startChannel(c, point.clone(), bliz.channel);

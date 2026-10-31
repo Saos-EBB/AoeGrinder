@@ -4,7 +4,7 @@ import { player } from '../state';
 import { mobsInRadius } from './core';
 
 export const ae = {
-  name: 'Arcane Explosion', cls: 'arcane', tags: ['Arkan', 'Nova'],
+  name: 'Arcane Explosion', cls: 'arcane', desc: 'Arkane Explosion um dich.', ranks: ['dmg','mana','radius'], tags: ['Arkan', 'Nova'],
   mana: 75, cd: 0, min: 34, max: 38, radius: 10,   // Rang 1 Wowhead, Radius PH
   effect(c) {
     const r = c.radius(ae.radius);

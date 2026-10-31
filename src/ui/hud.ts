@@ -103,6 +103,7 @@ export function updatePerf(t) {
 export function updateHud() {
   const hpMax = maxHp(), manaMax = maxMana();
   $('lvl').textContent = player.level;
+  $('luck').textContent = String(player.luck).replace('.', ',');
   $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax, 0, 1)})`;
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;

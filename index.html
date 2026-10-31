@@ -94,9 +94,9 @@
   .modal { position: fixed; inset: 0; background: #000a; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
   .modal.show { display: flex; }
   .modal h1 { margin: 0; font-size: 34px; }
-  .cards { display: flex; gap: 16px; }
+  .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; max-width: 96vw; max-height: 80vh; overflow: auto; padding: 6px; }
   .card { width: 220px; padding: 16px; cursor: pointer; transition: transform .1s; }
-  .card:hover, .card.selected { transform: translateY(-4px); border-color: #ffe27a; }
+  .card:hover, .card.selected { transform: translateY(-4px); box-shadow: 0 0 14px currentColor; }
   .card h3 { margin: 0 0 4px; font-size: 18px; }
   .card .src { font-size: 11px; color: #9cc4ff; margin-bottom: 10px; }
   .card p { margin: 0; font-size: 14px; color: #eee; }
@@ -123,7 +123,7 @@
 <body>
 
 <div id="playerFrame" class="frame">
-  <div class="row"><span class="title">Mage</span><span>Level <b id="lvl">20</b></span></div>
+  <div class="row"><span class="title">Mage</span><span>Glück <b id="luck">0</b> · Level <b id="lvl">20</b></span></div>
   <div class="bar"><div class="fill" id="hpFill"></div><span id="hpText"></span></div>
   <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
   <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>
@@ -168,6 +168,7 @@
 
 <div id="cardModal" class="modal">
   <h1 class="title">Level <span id="cardLvl"></span>!</h1>
+  <div id="cardHint" class="title"></div>
   <div class="cards" id="cards"></div>
 </div>
 
