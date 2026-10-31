@@ -84,16 +84,46 @@ addEventListener('keydown', e => {
   if (id) e.preventDefault();
   held.add(e.code);
   if (e.repeat || !id) return;
+  runAction(id);
+});
+addEventListener('keyup', e => held.delete(e.code));
+
+function runAction(id) {
   if (SPELLS[id]) pressSpell(id);
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;
+}
+
+// Mittlere Maustaste und Seitentasten sind belegbar wie Tasten. preventDefault verhindert Autoscroll und Browser-Zurück.
+const MOUSE_KEYS = { 1: 'Maus Mitte', 3: 'Maus 4', 4: 'Maus 5' };
+addEventListener('mousedown', e => {
+  const key = MOUSE_KEYS[e.button];
+  if (!key) return;
+  e.preventDefault();
+  const code = `Mouse${e.button}`;
+  if (state.rebinding) {
+    setBind(state.rebinding, { code, key });
+    state.rebinding = null;
+    renderBinds();
+    return;
+  }
+  if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }
+  held.add(code);
+  const id = actionForCode(code);
+  if (id) runAction(id);
 });
-addEventListener('keyup', e => held.delete(e.code));
+addEventListener('mouseup', e => {
+  if (!MOUSE_KEYS[e.button]) return;
+  e.preventDefault();
+  held.delete(`Mouse${e.button}`);
+});
+addEventListener('auxclick', e => { if (MOUSE_KEYS[e.button]) e.preventDefault(); });
 addEventListener('blur', () => { held.clear(); mouseBtn.left = mouseBtn.right = false; });
 
 const canvas = renderer.domElement;
 canvas.addEventListener('mousedown', e => {
+  if (MOUSE_KEYS[e.button]) return;
   if (e.button === 0) mouseBtn.left = true;
   if (e.button === 2) {
     mouseBtn.right = true;
@@ -104,6 +134,7 @@ canvas.addEventListener('mousedown', e => {
   mouse.downX = e.clientX; mouse.downY = e.clientY;
 });
 addEventListener('mouseup', e => {
+  if (MOUSE_KEYS[e.button]) return;
   const wasClick = !mouse.dragged;
   if (e.button === 0) mouseBtn.left = false;
   if (e.button === 2) mouseBtn.right = false;

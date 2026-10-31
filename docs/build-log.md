@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — fix(input): mittlere Maustaste und Seitentasten belegbar
+**Was:** Das Menü hörte nur auf `keydown`; die drei Maustasten laufen jetzt über denselben Weg wie Tasten und lösen kein Browser-Zurück mehr aus.
+**Nicht gebaut:** linke und rechte Maustaste bleiben fest, sie bedienen Menü und Kamera.
+
 ## 2026-10-31 — refactor(mage): Teile pro Gelenk zusammenfassen
 **Was:** Das Rig hatte 134 Draw Calls statt vorher 51, das kostet auf Rechnern ohne eigene Grafikkarte; Meshes eines Gelenks mit gleichem Material werden beim Bau verschmolzen.
 **Nicht gebaut:** keine Geometrie-Reduktion, die Dreiecke bleiben.
