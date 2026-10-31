@@ -5,6 +5,7 @@ import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels } from '../ui/hud';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame } from '../player';
+import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 // Level-Up-Karten
 export function showCards() {
@@ -39,6 +40,7 @@ function pickCard(card) {
 }
 
 // Tastenbelegung-Menü
+let selectedPad = null;   // bleibt beim Neuaufbau der Liste gewählt
 export function openBinds() {
   state.paused = true;
   renderBinds();
@@ -46,6 +48,7 @@ export function openBinds() {
 }
 export function closeBinds() {
   state.rebinding = null;
+  state.padRebinding = null;
   $('bindModal').classList.remove('show');
   state.paused = $('startModal').classList.contains('show') || $('cardModal').classList.contains('show') || player.dead;
 }
@@ -60,8 +63,24 @@ export function renderBinds() {
     btn.className = 'bindBtn' + (state.rebinding === a.id ? ' waiting' : '');
     btn.textContent = state.rebinding === a.id ? 'Taste drücken …' : binds[a.id].key;
     btn.addEventListener('click', () => { state.rebinding = a.id; renderBinds(); });
-    list.append(label, btn);
+    list.append(label, btn, a.id in padBinds ? padBindBtn(a.id) : document.createElement('span'));
   }
+  list.insertAdjacentHTML('beforeend', '<div class="group">Nur Pad</div>');
+  for (const a of PAD_ACTIONS) {
+    if (ACTIONS.some(k => k.id === a.id)) continue;
+    const label = document.createElement('span');
+    label.textContent = a.label;
+    list.append(label, document.createElement('span'), padBindBtn(a.id));
+  }
+  list.querySelector(`[data-pad="${selectedPad}"]`)?.classList.add('selected');
+}
+function padBindBtn(id) {
+  const btn = document.createElement('button');
+  btn.className = 'bindBtn padBtn' + (state.padRebinding === id ? ' waiting' : '');
+  btn.dataset.pad = id;
+  btn.textContent = state.padRebinding === id ? '…' : padLabel(padBinds[id]);
+  btn.addEventListener('click', () => { state.padRebinding = id; state.rebinding = null; selectedPad = id; renderBinds(); });
+  return btn;
 }
 export function setBind(id, e) {
   const other = actionForCode(e.code);
@@ -97,4 +116,4 @@ $('restartBtn').addEventListener('click', () => {
 });
 $('bindsOpen').addEventListener('click', openBinds);
 $('bindsClose').addEventListener('click', closeBinds);
-$('bindsReset').addEventListener('click', () => { resetBinds(); saveBinds(); refreshKeyLabels(); renderBinds(); });
+$('bindsReset').addEventListener('click', () => { resetBinds(); resetPadBinds(); saveBinds(); savePadBinds(); refreshKeyLabels(); renderBinds(); });

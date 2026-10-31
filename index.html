@@ -109,11 +109,11 @@
   .keys b { color: #f2c94c; }
 
   /* Tastenbelegung */
-  #bindList { display: grid; grid-template-columns: 1fr 110px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 60vh; overflow: auto; }
+  #bindList { display: grid; grid-template-columns: 1fr 110px 70px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 60vh; overflow: auto; }
   #bindList .group { grid-column: 1 / -1; margin-top: 8px; color: #f2c94c; font-family: Cinzel, serif; }
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
     border: 1px solid #6b5426; border-radius: 3px; cursor: pointer; }
-  .bindBtn.waiting { border-color: #ffe27a; color: #ffe27a; }
+  .bindBtn.waiting, .bindBtn.selected { border-color: #ffe27a; color: #ffe27a; }
   .row2 { display: flex; gap: 10px; justify-content: center; }
 </style>
 </head>

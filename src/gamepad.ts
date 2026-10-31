@@ -10,7 +10,7 @@ import { blizCursor } from './fx/spellFx';
 import { cast } from './spells';
 import { showError } from './ui/hud';
 import { pressSpell } from './input';
-import { openBinds, closeBinds } from './ui/menus';
+import { openBinds, closeBinds, renderBinds } from './ui/menus';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -36,7 +36,23 @@ export const PAD_ACTIONS = [
   { id: 'drink',     label: 'Trinken',             btn: 14 },
 ];
 const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
+const PAD_STORE = 'frostgrind.padbinds.v1';
 export const padBinds: Record<string, number> = padDefaults();
+try { Object.assign(padBinds, JSON.parse(localStorage.getItem(PAD_STORE) || '{}')); } catch { /* kein Storage */ }
+
+export function savePadBinds() {
+  try { localStorage.setItem(PAD_STORE, JSON.stringify(padBinds)); } catch { /* egal */ }
+}
+export function resetPadBinds() { Object.assign(padBinds, padDefaults()); }
+
+function setPadBind(id, btn) {
+  for (const other in padBinds) if (padBinds[other] === btn) padBinds[other] = -1;   // Doppelbelegung aufheben
+  padBinds[id] = btn;
+  savePadBinds();
+}
+
+const PAD_LABELS = ['✕', '○', '□', '△', 'L1', 'R1', 'L2', 'R2', 'Share', 'Options', 'L3', 'R3', '↑', '↓', '←', '→'];
+export const padLabel = btn => PAD_LABELS[btn] ?? '–';
 
 const pressed = i => pad.down[i] && !pad.prev[i];   // Flanke: ein Druck löst genau einmal aus
 
@@ -116,8 +132,25 @@ function moveSelection(items, step) {
   return items[next];
 }
 
+function bindMenuButtons(step) {
+  const row = moveSelection([...document.querySelectorAll('#bindList .padBtn')], step.y);
+  if (step.y) row?.scrollIntoView({ block: 'nearest' });
+  if (pressed(CONFIRM_BTN)) row?.click();
+  else if (pressed(CANCEL_BTN)) closeBinds();
+}
+
+function captureRebind() {
+  const btn = pad.down.findIndex((d, i) => d && !pad.prev[i]);
+  if (btn < 0) return;
+  const id = state.padRebinding;
+  state.padRebinding = null;
+  setPadBind(id, btn);
+  renderBinds();
+}
+
 function menuButtons() {
   const step = navStep();
+  if (isOpen('bindModal')) return bindMenuButtons(step);
   if (isOpen('cardModal') && !isOpen('bindModal')) {
     const card = moveSelection([...document.querySelectorAll('#cards .card')], step.x);
     if (pressed(CONFIRM_BTN)) card?.click();
@@ -152,7 +185,8 @@ export function pollGamepad() {
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
   if (!player.targeting || !gp || state.paused) { if (state.padAim) cancelAim(); }
-  if (!state.paused) gameButtons();
+  if (state.padRebinding) captureRebind();
+  else if (!state.paused) gameButtons();
   else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();
   else menuButtons();
 }

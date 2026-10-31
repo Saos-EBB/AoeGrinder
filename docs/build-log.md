@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Pad-Neubelegung im Tastenbelegungs-Menü
+**Was:** Dritte Spalte im Menü, Speicherung unter `frostgrind.padbinds.v1`; Bestätigen, Abbrechen und Steuerkreuz im Menü bleiben fest, damit man sich nicht aussperrt.
+**Nicht gebaut:** Pad-Bedienung für die Knöpfe Standard und Schließen, Kreis schließt das Menü bereits.
+
 ## 2026-10-31 — feat(gamepad): Start, Karten und Tod per Pad bedienbar
 **Was:** Kreuz löst die vorhandenen Klick-Handler aus, damit es keinen zweiten Weg durch die Menüs gibt; die Auswahl steckt nur in der CSS-Klasse.
 **Nicht gebaut:** Tastenbelegung am Pad kommt im nächsten Schritt.
