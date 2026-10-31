@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(world): Terrain, Hindernisse, Kollision
+**Was:** heightAt bleibt einzige Quelle für Bodenhöhe; terrainDecal und drape liegen hier, weil sie der Höhe folgen.
+**Nicht gebaut:** kein Chunking, kein Spatial Grid für Kollision.
+
 ## 2026-10-31 — refactor(render): Renderer, Composer, Himmel, Licht
 **Was:** Render-Setup unabhängig vom Spiel; die Schalter aus PERF greifen hier.
 **Nicht gebaut:** keine Schatten, kein Bloom-Umbau.
