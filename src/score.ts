@@ -1,8 +1,8 @@
-// Punkte eines Runs. Liest vom Kill nur xp und mob.castKey; Teil 2 setzt dort eine echte Cast-ID.
+// Punkte eines Runs. Liest vom Kill nur xp und mob.castKey: eine echte Cast-ID oder, als Fallback, die Spell-ID.
 
 import { state, player } from './state';
 import { scoreMult } from './modifiers';
-import { SCORE_MULTI_WINDOW, SCORE_MULTI_STEP, SCORE_MULTI_MAX, SCORE_COMBO_WINDOW, SCORE_COMBO_DIV, SCORE_COMBO_MAX, SCORE_PULL_POINTS, SCORE_MINUTE_POINTS } from './config';
+import { SPELLS, SCORE_MULTI_WINDOW, SCORE_MULTI_STEP, SCORE_MULTI_MAX, SCORE_COMBO_WINDOW, SCORE_COMBO_DIV, SCORE_COMBO_MAX, SCORE_PULL_POINTS, SCORE_MINUTE_POINTS } from './config';
 
 export const run: any = {};
 
@@ -13,7 +13,9 @@ resetScore();
 
 export function reportKill(mob, xp) {
   const now = state.now, key = mob.castKey ?? 'env', cast = run.casts[key] ?? (run.casts[key] = { n: 0, last: -1e9 });
-  cast.n = now - cast.last <= SCORE_MULTI_WINDOW ? cast.n + 1 : 1;
+  // Eine echte Cast-ID zählt ohne Zeitfenster, Spell-ID und 'env' nur innerhalb des Fensters
+  const realCast = key !== 'env' && !(key in SPELLS);
+  cast.n = realCast || now - cast.last <= SCORE_MULTI_WINDOW ? cast.n + 1 : 1;
   cast.last = now;
   run.combo = now - run.lastKill <= SCORE_COMBO_WINDOW ? run.combo + 1 : 0;
   run.lastKill = now;
