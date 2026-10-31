@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { state, player } from '../state';
 import { $, rand, clamp, dist2d } from '../util';
-import { CFG, SPELLS } from '../config';
+import { CFG, SPELLS, SPELL_ACTIONS } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
-import { binds, pressSpell } from '../input';
+import { ACTIONS, binds } from '../input';
+import { castSpell } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 
 export const overlay = $('overlay');
@@ -37,26 +38,39 @@ export function showError(msg) {
 
 export const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
-// Actionbar
-const slots: any = {};
-for (const [id, s] of Object.entries(SPELLS)) {
-  const el = document.createElement('div');
-  el.className = `slot ${s.cls}`;
-  el.innerHTML = `<span class="key"></span>${s.name}<div class="cd"></div><div class="cdText"></div>`;
-  el.addEventListener('click', () => pressSpell(id));
-  $('actionbar').appendChild(el);
-  slots[id] = { el, key: el.querySelector('.key'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
+// Actionbar: wächst mit den belegten Slots
+let slots: any = {};
+export function renderActionbar() {
+  const bar = $('actionbar');
+  bar.innerHTML = '';
+  slots = {};
+  state.slots.forEach((id, i) => {
+    const action = ACTIONS.find(a => a.id === SPELL_ACTIONS[i]);
+    action.label = id ? `Slot ${i + 1}: ${SPELLS[id].name}` : `Slot ${i + 1}: leer`;
+    if (!id) return;
+    const el = document.createElement('div');
+    el.className = `slot ${SPELLS[id].cls}`;
+    el.innerHTML = `<span class="key"></span>${SPELLS[id].name}<div class="cd"></div><div class="cdText"></div>`;
+    el.addEventListener('click', () => castSpell(id));
+    bar.appendChild(el);
+    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
+  });
+  labelSlots();
+}
+function labelSlots() {
+  const onPad = state.lastInput === 'pad';
+  for (const id in slots) slots[id].key.textContent = onPad ? padLabel(padBinds[slots[id].action] ?? -1) : binds[slots[id].action].key;
 }
 
 export function refreshKeyLabels() {
   const onPad = state.lastInput === 'pad';
-  for (const id in slots) slots[id].key.textContent = onPad ? padLabel(padBinds[id]) : binds[id].key;
+  renderActionbar();
   if (onPad) {
     const p = id => `<b>${padLabel(padBinds[id])}</b>`;
     $('help').innerHTML =
       `<b>Linker Stick</b> laufen · <b>Rechter Stick</b> Kamera<br>` +
       `${p('jump')} springen · ${p('autorun')} Autorun · ${p('camBehind')} Kamera hinter Figur<br>` +
-      `${p('bliz')} halten: Blizzard zielen · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
+      `${p('bliz')} halten: Slot 3 zielen · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
     return;
   }
   const b = id => `<b>${binds[id].key}</b>`;
@@ -112,7 +126,7 @@ export function updateHud() {
     const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
     $('castbar').style.display = 'block';
     $('castFill').style.transform = `scaleX(${left})`;
-    $('castText').textContent = `${ch ? 'Blizzard' : 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
+    $('castText').textContent = `${ch ? SPELLS[ch.id].name : 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
   } else $('castbar').style.display = 'none';
 
   for (const [id, sl] of Object.entries<any>(slots)) {
@@ -123,7 +137,7 @@ export function updateHud() {
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = (player.cds[id] || 0) - state.now > 1500 ? Math.ceil(left / 1000) : '';
     sl.el.classList.toggle('nomana', player.mana < manaCost(id));
-    sl.el.classList.toggle('active', (id === 'bliz' && (player.targeting || !!ch)) || (id === 'drink' && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || (player.targeting === true && state.slots[2] === id) || (id === 'drink' && !!dr));
   }
 
   // Nameplates

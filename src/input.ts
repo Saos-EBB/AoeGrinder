@@ -29,6 +29,8 @@ export const ACTIONS = [
   { id: 'coc',   label: 'Cone of Cold',     code: 'Digit4', key: '4', spell: true },
   { id: 'blink', label: 'Blink',            code: 'Digit5', key: '5', spell: true },
   { id: 'drink', label: 'Trinken',          code: 'Digit6', key: '6', spell: true },
+  { id: 'slot7', label: 'Slot 7', code: 'Digit7', key: '7', spell: true },
+  { id: 'slot8', label: 'Slot 8', code: 'Digit8', key: '8', spell: true },
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();

@@ -35,15 +35,12 @@ export const CFG = {
   padYaw: 2.5, padPitch: 1.5,                       // PH: Kamera am Pad (rad/s bei vollem Ausschlag)
 };
 
-// Rang-1-Werte laut Wowhead Classic. Radien PH (stehen nicht im Tooltip).
-export const SPELLS = {
-  nova:  { name: 'Frost Nova',       cls: 'frost',  mana: 55,  cd: 25000, min: 19, max: 21, radius: 10, root: 8000 },
-  ae:    { name: 'Arcane Explosion', cls: 'arcane', mana: 75,  cd: 0,     min: 34, max: 38, radius: 10 },
-  bliz:  { name: 'Blizzard',         cls: 'frost',  mana: 320, cd: 0,     tick: 26, channel: 8000, range: 30, radius: 8 },
-  coc:   { name: 'Cone of Cold',     cls: 'frost',  mana: 210, cd: 10000, min: 98, max: 108, range: 10, angle: Math.PI / 3, slow: 0.5, slowDur: 8000 },
-  blink: { name: 'Blink',            cls: 'arcane', mana: 80,  cd: 15000, dist: 20 },  // Mana PH
-  drink: { name: 'Trinken',          cls: 'util',   mana: 0,   cd: 0,     dur: 18000 },  // Werte PH
-};
+// SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie hier.
+export const SPELLS: any = {};
+export const SPELL_SLOTS = 8;
+export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink'];
+// Die Tasten-Aktionen heißen seit v1 wie das Start-Kit. Sie stehen für den Slot, nicht für den Spell.
+export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink', 'slot7', 'slot8'];
 
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};

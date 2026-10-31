@@ -250,7 +250,7 @@ export function ambientParticles(dt) {
       vx: -Math.sin(a) * (channeling ? 2 : 0.2), vy: rand(0.5, channeling ? 4 : 1), vz: Math.cos(a) * (channeling ? 2 : 0.2),
       life: rand(0.4, 0.9), color: FROST, size: rand(0.12, channeling ? 0.35 : 0.2) });
   }
-  if (player.channel) {
+  if (player.channel?.id === 'bliz') {
     const c = player.channel.point, r = blizRadius();
     for (let i = perFrame(40, dt); i > 0; i--) {             // wirbelnder Schnee
       const a = rand(0, Math.PI * 2), d = r * Math.sqrt(Math.random());

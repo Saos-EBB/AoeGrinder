@@ -4,3 +4,15 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 
 ## Steps
 - chore(docs): Spec abgelegt. Nicht gebaut: —
+- feat(spells): Tags, 8 Slots, Actionbar 1–8. `src/spells.ts` wird zu `src/spells/` (ein Spell pro Datei, `core.ts`, `index.ts`). Nicht gebaut: kein Umbau von `input.ts`/`gamepad.ts`, kein Pad-Button für Slot 7–8.
+
+## Struktur
+- `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`)
+- `src/spells/<id>.ts`: Werte und Wirkung eines Spells; `index.ts` registriert sie in `SPELLS`
+- Die Tasten-Aktionen behalten ihre IDs (`nova` = Slot 1 …). `cast(aktion)` sucht den Spell im Slot, `castSpell(id)` zaubert direkt.
+
+## Abweichungen und offene Punkte
+- `input.ts` ist bis auf die Tasten 7–8 unverändert. Dort steht `pressSpell` weiter fest auf `bliz`; `resolveSlot3()` in `core.ts` fängt das ab.
+- `formulas.ts` und `fx/spellFx.ts` standen nicht auf der Dateiliste, mussten aber kleine Änderungen bekommen.
+- Trinken belegt Slot 6 und ist nicht ersetzbar, sonst gäbe es keine Mana-Quelle mehr.
+- Pad: Slot 7–8 haben keinen Knopf (`gamepad.ts` nicht angefasst).

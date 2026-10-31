@@ -2,7 +2,8 @@ import { state, player } from '../state';
 import { $ } from '../util';
 import { CARDS } from '../config';
 import { maxHp, maxMana } from '../formulas';
-import { refreshKeyLabels, togglePerf, perfEnabled } from '../ui/hud';
+import { refreshKeyLabels, renderActionbar, togglePerf, perfEnabled } from '../ui/hud';
+import { resetSpells } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
 import { ZONES } from '../zones';
@@ -131,6 +132,8 @@ $('startBtn').addEventListener('click', () => { $('startModal').classList.remove
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
   resetGame();
+  resetSpells();
+  renderActionbar();
   state.paused = false;
 });
 $('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
