@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(mage): Griff im oberen Stabdrittel, beim Laufen waagerecht
+**Was:** Griff sitzt ein Drittel von oben, die Hand ist dafür höher, damit der Stab nicht im Boden steckt; beim Laufen wirkte er aufrecht zu steif und liegt jetzt waagerecht.
+**Nicht gebaut:** keine eigene Haltung für Rückwärts, dort bleibt er fast aufrecht.
+
 ## 2026-10-31 — feat(ui): Rückfrage vor dem Zurücksetzen der Belegung
 **Was:** „Standard“ liegt direkt neben „Schließen“, ein Fehlklick löschte bisher alle eigenen Tasten; Abbrechen hat den Fokus.
 **Nicht gebaut:** keine Pad-Bedienung des Fensters, „Standard“ ist am Pad ohnehin nicht erreichbar.

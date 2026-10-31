@@ -165,22 +165,22 @@ function buildMage() {
 
   // Stab
   const staff = joint(armR.wrist, 0, -0.08, 0);
-  staff.add(part(new THREE.CylinderGeometry(0.028, 0.042, 1.95, 8), wood, 0, 0.27, 0));
-  for (const y of [-0.3, 0.58]) {
+  staff.add(part(new THREE.CylinderGeometry(0.028, 0.042, 1.95, 8), wood, 0, -0.325, 0));
+  for (const y of [-0.895, -0.015]) {
     const ring = part(new THREE.TorusGeometry(0.043, 0.012, 5, 10), clothDark, 0, y, 0);
     ring.rotation.x = Math.PI / 2;
     staff.add(ring);
   }
   for (const a of [0, 1.57, 3.14, 4.71]) {
-    const claw = part(new THREE.ConeGeometry(0.026, 0.34, 5), wood, Math.cos(a) * 0.09, 1.26, Math.sin(a) * 0.09);
+    const claw = part(new THREE.ConeGeometry(0.026, 0.34, 5), wood, Math.cos(a) * 0.09, 0.665, Math.sin(a) * 0.09);
     claw.rotation.set(Math.sin(a) * 0.42, 0, -Math.cos(a) * 0.42);
     staff.add(claw);
   }
-  const crystal = part(new THREE.OctahedronGeometry(0.13), crystalMat, 0, 1.32, 0);
+  const crystal = part(new THREE.OctahedronGeometry(0.13), crystalMat, 0, 0.725, 0);
   crystal.scale.y = 1.6;
   staff.add(crystal);
   const crystalGlow = glowSprite(0x7fd8ff, 0.4);
-  crystalGlow.position.y = 1.32;
+  crystalGlow.position.y = 0.725;
   staff.add(crystalGlow);
 
   // Bein mit Fußgelenk und Zehen
@@ -246,8 +246,8 @@ function buildMage() {
     t.neck = -0.3 * h - 0.2 * sq; t.head = -0.3 * h - 0.14 * sq; t.headY = 0;
     t.jaw = 0.04; t.lCl = 0; t.rCl = 0;
     const lean = t.pX + t.s1 + t.s2 + t.s3;
-    t.lSh = -lean + 0.06; t.rSh = -lean - 0.22; t.lShZ = 0.06; t.rShZ = -0.06;
-    t.lEl = -0.28; t.rEl = -1.0; t.lWr = -0.1; t.rWr = 0; t.lCurl = 0.45; t.rCurl = 1.25;
+    t.lSh = -lean + 0.06; t.rSh = -lean - 0.5; t.lShZ = 0.06; t.rShZ = -0.06;
+    t.lEl = -0.28; t.rEl = -1.6; t.lWr = -0.1; t.rWr = 0; t.lCurl = 0.45; t.rCurl = 1.25;
     const hipBase = -(0.1 + 0.3 * h) - 0.75 * sq, kneeBase = 0.2 + 0.5 * h + 1.45 * sq;
     t.lH = hipBase; t.rH = hipBase - 0.04; t.lHz = 0.03; t.rHz = -0.03;
     t.lK = kneeBase; t.rK = kneeBase + 0.05; t.lT = 0; t.rT = 0; t.staffTilt = 0; t.bodyX = 0;
@@ -274,9 +274,10 @@ function buildMage() {
       const extra = backward ? -0.05 : lerpTo(0.03, 0.26, g);
       t.s1 += extra * 0.4; t.s2 += extra * 0.6; t.neck -= extra * 0.5; t.head -= extra * 0.3;
       t.lSh += sw * lerpTo(0.28, 0.75, g) - extra; t.rSh += -sw * lerpTo(0.1, 0.3, g) - extra * 0.5;
-      t.lEl = -lerpTo(0.35, 1.35, g) - Math.max(0, -sw) * 0.3; t.rEl = -lerpTo(1.0, 1.3, g);
+      t.lEl = -lerpTo(0.35, 1.35, g) - Math.max(0, -sw) * 0.3; t.rEl = -lerpTo(1.6, 1.2, g);
       t.lShZ = lerpTo(0.06, 0.14, g); t.lCurl = lerpTo(0.45, 0.9, g);
-      t.staffTilt = lerpTo(0.04, 0.4, g) * (backward ? -0.5 : 1);
+      // Beim Laufen waagerecht wie ein Speer, wippt im Schritt mit; Gehen bleibt aufrecht
+      t.staffTilt = backward ? -0.2 : lerpTo(0.04, Math.PI / 2, g) + Math.sin(phase * 2) * 0.09 * g;
       t.head += Math.sin(phase * 2) * 0.02;
       if (!backward) liftAir = g * 0.07 * Math.abs(Math.sin(phase * 1)) * Math.abs(cw);
       k = Math.min(1, s * 34);
@@ -318,7 +319,7 @@ function buildMage() {
     } else if (a.state === 'sit') {
       t.pX = -0.3; t.s1 = 0.26; t.s2 = 0.34; t.s3 = 0.34; t.neck = -0.28; t.head = -0.24;
       t.lH = -1.95; t.rH = -1.95; t.lK = 1.85; t.rK = 1.85; t.lHz = 0.34; t.rHz = -0.34;
-      t.rSh = -1.05; t.rEl = -0.8; t.lSh = -1.25; t.lEl = -1.9; t.lShZ = 0.24; t.lWr = -0.3; t.lCurl = 1.1;
+      t.rSh = -1.05; t.rEl = -0.8; t.staffTilt = 1.25; t.lSh = -1.25; t.lEl = -1.9; t.lShZ = 0.24; t.lWr = -0.3; t.lCurl = 1.1;
       t.head += Math.sin(tAcc * 0.8) * 0.03;
       fixedPy = 0.2; footFlat = 1; k = Math.min(1, s * 8);
     } else if (a.state === 'dead') {
