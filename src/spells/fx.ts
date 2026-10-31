@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { rand, pick, perFrame } from '../util';
 import { scene } from '../render';
 import { terrainDecal, drape, heightAt } from '../world';
-import { particles } from '../fx/particles';
+import { particles, glowSprite } from '../fx/particles';
 import { flashFx, ringFx, addEffect } from '../fx/spellFx';
 
 export const FIRE = [2.4, 0.9, 0.15], EMBER = [2.2, 0.45, 0.08], SHADOW = [0.8, 0.15, 1.5], VOID = [0.35, 0.05, 0.9];
@@ -54,3 +54,28 @@ export function boltFx(from, to, color = BOLT_WHITE, dur = 180) {
     new THREE.LineBasicMaterial({ color: new THREE.Color(...color), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
   addEffect(line, dur, t => { (line.material as any).opacity = 1 - t; });
 }
+
+// Leuchtkugel als Dauerflächen-Visual
+export function orbVisual(spriteColor, size, darkCore = false) {
+  const sp = glowSprite(spriteColor, size);
+  scene.add(sp);
+  const core = darkCore ? new THREE.Mesh(new THREE.SphereGeometry(size * 0.22, 16, 12), new THREE.MeshBasicMaterial({ color: 0x050008 })) : null;
+  if (core) scene.add(core);
+  const set = pos => {
+    sp.position.set(pos.x, heightAt(pos.x, pos.z) + 1.6, pos.z);
+    core?.position.copy(sp.position);
+  };
+  return {
+    update: set,
+    remove() {
+      scene.remove(sp); sp.material.dispose();
+      if (core) { scene.remove(core); core.geometry.dispose(); (core.material as any).dispose(); }
+    },
+  };
+}
+
+// Mehrere Visuals als eins
+export const visuals = (...list) => ({
+  update: (pos, r) => list.forEach(v => v.update(pos, r)),
+  remove: () => list.forEach(v => v.remove()),
+});

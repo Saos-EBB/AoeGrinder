@@ -304,3 +304,8 @@ export function knockbackMob(mob, center, dist, dur = 450) {
   collide(target, 0.7);
   startLeap(mob, target, dur, () => {});
 }
+
+// Status: Mob schlägt langsamer. Pro Frame aufgerufen, schiebt den nächsten Schlag so, als liefe die Uhr pct langsamer.
+export function slowSwing(mob, pct, dt) {
+  mob.nextSwing += dt * (1 / (1 - pct) - 1);
+}

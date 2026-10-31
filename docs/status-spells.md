@@ -9,6 +9,7 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - feat(spells): Runen-System, 15 Start-Kit-Runen, Dauerflächen (`addField`), Ladungen, `pullMob`/`knockbackMob` in `mobs.ts`. Nicht gebaut: keine Ladungsanzeige auf der Actionbar.
 - feat(spells): acht Supports. Nicht gebaut: Großes Echo wiederholt keine Kanäle (der Kanal würde sich selbst abbrechen), die Spec schließt das nur bei Echo aus.
 - feat(spells): Castzeit (Bewegung bricht ab, Treffer schieben auf), Flammenstoß, Druckwelle, Höllenfeuer. Nicht gebaut: eigene Texturen für die Bodenflächen.
+- feat(spells): Hurrikan, Frostkugel, Kettenblitz. Nicht gebaut: kein Zielen beim Kettenblitz, er nimmt den nächsten Mob in 30 yd.
 
 ## Struktur
 - `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`), Runen, Ladungen, Dauerflächen
