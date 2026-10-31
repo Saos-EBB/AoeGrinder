@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(models): Eber auslagern
+**Was:** Gleiche Schnittstelle wie der Mage.
+**Nicht gebaut:** keine gemeinsame Basisklasse (nur zwei Rigs).
+
 ## 2026-10-31 — refactor(models): Skelett-Mage auslagern
 **Was:** Rig mit der Schnittstelle root/update, die später ein glTF ersetzt.
 **Nicht gebaut:** kein glTF-Loader, kommt mit den echten Modellen.
