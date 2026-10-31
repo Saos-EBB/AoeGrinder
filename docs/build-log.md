@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — fix(spells): Kein Pushback durch Schaden über Zeit
+**Was:** Das Zaubern erkannte Treffer nur am Lebensverlust, also zählten Ticks mit. Jetzt zählt die Quelle aus `player.lastHitBy`. Kanäle schützt `damagePlayer` schon vor Gift.
+**Nicht gebaut:** kein Treffer-Ereignis in `player.ts`. Lava-Ticks schieben Kanäle weiter (`abilities.ts` ruft `damagePlayer` ohne `dot`).
+
 ## 2026-10-31 — fix(fx): Treffer-Funken nur in der eigenen Schule
 **Was:** `damageMob` sprühte bei allem außer Arcane Frost, die neuen Schulen kamen obendrauf. Jetzt sucht `hitSparkFx` die Farbe über die Spell-ID.
 **Nicht gebaut:** —

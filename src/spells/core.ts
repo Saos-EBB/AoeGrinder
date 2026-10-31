@@ -150,12 +150,15 @@ function release(id, point) {
   scheduleEchoes(id, point);
 }
 
+// damagePlayer trägt diese Quellen ein, wenn der letzte Schaden ein Tick war
+const DOT_SOURCES = ['Gift', 'Lava'];
+
 // Zauber läuft: Bewegung bricht ab, Treffer schieben auf (Spec §7: maximal bis zur vollen Castzeit)
 function updateCast() {
   const ct = player.casting;
   if (!ct) return;
   if (Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded) { player.casting = null; return; }
-  if (player.hp < ct.hp) {
+  if (player.hp < ct.hp && !DOT_SOURCES.includes(player.lastHitBy)) {
     const delay = ct.delays < 5 ? 1000 - ct.delays * 200 : 200;
     ct.delays++;
     ct.end = Math.min(ct.end + delay, state.now + ct.total);
