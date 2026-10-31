@@ -10,7 +10,7 @@ import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
-import { spawnPack, removeMob } from './mobs';
+import { spawnPack, removeMob, announceNewMobs } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import { modFactor } from './modifiers';
@@ -30,6 +30,7 @@ export function resetGame() {
   state.cardRanks = {};
   state.now = 0;
   state.pendingLevelUps = 0;
+  state.newMob = null;
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
@@ -113,6 +114,7 @@ function regenerate(dt) {
 }
 
 export function gainXp(xp) {
+  const fromLevel = player.level;
   player.xp += xp;
   while (player.level < LEVEL_MAX && player.xp >= xpNeeded()) {
     player.xp -= xpNeeded();
@@ -120,6 +122,7 @@ export function gainXp(xp) {
     state.pendingLevelUps++;
   }
   if (player.level >= LEVEL_MAX) player.xp = 0;
+  announceNewMobs(fromLevel);
   if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
 }
 

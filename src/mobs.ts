@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
-import { rand, randInt, clamp, dist2d, lerpTo } from './util';
-import { CFG, mods, LEVEL_MAX } from './config';
+import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
+import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { heightAt, collide, zone } from './world';
@@ -16,6 +16,15 @@ import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
 import { damagePlayer, gainXp } from './player';
 
+// Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
+const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+
+// Einblendung, wenn der Sprung von fromLevel neue Mobs freigeschaltet hat. Die Anzeige steckt in ui/scoreHud.ts.
+export function announceNewMobs(fromLevel) {
+  const names = unlockedMobs(player.level).slice(unlockedMobs(fromLevel).length).map(id => MOB_TYPES[id].name);
+  if (names.length) state.newMob = { text: `Neuer Gegner: ${names.join(', ')}`, at: state.now };
+}
+
 export function spawnPack() {
   let center;
   for (let tries = 0; tries < 40; tries++) {
@@ -27,8 +36,9 @@ export function spawnPack() {
   }
   const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10) * modFactor('packSize');
   const packId = ++state.packCounter;
+  const unlocked = unlockedMobs(player.level), special = unlocked.slice(1);
   for (let i = 0; i < size; i++) {
-    const typeId = i === 0 && size >= 3 && zone.packAlways && Math.random() < 0.5 ? zone.packAlways : Math.random() < 0.5 ? zone.mobs[0] : zone.mobs[randInt(1, Math.max(1, zone.mobs.length - 1))] ?? zone.mobs[0];
+    const typeId = i === 0 && size >= 3 && special.includes(zone.packAlways) && Math.random() < 0.5 ? zone.packAlways : special.length && Math.random() < 0.5 ? pick(special) : unlocked[0];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
     spawnMob(typeId, pos, level, packId);

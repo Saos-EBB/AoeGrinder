@@ -20,6 +20,8 @@ export const LEVEL_START = 1, LEVEL_MAX = 100;
 export const LEVEL_HP_AT_20 = 1040, LEVEL_HP_STEP = 39;   // Leben auf Level 20, plus pro Level
 export const LEVEL_DMG_STEP = 0.05;                       // Schaden und Mob-Leben: +5 % des Level-1-Werts pro Level
 export const LEVEL_MOB_HP = 100;                          // Start-Mob auf Level 1: 3 Arcane Explosions (34–38 Schaden)
+export const LEVEL_UNLOCKS = [16, 31, 46, 61];            // Ab diesen Spielerleveln kommen Mob 2, 3, 4, 5 dazu
+export const LEVEL_NEW_MOB_BANNER = 3000;                 // Anzeigedauer "Neuer Gegner"
 
 export const CFG = {
   aggroBase: 18, aggroMin: 5, aggroLevelCap: 25,     // Creature::GetAttackDistance
