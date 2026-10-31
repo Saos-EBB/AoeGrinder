@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(docs): Stand v9 in handoff.md
+**Was:** Teil Grün ergänzt, Artifact auf v9 aktualisiert.
+**Nicht gebaut:** —
+
 ## 2026-11-01 — chore(score): Spielversion v9
 **Was:** Runs des neuen Builds liefen sonst in der Rangliste als v8, obwohl Level und Modi anders sind.
 **Nicht gebaut:** —

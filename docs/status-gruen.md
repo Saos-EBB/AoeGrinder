@@ -1,6 +1,6 @@
 # Status Branch gruen-polish
 
-Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Nicht gepusht, nicht gemerged.
+Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Per Fast-Forward in main gemerged und als v9 (`1793484974-aac1`) veröffentlicht, nicht gepusht.
 
 ## Steps
 - fix(input): Taste 3 sucht den Spell im Slot wie jede andere Taste, `resolveSlot3()` ist weg. Nicht gebaut: —

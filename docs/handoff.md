@@ -1,7 +1,7 @@
 # Frost Grind – Stand & Übergabe (Chat ↔ Claude Code)
 
 **Artifact:** „Frost Grind – Prototyp“ · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v8 (`1793479944-42e9`, 2026-10-31), gebündelter Build aus diesem Repo. Quelle ist das Repo, das Artifact wird nicht mehr direkt editiert.
+Stand: v9 (`1793484974-aac1`, 2026-11-01), gebündelter Build aus diesem Repo. Quelle ist das Repo, das Artifact wird nicht mehr direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 
 ## Regeln für beide Seiten
@@ -22,7 +22,7 @@ Stand: v8 (`1793479944-42e9`, 2026-10-31), gebündelter Build aus diesem Repo. Q
 - Test-Hook: `window.__game`.
 
 ## Stand
-- v9 (Teil Blau, nur im Repo, nicht veröffentlicht; das Artifact bleibt auf v8) – Level 1–100 mit neuer Skalierung, Mob-Freischaltung pro Zone mit Einblendung, Dev „Level setzen“ im Esc-Menü, Hardmode-Fix (Halbe Werte als eigener Faktor), castKey-Vorrang in `score.ts`. Messwerte und offene Balance-Punkte in `docs/status-blau.md`, Spec in `docs/levels-spec.md`. Alle neuen Zahlen sind `// PH`.
+- v9 – **Teil Blau:** Level 1–100 mit neuer Skalierung, Mob-Freischaltung pro Zone mit Einblendung, Dev „Level setzen“ im Esc-Menü, Hardmode-Fix (Halbe Werte als eigener Faktor), castKey-Vorrang in `score.ts`. Messwerte und offene Balance-Punkte in `docs/status-blau.md`, Spec in `docs/levels-spec.md`. Alle neuen Zahlen sind `// PH`. **Teil Grün:** Nacharbeiten (Taste 3 frei, Pad-Slots 7/8 auf R2 und Steuerkreuz rechts, Zielmodus für Bodenziel-Spells in jedem Slot, Funken in der eigenen Schule, kein Zauber-Pushback durch Gift und Lava, Bodentexturen), Modi Teil 2 (Nur Frost, Nur Feuer, Kein Trinken, Classic pur, Kein Glück und drei Presets), Feld `build` der Rangliste, echte Cast-ID. Details in `docs/status-gruen.md` und `docs/score-spec.md`. Das echte Pad und die Spielbalance sind ungeprüft.
 - v8 – Punkte mit HUD, Modi und Modifikatoren im Startbildschirm, lokale Rangliste mit Export und Import (`docs/score-spec.md`, Teil 2 steht aus); Draw Calls pro Mob gesenkt, Materialien geteilt (`docs/status-maps.md`). Enthält das Spell-System aus v7. Alle Punktwerte sind `// PH`.
 - v7 – Fünfte Zone Elvyn (Wald mit Ebern), Lava schadet auch Mobs (`// PH`, kein Pathfinding), Leistungsanzeige im Dev-Menü (FPS, Draw Calls über den ganzen Frame, Mobs). Dazu Spell- und Kartensystem laut `docs/spells-spec.md`: 8 Slots, 9 neue Spells, Runen, Supports, 6 Relikte ab Level 30, Karten mit Seltenheit und Glück, Dev-Karten im Esc-Menü. Details, Abweichungen und offene Punkte in `docs/status-spells.md`. Alle neuen Werte sind `// PH`, die Spielbalance und das echte Pad sind ungeprüft.
 - v6 – Vier Zonen laut `docs/zones-spec.md` (Tirisfal, Blackrock Depths, Schlingendorntal, Tanaris) mit je fünf Mobs und Fähigkeiten, Sandsturm in Tanaris, Lava in BRD; Dev-Zonenwechsel im Esc-Menü. Dazu neuer Magier mit 48 Gelenken, Stab auf dem Rücken, Mittel- und Seitentasten der Maus belegbar, Rückfrage bei „Standard“. Alle Zonen- und Mob-Werte sind `// PH`. Getestet per Skript und Standbild, die Spielbalance ist ungeprüft.
@@ -62,6 +62,6 @@ public/assets/       CC0-Modelle, Sounds (später)
 
 ## Offen
 - Leistung: Kevin misst auf seinem Rechner. Pro Mob ist jedes Gelenk verschmolzen und die Materialien sind geteilt; jedes Gelenk bleibt ein Draw Call, weniger ginge nur mit Skinning oder Instancing.
-- Punkte Teil 2 (Frost only, Fire only, Classic, Kein Trinken, Kein Glück), echte Cast-ID für `mob.castKey`, Feld `build` der Rangliste.
+- Lava-Ticks schieben Kanäle noch auf (`abilities.ts` ruft `damagePlayer` ohne `dot`). `build` wird einen Frame nach dem Tod nachgetragen, sauberer wäre es direkt in `recordRun` (`docs/status-gruen.md`).
 - Platzhalter: Mob-HP/-Schaden/-Tempo, Trinkwerte, GCD, Spell-Radien, Nova-Break-Chance, Sprungphysik, Crit-Chance.
 - Echte CC0-Modelle (Kevin sucht selbst aus).
