@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Controller-Spec ablegen
+**Was:** Spec samt Entscheidungen (PlayStation-Symbole, kein Schnellzauber, keine Addition von Tastatur und Stick) liegt im Repo.
+**Nicht gebaut:** noch kein Code.
+
 ## 2026-10-31 — chore(docs): Stand der Repo-Migration in handoff.md
 **Was:** Stand-Abschnitt ergänzt, damit die Chat-Seite den Repo-Stand kennt; dazu einen doppelten Import in main.ts entfernt.
 **Nicht gebaut:** keine Spec-Anpassungen, kein Artifact-Update.
