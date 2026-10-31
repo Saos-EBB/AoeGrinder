@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(docs): Stand v9 Teil Blau in handoff.md
+**Was:** Branch `blau-levels` per Fast-Forward in `main`; die Einzelschritte stehen in `docs/status-blau.md`.
+**Nicht gebaut:** kein Publish, Artifact bleibt auf v8.
+
 ## 2026-10-31 — chore(docs): Stand v8 in handoff.md
 **Was:** Branch `maps` per Fast-Forward in `main`, Artifact auf v8; die Einzelschritte von Punkte und Draw Calls stehen in `docs/status-maps.md`.
 **Nicht gebaut:** Punkte Teil 2.
