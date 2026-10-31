@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Zonen-Spec ablegen
+**Was:** Auftrag für vier Zonen mit je fünf Mobs liegt als Quelle im Repo.
+**Nicht gebaut:** noch kein Code.
+
 ## 2026-10-31 — feat(mage): Stab auf den Rücken
 **Was:** Griff und waagerechtes Tragen haben nicht gefallen; der Stab hängt jetzt quer am Rücken, der rechte Arm schwingt frei wie der linke, Zauber-Partikel kommen aus der rechten Hand.
 **Nicht gebaut:** keine Animation zum Ziehen des Stabs.
