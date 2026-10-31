@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(fx): Zaubereffekte auslagern
+**Was:** Nova, AE, Blizzard, CoC, Blink, Decals und Dauer-Emitter an einem Ort.
+**Nicht gebaut:** kein Effekt-Registry-System.
+
 ## 2026-10-31 — refactor(models): Eber auslagern
 **Was:** Gleiche Schnittstelle wie der Mage.
 **Nicht gebaut:** keine gemeinsame Basisklasse (nur zwei Rigs).
