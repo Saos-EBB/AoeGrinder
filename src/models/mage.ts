@@ -3,10 +3,34 @@
 // anim = { state: 'idle'|'run'|'back'|'air'|'sit'|'dead', speed, vy, squat, cast, channel }
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp, lerpTo, part, joint } from '../util';
 import { CFG } from '../config';
 import { scene } from '../render';
 import { glowSprite } from '../fx/particles';
+
+// Fasst alle Meshes eines Gelenks pro Material zu einem zusammen, spart Draw Calls
+function mergeByJoint(root, keep) {
+  const joints = [];
+  root.traverse(o => { if (o.isGroup) joints.push(o); });
+  for (const g of joints) {
+    const byMat = new Map();
+    for (const m of g.children) {
+      if (!m.isMesh || m === keep) continue;
+      if (!byMat.has(m.material)) byMat.set(m.material, []);
+      byMat.get(m.material).push(m);
+    }
+    for (const [mat, meshes] of byMat) {
+      if (meshes.length < 2) continue;
+      const geos = meshes.map(m => {
+        m.updateMatrix();
+        return m.geometry.toNonIndexed().applyMatrix4(m.matrix);
+      });
+      g.remove(...meshes);
+      g.add(new THREE.Mesh(mergeGeometries(geos), mat));
+    }
+  }
+}
 
 // Skelett-Magier mit rotem Lendenschurz und Stab
 const THIGH = 0.5, SHIN = 0.46, ANKLE_H = 0.09;
@@ -200,6 +224,8 @@ function buildMage() {
   };
   const front = flap(0.13, 0.3), back = flap(-0.13, 0.32);
   const clothState = { f: [0, 0, 0], b: [0, 0, 0] };
+
+  mergeByJoint(root, crystal);
 
   let phase = 0, tAcc = 0;
   const j = {

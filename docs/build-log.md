@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(mage): Teile pro Gelenk zusammenfassen
+**Was:** Das Rig hatte 134 Draw Calls statt vorher 51, das kostet auf Rechnern ohne eigene Grafikkarte; Meshes eines Gelenks mit gleichem Material werden beim Bau verschmolzen.
+**Nicht gebaut:** keine Geometrie-Reduktion, die Dreiecke bleiben.
+
 ## 2026-10-31 — feat(mage): Einknicken bei der Landung
 **Was:** `player.landAt` merkt den Aufsetz-Zeitpunkt, die Knie federn 300 ms nach.
 **Nicht gebaut:** kein Ausholen vor dem Sprung: Springen muss sofort auf den Tastendruck reagieren.

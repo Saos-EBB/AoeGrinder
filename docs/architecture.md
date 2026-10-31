@@ -12,7 +12,7 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - `src/render.ts`: Renderer, Kamera-Objekt, Composer, Himmel, Licht, Resize
 - `src/world.ts`: heightAt, Terrain, Bäume, Gras, collide, Boden-Decals
 - `src/fx/particles.ts`: Partikelsystem, Glow-Textur
-- `src/models/mage.ts`: Skelett-Rig des Spielers
+- `src/models/mage.ts`: Skelett-Rig des Spielers, Teile pro Gelenk verschmolzen; `anim` enthält auch `vy` und `squat`
 - `src/models/boar.ts`: Eber-Rig
 - `src/fx/spellFx.ts`: Effekte pro Zauber, Decals, Dauer-Emitter
 - `src/camera.ts`: Orbit-Kamera, Baumkronen-Kollision, Shake
