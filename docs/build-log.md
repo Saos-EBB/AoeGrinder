@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — chore(docs): Stand der Repo-Migration in handoff.md
+**Was:** Stand-Abschnitt ergänzt, damit die Chat-Seite den Repo-Stand kennt; dazu einen doppelten Import in main.ts entfernt.
+**Nicht gebaut:** keine Spec-Anpassungen, kein Artifact-Update.
+
 ## 2026-10-31 — refactor(player): Bewegung, Physik, Mana auslagern
 **Was:** Danach bleiben in main.ts nur Bootstrap und Loop.
 **Nicht gebaut:** keine Player-Klasse.

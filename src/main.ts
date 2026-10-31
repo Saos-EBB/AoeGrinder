@@ -13,7 +13,6 @@ import { binds, mouse, pressSpell, pickGround } from './input';
 import { spawnPack, updateMob, separateMobs, sinkCorpse } from './mobs';
 import { cast } from './spells';
 import { resetGame, updatePlayer } from './player';
-import './input';
 import './ui/menus';
 
 function update(dt) {
