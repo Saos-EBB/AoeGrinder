@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(modes): Modi Teil 2
+**Was:** Fünf Modifikatoren und drei Presets als Daten. Das Start-Kit wird beim Klick auf Start gesetzt, weil die Modus-Auswahl davor nur `resetGame` aufruft.
+**Nicht gebaut:** keine Vorschau des Start-Kits im Startmenü.
+
 ## 2026-10-31 — feat(fx): Texturen für die Bodenflächen der neuen Spells
 **Was:** Glut, Wind, Leere und Entweihung als Canvas-Texturen im Stil von `iceTex`/`runeTex`, die flachen Farbscheiben sind weg. `fieldDecal` nimmt jetzt Textur, Farbe, Deckkraft und Drehung.
 **Nicht gebaut:** keine Texturen für Effekte ohne Bodenfläche, Feuerring und Feuernova bleiben Partikel.

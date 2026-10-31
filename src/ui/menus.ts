@@ -1,10 +1,10 @@
 import { state, player } from '../state';
 import { $ } from '../util';
-import { SPELLS, CARD_RARITIES } from '../config';
-import { rollOffer, forcedOffer } from '../cards';
+import { SPELLS, CARD_RARITIES, CARD_CLASSIC_EVERY } from '../config';
+import { rollOffer, forcedOffer, rankAllSpells } from '../cards';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
-import { resetSpells, learnSpell, stopChannel, clearSpellEffects } from '../spells/core';
+import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
 import { ZONES } from '../zones';
@@ -12,7 +12,9 @@ import { zoneId } from '../world';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 // Level-Up-Karten
-export function showCards(offer = rollOffer()) {
+export function showCards(offer?) {
+  if (!offer && modRule('noCards')) return classicLevelUp();
+  offer ??= rollOffer();
   state.paused = true;
   $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
   $('cardHint').textContent = '';
@@ -30,6 +32,15 @@ export function showCards(offer = rollOffer()) {
   }
   $('cardModal').classList.add('show');
   ding();
+}
+
+// Classic pur: statt Karten alle 2 Level ein Rang, das Spiel läuft weiter
+function classicLevelUp() {
+  for (let lvl = player.level - state.pendingLevelUps + 1; lvl <= player.level; lvl++) {
+    if (lvl % CARD_CLASSIC_EVERY === 0) rankAllSpells();
+  }
+  state.pendingLevelUps = 0;
+  refill();
 }
 
 function pickCard(card) {
@@ -54,10 +65,14 @@ function chooseReplacement(id) {
   });
 }
 
+function refill() {                    // Ding füllt auf, außer Mana bei Kein Trinken: dort gibt es es nur über Regeneration
+  player.hp = maxHp();
+  if (!modRule('noDrink')) player.mana = maxMana();
+}
+
 function finishCard() {
   state.pendingLevelUps--;
-  player.hp = maxHp();                 // Ding füllt auf
-  player.mana = maxMana();
+  refill();
   $('cardModal').classList.remove('show');
   if (state.pendingLevelUps > 0) showCards();
   else state.paused = false;
@@ -162,7 +177,13 @@ function ding() {
   } catch { /* kein Audio – egal */ }
 }
 
-$('startBtn').addEventListener('click', () => { $('startModal').classList.remove('show'); state.paused = false; ding(); });
+$('startBtn').addEventListener('click', () => {
+  $('startModal').classList.remove('show');
+  resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
+  renderActionbar();
+  state.paused = false;
+  ding();
+});
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
   stopChannel(true);

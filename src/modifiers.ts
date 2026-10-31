@@ -6,12 +6,21 @@ export const MODIFIERS = [
   { id: 'wild', name: 'Wilde Mobs', desc: 'Mobs +30 % Tempo', scoreMult: 1.3, excludes: [], speed: 1.3 },
   { id: 'big', name: 'Große Packs', desc: 'doppelte Packgröße', scoreMult: 1, excludes: [], packSize: 2 },
   { id: 'time', name: 'Zeitlimit', desc: 'Run endet nach 10 Minuten', scoreMult: 1, excludes: [], timeLimit: 600000 },
+  // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noTag, noDrink, noCards, noLuck
+  { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink'], onlyTag: 'Frost' },
+  { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
+  { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
+  { id: 'classic', name: 'Classic pur', desc: 'keine Level-Karten, alle 2 Level ein Rang auf alle Spells', scoreMult: 1.5, excludes: ['noluck'], noCards: true },
+  { id: 'noluck', name: 'Kein Glück', desc: 'Glück bleibt 0, immer 4 Karten', scoreMult: 1.2, excludes: ['classic'], noLuck: true },
 ];
 
 export const MODES = [
   { id: 'normal', name: 'Normal', mods: [] },
   { id: 'hard', name: 'Hardmode', mods: ['half'] },
   { id: 'sprint', name: 'Sprint', mods: ['time'] },
+  { id: 'frostonly', name: 'Frost only', mods: ['frost'] },
+  { id: 'fireonly', name: 'Fire only', mods: ['fire'] },
+  { id: 'classic', name: 'Classic', mods: ['classic'] },
   { id: 'custom', name: 'Eigene Mischung', mods: null },   // frei wählbar
 ];
 

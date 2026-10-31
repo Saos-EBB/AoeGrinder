@@ -39,3 +39,21 @@ Auswahl im Startbildschirm. Teil 2 (nach dem Spells-Merge, nicht jetzt): Frost o
 - Todesbildschirm: Punkte-Aufschlüsselung, Platz im Modus, "Neuer Rekord!".
 - Export: Button kopiert JSON in die Zwischenablage. Import: Textfeld zum Einfügen. Kein Datei-Download.
 - Aufrufbar im Start- und Esc-Menü.
+
+## Modi Teil 2
+Einträge in `modifiers.ts`, Regeln in `spells/core.ts` (`modRule`, `tagsAllowed`). Punkte `// PH`.
+
+| Modifikator | Wirkung | Punkte | Schließt aus |
+|---|---|---|---|
+| Nur Frost | Start-Kit Frost Nova, Wirbel, Blizzard, Cone of Cold, Blink, Trinken; nur Karten mit Tag Frost | ×1,2 | Nur Feuer |
+| Nur Feuer | Start-Kit Druckwelle, Flammenstoß, Höllenfeuer, Blink, Trinken; keine Frost-Karten | ×1,4 | Nur Frost |
+| Kein Trinken | Trinken-Slot entfällt, Level-Up füllt kein Mana auf | ×1,5 | – |
+| Classic pur | keine Level-Karten, alle 2 Level ein Rang auf jeden Wert aller Spells | ×1,5 | Kein Glück |
+| Kein Glück | Glück bleibt 0, immer 4 Karten | ×1,2 | Classic pur |
+
+Presets: Frost only, Fire only, Classic.
+
+Festlegungen, die die Tabelle offen lässt:
+- Supports haben keinen Frost-Tag. Sie bleiben im Angebot, solange sie auf einen erlaubten Spell wirken.
+- Talente: Improved Blizzard, Improved Frost Nova, Shatter, Weiter Sturm und Frostrüstung zählen als Frost. Arkane Macht, Arcane Mind und Arcane Meditation tragen keinen Tag: bei Nur Frost fallen sie weg, bei Nur Feuer bleiben sie.
+- Nur Feuer: Trinken bleibt auf Slot 6, Blink auf Slot 5, Slot 4 ist frei.

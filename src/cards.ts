@@ -3,7 +3,7 @@
 import { state, player } from './state';
 import { pick } from './util';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
-import { stat, hasSpell, hasTag } from './spells/core';
+import { stat, hasSpell, hasTag, tagsAllowed, modRule } from './spells/core';
 import { SUPPORTS } from './spells/supports';
 
 const pct = v => `${Math.round(v * 100)} %`;
@@ -34,7 +34,7 @@ function rankCards() {
 }
 
 function newSpellCards() {
-  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic).map(id => ({
+  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].fixed && tagsAllowed(SPELLS[id].tags)).map(id => ({
     kind: 'spell', id: `spell-${id}`, learn: id, name: SPELLS[id].name, src: `Neuer Spell · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { stat(id).dmg += CARD_SPELL_DMG * m; },
@@ -58,7 +58,9 @@ function runeCards() {
 }
 
 function supportCards() {
-  return SUPPORTS.filter(x => !state.supports[x.id]).map(x => ({
+  // Ein Support bleibt im Angebot, solange er auf einen im Modus erlaubten Spell wirkt
+  const works = x => Object.keys(SPELLS).some(id => tagsAllowed(SPELLS[id].tags) && x.tags.some(t => hasTag(id, t)));
+  return SUPPORTS.filter(x => !state.supports[x.id] && works(x)).map(x => ({
     kind: 'support', id: `support-${x.id}`, tags: x.tags, name: x.name, src: `Support · ${x.tags.join(', ')}`,
     desc: m => `${x.desc} +${pct(CARD_SPELL_DMG * m)} Schaden auf diese Spells.`,
     apply: m => {
@@ -71,7 +73,7 @@ function supportCards() {
 // Nur lila oder orange, max. 1 pro Run, ab Level 30
 function relicCards(forced = false) {
   if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
-  return Object.keys(SPELLS).filter(id => SPELLS[id].relic).map(id => ({
+  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && tagsAllowed(SPELLS[id].tags)).map(id => ({
     kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },
@@ -79,7 +81,7 @@ function relicCards(forced = false) {
 }
 
 function talentCards() {
-  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max).map(c => {
+  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && tagsAllowed(c.tags ?? []) && (!c.needs || hasSpell(c.needs))).map(c => {
     const rank = state.cardRanks[c.id] || 0;
     return {
       kind: 'talent', id: c.id, name: c.name, src: `Talent · Rang ${rank + 1} / ${c.max}`,
@@ -90,6 +92,7 @@ function talentCards() {
 }
 
 function luckCards() {
+  if (modRule('noLuck')) return [];
   return [{
     kind: 'luck', id: 'luck', name: 'Glück', src: 'Glück',
     desc: m => `Glück +${num(CARD_LUCK * m)}: bessere und mehr Karten.`,
@@ -98,6 +101,14 @@ function luckCards() {
 }
 
 const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: relicCards, talent: talentCards, luck: luckCards };
+
+// Classic pur: ein Rang auf jeden Wert jedes Spells im Slot
+export function rankAllSpells() {
+  for (const id of state.slots) {
+    if (!id) continue;
+    for (const key of SPELLS[id].ranks ?? []) RANK_APPLY[key](stat(id), 1);
+  }
+}
 
 // Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
 export function rollRarity(minTier = 0) {

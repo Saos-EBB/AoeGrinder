@@ -9,10 +9,22 @@ import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
+import { MODIFIERS, activeModIds } from '../modifiers';
 import { SUPPORTS } from './supports';
 
+// Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
+function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
+export function modRule(key): any { return activeMods().find(m => m[key])?.[key]; }
+// Nur Frost lässt nur Frost zu, Nur Feuer alles außer Frost
+export function tagsAllowed(tags) { return activeMods().every(m => (!m.onlyTag || tags.includes(m.onlyTag)) && (!m.noTag || !tags.includes(m.noTag))); }
+
+function startKit() {
+  const kit = (modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);
+  return [...kit, ...Array(SPELL_SLOTS - kit.length).fill(null)];
+}
+
 export function resetSpells() {
-  state.slots = [...SPELL_START, ...Array(SPELL_SLOTS - SPELL_START.length).fill(null)];
+  state.slots = startKit();
   state.spellStats = {};
   state.runes = {};
   state.supports = {};

@@ -76,16 +76,18 @@ export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spe
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
 export const CARD_RELIC_LEVEL = 30;
+export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 
 // Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.
+// tags: für Nur Frost und Nur Feuer. needs: nur mit diesem Spell im Slot.
 export const CARDS = [
-  { id: 'ibliz', name: 'Improved Blizzard', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
+  { id: 'ibliz', name: 'Improved Blizzard', tags: ['Frost'], max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
     desc: (r, m) => `Blizzard verlangsamt Gegner um ${Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100)} % für 1,5 s.`,
     apply: (r, m) => { mods.blizSlow = Math.max(mods.blizSlow, Math.min(0.9, [0.3, 0.5][r] * m)); } },
-  { id: 'ifn', name: 'Improved Frost Nova', max: 2,   // 2 s je Rang belegt (Wowhead) bei ×1
+  { id: 'ifn', name: 'Improved Frost Nova', tags: ['Frost'], max: 2,   // 2 s je Rang belegt (Wowhead) bei ×1
     desc: (r, m) => `Frost Nova Abklingzeit −${String(2 * m).replace('.', ',')} s.`,
     apply: (r, m) => { mods.novaCd += 2000 * m; } },
-  { id: 'shatter', name: 'Shatter', max: 3,
+  { id: 'shatter', name: 'Shatter', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
   { id: 'power', name: 'Arkane Macht', max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
@@ -93,10 +95,10 @@ export const CARDS = [
     desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
   { id: 'amed', name: 'Arcane Meditation', max: 3,
     desc: (r, m) => `+${Math.round(5 * m)} % Mana-Regeneration während der 5-Sekunden-Regel.`, apply: (r, m) => { mods.castRegen += 0.05 * m; } },
-  { id: 'storm', name: 'Weiter Sturm', max: 2,
+  { id: 'storm', name: 'Weiter Sturm', tags: ['Frost'], max: 2,
     desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
-  { id: 'aecost', name: 'Arkane Effizienz', max: 2,
+  { id: 'aecost', name: 'Arkane Effizienz', tags: ['Arkan'], needs: 'ae', max: 2,
     desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
-  { id: 'armor', name: 'Frostrüstung', max: 3,
+  { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
 ];

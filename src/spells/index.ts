@@ -1,6 +1,7 @@
 // Registrierung aller Spells. Die anderen Module importieren weiter aus './spells'.
 
 import { SPELLS, SPELL_ACTIONS } from '../config';
+import '../modifiers';   // resetSpells unten liest den Modus; über core.ts käme der Import im Kreis zu spät
 import { resetSpells } from './core';
 import { nova } from './nova';
 import { ae } from './ae';
