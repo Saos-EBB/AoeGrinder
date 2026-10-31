@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(zones): Tirisfal mit fünf Mobs
+**Was:** Erste echte Zone: grüner Nebel, Windmühle, Friedhof, See, Wachturm, Kürbisfelder; Baukasten `creatures.ts` für die Mob-Rigs; Sprungbiss, Schattenblitze, Lebensraub, Alarm. Mob-Modelle werden beim Entfernen freigegeben, sonst läuft der Speicher voll.
+**Nicht gebaut:** keine Tierfallen- oder Wegfindung: Mobs laufen weiter gerade auf den Spieler zu.
+
 ## 2026-10-31 — feat(mobs): Fähigkeiten-Hooks und Typ-Werte
 **Was:** `mobs.ts` ruft vier Hooks auf und kennt Typ-Werte; `spawnMob`, `hitPlayer`, `startLeap`, `applyRoot` stehen den Fähigkeiten offen. Noch keine Fähigkeit belegt, das Spiel läuft wie vorher.
 **Nicht gebaut:** kein `onDeath`-Hook: Pack-Tode zählt `killMob` direkt, sonst braucht ihn keine Fähigkeit.

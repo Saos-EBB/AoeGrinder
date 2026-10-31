@@ -10,9 +10,10 @@ import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, reset
 import { cam, updateCamera } from './camera';
 import { refreshKeyLabels, updateHud } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
-import { spawnPack, updateMob, separateMobs, sinkCorpse } from './mobs';
+import { spawnPack, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
+import { updateAbilities } from './abilities';
 import { cast } from './spells';
-import { resetGame, updatePlayer } from './player';
+import { resetGame, updatePlayer, switchZone } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 
@@ -21,10 +22,11 @@ function update(dt) {
   updatePlayer(dt);
   for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
+  updateAbilities(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {
-    if (m.dead && state.now - m.deathAt > 4000) { scene.remove(m.model.root); m.plate.remove(); return false; }
+    if (m.dead && state.now - m.deathAt > 4000) { removeMob(m); return false; }
     return true;
   });
   const activePacks = new Set(state.mobs.filter(m => !m.dead).map(m => m.packId)).size;
@@ -98,4 +100,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, get zone() { return zone; } };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, get zone() { return zone; }, switchZone, spawnMob, enterCombat };

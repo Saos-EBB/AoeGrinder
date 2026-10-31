@@ -10,12 +10,14 @@ import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
-import { spawnPack } from './mobs';
+import { spawnPack, removeMob } from './mobs';
+import { clearAbilities } from './abilities';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 
 export function resetGame() {
-  for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
+  for (const m of state.mobs) removeMob(m);
+  clearAbilities();
   state.mobs = [];
   resetMods();
   state.cardRanks = {};
@@ -38,7 +40,8 @@ export function resetGame() {
 
 // Dev: Zone wechseln. Mobs weg, Welt neu, Spieler in die Mitte; Level und Karten bleiben
 export function switchZone(id) {
-  for (const m of state.mobs) { scene.remove(m.model.root); m.plate.remove(); }
+  for (const m of state.mobs) removeMob(m);
+  clearAbilities();
   state.mobs = [];
   state.autorun = false;
   stopChannel(); stopDrink();

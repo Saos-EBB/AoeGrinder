@@ -33,6 +33,13 @@ export function spawnPack() {
   }
 }
 
+// Modelle sind pro Mob verschmolzen, Geometrie und Material müssen mit weg
+export function removeMob(m) {
+  scene.remove(m.model.root);
+  m.plate.remove();
+  m.model.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose?.(); });
+}
+
 export function spawnMob(typeId, pos, level, packId) {
   const type = MOB_TYPES[typeId];
   collide(pos, 0.7);
