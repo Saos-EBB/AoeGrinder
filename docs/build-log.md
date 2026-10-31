@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — refactor(camera): Orbit-Kamera, Kollision, Shake
+**Was:** Kamera-Logik getrennt vom Render-Setup.
+**Nicht gebaut:** keine Kamera-Klasse.
+
 ## 2026-10-31 — refactor(fx): Zaubereffekte auslagern
 **Was:** Nova, AE, Blizzard, CoC, Blink, Decals und Dauer-Emitter an einem Ort.
 **Nicht gebaut:** kein Effekt-Registry-System.

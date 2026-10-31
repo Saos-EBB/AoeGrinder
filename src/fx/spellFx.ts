@@ -6,7 +6,7 @@ import { scene } from '../render';
 import { heightAt, terrainDecal, drape } from '../world';
 import { glowSprite, particles } from '../fx/particles';
 import { mage } from '../models/mage';
-import { shakeCamera } from '../main';
+import { shakeCamera } from '../camera';
 
 export const blizCursor = terrainDecal(new THREE.RingGeometry(0.93, 1, 64, 1),
   new THREE.MeshBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.9, depthWrite: false }));
