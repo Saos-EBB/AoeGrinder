@@ -21,3 +21,18 @@ Die Abweichung von 3 kommt vom Trefferwurf (96 %) und seltenen Doppel-Crits. Leb
 - **feat(dev): Level setzen im Esc-Menü.** Der Block hängt sich aus `ui/leaderboardView.ts` selbst ein, `index.html` und `ui/menus.ts` bleiben unberührt. Mobs werden wie beim Zonenwechsel neu gesetzt und der Spieler kommt in die Mitte, sonst stünden noch die Packs des alten Levels da. Das ist die einzige Ausnahme von „bestehende Packs bleiben“. Nicht gebaut: keine Karten für übersprungene Level.
 - **fix(score): Halbe Werte als eigener Faktor.** Der Modus steckt jetzt in `maxHp` und `maxMana`, nicht mehr in `mods`, wo Karten darauf addierten. Das behebt die in `status-maps.md` notierte Abweichung (+15 % wirkten im Hardmode wie +30 %). Schaden war schon getrennt. Gemessen auf Level 20: Hardmode 520, mit 1× Frostrüstung 598 (= 1040 × 0,5 × 1,15); Normal 1040 und 1196, also in beiden Modi ×1,15. Mana im Hardmode mit Arcane Mind (+10 %): 763 (= 1387 × 0,5 × 1,1). Nicht gebaut: —
 - **feat(score): castKey hat Vorrang.** Alles, was keine Spell-ID ist, gilt als echte Cast-ID und zählt ohne 1,2-s-Fenster, sodass auch alle Kills eines 8-s-Blizzards ein Cast sind. Spell-IDs und `env` laufen weiter über das Fenster. Nur `score.ts` wurde geändert, weil Grün `damageMob` schon anfasst: `mob.castKey = source` bleibt dort stehen, bis Grün die Zeile ersetzt. Vertrag für Grün: Die Cast-ID darf nicht wie ein Spell heißen (eine Zahl oder `ae#12` passt). Nicht gebaut: kein zweites Feld für die Spell-ID.
+
+## Stand
+Alle 5 Punkte sind fertig. `tsc` ist sauber, der Build läuft, im Browser gab es keine Laufzeitfehler.
+
+**Getestet im Spiel:** Lauf von Level 1 bis 100 mit echtem Kartenmenü (immer Karten im Angebot, danach Max-Level, keine weiteren Level-Ups, Punkte laufen weiter), Mob-Level, Mob-Verteilung in allen Zonen, Einblendung, alle 10 Dev-Knöpfe, Hardmode mit Karten, castKey mit Spell-ID, Zahl, Text und ohne Quelle.
+
+**Merge mit `gruen-polish` (Stand `f1f9b0b`):** Probe-Merge ohne Konflikte. Beide ändern `updateHud` in `ui/hud.ts` und `mobs.ts` in verschiedenen Zeilen. Grüns offene Änderungen an `spells/core.ts` sind nicht geprüft.
+
+**Offen, nicht im Auftrag und daher nicht geändert:**
+- Hardmode auf Level 1: 150 Leben und 200 Mana. Das reicht für 2 AE, ein Mob braucht dort 6; Blizzard (320) und Cone of Cold (210) sind nicht wirkbar. Im Normal-Modus reicht es für 5 AE und das ganze Kit.
+- Manakosten sind fest: AE kostet auf jedem Level 75, das sind 19 % des Manas auf Level 1 und 1,4 % auf Level 100. Mana verliert nach oben an Bedeutung.
+- Mob-Schaden blieb `Level × 0,9–1,3`: Auf Level 1 trifft ein Mob für 1 Leben (0,4 %), auf Level 20 für etwa 22 (2 %), auf Level 100 für etwa 110 (2,6 %). Die ersten Level sind fast gefahrlos.
+- Fester Schaden skaliert nicht: Lava 40/s nimmt auf Level 1 13 % der Spieler-Leben pro Sekunde und tötet einen Start-Mob in 3 s. Lavaflächen (30/s) und Gift (4 je Stapel) kommen erst ab Level 61 vor.
+- Packgröße ist unverändert und bleibt bis Level 17 bei 2 Mobs.
+- `SCORE_VERSION` steht weiter auf `v8`. Vor dem nächsten Publish erhöhen, sonst mischt der Versionsfilter alte und neue Balance.
