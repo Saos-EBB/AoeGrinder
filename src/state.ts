@@ -9,6 +9,7 @@ export const state: any = {
   autorun: false,
   jumpQueued: false,
   rebinding: null,      // Aktion, die gerade neu belegt wird
+  padAim: null,         // Blizzard-Zielpunkt am Pad, solange R1 gehalten ist
 };
 
 export const player: any = {};

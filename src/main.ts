@@ -33,7 +33,7 @@ function update(dt) {
 
 function updateVisuals(dt) {
   updateCamera();
-  if (player.targeting) pickGround();
+  if (player.targeting && !state.padAim) pickGround();
 
   mage.root.position.copy(player.pos);
   mage.root.rotation.y = player.facing;
@@ -56,8 +56,9 @@ function updateVisuals(dt) {
   }
 
   if (player.targeting) {
-    drape(blizCursor, mouse.ground, blizRadius());
-    blizCursor.material.color.set(dist2d(player.pos, mouse.ground) <= SPELLS.bliz.range ? 0x7fd0ff : 0xff5050);
+    const aim = state.padAim || mouse.ground;
+    drape(blizCursor, aim, blizRadius());
+    blizCursor.material.color.set(dist2d(player.pos, aim) <= SPELLS.bliz.range ? 0x7fd0ff : 0xff5050);
   }
   if (blizFx.g.visible) {
     const cl = blizFx.cloud;

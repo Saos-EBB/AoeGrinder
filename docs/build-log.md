@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-10-31 — feat(gamepad): Blizzard-Zielmodus mit R1 halten, loslassen, Kreis abbrechen
+**Was:** Eigener Zielpunkt `state.padAim`, die Maus-Variante über `mouse.ground` bleibt; ein Fehlschlag wie „Außer Reichweite“ beendet das Zielen, weil R1 dann ohnehin los ist.
+**Nicht gebaut:** kein Schnellzauber (entschieden), kein Mitwandern des Zielkreises mit dem Charakter.
+
 ## 2026-10-31 — feat(gamepad): Zauber, Sprung, Trinken, Autorun, Zoom auf die Tasten
 **Was:** Einzeldrücke rufen dieselben Funktionen wie die Tastatur; Belegung in eigenem `padBinds`, damit gespeicherte Tastatur-Belegungen unberührt bleiben (statt zweitem Feld in `binds`).
 **Nicht gebaut:** L2-Modifier, weil noch keine zweite Zauberebene da ist.

@@ -1,9 +1,13 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
+import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
 import { CFG, SPELLS } from './config';
 import { cam } from './camera';
+import { heightAt } from './world';
+import { blizCursor } from './fx/spellFx';
+import { cast } from './spells';
 import { showError } from './ui/hud';
 import { pressSpell } from './input';
 import { openBinds, closeBinds } from './ui/menus';
@@ -45,11 +49,44 @@ const PAD_EFFECTS = {
   zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
 };
 
+// Blizzard: halten zum Zielen, loslassen zum Zaubern
+const CANCEL_BTN = 1;
+
+function cancelAim() {
+  state.padAim = null;
+  player.targeting = false;
+  blizCursor.visible = false;
+}
+
+function startAim() {
+  const x = player.pos.x + Math.sin(player.facing) * CFG.blizAimStart;
+  const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
+  state.padAim = new THREE.Vector3(x, heightAt(x, z), z);
+  player.targeting = true;
+  blizCursor.visible = true;
+}
+
+function moveAim(s) {
+  const yaw = player.facing + cam.offset, a = state.padAim, fwd = -pad.look.y, right = pad.look.x;
+  a.x += (Math.sin(yaw) * fwd - Math.cos(yaw) * right) * CFG.blizAimSpeed * s;
+  a.z += (Math.cos(yaw) * fwd + Math.sin(yaw) * right) * CFG.blizAimSpeed * s;
+  a.y = heightAt(a.x, a.z);
+}
+
 function gameButtons() {
   if (pressed(padBinds.menu)) return openBinds();
+  const cancelled = player.targeting && pressed(CANCEL_BTN);
+  if (cancelled) cancelAim();
+  const b = padBinds.bliz;
+  if (state.padAim && pad.prev[b] && !pad.down[b]) {
+    const point = state.padAim;
+    cancelAim();
+    cast('bliz', point);
+  }
   for (const { id } of PAD_ACTIONS) {
-    if (!pressed(padBinds[id])) continue;
-    if (SPELLS[id]) pressSpell(id);
+    if (!pressed(padBinds[id]) || (cancelled && padBinds[id] === CANCEL_BTN)) continue;
+    if (id === 'bliz') startAim();
+    else if (SPELLS[id]) pressSpell(id);
     else PAD_EFFECTS[id]?.();
   }
   if (Math.abs(pad.move.y) > 0.5) state.autorun = false;   // wie W/S an der Tastatur
@@ -78,15 +115,21 @@ export function pollGamepad() {
   const left = gp ? deadzone(gp.axes[0], gp.axes[1]) : { x: 0, y: 0 };
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
+  if (!player.targeting || !gp || state.paused) { if (state.padAim) cancelAim(); }
   if (!state.paused) gameButtons();
   else if (pressed(padBinds.menu) && $('bindModal').classList.contains('show')) closeBinds();
 }
 
 // Im Stand kreist die Kamera, beim Laufen dreht sich der Charakter mit (wie rechte Maustaste)
 export function updatePadCamera(dt) {
+  const s = dt / 1000;
+  if (state.padAim) {                       // rechter Stick verschiebt den Zielkreis statt der Kamera
+    moveAim(s);
+    pad.look = { x: 0, y: 0 };
+  }
   const moving = pad.move.x || pad.move.y;
   if (!moving && !pad.look.x && !pad.look.y) return;
-  const s = dt / 1000, yaw = -pad.look.x * CFG.padYaw * s;
+  const yaw = -pad.look.x * CFG.padYaw * s;
   if (moving || state.autorun) {
     player.facing += cam.offset + yaw;
     cam.offset = 0;

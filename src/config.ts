@@ -29,6 +29,7 @@ export const CFG = {
   playRadius: 98,
   packCount: 9,
   padDeadzone: 0.15, padWalkBelow: 0.5,             // PH: docs/gamepad-spec.md
+  blizAimStart: 12, blizAimSpeed: 25,               // PH: Blizzard-Zielkreis am Pad (yd, yd/s)
   padYaw: 2.5, padPitch: 1.5,                       // PH: Kamera am Pad (rad/s bei vollem Ausschlag)
 };
 
