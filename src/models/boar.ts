@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { rand, lerpTo, part, joint } from '../util';
+import { M, finish } from './creatures';
 
 // Eber: Körper, Kopf-Gelenk, 4 Beine
 const boarGeo = {
@@ -10,15 +11,10 @@ const boarGeo = {
   tusk: new THREE.ConeGeometry(0.06, 0.35, 5),
   leg: new THREE.BoxGeometry(0.2, 0.5, 0.2),
   tail: new THREE.BoxGeometry(0.06, 0.06, 0.3),
-  ice: new THREE.BoxGeometry(1.6, 1.7, 2.3),
 };
-const tuskMat = new THREE.MeshLambertMaterial({ color: 0xf2ecd8 });
-const snoutMat = new THREE.MeshLambertMaterial({ color: 0xc08a7a });
-const iceMat = new THREE.MeshLambertMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.5, emissive: 0x2a5070 });
 
 export function buildBoar(level) {
-  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6b4426 });
-  const legMat = new THREE.MeshLambertMaterial({ color: 0x3b2614 });
+  const bodyMat = M(0x6b4426), legMat = M(0x3b2614), tuskMat = M(0xf2ecd8), snoutMat = M(0xc08a7a);
   const root = new THREE.Group();
   const body = joint(root, 0, 0.82, 0);
   body.add(part(boarGeo.body, bodyMat));
@@ -38,19 +34,10 @@ export function buildBoar(level) {
     hip.add(part(boarGeo.leg, legMat, 0, -0.22, 0));
     return hip;
   });
-  const ice = new THREE.Mesh(boarGeo.ice, iceMat);
-  ice.position.y = 0.85; ice.visible = false;
-  root.add(ice);
-  root.scale.setScalar(0.9 + (level - 18) * 0.02);
-
   let phase = rand(0, 6);
   const j = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: 0 };
-  function update(dt, a) {
+  return finish(root, (dt, a) => {
     const s = dt / 1000;
-    ice.visible = !!a.frozen;
-    bodyMat.color.set(a.state === 'dead' ? 0x5a5048 : a.slowed ? 0x6f7fa0 : 0x6b4426);
-    bodyMat.emissive.setScalar(a.flash * 0.9);                 // kurzer weißer Treffer-Blitz
-    if (a.frozen) return;                                      // eingefroren: Pose bleibt stehen
     const t = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: Math.sin(performance.now() / 200) * 0.4 };
     if (a.state === 'run') {
       phase += s * a.speed * 2.2;
@@ -72,6 +59,5 @@ export function buildBoar(level) {
     body.position.y = j.bodyY;
     body.rotation.z = j.rollZ;
     tail.rotation.y = j.tail;
-  }
-  return { root, update };
+  }, level, [1, 1, 1], [1.6, 1.7, 2.3], 0.85);
 }
