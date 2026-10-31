@@ -69,8 +69,8 @@ function supportCards() {
 }
 
 // Nur lila oder orange, max. 1 pro Run, ab Level 30
-function relicCards() {
-  if (state.relicTaken || player.level < CARD_RELIC_LEVEL) return [];
+function relicCards(forced = false) {
+  if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
   return Object.keys(SPELLS).filter(id => SPELLS[id].relic).map(id => ({
     kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
@@ -134,4 +134,10 @@ export function rollOffer() {
     offer[offer.length - 1] = { ...card, tier: rollRarity() };
   }
   return offer;
+}
+
+// Dev: Angebot aus einer Art in fester Seltenheit. Relikte auch unter Level 30, aber nie unter lila.
+export function forcedOffer(kind, tier) {
+  const pool = kind === 'relic' ? relicCards(true) : POOLS[kind]();
+  return pool.sort(() => Math.random() - 0.5).slice(0, cardCount()).map(c => ({ ...c, tier: Math.max(tier, c.minTier ?? 0) }));
 }

@@ -12,6 +12,7 @@ Arbeitsstand des Spell-Systems. Grundlage: `docs/spells-spec.md`. Kein Publish, 
 - feat(spells): Hurrikan, Frostkugel, Kettenblitz. Nicht gebaut: kein Zielen beim Kettenblitz, er nimmt den nächsten Mob in 30 yd.
 - feat(spells): Leerenkugel, Wirbel, Bogenblitz; Schock wirkt auf allen Schaden der Spells. Nicht gebaut: —
 - feat(spells): sechs Relikte in `relics.ts`, Kartenart Relikt. Nicht gebaut: Relikte haben keine Runen (Spec nennt keine); entgegen "ein Spell pro Datei" liegen sie gesammelt in einer Datei.
+- feat(ui): Dev im Esc-Menü: Karte erzwingen (Art + Seltenheit), Glück +25. Nicht gebaut: —
 
 ## Struktur
 - `src/spells/core.ts`: Slots, Tags, `cast`, Channel, Kontext `c` pro Wirkung (`c.hit`, `c.radius`, `c.duration`), Runen, Ladungen, Dauerflächen

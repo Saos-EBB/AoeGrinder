@@ -1,9 +1,9 @@
 import { state, player } from '../state';
 import { $ } from '../util';
 import { SPELLS, CARD_RARITIES } from '../config';
-import { rollOffer } from '../cards';
+import { rollOffer, forcedOffer } from '../cards';
 import { maxHp, maxMana } from '../formulas';
-import { refreshKeyLabels, renderActionbar, togglePerf, perfEnabled } from '../ui/hud';
+import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
@@ -12,12 +12,12 @@ import { zoneId } from '../world';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 // Level-Up-Karten
-export function showCards() {
+export function showCards(offer = rollOffer()) {
   state.paused = true;
   $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
   $('cardHint').textContent = '';
   $('cards').innerHTML = '';
-  for (const c of rollOffer()) {
+  for (const c of offer) {
     const r = CARD_RARITIES[c.tier];
     const el = document.createElement('div');
     el.className = 'card frame';
@@ -130,6 +130,19 @@ function renderDevZones() {
     box.appendChild(b);
   }
 }
+
+// Dev: Karte erzwingen, Glück
+const KIND_NAMES = { rang: 'Rang', spell: 'Neuer Spell', rune: 'Rune', support: 'Support', relic: 'Relikt', talent: 'Talent', luck: 'Glück' };
+for (const [id, name] of Object.entries(KIND_NAMES)) $('devKind').insertAdjacentHTML('beforeend', `<option value="${id}">${name}</option>`);
+CARD_RARITIES.forEach((r, tier) => $('devTier').insertAdjacentHTML('beforeend', `<option value="${tier}">${r.name}</option>`));
+$('devForce').addEventListener('click', () => {
+  const offer = forcedOffer(($('devKind') as HTMLSelectElement).value, Number(($('devTier') as HTMLSelectElement).value));
+  if (!offer.length) return showError('Keine Karte dieser Art verfügbar');
+  closeBinds();
+  state.pendingLevelUps++;
+  showCards(offer);
+});
+$('devLuck').addEventListener('click', () => { player.luck += 25; });
 
 // Ding-Sound
 let audio;
