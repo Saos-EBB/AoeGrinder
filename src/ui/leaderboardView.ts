@@ -4,6 +4,7 @@ import { MODES, MODIFIERS, modeId, setMode, toggleCustomMod, activeModIds, score
 import { resetGame, setLevel } from '../player';
 import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
+import { showColliders } from '../world';
 import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns } from '../leaderboard';
 
 const fmtMult = v => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
@@ -255,3 +256,12 @@ for (const level of [1, 15, 16, 30, 31, 45, 46, 60, 61, 100]) {
   b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('bindsClose').click(); });
   $('devLevels').appendChild(b);
 }
+
+// Dev: Collider anzeigen
+$('devLevels').insertAdjacentHTML('afterend', `<button class="bindBtn" id="devColliders" style="width:100%;margin-bottom:4px">Collider anzeigen: aus</button>`);
+let collidersOn = false;
+$('devColliders').addEventListener('click', () => {
+  collidersOn = !collidersOn;
+  showColliders(collidersOn);
+  $('devColliders').textContent = `Collider anzeigen: ${collidersOn ? 'an' : 'aus'}`;
+});

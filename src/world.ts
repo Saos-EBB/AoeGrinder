@@ -5,7 +5,7 @@ import { rand, clamp } from './util';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
-import { clearColliders, resolve } from './collision';
+import { clearColliders, colliders, resolve } from './collision';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -57,6 +57,45 @@ export function buildWorld(id) {
   obstacles.length = 0;
   clearColliders(heightAt);
   zone.props(makeCtx(props, obstacles, heightAt));
+  if (colliderView) showColliders(true);
+}
+
+// Dev: Collider als Drahtgitter. Massives rot, begehbare Flächen grün.
+let colliderView = null;
+export function showColliders(on) {
+  if (colliderView) {
+    scene.remove(colliderView);
+    colliderView.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); });
+    colliderView = null;
+  }
+  if (!on) return;
+  const solid = [], walk = [];
+  const seg = (out, a, b) => out.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+  const outline = (out, pts, y) => pts.forEach(([x, z], i) => {
+    const [nx, nz] = pts[(i + 1) % pts.length], [cy, ny] = [y(x, z), y(nx, nz)];
+    seg(out, [x, cy, z], [nx, ny, nz]);
+  });
+  for (const c of colliders) {
+    const pts = [];
+    if (c.kind === 'circle') for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; pts.push([c.x + Math.cos(a) * c.r, c.z + Math.sin(a) * c.r]); }
+    else for (const [lx, lz] of [[-c.hw, -c.hd], [c.hw, -c.hd], [c.hw, c.hd], [-c.hw, c.hd]]) pts.push([c.x + lx * c.cos + lz * c.sin, c.z - lx * c.sin + lz * c.cos]);
+    if (c.kind === 'walk') {
+      outline(walk, pts, c.height);
+      for (const [a, b] of [[0, 2], [1, 3]]) seg(walk, [pts[a][0], c.height(...pts[a]), pts[a][1]], [pts[b][0], c.height(...pts[b]), pts[b][1]]);
+      continue;
+    }
+    const low = (x, z) => c.bottom > -Infinity ? c.bottom : heightAt(x, z);
+    const high = (x, z) => Math.min(c.top, heightAt(x, z) + 8);   // Unendlich hohe Objekte enden im Bild bei 8 yd
+    outline(solid, pts, low);
+    outline(solid, pts, high);
+    pts.forEach(([x, z], i) => { if (c.kind !== 'circle' || i % 3 === 0) seg(solid, [x, low(x, z), z], [x, high(x, z), z]); });
+  }
+  colliderView = new THREE.Group();
+  for (const [lines, color] of [[solid, 0xff5050], [walk, 0x40ff80]] as any) {
+    const geo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(lines, 3));
+    colliderView.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color, depthTest: false, transparent: true, fog: false })));
+  }
+  scene.add(colliderView);
 }
 buildWorld(zoneId);
 
