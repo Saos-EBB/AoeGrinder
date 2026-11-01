@@ -268,20 +268,21 @@ function tanarisProps(ctx) {
     [sandstone, [cyl(3, 3.6, 9, 0, 4.5, 0, 0, 0, 0, 8), cyl(3.5, 3, 0.8, 0, 9.3, 0, 0, 0, 0, 8), box(1.2, 2.6, 0.5, 2.6, 10.7, 0), box(1.2, 1.6, 0.5, -2.6, 10.2, 0.5), box(0.5, 2.2, 1.2, 0, 10.4, 2.6)]],
     [dark, [cyl(4.5, 4.8, 1.2, 0, 0.6, 0, 0, 0, 0, 8), box(1.7, 2.8, 0.3, 0, 1.6, 3.6)]],
   ]), [{ x: rx, z: rz, ry: 0.4 }]);
-  ctx.obstacle(rx, rz, 5);
+  ctx.circle(rx, rz, 3.6);
+  ctx.circle(rx, rz, 4.8, 1.2);   // Sockel
   const wallPre = prefab([[sandstone, [box(5, 2.8, 1, 0, 1.4, 0), box(1.8, 1.3, 1, -1.4, 3.3, 0)]], [dark, [box(5.2, 0.4, 1.2, 0, 0.2, 0)]]]);
   const walls = [[-13, -10, 0.2], [13, -9, -0.25], [-16, -26, 1.4], [15, -28, 1.7], [0, -34, 0]].map(([dx, dz, ry]) => ({ x: rx + dx, z: rz + dz + 8, ry, tiltZ: rand(-0.06, 0.06) }));
   ctx.place(wallPre, walls);
-  for (const w of walls) { ctx.obstacle(w.x, w.z, 2.2); }
+  for (const w of walls) ctx.solid(w.x, w.z, 5.2, 1.2, w.ry, 3.9);
   const col = prefab([[sandstone, [cyl(0.7, 0.8, 4, 0, 2, 0, 0, 0, 0, 8)]]]);
   const cols = scatter(10, 7, 26, (x, z) => Math.hypot(x - rx, z - rz) > 8 && Math.hypot(x - rx, z - rz) < 24).map(p => ({ ...p, sy: rand(0.4, 1.1), tiltZ: rand(-0.14, 0.14) }));
   ctx.place(col, cols);
-  for (const c of cols) ctx.obstacle(c.x, c.z, 0.9);
+  for (const c of cols) ctx.circle(c.x, c.z, 0.8, 4 * c.sy);
 
   // Silithid-Schlund
   const spikes = []; for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2 + rand(-0.1, 0.1), r = TAN.mawR + rand(1, 4.5); spikes.push(cone(rand(0.7, 1.4), rand(3, 7), Math.cos(a) * r, rand(0.5, 1.5), Math.sin(a) * r, Math.sin(a) * -0.4, 0, Math.cos(a) * 0.4)); }
   ctx.place(prefab([[shell, spikes]]), [{ x: TAN.maw[0], z: TAN.maw[1], y: 0 }]);
-  ctx.obstacle(TAN.maw[0], TAN.maw[1], TAN.mawR);
+  ctx.circle(TAN.maw[0], TAN.maw[1], TAN.mawR + 5);   // bis zu den äußeren Stacheln
 
   // Kakteen, Knochen, Felsen: kaum Hindernisse
   const cactus = prefab([[cactusMat, [cyl(0.32, 0.38, 3.2, 0, 1.6, 0, 0, 0, 0, 8), cyl(0.18, 0.2, 1.2, 0.75, 1.9, 0, 0, 0, Math.PI / 2, 7), cyl(0.18, 0.2, 1.2, 1.2, 2.4, 0), cyl(0.15, 0.18, 1, -0.6, 2.3, 0, 0, 0, Math.PI / 2, 7), cyl(0.15, 0.18, 0.9, -1, 2.7, 0)]]]);
@@ -289,7 +290,9 @@ function tanarisProps(ctx) {
   for (const c of cacti) ctx.obstacle(c.x, c.z, 0.45 * c.s);
   ctx.place(cactus, cacti);
   const ribs = []; for (let i = 0; i < 6; i++) for (const sd of [-1, 1]) ribs.push(cyl(0.07, 0.11, 2.4, sd * 0.75, 1, i * 0.8 - 2, 0, 0, sd * -0.45));
-  ctx.place(prefab([[bone, [...ribs, cyl(0.14, 0.14, 5.2, 0, 0.22, 0, Math.PI / 2), ball(0.65, 0, 0.5, 3.4, 0.8, 0.7, 1.2)]]]), scatter(9, 15, 90, free).map(p => ({ ...p, s: rand(0.9, 1.6), ry: rand(0, 6), tiltZ: rand(-0.14, 0.14) })));
+  const skeletons = scatter(9, 15, 90, free).map(p => ({ ...p, s: rand(0.9, 1.6), ry: rand(0, 6), tiltZ: rand(-0.14, 0.14) }));
+  ctx.place(prefab([[bone, [...ribs, cyl(0.14, 0.14, 5.2, 0, 0.22, 0, Math.PI / 2), ball(0.65, 0, 0.5, 3.4, 0.8, 0.7, 1.2)]]]), skeletons);
+  for (const b of skeletons) ctx.solid(b.x + Math.sin(b.ry) * 0.9 * b.s, b.z + Math.cos(b.ry) * 0.9 * b.s, 2.4 * b.s, 6.6 * b.s, b.ry, 1.8 * b.s);
   rocks(ctx, 12, 0xae8c5c, 16, 90, free);
   grass(ctx, 700, 0.11, 0.4, 0.42, free);
 }
