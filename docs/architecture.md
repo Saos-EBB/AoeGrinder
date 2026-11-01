@@ -10,7 +10,8 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - `src/config.ts`: CFG, SPELLS, CARDS, mods, PERF
 - `src/formulas.ts`: Aggro, Treffer, XP, Farben, Spielerwerte
 - `src/render.ts`: Renderer, Kamera-Objekt, Composer, Himmel, Licht, Resize
-- `src/world.ts`: aktive Zone, heightAt, `buildWorld`, collide, Boden-Decals
+- `src/world.ts`: aktive Zone, heightAt, `buildWorld`, Boden-Decals, Dev-Anzeige der Collider
+- `src/collision.ts`: Collider im Raster, `groundAt`, `resolve`, `steer`, `settle`, Treppen-Spuren; Spieler und Mobs bewegen sich nur darüber, die Zonen tragen über `ctx` ein
 - `src/zones.ts`: `ZONES`, pro Zone Licht, Gelände, Props, Mob-Liste, Pack-Werte
 - `src/props.ts`: Bausteine für die Zonen-Dekoration (`place` = InstancedMesh, `scatter`, `grass`, `rocks`)
 - `src/mobTypes.ts`: `MOB_TYPES`, pro Typ Name, Modell, Fähigkeit, Werte (`hpMul`, `dmgMul`, `speedMul`, `aggro`, `rootImmune`, `rootMax`, `fleeChance`, `noXp`)

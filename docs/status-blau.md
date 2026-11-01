@@ -49,3 +49,30 @@ Audit: `docs/map-audit.md`. Basis `9363cd4`. Nichts gepusht, nichts veröffentli
 - **feat(zones): Blackrock Depths massiv.** Korridorwände, Brüstungen, Schmiede und Ambosse sind gedrehte Boxen, die Brücken begehbare Platten knapp über dem Gelände. Die Statuen fehlten im Code; 4 neue stehen rund um die Schmiede. Jedes vierte Brüstungsstück fehlt, sonst kämen Mobs vom Ufer nie auf die Brücke. Nicht gebaut: keine echte Spannweite über Lava. Die Brücke bleibt ein Geländerücken unter der Platte, sonst müsste `zone.hazard` die Höhe kennen und der Lavaschaden umgebaut werden.
 - **Ausbruch aus Nischen (in `steer`).** Tangente allein ließ in Tests 7 von 16 Mobs in BRD und 6 von 16 in Tirisfal zwischen Wandblöcken und Kürbisreihen hängen. Kommt ein Mob in 20 Aufrufen keine 0,5 yd voran, läuft er 45 Aufrufe schräg zurück, abwechselnd links und rechts. Nicht gebaut: weiter kein Pathfinding.
 - **feat(dev): Collider anzeigen.** Knopf im Esc-Menü, Drahtgitter durch alles hindurch: massiv rot, begehbar grün. Unendlich hohe Objekte enden im Bild bei 8 yd. Die Anzeige überlebt den Zonenwechsel. Nicht gebaut: keine Anzeige der Mob-Spuren.
+
+## Stand massive Objekte
+Alle Schritte sind fertig. `tsc` und Build sind sauber, in den Testläufen gab es keine Laufzeitfehler. Gespielt wurde per Skript, nicht von Hand.
+
+**Getestet (Physik per Skript, gleiche Regeln wie im Spiel):**
+- Wand, Gleiten, Sprung auf Plattform, Fall von der Kante.
+- Spieler kommt auf das Wachturm-Dach und die oberste Zikkurat-Ebene.
+- Mobs je von 8 Seiten: alle erreichen Dach (8–10 s) und Zikkurat-Spitze (4–13 s).
+- Mobs auf freier Strecke, 16 Starts je Zone: 0 hängen geblieben. Schnitt 4,5–9,9 s, längster Weg 21,7 s (BRD).
+- Keine Mobs stecken nach dem Spawn in Objekten.
+
+**Leistung BRD, 40 Mobs im Kampf, vorher `9363cd4` gegen nachher, je 3 abwechselnde Läufe auf demselben Rechner:**
+| | vorher | nachher |
+|---|---|---|
+| FPS (Software-Rendering) | 7,3 / 7,3 / 9,2 | 7,2 / 8,0 / 9,1 |
+| Mob-Update je Frame | 0,40–0,60 ms | 0,16–0,26 ms |
+
+Die FPS begrenzt hier das Software-Rendering, auf einer echten Grafikkarte muss noch gemessen werden. Das Raster macht die Kollision trotz mehr Collidern billiger.
+
+**Merge:** Probe-Merge mit `gruen-tuning` (`2646d04`) ohne Konflikte. Grün hat den Leash entfernt, Mobs jagen also dauerhaft; deshalb sind Ausweichen und Spuren wichtiger.
+
+**Offen, außerhalb meiner Dateien:**
+- `spells/blink.ts` setzt die Höhe aufs Gelände: Ein Blink auf der Zikkurat landet unten neben dem Bauwerk, nie darin. Blink geht auch durch Wände.
+- Bodenziele (`input.ts`) und Boden-Effekte (`drape`) folgen dem Gelände, nicht den Plattformen.
+- Flächenzauber, Aggro und Nahkampf messen 2D: Ein Mob am Fuß einer Ebene kann den Spieler direkt über sich treffen, AE trifft nach unten.
+- Die Kamera kollidiert nur mit Baumkronen und kann in Bauwerke geraten.
+- Mobs springen nicht: Zäune, Mauern und Brüstungen (bis 1,2 hoch) umlaufen sie, der Spieler springt drüber. Das ist beim Kiten ein Vorteil.
