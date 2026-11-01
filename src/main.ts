@@ -10,7 +10,7 @@ import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, reset
 import { cam, updateCamera } from './camera';
 import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
-import { spawnPack, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
+import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
@@ -30,8 +30,7 @@ function update(dt) {
     if (m.dead && state.now - m.deathAt > 4000) { removeMob(m); return false; }
     return true;
   });
-  const activePacks = new Set(state.mobs.filter(m => !m.dead).map(m => m.packId)).size;
-  if (activePacks < zone.packs.count) spawnPack();
+  updateRespawn();
 }
 
 function updateVisuals(dt) {

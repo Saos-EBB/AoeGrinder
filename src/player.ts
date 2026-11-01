@@ -11,7 +11,7 @@ import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
-import { spawnPack, removeMob, announceNewMobs } from './mobs';
+import { fillPacks, removeMob, announceNewMobs } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import './ui/scoreHud';
@@ -41,7 +41,7 @@ export function resetGame() {
   player.mana = maxMana();
   blizCursor.visible = false;
   stopChannel();
-  while (state.mobs.length < zone.packs.initialMobs) spawnPack();
+  fillPacks();
 }
 
 // Dev: Zone wechseln. Mobs weg, Welt neu, Spieler in die Mitte; Level und Karten bleiben
@@ -61,7 +61,7 @@ export function switchZone(id) {
   player.slowUntil = player.stunUntil = 0;
   player.poison = null;
   cam.offset = 0;
-  while (state.mobs.length < zone.packs.initialMobs) spawnPack();
+  fillPacks();
 }
 
 // Dev: Level setzen. Mobs kommen neu, damit die Freischaltung sofort zu sehen ist; Karten bleiben

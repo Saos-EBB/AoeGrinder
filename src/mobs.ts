@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS } from './config';
+import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
@@ -26,6 +26,32 @@ export function announceNewMobs(fromLevel) {
   if (names.length) state.newMob = { text: `Neuer Gegner: ${names.join(', ')}`, at: state.now };
 }
 
+// Packgröße aus dem Level, ohne Zufall und Modifikatoren. Unter LEVEL_PACK_MIN greift ab Level 1 der Startwert.
+const levelPackSize = () => clamp(3 + Math.floor((player.level - 20) / 2) + zone.packs.sizeBonus, 2, 10);
+const liveMobs = () => state.mobs.filter(m => !m.dead);
+const livePackCount = () => new Set(liveMobs().map(m => m.packId)).size;
+// Nie unter dem Startwert; ab dem Level, wo die Packs wachsen, skaliert die Dichte wie bisher mit Packanzahl × Packgröße
+const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * modFactor('packSize');
+
+// Beim Aufbau der Welt: Karte füllen
+export function fillPacks() {
+  while (liveMobs().length < mobTarget()) spawnPack();
+  respawn.pending = 0;
+  respawn.packs = livePackCount();
+}
+
+// Jeder tote Pack bekommt sofort Ersatz, ein Pack pro Frame, weil der Modellbau Zeit kostet. Darunter hält mobTarget die Mindestdichte.
+const respawn = { pending: 0, packs: 0 };
+export function updateRespawn() {
+  const packs = livePackCount();
+  respawn.pending += Math.max(0, respawn.packs - packs);
+  if (respawn.pending > 0 || liveMobs().length < mobTarget()) {
+    respawn.pending = Math.max(0, respawn.pending - 1);
+    spawnPack();
+  }
+  respawn.packs = livePackCount();
+}
+
 export function spawnPack() {
   let center;
   for (let tries = 0; tries < 40; tries++) {
@@ -35,13 +61,15 @@ export function spawnPack() {
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
     if (farFromPlayer && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
   }
-  const size = clamp(3 + Math.floor((player.level - 20) / 2) + randInt(-1, 1) + zone.packs.sizeBonus, 2, 10) * modFactor('packSize');
+  const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
+  const size = base * modFactor('packSize');
+  const spread = Math.max(LEVEL_PACK_SPREAD, base / 2);   // große Packs brauchen wieder mehr Platz
   const packId = ++state.packCounter;
   const unlocked = unlockedMobs(player.level), special = unlocked.slice(1);
   for (let i = 0; i < size; i++) {
     const typeId = i === 0 && size >= 3 && special.includes(zone.packAlways) && Math.random() < 0.5 ? zone.packAlways : special.length && Math.random() < 0.5 ? pick(special) : unlocked[0];
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
-    const pos = center.clone().add(new THREE.Vector3(rand(-5, 5), 0, rand(-5, 5)));
+    const pos = center.clone().add(new THREE.Vector3(rand(-spread, spread), 0, rand(-spread, spread)));
     spawnMob(typeId, pos, level, packId);
   }
 }

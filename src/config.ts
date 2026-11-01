@@ -22,6 +22,9 @@ export const LEVEL_DMG_STEP = 0.05;                       // Schaden und Mob-Leb
 export const LEVEL_MOB_HP = 100;                          // Start-Mob auf Level 1: 3 Arcane Explosions (34–38 Schaden)
 export const LEVEL_UNLOCKS = [16, 31, 46, 61];            // Ab diesen Spielerleveln kommen Mob 2, 3, 4, 5 dazu
 export const LEVEL_NEW_MOB_BANNER = 3000;                 // Anzeigedauer "Neuer Gegner"
+export const LEVEL_MIN_MOBS = 40;                         // So viele Mobs leben mindestens auf der Karte
+export const LEVEL_PACK_MIN = 4, LEVEL_PACK_MAX = 6;      // Kleinstes Pack ab Level 1
+export const LEVEL_PACK_SPREAD = 3;                       // Mobs liegen bis zu so viele yd um die Pack-Mitte
 
 export const CFG = {
   aggroBase: 18, aggroMin: 5, aggroLevelCap: 25,     // Creature::GetAttackDistance

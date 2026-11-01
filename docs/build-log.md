@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(mobs): Mehr Mobs ab Level 1
+**Was:** Die Pack-Formel fiel unter Level 20 auf 2 Mobs, die Karte wirkte leer. Jetzt mindestens 40 Mobs in engen Packs zu 4–6, tote Packs kommen sofort nach, ab Level 30 skaliert die Dichte wie bisher.
+**Nicht gebaut:** keine Dichte pro Zone, kein LOD. `initialMobs` bleibt ungenutzt in `zones.ts` (gesperrt).
+
 ## 2026-11-01 — chore(docs): Stand v10 Teil Blau in handoff.md
 **Was:** Branch `blau-maps` per Fast-Forward in `main`; die Einzelschritte stehen in `docs/status-blau.md`.
 **Nicht gebaut:** kein Publish.

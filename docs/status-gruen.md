@@ -1,3 +1,28 @@
+# Status Branch gruen-tuning
+
+Kleine Fixes, Mob-Dichte, Bewegungsgefühl. Nicht gepusht, nicht gemerged, nicht veröffentlicht. Jede Änderung mit Vorher/Nachher.
+
+## Mob-Dichte (`LEVEL_*` in `config.ts`, alles PH)
+| Wert | Vorher | Nachher |
+|---|---|---|
+| Mobs auf Level 1 | 30–34 | mindestens 40 (40–47 im Kampf) |
+| Pack-Größe auf Level 1–15 | 2 | 4–6 |
+| Streuung um die Pack-Mitte | ±5 yd | ±3 yd, große Packs bis ±5 yd |
+| Respawn | erst unter der Pack-Grenze | jeder tote Pack sofort, darunter die Mindestdichte |
+| Mobs in Tirisfal auf Level 30 / 45 / 100 | Formel 91 / 130 / 130 | gemessen 97 / 134 / 135 (gleiche Formel, nie unter 40) |
+
+Leistungsanzeige auf Level 1, Software-Rendering im Headless-Browser, auf echter GPU neu zu messen. Die FPS taugen nur als grober Vergleich:
+
+| Zone | Mobs vorher → nachher | FPS vorher → nachher | Draw Calls vorher → nachher (Momentaufnahme) |
+|---|---|---|---|
+| Tirisfal | 34 → 45 | 3 → 5 | 200 → 161 |
+| Elvyn | 30 → 40 | 3 → 5 | 147 → 190 |
+| Blackrock Depths | 30 → 43 | 4 → 6 | 225 → 160 |
+| Schlingendorntal | 30 → 40 | 2 → 4 | 204 → 218 |
+| Tanaris | 30 → 44 | 7 → 7 | 169 → 286 |
+
+Draw Calls und FPS hängen am Bildausschnitt, die Werte sind keine belastbare Aussage über die Mehrlast. `zone.packs.initialMobs` in `zones.ts` wird nicht mehr gelesen, die Datei ist gesperrt.
+
 # Status Branch gruen-polish
 
 Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Per Fast-Forward in main gemerged und als v9 (`1793484974-aac1`) veröffentlicht, nicht gepusht.
