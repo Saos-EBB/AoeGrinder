@@ -42,3 +42,4 @@ Audit: `docs/map-audit.md`. Basis `9363cd4`. Nichts gepusht, nichts veröffentli
 
 ## Build-Log
 - **feat(collision): collision.ts.** Kreis, gedrehte Box, begehbare Fläche im 8-yd-Raster, `groundAt`, `resolve`, Stufe 0,6 yd. Jede Oberkante trägt, wenn man sie erreicht, das spart Sonderfälle beim Landen. Kein Zyklus: `world.ts` importiert `collision.ts` und übergibt die Geländehöhe. Nicht gebaut: keine Kollision von Mobs untereinander, kein Pathfinding. `bottom` und `height` sind vorhanden, weil der Auftrag `resolve(pos, radius, height)` verlangt; noch hängt nichts Überkopf.
+- **feat(collision): Spieler und Mobs.** Beide nutzen `resolve` und `groundAt`, fallen von Kanten und landen auf Flächen. Mobs laufen an der Tangente um Hindernisse und behalten dabei die Seite, bis der Weg frei ist. Sprungbögen starten und enden auf der echten Höhe. `world.collide` bleibt als dünne Hülle für `spells/blink.ts`. Nicht gebaut: kein Pathfinding, keine Höhe beim Nahkampf.

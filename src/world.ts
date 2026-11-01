@@ -1,12 +1,11 @@
 import * as THREE from 'three';
-import { CFG } from './config';
 import { scene, setEnv, blendFog } from './render';
 import { state, player } from './state';
 import { rand, clamp } from './util';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
-import { clearColliders } from './collision';
+import { clearColliders, resolve } from './collision';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -76,15 +75,8 @@ export function updateZoneEvent(dt) {
   }
 }
 
-// Spieler/Mobs aus Hindernissen herausschieben
-export function collide(pos, radius) {
-  for (const o of obstacles) {
-    const dx = pos.x - o.x, dz = pos.z - o.z, d = Math.hypot(dx, dz), min = o.r + radius;
-    if (d < min && d > 0.0001) { pos.x = o.x + dx / d * min; pos.z = o.z + dz / d * min; }
-  }
-  const r = Math.hypot(pos.x, pos.z);
-  if (r > CFG.playRadius) { pos.x *= CFG.playRadius / r; pos.z *= CFG.playRadius / r; }
-}
+// Für spells/blink.ts, alles andere ruft collision.ts direkt
+export function collide(pos, radius) { resolve(pos, radius); }
 
 // Blizzard-Zielkreis
 // Flache Kreise/Ringe, deren Vertices der Bodenhöhe folgen

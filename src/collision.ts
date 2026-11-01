@@ -143,11 +143,12 @@ function closest(c, pos) {
 
 // Ausweichen ohne Pathfinding: Liegt ein Hindernis voraus, läuft body an seiner Tangente entlang.
 // Die Seite bleibt, bis der Weg zum Ziel frei ist, sonst pendelt er vor langen Wänden.
+const LOOKAHEAD = 0.4;   // PH: kurz genug, dass eine steile Rampe voraus nicht als Wand zählt
 const probe = { x: 0, y: 0, z: 0 }, steered = { x: 0, z: 0 };
 export function steer(body, dx, dz, radius) {
-  probe.x = body.pos.x + dx * (radius + 0.3);   // PH: Vorausschau
-  probe.z = body.pos.z + dz * (radius + 0.3);
-  probe.y = body.pos.y;
+  probe.x = body.pos.x + dx * LOOKAHEAD;
+  probe.z = body.pos.z + dz * LOOKAHEAD;
+  probe.y = groundAt(probe.x, probe.z, body.pos.y);   // auf einer Rampe liegt der Fuß dort schon höher
   steered.x = dx; steered.z = dz;
   const hit = resolve(probe, radius);
   if (!hit) { body.steerSide = 0; return steered; }

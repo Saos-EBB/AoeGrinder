@@ -4,7 +4,8 @@ import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
 import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
-import { heightAt, collide, zone } from './world';
+import { zone } from './world';
+import { groundAt, resolve, settle, steer } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
 import { reportKill } from './score';
@@ -54,8 +55,9 @@ export function removeMob(m) {
 
 export function spawnMob(typeId, pos, level, packId) {
   const type = MOB_TYPES[typeId];
-  collide(pos, 0.7);
-  pos.y = heightAt(pos.x, pos.z);
+  pos.y = groundAt(pos.x, pos.z, pos.y);
+  resolve(pos, 0.7);
+  pos.y = groundAt(pos.x, pos.z, pos.y);
   const model = type.build(level);
   model.root.position.copy(pos);
   model.root.rotation.y = rand(0, Math.PI * 2);
@@ -125,8 +127,9 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   const d = Math.hypot(dx, dz);
   if (d < 0.01) return;
   const step = Math.min(d, speed * dt / 1000);
-  mob.pos.x += dx / d * step;
-  mob.pos.z += dz / d * step;
+  const dir = steer(mob, dx / d, dz / d, 0.7);
+  mob.pos.x += dir.x * step;
+  mob.pos.z += dir.z * step;
   mob.moving = true;
   mob.speed = speed;
 }
@@ -147,7 +150,7 @@ export function hitPlayer(mob, mul = 1) {
 
 // Sprung im Bogen auf ein Ziel, onLand läuft bei der Landung
 export function startLeap(mob, target, dur, onLand) {
-  mob.leap = { x0: mob.pos.x, z0: mob.pos.z, x1: target.x, z1: target.z, start: state.now, dur, onLand };
+  mob.leap = { x0: mob.pos.x, y0: mob.pos.y, z0: mob.pos.z, x1: target.x, y1: groundAt(target.x, target.z, Math.max(mob.pos.y, player.pos.y)), z1: target.z, start: state.now, dur, onLand };
   mob.moving = true;
   mob.speed = CFG.mobSpeed;
 }
@@ -156,7 +159,7 @@ function updateLeap(mob) {
   const l = mob.leap, t = clamp((state.now - l.start) / l.dur, 0, 1);
   mob.pos.x = lerpTo(l.x0, l.x1, t);
   mob.pos.z = lerpTo(l.z0, l.z1, t);
-  mob.pos.y = heightAt(mob.pos.x, mob.pos.z) + Math.sin(t * Math.PI) * 2;
+  mob.pos.y = lerpTo(l.y0, l.y1, t) + Math.sin(t * Math.PI) * 2;
   faceMob(mob, { x: l.x1, z: l.z1 });
   if (t < 1) return;
   mob.leap = null;
@@ -202,8 +205,7 @@ export function updateMob(mob, dt) {
     mob.hp = mob.maxHp;
     if (dist2d(mob.pos, mob.home) < 0.5) { mob.state = 'idle'; mob.fleeRolled = false; }
   }
-  collide(mob.pos, 0.7);
-  mob.pos.y = heightAt(mob.pos.x, mob.pos.z);
+  settle(mob, 0.7, dt);
 }
 
 // Mobs im Kampf schieben sich leicht auseinander
@@ -298,7 +300,8 @@ export function sinkCorpse(mob) {
         life: rand(0.8, 1.4), color: [0.09, 0.07, 0.05], size: rand(1, 1.8), grow: 0.8 });
     }
   }
-  mob.pos.y = heightAt(mob.pos.x, mob.pos.z) - t * 1.4;
+  mob.corpseY ??= groundAt(mob.pos.x, mob.pos.z, mob.pos.y);
+  mob.pos.y = mob.corpseY - t * 1.4;
 }
 
 // Zug zu einem Punkt. Eingefrorene bleiben stehen.
@@ -316,7 +319,8 @@ export function knockbackMob(mob, center, dist, dur = 450) {
   if (mob.dead || mob.leap) return;
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
-  collide(target, 0.7);
+  target.y = mob.pos.y;
+  resolve(target, 0.7);
   startLeap(mob, target, dur, () => {});
 }
 

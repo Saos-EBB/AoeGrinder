@@ -8,7 +8,8 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { dist2d, rand, perFrame } from './util';
-import { collide, zone, terrainDecal, drape } from './world';
+import { zone, terrainDecal, drape } from './world';
+import { resolve } from './collision';
 import { scene } from './render';
 import { damagePlayer } from './player';
 import { particles } from './fx/particles';
@@ -106,7 +107,7 @@ export const ABILITIES: any = {
         if (dist2d(mob.pos, player.pos) > 4) return;
         hitPlayer(mob, 1.5);                                    // PH
         player.pos.x += dx * 3.5; player.pos.z += dz * 3.5;     // PH: Rückstoß in yd
-        collide(player.pos, 0.45);
+        resolve(player.pos, 0.45);
       });
       return true;
     },

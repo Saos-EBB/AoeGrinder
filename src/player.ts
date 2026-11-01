@@ -4,7 +4,8 @@ import { $, clamp } from './util';
 import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
-import { heightAt, collide, zone, zoneId, buildWorld } from './world';
+import { heightAt, zone, zoneId, buildWorld } from './world';
+import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam } from './camera';
 import { combatText, fmtTime } from './ui/hud';
@@ -187,15 +188,18 @@ export function updatePlayer(dt) {
   const moved = Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded;
   player.pos.x += player.vel.x * s;
   player.pos.z += player.vel.z * s;
-  collide(player.pos, 0.45);
+  resolve(player.pos, 0.45);
 
-  const ground = heightAt(player.pos.x, player.pos.z);
+  const ground = groundAt(player.pos.x, player.pos.z, player.pos.y);
   if (player.grounded) {
-    player.pos.y = ground;               // klebt am Boden (auch bergab)
-  } else {
+    if (player.pos.y - ground > STEP) { player.grounded = false; player.vel.y = 0; }   // von der Kante gefallen
+    else player.pos.y = ground;          // klebt am Boden (auch bergab)
+  }
+  if (!player.grounded) {
     player.vel.y -= CFG.gravity * s;
     player.pos.y += player.vel.y * s;
-    if (player.pos.y <= ground) { player.pos.y = ground; player.vel.y = 0; player.grounded = true; player.landAt = state.now; }
+    // Im Aufstieg nur am Gelände landen, sonst bliebe der Sprung an jeder Kante hängen
+    if (player.pos.y <= ground && (player.vel.y <= 0 || ground <= heightAt(player.pos.x, player.pos.z))) { player.pos.y = ground; player.vel.y = 0; player.grounded = true; player.landAt = state.now; }
   }
 
   if (moved) {
