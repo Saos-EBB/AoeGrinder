@@ -44,10 +44,11 @@ function updateVisuals(dt) {
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
   mage.update(dt, {
-    state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : player.moveState,
+    state: player.dead ? 'dead' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI),
   });
+  if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
   for (const m of state.mobs) {
     const attackT = (state.now - m.attackAt) / 400;

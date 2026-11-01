@@ -18,8 +18,10 @@ import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
+import { mage, startMageRun, endMageRun } from './models/mage';
 
 export function resetGame() {
+  startMageRun();
   for (const m of state.mobs) removeMob(m);
   clearAbilities();
   state.mobs = [];
@@ -138,6 +140,7 @@ export function gainXp(xp) {
 export function die() {
   player.dead = true;
   player.hp = 0;
+  endMageRun();
   showRunResult();
   stopChannel(); stopDrink();
   state.paused = true;
@@ -172,12 +175,12 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed;
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1);
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;
     player.moveState = len ? (fwd < 0 ? 'back' : 'run') : 'idle';
-    player.moveSpeed = len ? slowed : CFG.runSpeed;
+    player.moveSpeed = len ? slowed : CFG.runSpeed;   // anim.speed: echtes Tempo
     if (state.jumpQueued) {
       player.vel.y = CFG.jumpSpeed;
       player.grounded = false;

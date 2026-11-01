@@ -7,6 +7,7 @@ import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled }
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
+import { startMageRun } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
@@ -179,6 +180,7 @@ function ding() {
 
 $('startBtn').addEventListener('click', () => {
   $('startModal').classList.remove('show');
+  startMageRun();
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
   renderActionbar();
   state.paused = false;
