@@ -3,7 +3,8 @@
 import * as THREE from 'three';
 import { rand, pick, perFrame } from '../util';
 import { scene } from '../render';
-import { terrainDecal, drape, heightAt } from '../world';
+import { terrainDecal, drape } from '../world';
+import { groundAt } from '../collision';
 import { particles, glowSprite } from '../fx/particles';
 import { flashFx, ringFx, addEffect } from '../fx/spellFx';
 
@@ -34,7 +35,7 @@ export function areaParticles(pos, radius, rate, dt, colors, { up = 3, size = 0.
   for (let i = perFrame(rate, dt); i > 0; i--) {
     const a = rand(0, Math.PI * 2), d = radius * Math.sqrt(Math.random());
     const x = pos.x + Math.cos(a) * d, z = pos.z + Math.sin(a) * d;
-    particles.spawn({ x, y: heightAt(x, z) + rand(0.1, 0.8), z, vx: -Math.sin(a) * swirl, vy: rand(up * 0.4, up), vz: Math.cos(a) * swirl,
+    particles.spawn({ x, y: groundAt(x, z, pos.y) + rand(0.1, 0.8), z, vx: -Math.sin(a) * swirl, vy: rand(up * 0.4, up), vz: Math.cos(a) * swirl,
       life: rand(life * 0.6, life), color: pick(colors), size: rand(size * 0.5, size) });
   }
 }
@@ -69,7 +70,7 @@ export function orbVisual(spriteColor, size, darkCore = false) {
   const core = darkCore ? new THREE.Mesh(new THREE.SphereGeometry(size * 0.22, 16, 12), new THREE.MeshBasicMaterial({ color: 0x050008 })) : null;
   if (core) scene.add(core);
   const set = pos => {
-    sp.position.set(pos.x, heightAt(pos.x, pos.z) + 1.6, pos.z);
+    sp.position.set(pos.x, groundAt(pos.x, pos.z, pos.y) + 1.6, pos.z);
     core?.position.copy(sp.position);
   };
   return {

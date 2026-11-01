@@ -5,7 +5,7 @@ import { state, player } from './state';
 import { $, clamp } from './util';
 import { SPELLS } from './config';
 import { renderer, camera } from './render';
-import { heightAt } from './world';
+import { groundAt } from './collision';
 import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
 import { openBinds, closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
@@ -168,7 +168,8 @@ export function pickGround() {
   const p = new THREE.Vector3();
   for (let t = 0; t < 150; t += 0.5) {
     p.copy(origin).addScaledVector(direction, t);
-    if (p.y <= heightAt(p.x, p.z)) { mouse.ground.set(p.x, heightAt(p.x, p.z), p.z); return; }
+    const g = groundAt(p.x, p.z, p.y);   // die erste Fläche, auf die der Strahl von oben trifft
+    if (p.y <= g) { mouse.ground.set(p.x, g, p.z); return; }
   }
 }
 

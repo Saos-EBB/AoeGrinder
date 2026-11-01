@@ -4,7 +4,8 @@ import { rand, lerpTo, pick, perFrame } from '../util';
 import { SPELLS } from '../config';
 import { blizRadius } from '../formulas';
 import { scene } from '../render';
-import { heightAt, terrainDecal, drape } from '../world';
+import { terrainDecal, drape } from '../world';
+import { groundAt } from '../collision';
 import { glowSprite, particles } from '../fx/particles';
 import { mage } from '../models/mage';
 import { shakeCamera } from '../camera';
@@ -226,7 +227,7 @@ export function novaFx(pos, radius) {
     const a = i / 30 * Math.PI * 2 + rand(-0.1, 0.1), r = radius * rand(0.45, 0.95);
     const x = pos.x + Math.cos(a) * r, z = pos.z + Math.sin(a) * r;
     const sp = new THREE.Mesh(spikeGeo, mat);
-    sp.position.set(x, heightAt(x, z), z);
+    sp.position.set(x, groundAt(x, z, pos.y), z);
     sp.rotation.set(rand(-0.35, 0.35), 0, rand(-0.35, 0.35));
     g.add(sp);
   }
@@ -336,7 +337,7 @@ export function ambientParticles(dt) {
     for (let i = perFrame(5, dt); i > 0; i--) {              // Kältenebel am Boden
       const a = rand(0, Math.PI * 2), d = r * Math.sqrt(Math.random());
       const x = c.x + Math.cos(a) * d, z = c.z + Math.sin(a) * d;
-      particles.spawn({ x, y: heightAt(x, z) + 0.4, z, vx: rand(-1, 1), vz: rand(-1, 1),
+      particles.spawn({ x, y: groundAt(x, z, c.y) + 0.4, z, vx: rand(-1, 1), vz: rand(-1, 1),
         life: rand(1.2, 2), color: MIST, size: rand(2.5, 4), grow: 0.6 });
     }
   }

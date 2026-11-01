@@ -2,6 +2,7 @@ import { player } from '../state';
 import { mods } from '../config';
 import { blizRadius } from '../formulas';
 import { drape } from '../world';
+import { groundAt } from '../collision';
 import { blizFx, resetShard } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, startChannel, hasRune } from './core';
@@ -41,6 +42,7 @@ export const bliz = {
     const step = Math.min(d, WANDER_SPEED * dt / 1000);
     ch.point.x += dx / d * step;
     ch.point.z += dz / d * step;
+    ch.point.y = groundAt(ch.point.x, ch.point.z, ch.point.y);
     blizFx.g.position.copy(ch.point);
     drape(blizFx.disc, ch.point, blizRadius());
   },

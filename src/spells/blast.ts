@@ -1,7 +1,7 @@
 import { rand, dist2d } from '../util';
 import { player } from '../state';
 import { particles } from '../fx/particles';
-import { heightAt } from '../world';
+import { groundAt } from '../collision';
 import { knockbackMob, pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { burstFx, FIRE, EMBER } from './fx';
@@ -33,7 +33,7 @@ export const blast = {
       onUpdate: f => {
         for (let i = 0; i < 6; i++) {
           const a = rand(0, Math.PI * 2), x = f.pos.x + Math.cos(a) * f.radius, z = f.pos.z + Math.sin(a) * f.radius;
-          particles.spawn({ x, y: heightAt(x, z) + 0.2, z, vy: rand(2, 5), life: rand(0.4, 0.8), color: i % 2 ? FIRE : EMBER, size: rand(0.25, 0.5) });
+          particles.spawn({ x, y: groundAt(x, z, f.pos.y) + 0.2, z, vy: rand(2, 5), life: rand(0.4, 0.8), color: i % 2 ? FIRE : EMBER, size: rand(0.25, 0.5) });
         }
       },
     });

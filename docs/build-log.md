@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — fix(spells): Bodenziele auf groundAt
+**Was:** Maus, Pad, Zielkreis, Flächen und ihre Partikel nutzen `groundAt` statt nur das Gelände. Wandernde Flächen folgen der Höhe.
+**Nicht gebaut:** keine Sichtprüfung beim Zielen, ein Strahl durch die Seite eines Bauwerks trifft den Boden dahinter.
+
 ## 2026-11-01 — fix(blink): stoppt vor Wänden, landet auf begehbaren Flächen
 **Was:** Blink lief durch massive Objekte und landete immer auf dem Gelände. Jetzt läuft er die Strecke über `resolve` und `groundAt` ab.
 **Nicht gebaut:** kein Pathfinding, kein Gleiten an der Wand: Blink endet am ersten Hindernis.

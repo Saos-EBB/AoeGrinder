@@ -4,7 +4,8 @@ import * as THREE from 'three';
 import { rand, dist2d } from '../util';
 import { state, player } from '../state';
 import { scene } from '../render';
-import { heightAt, obstacles } from '../world';
+import { obstacles } from '../world';
+import { groundAt } from '../collision';
 import { particles } from '../fx/particles';
 import { ringFx, blightTex } from '../fx/spellFx';
 import { shakeCamera } from '../camera';
@@ -85,7 +86,7 @@ export const firenova = {
         for (const m of mobsInRadius(f.pos, f.radius)) if (!done.has(m)) { done.add(m); c.hit(m, firenova.dmg); }
         for (let i = 0; i < 40; i++) {
           const a = rand(0, Math.PI * 2), x = f.pos.x + Math.cos(a) * f.radius, z = f.pos.z + Math.sin(a) * f.radius;
-          particles.spawn({ x, y: heightAt(x, z) + 0.3, z, vy: rand(1, 4), life: rand(0.3, 0.6), color: i % 2 ? FIRE : EMBER, size: rand(0.3, 0.6) });
+          particles.spawn({ x, y: groundAt(x, z, f.pos.y) + 0.3, z, vy: rand(1, 4), life: rand(0.3, 0.6), color: i % 2 ? FIRE : EMBER, size: rand(0.3, 0.6) });
         }
       },
     });
@@ -98,7 +99,7 @@ function boneRing(pos, radius) {
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2, x = pos.x + Math.cos(a) * radius, z = pos.z + Math.sin(a) * radius;
     const bone = new THREE.Mesh(boneGeo, mat);
-    bone.position.set(x, heightAt(x, z) + 1.2, z);
+    bone.position.set(x, groundAt(x, z, pos.y) + 1.2, z);
     bone.rotation.set(Math.sin(a) * 0.3, 0, -Math.cos(a) * 0.3);   // nach innen gebogen
     g.add(bone);
   }

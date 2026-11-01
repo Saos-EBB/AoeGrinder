@@ -3,7 +3,8 @@ import { rand, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, mods } from './config';
 import { blizRadius } from './formulas';
 import { scene, composer, tickHeat } from './render';
-import { heightAt, drape, zone, updateZoneEvent } from './world';
+import { drape, zone, updateZoneEvent } from './world';
+import { groundAt } from './collision';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
@@ -72,7 +73,7 @@ function updateVisuals(dt) {
       sh.position.y -= sh.userData.speed * (state.paused ? 0 : dt) / 1000;
       if (sh.position.y < 0) {
         const wx = blizFx.g.position.x + sh.position.x, wz = blizFx.g.position.z + sh.position.z;
-        for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: heightAt(wx, wz) + 0.1, z: wz,
+        for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: groundAt(wx, wz, blizFx.g.position.y) + 0.1, z: wz,
           vx: rand(-2, 2), vy: rand(1, 3), vz: rand(-2, 2), grav: 6, life: rand(0.2, 0.4), color: FROST_WHITE, size: rand(0.12, 0.25) });
         resetShard(sh, false);
       }

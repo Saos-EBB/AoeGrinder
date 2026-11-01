@@ -5,7 +5,7 @@ import { rand, clamp } from './util';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
-import { clearColliders, colliders, resolve } from './collision';
+import { clearColliders, colliders, resolve, groundAt } from './collision';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -118,7 +118,7 @@ export function updateZoneEvent(dt) {
 export function collide(pos, radius) { resolve(pos, radius); }
 
 // Blizzard-Zielkreis
-// Flache Kreise/Ringe, deren Vertices der Bodenhöhe folgen
+// Flache Kreise/Ringe, deren Vertices der Fläche unter der Mitte folgen: Gelände, Plattform oder Stufe darunter
 export function terrainDecal(geo, mat) {
   geo.rotateX(-Math.PI / 2);
   const mesh = new THREE.Mesh(geo, mat);
@@ -131,7 +131,7 @@ export function drape(mesh, center, radius) {
   for (let i = 0; i < base.length; i += 3) {
     const x = base[i] * radius, z = base[i + 2] * radius;
     arr[i] = x; arr[i + 2] = z;
-    arr[i + 1] = heightAt(center.x + x, center.z + z) + 0.15;
+    arr[i + 1] = groundAt(center.x + x, center.z + z, center.y ?? 0) + 0.15;
   }
   mesh.geometry.attributes.position.needsUpdate = true;
   mesh.geometry.computeBoundingSphere();

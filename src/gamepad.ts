@@ -5,7 +5,7 @@ import { state, player } from './state';
 import { $, clamp } from './util';
 import { CFG, SPELLS, SPELL_ACTIONS } from './config';
 import { cam } from './camera';
-import { heightAt } from './world';
+import { groundAt, SKY } from './collision';
 import { blizCursor } from './fx/spellFx';
 import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './ui/hud';
@@ -81,7 +81,7 @@ function startAim(action, id) {
   aimAction = action;
   const x = player.pos.x + Math.sin(player.facing) * CFG.blizAimStart;
   const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
-  state.padAim = new THREE.Vector3(x, heightAt(x, z), z);
+  state.padAim = new THREE.Vector3(x, groundAt(x, z, SKY), z);
   player.targeting = id;
   blizCursor.visible = true;
 }
@@ -90,7 +90,7 @@ function moveAim(s) {
   const yaw = player.facing + cam.offset, a = state.padAim, fwd = -pad.look.y, right = pad.look.x;
   a.x += (Math.sin(yaw) * fwd - Math.cos(yaw) * right) * CFG.blizAimSpeed * s;
   a.z += (Math.cos(yaw) * fwd + Math.sin(yaw) * right) * CFG.blizAimSpeed * s;
-  a.y = heightAt(a.x, a.z);
+  a.y = groundAt(a.x, a.z, SKY);
 }
 
 function gameButtons() {

@@ -2,6 +2,7 @@
 
 import { state, player } from '../state';
 import { dist2d } from '../util';
+import { groundAt } from '../collision';
 import { CFG, SPELLS, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
@@ -207,6 +208,7 @@ export const schedule = (delay, fn) => state.scheduled.push({ at: state.now + de
 function updateFields(dt) {
   for (const f of [...state.fields]) {
     f.onUpdate?.(f, dt);
+    f.pos.y = groundAt(f.pos.x, f.pos.z, f.pos.y);   // wandernde Flächen bleiben am Boden
     inTick = true;
     while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
     inTick = false;
