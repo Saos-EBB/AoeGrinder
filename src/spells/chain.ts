@@ -30,7 +30,7 @@ export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = fa
   jump(player.pos, first, dmg);
 }
 
-export const nearestMob = range => nearestFirst(mobsInRadius(player.pos, range), player.pos)[0];
+export const nearestMob = range => nearestFirst(mobsInRadius(player.pos, range, Infinity), player.pos)[0];
 
 export const chain = {
   name: 'Kettenblitz', desc: 'Bis zu 50 Sprünge in 12 yd, jeder Sprung −2 % Schaden, 1,5 s Zauber.', ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',

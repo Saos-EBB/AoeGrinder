@@ -52,6 +52,7 @@ export const CFG = {
 
 // SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie hier.
 export const SPELLS: any = {};
+export const SPELL_AOE_HEIGHT = 3;   // PH: yd Höhenunterschied zur Wirkfläche, ab dem Flächen-Spells nicht mehr treffen
 export const SPELL_SLOTS = 8;
 export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink'];
 // Die Tasten-Aktionen heißen seit v1 wie das Start-Kit. Sie stehen für den Slot, nicht für den Spell.

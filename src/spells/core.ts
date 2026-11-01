@@ -3,7 +3,7 @@
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
-import { CFG, SPELLS, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
+import { CFG, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
@@ -93,7 +93,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
     hitProjectile(m, amount) {
       const landed = c.hit(m, amount);
       if (!landed || !supported('chain', id)) return landed;
-      const next = mobsInRadius(m.pos, 10).filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, 2);
+      const next = mobsInRadius(m.pos, 10, Infinity).filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, 2);
       for (const o of next) { boltFx(m.pos, o.pos, ICE_WHITE); c.hit(o, amount); }
       return landed;
     },
@@ -103,7 +103,12 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
   return c;
 }
 
-export const mobsInRadius = (center, r) => state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r);
+// Flächen treffen nur nahe der Wirkfläche: der Boden unter center, damit ein Sprung die Fläche nicht mit anhebt.
+// height = Infinity für Zielzauber, die nur ein Ziel im Umkreis suchen.
+export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
+  const y = groundAt(center.x, center.z, center.y);
+  return state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r && Math.abs(m.pos.y - y) < height);
+}
 
 // Stärkerer Slow gewinnt; abgelaufener Slow zählt nicht mehr
 export function applySlow(mob, pct, dur) {

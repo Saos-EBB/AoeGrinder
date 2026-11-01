@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — fix(spells): Flächen-Spells prüfen die Höhe
+**Was:** `mobsInRadius` trifft nur Mobs unter 3 yd Höhenunterschied zur Wirkfläche (`SPELL_AOE_HEIGHT`). Das gilt für alle Flächen-Spells auf einmal.
+**Nicht gebaut:** keine Höhenprüfung für Kettenblitz, Bogenblitz und die Support-Kette, die suchen Ziele statt eine Fläche zu treffen.
+
 ## 2026-11-01 — fix(spells): Bodenziele auf groundAt
 **Was:** Maus, Pad, Zielkreis, Flächen und ihre Partikel nutzen `groundAt` statt nur das Gelände. Wandernde Flächen folgen der Höhe.
 **Nicht gebaut:** keine Sichtprüfung beim Zielen, ein Strahl durch die Seite eines Bauwerks trifft den Boden dahinter.
