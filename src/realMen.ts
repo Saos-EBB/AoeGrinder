@@ -53,11 +53,92 @@ export function resetRealMen() {
   clearAttacks();
 }
 
-function clearAttacks() {}
-function pressAttack() { showError('Noch nicht bereit'); }
-const pressWhirl = pressAttack;
-function pressOnce(id) { pressAttack(); }
-export function updateRealMen(dt) {}
-export const moveMul = () => 1;
-export const rooted = () => false;
-export const realMenAnim = () => ({});
+const ONCE = {
+  wSmash: { def: R.smash, ability: 'smash', ms: WAR_TIMING.smash },
+  wClap: { def: R.thunderclap, ability: 'thunderclap', ms: WAR_TIMING.thunderclap },
+};
+const roll = (r: number[]) => rand(r[0], r[1]);
+
+let once = null;                                   // laufender Smash oder Donnerknall: { id, ability, until, ctx }
+let attackUntil = 0, attackCtx = null;             // Grundangriff: läuft den Zyklus immer zu Ende, ein Tippen gibt einen ganzen
+let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0;
+
+function clearAttacks() {
+  once = null;
+  attackUntil = 0; attackCtx = null;
+  whirlOn = false; whirlUntil = 0; whirlCtx = null;
+}
+
+function pressAttack() {
+  if (once) return;
+  startAttackCycle();
+}
+function startAttackCycle() {
+  if (state.now >= attackUntil) { attackUntil = state.now + WAR_TIMING.cast; attackCtx = makeCtx('wAttack'); }
+}
+function pressWhirl() {
+  if (player.mana <= 0) return showError('Nicht genug Wut');
+  whirlUntil = state.now + R.whirlwind.tapMs;
+}
+function pressOnce(id) {
+  const o = ONCE[id];
+  if (once) return;
+  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
+  if ((player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (player.mana < o.def.rage) return showError('Nicht genug Wut');
+  player.mana -= o.def.rage;
+  player.cds[id] = state.now + o.def.cd;
+  player.lastCombat = state.now;
+  attackUntil = 0; whirlOn = false; whirlUntil = 0;
+  once = { id, ability: o.ability, until: state.now + o.ms, ctx: makeCtx(id) };
+}
+
+// Treffer-Moment aus der Animation; die Position ist Schwertspitze oder Spieler
+onWarriorHit((kind, x, z) => {
+  if (!isWarrior() || player.dead) return;
+  const at = { x, y: player.pos.y, z };
+  if (kind === 'cast' && attackCtx) {
+    let landed = 0;
+    for (const m of mobsInRadius(at, attackCtx.radius(R.attack.radius))) if (attackCtx.hit(m, roll(R.attack.dmg))) landed++;
+    gainRage(Math.min(R.rage.perSwingMax, landed * R.rage.perMobHit));
+  } else if (kind === 'smash' && once?.id === 'wSmash') {
+    for (const m of mobsInRadius(at, once.ctx.radius(R.smash.radius))) once.ctx.hit(m, roll(R.smash.dmg));
+  } else if (kind === 'thunderclap' && once?.id === 'wClap') {
+    for (const m of mobsInRadius(player.pos, once.ctx.radius(R.thunderclap.radius))) {
+      if (once.ctx.hit(m, roll(R.thunderclap.dmg))) m.clapUntil = state.now + R.thunderclap.slowMs;
+    }
+  }
+});
+
+export function updateRealMen(dt) {
+  if (!isWarrior() || player.dead) return;
+  const now = state.now, s = dt / 1000;
+  for (const m of state.mobs) if (m.clapUntil > now) slowSwing(m, R.thunderclap.attackSlow, dt);
+  if (now - player.lastCombat > R.rage.outOfCombatMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
+  if (once && now >= once.until) once = null;
+
+  const stunned = player.stunUntil > now;
+  const wantWhirl = !once && !stunned && player.mana > 0 && (held('wWhirl') || now < whirlUntil);
+  if (wantWhirl) {
+    if (!whirlOn) { whirlOn = true; whirlCtx = makeCtx('wWhirl'); attackUntil = 0; }
+    if (now >= nextWhirlTick) {
+      nextWhirlTick = now + R.whirlwind.tickMs;
+      player.lastCombat = now;
+      for (const m of mobsInRadius(player.pos, whirlCtx.radius(R.whirlwind.radius))) whirlCtx.hit(m, roll(R.whirlwind.dmg));
+    }
+    player.mana = Math.max(0, player.mana - R.whirlwind.ragePerS * s);
+  } else whirlOn = false;
+
+  if (!once && !whirlOn && !stunned && held('wAttack')) startAttackCycle();
+}
+
+export const moveMul = () => whirlOn ? R.whirlwind.speedMul : 1;
+export const rooted = () => !!once;                // Smash und Donnerknall: keine Bewegung
+
+// Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
+export function realMenAnim() {
+  if (!isWarrior() || player.dead) return {};
+  const attack = state.now < attackUntil;
+  const busy = once || whirlOn || attack;
+  return { ability: once?.ability ?? (whirlOn ? 'whirlwind' : null), attack, frozen: !!(state.paused && busy) };
+}
