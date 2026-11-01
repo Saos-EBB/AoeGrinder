@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Relikte neu
+**Was:** Jedes Relikt bekommt einen eigenen großen Moment mit Hitstop, Säule oder Wand statt der gemeinsamen Explosion.
+**Nicht gebaut:** keine Boss-Modelle wie ein echter Hammer; `runChain` bekam nur die Blitzfarbe als Optik-Parameter.
+
 ## 2026-11-01 — feat(vfx): Blitz und Natur neu
 **Was:** Kettenblitz und Bogenblitz laufen über den Blitz-Baustein, Hurrikan bekommt einen sichtbaren Trichter.
 **Nicht gebaut:** kein Schockwellen-Post-Pass pro Sprung, nur Licht und Funken, damit 50 Sprünge flüssig bleiben.

@@ -7,11 +7,14 @@ import { scene } from '../render';
 import { heightAt, obstacles } from '../world';
 import { particles } from '../fx/particles';
 import { ringFx, blightTex } from '../fx/spellFx';
+import { vfxOld } from '../fx/shaders';
+import { vortexVisual } from '../fx/prims';
+import { ragnarosNew, frostChargeNew, frostbreathNew, froststrikeOpen, frostHit, desecrateOpen, firenovaOpen, fireWallVisual, boneRingNew } from '../fx/relicFx';
 import { shakeCamera } from '../camera';
 import { applyRoot, knockbackMob } from '../mobs';
 import { mobsInRadius, addField, schedule } from './core';
 import { runChain, nearestMob } from './chain';
-import { fieldDecal, areaParticles, burstFx, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
+import { fieldDecal, areaParticles, burstFx, visuals, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
 
 export const ragnaros = {
   name: 'Zorn des Ragnaros', relic: true, desc: 'Feuerschlag 15 yd, alle fliegen weg.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
@@ -19,7 +22,7 @@ export const ragnaros = {
   effect(c) {
     const r = c.radius(ragnaros.radius);
     for (const m of mobsInRadius(player.pos, r)) if (c.hit(m, ragnaros.dmg)) knockbackMob(m, player.pos, ragnaros.knock, 800);
-    burstFx(player.pos, r, [FIRE, EMBER], 0xffa040);
+    if (vfxOld()) burstFx(player.pos, r, [FIRE, EMBER], 0xffa040); else ragnarosNew(player.pos, r);
     shakeCamera(0.4);
   },
 };
@@ -28,7 +31,9 @@ export const desecrate = {
   name: 'Entweihen', relic: true, desc: 'Schattenfläche aufs Bodenziel 10 s, wächst mit jedem Tick, der trifft.', ranks: ['dmg', 'mana', 'radius'], tags: ['Schatten', 'Fläche'], cls: 'shadow',
   mana: 250, cd: 40000, dur: 10000, tickDmg: 20, range: 30, radius: 6, grow: 0.6, ground: true,
   effect(c, point) {
-    addField(c, { pos: point, radius: c.radius(desecrate.radius), dur: desecrate.dur, visual: fieldDecal(blightTex, SHADOW, 0.55, 0.15),
+    if (!vfxOld()) desecrateOpen(point, c.radius(desecrate.radius));
+    const floor = fieldDecal(blightTex, SHADOW, 0.55, 0.15);
+    addField(c, { pos: point, radius: c.radius(desecrate.radius), dur: desecrate.dur, visual: vfxOld() ? floor : visuals(floor, vortexVisual(SHADOW, VOID, 2.6, { top: 0.9, scroll: 0.8, peak: 0.45, spin: 0.6, dens: 0.38 })),
       onTick(f) {
         const hits = mobsInRadius(f.pos, f.radius).filter(m => c.hit(m, desecrate.tickDmg));
         if (hits.length) f.radius += desecrate.grow;
@@ -52,12 +57,12 @@ export const frostbreath = {
   mana: 300, cd: 60000, dmg: 200, delay: 3000, radius: 30,
   effect(c) {
     const r = c.radius(frostbreath.radius);
-    ringFx(player.pos, r, ICE_WHITE, frostbreath.delay);
+    if (vfxOld()) ringFx(player.pos, r, ICE_WHITE, frostbreath.delay); else frostChargeNew(player.pos, r, frostbreath.delay);
     schedule(frostbreath.delay, () => {
       for (const m of mobsInRadius(player.pos, r)) {
         if (lineOfSight(player.pos, m.pos)) c.hit(m, frostbreath.dmg * (m.rootUntil > state.now ? 2 : 1));
       }
-      burstFx(player.pos, r, [ICE, ICE_WHITE], 0xc8ecff);
+      if (vfxOld()) burstFx(player.pos, r, [ICE, ICE_WHITE], 0xc8ecff); else frostbreathNew(player.pos, r);
       shakeCamera(0.5);
     });
   },
@@ -70,7 +75,9 @@ export const froststrike = {
   effect(c) {
     const first = nearestMob(froststrike.range);
     if (!first) return;
-    runChain(c, first, { jumps: Infinity, range: froststrike.jumpRange, dmg: froststrike.dmg, onHit: m => { if (!m.dead) applyRoot(m, froststrike.root); } });
+    if (!vfxOld()) froststrikeOpen(first.pos);
+    runChain(c, first, { jumps: Infinity, range: froststrike.jumpRange, dmg: froststrike.dmg, boltColor: vfxOld() ? undefined : ICE,
+      onHit: m => { if (!vfxOld()) frostHit(m.pos); if (!m.dead) applyRoot(m, froststrike.root); } });
   },
 };
 
@@ -79,11 +86,12 @@ export const firenova = {
   mana: 280, cd: 30000, dmg: 120, radius: 40, speed: 20,
   effect(c) {
     const maxR = c.radius(firenova.radius), done = new Set();
-    addField(c, { pos: player.pos, radius: 0, dur: maxR / firenova.speed * 1000,
+    if (!vfxOld()) firenovaOpen(player.pos);
+    addField(c, { pos: player.pos, radius: 0, dur: maxR / firenova.speed * 1000, visual: vfxOld() ? undefined : fireWallVisual(),
       onUpdate(f, dt) {
         f.radius = Math.min(maxR, f.radius + firenova.speed * dt / 1000);
         for (const m of mobsInRadius(f.pos, f.radius)) if (!done.has(m)) { done.add(m); c.hit(m, firenova.dmg); }
-        for (let i = 0; i < 40; i++) {
+        for (let i = vfxOld() ? 40 : 18; i > 0; i--) {
           const a = rand(0, Math.PI * 2), x = f.pos.x + Math.cos(a) * f.radius, z = f.pos.z + Math.sin(a) * f.radius;
           particles.spawn({ x, y: heightAt(x, z) + 0.3, z, vy: rand(1, 4), life: rand(0.3, 0.6), color: i % 2 ? FIRE : EMBER, size: rand(0.3, 0.6) });
         }
@@ -111,7 +119,7 @@ export const bonecage = {
   mana: 150, cd: 35000, dur: 6000, range: 30, radius: 8, ground: true,
   effect(c, point) {
     const radius = c.radius(bonecage.radius), caught = mobsInRadius(point, radius);
-    const f = addField(c, { pos: point, radius, dur: bonecage.dur, visual: boneRing(point, radius),
+    const f = addField(c, { pos: point, radius, dur: bonecage.dur, visual: vfxOld() ? boneRing(point, radius) : boneRingNew(point, radius),
       onUpdate(field) {
         for (const m of caught) {
           const d = dist2d(m.pos, field.pos);
