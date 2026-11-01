@@ -9,6 +9,7 @@ import { camera, renderer, composer } from './render';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } from './fx/spellFx';
+import { bolt } from './fx/bolts';
 import { hitstopDt, impact, onMultiKill } from './fx/impact';
 import { cam } from './camera';
 import { spawnMob, updateMob, removeMob } from './mobs';
@@ -139,6 +140,7 @@ function stress() {
 }
 $('stress').addEventListener('click', stress);
 $('impact').addEventListener('click', () => impact(PACK_CENTER, 0xbfe4ff));
+$('boltTest').addEventListener('click', () => bolt({ x: 0, y: 1.4, z: 0 }, { x: 0, y: 1.2, z: 8 }, [1.3, 1.7, 2.8]));
 $('multi').addEventListener('click', () => { impact(PACK_CENTER, 0xffd080, { radius: 18, power: 600 }); onMultiKill(); });
 $('toggle').addEventListener('click', () => $('panel').classList.toggle('closed'));
 if (innerWidth < 700) $('panel').classList.add('closed');
@@ -194,4 +196,4 @@ function loop(t) {
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__lab = { castLab, stress, stopAll, setOld, state, player, particles, SPELLS };
+(window as any).__lab = { bolt, impact, castLab, stress, stopAll, setOld, state, player, particles, SPELLS };

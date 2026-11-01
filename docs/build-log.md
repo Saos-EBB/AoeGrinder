@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Blitz-Baustein
+**Was:** Alle Blitze teilen einen Ringpuffer und einen Draw Call, Verblassen und Flackern laufen im Shader. Der alte `boltFx` baute pro Blitz Mesh und Material.
+**Nicht gebaut:** noch kein Spell nutzt ihn, das folgt in Schritt 3; im Labor als Testknopf.
+
 ## 2026-11-01 — feat(vfx): Impact-Paket
 **Was:** Licht-Pool, Schockwellen-Verzerrung als Post-Pass (nur aktiv, solange eine läuft), Kamera-Ruck, Hitstop 40 ms bei Crit und Multi-Kill ab 10.
 **Nicht gebaut:** keine Änderung in `mobs.ts`: Crits kommen über `combatText` in `ui/hud.ts`, Multi-Kills über `reportKill` in `score.ts`, je eine Zeile; dazu der Hitstop in `main.ts`.

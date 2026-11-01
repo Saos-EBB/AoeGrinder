@@ -28,7 +28,7 @@
   #stats { position: fixed; right: 8px; top: 8px; padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
     font-variant-numeric: tabular-nums; text-align: right; z-index: 5; pointer-events: none; }
   #overlay { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-  .plate { display: none; }
+  .plate, #scoreHud { display: none; }
   .ct { position: absolute; font-weight: 800; text-shadow: 0 1px 2px #000, 0 0 3px #000; animation: ctUp 1.2s ease-out forwards; }
   .ct.dmg { color: #fff; font-size: 16px; } .ct.crit { color: #ffe14d; font-size: 26px; } .ct.miss { color: #c8c8c8; font-size: 13px; }
   .ct.heal { color: #5dff7a; font-size: 15px; } .ct.hurt, .ct.xp, .ct.info { display: none; }
@@ -67,6 +67,7 @@
   <h2>Test</h2>
   <button class="wide" id="stress">Last: 50 Sprünge + Blizzard</button>
   <button class="wide" id="impact">Einschlag testen</button>
+  <button class="wide" id="boltTest">Blitz testen</button>
   <button class="wide" id="multi">Multi-Kill ab 10 testen</button>
   <button class="wide" id="stop">Alles stoppen</button>
 </div>
