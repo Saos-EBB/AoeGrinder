@@ -11,6 +11,7 @@ import { initWeaponMenu } from './weapons/menu';
 
 // Standardwaffe pro Skin
 const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrute', arkan: 'zirkelstab' };
+const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 // Der eingebaute Stab weicht der Waffe. Sein Gelenk bleibt: Das Modell hält es in jeder Pose aufrecht.
@@ -20,7 +21,7 @@ for (const [id, C] of Object.entries<any>(SKINS)) SKINS[id] = { ...C, addons(R, 
   R.crystal.visible = R.crystalGlow.visible = false;
 } };
 
-let cur = null, skin = null, weapon = null, mount = null, clock = 0, refreshMenu = () => {};
+let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0, refreshMenu = () => {};
 
 function dispose(m) {
   weapon.dispose();
@@ -55,7 +56,6 @@ function wield(id) {
   weapon?.dispose();
   weapon = buildWeapon(id);
   mount.add(weapon.root);
-  mount.position.y = weapon.cane ? weapon.gripY - STAFF_FOOT : 0;
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
@@ -86,6 +86,8 @@ export const mage = {
     const s = Math.max(0, dt) / 1000;
     cur.update(s, anim);
     clock += s;
+    lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);
+    mount.position.y = (weapon.cane ? weapon.gripY - STAFF_FOOT : 0) + lift;
     weapon.combat = !!anim.channel || anim.cast > 0;
     weapon.update(s, clock);
   },
