@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { PERF } from '../config';
-import { scene, camera } from '../render';
+import { camera } from '../render';
+import { softScene, softPass, softUniforms, SOFT_GLSL, additiveBlend } from './softPass';
+import { quality, vfxOld } from './shaders';
 
 // Glow-Textur (weicher Kreis) für Partikel und Leuchteffekte
 const glowTex = (() => {
@@ -30,27 +32,28 @@ export const particles = (() => {
   geo.setAttribute('pcolor', new THREE.BufferAttribute(colArr, 3));
   geo.setAttribute('psize', new THREE.BufferAttribute(sizeArr, 1));
   const mat = new THREE.ShaderMaterial({
-    uniforms: { map: { value: glowTex }, scale: { value: 1 } },
-    vertexShader: `attribute float psize; attribute vec3 pcolor; uniform float scale; varying vec3 vColor;
-      void main() { vColor = pcolor; vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    uniforms: { scale: { value: 1 }, ...softUniforms },
+    vertexShader: `attribute float psize; attribute vec3 pcolor; uniform float scale; varying vec3 vColor; varying float vViewZ;
+      void main() { vColor = pcolor; vec4 mv = modelViewMatrix * vec4(position, 1.0); vViewZ = mv.z;
         gl_PointSize = psize * scale / -mv.z; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform sampler2D map; varying vec3 vColor;
-      void main() { gl_FragColor = vec4(vColor, 1.0) * texture2D(map, gl_PointCoord); }`,
-    blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
+    fragmentShader: `varying vec3 vColor; varying float vViewZ; ${SOFT_GLSL}
+      void main() { float d = 1.0 - length(gl_PointCoord - 0.5) * 2.0; gl_FragColor = vec4(vColor * softFade(vViewZ) * d * d * sign(max(d, 0.0)), 0.0); }`,
+    depthTest: false, depthWrite: false, transparent: true, ...additiveBlend,
   });
   const points = new THREE.Points(geo, mat);
   points.frustumCulled = false;
-  scene.add(points);
+  softScene.add(points);
+  softPass.active = () => list.length > 0 || softScene.children.length > 1;
   const list = [];
 
   // o: { x,y,z, vx,vy,vz, life, color:[r,g,b], size, grow, grav, drag }
   function spawn(o) {
-    if (list.length >= MAX) return;
+    if (list.length >= MAX || (!vfxOld() && Math.random() > quality().particleMul)) return;
     list.push({ vx: 0, vy: 0, vz: 0, grow: 0, grav: 0, drag: 0, ...o, max: o.life });
   }
   function update(dt) {
     const s = dt / 1000;
-    mat.uniforms.scale.value = innerHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+    mat.uniforms.scale.value = softUniforms.uDepthRes.value.y / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
     let n = 0;
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];

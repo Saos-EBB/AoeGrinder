@@ -26,7 +26,10 @@ const sun = new THREE.DirectionalLight(0xffffff, 1);
 scene.add(sun);
 
 // Bloom: nur sehr helle Farben (Zauber-Partikel, Kristall) leuchten
-export const composer = new EffectComposer(renderer);
+// Eigener Puffer mit Tiefentextur: Soft Particles lesen sie (fx/softPass.ts). Der Composer klont sie für den zweiten Puffer.
+export const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+  type: THREE.HalfFloatType, depthTexture: new THREE.DepthTexture(innerWidth, innerHeight) }));
+composer.setPixelRatio(renderer.getPixelRatio());
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.4, 1.5);
 if (PERF.bloom) composer.addPass(bloom);

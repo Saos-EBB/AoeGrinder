@@ -363,6 +363,14 @@ export function addEffect(mesh, dur, update) {
   scene.add(mesh);
   effects.push({ mesh, start: fxClock.now, dur, update });
 }
+// Labor: alle laufenden Einmal-Effekte weg
+export function clearEffects() {
+  for (const e of effects) {
+    scene.remove(e.mesh);
+    if (!e.shared) { e.mesh.geometry.dispose(); e.mesh.material.dispose(); }
+  }
+  effects.length = 0;
+}
 export function updateEffects() {
   const real = performance.now();
   fxClock.now += Math.min(50, real - fxClock.last) * fxClock.scale;

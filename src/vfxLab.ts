@@ -8,7 +8,7 @@ import { CFG, SPELLS, PERF } from './config';
 import { camera, renderer, composer } from './render';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
-import { ambientParticles, updateBlizFx, updateEffects, fxClock } from './fx/spellFx';
+import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } from './fx/spellFx';
 import { spawnMob, updateMob, removeMob } from './mobs';
 import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune } from './spells';
 import { resetGame, switchZone } from './player';
@@ -123,6 +123,7 @@ function stopAll() {
   stopChannel(true);
   player.drink = null;
   clearSpellEffects();
+  clearEffects();
   resetStage();
 }
 $('stop').addEventListener('click', stopAll);

@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Soft Particles im eigenen Puffer
+**Was:** Partikel enden nicht mehr mit harter Kante am Boden. Der Puffer läuft auf „niedrig“ und „mittel“ in halber Auflösung, das spart Füllrate.
+**Nicht gebaut:** kein separater Tiefen-Durchgang der Szene (hätte alle Draw Calls verdoppelt), stattdessen liest der Pass die Tiefe des Szenen-Passes.
+
 ## 2026-11-01 — feat(vfx): Shader-Bausteine und Effektqualität
 **Was:** Rauschen aus gebackener Textur, Fresnel, Auflösen, scrollende UVs als GLSL-Bausteine; Schalter `PERF.vfx` mit drei Stufen in `config.ts`.
 **Nicht gebaut:** kein Rauschen pro Pixel im Shader, keine Qualitäts-Auswahl im Spielmenü (Auftrag nennt `config.ts`).
