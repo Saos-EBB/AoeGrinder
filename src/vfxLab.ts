@@ -64,9 +64,9 @@ function resetStage() {
 }
 
 // Kamera
-camera.position.set(-9, 13, -15);
+camera.position.set(-13, 11, -19);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 1, 4);
+controls.target.set(0, 4, 5);
 controls.enableDamping = true;
 
 // Wirken ohne Kosten, Abklingzeit und Castzeit

@@ -1,8 +1,7 @@
 import { player } from '../state';
 import { mods } from '../config';
 import { blizRadius } from '../formulas';
-import { drape } from '../world';
-import { blizFx, resetShard } from '../fx/spellFx';
+import { blizStart, blizMove, blizStop } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, startChannel, hasRune } from './core';
 
@@ -20,11 +19,7 @@ export const bliz = {
   effect(c, point) {
     const ch = startChannel(c, point.clone(), bliz.channel);
     ch.mobile = hasRune('bliz', 'walk');
-    blizFx.g.position.copy(point);
-    drape(blizFx.disc, point, blizRadius());
-    for (const sh of blizFx.shards) resetShard(sh, true);
-    blizFx.g.visible = blizFx.disc.visible = true;
-    blizFx.cloud.scale.setScalar(blizRadius() / 8 * 0.2);
+    blizStart(point, blizRadius());
   },
   tick(ch) {
     const dmg = bliz.tickDmg * (ch.mobile ? 0.5 : 1), last = ch.nextTick > ch.end;
@@ -41,10 +36,9 @@ export const bliz = {
     const step = Math.min(d, WANDER_SPEED * dt / 1000);
     ch.point.x += dx / d * step;
     ch.point.z += dz / d * step;
-    blizFx.g.position.copy(ch.point);
-    drape(blizFx.disc, ch.point, blizRadius());
+    blizMove(ch.point, blizRadius());
   },
   onChannelEnd() {
-    blizFx.g.visible = blizFx.disc.visible = false;
+    blizStop();
   },
 };

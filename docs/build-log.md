@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Frost-Gruppe neu
+**Was:** Nova, Cone of Cold, Blizzard, Wirbel und Frostkugel auf glatten Formen im Shader, weich rein und raus. `fieldDecal`, `orbVisual`, `burstFx` und `boltFx` nutzen ab jetzt die neuen Formen, das gilt für alle Spells, die sie aufrufen.
+**Nicht gebaut:** keine Wolken-Simulation, die Wolke besteht aus Rausch-Bällen.
+
 ## 2026-11-01 — feat(vfx): Blitz-Baustein
 **Was:** Alle Blitze teilen einen Ringpuffer und einen Draw Call, Verblassen und Flackern laufen im Shader. Der alte `boltFx` baute pro Blitz Mesh und Material.
 **Nicht gebaut:** noch kein Spell nutzt ihn, das folgt in Schritt 3; im Labor als Testknopf.

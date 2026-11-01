@@ -46,7 +46,7 @@ export const particles = (() => {
   softPass.active = () => list.length > 0 || softScene.children.length > 1;
   const list = [];
 
-  // o: { x,y,z, vx,vy,vz, life, color:[r,g,b], size, grow, grav, drag }
+  // o: { x,y,z, vx,vy,vz, life, color:[r,g,b], size, grow, grav, drag, cx,cz,spin,pull }
   function spawn(o) {
     if (list.length >= MAX || (!vfxOld() && Math.random() > quality().particleMul)) return;
     list.push({ vx: 0, vy: 0, vz: 0, grow: 0, grav: 0, drag: 0, ...o, max: o.life });
@@ -61,6 +61,12 @@ export const particles = (() => {
       if (p.life <= 0) { list[i] = list[list.length - 1]; list.pop(); continue; }
       const d = Math.max(0, 1 - p.drag * s);
       p.vx *= d; p.vz *= d; p.vy = p.vy * d - p.grav * s;
+      if (p.spin !== undefined) {                     // Spirale um (cx, cz), pull zieht zur Mitte
+        const dx = p.x - p.cx, dz = p.z - p.cz, r = Math.hypot(dx, dz) || 0.001;
+        p.vx = -dz / r * p.spin - dx / r * p.pull;
+        p.vz = dx / r * p.spin - dz / r * p.pull;
+        if (p.pull > 0 && r < 0.4) p.life = 0;
+      }
       p.x += p.vx * s; p.y += p.vy * s; p.z += p.vz * s;
     }
     for (const p of list) {
