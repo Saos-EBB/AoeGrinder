@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): VFX-Labor als zweite Vite-Seite
+**Was:** Kevin soll jeden Spell isoliert, in Zeitlupe und mit Messwerten sehen und alt gegen neu vergleichen können.
+**Nicht gebaut:** keine Kartenwahl, kein Mob-Verhalten, kein Spielerlauf; „Alt/Neu“ schaltet erst ab den neuen Spells etwas um.
+
 ## 2026-11-01 — chore(docs): Stand v10 in handoff.md
 **Was:** Teil Grün ergänzt, `gruen-tuning` per Fast-Forward in `main`, Artifact auf v10 aktualisiert.
 **Nicht gebaut:** keine Feeling-Fixes, es gab keine Commits dazu.

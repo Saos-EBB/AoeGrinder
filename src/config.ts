@@ -7,6 +7,7 @@ export const PERF = {
   bloom: true,          // false: kein Bloom-Pass
   maxParticles: 5000,   // Obergrenze des Partikelsystems
   maxPixelRatio: 2,     // Obergrenze für devicePixelRatio
+  vfxOld: false,        // true: alte Spell-Optik, Schalter im VFX-Labor
 };
 
 // SCORE_*: Punkte und Rangliste, alles PH (docs/score-spec.md)

@@ -71,5 +71,5 @@ export const particles = (() => {
     geo.setDrawRange(0, n);
     geo.attributes.position.needsUpdate = geo.attributes.pcolor.needsUpdate = geo.attributes.psize.needsUpdate = true;
   }
-  return { spawn, update };
+  return { spawn, update, count: () => list.length };
 })();

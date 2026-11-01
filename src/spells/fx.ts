@@ -5,7 +5,7 @@ import { rand, pick, perFrame } from '../util';
 import { scene } from '../render';
 import { terrainDecal, drape, heightAt } from '../world';
 import { particles, glowSprite } from '../fx/particles';
-import { flashFx, ringFx, addEffect } from '../fx/spellFx';
+import { flashFx, ringFx, addEffect, fxClock } from '../fx/spellFx';
 
 export const FIRE = [2.4, 0.9, 0.15], EMBER = [2.2, 0.45, 0.08], SHADOW = [0.8, 0.15, 1.5], VOID = [0.35, 0.05, 0.9];
 export const NATURE = [0.5, 2, 0.8], BOLT = [1.3, 1.7, 2.8], BOLT_WHITE = [2.2, 2.4, 2.8], BONE = [1.9, 1.75, 1.3];
@@ -23,7 +23,7 @@ export function fieldDecal(tex, color, opacity = 0.5, spin = 0) {
   return {
     update(pos, radius) {
       drape(mesh, pos, radius);
-      map.rotation = performance.now() / 1000 * spin;
+      map.rotation = fxClock.now / 1000 * spin;
     },
     remove() { scene.remove(mesh); mesh.geometry.dispose(); (mesh.material as any).dispose(); map.dispose(); },
   };

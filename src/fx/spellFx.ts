@@ -48,6 +48,8 @@ export const blizFx = (() => {
 })();
 
 const effects = [];
+// Uhr aller Effekte. scale ist die Zeitlupe im VFX-Labor.
+export const fxClock = { now: 0, last: performance.now(), scale: 1 };
 // ---------- Partikelsystem (ein Draw-Call, additiv, HDR-Farben > 1 erzeugen Bloom) ----------
 export const FROST = [0.35, 1.0, 2.1], FROST_WHITE = [1.1, 1.5, 2.1], MIST = [0.05, 0.1, 0.15];
 const ARCANE = [1.5, 0.45, 2.1], ARCANE_PINK = [1.9, 0.7, 1.6], GOLD = [2.2, 1.6, 0.5];
@@ -231,7 +233,7 @@ export function novaFx(pos, radius) {
     g.add(sp);
   }
   scene.add(g);
-  effects.push({ mesh: g, start: performance.now(), dur: 1000, shared: true,
+  effects.push({ mesh: g, start: fxClock.now, dur: 1000, shared: true,
     update: t => { const k = t < 0.15 ? t / 0.15 : 1; g.children.forEach(c => c.scale.set(1, k, 1)); mat.opacity = t < 0.6 ? 0.9 : 0.9 * (1 - (t - 0.6) / 0.4); } });
 }
 
@@ -358,10 +360,13 @@ export function ambientParticles(dt) {
 
 export function addEffect(mesh, dur, update) {
   scene.add(mesh);
-  effects.push({ mesh, start: performance.now(), dur, update });
+  effects.push({ mesh, start: fxClock.now, dur, update });
 }
 export function updateEffects() {
-  const t0 = performance.now();
+  const real = performance.now();
+  fxClock.now += Math.min(50, real - fxClock.last) * fxClock.scale;
+  fxClock.last = real;
+  const t0 = fxClock.now;
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i];
     const t = (t0 - e.start) / e.dur;
@@ -370,6 +375,22 @@ export function updateEffects() {
       if (!e.shared) { e.mesh.geometry.dispose(); e.mesh.material.dispose(); }
       effects.splice(i, 1);
     } else e.update(t);
+  }
+}
+// Wolke und Splitter des laufenden Blizzards
+export function updateBlizFx(dt) {
+  if (!blizFx.g.visible) return;
+  const cl = blizFx.cloud;
+  cl.rotation.y += dt / 1000 * 0.4;
+  cl.scale.setScalar(lerpTo(cl.scale.x, blizRadius() / 8, Math.min(1, dt / 150)));   // Wolke baut sich auf
+  for (const sh of blizFx.shards) {
+    sh.position.y -= sh.userData.speed * dt / 1000;
+    if (sh.position.y < 0) {
+      const wx = blizFx.g.position.x + sh.position.x, wz = blizFx.g.position.z + sh.position.z;
+      for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: heightAt(wx, wz) + 0.1, z: wz,
+        vx: rand(-2, 2), vy: rand(1, 3), vz: rand(-2, 2), grav: 6, life: rand(0.2, 0.4), color: FROST_WHITE, size: rand(0.12, 0.25) });
+      resetShard(sh, false);
+    }
   }
 }
 export function resetShard(sh, randomHeight) {
