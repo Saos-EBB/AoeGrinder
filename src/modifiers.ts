@@ -11,7 +11,7 @@ export const MODIFIERS = [
   { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost', 'arcane'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
   // hidden: nur über den eigenen Modus, nicht in der eigenen Mischung. Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
-  { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: [], hidden: true, startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', null, null], onlyTag: 'Krieger' },
+  { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: [], hidden: true, startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', 'wCry', null], onlyTag: 'Krieger' },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
   { id: 'classic', name: 'Classic pur', desc: 'keine Level-Karten, alle 2 Level ein Rang auf alle Spells', scoreMult: 1.5, excludes: ['noluck'], noCards: true },
   { id: 'noluck', name: 'Kein Glück', desc: 'Glück bleibt 0, immer 4 Karten', scoreMult: 1.2, excludes: ['classic'], noLuck: true },

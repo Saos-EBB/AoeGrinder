@@ -11,6 +11,9 @@ import { pad, padBinds } from './gamepad';
 import { showError } from './ui/hud';
 import { slowSwing } from './mobs';
 import { makeCtx, mobsInRadius } from './spells/core';
+import { spellCd } from './formulas';
+import { shakeCamera } from './camera';
+import { combatText } from './ui/hud';
 
 // Alle Zahlen hier. [Classic] = WoW Classic, Quellen in docs/handoff.md; alles andere ist // PH
 export const REALMEN = {
@@ -18,6 +21,7 @@ export const REALMEN = {
   attack: { dmg: [28, 34], radius: 2.5 },
   whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 10, speedMul: 0.7, tapMs: 300 },   // trifft alle Mobs, Classic nur 4
   smash: { dmg: [110, 130], radius: 4, rage: 20, cd: 6000 },
+  warcry: { rage: 10, cd: 30000, ms: 900, buffMs: 15000, dmgMul: 1.2 },
   thunderclap: { dmg: [10, 10] /* Classic */, radius: 8 /* Classic */, rage: 20 /* Classic */, cd: 6000 /* Classic-Client 3.x */, attackSlow: 0.1 /* Classic */, slowMs: 10000 /* Classic */ },
 };
 
@@ -29,6 +33,7 @@ Object.assign(SPELLS, {
   wWhirl: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', 0, 0, ['dmg', 'radius'], () => pressWhirl()),
   wSmash: spell('Smash', 'Sprung und Hieb in den Boden vor dir.', R.smash.cd, R.smash.rage, ['dmg', 'radius'], () => pressOnce('wSmash')),
   wClap: spell('Donnerknall', 'Stampfer: trifft alles um dich, Mobs schlagen langsamer.', R.thunderclap.cd, R.thunderclap.rage, ['dmg', 'radius'], () => pressOnce('wClap')),
+  wCry: spell('Kampfschrei', '+20 % Schaden für 15 s.', R.warcry.cd, R.warcry.rage, [], () => pressOnce('wCry')),
 });
 
 const isWarrior = () => mage.skin === 'krieger';
@@ -56,15 +61,17 @@ export function resetRealMen() {
 const ONCE = {
   wSmash: { def: R.smash, ability: 'smash', ms: WAR_TIMING.smash },
   wClap: { def: R.thunderclap, ability: 'thunderclap', ms: WAR_TIMING.thunderclap },
+  wCry: { def: R.warcry, ability: 'warcry', ms: R.warcry.ms },
 };
 const roll = (r: number[]) => rand(r[0], r[1]);
 
 let once = null;                                   // laufender Smash oder Donnerknall: { id, ability, until, ctx }
 let attackUntil = 0, attackCtx = null;             // Grundangriff: läuft den Zyklus immer zu Ende, ein Tippen gibt einen ganzen
+let cryUntil = 0;
 let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0;
 
 function clearAttacks() {
-  once = null;
+  once = null; cryUntil = 0;
   attackUntil = 0; attackCtx = null;
   whirlOn = false; whirlUntil = 0; whirlCtx = null;
 }
@@ -87,11 +94,19 @@ function pressOnce(id) {
   if ((player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   if (player.mana < o.def.rage) return showError('Nicht genug Wut');
   player.mana -= o.def.rage;
-  player.cds[id] = state.now + o.def.cd;
+  player.cds[id] = state.now + spellCd(id);
   player.lastCombat = state.now;
   attackUntil = 0; whirlOn = false; whirlUntil = 0;
   once = { id, ability: o.ability, until: state.now + o.ms, ctx: makeCtx(id) };
+  if (id === 'wCry') shout();
 }
+
+function shout() {
+  cryUntil = state.now + R.warcry.buffMs;
+  combatText(player.pos, 'Kampfschrei!', 'info', 2.6);
+  shakeCamera(0.2);
+}
+const strike = (c, m, dmg) => c.hit(m, roll(dmg) * (state.now < cryUntil ? R.warcry.dmgMul : 1));
 
 // Treffer-Moment aus der Animation; die Position ist Schwertspitze oder Spieler
 onWarriorHit((kind, x, z) => {
@@ -99,13 +114,13 @@ onWarriorHit((kind, x, z) => {
   const at = { x, y: player.pos.y, z };
   if (kind === 'cast' && attackCtx) {
     let landed = 0;
-    for (const m of mobsInRadius(at, attackCtx.radius(R.attack.radius))) if (attackCtx.hit(m, roll(R.attack.dmg))) landed++;
+    for (const m of mobsInRadius(at, attackCtx.radius(R.attack.radius))) if (strike(attackCtx, m, R.attack.dmg)) landed++;
     gainRage(Math.min(R.rage.perSwingMax, landed * R.rage.perMobHit));
   } else if (kind === 'smash' && once?.id === 'wSmash') {
-    for (const m of mobsInRadius(at, once.ctx.radius(R.smash.radius))) once.ctx.hit(m, roll(R.smash.dmg));
+    for (const m of mobsInRadius(at, once.ctx.radius(R.smash.radius))) strike(once.ctx, m, R.smash.dmg);
   } else if (kind === 'thunderclap' && once?.id === 'wClap') {
     for (const m of mobsInRadius(player.pos, once.ctx.radius(R.thunderclap.radius))) {
-      if (once.ctx.hit(m, roll(R.thunderclap.dmg))) m.clapUntil = state.now + R.thunderclap.slowMs;
+      if (strike(once.ctx, m, R.thunderclap.dmg)) m.clapUntil = state.now + R.thunderclap.slowMs;
     }
   }
 });
@@ -124,7 +139,7 @@ export function updateRealMen(dt) {
     if (now >= nextWhirlTick) {
       nextWhirlTick = now + R.whirlwind.tickMs;
       player.lastCombat = now;
-      for (const m of mobsInRadius(player.pos, whirlCtx.radius(R.whirlwind.radius))) whirlCtx.hit(m, roll(R.whirlwind.dmg));
+      for (const m of mobsInRadius(player.pos, whirlCtx.radius(R.whirlwind.radius))) strike(whirlCtx, m, R.whirlwind.dmg);
     }
     player.mana = Math.max(0, player.mana - R.whirlwind.ragePerS * s);
   } else whirlOn = false;
