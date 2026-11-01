@@ -9,7 +9,7 @@ export const MODIFIERS = [
   // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noTag, noDrink, noCards, noLuck
   { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink'], onlyTag: 'Frost' },
   { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost', 'arcane'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
-  { id: 'arcane', name: 'Arkan', desc: 'Arkan-Skin: schwebt, +10 % Tempo, alle Spells bleiben', scoreMult: 1, excludes: ['frost', 'fire'] },
+  { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
   { id: 'classic', name: 'Classic pur', desc: 'keine Level-Karten, alle 2 Level ein Rang auf alle Spells', scoreMult: 1.5, excludes: ['noluck'], noCards: true },
   { id: 'noluck', name: 'Kein Glück', desc: 'Glück bleibt 0, immer 4 Karten', scoreMult: 1.2, excludes: ['classic'], noLuck: true },
@@ -21,7 +21,7 @@ export const MODES = [
   { id: 'sprint', name: 'Sprint', mods: ['time'] },
   { id: 'frostonly', name: 'Frost only', mods: ['frost'] },
   { id: 'fireonly', name: 'Fire only', mods: ['fire'] },
-  { id: 'arcaneonly', name: 'Arkan', mods: ['arcane'] },
+  { id: 'arcaneonly', name: 'Arcane only', mods: ['arcane'] },
   { id: 'classic', name: 'Classic', mods: ['classic'] },
   { id: 'custom', name: 'Eigene Mischung', mods: null },   // frei wählbar
 ];

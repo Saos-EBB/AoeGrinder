@@ -33,10 +33,10 @@ function spawnOrb(c, pos, radius, k) {
 }
 
 export const voidorb = {
-  name: 'Leerenkugel', desc: 'Dunkle Kugel aufs Bodenziel 6 s, zieht alle in 15 yd zur Mitte, Schattenschaden, bis 40 % Slow nahe der Mitte.', ranks: ['dmg', 'mana', 'radius'], tags: ['Schatten', 'Leere', 'Fläche'], cls: 'shadow',
+  name: 'Leerenkugel', desc: 'Dunkle Kugel aufs Bodenziel 6 s, zieht alle in 15 yd zur Mitte, Arkanschaden, bis 40 % Slow nahe der Mitte.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Leere', 'Fläche'], cls: 'arcane',
   mana: 350, cd: 30000, dur: 6000, pulse: 18, range: 30, radius: 15, ground: true,   // PH
   runes: [
-    { id: 'follow', name: 'Schattenbegleiter', desc: 'Folgt dir.' },
+    { id: 'follow', name: 'Leerenbegleiter', desc: 'Folgt dir.' },
     { id: 'implode', name: 'Implosion', desc: 'Implodiert am Ende, Schaden pro Gefangenem.' },
     { id: 'twins', name: 'Zwillinge', desc: '2 kleine Kugeln.' },
   ],
