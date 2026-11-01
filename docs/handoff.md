@@ -19,6 +19,10 @@ Neues Spielermodell mit 4 Skins, 15 Waffen und Skin-Effekten. Agent Rot arbeitet
 - `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo. Modi: Normal = Alle, Frost only, Fire only, Arcane only (Leerenkugel zählt jetzt als Arkan).
 - Messung Level 1, 1600×900 (FPS / Calls / davon Spieler): vorher 165 / 262 / 63, Alle 159 / 188 / 4, Feuer mit 10 Spuren 139 / 201 / 7.
 
+## Branch real-men (Agent Gelb)
+Modus „Real Men“: Skelett-Krieger aus `buildWarrior` (`mageModel.ts`), abgezweigt von `mc-model`, darum erst danach auf `main`. Zahlen und Regeln in `src/realMen.ts` (`REALMEN`). Wut steht in `player.mana`, `player.rageMax` schaltet `maxMana` und die Regeneration um. Die Attacken sind Spells mit `press`, sie überspringen in `castSpell` den GCD.
+Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343). Kampfschrei gibt es nur als Animation (`ability: 'warcry'`).
+
 ## Code-Aufbau (Abschnitte in index.html)
 - `CFG`, `SPELLS`, `CARDS`: alle Zahlen. Tunen nur hier.
 - `ACTIONS` / `binds`: Tastenbelegung, localStorage `frostgrind.binds.v1`.
