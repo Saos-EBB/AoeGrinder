@@ -6,6 +6,7 @@ import { rand, clamp } from './util';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
+import { clearColliders } from './collision';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -55,6 +56,7 @@ export function buildWorld(id) {
   props.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); o.dispose?.(); });
   props.clear();
   obstacles.length = 0;
+  clearColliders(heightAt);
   zone.props(makeCtx(props, obstacles, heightAt));
 }
 buildWorld(zoneId);

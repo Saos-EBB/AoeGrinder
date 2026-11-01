@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rand } from './util';
+import { addCircle, addBox, addWalk } from './collision';
 
 const lambert = (color, opts = {}) => new THREE.MeshLambertMaterial({ color, ...opts });
 export { lambert };
@@ -21,11 +22,27 @@ export const ball = (r, x = 0, y = 0, z = 0, sx = 1, sy = 1, sz = 1) => { const 
 // [[Material, [Geometrien]], ...] -> ein Fertigteil
 export const prefab = groups => groups.map(([mat, geos]) => ({ mat, geo: mergeGeometries(geos) }));
 
+const SIGHT_HEIGHT = 2;   // PH: ab dieser Höhe versperrt ein Objekt die Sichtlinie
+
 export function makeCtx(group, obstacles, heightAt) {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
   return {
     heightAt,
-    obstacle(x, z, r, canopy?) { obstacles.push(canopy ? { x, z, r, canopy } : { x, z, r }); },
+    // Massive Objekte: h ist die Höhe der Oberkante über dem Boden. Hohes zählt für die Sichtlinie in spells/relics.ts.
+    obstacle(x, z, r, canopy?) { this.circle(x, z, r, Infinity, canopy); },
+    circle(x, z, r, h = Infinity, canopy?) {
+      addCircle(x, z, r, heightAt(x, z) + h);
+      if (h >= SIGHT_HEIGHT) obstacles.push(canopy ? { x, z, r, canopy } : { x, z, r });
+    },
+    solid(x, z, w, d, ry = 0, h = Infinity) {
+      addBox(x, z, w, d, ry, heightAt(x, z) + h);
+      if (h >= SIGHT_HEIGHT) obstacles.push({ x, z, r: Math.max(w, d) / 2 });
+    },
+    // height(x, z): absolute Höhe der Lauffläche
+    walk(x, z, w, d, ry, height, solid = true) {
+      addWalk(x, z, w, d, ry, height, solid);
+      if (solid) obstacles.push({ x, z, r: Math.min(w, d) / 2 });
+    },
     add(mesh) { group.add(mesh); return mesh; },
     // list: [{ x, z, y?, s?, ry?, tilt?, color? }]; y ist die Höhe über dem Boden
     place(pre, list) {

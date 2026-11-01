@@ -36,3 +36,9 @@ Alle 5 Punkte sind fertig. `tsc` ist sauber, der Build läuft, im Browser gab es
 - Fester Schaden skaliert nicht: Lava 40/s nimmt auf Level 1 13 % der Spieler-Leben pro Sekunde und tötet einen Start-Mob in 3 s. Lavaflächen (30/s) und Gift (4 je Stapel) kommen erst ab Level 61 vor.
 - Packgröße ist unverändert und bleibt bis Level 17 bei 2 Mobs.
 - `SCORE_VERSION` steht weiter auf `v8`. Vor dem nächsten Publish erhöhen, sonst mischt der Versionsfilter alte und neue Balance.
+
+# Massive Objekte (Branch blau-maps)
+Audit: `docs/map-audit.md`. Basis `9363cd4`. Nichts gepusht, nichts veröffentlicht, nichts gemergt.
+
+## Build-Log
+- **feat(collision): collision.ts.** Kreis, gedrehte Box, begehbare Fläche im 8-yd-Raster, `groundAt`, `resolve`, Stufe 0,6 yd. Jede Oberkante trägt, wenn man sie erreicht, das spart Sonderfälle beim Landen. Kein Zyklus: `world.ts` importiert `collision.ts` und übergibt die Geländehöhe. Nicht gebaut: keine Kollision von Mobs untereinander, kein Pathfinding. `bottom` und `height` sind vorhanden, weil der Auftrag `resolve(pos, radius, height)` verlangt; noch hängt nichts Überkopf.
