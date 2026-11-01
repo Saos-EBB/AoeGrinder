@@ -88,9 +88,9 @@ export function grass(ctx, n, hue, sat, light, ok?) {
 export function rocks(ctx, n, color, rMin = 12, rMax = 90, ok?) {
   const geo = new THREE.DodecahedronGeometry(1).toNonIndexed();
   const list = scatter(n, rMin, rMax, ok).map(p => {
-    const s = rand(0.8, 2);
-    ctx.obstacle(p.x, p.z, s * 0.9);
-    return { ...p, y: 0.2 * s, s, sy: rand(0.5, 0.9), ry: rand(0, 6) };
+    const s = rand(0.8, 2), sy = rand(0.5, 0.9);
+    ctx.circle(p.x, p.z, s * 0.9, s * (0.2 + sy));
+    return { ...p, y: 0.2 * s, s, sy, ry: rand(0, 6) };
   });
   ctx.place([{ geo, mat: lambert(color, { flatShading: true }) }], list);
 }

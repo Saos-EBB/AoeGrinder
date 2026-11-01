@@ -5,7 +5,7 @@ import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
-import { groundAt, resolve, settle, steer } from './collision';
+import { groundAt, resolve, settle, steer, climbTarget } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
 import { reportKill } from './score';
@@ -123,6 +123,7 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
   let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
+  target = climbTarget(mob.pos, target);
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.01) return;

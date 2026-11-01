@@ -3,6 +3,7 @@
 
 import * as THREE from 'three';
 import { clamp, rand, lerpTo } from './util';
+import { addBox, addRoute } from './collision';
 import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
 
 const near = (x, z, cx, cz, r) => Math.hypot(x - cx, z - cz) < r;
@@ -29,7 +30,7 @@ const WATER_Y = -1.5;
 
 function tirisfalProps(ctx) {
   const free = (x, z) => tirPath(x, z) > 3.5 && !inLake(x, z, 3) && !near(x, z, TIR.mill[0], TIR.mill[1], 10)
-    && !near(x, z, TIR.cemetery[0], TIR.cemetery[1], 16) && !near(x, z, TIR.tower[0], TIR.tower[1], 7);
+    && !near(x, z, TIR.cemetery[0], TIR.cemetery[1], 16) && !near(x, z, TIR.tower[0], TIR.tower[1], 8);
   const bark = lambert(0x6a5a48), stone = lambert(0x9c988c, { flatShading: true }), wood = lambert(0x75593c), darkWood = lambert(0x4a3a2a);
 
   // Kahle, verdrehte Bäume
@@ -50,11 +51,14 @@ function tirisfalProps(ctx) {
     for (let x = -7; x <= 7; x += 2.3) for (let z = -5; z <= 5; z += 2.3) {
       if (Math.random() < 0.72) crops.push({ x: cx + x + rand(-0.4, 0.4), z: cz + z + rand(-0.4, 0.4), s: rand(0.7, 1.25), ry: rand(0, 6) });
     }
-    for (let x = -8; x <= 8; x += 3.3) for (const sz of [-1, 1]) if (Math.random() < 0.8) fences.push({ x: cx + x, z: cz + sz * 7, ry: rand(-0.08, 0.08), tiltZ: rand(-0.2, 0.2), tilt: rand(-0.15, 0.15) });
-    for (let z = -6; z <= 6; z += 3.3) for (const sx of [-1, 1]) if (Math.random() < 0.8) fences.push({ x: cx + sx * 9, z: cz + z, ry: Math.PI / 2 + rand(-0.08, 0.08), tiltZ: rand(-0.2, 0.2), tilt: rand(-0.15, 0.15) });
+    // Abs < 1,5: feste Lücke in der Mitte jeder Seite
+    for (let x = -8; x <= 8; x += 3.3) for (const sz of [-1, 1]) if (Math.abs(x) >= 1.5 && Math.random() < 0.8) fences.push({ x: cx + x, z: cz + sz * 7, ry: rand(-0.08, 0.08), tiltZ: rand(-0.2, 0.2), tilt: rand(-0.15, 0.15) });
+    for (let z = -6; z <= 6; z += 3.3) for (const sx of [-1, 1]) if (Math.abs(z) >= 1.5 && Math.random() < 0.8) fences.push({ x: cx + sx * 9, z: cz + z, ry: Math.PI / 2 + rand(-0.08, 0.08), tiltZ: rand(-0.2, 0.2), tilt: rand(-0.15, 0.15) });
   }
   ctx.place(pumpkin, crops);
+  for (const c of crops) ctx.circle(c.x, c.z, 0.42 * c.s, 0.8);
   ctx.place(fence, fences);
+  for (const f of fences) ctx.solid(f.x, f.z, 3.2, 0.3, f.ry, 1.2);
 
   // Zerfallene Windmühle in der Mitte
   const mill = prefab([
@@ -63,7 +67,9 @@ function tirisfalProps(ctx) {
     [wood, [cyl(0.2, 0.2, 2, 0, 9.3, 3.6, Math.PI / 2), box(0.3, 7.5, 0.12, 0, 9.3, 4.5, 0, 0, 0.5), box(1.2, 5.2, 0.05, -0.5, 11, 4.45, 0, 0, 0.5), box(0.3, 3.8, 0.12, 1.5, 8.2, 4.5, 0, 0, 2.0)]],
   ]);
   ctx.place(mill, [{ x: TIR.mill[0], z: TIR.mill[1] }]);
-  ctx.obstacle(TIR.mill[0], TIR.mill[1], 5);
+  ctx.circle(TIR.mill[0], TIR.mill[1], 4.4);
+  ctx.solid(TIR.mill[0] + 3.6, TIR.mill[1] + 2, 2, 1, 0, 1.45);   // Schutt
+  ctx.solid(TIR.mill[0] - 4, TIR.mill[1] + 1.5, 1.4, 1.2, 0, 1);
 
   // Friedhof
   const [gx, gz] = TIR.cemetery;
@@ -71,22 +77,39 @@ function tirisfalProps(ctx) {
   const graves = [];
   for (let x = -10; x <= 10; x += 3.4) for (let z = -10; z <= 8; z += 4) if (Math.random() < 0.8 && Math.hypot(x, z - 7) > 5) {
     const p = { x: gx + x + rand(-0.4, 0.4), z: gz + z, ry: rand(-0.2, 0.2), tiltZ: rand(-0.2, 0.2), tilt: rand(-0.14, 0.14) };
-    graves.push(p); ctx.obstacle(p.x, p.z, 0.5);
+    graves.push(p); ctx.solid(p.x, p.z, 0.8, 0.3, p.ry, 1.25);
   }
   ctx.place(grave, graves);
   const crypt = prefab([[stone, [box(6, 3.4, 5, 0, 1.7, 0), box(1.5, 2.2, 0.4, 0, 1.1, 2.5)]], [darkWood, [box(7, 0.5, 6, 0, 3.6, 0), cone(4.6, 2, 0, 4.8, 0, 0, Math.PI / 4, 0, 4)]]]);
   ctx.place(crypt, [{ x: gx, z: gz + 7, ry: Math.PI }]);
-  ctx.obstacle(gx, gz + 7, 3.8);
+  ctx.solid(gx, gz + 7, 7, 6, Math.PI);
   const wall = prefab([[stone, [box(3.2, 1, 0.4, 0, 0.5, 0)]]]);
   const walls = [];
   for (let i = -4; i <= 4; i++) if (Math.random() < 0.85) { walls.push({ x: gx + i * 3.2, z: gz - 13, tiltZ: rand(-0.08, 0.08) }); walls.push({ x: gx - 14, z: gz + i * 3, ry: Math.PI / 2, tiltZ: rand(-0.08, 0.08) }); }
   ctx.place(wall, walls);
-  for (const w of walls) ctx.obstacle(w.x, w.z, 1);
+  for (const w of walls) ctx.solid(w.x, w.z, 3.2, 0.4, w.ry ?? 0, 1);
 
-  // Wachturm
-  const crenel = []; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; crenel.push(box(0.9, 1, 0.5, Math.cos(a) * 3, 15.5, Math.sin(a) * 3, 0, -a + Math.PI / 2)); }
-  ctx.place(prefab([[stone, [cyl(3, 3.5, 15, 0, 7.5, 0, 0, 0, 0, 9), cyl(3.5, 3, 1, 0, 15, 0, 0, 0, 0, 9), ...crenel]], [darkWood, [box(1.4, 2.4, 0.3, 0, 1.2, 3.5)]]]), [{ x: TIR.tower[0], z: TIR.tower[1], ry: 2.4 }]);
-  ctx.obstacle(TIR.tower[0], TIR.tower[1], 4);
+  // Wachturm: Wendeltreppe außen, eine Runde bis aufs Dach. Unter den hohen Stufen kann man durchgehen.
+  const [tx, tz] = TIR.tower, towerY = ctx.heightAt(tx, tz);
+  const STEPS = 30, RISE = 0.5, STEP_AT = Math.PI / 2, STEP_TURN = Math.PI * 2 / STEPS;   // PH
+  const crenel = [], treads = [], route = [];
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * Math.PI * 2;
+    if (i === 2) continue;                    // Durchgang am Treppenende
+    crenel.push(box(0.9, 1, 0.5, Math.cos(a) * 3, 15.5, Math.sin(a) * 3, 0, -a + Math.PI / 2));
+    addBox(tx + Math.cos(a) * 3, tz + Math.sin(a) * 3, 0.9, 0.5, -a + Math.PI / 2, towerY + 16);
+  }
+  for (let i = 0; i < STEPS; i++) {
+    const a = STEP_AT + i * STEP_TURN, top = (i + 1) * RISE;
+    treads.push(box(2.2, RISE, 1.25, Math.cos(a) * 4.6, top - RISE / 2, Math.sin(a) * 4.6, 0, -a));
+    addBox(tx + Math.cos(a) * 4.6, tz + Math.sin(a) * 4.6, 2.2, 1.25, -a, towerY + top, towerY + top - RISE);
+    route.push({ x: tx + Math.cos(a) * 4.6, y: towerY + top, z: tz + Math.sin(a) * 4.6 });
+  }
+  route.push({ x: tx, y: towerY + 15.5, z: tz });
+  addRoute(tx, tz, 6, route);
+  ctx.place(prefab([[stone, [cyl(3, 3.5, 15, 0, 7.5, 0, 0, 0, 0, 9), cyl(3.5, 3, 1, 0, 15, 0, 0, 0, 0, 9)]], [darkWood, [box(1.4, 2.4, 0.3, 0, 1.2, 3.5)]]]), [{ x: tx, z: tz, ry: 2.4 }]);
+  ctx.place(prefab([[stone, [...crenel, ...treads]]]), [{ x: tx, z: tz }]);
+  ctx.circle(tx, tz, 3.5, 15.5);
 
   // Trüber See
   const water = new THREE.Mesh(new THREE.CircleGeometry(TIR.lake[2] + 4, 40).rotateX(-Math.PI / 2),

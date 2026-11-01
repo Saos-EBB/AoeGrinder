@@ -9,6 +9,7 @@ export const BODY_HEIGHT = 2;  // PH: Körperhöhe von Spieler und Mobs
 const CELL = 8;                // PH: Rastergröße in yd
 
 export const colliders = [];
+const routes = [];
 const grid = new Map();
 let terrain = (x, z) => 0;
 let stamp = 0;
@@ -17,6 +18,7 @@ const found = [];
 export function clearColliders(terrainHeight) {
   terrain = terrainHeight;
   colliders.length = 0;
+  routes.length = 0;
   grid.clear();
 }
 
@@ -160,6 +162,25 @@ export function steer(body, dx, dz, radius) {
   steered.x = tx * body.steerSide;
   steered.z = tz * body.steerSide;
   return steered;
+}
+
+// Aufstieg: points [{x, y, z}] vom Fuß nach oben, area: Kreis um x, z, in dem das Ziel auf dem Bauwerk steht.
+// Kein Pathfinding, eine feste Spur je Treppe. Ohne sie käme kein Mob auf eine Wendeltreppe.
+export const addRoute = (x, z, r, points) => routes.push({ x, z, r, points });
+
+// Steht das Ziel höher auf einem Bauwerk, läuft der Mob zum nächsten Punkt der Spur statt direkt zum Ziel
+export function climbTarget(pos, target) {
+  if (target.y - pos.y <= STEP) return target;
+  for (const route of routes) {
+    if (Math.hypot(target.x - route.x, target.z - route.z) > route.r) continue;
+    let best = 0, bestD = Infinity;
+    route.points.forEach((p, i) => {
+      const d = Math.hypot(p.x - pos.x, (p.y - pos.y) * 2, p.z - pos.z);   // Höhe zählt doppelt: nicht die Runde darüber wählen
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    return route.points[bestD < 1.2 ? Math.min(best + 1, route.points.length - 1) : best];
+  }
+  return target;
 }
 
 // Boden und Schwerkraft für Körper ohne eigenen Sprung (Mobs): body.vy, body.falling
