@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(score): Spielversion v10
+**Was:** Vor dem Publish erhöht, sonst mischt der Versionsfilter der Rangliste alte und neue Balance (Notiz in `docs/status-blau.md`).
+**Nicht gebaut:** —
+
 ## 2026-11-01 — feat(mobs): Kein Aggro-Verlust mehr
 **Was:** Wunsch von Kevin: Der Leash ist raus, Mobs jagen dich bis zum Tod.
 **Nicht gebaut:** kein Schalter, Fliehen und Heimlaufen nach dem Tod bleiben.
