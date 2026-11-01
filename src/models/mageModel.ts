@@ -1,7 +1,7 @@
 // @ts-nocheck
 // Frost Grind – Spielermodell (Vanilla-Rig + Skins). Automatisch aus dem Viewer „Frost Grind – MC-Modell“ gezogen:
 // nur der Code, den die vier Spiel-Skins brauchen. Änderungen am besten im Viewer machen und neu ziehen.
-// Schnittstelle: buildMage(skin) → { root, update(dt, anim), anchors: { crystal, handL } }
+// Schnittstelle: buildMage(skin) und buildWarrior() → { root, update(dt, anim), anchors: { crystal, handL, handR } }
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -139,6 +139,16 @@ function paintWood(s) {
     for (let i = 0; i < 4; i++) { const x = rand(0.05, 0.25) * s, y = rand(0, s); g.fillStyle = 'rgba(20,10,3,0.8)'; g.beginPath(); g.ellipse(x, y, s * 0.012, s * 0.03, 0, 0, 7); g.fill(); }
   });
 }
+function paintLeather(s, base = ['#6a4426', '#2c180c']) {
+  return canvas(s, (g) => {
+    hGrad(g, s, [[0, base[0]], [0.5, base[1]], [1, base[0]]]);
+    strokes(g, s, 260, ['#8a5a32', '#1a0d05'], { angle: 0, len: [0.05, 0.2] });
+    strokes(g, s, 40, ['rgba(230,200,160,1)'], { angle: 0.3, len: [0.02, 0.06], w: [1, 1.5], a: [0.2, 0.35] });   // Kratzer
+    blotches(g, s, 10, 'rgba(20,10,5,0.35)', [0.03, 0.08]);
+    g.fillStyle = 'rgba(220,180,120,0.7)';
+    for (let i = 0; i < s; i += s / 16) { g.fillRect(i, s * 0.12, s / 32, s * 0.02); g.fillRect(i, s * 0.86, s / 32, s * 0.02); }
+  });
+}
 function joint(parent, x = 0, y = 0, z = 0) { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; }
 function add(parent, geo, mat, x = 0, y = 0, z = 0, extra) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (extra) Object.assign(m.userData, extra); parent.add(m); return m; }
 const glowTex = toTex(canvas(64, (g, s) => {
@@ -166,6 +176,18 @@ function tube(pts, r, segs, radial, { taper = 0, oval = null, closed = false } =
   }
   return geo;
 }
+function longBone(len, r, samples, radial, ends = [1, 1], tip = 0.25) {
+  const pts = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    let w = r * (0.78 + 0.22 * Math.abs(2 * t - 1));
+    w += r * 0.9 * ends[0] * gauss(t - 0.05, 0.1) + r * 0.8 * ends[1] * gauss(t - 0.95, 0.1);
+    if (i === 0) w = r * 0.25; if (i === samples) w = r * tip;
+    pts.push(new THREE.Vector2(w, -t * len));
+  }
+  return new THREE.LatheGeometry(pts, radial);
+}
+const bone = (len, r, P, ends) => longBone(len, r * STYLE.bk, P.samples, P.radial, ends);
 function garment(spec, segs) {
   const [aSeg, rowsBase] = segs, rows = Math.max(4, Math.round(rowsBase * (spec.yTop - spec.yBot) / 0.5));
   const pos = [], uv = [], idx = [];
@@ -377,6 +399,12 @@ const CRAN = { y0: -0.06, y1: 0.088 };
 const faceUV = (x, y) => [(x - FACE.x0) / (FACE.x1 - FACE.x0), (y - FACE.y0) / (FACE.y1 - FACE.y0)];
 const LIT = '255,244,214', SHD = '46,26,62', DEEP = '14,8,20';
 const rgba = (c, a) => `rgba(${c},${a})`;
+function setUV(geo, fn) {
+  const p = geo.attributes.position, uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) { const [u, v] = fn(p.getX(i), p.getY(i), p.getZ(i)); uv[i * 2] = u; uv[i * 2 + 1] = v; }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
 function subUV(geo, x0, y0, x1, y1) {                                   // UV in einen Teil der Zelle legen
   const uv = geo.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, lerp(x0, x1, uv.getX(i)), lerp(y0, y1, uv.getY(i)));
@@ -580,7 +608,7 @@ function buildLow(M, C) {
     const ankle = joint(knee, 0, -L.shank, 0);
     return { hip, knee, ankle, ...lowFoot(ankle, M, side) };
   };
-  const R = { root, hips, torso, neck, head, sk, jaw, armL, armR, legL: leg(1), legR: leg(-1), ...lowStaff(armR.wrist, M, C) };
+  const R = { root, hips, torso, neck, head, sk, jaw, armL, armR, legL: leg(1), legR: leg(-1), ...(C.weapon ? C.weapon(armR, armL, M, C) : lowStaff(armR.wrist, M, C)) };
   (C.clothes || lowClothes)(R, M, C);
   if (C.addons) C.addons(R, M, C);
   return R;
@@ -1306,6 +1334,295 @@ const HOOD = { ...SKIN, ...HOOD_MOVES, id: 'hood', name: 'Kapuzenmagier (Alle)',
     const c = [0, 1, 2].map(n => lerp(a[n], b[n], k));
     R.crystal.material.color.setRGB(...c); R.crystalGlow.material.color.setRGB(c[0] / 2.8, c[1] / 2.8, c[2] / 2.8);
   } };
+function skullEmblem(g, x, y, r, bone, dark) {                         // Wappen-Schädel für Schild, Rock, Platte, Schnalle
+  g.fillStyle = bone; g.beginPath(); g.arc(x, y - r * 0.15, r, Math.PI * 0.85, Math.PI * 2.15); g.lineTo(x + r * 0.55, y + r * 0.75); g.lineTo(x - r * 0.55, y + r * 0.75); g.closePath(); g.fill();
+  g.fillStyle = dark; for (const d of [-1, 1]) { g.beginPath(); g.ellipse(x + d * r * 0.4, y, r * 0.27, r * 0.24, 0, 0, 7); g.fill(); }
+  g.beginPath(); g.moveTo(x, y + r * 0.2); g.lineTo(x - r * 0.12, y + r * 0.42); g.lineTo(x + r * 0.12, y + r * 0.42); g.fill();
+  g.strokeStyle = dark; g.lineWidth = Math.max(1, r * 0.06);
+  for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(x + i * r * 0.16, y + r * 0.55); g.lineTo(x + i * r * 0.16, y + r * 0.75); g.stroke(); }
+}
+const EMBLEM = [0.72, 0.72, 1, 1];
+function rivet(g, x, y, r) {
+  g.fillStyle = 'rgba(10,10,14,0.6)'; g.beginPath(); g.arc(x + 1.5, y + 2, r, 0, 7); g.fill();
+  const grd = g.createRadialGradient(x - r * 0.3, y - r * 0.3, 0, x, y, r); grd.addColorStop(0, '#d8dce4'); grd.addColorStop(1, '#3a3c44');
+  g.fillStyle = grd; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+}
+function paintIron(s) {
+  return canvas(s, g => {
+    vGrad(g, s, [[0, '#8a8f99'], [0.3, '#5e636d'], [0.65, '#41444c'], [1, '#26252c']]);   // Licht oben, kühle Schatten unten
+    strokes(g, s, 500, ['#a9aeb8', '#2a2a30', '#6c707a'], { angle: 0, len: [0.05, 0.25], w: [1, 2], a: [0.05, 0.15] });   // Schleifspuren
+    blotches(g, s, 10, 'rgba(120,60,25,0.35)', [0.02, 0.07]);                               // Rost
+    blotches(g, s, 8, 'rgba(20,20,26,0.4)', [0.03, 0.08]);                                  // Dellen
+    for (const y of [0.4, 0.93]) for (let x = 14; x < s; x += 34) rivet(g, x, y * s, 5);    // Nieten an Rand und Mitte
+    g.fillStyle = rgba(LIT, 0.35); g.fillRect(0, 0.3 * s, s, 3);                            // Kantenlicht oben
+    const ex = EMBLEM[0] * s, ew = (1 - EMBLEM[0]) * s, grd = g.createRadialGradient(ex + ew * 0.4, ew * 0.4, 0, ex + ew / 2, ew / 2, ew / 2);
+    grd.addColorStop(0, '#e2b56a'); grd.addColorStop(0.7, '#9a6a2a'); grd.addColorStop(1, '#4a2e10');
+    g.fillStyle = grd; g.fillRect(ex, 0, ew, ew);
+    skullEmblem(g, ex + ew / 2, ew / 2, ew * 0.34, '#efe3bd', '#2a1a10');
+  });
+}
+function paintFur(s) {                                                   // Fellrock: Strähnen hängen nach unten, Büschel am Saum
+  return canvas(s, g => {
+    vGrad(g, s, [[0, '#6b5a46'], [0.5, '#4f4134'], [1, '#2e251f']]);
+    g.lineCap = 'round';
+    for (let i = 0; i < 2600; i++) {
+      const x = rand(0, s), y = rand(-0.05, 1) * s, l = rand(10, 26), c = Math.random();
+      g.strokeStyle = c < 0.5 ? `rgba(30,22,16,${rand(0.3, 0.7)})` : `rgba(${c < 0.85 ? '150,130,105' : '205,190,165'},${rand(0.25, 0.6)})`;
+      g.lineWidth = rand(1.5, 3); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + rand(-4, 4), y + l / 2, x + rand(-6, 6), y + l); g.stroke();
+    }
+    band(g, s, 0, 0.12 * s, DEEP, 0.7);                                                     // Schatten unter dem Gürtel
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000';
+    g.beginPath(); g.moveTo(0, s); for (let x = 0; x <= s; x += 16) { g.lineTo(x + 8, s - rand(0.03, 0.09) * s); g.lineTo(x + 16, s); } g.fill();
+    g.globalCompositeOperation = 'source-over';
+  });
+}
+function paintRibs(s) {                                                  // u 0 = Wirbelsäule, 1 = Brustbein; zwischen den Rippen durchsichtig
+  return canvas(s, g => {
+    g.lineCap = 'round';
+    for (let k = 0; k < 7; k++) {
+      const y0 = (0.06 + k * 0.12) * s, th = (0.055 - k * 0.003) * s, drop = 0.16 * s, floating = k >= 5, end = floating ? 0.62 - (k - 5) * 0.12 : 0.88;
+      const rib = (o, w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(0, y0 + o); g.bezierCurveTo(0.35 * s, y0 + o + drop * 0.6, 0.6 * s, y0 + o + drop, end * s, y0 + o + drop * 0.8); g.stroke(); };
+      rib(th * 0.25, th * 1.15, 'rgba(30,18,24,0.85)'); rib(0, th, '#b39d76'); rib(-th * 0.22, th * 0.45, '#f3e5bf'); rib(th * 0.3, th * 0.25, rgba(SHD, 0.7));
+      if (!floating) {                                                   // Rippenknorpel: steigt zum Brustbein an, kühler Ton
+        g.strokeStyle = '#8f9a9c'; g.lineWidth = th * 0.8; g.beginPath(); g.moveTo(end * s, y0 + drop * 0.8); g.quadraticCurveTo(0.95 * s, y0 + drop * 0.6, s, y0 + drop * 0.25); g.stroke();
+      }
+    }
+    const grd = g.createLinearGradient(0.93 * s, 0, s, 0); grd.addColorStop(0, '#9a8562'); grd.addColorStop(0.5, '#f0e2bc'); grd.addColorStop(1, '#c9b48a');
+    g.fillStyle = grd; g.beginPath(); g.roundRect(0.92 * s, 0.02 * s, 0.1 * s, 0.68 * s, 10); g.fill();                     // Brustbein
+    g.fillStyle = '#c9b48a'; g.fillRect(0, 0, 0.05 * s, s);                                                                   // Wirbelsäule hinten
+    for (let y = 8; y < s; y += 24) { g.fillStyle = 'rgba(40,25,15,0.7)'; g.fillRect(0, y, 0.05 * s, 3); }
+  });
+}
+function paintWarLeather(s) {                                            // oben Wappenrock (rot, Schädel, Fransen), unten Leder für Riemen
+  return canvas(s, g => {
+    const h = s / 2;
+    g.drawImage(paintLeather(s), 0, 0);
+    for (let y = h + 20; y < s; y += 40) for (let x = 16; x < s; x += 40) rivet(g, x, y, 4);   // Nieten auf Riemen und Armschienen
+    g.save(); g.beginPath(); g.rect(0, 0, s, h); g.clip();
+    g.fillStyle = '#6a1c1c'; g.fillRect(0, 0, s, h); weave(g, s, 2, '0,0,0', '255,200,190', 0.6);
+    vGrad(g, s, [[0, rgba(LIT, 0.15)], [0.5, rgba(DEEP, 0.45)]]);
+    for (const x of [0.06, 0.94]) { g.fillStyle = '#b08a3e'; g.fillRect(x * s - 5, 0, 10, h); }
+    skullEmblem(g, s / 2, h * 0.42, s * 0.15, '#e8dcb8', '#1a0e0a');
+    g.restore();
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000';                      // ausgefranster Saum des Wappenrocks
+    g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= s; x += 20) { g.lineTo(x + 10, h - rand(10, 26)); g.lineTo(x + 20, h); } g.fill();
+    g.globalCompositeOperation = 'source-over';
+  });
+}
+function paintBlade(s) {                                                 // Klinge: u quer (Schneide links/rechts), v Heft → Spitze
+  return canvas(s, g => {
+    hGrad(g, s, [[0, '#eef0f4'], [0.08, '#aab0ba'], [0.3, '#8a909a'], [0.5, '#9ca1ab'], [0.7, '#80858f'], [0.92, '#a2a7b1'], [1, '#e4e8ee']]);   // Fase an beiden Schneiden
+    strokes(g, s, 600, ['#9aa0aa', '#2c2d33', '#70747e'], { angle: -Math.PI / 2, jitter: 0.05, len: [0.05, 0.3], w: [1, 2], a: [0.06, 0.16] });   // Schleifspuren längs
+    blotches(g, s, 12, 'rgba(110,55,25,0.35)', [0.02, 0.07]);                              // Rost
+    blotches(g, s, 7, 'rgba(70,10,10,0.55)', [0.03, 0.09], [0, 0, 1, 0.35]);               // getrocknetes Blut zur Spitze hin
+    vGrad(g, s, [[0, rgba(LIT, 0.12)], [0.6, rgba(SHD, 0)], [1, rgba(SHD, 0.35)]]);
+    g.fillStyle = 'rgba(20,20,26,0.6)'; g.fillRect(0.47 * s, 0.25 * s, 0.06 * s, 0.75 * s);   // Hohlkehle
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000';                  // Scharten in beiden Schneiden
+    for (let i = 0; i < 14; i++) { const x = i % 2 ? s : 0, y = rand(0.05, 0.95) * s, d = rand(0.03, 0.07) * s, h = rand(8, 22); g.beginPath(); g.moveTo(x, y - h); g.lineTo(x + (i % 2 ? -d : d), y); g.lineTo(x, y + h); g.fill(); }
+    g.globalCompositeOperation = 'source-over';
+  });
+}
+function paintGrip(s) {                                                  // Griff: dunkles Leder, schräg gewickelt
+  return canvas(s, g => {
+    vGrad(g, s, [[0, '#24160d'], [0.35, '#5a3a22'], [0.5, '#6b4628'], [0.75, '#3a2414'], [1, '#1c1009']]);
+    g.strokeStyle = 'rgba(10,5,2,0.8)'; g.lineWidth = 3;
+    for (let x = -s; x < s; x += 14) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + s * 0.5, s); g.stroke(); }
+    blotches(g, s, 6, 'rgba(70,10,10,0.4)', [0.03, 0.08]);
+  });
+}
+function paintHorn(s) {                                                  // Horn und Stacheln: Röhre, u = Ansatz → Spitze
+  return canvas(s, g => {
+    hGrad(g, s, [[0, '#4a3826'], [0.5, '#a08860'], [1, '#efe2c0']]);
+    vGrad(g, s, [[0, rgba(SHD, 0.5)], [0.35, rgba(LIT, 0.25)], [0.5, rgba(LIT, 0.1)], [1, rgba(SHD, 0.5)]]);
+    for (let x = 8; x < s * 0.8; x += rand(10, 20)) { g.fillStyle = 'rgba(40,25,15,0.5)'; g.fillRect(x, 0, 2, s); }   // Wachstumsringe
+    strokes(g, s, 200, ['#3a2a1a', '#fff2d0'], { angle: 0, len: [0.05, 0.2], w: [1, 2], a: [0.1, 0.25] });
+  });
+}
+const warriorCells = (s, C) => { const c = paintLowAtlas(s, C); c[4] = paintFur(s); c[5] = paintIron(s); c[6] = paintGrip(s); c[7] = paintRibs(s); c[8] = paintWarLeather(s); c[9] = paintBlade(s); c[10] = paintHorn(s); return c; };
+const RIB = { y0: 1.2, y1: 1.53 };
+function ribcageGeo() {                                                  // Fass aus 7 Ringen × 12 Seiten; die Rippen macht die Textur
+  const N = 12, rows = [];
+  for (let r = 0; r <= 6; r++) {
+    const t = 1 - r / 6, y = lerp(RIB.y0, RIB.y1, t);
+    const rx = 0.125 + 0.03 * Math.sin(Math.PI * Math.min(1, t * 1.3)) - 0.035 * smooth(0.75, 1, t), rz = 0.095 + 0.02 * Math.sin(Math.PI * t), cz = 0.015 + 0.01 * t;
+    rows.push(Array.from({ length: N + 1 }, (_, c) => { const a = c / N * 2 * Math.PI; return [Math.sin(a) * rx, y, cz - Math.cos(a) * rz]; }));
+  }
+  return gridGeo(rows, (r, c) => [1 - Math.abs(2 * c / N - 1), 1 - r / 6]);
+}
+const KILT = { yBot: 0.6, yTop: 1.08, g0: 0, g: () => 0,
+  RX: [[0.6, 0.27], [0.8, 0.235], [0.95, 0.205], [1.08, 0.18]], RZ: [[0.6, 0.23], [0.8, 0.2], [0.95, 0.175], [1.08, 0.155]], CZ: [[0.6, -0.01], [1.08, 0]],
+  fold: (y, a) => 0.06 * smooth(0.95, 0.6, y) * (0.5 + 0.5 * Math.sin(a * 5)) };
+function warriorClothes(R, M) {
+  const { root, torso, hips, armL, armR, legL, legR, sk } = R, onTorso = { weights: () => [[torso, 1]] };
+  add(torso, ribcageGeo().translate(0, -1, 0), M.inner);                                                                      // Brustkorb
+  add(torso, tube([[0, 0.02, -0.03], [0, 0.2, -0.05], [0, 0.4, -0.06], [0, 0.55, -0.035]], 0.017, 5, 5), M.bone);             // Wirbelsäule
+  for (const s of [-1, 1]) add(torso, tube([[0, 0.54, 0.1], [s * 0.1, 0.56, 0.06], [s * 0.19, 0.555, -0.01]], 0.011, 3, 4), M.bone);   // Schlüsselbeine
+  for (const [s, a] of [[1, armL], [-1, armR]]) add(a.shoulder, tube([[0, -0.01, 0], [0, -L.upper * 0.5, 0.005], [0, -L.upper + 0.01, 0]], 0.016, 3, 5, { oval: (v, tg, t) => v.multiplyScalar(1 + 0.5 * gauss(t, 0.15) + 0.4 * gauss(t - 1, 0.15)) }), M.bone);   // Oberarm
+  for (const [s, lg] of [[1, legL], [-1, legR]]) {
+    add(lg.hip, tube([[s * 0.01, -0.02, 0], [0, -L.thigh * 0.5, 0.01], [0, -L.thigh + 0.02, 0.005]], 0.019, 3, 5, { oval: (v, tg, t) => v.multiplyScalar(1 + 0.4 * gauss(t - 1, 0.15)) }), M.bone);   // Oberschenkel
+    add(lg.knee, new THREE.SphereGeometry(0.022, 5, 3).scale(1, 1.1, 0.6), M.bone, 0, 0.005, 0.035);                          // Kniescheibe
+    add(lg.knee, subUV(tube([[0, -0.15, 0.008], [0, -0.3, 0.01], [0, -L.shank + 0.05, 0.006]], 0.046, 2, 7, { taper: 0.15 }), 0, 0, 1, 0.7), M.pants);   // Beinschiene
+    add(lg.knee, new THREE.TorusGeometry(0.05, 0.022, 4, 8).rotateX(Math.PI / 2), M.shell, 0, -0.15, 0.008);                  // Fellstulpe
+  }
+  for (const a of [armL, armR]) add(a.elbow, subUV(tube([[0, -0.07, -0.002], [0, -0.17, -0.002], [0, -L.fore + 0.03, -0.002]], 0.034, 2, 6, { taper: -0.15 }), 0, 0, 1, 0.5), M.accent);   // Armschienen
+  // Hörnerhelm (Schädelraum): Kalotte bis zur Braue, Nasenschutz, zwei Hörner
+  add(sk, subUV(new THREE.SphereGeometry(0.1, 10, 5, 0, Math.PI * 2, 0, Math.PI * 0.56).scale(0.82, 0.95, 1.04), 0, 0, 1, 0.7), M.pants, 0, 0.004, -0.004);
+  add(sk, subUV(new THREE.BoxGeometry(0.014, 0.055, 0.008), 0, 0, 1, 0.7), M.pants, 0, -0.035, 0.1);
+  for (const s of [-1, 1]) add(sk, tube([[s * 0.07, 0.035, -0.005], [s * 0.125, 0.055, 0], [s * 0.16, 0.1, 0.025], [s * 0.165, 0.165, 0.07]], 0.02, 6, 5, { taper: 0.92 }), M.satin);
+  // Schulterplatten: drei Schalen übereinander + Stacheln; links größer (Barbar)
+  for (const [s, a, k] of [[1, armL, 1.25], [-1, armR, 1]]) {
+    const p = joint(a.shoulder, s * 0.015, 0.035, 0); p.rotation.z = -s * 0.3;
+    for (let i = 0; i < 3; i++) add(p, subUV(new THREE.SphereGeometry(0.105 * k * (1 - i * 0.1), 8, 4, 0, Math.PI * 2, 0, Math.PI * 0.5).scale(1, 0.75, 1.05), 0, 0, 1, 0.7), M.pants, s * 0.012 * i, -0.04 * k * i, 0);
+    for (const [dz, h] of [[-0.045, 0.1], [0.01, 0.14], [0.06, 0.09]]) add(p, new THREE.ConeGeometry(0.018 * k, h * k, 5).translate(0, h * k / 2, 0), M.satin, s * 0.03, 0.065 * k, dz).rotation.z = -s * 0.35;
+  }
+  // Kreuzgurt mit Schädelplatte, Gürtel mit Schnalle
+  for (const s of [-1, 1]) add(torso, subUV(tube([[s * 0.12, 0.555, 0.06], [s * 0.08, 0.48, 0.13], [0, 0.34, 0.152], [-s * 0.08, 0.2, 0.15], [-s * 0.13, 0.08, 0.13]], 0.011, 6, 4), 0, 0, 1, 0.5), M.accent);
+  add(torso, subUV(new THREE.CylinderGeometry(0.045, 0.045, 0.012, 10).rotateX(Math.PI / 2), ...EMBLEM), M.pants, 0, 0.34, 0.16);
+  const belt = []; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; belt.push([Math.sin(a) * 0.185, 1.07 + 0.01 * Math.cos(a), Math.cos(a) * 0.16]); }
+  add(root, subUV(tube(belt, 0.022, 12, 4, { closed: true, oval: v => { v.y *= 1.6; } }), 0, 0, 1, 0.5), M.accent, 0, 0, 0, { weights: () => [[torso, 0.5], [hips, 0.5]] });
+  add(hips, subUV(new THREE.BoxGeometry(0.075, 0.065, 0.02), ...EMBLEM), M.pants, 0, 0.07, 0.19);
+  // Fellrock (geht mit den Beinen) + Wappenrock vorn
+  add(root, mirrorU(garment(KILT, [14, 4])), M.shell, 0, 0, 0, { weights: robeWeights(R) });
+  add(hips, subUV(lowPanel(0.2, 0.42, 3, -0.2), 0, 0.5, 1, 1), M.accent, 0, 0.075, 0.2).rotation.x = -0.05;
+}
+function warriorWeapon(armR, armL, M, C) {
+  // Zweihand-Schwert: Griff durch die rechte Faust, breite Eisenplatte mit schräger Spitze. Die flache Seite zeigt zur Kamera
+  // (auf der Schulter und beim Schlag von vorn) – lesbarer als physikalisch korrekt, wie bei Vanilla
+  const w = joint(armR.wrist, 0.018, -0.088, 0.004); w.rotation.x = C.weaponX;
+  add(w, tube([[0, -0.3, 0], [0, -0.1, 0.002], [0, 0.1, 0]], 0.022, 2, 5), M.woodTube);                                     // Griff (zwei Hände)
+  add(w, subUV(new THREE.SphereGeometry(0.035, 5, 3), 0, 0, 1, 0.7), M.pants, 0, -0.32, 0);                                   // Knauf
+  add(w, subUV(new THREE.BoxGeometry(0.32, 0.05, 0.07), 0, 0, 1, 0.7), M.pants, 0, 0.12, 0);                                  // Parierstange
+  const b = new THREE.Shape(); b.moveTo(-0.13, 0.15); b.lineTo(0.13, 0.15); b.lineTo(0.125, 1.45); b.lineTo(0.05, 1.66); b.lineTo(-0.125, 1.55); b.closePath();
+  const blade = new THREE.ExtrudeGeometry(b, { depth: 0.045, bevelEnabled: false }).translate(0, 0, -0.0225);
+  setUV(blade, (x, y) => [(x + 0.13) / 0.26, (y - 0.15) / 1.51]);
+  add(w, blade, M.sleeve);
+  return { staff: w, crystal: joint(w, 0, 1.5, 0), crystalGlow: null };   // crystal = Spitze (Treffer-Effekte, Spiel: anchors.crystal)
+}
+function fxTex(kind) {
+  return toTex(canvas(256, (g, s) => {
+    const c = s / 2;
+    if (kind === 'ring') {                                               // Donnerknall: heller Ring mit Blitzzacken
+      g.filter = 'blur(4px)'; g.strokeStyle = 'rgba(110,160,255,0.9)'; g.lineWidth = 16; g.beginPath(); g.arc(c, c, c * 0.82, 0, 7); g.stroke(); g.filter = 'none';
+      g.strokeStyle = '#eef6ff'; g.lineWidth = 3; g.beginPath();
+      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) { const r = c * (0.82 + rand(-0.05, 0.05)); a ? g.lineTo(c + Math.cos(a) * r, c + Math.sin(a) * r) : g.moveTo(c + r, c); }
+      g.stroke();
+    } else if (kind === 'dust') {                                        // Staubring
+      const grd = g.createRadialGradient(c, c, 0, c, c, c); grd.addColorStop(0, 'rgba(180,150,110,0)'); grd.addColorStop(0.6, 'rgba(180,150,110,0.15)'); grd.addColorStop(0.8, 'rgba(200,175,135,0.55)'); grd.addColorStop(1, 'rgba(180,150,110,0)');
+      g.fillStyle = grd; g.fillRect(0, 0, s, s);
+    } else if (kind === 'crack') {                                       // Bodenrisse: dunkler Krater, Risse mit glühendem Kern
+      const grd = g.createRadialGradient(c, c, 0, c, c, c * 0.35); grd.addColorStop(0, 'rgba(20,12,8,0.85)'); grd.addColorStop(1, 'rgba(20,12,8,0)');
+      g.fillStyle = grd; g.fillRect(0, 0, s, s); g.lineCap = 'round';
+      for (let i = 0; i < 9; i++) {
+        const pts = [[c, c]]; let a = i / 9 * Math.PI * 2 + rand(-0.3, 0.3), x = c, y = c;
+        for (let k = 0; k < 6; k++) { a += rand(-0.5, 0.5); x += Math.cos(a) * c * 0.15; y += Math.sin(a) * c * 0.15; pts.push([x, y]); }
+        for (const [w, col] of [[7, 'rgba(25,15,10,0.9)'], [2.5, 'rgba(255,130,40,0.95)']]) { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([px, py], k) => k ? g.lineTo(px, py) : g.moveTo(px, py)); g.stroke(); }
+      }
+    } else {                                                             // Wirbel: Windstreifen rundherum
+      for (let i = 0; i < 16; i++) {
+        const y = rand(0.15, 0.85) * s, x0 = rand(0, s), len = rand(0.3, 0.7) * s, grd = g.createLinearGradient(x0, 0, x0 + len, 0);
+        grd.addColorStop(0, 'rgba(255,240,220,0)'); grd.addColorStop(0.7, 'rgba(255,240,220,0.8)'); grd.addColorStop(1, 'rgba(255,240,220,0)');
+        g.strokeStyle = grd; g.lineWidth = rand(2, 7); g.beginPath(); g.moveTo(x0, y); g.lineTo(x0 + len, y + rand(-6, 6)); g.stroke();
+      }
+    }
+  }));
+}
+function makeWarriorFx() {                                               // je Art ein Bodenquad, das wiederverwendet wird
+  const group = new THREE.Group(), live = {}, SPEC = {
+    crack: { life: 1.6, s0: 2.4, s1: 2.6, fadeAt: 0.6 }, dust: { life: 0.55, s0: 0.6, s1: 3.2, fadeAt: 0 }, ring: { life: 0.6, s0: 0.6, s1: 9, fadeAt: 0.3 } };
+  const meshes = Object.fromEntries(Object.keys(SPEC).map(k => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: fxTex(k), transparent: true, depthWrite: false, blending: k === 'crack' ? THREE.NormalBlending : THREE.AdditiveBlending }));
+    m.visible = false; group.add(m); return [k, m];
+  }));
+  let last = null;
+  return { group,
+    spawn(kind, x, y, z) { const m = meshes[kind]; m.position.set(x, y + 0.012 + (kind === 'ring' ? 0.006 : 0), z); m.rotation.y = rand(0, 7); m.visible = true; live[kind] = 0; },
+    update(time) {
+      const dt = last === null ? 0 : Math.min(0.1, (time - last) / 1000); last = time;
+      for (const k of Object.keys(live)) {
+        const sp = SPEC[k], m = meshes[k], t = (live[k] += dt) / sp.life;
+        if (t >= 1) { m.visible = false; delete live[k]; continue; }
+        m.scale.setScalar(lerp(sp.s0, sp.s1, 1 - (1 - t) ** 2)); m.material.opacity = 1 - smooth(sp.fadeAt, 1, t);
+      }
+    } };
+}
+function warriorAddons(R) {
+  const mat = new THREE.MeshBasicMaterial({ map: fxTex('swirl'), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });   // sonst 2 Draw Calls pro Schleier
+  R.swirl = [[0.95, 0.55, 0.5], [1.15, 1.15, 0.6]].map(([r, y, h]) => { const m = add(R.root, new THREE.CylinderGeometry(r, r * 0.9, h, 24, 1, true), mat, 0, y, 0); m.userData.keep = true; m.visible = false; return m; });
+  R.fx = makeWarriorFx();
+}
+const tmpV = new THREE.Vector3();
+const WAR_HITS = { cast: [1200, [0.24, 0.6]], smash: [1300, [0.47]], thunderclap: [1500, [0.42]] };
+function warriorAnimate(R, time) {
+  const ww = R.action === 'whirlwind';
+  R.swirlK = lerp(R.swirlK || 0, ww ? 1 : 0, 0.15);
+  R.swirl.forEach((m, i) => { m.material.opacity = R.swirlK * 0.75; m.visible = R.swirlK > 0.02; m.rotation.y = -time / (i ? 70 : 95); });
+  const cyc = WAR_HITS[R.action];
+  if (cyc) {
+    const k = wave(R.actTime, cyc[0]), prev = R.fxAct === R.action ? R.fxK : k;
+    for (const at of cyc[1]) if (prev < at && k >= at) {
+      R.root.updateMatrixWorld(true); R.root.getWorldPosition(tmpV); const y = tmpV.y;
+      if (R.action === 'thunderclap') { R.fx.spawn('ring', tmpV.x, y, tmpV.z); R.fx.spawn('dust', tmpV.x, y, tmpV.z); }
+      else {
+        R.crystal.getWorldPosition(tmpV);                                  // Schwertspitze
+        if (R.action === 'smash') { R.fx.spawn('crack', tmpV.x, y, tmpV.z); R.fx.spawn('dust', tmpV.x, y, tmpV.z); }
+      }
+      if (R.onHit) R.onHit(R.action, tmpV.x, tmpV.z);
+    }
+    R.fxK = k;
+  }
+  R.fxAct = R.action;
+  R.fx.update(time);
+}
+const mix = (t, pose, w) => { for (const k in pose) t[k] = lerp(t[k] ?? 0, pose[k], w); };
+const CARRY = { rSh: -0.4, rShZ: -0.15, rEl: -2.3, wpn: -0.13 };
+const STAND = { ...CARRY, lean: 0.18, headX: 0.15, lKnee: 0.25, rKnee: 0.25, lHip: -0.15, rHip: -0.05, hipsY: 0.965, lSh: 0.1, lShZ: 0.18, lEl: -0.5, gripL: 1, jaw: 0.1, twist: 0 };
+const W_POSES = {
+  aWind: { rSh: -2.6, rShZ: -0.55, rEl: -0.9, wpn: 0.05, twist: 0.55, lean: -0.1, lSh: -1.6, lShZ: -0.2, lEl: -1.3, hipsY: 0.98 },
+  aHit: { rSh: -0.45, rShZ: 0.55, rEl: -0.15, wpn: 1.06, twist: -0.65, lean: 0.4, hipsY: 0.9, lKnee: 0.4, rKnee: 0.2, lHip: -0.45, rHip: 0.15, lSh: 0.3, lShZ: 0.3, lEl: -0.4, jaw: 0.35 },
+  bHit: { rSh: -1.35, rShZ: -1.25, rEl: -0.15, wpn: 1.34, twist: 0.75, lean: 0.25, hipsY: 0.92, lSh: -0.6, lShZ: 0.6, lEl: -0.8, lKnee: 0.3, rKnee: 0.35, jaw: 0.3 },
+  smashUp: { hipsY: 1.28, lKnee: 0.9, rKnee: 0.7, lHip: -0.6, rHip: -0.2, rSh: -3.0, rShZ: -0.1, rEl: -0.7, wpn: -0.1, lSh: -3.0, lShZ: 0.1, lEl: -0.7, lean: -0.35, headX: -0.2, jaw: 0.4 },
+  smashHit: { hipsY: 0.8, lKnee: 1.0, rKnee: 0.6, lHip: -0.85, rHip: 0.2, rSh: -0.55, rShZ: 0.1, rEl: -0.05, wpn: 0.95, lSh: -0.55, lShZ: -0.1, lEl: -0.05, lean: 0.75, headX: 0.35, jaw: 0.6 },
+  clapUp: { hipsY: 1.32, lKnee: 1.1, rKnee: 1.1, lHip: -0.7, rHip: -0.7, rSh: -2.9, rEl: -0.4, wpn: 0, lSh: -2.9, lEl: -0.4, lShZ: 0.2, rShZ: -0.2, lean: -0.2, headX: -0.25 },
+  clapDown: { hipsY: 0.8, lKnee: 1.05, rKnee: 1.05, lHip: -0.75, rHip: -0.55, rSh: -0.35, rShZ: 0.05, rEl: -0.05, wpn: 1.35, lSh: 0.3, lShZ: 0.9, lEl: -0.3, lean: 0.55, headX: 0.35, jaw: 0.6, gripL: 1 },
+};
+const WAR_MOVES = {
+  freq: 4.6, blend: 18, lag: { head: 7, arm: 6 }, stance: 0.13, rigidWeapon: true, weaponX: 1.9,
+  idle(t, ph) {                                                          // geduckt, lauernd, schweres Atmen
+    const b = Math.sin(ph * 0.9);
+    Object.assign(t, STAND, { hipsY: 0.965 + b * 0.006, lean: 0.18 + b * 0.025, headZ: Math.sin(ph * 0.4) * 0.05, rSh: CARRY.rSh + b * 0.03 });
+  },
+  gait(j, t, ph) {                                                       // Sturmlauf, Schwert auf der Schulter federt mit
+    const sw = Math.sin(ph), cw = Math.cos(ph);
+    Object.assign(t, CARRY, { lHip: -sw * 0.65, rHip: sw * 0.65, lKnee: Math.max(0, sw) * 1.0 + 0.12, rKnee: Math.max(0, -sw) * 1.0 + 0.12, lean: 0.32, hipsY: 0.94 + Math.abs(cw) * 0.06,
+      sway: sw * 0.08, twist: sw * 0.12, lSh: sw * 0.8, lEl: -1.1, lShZ: 0.15, gripL: 1, headX: 0.2, rSh: CARRY.rSh + Math.abs(cw) * 0.06 });
+  },
+  cast(t, time) {                                                        // Kombo: schräg von rechts oben, dann Rückhand waagrecht
+    const k = wave(time, 1200), P = W_POSES;
+    Object.assign(t, STAND);
+    mix(t, P.aWind, smooth(0, 0.16, k)); mix(t, P.aHit, smooth(0.16, 0.24, k)); mix(t, P.bHit, smooth(0.46, 0.6, k)); mix(t, STAND, smooth(0.8, 1, k));
+  },
+  channel(t, time) {                                                     // Kampfschrei: Schwert hoch, Kopf zurück, bebt
+    const sh = Math.sin(time / 35) * 0.02;
+    Object.assign(t, { rSh: -2.8, rShZ: -0.25, rEl: -0.2, wpn: 1.1, lSh: -0.5, lShZ: 0.9, lEl: -1.6, gripL: 1, headX: -0.5, headZ: sh, jaw: 0.65, lean: -0.2 + sh,
+      hipsY: 0.95, lKnee: 0.3, rKnee: 0.3, lHip: -0.2, rHip: 0.1 });
+  },
+  whirlwind(t, time) {                                                   // 2,6 Umdrehungen pro Sekunde, Klinge weit draußen
+    Object.assign(t, { spinY: time / 1000 * Math.PI * 2 * 2.6, rSh: -0.25, rShZ: -1.45, rEl: -0.05, wpn: 1.06, lSh: -0.3, lShZ: 0.5, lEl: -1.2, gripL: 1, lean: -0.05,
+      hipsY: 0.93 + Math.abs(Math.sin(time / 120)) * 0.02, lKnee: 0.35, rKnee: 0.35, headX: 0.1 });
+  },
+  smash(t, time) {                                                       // Sprung, beidhändig über den Kopf, Aufschlag bei 47 %, Klinge steckt kurz im Boden
+    const k = wave(time, 1300), P = W_POSES;
+    Object.assign(t, STAND);
+    mix(t, P.smashUp, smooth(0, 0.4, k) * (1 - smooth(0.4, 0.47, k))); mix(t, P.smashHit, smooth(0.4, 0.47, k) * (1 - smooth(0.78, 1, k)));
+  },
+  thunderclap(t, time) {                                                 // Sprung, Landung mit Stampfer und Klinge in den Boden bei 42 %
+    const k = wave(time, 1500), P = W_POSES;
+    Object.assign(t, STAND);
+    mix(t, P.clapUp, smooth(0, 0.3, k) * (1 - smooth(0.3, 0.42, k))); mix(t, P.clapDown, smooth(0.32, 0.42, k) * (1 - smooth(0.75, 1, k)));
+  },
+};
+const WARRIOR = { ...SKIN, ...WAR_MOVES, id: 'warrior', name: 'Skelett-Krieger', atlasCells: warriorCells, clothes: warriorClothes, weapon: warriorWeapon, addons: warriorAddons,
+  eye: 0xff4a2a, eyeCol: [3, 0.55, 0.25], animate: warriorAnimate };
 function aoFactor(v, n) {
   let f = lerp(0.62, 1.12, smooth(0.0, 1.85, v.y));
   f *= 0.8 + 0.3 * Math.max(0, n.y);
@@ -1382,9 +1699,9 @@ function skinMerge(root, C) {
     sm.frustumCulled = false; root.add(sm); sm.bind(skeleton);
   }
 }
-const KEYS = ['hipsY', 'lean', 'sway', 'twist', 'lHip', 'rHip', 'lKnee', 'rKnee', 'rAnkle', 'lSh', 'rSh', 'lShZ', 'rShZ', 'lEl', 'rEl', 'headX', 'headZ', 'jaw', 'gripL'];
+const KEYS = ['hipsY', 'lean', 'sway', 'twist', 'lHip', 'rHip', 'lKnee', 'rKnee', 'rAnkle', 'lSh', 'rSh', 'lShZ', 'rShZ', 'lEl', 'rEl', 'headX', 'headZ', 'jaw', 'gripL', 'wpn'];
 const LAGGED = { headX: 'head', headZ: 'head', lSh: 'arm', lEl: 'arm' };
-const UPPER = ['lSh', 'rSh', 'lShZ', 'rShZ', 'lEl', 'rEl', 'gripL', 'headX', 'headZ', 'jaw'];
+const UPPER = ['lSh', 'rSh', 'lShZ', 'rShZ', 'lEl', 'rEl', 'gripL', 'headX', 'headZ', 'jaw', 'wpn'];
 const BASE_ACTIONS = {
   cast(t, time) { const c = (Math.sin(time / 260) + 1) / 2; Object.assign(t, { rSh: -1.6 * c, lSh: -1.1 * c, rEl: -0.2, lEl: -0.3, jaw: 0.1 + 0.25 * c, gripL: 0, headX: -0.1 * c }); },
   channel(t, time) { Object.assign(t, { lSh: -2.6 + Math.sin(time / 120) * 0.05, rSh: -2.6, lShZ: 0.35, rShZ: -0.35, lEl: 0, rEl: 0, jaw: 0.22 + Math.sin(time / 70) * 0.05, headX: -0.25, gripL: 0 }); },
@@ -1398,14 +1715,15 @@ function animator(R, C) {
   let phase = 0;
   const j = Object.fromEntries(KEYS.map(k => [k, 0])); j.hipsY = 1; j.swayLag = 0;
   const rest = () => ({ ...Object.fromEntries(KEYS.map(k => [k, 0])), hipsY: 1, lSh: 0.05, rSh: 0.05, lShZ: 0.1, rShZ: -0.1, lEl: -0.2, rEl: -0.5, jaw: 0.05, gripL: 0.4 });
-  return function update(dt, loco, action, time, speedK = 1) {
+  return function update(dt, loco, action, time, speedK = 1, actTime = time) {
     const s = dt / 1000, t = rest();
-    let moving = false;
+    let moving = false, spinY = 0;
     if (loco === 'run' || loco === 'back') { phase += s * C.freq * speedK * (loco === 'back' ? -0.75 : 1); C.gait(j, t, phase, s, R); moving = true; }
     else if (loco === 'idle') { phase += s * 1.6; C.idle(t, phase, time); }
     else Object.assign(t, (C.poses || {})[loco] || POSES[loco] || {});
     if (action && loco !== 'dead' && loco !== 'sit') {
-      const a = rest(); (C[action] || BASE_ACTIONS[action])(a, time);
+      const a = rest(); (C[action] || BASE_ACTIONS[action] || BASE_ACTIONS.cast)(a, actTime);
+      spinY = a.spinY || 0;                                                // Wirbelwind: ganze Figur dreht sich, ohne Glättung
       if (moving || loco === 'air') for (const key of UPPER) t[key] = a[key]; else Object.assign(t, a);   // beim Laufen nur Oberkörper
     }
     const blend = C.blend ?? 12;
@@ -1415,11 +1733,13 @@ function animator(R, C) {
     }
     j.swayLag = lerp(j.swayLag, j.sway, Math.min(1, s * 4));
     R.hips.position.y = j.hipsY;
-    R.hips.rotation.set(0, j.twist, j.sway * 0.5);
+    R.hips.rotation.set(0, j.twist + spinY, j.sway * 0.5);
     R.torso.rotation.set(j.lean, -j.twist * 1.6, -j.sway);
     R.neck.rotation.set(j.headX, j.twist * 0.6, j.headZ + j.sway * 0.4);
     R.jaw.rotation.x = j.jaw;
-    R.legL.hip.rotation.set(j.lHip, 0, -j.sway * 0.5); R.legR.hip.rotation.set(j.rHip, 0, -j.sway * 0.5);
+    const st = C.stance || 0;                                               // breiter Stand (Krieger)
+    R.legL.hip.rotation.set(j.lHip, 0, -j.sway * 0.5 + st); R.legR.hip.rotation.set(j.rHip, 0, -j.sway * 0.5 - st);
+    R.legL.ankle.rotation.z = -st; R.legR.ankle.rotation.z = st;
     R.legL.knee.rotation.x = j.lKnee; R.legR.knee.rotation.x = j.rKnee;
     R.legL.ankle.rotation.x = -j.lKnee * 0.35 - j.lHip * 0.2; R.legR.ankle.rotation.x = -j.rKnee * 0.35 - j.rHip * 0.2 + j.rAnkle;
     R.armL.shoulder.rotation.set(j.lSh, 0, j.lShZ); R.armR.shoulder.rotation.set(j.rSh, 0, j.rShZ);
@@ -1429,12 +1749,15 @@ function animator(R, C) {
     curl(R.armR.fingers, 1.25);
     curl(R.armL.fingers, 0.15 + j.gripL * 0.9);
     // Stab bleibt grob aufrecht: Schulter- und Ellbogendrehung (gegenüber der Ruhehaltung) werden am Griff ausgeglichen
-    R.staff.rotation.x = 0.5 - ((j.rSh - 0.05) + (j.rEl + 0.5) + j.lean) * 0.85;
-    R.staff.rotation.z = -(j.rShZ + 0.1) * 0.85;
+    if (C.rigidWeapon) R.staff.rotation.x = C.weaponX + j.wpn;              // Schwert: fest in der Faust, nur das Handgelenk kippt
+    else {                                                                  // Stab: bleibt grob aufrecht
+      R.staff.rotation.x = 0.5 - ((j.rSh - 0.05) + (j.rEl + 0.5) + j.lean) * 0.85;
+      R.staff.rotation.z = -(j.rShZ + 0.1) * 0.85;
+    }
+    R.action = action; R.actTime = actTime;
     if (C.extra) C.extra(R, j, time);
     const pulse = 1 + Math.sin(time / 300) * 0.08 + (action ? 0.4 : 0);
-    R.crystalGlow.scale.setScalar(0.55 * pulse);
-    R.crystal.rotation.y = time / 1500;
+    if (R.crystalGlow) { R.crystalGlow.scale.setScalar(0.55 * pulse); R.crystal.rotation.y = time / 1500; }
   };
 }
 function buildChar(C) {
@@ -1456,7 +1779,7 @@ export const SKIN_FX = {
   feuer: { trail: 'fire', dps: 5 },                     // PLATZHALTER „bissi dmg“: Schaden pro Sekunde pro Mob, Spuren stapeln nicht
   arkan: { speedMul: 1.1, float: true },                // schwebt, 10 % schneller, keine Spuren
 };
-const RUN_REF = 3.9;                                    // 7 yd/s ergibt so die Obergrenze 1,8 von speedK; mit 7 rutschten die Füße sichtbar (Spiel-Messung)
+const RUN_REF = 3.9;                                    // im Spiel gemessen (Agent Rot): bei diesem anim.speed rutscht der Fuß nicht
 
 const norm = c => c.multiplyScalar(1 / Math.max(1, c.r, c.g, c.b));
 function dimGlow(R) {                                   // ohne Bloom: Glühfarben auf ≤ 1, sonst brennen sie weiß aus
@@ -1470,7 +1793,7 @@ function dimGlow(R) {                                   // ohne Bloom: Glühfarb
       c.needsUpdate = true;
     }
   });
-  norm(R.crystal.material.color);
+  if (R.crystal.material) norm(R.crystal.material.color);
 }
 
 // anim = { state: 'idle'|'run'|'back'|'air'|'sit'|'dead', speed, cast, channel, attack, frozen }
@@ -1499,4 +1822,37 @@ export function buildMage(skin = 'alle', { bloom = false } = {}) {
       if (trail && (loco === 'run' || loco === 'back')) { R.root.updateMatrixWorld(true); watch((x, y, z, a, side) => trail.add(x, y, z, a, side)); }
     },
   };
+}
+
+// =====================================================================
+// Krieger (Real Men Mode)
+// =====================================================================
+// anim = { state: 'idle'|'run'|'back'|'air'|'sit'|'dead', speed, attack, ability: null|'whirlwind'|'smash'|'thunderclap'|'warcry', frozen }
+// Eine Aktion startet bei Phase 0, sobald sie sich ändert. Einmal-Aktionen so lange gesetzt lassen, wie WAR_TIMING sagt.
+// onHit(kind, x, z): genau im Moment, in dem die Klinge trifft (kind 'cast' = Grundangriff, 'smash', 'thunderclap').
+// Wirbelwind meldet keine Treffer; das Spiel tickt selbst, solange ability === 'whirlwind'.
+export const WAR_TIMING = { cast: WAR_HITS.cast[0], smash: WAR_HITS.smash[0], thunderclap: WAR_HITS.thunderclap[0] };
+export function buildWarrior({ bloom = false } = {}) {
+  const R = buildChar(WARRIOR), step = animator(R, WARRIOR);
+  if (!bloom) dimGlow(R);
+  let clock = 0, act = null, actStart = 0;
+  const mage = {
+    root: R.root,
+    anchors: { ...R.anchors, handR: R.armR.wrist },     // crystal = Schwertspitze
+    fx: R.fx,                                           // fx.group gehört in die Szene (Weltkoordinaten)
+    onHit: null,
+    update(dt, anim = {}) {
+      const ms = Math.min(100, dt > 1 ? dt : dt * 1000);
+      if (anim.frozen) { R.fx.update(clock); return; }
+      clock += ms;
+      const st = anim.state || 'idle';
+      const loco = ['run', 'back', 'air', 'sit', 'dead'].includes(st) ? st : 'idle';
+      const a = anim.ability === 'warcry' ? 'channel' : anim.ability || (anim.attack ? 'cast' : null);
+      if (a !== act) { act = a; actStart = clock; }
+      const speedK = anim.speed ? Math.min(1.8, Math.max(0.5, anim.speed / RUN_REF)) : 1;
+      step(ms, loco, act, clock, speedK, clock - actStart);
+    },
+  };
+  R.onHit = (kind, x, z) => mage.onHit && mage.onHit(kind, x, z);
+  return mage;
 }
