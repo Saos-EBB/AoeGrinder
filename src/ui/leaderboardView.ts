@@ -65,11 +65,13 @@ function renderPick() {
     btns.appendChild(b);
   }
   box.innerHTML = '';
-  if (modeId === 'custom') for (const mod of MODIFIERS.filter(m => !m.hidden)) {
+  if (modeId === 'custom') for (const mod of MODIFIERS) {
     const label = document.createElement('label');
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.checked = activeModIds().includes(mod.id);
+    input.disabled = mod.excludes.some(id => activeModIds().includes(id));   // Gegenstück gewählt: erst dort abwählen
+    if (input.disabled) label.style.cssText = 'opacity:.4;cursor:not-allowed';
     input.addEventListener('change', () => { toggleCustomMod(mod.id); changed(); });
     label.append(input, `${mod.name} (${fmtMult(mod.scoreMult)})`);
     label.title = mod.desc;
