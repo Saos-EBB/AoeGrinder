@@ -40,7 +40,7 @@ MOB_TYPES.dummy = { name: 'Ziel', ability: null, hpMul: 1e5, speedMul: 0, aggro:
     const mat = new THREE.MeshLambertMaterial({ color: 0x8a93a6 }), root = new THREE.Group(), body = new THREE.Mesh(dummyGeo, mat);
     body.position.y = 1;
     root.add(body);
-    return { root, update(_dt, anim) { mat.emissive.setRGB(anim.flash, anim.flash, anim.flash); } };
+    return { root, update(_dt, anim) { mat.emissive.setRGB(anim.flash * 0.3, anim.flash * 0.3, anim.flash * 0.3); } };
   } };
 
 // Welt und Spieler wie im Spiel aufbauen, danach Ziele statt Packs
@@ -64,9 +64,9 @@ function resetStage() {
 }
 
 // Kamera
-camera.position.set(-13, 11, -19);
+camera.position.set(-9.5, 8.5, -14);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 4, 5);
+controls.target.set(0, 3.2, 5);
 controls.enableDamping = true;
 
 // Wirken ohne Kosten, Abklingzeit und Castzeit

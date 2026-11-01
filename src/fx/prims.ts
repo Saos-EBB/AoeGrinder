@@ -100,19 +100,20 @@ export function flareFx(pos, color, size, dur = 300, y = 1) {
 }
 
 // Säule oder Trichter mit aufsteigendem Rauschen
-const COLUMN_FRAG = `${GLSL.common} uniform float uAlpha, uScrollV, uDens; uniform vec3 uA, uB; uniform float uDis; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+const COLUMN_FRAG = `${GLSL.common} uniform float uAlpha, uScrollV, uDens, uTwist; uniform vec3 uA, uB; uniform float uDis; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
   void main() {
-    float n = noise2(vUv * vec2(3.0, 1.0) + scrollUv(vec2(0.0), vec2(0.05, -uScrollV)));
-    float n2 = noise2(vUv * vec2(6.0, 2.0) + scrollUv(vec2(0.4), vec2(-0.08, -uScrollV * 1.7)));
+    vec2 uv = vec2(vUv.x + vUv.y * uTwist, vUv.y);   // Schrägstellung ergibt Schraubenlinien
+    float n = noise2(uv * vec2(3.0, 1.0) + scrollUv(vec2(0.0), vec2(0.05, -uScrollV)));
+    float n2 = noise2(uv * vec2(6.0, 2.0) + scrollUv(vec2(0.4), vec2(-0.08, -uScrollV * 1.7)));
     float body = smoothstep(uDens, uDens + 0.3, n * 0.6 + n2 * 0.5);
     float h = smoothstep(0.0, 0.1, vUv.y) * (1.0 - smoothstep(0.55, 1.0, vUv.y));
     float keep = dissolve(n2, uDis, 0.25);
     float f = 0.45 + 0.55 * fresnel(vN, vV, 1.3);
     gl_FragColor = vec4(mix(uB, uA, body) * body * h * keep * f * uAlpha, 1.0);
   }`;
-export function columnMaterial(colorA, colorB, { scroll = 1.1, dens = 0.25 } = {}) {
+export function columnMaterial(colorA, colorB, { scroll = 1.1, dens = 0.25, twist = 0 } = {}) {
   return fxMaterial({ side: THREE.DoubleSide, vertexShader: FX_VERTEX, fragmentShader: COLUMN_FRAG,
-    uniforms: { uAlpha: { value: 1 }, uScrollV: { value: scroll }, uDens: { value: dens }, uA: { value: vec3(colorA) }, uB: { value: vec3(colorB) }, uDis: { value: 0 } } });
+    uniforms: { uTwist: { value: twist }, uAlpha: { value: 1 }, uScrollV: { value: scroll }, uDens: { value: dens }, uA: { value: vec3(colorA) }, uB: { value: vec3(colorB) }, uDis: { value: 0 } } });
 }
 export function columnFx(pos, radius, height, colorA, colorB, { dur = 650, top = 1, grow = 0.2, scroll = 1.1, dens = 0.25 } = {}) {
   const geo = new THREE.CylinderGeometry(radius * top, radius, 1, 64, 8, true).translate(0, 0.5, 0);
@@ -193,9 +194,9 @@ export function sparksFx(pos, n, colors, speed, { up = 3, life = 0.7, size = 0.4
 }
 
 // Dauerhafter Wirbel oder Trichter als Flächen-Visual, blendet ein und aus
-export function vortexVisual(colorA, colorB, height, { top = 1.25, scroll = 0.9, dens = 0.32, peak = 1, spin = 1.2 } = {}) {
-  const geo = new THREE.CylinderGeometry(top, 1, 1, 64, 8, true).translate(0, 0.5, 0);
-  const mat = columnMaterial(colorA, colorB, { scroll, dens });
+export function vortexVisual(colorA, colorB, height, { top = 1.25, bottom = 1, scroll = 0.9, dens = 0.32, peak = 1, spin = 1.2, twist = 0 } = {}) {
+  const geo = new THREE.CylinderGeometry(top, bottom, 1, 64, 8, true).translate(0, 0.5, 0);
+  const mat = columnMaterial(colorA, colorB, { scroll, dens, twist });
   const mesh = new THREE.Mesh(geo, mat);
   scene.add(mesh);
   const born = fxClock.now;

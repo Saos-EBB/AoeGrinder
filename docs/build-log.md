@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Blitz und Natur neu
+**Was:** Kettenblitz und Bogenblitz laufen über den Blitz-Baustein, Hurrikan bekommt einen sichtbaren Trichter.
+**Nicht gebaut:** kein Schockwellen-Post-Pass pro Sprung, nur Licht und Funken, damit 50 Sprünge flüssig bleiben.
+
 ## 2026-11-01 — feat(vfx): Feuer-Gruppe neu
 **Was:** Flammenstoß, Druckwelle und Höllenfeuer bekommen je einen eigenen Charakter statt derselben Explosion.
 **Nicht gebaut:** kein Vorwarn-Effekt während der 2 s Zauberzeit.
