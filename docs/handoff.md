@@ -1,7 +1,7 @@
 # Frost Grind – Stand & Übergabe (Chat ↔ Claude Code)
 
 **Artifact:** „Frost Grind – Prototyp“ · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v11 (Version wird nach dem Publish eingetragen, 2026-11-01), gebündelter Build aus diesem Repo. Quelle ist das Repo, das Artifact wird nicht mehr direkt editiert.
+Stand: v11 (`1793501678-2c8c`, 2026-11-01), gebündelter Build aus diesem Repo. Quelle ist das Repo, das Artifact wird nicht mehr direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 
 ## Regeln für beide Seiten
