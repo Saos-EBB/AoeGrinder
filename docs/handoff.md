@@ -11,13 +11,21 @@ Stand: v11 (`1793501678-2c8c`, 2026-11-01), gebündelter Build aus diesem Repo. 
 4. Werte ohne Beleg im Code mit `// PH` markieren. Belegte Werte mit Quelle kommentieren (Datei/Funktion oder Spell-ID).
 5. Ab der Repo-Migration ist das Repo die Quelle. Das Artifact wird nur noch als spielbarer Build aktualisiert (gebündelte index.html), nicht mehr direkt editiert.
 
+## Branch mc-model (Agent Rot)
+Neues Spielermodell mit 4 Skins, 15 Waffen und Skin-Effekten. Agent Rot arbeitet im Haupt-Repo, Blau (`blau-assets`) und Grün (`gruen-vfx`) in eigenen Worktrees. Noch nicht auf `main`, Artifact bleibt v11 bis zur Freigabe.
+- `src/models/mageModel.ts`: Modell aus dem Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Dort ändern und neu ziehen; danach `RUN_REF` prüfen (bisher 3.9 statt 7).
+- `src/models/mage.ts`: dünne Hülle mit Skin aus dem Modus. `SKIN_WEAPON` legt die Standardwaffe pro Skin fest.
+- `src/models/weapons/`: 15 Waffen, Details in `docs/status-waffen.md`.
+- `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo. Modi: Normal = Alle, Frost only, Fire only, Arkan.
+- Messung Level 1, 1600×900 (FPS / Calls / davon Spieler): vorher 165 / 262 / 63, Alle 159 / 188 / 4, Feuer mit 10 Spuren 139 / 201 / 7.
+
 ## Code-Aufbau (Abschnitte in index.html)
 - `CFG`, `SPELLS`, `CARDS`: alle Zahlen. Tunen nur hier.
 - `ACTIONS` / `binds`: Tastenbelegung, localStorage `frostgrind.binds.v1`.
 - Formeln (`aggroRadius`, `hitChance`, `xpForKill` …) 1:1 aus der Spec.
 - Welt: `heightAt(x,z)` ist die einzige Quelle für Bodenhöhe; `collide()` für Bäume/Steine/Kartenrand; `obstacles[]` (Bäume mit `canopy` für Kamerakollision).
 - Render: kein Schattenwurf; EffectComposer = RenderPass → UnrealBloom (Schwelle 1.5) → Vignette/Tönung (ShaderPass) → OutputPass. Nur HDR-Farben > 1 leuchten.
-- Modelle: `buildMage()` (Skelett) / `buildBoar()` liefern `{ root, update(dt, anim) }`. Ein CC0-glTF ersetzt sie mit gleicher Schnittstelle (`anim.state`: idle/run/back/air/sit/dead, plus cast, channel, attack, frozen, slowed, flash). Mage hat `anchors` (Kristall, Hand) als Partikel-Ursprung.
+- Modelle: `mage` (`models/mage.ts`, Abschnitt mc-model) / `buildBoar()` liefern `{ root, update(dt, anim) }`. Ein CC0-glTF ersetzt sie mit gleicher Schnittstelle (`anim.state`: idle/run/back/air/sit/dead, plus cast, channel, attack, frozen, slowed, flash). Mage hat `anchors` (Kristall, Hand) als Partikel-Ursprung.
 - Waffen: `src/models/weapons/`, `buildWeapon(id)`, `mage.setWeapon(id)`, Auswahl im Esc-Menü (`docs/status-waffen.md`). `anchors.crystal` zeigt auf den Leuchtpunkt der Waffe.
 - Effekte: `particles` (ein Points-Draw-Call, additiv), `*Fx()` pro Spell, `groundDecalFx()` (Canvas-Texturen iceTex, runeTex), `ambientParticles()`, `shakeCamera()`, `sinkCorpse()`.
 - Test-Hook: `window.__game`.
@@ -64,6 +72,7 @@ public/assets/       CC0-Modelle, Sounds (später)
 - Performance-Schalter in config.ts: Bloom an/aus, Partikel-Limit, Pixel-Ratio (Rechner ohne dedizierte GPU).
 
 ## Offen
+- mc-model: Modell im Abendlicht sehr dunkel, Füße rutschen (`speedK` bei 1,8 gedeckelt), Spuren mit Lücken (alles im Viewer). Kein Einknicken beim Landen, Spuren am Hang und ohne Höhenprüfung ungeprüft.
 - Kollision: Aggro und Nahkampf messen nur 2D; ein Mob am Fuß einer Ebene kann den Spieler direkt über sich schlagen. Flächen-Spells prüfen die Höhe (`SPELL_AOE_HEIGHT`, Branch `gruen-terrain`), Kettenblitz und Bogenblitz nicht.
 - Kollision: Die Kamera kann in Bauwerke geraten. Brücken in BRD bleiben Geländerücken mit begehbarer Platte, keine echte Spannweite über Lava.
 - Leistung v10: Die BRD-Werte stammen aus Software-Rendering, Messung auf echter Grafikkarte steht aus.

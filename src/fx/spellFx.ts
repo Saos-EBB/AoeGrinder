@@ -297,7 +297,7 @@ export function hitSparkFx(pos, spellId) {
 
 export function crystalBurst(school) {
   const c = new THREE.Vector3();
-  mage.anchors.handR.getWorldPosition(c);   // der Stab hängt auf dem Rücken, gezaubert wird aus der Hand
+  mage.anchors.handR.getWorldPosition(c);   // gezaubert wird aus der rechten Hand, die den Stab hält
   const color = SCHOOL_COLOR[school] || FROST;
   for (let i = 0; i < 25; i++) {
     const dir = new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize();
