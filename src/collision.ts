@@ -164,7 +164,7 @@ export function steer(body, dx, dz, radius) {
   return steered;
 }
 
-// Aufstieg: points [{x, y, z}] vom Fuß nach oben, area: Kreis um x, z, in dem das Ziel auf dem Bauwerk steht.
+// Aufstieg: points [{x, y, z}] vom Fuß nach oben, Abstand unter einer Stufe, area: Kreis um x, z, in dem das Ziel auf dem Bauwerk steht.
 // Kein Pathfinding, eine feste Spur je Treppe. Ohne sie käme kein Mob auf eine Wendeltreppe.
 export const addRoute = (x, z, r, points) => routes.push({ x, z, r, points });
 
@@ -173,12 +173,11 @@ export function climbTarget(pos, target) {
   if (target.y - pos.y <= STEP) return target;
   for (const route of routes) {
     if (Math.hypot(target.x - route.x, target.z - route.z) > route.r) continue;
-    let best = 0, bestD = Infinity;
-    route.points.forEach((p, i) => {
-      const d = Math.hypot(p.x - pos.x, (p.y - pos.y) * 2, p.z - pos.z);   // Höhe zählt doppelt: nicht die Runde darüber wählen
-      if (d < bestD) { bestD = d; best = i; }
-    });
-    return route.points[bestD < 1.2 ? Math.min(best + 1, route.points.length - 1) : best];
+    // Höchster Punkt, den man von hier erreicht; von hinten führt das erst zum Fuß, nicht zur Spitze
+    let i = 0;
+    while (i < route.points.length - 1 && route.points[i + 1].y <= pos.y + STEP) i++;
+    const p = route.points[i];
+    return Math.hypot(p.x - pos.x, p.z - pos.z) < 1.2 ? route.points[Math.min(i + 1, route.points.length - 1)] : p;
   }
   return target;
 }

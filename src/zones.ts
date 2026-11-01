@@ -162,7 +162,8 @@ const stvPath = (x, z) => pathsDist(x, z, STV.paths);
 const stvRiver = (x, z) => polyDist(x, z, STV.river);
 
 function stvProps(ctx) {
-  const free = (x, z) => stvPath(x, z) > 4.5 && stvRiver(x, z) > 8 && Math.hypot(x, z) > STV.clearing && x < STV.beachX - 4;
+  const onZig = (x, z) => near(x, z, STV.zig[0], STV.zig[1], 18) || (Math.abs(x - STV.zig[0]) < 3.5 && z > STV.zig[1] && z < STV.zig[1] + 20);
+  const free = (x, z) => stvPath(x, z) > 4.5 && stvRiver(x, z) > 8 && Math.hypot(x, z) > STV.clearing && x < STV.beachX - 4 && !onZig(x, z);
   const trunk = lambert(0x5b4326), leaf = lambert(0x2f7a2b), leafB = lambert(0x47962f), vine = lambert(0x3a6a22), stone = lambert(0x8b8a70, { flatShading: true }), moss = lambert(0x5c7a3c, { flatShading: true });
 
   // Dschungelbäume: hoher Stamm, breite Krone, Lianen
@@ -179,24 +180,37 @@ function stvProps(ctx) {
   // Großblättrige Pflanzen
   const leaves = []; for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; leaves.push(ball(0.75, Math.cos(a) * 0.8, 0.55, Math.sin(a) * 0.8, 1.2, 0.1, 0.55)); }
   const fern = prefab([[leafB, leaves], [vine, [cyl(0.06, 0.12, 0.6, 0, 0.3, 0)]]]);
-  const noPlant = (x, z) => stvPath(x, z) > 2.5 && stvRiver(x, z) > 6 && x < STV.beachX - 2 && !near(x, z, STV.zig[0], STV.zig[1], 13);
+  const noPlant = (x, z) => stvPath(x, z) > 2.5 && stvRiver(x, z) > 6 && x < STV.beachX - 2 && !onZig(x, z);
   ctx.place(fern, scatter(420, 4, 98, noPlant).map(p => ({ ...p, s: rand(0.7, 1.9), ry: rand(0, 6), tiltZ: rand(-0.15, 0.15) })));
 
-  // Zikkurat in der Mitte
+  // Zikkurat in der Mitte: 5 begehbare Ebenen, Treppe an der Vorderseite bis auf die oberste
+  const [zx, zz] = STV.zig, zigY = ctx.heightAt(zx, zz);
+  const TIER = 2.4, TOP = 5 * TIER, FOOT = 19, RUN = 16, TREADS = 24;   // PH: flach genug für 0,6 yd Stufe
   const steps = [];
-  for (let i = 0; i < 5; i++) { const w = 22 - i * 4; steps.push(box(w, 2.4, w, 0, 1.2 + i * 2.4, 0)); }
-  const stairs = []; for (let i = 0; i < 12; i++) stairs.push(box(4, 1, 1, 0, 0.5 + i, 11.5 - i * 0.82));
-  const [zx, zz] = STV.zig;
+  for (let i = 0; i < 5; i++) {
+    const w = 22 - i * 4, top = zigY + (i + 1) * TIER;
+    steps.push(box(w, TIER, w, 0, TIER / 2 + i * TIER, 0));
+    ctx.walk(zx, zz, w, w, 0, () => top);
+  }
+  const stairs = [], route = [{ x: zx, y: zigY, z: zz + FOOT + 1 }];
+  for (let i = 0; i < TREADS; i++) {
+    const h = (i + 1) * TOP / TREADS, sz = FOOT - (i + 0.5) * RUN / TREADS;
+    stairs.push(box(4, h, RUN / TREADS + 0.1, 0, h / 2, sz));
+    route.push({ x: zx, y: zigY + (FOOT - sz) / RUN * TOP, z: zz + sz });
+  }
+  route.push({ x: zx + 2.4, y: zigY + TOP, z: zz + 1 });
+  ctx.walk(zx, zz + FOOT - RUN / 2, 4, RUN, 0, (x, z) => zigY + clamp((zz + FOOT - z) / RUN, 0, 1) * TOP);
+  addRoute(zx, zz, 22, route);
   ctx.place(prefab([
-    [stone, [...steps, ...stairs, box(4.4, 3, 4.4, 0, 13.2, 0)]],
-    [moss, [box(22.3, 0.5, 22.3, 0, 2.2, 0), box(14.3, 0.5, 14.3, 0, 6.8, 0), cone(2.6, 1.8, 0, 15.6, 0, 0, Math.PI / 4, 0, 4)]],
+    [stone, [...steps, ...stairs, box(2, 1.4, 2, 0, TOP + 0.7, 0)]],
+    [moss, [box(22.3, 0.5, 22.3, 0, 2.2, 0), box(14.3, 0.5, 14.3, 0, 6.8, 0), cone(1.4, 1, 0, TOP + 1.9, 0, 0, Math.PI / 4, 0, 4)]],
   ]), [{ x: zx, z: zz }]);
-  ctx.obstacle(zx, zz, 13);
+  addBox(zx, zz, 2, 2, 0, zigY + TOP + 1.4);   // Altar
 
   // Trollruinen an den Pfaden: Säulenreste und Totems
   const column = prefab([[stone, [cyl(0.6, 0.72, 3.2, 0, 1.6, 0, 0, 0, 0, 8)]], [moss, [box(1.5, 0.3, 1.5, 0, 0.15, 0)]]]);
-  const cols = scatter(26, 15, 88, (x, z) => stvRiver(x, z) > 8 && x < STV.beachX && stvPath(x, z) > 3 && stvPath(x, z) < 9).map(p => ({ ...p, s: rand(0.7, 1.15), sy: rand(0.4, 1.2), tiltZ: rand(-0.2, 0.2), ry: rand(0, 6) }));
-  for (const c of cols) ctx.obstacle(c.x, c.z, 0.8 * c.s);
+  const cols = scatter(26, 15, 88, (x, z) => stvRiver(x, z) > 8 && x < STV.beachX && stvPath(x, z) > 3 && stvPath(x, z) < 9 && !onZig(x, z)).map(p => ({ ...p, s: rand(0.7, 1.15), sy: rand(0.4, 1.2), tiltZ: rand(-0.2, 0.2), ry: rand(0, 6) }));
+  for (const c of cols) ctx.circle(c.x, c.z, 0.72 * c.s, 3.2 * c.s * c.sy);
   ctx.place(column, cols);
 
   const water = new THREE.Mesh(new THREE.CircleGeometry(175, 48).rotateX(-Math.PI / 2),
@@ -236,7 +250,7 @@ const stv = {
     };
   })(),
   props: stvProps,
-  spawn: { x: 0, z: 2 },
+  spawn: { x: 0, z: 6 },
   mobs: ['jungraptor', 'peitschenraptor', 'axtwerfer', 'medizinmann', 'schattenpanther'],
   packs: { count: 9, initialMobs: 30, sizeBonus: 0 },   // PH
 };
