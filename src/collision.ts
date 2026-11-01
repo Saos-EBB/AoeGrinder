@@ -79,6 +79,20 @@ export function groundAt(x, z, currentY) {
   return ground;
 }
 
+// Höhe, die kein Objekt erreicht: groundAt(x, z, SKY) liefert die oberste Fläche, ohne endlos hohe Wände
+export const SKY = 1e6;
+
+// Höchste begehbare Fläche (Plattform, Rampe) unter dem Punkt, sonst null. Massive Objekte zählen nicht.
+export function walkTopAt(x, z) {
+  let top = null;
+  for (const c of near(x, z, 0)) {
+    if (c.kind !== 'walk' || !contains(c, x, z)) continue;
+    const h = c.height(x, z);
+    if (top === null || h > top) top = h;
+  }
+  return top;
+}
+
 // Schiebt pos aus diesem Collider, gibt zurück, ob er geschoben hat
 function push(c, pos, radius) {
   const dx = pos.x - c.x, dz = pos.z - c.z;

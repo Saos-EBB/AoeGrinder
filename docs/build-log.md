@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — fix(blink): stoppt vor Wänden, landet auf begehbaren Flächen
+**Was:** Blink lief durch massive Objekte und landete immer auf dem Gelände. Jetzt läuft er die Strecke über `resolve` und `groundAt` ab.
+**Nicht gebaut:** kein Pathfinding, kein Gleiten an der Wand: Blink endet am ersten Hindernis.
+
 ## 2026-11-01 — chore(docs): Stand v10 in handoff.md
 **Was:** Teil Grün ergänzt, `gruen-tuning` per Fast-Forward in `main`, Artifact auf v10 aktualisiert.
 **Nicht gebaut:** keine Feeling-Fixes, es gab keine Commits dazu.
