@@ -59,8 +59,7 @@ function wield(id) {
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-// Noch kein Arkan-Modus: 'arkan' ist nur über __game.mage.setSkin erreichbar
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : 'alle'; };
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : 'alle'; };
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
