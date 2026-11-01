@@ -110,11 +110,12 @@ export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
   return state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r && Math.abs(m.pos.y - y) < height);
 }
 
-// Stärkerer Slow gewinnt; abgelaufener Slow zählt nicht mehr
+// Stärkster Slow gilt; ein schwächerer verlängert ihn nicht, abgelaufener Slow zählt nicht mehr
 export function applySlow(mob, pct, dur) {
   if (mob.slowUntil <= state.now) mob.slowPct = 0;
-  mob.slowPct = Math.max(mob.slowPct, pct);
-  mob.slowUntil = Math.max(mob.slowUntil, state.now + dur);
+  if (pct < mob.slowPct) return;
+  mob.slowUntil = pct > mob.slowPct ? state.now + dur : Math.max(mob.slowUntil, state.now + dur);
+  mob.slowPct = pct;
 }
 
 // Bodenziel: Maus wählt per Klick. Das Pad zielt selbst (gamepad.ts) und kommt mit fertigem Punkt.
