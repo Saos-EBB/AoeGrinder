@@ -6,20 +6,19 @@ import * as THREE from 'three';
 import { clamp, lerpTo, part, joint, mergeByJoint } from '../util';
 import { CFG } from '../config';
 import { scene } from '../render';
-import { glowSprite } from '../fx/particles';
+import { buildWeapon } from './weapons/index';
+import { loadWeaponId, initWeaponMenu } from './weapons/menu';
 
-// Skelett-Magier mit rotem Lendenschurz und Stab
+// Skelett-Magier mit rotem Lendenschurz, Waffe in der rechten Hand
 const THIGH = 0.5, SHIN = 0.46, ANKLE_H = 0.09;
 
-function buildMage() {
+function buildMage(weaponId) {
   const bone = new THREE.MeshLambertMaterial({ color: 0xd2c8a8 });
   const boneShade = new THREE.MeshLambertMaterial({ color: 0xa79c7c });
   const dark = new THREE.MeshBasicMaterial({ color: 0x0a0806 });
   const cloth = new THREE.MeshLambertMaterial({ color: 0xa01818, side: THREE.DoubleSide });
   const clothDark = new THREE.MeshLambertMaterial({ color: 0x6e1010, side: THREE.DoubleSide });
-  const wood = new THREE.MeshLambertMaterial({ color: 0x4a2f1a });
   const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.6, 1.6, 3.0) })   // > 1 → Bloom;
-  const crystalMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.8, 1.8, 2.8) });
 
   const ball = (r, w = 10, h = 8) => new THREE.SphereGeometry(r, w, h);
   // Röhrenknochen mit verdickten Enden, hängt von y=0 nach unten
@@ -139,31 +138,6 @@ function buildMage() {
   jaw.add(jawBone);
   teethArc(jaw, -0.026, 0.086);
 
-  // Stab
-  const staff = joint(spine3, 0, -0.1, -0.2);   // quer auf dem Rücken, Kristall über der rechten Schulter
-  staff.rotation.z = 0.55;
-  staff.add(part(new THREE.CylinderGeometry(0.028, 0.042, 1.95, 8), wood));
-  for (const y of [-0.57, 0.31]) {
-    const ring = part(new THREE.TorusGeometry(0.043, 0.012, 5, 10), clothDark, 0, y, 0);
-    ring.rotation.x = Math.PI / 2;
-    staff.add(ring);
-  }
-  for (const a of [0, 1.57, 3.14, 4.71]) {
-    const claw = part(new THREE.ConeGeometry(0.026, 0.34, 5), wood, Math.cos(a) * 0.09, 0.99, Math.sin(a) * 0.09);
-    claw.rotation.set(Math.sin(a) * 0.42, 0, -Math.cos(a) * 0.42);
-    staff.add(claw);
-  }
-  const crystal = part(new THREE.OctahedronGeometry(0.13), crystalMat, 0, 1.05, 0);
-  crystal.scale.y = 1.6;
-  staff.add(crystal);
-  const crystalGlow = glowSprite(0x7fd8ff, 0.4);
-  crystalGlow.position.y = 1.05;
-  // Gurt quer über die Brust hält den Stab
-  const strap = part(new THREE.TorusGeometry(0.255, 0.014, 5, 24).rotateX(Math.PI / 2).scale(1, 1, 0.85), clothDark, 0, 0.13, -0.015);
-  strap.rotation.z = 1.0;
-  spine3.add(strap);
-  staff.add(crystalGlow);
-
   // Bein mit Fußgelenk und Zehen
   const leg = side => {
     const hip = joint(pelvis, side * 0.15, -0.03, 0);
@@ -206,7 +180,22 @@ function buildMage() {
   const front = flap(0.13, 0.3), back = flap(-0.13, 0.32);
   const clothState = { f: [0, 0, 0], b: [0, 0, 0] };
 
-  mergeByJoint(root, crystal);
+  mergeByJoint(root, null);
+
+  // Waffe: mount liegt im Griff der Hand. Die Hand zeigt je nach Armhaltung überallhin, darum wird die Waffe
+  // jedes Frame gegen die Hand zurückgedreht und folgt nur der Figur plus eigener Neigung.
+  const mount = joint(armR.wrist, 0, -0.125, 0.015);
+  let weapon = buildWeapon(weaponId), holdPitch = weapon.pitch;
+  mount.add(weapon.root);
+  const anchors = { crystal: weapon.glowAnchor, handL: armL.wrist, handR: armR.wrist };
+  function setWeapon(id) {
+    weapon.dispose();
+    weapon = buildWeapon(id);
+    holdPitch = weapon.pitch;
+    mount.add(weapon.root);
+    anchors.crystal = weapon.glowAnchor;
+  }
+  const qHand = new THREE.Quaternion(), qRoot = new THREE.Quaternion(), qHold = new THREE.Quaternion(), eHold = new THREE.Euler(0, 0, 0, 'XYZ');
 
   let phase = 0, tAcc = 0;
   const j = {
@@ -308,6 +297,17 @@ function buildMage() {
       fixedPy = 0.19; footFlat = 0; k = Math.min(1, s * 7);
     }
 
+    // Griff um die Waffe. Stab: Unterarm vor dem Körper, der Stab stützt im Takt der Schritte wie ein Gehstock.
+    const moving = a.state === 'run' || a.state === 'back', upright = moving || a.state === 'idle';
+    let tap = 0;
+    if (a.state !== 'dead') t.rCurl = Math.max(t.rCurl, 1.0);
+    if (weapon.cane && upright) {
+      const g = moving ? clamp((a.speed - 2.5) / 4.5, 0, 1) : 0;
+      tap = moving ? Math.sin(phase) * (1 - g * 0.6) : 0;
+      t.rSh = -lean - 0.34 + tap * 0.1; t.rShZ = -0.1; t.rWr = 0;
+      t.rEl = moving ? lerpTo(-0.7, -1.4, g) : -0.4;    // Fuß des Stabs bleibt knapp über dem Boden, // PH
+    }
+
     if (a.channel) {
       t.lSh = -2.85 - lean * 0.4 + Math.sin(tAcc * 8) * 0.04; t.rSh = -2.75 - lean * 0.4; t.lShZ = 0.34; t.rShZ = -0.34;
       t.lEl = -0.22; t.rEl = -0.2; t.lCurl = 0.05 + Math.abs(Math.sin(tAcc * 11)) * 0.12; t.lCl = 0.14; t.rCl = 0.14;
@@ -368,10 +368,26 @@ function buildMage() {
       back[i].rotation.x = i ? (clothState.b[i] - clothState.b[i - 1]) : clothState.b[0];
       fp = clothState.f[i]; bp = clothState.b[i];
     }
-    crystalGlow.scale.setScalar(0.4 + Math.sin(tAcc * 3.3) * 0.06 + (a.channel || a.cast > 0 ? 0.32 : 0));
+
+    // Neigung der Waffe nach Zustand, Werte // PH
+    const combat = !!a.channel || a.cast > 0;
+    let pitch = a.state === 'dead' ? 1.5 : a.state === 'sit' ? 1.35 : weapon.pitch + tap * 0.16;
+    if (!weapon.cane && upright) pitch += (j.rSh + lean) * 0.35;   // Klinge schwingt mit dem Arm
+    if (a.channel) pitch = weapon.cane ? 0.12 : 0.25;
+    else if (a.cast > 0) pitch = lerpTo(pitch, weapon.cane ? 0.3 : 0.35, a.cast);
+    holdPitch = lerpTo(holdPitch, pitch, k);
+    armR.wrist.updateWorldMatrix(true, false);
+    armR.wrist.getWorldQuaternion(qHand);
+    root.getWorldQuaternion(qRoot);
+    mount.quaternion.copy(qHand.invert().multiply(qRoot).multiply(qHold.setFromEuler(eHold.set(holdPitch, weapon.yaw, 0))));
+    mount.updateMatrix();
+    mount.updateMatrixWorld(true);
+    weapon.combat = combat;
+    weapon.update(s, tAcc);
   }
-  return { root, update, anchors: { crystal, handL: armL.wrist, handR: armR.wrist } };
+  return { root, update, anchors, setWeapon, get weapon() { return weapon; } };
 }
 
-export const mage = buildMage();
+export const mage = buildMage(loadWeaponId());
 scene.add(mage.root);
+initWeaponMenu(mage);
