@@ -54,3 +54,14 @@ Alle Punkte des Auftrags sind drin. Geprüft im Headless-Browser: alle 63 Kombin
 - Classic pur: Ein Rang wirkt auf jeden Rang-Wert des Spells (Schaden, Mana, Radius), ×1.
 - Kein Trinken: Level-Ups füllen kein Mana auf, Leben schon.
 - Nur Frost: Supports bleiben, wenn sie auf erlaubte Spells wirken; Talente ohne Tag fallen weg (`docs/score-spec.md`).
+
+# Spells und massive Objekte (Branch gruen-terrain)
+Basis `ddac402`. Nicht gepusht, nicht gemergt, nicht veröffentlicht.
+
+- **Blink:** läuft die Strecke über `resolve` und `groundAt` ab, stoppt am ersten massiven Objekt. Liegt das Ziel auf einer begehbaren Fläche, zählt deren Seite nicht als Wand und die Figur landet oben. Neu in `collision.ts`: `walkTopAt`, `SKY`.
+- **Bodenziele:** Maus-Strahl, Pad, Zielkreis (`drape`), Flächen und ihre Partikel nutzen `groundAt`. Wandernde Flächen folgen der Höhe.
+- **Höhe:** `SPELL_AOE_HEIGHT = 3` yd (PH) in `mobsInRadius`, gemessen ab dem Boden unter der Mitte, damit ein Sprung die Fläche nicht anhebt.
+
+**Getestet per Skript, nicht von Hand:** 2.000 Zufalls-Blinks in 5 Zonen, 1 davon in BRD meldet eine Wand-Querung und eine Überlappung (Ursache unklar, möglich ist ein Teststart in einer Nische). Treppe hoch, von der Spitze runter, von der Seite auf die Pyramide, Eisportal auf die Spitze. Blizzard am Hang mit 4 yd Spanne: Kreis exakt auf dem Boden. Nova, AE, Kegel, Wirbel, Flammenstoß: Mob oben getroffen, Mob unten nie, und umgekehrt; 2,9 yd trifft, 3,1 yd nicht.
+
+**Offen:** Aggro und Nahkampf messen weiter 2D. Der Maus-Strahl trifft die Oberkanten, die Seite eines Bauwerks nicht. „Unter der Plattform“ wurde am Fuß der Zikkurat getestet, die massiv ist, nicht unter einer hohlen Plattform. Die alten Effekte auf `main` sind angepasst; `gruen-vfx` nutzt in `fx/*` noch `heightAt` und braucht das beim Merge.

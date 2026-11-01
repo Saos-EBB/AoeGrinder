@@ -146,7 +146,7 @@ Wichtig: **Blizzard slowt ohne Talent nicht.** Das passt gut als Roguelike-Upgra
 ## Für den Prototyp übernehmen (Zusammenfassung)
 
 1. Aggro 18 yd ± Leveldiff, min. 5. Social Aggro 10 yd, Helfer nach 1,5 s.
-2. Leash 50 yd ab Startpunkt, 12 s Gnade.
+2. ~~Leash 50 yd ab Startpunkt, 12 s Gnade.~~ Entfernt am 2026-11-01 (Wunsch Kevin), siehe §4.
 3. Treffer 96 % bei gleichem Level, −11 % pro Level ab +3. AoE würfelt pro Ziel.
 4. Crit +50 %.
 5. Channel-Pushback verkürzt Blizzard: 1000/800/600/400/200 ms.

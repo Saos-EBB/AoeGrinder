@@ -62,8 +62,7 @@ public/assets/       CC0-Modelle, Sounds (später)
 - Performance-Schalter in config.ts: Bloom an/aus, Partikel-Limit, Pixel-Ratio (Rechner ohne dedizierte GPU).
 
 ## Offen
-- Kollision: `spells/blink.ts` landet immer auf dem Gelände und geht durch Wände. Bodenziele (`input.ts`) und Boden-Effekte (`drape`) folgen dem Gelände, nicht den Plattformen.
-- Kollision: Flächenzauber, Aggro und Nahkampf messen nur 2D, treffen also über Höhenunterschiede; ein Mob am Fuß einer Ebene kann den Spieler direkt über sich schlagen.
+- Kollision: Aggro und Nahkampf messen nur 2D; ein Mob am Fuß einer Ebene kann den Spieler direkt über sich schlagen. Flächen-Spells prüfen die Höhe (`SPELL_AOE_HEIGHT`, Branch `gruen-terrain`), Kettenblitz und Bogenblitz nicht.
 - Kollision: Die Kamera kann in Bauwerke geraten. Brücken in BRD bleiben Geländerücken mit begehbarer Platte, keine echte Spannweite über Lava.
 - Leistung v10: Die BRD-Werte stammen aus Software-Rendering, Messung auf echter Grafikkarte steht aus.
 - Leistung: Kevin misst auf seinem Rechner. Pro Mob ist jedes Gelenk verschmolzen und die Materialien sind geteilt; jedes Gelenk bleibt ein Draw Call, weniger ginge nur mit Skinning oder Instancing.

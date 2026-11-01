@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(docs): Leash in der Spec-Zusammenfassung
+**Was:** §4 trug den Vermerk mit Datum schon seit dem Leash-Commit, die Zusammenfassung am Ende nannte den Leash noch als übernommen. Dazu Stand und Handoff für diesen Branch.
+**Nicht gebaut:** kein zweiter Vermerk in §4.
+
 ## 2026-11-01 — fix(spells): Flächen-Spells prüfen die Höhe
 **Was:** `mobsInRadius` trifft nur Mobs unter 3 yd Höhenunterschied zur Wirkfläche (`SPELL_AOE_HEIGHT`). Das gilt für alle Flächen-Spells auf einmal.
 **Nicht gebaut:** keine Höhenprüfung für Kettenblitz, Bogenblitz und die Support-Kette, die suchen Ziele statt eine Fläche zu treffen.
