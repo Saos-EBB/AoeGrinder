@@ -5,6 +5,7 @@ import { heightAt } from '../world';
 import { particles } from './particles';
 import { impact, lightFlash, shockwave } from './impact';
 import { bolt } from './bolts';
+import { playSound } from './sound';
 import { waveFx, markFx, shellFx, flareFx, sparksFx } from './prims';
 
 const ARC = [1.5, 0.45, 2.1], PINK = [1.9, 0.7, 1.6], WHITE = [2.2, 1.7, 2.6];
@@ -29,6 +30,7 @@ export function aeNew(pos, radius, runeTex) {
 
 export function blinkNew(from, to) {
   // Start: alles fällt nach innen. Ziel: alles fliegt nach außen.
+  playSound('zap', 0.8);
   flareFx(from, 0xd890ff, 5, 280, 1.2);
   shockwave(from, 4, -0.025, 300);
   for (let i = 0; i < 60; i++) {
@@ -59,6 +61,7 @@ export function voidSpiral(pos, radius, k, dt, colors) {
   }
 }
 export function voidOpen(pos, radius) {
+  playSound('impact', 0.7);
   flareFx(pos, 0x7a2fd0, radius * 0.5, 380, 1.6);
   lightFlash(pos, 0x7a2fd0, 260, radius);
   shockwave(pos, radius * 0.6, -0.03, 500);

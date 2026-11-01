@@ -3,6 +3,7 @@
 import { rand, pick } from '../util';
 import { particles } from './particles';
 import { impact, lightFlash, shockwave } from './impact';
+import { playSound } from './sound';
 import { waveFx, shellFx, flareFx, sparksFx, columnFx } from './prims';
 
 const FIRE = [1.5, 0.48, 0.06], EMBER = [1.1, 0.2, 0.03], HOT = [1.9, 0.95, 0.22];   // unter der Sättigung, sonst brennt alles weiß aus
@@ -18,7 +19,7 @@ function embersUp(pos, radius, n) {
 
 // Flammenstoß: Feuersäule stürzt ins Ziel, dann läuft die Welle
 export function flamestrikeNew(pos, radius) {
-  impact(pos, 0xff8030, { radius, power: 300, kickBy: 0.32 });
+  impact(pos, 0xff8030, { radius, power: 300, kickBy: 0.32, sound: 'fire' });
   flareFx(pos, 0xff7a20, radius * 1.1, 300);
   columnFx(pos, radius * 0.6, 13, HOT, EMBER, { dur: 680, top: 0.55, grow: 0.14, scroll: 1.7, dens: 0.34 });
   waveFx(pos, radius, HOT, EMBER, { dur: 460, width: 0.24, peak: 0.85 });
@@ -29,7 +30,7 @@ export function flamestrikeNew(pos, radius) {
 
 // Druckwelle: wenig Säule, viel Druck
 export function blastNew(pos, radius, inward) {
-  impact(pos, 0xff8030, { radius, power: 260, kickBy: 0.42 });
+  impact(pos, 0xff8030, { radius, power: 260, kickBy: 0.42, sound: 'fire' });
   shockwave(pos, radius * 1.4, inward ? -0.05 : 0.055, 420);
   flareFx(pos, 0xff8028, radius * 0.9, 260);
   waveFx(pos, radius, HOT, FIRE, { dur: 380, width: 0.26, peak: 0.8 });
@@ -44,11 +45,13 @@ export function blastNew(pos, radius, inward) {
 }
 
 export function hellfireOpen(pos, radius) {
+  playSound('fire', 0.8);
   lightFlash(pos, 0xff7030, 340, radius * 2.4, 320);
   flareFx(pos, 0xff8040, radius * 0.9, 340);
   waveFx(pos, radius, FIRE, [0.8, 0.15, 1.5], { dur: 480, width: 0.3 });
 }
 export function hellfirePulse(pos, radius) {
+  playSound('fire', 0.35);
   lightFlash(pos, 0xff6020, 170, radius * 2, 340);
   waveFx(pos, radius, FIRE, [0.5, 0.08, 0.9], { dur: 620, width: 0.16, peak: 0.5 });
   embersUp(pos, radius, 22);

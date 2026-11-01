@@ -8,6 +8,7 @@ import { particles, glowSprite } from '../fx/particles';
 import { flashFx, ringFx, addEffect, fxClock } from '../fx/spellFx';
 import { fxMaterial, GLSL, FX_VERTEX, vfxOld } from '../fx/shaders';
 import { bolt } from '../fx/bolts';
+import { playSound } from '../fx/sound';
 import { impact, lightFlash } from '../fx/impact';
 import { waveFx, shellFx, flareFx, sparksFx, groundDisc } from '../fx/prims';
 
@@ -73,7 +74,8 @@ export function areaParticles(pos, radius, rate, dt, colors, { up = 3, size = 0.
 
 export function burstFx(pos, radius, colors, flash) {
   if (!vfxOld()) {
-    impact(pos, flash, { radius, power: 220 + radius * 18, kickBy: Math.min(0.4, 0.08 + radius * 0.02) });
+    const c = new THREE.Color(flash);
+    impact(pos, flash, { radius, power: 220 + radius * 18, kickBy: Math.min(0.4, 0.08 + radius * 0.02), sound: c.b > c.r ? (c.g > 0.5 ? 'frost' : 'impact') : 'fire' });
     flareFx(pos, flash, Math.min(16, radius * 1.1), 320);
     waveFx(pos, radius, colors[0], colors[1] ?? colors[0], { dur: 460, width: 0.32 });
     shellFx(pos, radius, colors[0], { dur: 440, squash: 0.6 });
@@ -95,6 +97,7 @@ export function boltFx(from, to, color = BOLT_WHITE, dur = 180) {
     const end = { x: to.x, y: to.y + 1.2, z: to.z };
     bolt({ x: from.x, y: from.y + 1.2, z: from.z }, end, color === BOLT_WHITE ? BOLT : color, { life: dur + 90 });
     lightFlash(end, 0xbfd8ff, 90, 14, 130);
+    playSound('zap');
     for (let i = 0; i < 6; i++) particles.spawn({ x: end.x, y: end.y, z: end.z, vx: rand(-5, 5), vy: rand(-1, 5), vz: rand(-5, 5), grav: 9, drag: 1.5, life: rand(0.15, 0.32), color: BOLT_WHITE, size: rand(0.1, 0.22) });
     return;
   }

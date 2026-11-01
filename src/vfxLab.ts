@@ -10,6 +10,7 @@ import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } from './fx/spellFx';
 import { bolt } from './fx/bolts';
+import { mountVolume } from './fx/sound';
 import { hitstopDt, impact, onMultiKill } from './fx/impact';
 import { cam } from './camera';
 import { spawnMob, updateMob, removeMob } from './mobs';
@@ -114,6 +115,8 @@ setOld(false);
 const qualitySel = $('quality') as HTMLSelectElement;
 qualitySel.value = PERF.vfx;
 qualitySel.addEventListener('change', () => { PERF.vfx = qualitySel.value; });
+
+mountVolume($('slow'), 'beforebegin');
 
 let slow = 1;
 $('slow').addEventListener('click', () => {

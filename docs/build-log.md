@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Sound synthetisiert
+**Was:** Vier Klangarten per WebAudio, Lautstärke-Regler im Esc-Menü mit Standard 60 %.
+**Nicht gebaut:** keine Audiodateien, kein Raumklang, kein Dauerton für Kanäle.
+
 ## 2026-11-01 — feat(vfx): Relikte neu
 **Was:** Jedes Relikt bekommt einen eigenen großen Moment mit Hitstop, Säule oder Wand statt der gemeinsamen Explosion.
 **Nicht gebaut:** keine Boss-Modelle wie ein echter Hammer; `runChain` bekam nur die Blitzfarbe als Optik-Parameter.

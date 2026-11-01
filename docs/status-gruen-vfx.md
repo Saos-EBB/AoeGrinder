@@ -18,6 +18,9 @@ Spell-Optik polieren. Nicht gepusht, nicht gemergt, Spiel-Artifact nicht angefas
 
 **Außerhalb der genannten Dateien, je minimal:** `render.ts` (Tiefentextur), `main.ts` (Hitstop, Blizzard-Aufruf), `ui/hud.ts` (Crit-Meldung, weil `mobs.ts` gesperrt ist), `score.ts` (Multi-Kill-Meldung), `config.ts` (Schalter), `vite.config.ts`, `package.json`, `.gitignore`.
 
+## 4. Sound
+`fx/sound.ts`: synthetisch über WebAudio, Einschlag, Frost-Klirren, Blitzknistern, Feuer-Wumms; pro Art ein Mindestabstand, ein Kompressor gegen Übersteuern. Regler im Esc-Menü und im Labor, Standard 60 %, gespeichert in `frostgrind.volume.v1`. Der Ding-Ton folgt dem Regler und klingt bei 60 % wie vorher. Wiedergabe per Skript geprüft (Pegel ungleich null), nicht angehört.
+
 ## 3. Spells neu
 Die Alt-Optik bleibt je Funktion hinter `vfxOld()`, nur für den Schalter im Labor. Schaden, Radius und Abklingzeit sind unberührt.
 

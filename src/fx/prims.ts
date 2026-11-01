@@ -132,7 +132,7 @@ export function columnFx(pos, radius, height, colorA, colorB, { dur = 650, top =
 // Eiskristalle und Knochen: runde Lathe-Spitzen, ein Draw Call pro Ring
 export function spikeGeometry(radius, height) {
   const pts = [];
-  for (let i = 0; i <= 12; i++) { const k = i / 12; pts.push(new THREE.Vector2(radius * Math.pow(1 - k, 0.75) * (k < 0.08 ? 0.75 + k * 3 : 1), k * height)); }
+  for (let i = 0; i <= 12; i++) { const k = i / 12; pts.push(new THREE.Vector2(radius * Math.pow(1 - k, 0.75), k * height)); }
   return new THREE.LatheGeometry(pts, 14);
 }
 const SPIKE_VERTEX = /* glsl */`
@@ -175,7 +175,7 @@ const iceSpike = spikeGeometry(0.28, 1.8);
 export function iceSpikesFx(pos, radius, n, { dur = 1300, scale = 1 } = {}) {
   const { mesh, mat } = spikeRing(() => {
     const a = rand(0, 6.28), r = radius * rand(0.4, 0.98), x = pos.x + Math.cos(a) * r, z = pos.z + Math.sin(a) * r;
-    return { x, y: heightAt(x, z) - 0.25, z, tiltX: Math.sin(a) * rand(0.08, 0.3), tiltZ: -Math.cos(a) * rand(0.08, 0.3), scale: scale * rand(0.7, 1.5) };
+    return { x, y: heightAt(x, z) - 0.4, z, tiltX: Math.sin(a) * rand(0.08, 0.3), tiltZ: -Math.cos(a) * rand(0.08, 0.3), scale: scale * rand(0.7, 1.5) };
   }, n, iceSpike);
   (mesh as any).sharedGeometry = true;
   addEffect(mesh, dur, t => {

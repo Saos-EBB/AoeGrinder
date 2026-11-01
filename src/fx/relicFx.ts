@@ -8,6 +8,7 @@ import { particles } from './particles';
 import { addEffect, burnTex, iceTex } from './spellFx';
 import { fxClock, fxMaterial, GLSL } from './shaders';
 import { impact, lightFlash, shockwave, cameraKick, hitstop } from './impact';
+import { playSound } from './sound';
 import { waveFx, markFx, shellFx, flareFx, sparksFx, columnFx, iceSpikesFx, columnMaterial, spikeGeometry, spikeRing, groundDisc } from './prims';
 
 const FIRE = [1.5, 0.48, 0.06], EMBER = [1.1, 0.2, 0.03], HOT = [1.9, 0.95, 0.22], SPARK = [2.4, 0.9, 0.15];
@@ -16,7 +17,7 @@ const ICE = [0.35, 1, 2.1], ICE_W = [1.1, 1.5, 2.1], SHADOW = [0.8, 0.15, 1.5], 
 // Ragnaros-Schlag: Feuerhammer aus dem Himmel, doppelte Welle, der Boden reißt auf
 export function ragnarosNew(pos, radius) {
   hitstop();
-  impact(pos, 0xff7020, { radius: radius * 1.5, power: 800, kickBy: 0.9 });
+  impact(pos, 0xff7020, { radius: radius * 1.5, power: 800, kickBy: 0.9, sound: 'fire', volume: 1.5 });
   shockwave(pos, radius * 1.3, 0.065, 620);
   flareFx(pos, 0xff6a18, radius * 0.9, 420);
   columnFx(pos, radius * 0.42, 42, FIRE, EMBER, { dur: 820, top: 1.5, grow: 0.08, scroll: 2.4, dens: 0.3 });
@@ -53,8 +54,9 @@ export function frostChargeNew(pos, radius, delay) {
 }
 export function frostbreathNew(pos, radius) {
   hitstop();
-  impact(pos, 0x9fdcff, { radius, power: 1000, kickBy: 1 });
+  impact(pos, 0x9fdcff, { radius, power: 1000, kickBy: 1, volume: 1.5 });
   shockwave(pos, radius, 0.075, 720);
+  playSound('frost', 1.4);
   flareFx(pos, 0x9fd8ff, 16, 480);
   columnFx(pos, 4.5, 60, [0.6, 1.1, 2], ICE, { dur: 900, top: 1.4, grow: 0.07, scroll: 2.6, dens: 0.28 });
   waveFx(pos, radius, [1.3, 1.8, 2.6], ICE, { dur: 760, width: 0.2 });
@@ -68,7 +70,7 @@ export function frostbreathNew(pos, radius) {
 // Frostschlag: harter Treffer auf dem ersten Ziel, Eis auf jedem weiteren
 export function froststrikeOpen(pos) {
   hitstop();
-  impact(pos, 0x9fdcff, { radius: 9, power: 520, kickBy: 0.5 });
+  impact(pos, 0x9fdcff, { radius: 9, power: 520, kickBy: 0.5, sound: 'frost', volume: 1.2 });
   flareFx(pos, 0xc8ecff, 9, 340);
   shellFx(pos, 5, ICE_W, { dur: 340, squash: 1, y: 1 });
 }
@@ -90,7 +92,7 @@ export function desecrateOpen(pos, radius) {
 // Feuernova: wandernde Flammenwand als Visual der Fläche, wächst mit f.radius
 export function firenovaOpen(pos) {
   hitstop();
-  impact(pos, 0xff7020, { radius: 24, power: 780, kickBy: 0.7 });
+  impact(pos, 0xff7020, { radius: 24, power: 780, kickBy: 0.7, sound: 'fire', volume: 1.4 });
   shockwave(pos, 26, 0.06, 900);
   flareFx(pos, 0xff7a20, 24, 480);
 }

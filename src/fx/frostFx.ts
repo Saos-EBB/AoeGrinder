@@ -9,13 +9,14 @@ import { particles } from './particles';
 import { softScene, softUniforms, SOFT_GLSL, premultipliedBlend } from './softPass';
 import { fxUniforms, fxMaterial, GLSL, quality } from './shaders';
 import { impact } from './impact';
+import { playSound } from './sound';
 import { addEffect, iceTex, FROST, FROST_WHITE, MIST } from './spellFx';
 import { waveFx, markFx, shellFx, flareFx, iceSpikesFx, sparksFx, groundDisc } from './prims';
 import { mage } from '../models/mage';
 import { blizRadius } from '../formulas';
 
 export function novaNew(pos, radius) {
-  impact(pos, 0x9fdcff, { radius, power: 320, kickBy: 0.3 });
+  impact(pos, 0x9fdcff, { radius, power: 320, kickBy: 0.3, sound: 'frost' });
   flareFx(pos, 0xbfe6ff, radius * 0.9, 320);
   waveFx(pos, radius, [1.8, 2.3, 2.9], FROST, { dur: 480, width: 0.34 });
   shellFx(pos, radius * 1.02, [0.7, 1.4, 2.4], { dur: 420 });
@@ -47,7 +48,7 @@ export function coneNew(range, angle) {
   mesh.scale.setScalar(range * 1.05);
   addEffect(mesh, 520, t => { mat.uniforms.uT.value = t; });
   const tip = { x: player.pos.x + Math.sin(f) * range * 0.55, y: player.pos.y, z: player.pos.z + Math.cos(f) * range * 0.55 };
-  impact(tip, 0x9fdcff, { radius: range * 0.7, power: 220, kickBy: 0.18 });
+  impact(tip, 0x9fdcff, { radius: range * 0.7, power: 220, kickBy: 0.18, sound: 'frost' });
   flareFx(hand, 0xbfe6ff, 2.5, 200, 0);
   for (let i = 0; i < 140; i++) {
     const a = f + rand(-angle / 2, angle / 2), sp = rand(14, 26);
@@ -149,6 +150,7 @@ export function blizStartNew(point, radius) {
   blizU.uCenter.value.copy(point);
   blizU.uRadius.value = radius;
   blizActive = shards.visible = puffs.visible = true;
+  playSound('frost', 0.8);
   shardGeo.instanceCount = quality().shards;
   puffGeo.instanceCount = quality().puffs;
   if (blizMark) { scene.remove(blizMark); blizMark.geometry.dispose(); blizMark.material.dispose(); }
