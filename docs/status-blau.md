@@ -76,3 +76,6 @@ Die FPS begrenzt hier das Software-Rendering, auf einer echten Grafikkarte muss 
 - Flächenzauber, Aggro und Nahkampf messen 2D: Ein Mob am Fuß einer Ebene kann den Spieler direkt über sich treffen, AE trifft nach unten.
 - Die Kamera kollidiert nur mit Baumkronen und kann in Bauwerke geraten.
 - Mobs springen nicht: Zäune, Mauern und Brüstungen (bis 1,2 hoch) umlaufen sie, der Spieler springt drüber. Das ist beim Kiten ein Vorteil.
+
+# Asset-Sichtung (Branch blau-assets)
+- **chore(docs): Asset-Audit.** Ergebnis in `docs/asset-audit.md`. Nur Doku, nichts eingebaut. Nicht gebaut: keine Konvertierung, weil Blender fehlt; kein Parser für `.blend`; keine neue Suche nach Assets.
