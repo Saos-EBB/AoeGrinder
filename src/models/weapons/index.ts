@@ -141,7 +141,7 @@ function mergeParts(root, fx) {
 }
 
 export function buildWeapon(id) {
-  const def = WEAPONS.find(w => w.id === id) ?? WEAPONS.find(w => w.id === DEFAULT_WEAPON);
+  const def = WEAPONS.find(w => w.id === id) ?? WEAPONS[0];
   const inner = new THREE.Group();             // Waffen-Koordinaten wie im Viewer (Griff bei gripY)
   const fx = new FX();
   const upd = def.build(inner, fx) || null;
