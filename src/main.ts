@@ -13,6 +13,7 @@ import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
 import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
+import { updateSkinFx } from './skinFx';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
@@ -24,6 +25,7 @@ function update(dt) {
   for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
   updateAbilities(dt);
+  updateSkinFx();
   updateZoneEvent(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen

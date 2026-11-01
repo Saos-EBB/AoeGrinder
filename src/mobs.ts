@@ -252,13 +252,14 @@ export function applyRoot(mob, dur) {
 }
 
 // Gibt true zurück, wenn der Zauber getroffen hat
-export function damageMob(mob, amount, source, castKey?) {
+// noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
+export function damageMob(mob, amount, source, castKey?, noRoll = false) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
   player.lastCombat = state.now;
 
-  if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
+  if (!noRoll && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
   mob.castKey = castKey ?? source;
   amount *= modFactor('dmg');
@@ -268,7 +269,7 @@ export function damageMob(mob, amount, source, castKey?) {
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
+  const crit = !noRoll && Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
   const dmg = Math.round(amount * dmgMult() * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   mob.hitAt = state.now;
