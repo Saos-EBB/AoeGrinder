@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
-import { buildMage, SKINS } from './mageModel';
+import { buildMage, buildWarrior, SKINS } from './mageModel';
 import { buildWeapon } from './weapons/index';
 import { initWeaponMenu } from './weapons/menu';
 
@@ -21,10 +21,21 @@ for (const [id, C] of Object.entries<any>(SKINS)) SKINS[id] = { ...C, addons(R, 
   R.crystal.visible = R.crystalGlow.visible = false;
 } };
 
+const NO_FX = {};
+let hitHandler = null;
+// Treffer-Moment der Krieger-Animation (realMen.ts)
+export function onWarriorHit(fn) { hitHandler = fn; }
+
 let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0, refreshMenu = () => {};
 
 function dispose(m) {
-  weapon.dispose();
+  weapon?.dispose();
+  weapon = null;
+  if (m.fx.group) {                           // Krieger: Bodeneffekte und Wirbel haben eigene Texturen
+    scene.remove(m.fx.group);
+    m.fx.group.traverse(o => { if (o.isMesh) { o.material.map.dispose(); o.material.dispose(); o.geometry.dispose(); } });
+    m.root.traverse(o => { if (o.userData.keep) o.material.map?.dispose(); });
+  }
   scene.remove(m.root);
   m.root.traverse(o => {
     if (o.isSkinnedMesh) o.skeleton.dispose();
@@ -43,6 +54,13 @@ function dispose(m) {
 function setSkin(id) {
   if (cur) dispose(cur);
   skin = id;
+  if (id === 'krieger') {
+    cur = buildWarrior({ bloom: PERF.bloom });
+    cur.onHit = (kind, x, z) => hitHandler?.(kind, x, z);
+    scene.add(cur.root, cur.fx.group);
+    refreshMenu();
+    return;
+  }
   cur = buildMage(id, { bloom: PERF.bloom });
   scene.add(cur.root);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
@@ -53,13 +71,14 @@ function setSkin(id) {
 }
 
 function wield(id) {
+  if (skin === 'krieger') return;             // Der Krieger trägt sein Schwert fest
   weapon?.dispose();
   weapon = buildWeapon(id);
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : 'alle'; };
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : 'alle'; };
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
@@ -73,9 +92,9 @@ export function endMageRun() {
 
 export const mage = {
   get root() { return cur.root; },
-  get anchors() { return { ...cur.anchors, crystal: weapon.glowAnchor }; },
+  get anchors() { return weapon ? { ...cur.anchors, crystal: weapon.glowAnchor } : cur.anchors; },
   get trail() { return cur.trail; },
-  get fx() { return cur.fx; },
+  get fx() { return skin === 'krieger' ? NO_FX : cur.fx; },   // beim Krieger ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
   get weapon() { return weapon; },
   setSkin,
@@ -85,6 +104,7 @@ export const mage = {
   update(dt, anim) {
     const s = Math.max(0, dt) / 1000;
     cur.update(s, anim);
+    if (!weapon) return;
     clock += s;
     lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);
     mount.position.y = (weapon.cane ? weapon.gripY - STAFF_FOOT : 0) + lift;

@@ -18,7 +18,7 @@ export function initWeaponMenu(mage) {
     box.innerHTML = '';
     for (const w of WEAPONS) {
       const b = document.createElement('button');
-      b.className = 'bindBtn' + (w.id === mage.weapon.id ? ' selected' : '');
+      b.className = 'bindBtn' + (w.id === mage.weapon?.id ? ' selected' : '');
       b.textContent = w.name; b.title = w.arch;
       b.addEventListener('click', () => pick(w.id));
       box.appendChild(b);
@@ -27,7 +27,7 @@ export function initWeaponMenu(mage) {
   };
   cycle.addEventListener('click', () => {
     if (timer) { clearInterval(timer); timer = 0; }
-    else timer = window.setInterval(() => pick(WEAPONS[(WEAPONS.findIndex(w => w.id === mage.weapon.id) + 1) % WEAPONS.length].id), 2500);
+    else timer = window.setInterval(() => pick(WEAPONS[(WEAPONS.findIndex(w => w.id === mage.weapon?.id) + 1) % WEAPONS.length].id), 2500);
     render();
   });
   anchor.before(title, box, cycle);

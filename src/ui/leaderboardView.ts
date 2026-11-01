@@ -65,7 +65,7 @@ function renderPick() {
     btns.appendChild(b);
   }
   box.innerHTML = '';
-  if (modeId === 'custom') for (const mod of MODIFIERS) {
+  if (modeId === 'custom') for (const mod of MODIFIERS.filter(m => !m.hidden)) {
     const label = document.createElement('label');
     const input = document.createElement('input');
     input.type = 'checkbox';
