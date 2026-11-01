@@ -10,6 +10,7 @@ Auftrag an Agent BLAU (Branch `blau-levels`). Alle neuen Zahlen sind `// PH`. St
 - Balance-Regel Schaden: Auf JEDEM Level braucht ein gleichstufiger Start-Mob ca. 3 Arcane
   Explosions (ohne Karten). dmgMult(level) und mobMaxHp(level) danach auslegen.
   Per Test messen auf Level 1, 20, 50, 100, Werte in status-blau.md.
+  Überholt auf Kevins Wunsch: Mob-Leben verdoppelt, dazu 0,4 % Schadensreduktion pro Level (höchstens 40 %). Rechnerisch 6 Explosions auf Level 1 und 20, 7 auf Level 50, 10 auf Level 100.
 - XP: Classic-Formel bleibt (ZD ab Level 60 = 17). xpNeeded so, dass ~10 gleichstufige Kills
   pro Level reichen.
 - Level 100: kein Level-Up mehr, XP-Balken zeigt "Max-Level", Punkte laufen weiter.

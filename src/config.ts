@@ -17,9 +17,10 @@ export const SCORE_VERSION = 'v12';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
+export const LEVEL_MOB_DEF_STEP = 0.004, LEVEL_MOB_DEF_MAX = 0.4;   // Schadensreduktion der Mobs: 0,4 % pro Level über 1, höchstens 40 %
 export const LEVEL_HP_AT_20 = 1040, LEVEL_HP_STEP = 39;   // Leben auf Level 20, plus pro Level
 export const LEVEL_DMG_STEP = 0.05;                       // Schaden und Mob-Leben: +5 % des Level-1-Werts pro Level
-export const LEVEL_MOB_HP = 100;                          // Start-Mob auf Level 1: 3 Arcane Explosions (34–38 Schaden)
+export const LEVEL_MOB_HP = 200;                          // Start-Mob auf Level 1: 6 Arcane Explosions (34–38 Schaden), Kevins Wunsch: doppelt so viel Leben
 export const LEVEL_UNLOCKS = [16, 31, 46, 61];            // Ab diesen Spielerleveln kommen Mob 2, 3, 4, 5 dazu
 export const LEVEL_NEW_MOB_BANNER = 3000;                 // Anzeigedauer "Neuer Gegner"
 export const LEVEL_MIN_MOBS = 40;                         // So viele Mobs leben mindestens auf der Karte

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
 import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
-import { aggroRadius, hitChance, xpForKill, dmgMult, mobMaxHp, mobHitDmg } from './formulas';
+import { aggroRadius, hitChance, xpForKill, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
 import { groundAt, resolve, settle, steer, climbTarget } from './collision';
@@ -270,7 +270,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false) {
 
   const frozen = mob.rootUntil > state.now;
   const crit = !noRoll && Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
-  const dmg = Math.round(amount * dmgMult() * (crit ? 1 + CFG.critBonus : 1));
+  const dmg = Math.round(amount * dmgMult() * mobDmgTaken(mob.level) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
