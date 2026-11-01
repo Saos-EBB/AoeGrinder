@@ -31,7 +31,6 @@ export const CFG = {
   socialRadius: 10, socialDelay: 1500,              // CreatureFamilyAssistance*
   fleeAssistRadius: 30, fleeDuration: 7000,         // DoFleeToGetAssistance
   fleeHpPct: 0.15, fleeChance: 0.3,                 // PH: steht im DB-Script, nicht im Core
-  leashRadius: 50, leashGrace: 12000,               // IsOutOfThreatArea
   regenTick: 2000, fiveSecRule: 5000,               // Player::Regenerate, SetLastManaUse
   critBonus: 0.5,                                   // SpellCriticalDamageBonus
   baseCrit: 0.05,                                   // PH

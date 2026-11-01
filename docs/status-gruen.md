@@ -23,6 +23,13 @@ Leistungsanzeige auf Level 1, Software-Rendering im Headless-Browser, auf echter
 
 Draw Calls und FPS hängen am Bildausschnitt, die Werte sind keine belastbare Aussage über die Mehrlast. `zone.packs.initialMobs` in `zones.ts` wird nicht mehr gelesen, die Datei ist gesperrt.
 
+## Aggro-Verlust
+| Wert | Vorher | Nachher |
+|---|---|---|
+| Leash | Abbruch, wenn Mob und Spieler über 50 yd vom Kampfstart entfernt sind und 12 s kein Treffer kam | keiner, Mobs verfolgen dich bis zum Tod |
+
+Bleibt: Heimlaufen nach dem Tod der Figur, Fliehen bei wenig Leben.
+
 # Status Branch gruen-polish
 
 Nacharbeiten an Spells und Input, Modi Teil 2, Feld `build`, echte Cast-ID. Per Fast-Forward in main gemerged und als v9 (`1793484974-aac1`) veröffentlicht, nicht gepusht.

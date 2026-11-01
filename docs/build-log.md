@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(mobs): Kein Aggro-Verlust mehr
+**Was:** Wunsch von Kevin: Der Leash ist raus, Mobs jagen dich bis zum Tod.
+**Nicht gebaut:** kein Schalter, Fliehen und Heimlaufen nach dem Tod bleiben.
+
 ## 2026-11-01 — feat(mobs): Mehr Mobs ab Level 1
 **Was:** Die Pack-Formel fiel unter Level 20 auf 2 Mobs, die Karte wirkte leer. Jetzt mindestens 40 Mobs in engen Packs zu 4–6, tote Packs kommen sofort nach, ab Level 30 skaliert die Dichte wie bisher.
 **Nicht gebaut:** keine Dichte pro Zone, kein LOD. `initialMobs` bleibt ungenutzt in `zones.ts` (gesperrt).

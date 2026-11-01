@@ -35,6 +35,8 @@ aggroRadius   = max(aggroRadius, min(detectionRange, 5))
 - *Wann* geflohen wird (typisch bei ~15 % HP), steht pro Mob im DB-Script und nicht im Core. → selbst festlegen, z. B. 15 % HP und 30 % Chance (`[offen]`).
 
 ## 4. Leash / Evade
+**Im Spiel entfernt (2026-11-01, Wunsch Kevin):** Mobs verlieren die Aggro nur noch beim Tod der Figur. Der Beleg bleibt zum Nachschlagen.
+
 
 `Objects/Creature.cpp` → `IsOutOfThreatArea()`, Default `World.cpp` Z. 564
 ```

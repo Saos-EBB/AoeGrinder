@@ -97,10 +97,10 @@ export function spawnMob(typeId, pos, level, packId) {
   const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1));
   const mob = {
     type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
-    pos: model.root.position, home: pos.clone(), combatStart: pos.clone(), packId,
+    pos: model.root.position, home: pos.clone(), packId,
     level, hp, maxHp: hp, speedMul: type.speedMul ?? 1,
     state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
-    fleeRolled: false, fleeTarget: null, fleeUntil: 0, lastLeashExt: 0, dead: false, deathAt: 0, moving: false, leap: null, hidden: false,
+    fleeRolled: false, fleeTarget: null, fleeUntil: 0, dead: false, deathAt: 0, moving: false, leap: null, hidden: false,
   };
   if (type.stealth) { mob.hidden = true; model.root.visible = false; }
   state.mobs.push(mob);
@@ -110,8 +110,6 @@ export function spawnMob(typeId, pos, level, packId) {
 export function enterCombat(mob, callForHelp) {
   if (mob.dead || mob.state === 'combat') return;
   mob.state = 'combat';
-  mob.combatStart.copy(mob.pos);
-  mob.lastLeashExt = state.now;
   mob.nextSwing = state.now + 500;
   mob.assistAt = 0;
   mob.ability?.onCombatStart?.(mob);
@@ -126,12 +124,6 @@ function startEvade(mob) {
   mob.state = 'evade';
   mob.rootUntil = 0;
   mob.slowUntil = 0;
-}
-
-function isOutOfThreatArea(mob) {
-  const area = Math.max(aggroRadius(mob) * 1.5, CFG.leashRadius);
-  const out = dist2d(mob.pos, mob.combatStart) > area && dist2d(player.pos, mob.combatStart) > area;
-  return out && state.now - mob.lastLeashExt > CFG.leashGrace;
 }
 
 function startFlee(mob) {
@@ -206,7 +198,7 @@ export function updateMob(mob, dt) {
     else if (mob.assistAt && state.now >= mob.assistAt) enterCombat(mob, false);
   }
   else if (mob.state === 'combat') {
-    if (player.dead || isOutOfThreatArea(mob)) { startEvade(mob); return; }
+    if (player.dead) { startEvade(mob); return; }   // Kein Leash: Mobs verlieren die Aggro nur, wenn die Figur stirbt
     if (mob.ability?.onUpdate?.(mob, dt)) { /* Fähigkeit steuert selbst */ }
     else if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
     else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
@@ -265,7 +257,6 @@ export function damageMob(mob, amount, source, castKey?) {
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
   player.lastCombat = state.now;
-  mob.lastLeashExt = state.now;
 
   if (Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
