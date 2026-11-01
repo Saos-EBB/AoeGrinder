@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(docs): Stand VFX in status-gruen-vfx.md
+**Was:** Messwerte, Prüfstand und offene Punkte; Testzugriffe im Labor für Speicher und Hitstop.
+**Nicht gebaut:** keine Qualitäts-Auswahl im Spielmenü, kein Merge, kein Publish des Spiels.
+
 ## 2026-11-01 — feat(vfx): Sound synthetisiert
 **Was:** Vier Klangarten per WebAudio, Lautstärke-Regler im Esc-Menü mit Standard 60 %.
 **Nicht gebaut:** keine Audiodateien, kein Raumklang, kein Dauerton für Kanäle.
