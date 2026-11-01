@@ -18,6 +18,7 @@ Stand: v11 (`1793501678-2c8c`, 2026-11-01), gebündelter Build aus diesem Repo. 
 - Welt: `heightAt(x,z)` ist die einzige Quelle für Bodenhöhe; `collide()` für Bäume/Steine/Kartenrand; `obstacles[]` (Bäume mit `canopy` für Kamerakollision).
 - Render: kein Schattenwurf; EffectComposer = RenderPass → UnrealBloom (Schwelle 1.5) → Vignette/Tönung (ShaderPass) → OutputPass. Nur HDR-Farben > 1 leuchten.
 - Modelle: `buildMage()` (Skelett) / `buildBoar()` liefern `{ root, update(dt, anim) }`. Ein CC0-glTF ersetzt sie mit gleicher Schnittstelle (`anim.state`: idle/run/back/air/sit/dead, plus cast, channel, attack, frozen, slowed, flash). Mage hat `anchors` (Kristall, Hand) als Partikel-Ursprung.
+- Waffen: `src/models/weapons/`, `buildWeapon(id)`, `mage.setWeapon(id)`, Auswahl im Esc-Menü (`docs/status-waffen.md`). `anchors.crystal` zeigt auf den Leuchtpunkt der Waffe.
 - Effekte: `particles` (ein Points-Draw-Call, additiv), `*Fx()` pro Spell, `groundDecalFx()` (Canvas-Texturen iceTex, runeTex), `ambientParticles()`, `shakeCamera()`, `sinkCorpse()`.
 - Test-Hook: `window.__game`.
 
@@ -70,4 +71,5 @@ public/assets/       CC0-Modelle, Sounds (später)
 - Balance ohne Leash: Gezogene Mobs jagen unbegrenzt und sammeln sich bei der neuen Dichte. Leistung Level 1 und 45 auf echter Grafikkarte misst Kevin. `initialMobs` in `zones.ts` ist ungenutzt.
 - Lava-Ticks schieben Kanäle noch auf (`abilities.ts` ruft `damagePlayer` ohne `dot`). `build` wird einen Frame nach dem Tod nachgetragen, sauberer wäre es direkt in `recordRun` (`docs/status-gruen.md`).
 - Platzhalter: Mob-HP/-Schaden/-Tempo, Trinkwerte, GCD, Spell-Radien, Nova-Break-Chance, Sprungphysik, Crit-Chance.
+- Waffen: Noch kein Loot- oder Ausrüstungssystem, nur Dev-Auswahl; Grüns blaue Kristall-Partikel überdecken die Waffeneffekte (`docs/status-waffen.md`).
 - Echte CC0-Modelle (Kevin sucht selbst aus).
