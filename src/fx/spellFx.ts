@@ -321,7 +321,7 @@ export function ambientParticles(dt) {
   if (!dt) return;
   const channeling = !!player.channel;
   (channeling ? mage.anchors.handR : mage.anchors.crystal).getWorldPosition(tmpV);
-  for (let i = perFrame(channeling ? 45 : 5, dt); i > 0; i--) {
+  for (let i = perFrame(channeling ? 45 : mage.weapon ? 5 : 0, dt); i > 0; i--) {
     const a = rand(0, Math.PI * 2), r = channeling ? 0.35 : 0.1;
     particles.spawn({ x: tmpV.x + Math.cos(a) * r, y: tmpV.y, z: tmpV.z + Math.sin(a) * r,
       vx: -Math.sin(a) * (channeling ? 2 : 0.2), vy: rand(0.5, channeling ? 4 : 1), vz: Math.cos(a) * (channeling ? 2 : 0.2),

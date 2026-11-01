@@ -135,6 +135,7 @@ export function castSpell(id, point?) {
   if (state.paused || player.dead) return;
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
+  if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (state.now < player.gcdUntil || cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');

@@ -56,7 +56,7 @@ const baseHp = () => LEVEL_HP_AT_20 + LEVEL_HP_STEP * (player.level - 20);
 const MANA_PER_HP = 4 / 3;                       // Mana = Leben + 1/3
 // Modi als eigener Faktor, damit Karten-Boni in jedem Modus relativ gleich wirken
 export const maxHp = () => Math.round(baseHp() * mods.hpMult * modFactor('hp'));
-export const maxMana = () => Math.round(baseHp() * MANA_PER_HP * mods.manaMult * modFactor('mana'));
+export const maxMana = () => player.rageMax ?? Math.round(baseHp() * MANA_PER_HP * mods.manaMult * modFactor('mana'));
 export const spirit = () => 45 + 2 * (player.level - 20);
 // Schaden und Mob-Leben wachsen gleich; dazu kommt die Schadensreduktion der Mobs
 const levelFactor = lvl => 1 + LEVEL_DMG_STEP * (lvl - 1);

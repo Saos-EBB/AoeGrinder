@@ -19,6 +19,7 @@ import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
+import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 
 export function resetGame() {
   startMageRun();
@@ -41,6 +42,7 @@ export function resetGame() {
   cam.offset = 0;
   player.hp = maxHp();
   player.mana = maxMana();
+  resetRealMen();
   blizCursor.visible = false;
   stopChannel();
   fillPacks();
@@ -85,6 +87,7 @@ export function damagePlayer(amount, dot = false) {
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
+  if (!dot) rageOnHit();
   if (!dot) {                            // Gift-Ticks brechen weder Trinken noch Channel
     if (player.drink) stopDrink();
     pushbackChannel();
@@ -113,7 +116,7 @@ function regenerate(dt) {
     player.nextRegen += CFG.regenTick;
     let mana = spirit() / 4 + 12.5;
     if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
-    player.mana = Math.min(maxMana(), player.mana + mana);
+    if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
     if (state.now - player.lastCombat > 5000) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH
   }
   if (player.drink) {                    // PH: 90 % Mana + 50 % HP über 18 s
