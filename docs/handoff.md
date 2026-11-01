@@ -22,6 +22,7 @@ Stand: v9 (`1793484974-aac1`, 2026-11-01), gebündelter Build aus diesem Repo. Q
 - Test-Hook: `window.__game`.
 
 ## Stand
+- v10 (Teil Blau, nur im Repo, nicht veröffentlicht) – Massive Objekte in allen Zonen für Spieler und Mobs, neues `src/collision.ts` (Kreis, gedrehte Box, begehbare Fläche, 8-yd-Raster, Stufe 0,6 yd), Mobs weichen seitlich aus und folgen festen Treppen-Spuren. Wachturm (Tirisfal) und Zikkurat (Schlingendorntal) sind begehbar, Dev „Collider anzeigen“ im Esc-Menü. Audit in `docs/map-audit.md`, Messwerte in `docs/status-blau.md`. Alle neuen Zahlen sind `// PH`; getestet per Skript, nicht von Hand gespielt.
 - v9 – **Teil Blau:** Level 1–100 mit neuer Skalierung, Mob-Freischaltung pro Zone mit Einblendung, Dev „Level setzen“ im Esc-Menü, Hardmode-Fix (Halbe Werte als eigener Faktor), castKey-Vorrang in `score.ts`. Messwerte und offene Balance-Punkte in `docs/status-blau.md`, Spec in `docs/levels-spec.md`. Alle neuen Zahlen sind `// PH`. **Teil Grün:** Nacharbeiten (Taste 3 frei, Pad-Slots 7/8 auf R2 und Steuerkreuz rechts, Zielmodus für Bodenziel-Spells in jedem Slot, Funken in der eigenen Schule, kein Zauber-Pushback durch Gift und Lava, Bodentexturen), Modi Teil 2 (Nur Frost, Nur Feuer, Kein Trinken, Classic pur, Kein Glück und drei Presets), Feld `build` der Rangliste, echte Cast-ID. Details in `docs/status-gruen.md` und `docs/score-spec.md`. Das echte Pad und die Spielbalance sind ungeprüft.
 - v8 – Punkte mit HUD, Modi und Modifikatoren im Startbildschirm, lokale Rangliste mit Export und Import (`docs/score-spec.md`, Teil 2 steht aus); Draw Calls pro Mob gesenkt, Materialien geteilt (`docs/status-maps.md`). Enthält das Spell-System aus v7. Alle Punktwerte sind `// PH`.
 - v7 – Fünfte Zone Elvyn (Wald mit Ebern), Lava schadet auch Mobs (`// PH`, kein Pathfinding), Leistungsanzeige im Dev-Menü (FPS, Draw Calls über den ganzen Frame, Mobs). Dazu Spell- und Kartensystem laut `docs/spells-spec.md`: 8 Slots, 9 neue Spells, Runen, Supports, 6 Relikte ab Level 30, Karten mit Seltenheit und Glück, Dev-Karten im Esc-Menü. Details, Abweichungen und offene Punkte in `docs/status-spells.md`. Alle neuen Werte sind `// PH`, die Spielbalance und das echte Pad sind ungeprüft.
@@ -61,6 +62,10 @@ public/assets/       CC0-Modelle, Sounds (später)
 - Performance-Schalter in config.ts: Bloom an/aus, Partikel-Limit, Pixel-Ratio (Rechner ohne dedizierte GPU).
 
 ## Offen
+- Kollision: `spells/blink.ts` landet immer auf dem Gelände und geht durch Wände. Bodenziele (`input.ts`) und Boden-Effekte (`drape`) folgen dem Gelände, nicht den Plattformen.
+- Kollision: Flächenzauber, Aggro und Nahkampf messen nur 2D, treffen also über Höhenunterschiede; ein Mob am Fuß einer Ebene kann den Spieler direkt über sich schlagen.
+- Kollision: Die Kamera kann in Bauwerke geraten. Brücken in BRD bleiben Geländerücken mit begehbarer Platte, keine echte Spannweite über Lava.
+- Leistung v10: Die BRD-Werte stammen aus Software-Rendering, Messung auf echter Grafikkarte steht aus.
 - Leistung: Kevin misst auf seinem Rechner. Pro Mob ist jedes Gelenk verschmolzen und die Materialien sind geteilt; jedes Gelenk bleibt ein Draw Call, weniger ginge nur mit Skinning oder Instancing.
 - Lava-Ticks schieben Kanäle noch auf (`abilities.ts` ruft `damagePlayer` ohne `dot`). `build` wird einen Frame nach dem Tod nachgetragen, sauberer wäre es direkt in `recordRun` (`docs/status-gruen.md`).
 - Platzhalter: Mob-HP/-Schaden/-Tempo, Trinkwerte, GCD, Spell-Radien, Nova-Break-Chance, Sprungphysik, Crit-Chance.
