@@ -21,7 +21,7 @@ Neues Spielermodell mit 4 Skins, 15 Waffen und Skin-Effekten. Agent Rot arbeitet
 
 ## Branch real-men (Agent Gelb)
 Modus „Real Men“: Skelett-Krieger aus `buildWarrior` (`mageModel.ts`), abgezweigt von `mc-model`, darum erst danach auf `main`. Zahlen und Regeln in `src/realMen.ts` (`REALMEN`). Wut steht in `player.mana`, `player.rageMax` schaltet `maxMana` und die Regeneration um. Die Attacken sind Spells mit `press`, sie überspringen in `castSpell` den GCD.
-Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343). Kampfschrei gibt es nur als Animation (`ability: 'warcry'`).
+Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343). Sechs Attacken mit je drei Runen (`RUNES`): Hieb, Wirbelwind, Smash, Donnerknall, Kampfschrei, Ansturm. Der Ansturm hat keine eigene Animation, er nutzt den Laufzyklus.
 
 ## Code-Aufbau (Abschnitte in index.html)
 - `CFG`, `SPELLS`, `CARDS`: alle Zahlen. Tunen nur hier.
