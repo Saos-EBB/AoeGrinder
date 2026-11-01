@@ -23,6 +23,7 @@
   select { width: 100%; }
   button:hover { border-color: var(--accent); }
   button.on { background: var(--on); border-color: var(--accent); }
+  .lbl { display: block; margin: 6px 0 3px; color: var(--dim); }
   .wide { width: 100%; margin-top: 4px; }
   #stats { position: fixed; right: 8px; top: 8px; padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
     font-variant-numeric: tabular-nums; text-align: right; z-index: 5; pointer-events: none; }
@@ -57,6 +58,7 @@
   <h1>VFX-Labor</h1>
   <h2>Optik</h2>
   <div class="grid"><button id="modeOld">Alt</button><button id="modeNew">Neu</button></div>
+  <label for="quality" class="lbl">Effektqualität</label><select id="quality"><option value="niedrig">Niedrig</option><option value="mittel">Mittel</option><option value="hoch">Hoch</option></select>
   <button class="wide" id="slow">Zeitlupe 0,25×: aus</button>
   <h2>Start-Kit</h2><div class="grid" id="kit"></div>
   <h2>Neue Spells</h2><div class="grid" id="fresh"></div>

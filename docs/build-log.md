@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Shader-Bausteine und Effektqualität
+**Was:** Rauschen aus gebackener Textur, Fresnel, Auflösen, scrollende UVs als GLSL-Bausteine; Schalter `PERF.vfx` mit drei Stufen in `config.ts`.
+**Nicht gebaut:** kein Rauschen pro Pixel im Shader, keine Qualitäts-Auswahl im Spielmenü (Auftrag nennt `config.ts`).
+
 ## 2026-11-01 — feat(vfx): VFX-Labor als zweite Vite-Seite
 **Was:** Kevin soll jeden Spell isoliert, in Zeitlupe und mit Messwerten sehen und alt gegen neu vergleichen können.
 **Nicht gebaut:** keine Kartenwahl, kein Mob-Verhalten, kein Spielerlauf; „Alt/Neu“ schaltet erst ab den neuen Spells etwas um.

@@ -8,6 +8,9 @@ import { heightAt, terrainDecal, drape } from '../world';
 import { glowSprite, particles } from '../fx/particles';
 import { mage } from '../models/mage';
 import { shakeCamera } from '../camera';
+import { fxClock, fxUniforms } from './shaders';
+
+export { fxClock };
 
 export const blizCursor = terrainDecal(new THREE.RingGeometry(0.93, 1, 64, 1),
   new THREE.MeshBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.9, depthWrite: false }));
@@ -48,8 +51,6 @@ export const blizFx = (() => {
 })();
 
 const effects = [];
-// Uhr aller Effekte. scale ist die Zeitlupe im VFX-Labor.
-export const fxClock = { now: 0, last: performance.now(), scale: 1 };
 // ---------- Partikelsystem (ein Draw-Call, additiv, HDR-Farben > 1 erzeugen Bloom) ----------
 export const FROST = [0.35, 1.0, 2.1], FROST_WHITE = [1.1, 1.5, 2.1], MIST = [0.05, 0.1, 0.15];
 const ARCANE = [1.5, 0.45, 2.1], ARCANE_PINK = [1.9, 0.7, 1.6], GOLD = [2.2, 1.6, 0.5];
@@ -366,7 +367,7 @@ export function updateEffects() {
   const real = performance.now();
   fxClock.now += Math.min(50, real - fxClock.last) * fxClock.scale;
   fxClock.last = real;
-  const t0 = fxClock.now;
+  const t0 = fxUniforms.uTime.value = fxClock.now;
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i];
     const t = (t0 - e.start) / e.dur;

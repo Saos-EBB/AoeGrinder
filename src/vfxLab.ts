@@ -108,6 +108,10 @@ $('modeOld').addEventListener('click', () => setOld(true));
 $('modeNew').addEventListener('click', () => setOld(false));
 setOld(false);
 
+const qualitySel = $('quality') as HTMLSelectElement;
+qualitySel.value = PERF.vfx;
+qualitySel.addEventListener('change', () => { PERF.vfx = qualitySel.value; });
+
 let slow = 1;
 $('slow').addEventListener('click', () => {
   slow = fxClock.scale = slow === 1 ? 0.25 : 1;
