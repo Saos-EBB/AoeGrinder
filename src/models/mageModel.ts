@@ -1456,7 +1456,7 @@ export const SKIN_FX = {
   feuer: { trail: 'fire', dps: 5 },                     // PLATZHALTER „bissi dmg“: Schaden pro Sekunde pro Mob, Spuren stapeln nicht
   arkan: { speedMul: 1.1, float: true },                // schwebt, 10 % schneller, keine Spuren
 };
-const RUN_REF = 7;                                      // Laufen 7,0 yd/s (mechanics-spec §13) → Schrittfrequenz 1
+const RUN_REF = 3.9;                                    // 7 yd/s ergibt so die Obergrenze 1,8 von speedK; mit 7 rutschten die Füße sichtbar (Spiel-Messung)
 
 const norm = c => c.multiplyScalar(1 / Math.max(1, c.r, c.g, c.b));
 function dimGlow(R) {                                   // ohne Bloom: Glühfarben auf ≤ 1, sonst brennen sie weiß aus
