@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(score): Spielversion v11
+**Was:** Die AoE-Höhenprüfung ändert Treffer, die Rangliste soll alte und neue Läufe trennen. Stand v11 in `handoff.md`.
+**Nicht gebaut:** —
+
 ## 2026-11-01 — chore(docs): Leash in der Spec-Zusammenfassung
 **Was:** §4 trug den Vermerk mit Datum schon seit dem Leash-Commit, die Zusammenfassung am Ende nannte den Leash noch als übernommen. Dazu Stand und Handoff für diesen Branch.
 **Nicht gebaut:** kein zweiter Vermerk in §4.
