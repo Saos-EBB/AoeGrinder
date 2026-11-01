@@ -196,4 +196,4 @@ function loop(t) {
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__lab = { bolt, impact, castLab, stress, stopAll, setOld, state, player, particles, SPELLS };
+(window as any).__lab = { setSlow(v) { slow = fxClock.scale = v; }, bolt, impact, castLab, stress, stopAll, setOld, state, player, particles, SPELLS };

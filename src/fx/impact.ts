@@ -38,7 +38,7 @@ const shock = new ShaderPass({
       vec2 off = vec2(0.0);
       for (int i = 0; i < ${WAVES}; i++) {
         vec4 w = uWave[i];              // xy Mitte in UV, z Radius, w Stärke
-        if (w.w <= 0.0) continue;
+        if (w.w == 0.0) continue;             // negativ: nach innen
         vec2 d = (vUv - w.xy) * vec2(uAspect, 1.0);
         float l = length(d), width = max(0.03, w.z * 0.35);
         float k = 1.0 - smoothstep(0.0, width, abs(l - w.z));

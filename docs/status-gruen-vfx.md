@@ -22,3 +22,4 @@ Spell-Optik polieren. Nicht gepusht, nicht gemergt, Spiel-Artifact nicht angefas
 Die Alt-Optik bleibt je Funktion hinter `vfxOld()`, nur für den Schalter im Labor. Schaden, Radius und Abklingzeit sind unberührt.
 
 - **Frost:** Nova, Cone of Cold, Blizzard (Wolke und 110 Splitter im Shader, 2 Draw Calls statt über 100), Wirbel, Frostkugel. Die Wolke liegt bei 11,5 yd statt 15 yd, sonst bleibt sie aus der Spielkamera.
+- **Arkan/Leere:** Arcane Explosion, Blink (Einsturz am Start, Stoß am Ziel, Strahl dazwischen), Leerenkugel (Partikel starten außen und spiralen zur Mitte, dunkler Kern mit Fresnel-Rand, Schockwelle nach innen).

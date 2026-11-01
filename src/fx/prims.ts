@@ -67,14 +67,14 @@ export function markFx(tex, center, radius, color, dur, { peak = 1, spin = 0, gr
 
 // Glatte Halbkugel mit Fresnel-Rand, die sich ausdehnt und auflöst
 const shellGeo = new THREE.SphereGeometry(1, 64, 40);
-export function shellFx(pos, radius, color, { dur = 480, power = 2.4, peak = 1.2, squash = 0.65, y = 0.1, delay = 0 } = {}) {
+export function shellFx(pos, radius, color, { dur = 480, power = 3.2, peak = 0.75, squash = 0.65, y = 0.1, delay = 0 } = {}) {
   const mat = fxMaterial({ side: THREE.DoubleSide, uniforms: { uT: { value: 0 }, uC: { value: vec3(color) }, uPow: { value: power }, uPeak: { value: peak } }, vertexShader: FX_VERTEX,
     fragmentShader: `${GLSL.common} uniform float uT, uPow, uPeak; uniform vec3 uC; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
       void main() {
         float f = fresnel(vN, vV, uPow);
         float n = noise2(vUv * vec2(4.0, 2.0) + scrollUv(vec2(0.0), vec2(0.1, -0.5)));
         float keep = dissolve(n, uT * uT, 0.3);
-        gl_FragColor = vec4(uC * (f * 1.3 + 0.05) * keep * (1.0 - uT) * uPeak, 1.0);
+        gl_FragColor = vec4(uC * f * 1.2 * keep * (1.0 - uT) * uPeak, 1.0);
       }` });
   const mesh = new THREE.Mesh(shellGeo, mat);
   mesh.position.set(pos.x, pos.y + y, pos.z);

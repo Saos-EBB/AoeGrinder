@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Arkan/Leere neu
+**Was:** Arcane Explosion, Blink und Leerenkugel; der Sog ist jetzt zu sehen, weil Partikel außen starten und zur Mitte spiralen.
+**Nicht gebaut:** keine Sogwirkung auf Mobs geändert, nur die Optik.
+
 ## 2026-11-01 — feat(vfx): Frost-Gruppe neu
 **Was:** Nova, Cone of Cold, Blizzard, Wirbel und Frostkugel auf glatten Formen im Shader, weich rein und raus. `fieldDecal`, `orbVisual`, `burstFx` und `boltFx` nutzen ab jetzt die neuen Formen, das gilt für alle Spells, die sie aufrufen.
 **Nicht gebaut:** keine Wolken-Simulation, die Wolke besteht aus Rausch-Bällen.
