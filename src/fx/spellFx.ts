@@ -9,6 +9,7 @@ import { glowSprite, particles } from '../fx/particles';
 import { mage } from '../models/mage';
 import { shakeCamera } from '../camera';
 import { fxClock, fxUniforms } from './shaders';
+import { updateImpact } from './impact';
 
 export { fxClock };
 
@@ -373,9 +374,11 @@ export function clearEffects() {
 }
 export function updateEffects() {
   const real = performance.now();
-  fxClock.now += Math.min(50, real - fxClock.last) * fxClock.scale;
+  const fxDt = Math.min(50, real - fxClock.last) * fxClock.scale;
+  fxClock.now += fxDt;
   fxClock.last = real;
   const t0 = fxUniforms.uTime.value = fxClock.now;
+  updateImpact(fxDt);
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i];
     const t = (t0 - e.start) / e.dur;

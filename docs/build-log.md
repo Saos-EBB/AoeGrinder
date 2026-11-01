@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Impact-Paket
+**Was:** Licht-Pool, Schockwellen-Verzerrung als Post-Pass (nur aktiv, solange eine läuft), Kamera-Ruck, Hitstop 40 ms bei Crit und Multi-Kill ab 10.
+**Nicht gebaut:** keine Änderung in `mobs.ts`: Crits kommen über `combatText` in `ui/hud.ts`, Multi-Kills über `reportKill` in `score.ts`, je eine Zeile; dazu der Hitstop in `main.ts`.
+
 ## 2026-11-01 — feat(vfx): Soft Particles im eigenen Puffer
 **Was:** Partikel enden nicht mehr mit harter Kante am Boden. Der Puffer läuft auf „niedrig“ und „mittel“ in halber Auflösung, das spart Füllrate.
 **Nicht gebaut:** kein separater Tiefen-Durchgang der Szene (hätte alle Draw Calls verdoppelt), stattdessen liest der Pass die Tiefe des Szenen-Passes.

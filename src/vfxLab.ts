@@ -3,12 +3,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { state, player } from './state';
-import { $, clamp } from './util';
+import { $, clamp, rand } from './util';
 import { CFG, SPELLS, PERF } from './config';
 import { camera, renderer, composer } from './render';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } from './fx/spellFx';
+import { hitstopDt, impact, onMultiKill } from './fx/impact';
+import { cam } from './camera';
 import { spawnMob, updateMob, removeMob } from './mobs';
 import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune } from './spells';
 import { resetGame, switchZone } from './player';
@@ -136,6 +138,8 @@ function stress() {
   SPELLS.bliz.effect(makeCtx('bliz'), PACK_CENTER.clone());
 }
 $('stress').addEventListener('click', stress);
+$('impact').addEventListener('click', () => impact(PACK_CENTER, 0xbfe4ff));
+$('multi').addEventListener('click', () => { impact(PACK_CENTER, 0xffd080, { radius: 18, power: 600 }); onMultiKill(); });
 $('toggle').addEventListener('click', () => $('panel').classList.toggle('closed'));
 if (innerWidth < 700) $('panel').classList.add('closed');
 
@@ -149,9 +153,10 @@ function updateStats(t) {
   $('stats').innerHTML = `${fps} FPS<br>${calls} Draw Calls<br>${particles.count()} Partikel`;
 }
 
+const saved = new THREE.Vector3();
 let last = performance.now();
 function loop(t) {
-  const dt = Math.min(50, t - last) * slow;
+  const fxDt = Math.min(50, t - last) * slow, dt = hitstopDt(fxDt);
   last = t;
   state.now += dt;
   player.hp = 1e7;
@@ -169,12 +174,20 @@ function loop(t) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   mage.update(dt, { state: player.drink ? 'sit' : 'idle', speed: CFG.runSpeed, vy: 0, squat: 0, channel: !!player.channel, cast: Math.sin(castT * Math.PI) });
   for (const m of state.mobs) m.model.update(dt, { state: 'idle', speed: 0, frozen: false, slowed: false, attack: 0, flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1) });
-  updateBlizFx(dt);
-  ambientParticles(dt);
-  particles.update(dt);
-  updateEffects();
+  updateBlizFx(fxDt);
+  ambientParticles(fxDt);
+  particles.update(fxDt);
   controls.update();
+  // Wackeln und Ruck nur für dieses Bild, OrbitControls behält die eigene Position
+  saved.copy(camera.position);
+  if (cam.shake > 0.001) {
+    camera.position.x += rand(-1, 1) * cam.shake;
+    camera.position.y += rand(-1, 1) * cam.shake;
+    cam.shake *= 0.86;
+  }
+  updateEffects();
   composer.render();
+  camera.position.copy(saved);
   updateStats(t);
   requestAnimationFrame(loop);
 }

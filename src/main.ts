@@ -7,6 +7,7 @@ import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
+import { hitstopDt } from './fx/impact';
 import { cam, updateCamera } from './camera';
 import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
@@ -75,7 +76,8 @@ function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();
-  if (!state.paused) { state.now += dt; update(dt); }
+  const simDt = hitstopDt(dt);
+  if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);
   composer.render();
