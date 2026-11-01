@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — chore(docs): Stand v10 in handoff.md
+**Was:** Teil Grün ergänzt, `gruen-tuning` per Fast-Forward in `main`, Artifact auf v10 aktualisiert.
+**Nicht gebaut:** keine Feeling-Fixes, es gab keine Commits dazu.
+
 ## 2026-11-01 — chore(score): Spielversion v10
 **Was:** Vor dem Publish erhöht, sonst mischt der Versionsfilter der Rangliste alte und neue Balance (Notiz in `docs/status-blau.md`).
 **Nicht gebaut:** —
