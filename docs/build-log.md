@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(vfx): Feuer-Gruppe neu
+**Was:** Flammenstoß, Druckwelle und Höllenfeuer bekommen je einen eigenen Charakter statt derselben Explosion.
+**Nicht gebaut:** kein Vorwarn-Effekt während der 2 s Zauberzeit.
+
 ## 2026-11-01 — feat(vfx): Arkan/Leere neu
 **Was:** Arcane Explosion, Blink und Leerenkugel; der Sog ist jetzt zu sehen, weil Partikel außen starten und zur Mitte spiralen.
 **Nicht gebaut:** keine Sogwirkung auf Mobs geändert, nur die Optik.

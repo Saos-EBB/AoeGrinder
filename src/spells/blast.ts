@@ -1,6 +1,8 @@
 import { rand, dist2d } from '../util';
 import { player } from '../state';
 import { particles } from '../fx/particles';
+import { vfxOld } from '../fx/shaders';
+import { blastNew } from '../fx/fireFx';
 import { heightAt } from '../world';
 import { knockbackMob, pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
@@ -24,7 +26,7 @@ export const blast = {
       if (hasRune('blast', 'suck')) pullMob(m, center, blast.knock);
       else if (!hasRune('blast', 'quick')) knockbackMob(m, center, blast.knock);
     }
-    burstFx(center, r, [FIRE, EMBER], 0xffa050);
+    if (vfxOld()) burstFx(center, r, [FIRE, EMBER], 0xffa050); else blastNew(center, r, hasRune('blast', 'suck'));
     if (!hasRune('blast', 'ring')) return;
     addField(c, { pos: center, radius: r, dur: RING.dur,
       onTick: f => {
