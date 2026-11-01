@@ -54,7 +54,7 @@ Plan: Kreis und Box tragen eine Oberkante, auf der man stehen kann, wenn man sie
 |---|---|---|---|
 | Korridorwände | Kreis 1,8 | Blöcke sind eckig | gedrehte Box 4 × 3,6 |
 | Brücken | Gelände ohne Lava, Belag nur Optik | funktioniert, aber nicht als Fläche erkennbar | begehbare Platte über dem Gelände |
-| Brüstung | Kreis 0,8 auf 3 yd | Löcher | Box 3,1 × 0,6, Oberkante 1 |
+| Brüstung | Kreis 0,8 auf 3 yd | Löcher | Box 3,1 × 0,6, Oberkante 1; jedes 4. Stück als Lücke |
 | Schmiede | Kreis 7,5 | Gebäude ist 14 × 10, Ecken durchlaufbar | Box 14 × 10 |
 | Ambosse | Kreis 1 | zu groß, keine Höhe | gedrehte Box, Oberkante 1,5 |
 | Hallensäulen | Kreis 2 × s | etwas zu groß | Kreis 1,9 × s |

@@ -145,9 +145,23 @@ function closest(c, pos) {
 
 // Ausweichen ohne Pathfinding: Liegt ein Hindernis voraus, läuft body an seiner Tangente entlang.
 // Die Seite bleibt, bis der Weg zum Ziel frei ist, sonst pendelt er vor langen Wänden.
+const STUCK_CALLS = 20, STUCK_DIST = 0.5, ESCAPE_CALLS = 45, ESCAPE_ANGLE = 2.1;   // PH
 const LOOKAHEAD = 0.4;   // PH: kurz genug, dass eine steile Rampe voraus nicht als Wand zählt
 const probe = { x: 0, y: 0, z: 0 }, steered = { x: 0, z: 0 };
 export function steer(body, dx, dz, radius) {
+  if (body.escape > 0) {                     // Ausbruch aus einer Nische: schräg zurück
+    body.escape--;
+    const a = ESCAPE_ANGLE * body.escapeSide;
+    steered.x = dx * Math.cos(a) - dz * Math.sin(a);
+    steered.z = dx * Math.sin(a) + dz * Math.cos(a);
+    return steered;
+  }
+  body.stuckCalls = (body.stuckCalls ?? 0) + 1;
+  if (body.stuckCalls >= STUCK_CALLS) {      // kaum vom Fleck gekommen: Ausbruch, jedes Mal zur anderen Seite
+    const stuck = Math.hypot(body.pos.x - (body.stuckX ?? Infinity), body.pos.z - body.stuckZ) < STUCK_DIST;
+    body.stuckX = body.pos.x; body.stuckZ = body.pos.z; body.stuckCalls = 0;
+    if (stuck) { body.escape = ESCAPE_CALLS; body.escapeSide = -(body.escapeSide ?? 1); body.steerSide = 0; }
+  }
   probe.x = body.pos.x + dx * LOOKAHEAD;
   probe.z = body.pos.z + dz * LOOKAHEAD;
   probe.y = groundAt(probe.x, probe.z, body.pos.y);   // auf einer Rampe liegt der Fuß dort schon höher

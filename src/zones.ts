@@ -363,12 +363,12 @@ function brdProps(ctx) {
     for (let d = 0; d < len; d += 3) {
       const cx = ax + (bx - ax) * d / len, cz = az + (bz - az) * d / len;
       const onBridge = brdRiver(cx, cz) < 9;
-      if (onBridge) decks.push({ x: cx, z: cz, ry });
+      if (onBridge) { decks.push({ x: cx, z: cz, ry }); ctx.walk(cx, cz, 3.2, 10, ry, (px, pz) => ctx.heightAt(px, pz) + 0.1, false); }
       for (const side of [-1, 1]) {
         const x = cx + nx * side * 5, z = cz + nz * side * 5;
         if (Math.hypot(x, z - BRD.forge[1]) < 21) continue;
-        if (onBridge) { rails.push({ x, z, ry }); ctx.obstacle(x, z, 0.8); }
-        else if (brdRiver(x, z) > 8 && Math.random() < 0.9) { walls.push({ x, z, ry: ry + rand(-0.1, 0.1), sy: rand(0.75, 1.25), s: rand(0.95, 1.15) }); ctx.obstacle(x, z, 1.8); }
+        if (onBridge) { if (d % 12 >= 3) { rails.push({ x, z, ry }); ctx.solid(x, z, 3.1, 0.6, ry, 1); } }   // PH: jedes 4. Stück fehlt, sonst kämen Mobs vom Ufer nie auf die Brücke
+        else if (brdRiver(x, z) > 8 && Math.random() < 0.9) { const w = { x, z, ry: ry + rand(-0.1, 0.1), sy: rand(0.75, 1.25), s: rand(0.95, 1.15) }; walls.push(w); ctx.solid(x, z, 3.6 * w.s, 3.2 * w.s, w.ry); }
       }
     }
   }
@@ -383,7 +383,7 @@ function brdProps(ctx) {
     [iron, [box(14, 0.7, 10, 0, 6.2, 0), box(1, 6, 1, -6.6, 3, 4.7), box(1, 6, 1, 6.6, 3, 4.7)]],
     [fire, [box(7, 3.4, 0.4, 0, 2, 4.55), cyl(1.6, 1.6, 0.4, 0, 17.9, 0, 0, 0, 0, 8)]],
   ]), [{ x: fx, z: fz }]);
-  ctx.obstacle(fx, fz, 7.5);
+  ctx.solid(fx, fz, 14, 10);
   const glow = new THREE.PointLight(0xff7a30, 90, 40, 1.6);
   glow.position.set(fx, 4, fz + 7);
   ctx.add(glow);
@@ -393,15 +393,24 @@ function brdProps(ctx) {
     const a = -0.5 + i * 0.75, r = 12 + (i % 2) * 2;
     const p = { x: fx + Math.sin(a) * r, z: fz + Math.cos(a) * r, ry: rand(0, 6), s: 1.4 };
     if (Math.hypot(p.x, p.z) < 5) continue;
-    anvils.push(p); ctx.obstacle(p.x, p.z, 1);
+    anvils.push(p); ctx.solid(p.x, p.z, 2.1, 0.8, p.ry, 1.6);
   }
   ctx.place(anvil, anvils);
+
+  // Zwergenstatuen rund um die Schmiede
+  const statue = prefab([
+    [stone, [box(2, 1, 2, 0, 0.5, 0), cyl(0.55, 0.8, 2.4, 0, 2.2, 0, 0, 0, 0, 8), ball(0.5, 0, 3.8, 0, 1, 1, 1), box(1.9, 0.5, 0.7, 0, 3.2, 0), cone(0.62, 1.1, 0, 3.1, 0.42, Math.PI, 0, 0, 7)]],
+    [iron, [cyl(0.1, 0.1, 2.8, 0.85, 2.5, 0), box(1, 0.6, 0.6, 0.85, 3.9, 0)]],
+  ]);
+  const statues = [[-12, -9], [12, -9], [-15, 4], [15, 4]].map(([dx, dz]) => ({ x: fx + dx, z: fz + dz, ry: Math.atan2(-dx, -dz) }));   // PH
+  ctx.place(statue, statues);
+  for (const p of statues) ctx.solid(p.x, p.z, 2, 2, p.ry);
 
   // Säulen in den Hallen, Felsbrocken
   const free = (x, z) => brdRiver(x, z) > 9 && brdCorr(x, z) > 7 && Math.hypot(x, z - BRD.forge[1]) > 22;
   const pillar = prefab([[basalt, [cyl(1.5, 1.9, 16, 0, 8, 0, 0, 0, 0, 7)]], [iron, [cyl(2.1, 2.1, 0.6, 0, 6, 0, 0, 0, 0, 7)]]]);
   const pillars = scatter(26, 22, 90, free).map(p => ({ ...p, s: rand(0.9, 1.3), ry: rand(0, 6) }));
-  for (const p of pillars) ctx.obstacle(p.x, p.z, 2 * p.s);
+  for (const p of pillars) ctx.circle(p.x, p.z, 1.9 * p.s);
   ctx.place(pillar, pillars);
   ctx.place(pillar, scatter(120, 98, 150).map(p => ({ ...p, s: rand(2, 4), sy: 3, ry: rand(0, 6) })));
   rocks(ctx, 26, 0x38322f, 14, 92, free);
