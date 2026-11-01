@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-01 — feat(ui): Schadenszahlen größer
+**Was:** Wunsch von Kevin: Treffer 22 px, Crit 34 px, Schaden an der Figur 22 px.
+**Nicht gebaut:** Heilung, Widerstanden und XP bleiben, die sind keine Schadenszahlen.
+
 ## 2026-11-01 — chore(docs): Stand VFX in status-gruen-vfx.md
 **Was:** Messwerte, Prüfstand und offene Punkte; Testzugriffe im Labor für Speicher und Hitstop.
 **Nicht gebaut:** keine Qualitäts-Auswahl im Spielmenü, kein Merge, kein Publish des Spiels.

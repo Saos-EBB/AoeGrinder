@@ -57,3 +57,6 @@ Alles aus dem Auftrag ist gebaut. `tsc` und beide Builds sind sauber.
 - Auf Bloom-Stärke und ACES-Sättigung sind die Feuerfarben abgestimmt: Über rund 2 im Farbwert brennt Feuer weiß aus.
 - Das Esc-Menü ist jetzt scrollbar, weil es höher als kleine Fenster ist.
 - Das Labor-Artifact bekommt nur Stände aus diesem Branch, das Spiel-Artifact blieb unberührt.
+
+## Schadenszahlen
+Wunsch von Kevin, nur Schriftgröße. Treffer 18 → 22 px, Crit 28 → 34 px, Schaden an der Figur 18 → 22 px. Im Labor waren es vorher 16 und 26 px, jetzt dieselben Werte wie im Spiel.
