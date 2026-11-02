@@ -95,7 +95,7 @@ export const CARD_RELIC_LEVEL = 30;
 export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 
 // Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.
-// tags: für Nur Frost und Nur Feuer. needs: nur mit diesem Spell im Slot.
+// tags: Schule, im Schul-Modus zählt nur die eigene. only: nur in diesen Modi (onlyTag), sonst nie. needs: nur mit diesem Spell im Slot.
 export const CARDS = [
   { id: 'ibliz', name: 'Improved Blizzard', tags: ['Frost'], needs: 'bliz', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
     desc: (r, m) => `Blizzard verlangsamt Gegner um ${Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100)} % für 1,5 s.`,
@@ -105,11 +105,11 @@ export const CARDS = [
     apply: (r, m) => { mods.novaCd += 2000 * m; } },
   { id: 'shatter', name: 'Shatter', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
-  { id: 'power', name: 'Arkane Macht', max: 5,
+  { id: 'power', name: 'Arkane Macht', tags: ['Arkan'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'amind', name: 'Arcane Mind', max: 3,
+  { id: 'amind', name: 'Arcane Mind', tags: ['Arkan'], max: 3,
     desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
-  { id: 'amed', name: 'Arcane Meditation', max: 3,
+  { id: 'amed', name: 'Arcane Meditation', tags: ['Arkan'], max: 3,
     desc: (r, m) => `+${Math.round(5 * m)} % Mana-Regeneration während der 5-Sekunden-Regel.`, apply: (r, m) => { mods.castRegen += 0.05 * m; } },
   { id: 'storm', name: 'Weiter Sturm', tags: ['Frost'], needs: 'bliz', max: 2,
     desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
@@ -117,4 +117,11 @@ export const CARDS = [
     desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
   { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
+  // Gegenstücke zu Arkane Macht und Arcane Mind, damit die Schul-Modi dieselben Grundwerte steigern können
+  { id: 'iceheart', name: 'Eisherz', only: ['Frost'], max: 5,
+    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
+  { id: 'emberheart', name: 'Glutherz', only: ['Feuer'], max: 5,
+    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
+  { id: 'embersoul', name: 'Glutseele', only: ['Feuer'], max: 3,
+    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
 ];

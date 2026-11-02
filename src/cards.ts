@@ -26,7 +26,7 @@ const RANK_APPLY = {
 function rankCards() {
   const list = [];
   for (const id of state.slots) {
-    if (!id) continue;
+    if (!id || !tagsAllowed(SPELLS[id].tags)) continue;   // Blink und Trinken bleiben im Kit, bekommen im Schul-Modus aber keine Karten
     for (const key of SPELLS[id].ranks ?? []) list.push({
       kind: 'rang', id: `rang-${id}-${key}`, spell: id, name: SPELLS[id].name, src: 'Rang',
       desc: m => RANK_TEXT[key](SPELLS[id].name, m),
@@ -47,7 +47,7 @@ function newSpellCards() {
 function runeCards() {
   const list = [];
   for (const id of state.slots) {
-    if (!id) continue;
+    if (!id || !tagsAllowed(SPELLS[id].tags)) continue;
     for (const [i, r] of (SPELLS[id].runes ?? []).entries()) {
       if (state.runes[id] === r.id || !isUnlocked(`rune:${id}:${i}`)) continue;
       list.push({
@@ -84,7 +84,8 @@ function relicCards(forced = false) {
 }
 
 function talentCards() {
-  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && tagsAllowed(c.tags ?? []) && (!c.needs || hasSpell(c.needs))).map(c => {
+  const allowed = c => c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []);
+  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs))).map(c => {
     const rank = state.cardRanks[c.id] || 0;
     return {
       kind: 'talent', id: c.id, name: c.name, src: `Talent · Rang ${rank + 1} / ${c.max}`,

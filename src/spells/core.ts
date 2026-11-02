@@ -17,8 +17,8 @@ import { SUPPORTS } from './supports';
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
 export function modRule(key): any { return activeMods().find(m => m[key])?.[key]; }
-// Nur Frost und Nur Arkan lassen nur ihre Schule zu, Nur Feuer alles außer Frost
-export function tagsAllowed(tags) { return activeMods().every(m => (!m.onlyTag || tags.includes(m.onlyTag)) && (!m.noTag || !tags.includes(m.noTag))); }
+// Nur Frost, Nur Feuer und Nur Arkan lassen nur ihre Schule zu
+export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 function startKit() {
   const kit = (modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);

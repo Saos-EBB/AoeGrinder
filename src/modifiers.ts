@@ -6,9 +6,9 @@ export const MODIFIERS = [
   { id: 'wild', name: 'Wilde Mobs', desc: 'Mobs +30 % Tempo', scoreMult: 1.3, excludes: [], speed: 1.3 },
   { id: 'big', name: 'Große Packs', desc: 'doppelte Packgröße', scoreMult: 1, excludes: [], packSize: 2 },
   { id: 'time', name: 'Zeitlimit', desc: 'Run endet nach 10 Minuten', scoreMult: 1, excludes: [], timeLimit: 600000 },
-  // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noTag, noDrink, noCards, noLuck
+  // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noDrink, noCards, noLuck
   { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'ronin', 'schatten'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink'], onlyTag: 'Frost' },
-  { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'ronin', 'schatten'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
+  { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'ronin', 'schatten'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], onlyTag: 'Feuer' },
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'ronin', 'schatten'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
   { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'ronin', 'schatten'], startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', 'wCry', 'wCharge'], onlyTag: 'Krieger' },

@@ -18,9 +18,15 @@ import { chain } from './chain';
 import { voidorb } from './voidorb';
 import { whirl } from './whirl';
 import { arc } from './arc';
+import { icelance } from './icelance';
+import { glacier } from './glacier';
+import { fireball } from './fireball';
+import { meteor } from './meteor';
+import { barrage } from './barrage';
+import { surge } from './surge';
 import { ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage } from './relics';
 
-Object.assign(SPELLS, { nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, hurricane, frostorb, chain, voidorb, whirl, arc, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
+Object.assign(SPELLS, { nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, hurricane, frostorb, chain, voidorb, whirl, arc, icelance, glacier, fireball, meteor, barrage, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
 // input.ts und gamepad.ts prüfen SPELLS[aktion]. Die neuen Tasten zählen dort als Zauber, ohne selbst einer zu sein.
 for (const action of SPELL_ACTIONS) if (!SPELLS[action]) Object.defineProperty(SPELLS, action, { value: { alias: true }, enumerable: false });
 resetSpells();

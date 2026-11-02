@@ -52,6 +52,12 @@ Alle frei, die Krieger-Attacken und Trinken gehören fest zum Modus.
 | Leerenkugel | arcane |
 | Wirbel | frost |
 | Bogenblitz | lightning |
+| Eislanze | frost |
+| Gletscherspalte | frost |
+| Feuerball | fire |
+| Meteor | fire |
+| Arkanes Sperrfeuer | arcane |
+| Arkane Woge | arcane |
 
 ## Relikte
 

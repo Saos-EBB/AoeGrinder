@@ -4,6 +4,8 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(spells): Neue Spells Eislanze, Gletscherspalte, Feuerball, Meteor, Arkanes Sperrfeuer und Arkane Woge, je mit 3 Runen
+- feat(modes): Nur Frost, Nur Feuer und Nur Arkan bieten nur noch Karten der eigenen Schule an
 - fix(realmen): Wirbelwind machte ab dem zweiten Run zeitweise keinen Schaden, stottert ohne Wut nicht mehr an
 - feat(mobile): Startbildschirm fragt Desktop oder Handy; Handy erzwingt Vollbild und Querformat, ohne Sperre (iPhone, iframe) liegt die Seite um 90° gedreht
 - refactor(model): mageModel.ts entfernt, alle Figuren kommen aus heroModels.ts (Magier unverändert gemessen)
