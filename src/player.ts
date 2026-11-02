@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_LEVELS, CARD_MIN_GAP } from './config';
+import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_PACES } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
 import { heightAt, zone, zoneId, buildWorld } from './world';
@@ -22,7 +22,7 @@ import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
-import { mobMode } from './modifiers';
+import { mobMode, cardPaceId } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
 
@@ -156,14 +156,15 @@ export function gainXp(xp) {
   updateCardQueue();
 }
 
+const cardPace = () => CARD_PACES.find(p => p.id === cardPaceId);
 function cardAtLevel(level) {
-  return level % CARD_LEVELS.find(b => level <= b.to).every === 0;
+  return level % cardPace().levels.find(b => level <= b.to).every === 0;
 }
 
-// Auch mehrere Level auf einmal öffnen nur ein Fenster, die übrigen kommen frühestens nach CARD_MIN_GAP Spielzeit
+// Auch mehrere Level auf einmal öffnen nur ein Fenster, die übrigen kommen frühestens nach der Lücke des Kartentakts
 export function updateCardQueue() {
   if (state.pendingLevelUps <= 0 || state.now < state.nextCardAt || player.dead || $('cardModal').classList.contains('show')) return;
-  state.nextCardAt = state.now + CARD_MIN_GAP;
+  state.nextCardAt = state.now + cardPace().gap;
   showCards();
 }
 

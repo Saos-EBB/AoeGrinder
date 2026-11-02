@@ -2,7 +2,8 @@
 
 import { state, player } from '../state';
 import { $ } from '../util';
-import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult } from '../modifiers';
+import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult, cardPaceId, setCardPace } from '../modifiers';
+import { CARD_PACES } from '../config';
 import { WEAPONS } from '../models/weapons/index';
 import { mage } from '../models/mage';
 import { WAR_WEAPON_NAMES } from '../realMen';
@@ -94,6 +95,9 @@ export function renderMenu() {
     b.disabled = blocked;
     mods.appendChild(b);
   }
+  const cardRow = $('menuCards');
+  cardRow.innerHTML = '';
+  for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
   $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger';

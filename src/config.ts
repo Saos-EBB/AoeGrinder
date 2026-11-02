@@ -95,9 +95,14 @@ export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spe
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
 export const CARD_RELIC_LEVEL = 30;
-// Karten nur auf diesen Leveln, 31 pro Run: anfangs Build aufbauen, am Ende spielen. Bis Level "to" alle "every" Level. // PH
-export const CARD_LEVELS = [{ to: 10, every: 1 }, { to: 40, every: 3 }, { to: 100, every: 5 }];
-export const CARD_MIN_GAP = 15000;     // ms Spielzeit zwischen zwei Kartenfenstern, der Rest wartet // PH
+// Kartentakt, Reihe im Hauptmenü. levels: bis Level "to" alle "every" Level. gap: ms Spielzeit zwischen zwei Kartenfenstern, der Rest wartet.
+// Gestaffelt: 31 Karten, anfangs Build aufbauen, am Ende spielen. gap liegt unter dem Abstand der Karten (etwa 9 s pro Level), sonst staut es sich. // PH
+export const CARD_PACES = [
+  { id: 'staffel', name: 'Gestaffelt', title: 'Jedes Level bis 10, jedes 3. bis 40, dann jedes 5. Zusammen 31 Karten', levels: [{ to: 10, every: 1 }, { to: 40, every: 3 }, { to: 100, every: 5 }], gap: 15000 },
+  { id: 'every1', name: '1 pro Level', title: '99 Karten', levels: [{ to: 100, every: 1 }], gap: 5000 },
+  { id: 'every2', name: '1 pro 2 Level', title: '50 Karten', levels: [{ to: 100, every: 2 }], gap: 10000 },
+  { id: 'every3', name: '1 pro 3 Level', title: '33 Karten', levels: [{ to: 100, every: 3 }], gap: 15000 },
+];
 export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 
 // Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.
