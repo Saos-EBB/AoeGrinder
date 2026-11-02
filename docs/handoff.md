@@ -1,7 +1,7 @@
 # Frost Grind – Stand & Übergabe
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand: v15 (`1793625667-fc85`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/heroModels.ts` neu ziehen (alle Figuren; die Magier-Schnittstelle `SKINS`, `SKIN_FX`, `buildMage` am Ende muss mit), danach `RUN_REF` prüfen. Quelle von `heroModels.ts`: Handoff-Artifact https://claude.ai/artifact/WqUXFEaQYcN5VEC6zEgoym.
 
@@ -36,6 +36,7 @@ Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v15 – Handy: Startbildschirm Desktop oder Handy, Vollbild quer (sonst um 90° gedrehte Seite), Touch mit 2 Sticks und je 4 Tasten, eigenes HUD-Layout, Menüs im Vollbild. Dazu Nahkämpfer aus PR #2 (Real-Men-Waffen, Ronin, Schatten, `heroModels.ts`). Getestet per Skript, nicht am echten Handy.
 - v14 – Neue UI: Hauptmenü, verschiebbares HUD mit Einrasten, Icons, Schadenszahlen, Karten mit echter Vorschau, Charakterfenster, Pause-Menü, Auto-Kamera. Meta Phase 1: Speedrun-Zeit mit Splits, Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Knochenstaub, gesperrter Pool, Shop nach Abschluss und im Hauptmenü, Credits. Level-up heilt 25 % Leben. Getestet per Skript in allen Modi, nicht von Hand gespielt.
 - v12 – Alle Branches in `main` zusammengeführt. Neues Spielermodell mit 4 Skins, 15 Waffen als Standard pro Skin und Skin-Effekte; Modus Nur Arkan (Leerenkugel zählt als Arkan); Modus Real Men mit 6 Attacken und je 3 Runen; Karten mit vierfacher Fläche; Mob-Modus Belagerung; Mobs mit doppeltem Leben und Schadensreduktion pro Level; neue Spell-Effekte, Sound und VFX-Labor, Effekte liegen über `groundAt`. Getestet per Skript in allen Modi, nicht von Hand gespielt.
 - v11 – Spells kennen die massiven Objekte: Blink stoppt vor Wänden und landet auf begehbaren Flächen, Bodenziele und Zielkreis liegen auf `groundAt`, Flächen-Spells treffen nur unter 3 yd Höhenunterschied (`SPELL_AOE_HEIGHT`, PH). Spielversion v11, weil die Höhenprüfung Treffer ändert. Details in `docs/status-gruen.md`. Getestet per Skript, nicht von Hand gespielt.

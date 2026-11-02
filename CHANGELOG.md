@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- chore(docs): Artifact-Version v15 in handoff.md
 - feat(mobile): Startbildschirm fragt Desktop oder Handy; Handy erzwingt Vollbild und Querformat, ohne Sperre (iPhone, iframe) liegt die Seite um 90° gedreht
 - refactor(model): mageModel.ts entfernt, alle Figuren kommen aus heroModels.ts (Magier unverändert gemessen)
 - chore(docs): Handoff mit Nahkämpfern und offenen Punkten
