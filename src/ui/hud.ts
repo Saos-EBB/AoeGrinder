@@ -1,13 +1,17 @@
 import * as THREE from 'three';
 import { state, player } from '../state';
 import { $, rand, clamp, dist2d } from '../util';
-import { CFG, SPELLS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
+import { CFG, SPELLS, CARDS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
 import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 import { onCrit } from '../fx/impact';
+import { zone } from '../world';
+import { run } from '../score';
+import { rune } from '../spells/core';
+import './hudLayout';
 
 export const overlay = $('overlay');
 
@@ -102,6 +106,26 @@ export function updatePerf(t) {
   perfSince = t;
 }
 
+// Links die Effekte und Runen mit Stacks, rechts die Relikte. Nur neu bauen, wenn sich der Inhalt ändert.
+let chipKey = '', relicKey = '';
+function updateBuildChips() {
+  const chips = [];
+  if (player.poison) chips.push(['Gift', player.poison.stacks]);
+  for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
+  for (const id of Object.keys(state.supports ?? {})) chips.push([id, 0]);
+  for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
+  const key = JSON.stringify(chips);
+  if (key !== chipKey) {
+    chipKey = key;
+    $('hudEffects').innerHTML = chips.map(([name, n]) => `<span class="fxChip">${name}${n ? `<b>${n}</b>` : ''}</span>`).join('');
+  }
+  const relics = state.slots.filter(id => id && SPELLS[id].relic), rk = relics.join();
+  if (rk !== relicKey) {
+    relicKey = rk;
+    $('hudRelics').innerHTML = relics.map(id => `<div class="relicBox">${SPELLS[id].name}</div>`).join('');
+  }
+}
+
 export function updateHud() {
   saveRunBuild();
   const hpMax = maxHp(), manaMax = maxMana();
@@ -118,11 +142,14 @@ export function updateHud() {
   const need = xpNeeded();
   const atMax = player.level >= LEVEL_MAX;
   $('xpFill').style.transform = `scaleX(${atMax ? 1 : player.xp / need})`;
-  $('xpText').textContent = atMax ? 'Max-Level' : `XP ${player.xp} / ${need}`;
+  $('xpText').textContent = atMax ? 'Max' : `${player.xp} / ${need}`;
 
   $('iTime').textContent = fmtTime(state.now);
   $('iKills').textContent = player.kills;
-  $('iCombat').textContent = String(state.mobs.filter(m => !m.dead && (m.state === 'combat' || m.state === 'flee')).length);
+  $('iCombat').textContent = String(state.mobs.filter(m => !m.dead).length);
+  $('hZone').textContent = zone.name;
+  $('hMulti').textContent = run.bestMulti > 1 ? `×${run.bestMulti}` : '–';
+  updateBuildChips();
 
   // Castbar (Channel läuft von rechts nach links wie in WoW)
   const ch = player.channel, dr = player.drink, ct = player.casting;

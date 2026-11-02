@@ -200,7 +200,6 @@ $('restartBtn').addEventListener('click', () => {
   state.paused = false;
 });
 $('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
-$('bindsOpen').addEventListener('click', openBinds);
 $('bindsClose').addEventListener('click', closeBinds);
 // Abbrechen hat den Fokus, damit Enter oder Leertaste nichts löscht
 $('bindsReset').addEventListener('click', () => { state.rebinding = null; state.padRebinding = null; renderBinds(); $('resetModal').classList.add('show'); $('resetNo').focus(); });

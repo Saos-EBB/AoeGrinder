@@ -45,7 +45,7 @@ export function updateSiege(dt) {
 
 export function resetSiege() { due = 0; }
 
-document.head.insertAdjacentHTML('beforeend', `<style>#siegeHud { position: fixed; top: 92px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; font: 700 14px system-ui, sans-serif; color: #ff9a7a; text-shadow: 0 1px 3px #000; }</style>`);
+document.head.insertAdjacentHTML('beforeend', `<style>#siegeHud { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; font: 700 14px system-ui, sans-serif; color: #ff9a7a; text-shadow: 0 1px 3px #000; }</style>`);
 document.body.insertAdjacentHTML('beforeend', `<div id="siegeHud" hidden></div>`);
 
 // Auswahl im Startfenster, unabhängig vom Modus

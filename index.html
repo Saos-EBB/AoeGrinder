@@ -14,38 +14,48 @@
     border-radius: 6px; box-shadow: 0 2px 8px #0008; }
   .title { font-family: Cinzel, serif; color: #f2c94c; letter-spacing: .5px; }
 
-  /* Spieler-Frame */
-  #playerFrame { position: fixed; top: 14px; left: 14px; width: 270px; padding: 8px 10px; }
-  #playerFrame .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-  .bar { position: relative; height: 18px; background: #000a; border: 1px solid #000; margin-top: 4px; overflow: hidden; }
-  .bar > .fill { position: absolute; inset: 0; transform-origin: left; }
-  .bar > span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 600;
-    text-shadow: 0 1px 2px #000; line-height: 18px; }
-  #hpFill { background: linear-gradient(#3fcf3f, #1c8a1c); }
-  #manaFill { background: linear-gradient(#4a7dff, #1f3fbf); }
+  /* HUD: Position kommt aus ui/hudLayout.ts */
+  #hudHeader { width: 100vw; border-width: 0 0 2px; border-radius: 0; padding: 4px 0 0; }
+  #hudRow { display: flex; justify-content: center; gap: 26px; font-size: 13px; padding-bottom: 4px; }
+  #hudRow span { display: flex; flex-direction: column; align-items: center; min-width: 44px; position: relative; }
+  #hudRow i { font-style: normal; font-size: 10px; color: #c9b88a; text-transform: uppercase; letter-spacing: .5px; }
+  #hudRow b { font-variant-numeric: tabular-nums; color: #fff; white-space: nowrap; }
+  #scorePts { color: #f2c94c !important; }
+  #scoreBar { position: absolute; bottom: -3px; left: 0; right: 0; height: 2px; visibility: hidden; }
+  #scoreBar div { height: 100%; background: #ffb347; transform-origin: left; }
+  #hudBars { width: 40vw; }
+  #hudBarRow { display: flex; gap: 6px; }
+  #hudBarRow .bar { flex: 1; margin: 0; height: 22px; border-radius: 3px; }
+  #hudBarRow .bar > span { line-height: 22px; font-size: 13px; }
+  #hudEffects { display: flex; flex-wrap: wrap; gap: 3px; max-width: 26vw; font-size: 11px; }
+  .fxChip { padding: 1px 6px; background: #000a; border: 1px solid #6b5426; border-radius: 3px; white-space: nowrap; }
+  .fxChip b { color: #ffe27a; margin-left: 3px; }
+  #hudRelics { display: flex; flex-direction: column; gap: 6px; }
+  .relicBox { width: 88px; padding: 8px 4px; text-align: center; font: 700 12px Cinzel, serif; color: #f2c94c; background: linear-gradient(#2a2010ee, #120d06ee);
+    border: 3px solid #f2c94c; border-radius: 8px; box-shadow: 0 0 10px #f2c94c88; }
+  body.hudEdit #hudHeader, body.hudEdit #hudBars, body.hudEdit #actionbar, body.hudEdit #hudEffects, body.hudEdit #hudRelics {
+    outline: 2px dashed #ffe27a; outline-offset: 1px; cursor: move; min-width: 90px; min-height: 26px; }
+  body.hudEdit #hudHeader::after, body.hudEdit #hudBars::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after {
+    content: attr(data-hud-name); position: absolute; top: 100%; left: 0; font: 700 11px system-ui; color: #ffe27a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+  #hudEditBar { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
+  #hudEditBar[hidden] { display: none; }
   #fsr { height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
-  #status { font-size: 12px; color: #9cc4ff; min-height: 16px; margin-top: 4px; }
+  #status { font-size: 12px; color: #9cc4ff; min-height: 16px; margin-top: 2px; text-align: center; text-shadow: 0 1px 2px #000; }
 
-  /* Info rechts */
-  #info { position: fixed; top: 14px; right: 14px; width: 230px; padding: 8px 12px; font-size: 13px; }
-  #info td:last-child { text-align: right; color: #fff; font-weight: 600; }
-  #info table { width: 100%; border-collapse: collapse; }
-  #help { margin-top: 8px; padding-top: 6px; border-top: 1px solid #b8913f66; font-size: 12px; color: #d8cfb8; }
-  #help b { color: #f2c94c; }
   .smallBtn { margin-top: 8px; width: 100%; font: 600 13px system-ui, sans-serif; padding: 5px; background: #3a2a12;
     color: #f2c94c; border: 1px solid #b8913f; border-radius: 3px; cursor: pointer; }
   .smallBtn:hover { background: #5a4220; }
 
   /* Castbar */
-  #castbar { position: fixed; left: 50%; bottom: 130px; width: 300px; margin-left: -150px; height: 20px;
+  #castbar { position: relative; margin-top: 4px; height: 20px;
     background: #000c; border: 2px solid #b8913f; border-radius: 3px; display: none; overflow: hidden; }
   #castFill { position: absolute; inset: 0; background: linear-gradient(#ffd34d, #c9921a); transform-origin: left; }
   #castbar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 700;
     line-height: 16px; text-shadow: 0 1px 2px #000; }
 
   /* Actionbar */
-  #actionbar { position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; }
+  #actionbar { display: flex; gap: 6px; padding: 6px; }
   .slot { position: relative; width: 62px; height: 62px; border: 2px solid #6b5426; border-radius: 4px;
     display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; overflow: hidden;
     font-size: 11px; font-weight: 700; text-align: center; text-shadow: 0 1px 2px #000; cursor: pointer; }
@@ -66,9 +76,8 @@
   .util   { background: radial-gradient(circle at 50% 35%, #fff2c2, #9a7a3a 70%, #4a3816); }
 
   /* XP */
-  #xpbar { position: fixed; left: 0; right: 0; bottom: 0; height: 22px; background: #000c; border-top: 2px solid #b8913f; }
+  #xpbar { position: relative; height: 5px; background: #000c; }
   #xpFill { position: absolute; inset: 0; background: linear-gradient(#a35ad6, #5b2a8a); transform-origin: left; }
-  #xpbar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 600; line-height: 20px; }
 
   /* Fehlermeldung (wie Classic-UI-Errorframe) */
   #err { position: fixed; top: 18%; left: 0; right: 0; text-align: center; color: #ff3b3b; font-size: 18px;
@@ -78,7 +87,7 @@
 
   /* Nameplates + Kampftext */
   #overlay { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-  #playerFrame, #info, #castbar, #actionbar, #xpbar, #err { z-index: 2; }
+  #hudHeader, #hudBars, #hudEffects, #hudRelics, #actionbar, #err { z-index: 2; }
   .modal { z-index: 3; }
   .plate { position: absolute; width: 74px; margin-left: -37px; font-size: 11px; text-align: center;
     text-shadow: 0 1px 2px #000; font-weight: 600; }
@@ -117,7 +126,7 @@
   /* Tastenbelegung */
   #bindList { display: grid; grid-template-columns: 1fr 110px 70px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 45vh; overflow: auto; }
   #devZones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 4px; }
-  #perf { position: fixed; top: 0; right: 14px; z-index: 2; font: 600 11px/14px system-ui, sans-serif; color: #9cff9c; text-shadow: 0 1px 2px #000; pointer-events: none; font-variant-numeric: tabular-nums; }
+  #perf { position: fixed; top: 48px; right: 14px; z-index: 2; font: 600 11px/14px system-ui, sans-serif; color: #9cff9c; text-shadow: 0 1px 2px #000; pointer-events: none; font-variant-numeric: tabular-nums; }
   #devCards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
   #bindList .group { grid-column: 1 / -1; margin-top: 8px; color: #f2c94c; font-family: Cinzel, serif; }
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
@@ -128,28 +137,40 @@
 </head>
 <body>
 
-<div id="playerFrame" class="frame">
-  <div class="row"><span class="title">Mage</span><span>Glück <b id="luck">0</b> · Level <b id="lvl">20</b></span></div>
-  <div class="bar"><div class="fill" id="hpFill"></div><span id="hpText"></span></div>
-  <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
+<div id="hudHeader" class="frame">
+  <div id="hudRow">
+    <span><i>Zone</i><b id="hZone"></b></span>
+    <span><i>Level</i><b id="lvl">1</b></span>
+    <span><i>Zeit</i><b id="iTime">0:00</b></span>
+    <span id="hSplitBox"><i>Split</i><b id="hSplit">–</b></span>
+    <span><i>Punkte</i><b id="scorePts">0</b></span>
+    <span><i>Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div></span>
+    <span><i>Multi</i><b id="hMulti">–</b></span>
+    <span><i>Mobs</i><b id="iCombat">0</b></span>
+    <span><i>Kills</i><b id="iKills">0</b></span>
+    <span><i>Glück</i><b id="luck">0</b></span>
+    <span><i>XP</i><b id="xpText"></b></span>
+  </div>
+  <div id="xpbar"><div id="xpFill"></div></div>
+</div>
+
+<div id="hudBars">
+  <div id="hudBarRow">
+    <div class="bar"><div class="fill" id="hpFill"></div><span id="hpText"></span></div>
+    <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
+  </div>
   <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>
+  <div id="castbar"><div id="castFill"></div><span id="castText"></span></div>
   <div id="status"></div>
 </div>
-
-<div id="info" class="frame">
-  <div class="title" style="margin-bottom:4px">Run</div>
-  <table>
-    <tr><td>Zeit</td><td id="iTime">0:00</td></tr>
-    <tr><td>Kills</td><td id="iKills">0</td></tr>
-    <tr><td>Im Kampf</td><td id="iCombat">0</td></tr>
-  </table>
-  <div id="help"></div>
-  <button class="smallBtn" id="bindsOpen">Tastenbelegung (Esc)</button>
-</div>
-
-<div id="castbar"><div id="castFill"></div><span id="castText"></span></div>
+<div id="hudEffects"></div>
+<div id="hudRelics"></div>
 <div id="actionbar" class="frame"></div>
-<div id="xpbar"><div id="xpFill"></div><span id="xpText"></span></div>
+<div id="hudEditBar" class="frame" hidden>
+  <span class="title">UI bearbeiten: Elemente ziehen</span>
+  <button class="bindBtn" id="hudEditReset">Zurücksetzen</button>
+  <button class="bindBtn" id="hudEditDone">Fertig</button>
+</div>
 <div id="err"></div>
 <div id="perf" hidden></div>
 <div id="overlay"></div>
@@ -190,6 +211,7 @@
   <div class="frame panel">
     <h1 class="title" style="font-size:26px">Tastenbelegung</h1>
     <p style="margin:6px 0 0;font-size:13px">Feld anklicken, dann neue Taste drücken. Esc bricht ab.</p>
+    <div id="help" style="font-size:12px;margin-top:8px"></div>
     <div id="bindList"></div>
     <div class="title" style="text-align:left;margin-bottom:6px">Dev: Zone wechseln</div>
     <div id="devZones"></div>
