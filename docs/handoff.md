@@ -3,7 +3,7 @@
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
-**Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/mageModel.ts` neu ziehen, danach `RUN_REF` prüfen.
+**Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/mageModel.ts` (Magier) bzw. `src/models/heroModels.ts` (Krieger, Samurai, Ninja) neu ziehen, danach `RUN_REF` prüfen. Quelle von `heroModels.ts`: Handoff-Artifact https://claude.ai/artifact/WqUXFEaQYcN5VEC6zEgoym.
 
 ## Regeln
 1. Es gibt nur noch `main` und einen Agenten, keine parallelen Branches oder Worktrees mehr.
@@ -19,9 +19,12 @@ Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - `src/modifiers.ts`: `MODIFIERS`, `MODES` (auch Nur Arkan, Real Men), `mobMode`.
 - **Welt:** `world.ts` (`heightAt`, Terrain, `buildWorld`), `collision.ts` (`groundAt`, `resolve`, begehbare Flächen; für Effekte und Bodenziele immer `groundAt`), `zones.ts`, `props.ts` (`scatter` skaliert Karten-Streu mit `WORLD_K`).
 - **Spieler:** `player.ts`, `input.ts`, `gamepad.ts`, `camera.ts`.
-- **Modell:** `models/mageModel.ts` (aus dem Viewer: `buildMage`, `buildWarrior`), `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
+- **Modell:** `models/mageModel.ts` (aus dem Viewer: `buildMage`), `models/heroModels.ts` (aus dem Viewer: `buildWarrior` mit 4 Waffen, `buildSamurai`, `buildNinja`; enthält den Kern doppelt), `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
 - `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo.
 - `src/realMen.ts`: Modus Real Men. Zahlen in `REALMEN` und `RUNES`, Wut steht in `player.mana`, Attacken sind Spells mit `press`. Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343).
+- `src/melee.ts`: gemeinsame Helfer der Nahkämpfer (Kosten/Abklingzeit, Linie, Sprint, Bewegungsfenster, verzögerte Treffer, Wellen).
+- Real-Men-Waffen in `REALMEN.weapons` (`realMen.ts`), Wahl im Hauptmenü, gespeichert in `frostgrind.warWeapon`. Seelenfang wirkt über `mob.markUntil`/`markMul` in `damageMob`.
+- `src/heroes.ts`: Modi Ronin (Samurai, Wut nach `REALMEN.rage`) und Schatten (Ninja, Energie), Zahlen in `RONIN` und `SCHATTEN`.
 - `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
 - `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü, Shop im Hauptmenü. Credits: `docs/credits.md`.
 - `src/mobs.ts`, `mobTypes.ts`, `abilities.ts`: Spawn (Ring um den Spieler), KI, `damageMob`, Fähigkeiten.
@@ -65,6 +68,16 @@ Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - Mana-Bedarf pro Kill etwa verdoppelt. Arcane only hat nur zwei Schadens-Spells. Donnerknall (10 Schaden, Classic) ist schwach. Real Men hat weder Trinken noch Blink.
 - Belagerung: Rate in `SIEGE`, „Größter Pull“ treibt die Punkte sehr hoch. Ohne Leash jagen gezogene Mobs unbegrenzt.
 - Weitere Platzhalter: Mob-Tempo, Trinkwerte, GCD, Radien, Crit, Sprungphysik.
+
+**Nahkämpfer (Krieger-Waffen, Ronin, Schatten), alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
+- Donnerknall mit Äxten, Hammer, Anker: Das Modell meldet keinen Treffer (`hits` ohne `thunderclap`), das Spiel nutzt einen Timer bei 42 %. Besser im Viewer beheben.
+- Blutrausch zählt +1 pro Treffer-Moment mit mindestens einem Mob, nicht pro Mob.
+- Seelenfang zieht über `pullMob`; eingefrorene Mobs bleiben stehen, werden aber markiert.
+- Seoi-Sichel ist ein eigener Strahltest pro Frame (`melee.ts`), kein Geschoss-System.
+- Schatten: unangreifbar heißt nur kein Schaden, Mobs behalten die Aggro. Unangreifbarkeit im Skript nicht geprüft.
+- Alle Moves sperren die eigene Bewegung, solange sie laufen.
+- `RUN_REF` für Krieger, Samurai, Ninja ungeprüft. Keine Icons für die neuen Moves.
+- Doppelter Kern in `mageModel.ts` und `heroModels.ts` zusammenlegen.
 
 **Technik:**
 - Belagerung bei etwa 200–300 Mobs an der Grenze des Spielbaren, mit Zaubern ungemessen. Ansätze: Mob-Instancing, Nameplates.
