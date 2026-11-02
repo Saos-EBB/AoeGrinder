@@ -18,17 +18,18 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/world.ts`, `collision.ts`, `zones.ts` | Karten, Boden, massive Objekte | [map-audit](map-audit.md) |
 | `src/mobs.ts`, `abilities.ts`, `siege.ts` | Mobs, Fähigkeiten, Mob-Modus Belagerung | [zones-spec](zones-spec.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/models/` | Spielermodell mit Skins, Krieger, 15 Waffen | [status-waffen](status-waffen.md) |
-| `src/realMen.ts`, `skinFx.ts` | Modus Real Men, Skin-Effekte | [Code-Karte](handoff.md#code-karte) |
+| `src/models/` | Alle Figuren (Magier-Skins, Krieger mit 4 Waffen, Samurai, Ninja), 15 Magier-Waffen | [status-waffen](status-waffen.md) |
+| `src/realMen.ts`, `heroes.ts`, `melee.ts` | Nahkampf-Modi Real Men, Ronin, Schatten und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
+| `src/skinFx.ts` | Skin-Effekte der Magier | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |
 | `src/meta.ts`, `ui/shop.ts` | Knochenstaub, gesperrter Pool, Shop | [pool-liste](pool-liste.md) |
 
 ## ⚠ Besonderheiten
-- `mageModel.ts` kommt aus dem Viewer: dort ändern und neu ziehen, danach `RUN_REF` prüfen → [handoff](handoff.md#offen)
+- `heroModels.ts` kommt aus dem Viewer: dort ändern und neu ziehen, die Magier-Schnittstelle am Dateiende muss mit, danach `RUN_REF` prüfen → [handoff](handoff.md#offen)
 - Effekte und Bodenziele nutzen `groundAt`, nicht `heightAt`, sonst liegen sie auf Plattformen falsch → [Code-Karte](handoff.md#code-karte)
-- Die Wut des Kriegers steht in `player.mana`, `player.rageMax` schaltet den Modus um → [realMen.ts](../src/realMen.ts)
+- Wut (Krieger, Samurai) und Energie (Ninja) stehen in `player.mana`, `player.rageMax` schaltet den Modus um → [realMen.ts](../src/realMen.ts), [heroes.ts](../src/heroes.ts)
 - Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)

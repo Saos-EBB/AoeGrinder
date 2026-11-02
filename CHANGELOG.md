@@ -4,6 +4,11 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- refactor(model): mageModel.ts entfernt, alle Figuren kommen aus heroModels.ts (Magier unverändert gemessen)
+- chore(docs): Handoff mit Nahkämpfern und offenen Punkten
+- feat(modes): Modi Ronin (Gebeinsamurai, Wut) und Schatten (Ninja, Energie) mit je Grundangriff und 4 Moves, eigene Ranglisten
+- feat(realmen): Waffenwahl im Hauptmenü (Zweihänder, Zwillingsäxte, Grabhammer, Seelenanker) mit eigenen Attacken, Blutrausch, Nachbeben und Seelenfang
+- feat(model): heroModels.ts aus dem Viewer (Krieger mit 4 Waffen, Samurai, Ninja), Real Men nutzt den Krieger daraus
 - feat(mobile): Handy-Erkennung, Vollbild quer beim ersten Antippen, Touch-Steuerung mit 2 Sticks und 4 Tasten pro Seite, eigenes HUD-Layout, Menüs im Vollbild
 - chore(docs): Handoff und Übersicht auf v14
 - feat(docs): Credits für die Icons, auch in den Einstellungen

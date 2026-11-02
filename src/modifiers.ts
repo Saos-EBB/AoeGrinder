@@ -7,11 +7,14 @@ export const MODIFIERS = [
   { id: 'big', name: 'Große Packs', desc: 'doppelte Packgröße', scoreMult: 1, excludes: [], packSize: 2 },
   { id: 'time', name: 'Zeitlimit', desc: 'Run endet nach 10 Minuten', scoreMult: 1, excludes: [], timeLimit: 600000 },
   // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noTag, noDrink, noCards, noLuck
-  { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink'], onlyTag: 'Frost' },
-  { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
-  { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
+  { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'ronin', 'schatten'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink'], onlyTag: 'Frost' },
+  { id: 'fire', name: 'Nur Feuer', desc: 'Feuer-Start, keine Frost-Karten', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'ronin', 'schatten'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], noTag: 'Frost' },
+  { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'ronin', 'schatten'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
-  { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane'], startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', 'wCry', 'wCharge'], onlyTag: 'Krieger' },
+  { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'ronin', 'schatten'], startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', 'wCry', 'wCharge'], onlyTag: 'Krieger' },
+  // Nahkämpfer aus heroes.ts
+  { id: 'ronin', name: 'Ronin', desc: 'Gebeinsamurai mit Katana, Wakizashi und Ōdachi, Wut statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'schatten'], startKit: ['rAttack', 'rIai', 'rTwo', 'rCrescent', 'rDeath', null], onlyTag: 'Ronin' },
+  { id: 'schatten', name: 'Schatten', desc: 'Ninja mit bis zu drei Klingen, Energie statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'ronin'], startKit: ['nAttack', 'nStep', 'nTwin', 'nSmoke', 'nStorm', null], onlyTag: 'Schatten' },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
   { id: 'classic', name: 'Classic pur', desc: 'keine Level-Karten, alle 2 Level ein Rang auf alle Spells', scoreMult: 1.5, excludes: ['noluck'], noCards: true },
   { id: 'noluck', name: 'Kein Glück', desc: 'Glück bleibt 0, immer 4 Karten', scoreMult: 1.2, excludes: ['classic'], noLuck: true },
@@ -25,6 +28,8 @@ export const MODES = [
   { id: 'fireonly', name: 'Fire only', mods: ['fire'] },
   { id: 'arcaneonly', name: 'Arcane only', mods: ['arcane'] },
   { id: 'realmen', name: 'Real Men', mods: ['realmen'] },
+  { id: 'ronin', name: 'Ronin', mods: ['ronin'] },
+  { id: 'schatten', name: 'Schatten', mods: ['schatten'] },
   { id: 'classic', name: 'Classic', mods: ['classic'] },
   { id: 'custom', name: 'Eigene Mischung', mods: null },   // frei wählbar
 ];
