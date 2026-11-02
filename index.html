@@ -97,7 +97,10 @@
   .plate .hp div { height: 100%; background: #d22; }
   .ct { position: absolute; font-weight: 800; text-shadow: 0 1px 2px #000, 0 0 3px #000;
     animation: rise 1.2s ease-out forwards; white-space: nowrap; transform: translateX(-50%); }
-  .ct.dmg { color: #fff; font-size: 22px; }
+  .ct.num { font-weight: 900; font-family: system-ui, sans-serif; -webkit-text-stroke: 3px #120a06; paint-order: stroke fill; text-shadow: 0 2px 3px #000; }
+  .ct.num.crit { animation: critPop 1.1s ease-out forwards; }
+  @keyframes critPop { 0% { opacity: 1; scale: .5; translate: 0 0; } 12% { scale: 1.3; } 24% { scale: 1; } 70% { opacity: 1; } 100% { opacity: 0; scale: 1; translate: 0 -70px; } }
+  .ct.dmg { color: #fff; font-size: 22px; -webkit-text-stroke: 3px #120a06; paint-order: stroke fill; font-weight: 900; }
   .ct.crit { color: #ffe14d; font-size: 34px; }
   .ct.miss { color: #c8c8c8; font-size: 15px; }
   .ct.hurt { color: #ff4040; font-size: 22px; }

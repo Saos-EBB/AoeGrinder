@@ -36,7 +36,7 @@ export const RUNES = {
   longMs: 30000, fearMs: 2000, fearRadius: 8, angryRage: 20,         // Kampfschrei
   ragingRage: 20,                                                    // Ansturm
 };
-const spell = (name, desc, cd, mana, ranks, press) => ({ name, desc, ranks, tags: ['Krieger'], cls: 'fire', fixed: true, cd, mana, press });
+const spell = (name, desc, cd, mana, ranks, press) => ({ name, desc, ranks, tags: ['Krieger'], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press });
 // fixed: nie als Karte in anderen Modi
 Object.assign(SPELLS, {
   wAttack: spell('Hieb', 'Zweihandschlag, solange gehalten. Bringt Wut.', 0, 0, ['dmg', 'radius'], () => pressAttack()),

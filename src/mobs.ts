@@ -16,6 +16,7 @@ import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
 import { damagePlayer, gainXp } from './player';
+import { damageNumber } from './ui/dmgNumbers';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
 const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
@@ -294,7 +295,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false) {
   mob.hp -= dmg;
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
-  combatText(mob.pos, dmg, crit ? 'crit' : 'dmg');
+  damageNumber(mob, dmg, crit, source);
   hitSparkFx(mob.pos, source);
 
   if (frozen && source !== 'nova' && Math.random() < CFG.novaBreakChance) mob.rootUntil = 0;
