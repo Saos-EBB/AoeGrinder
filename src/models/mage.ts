@@ -6,7 +6,7 @@ import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
 import { buildMage, SKINS } from './mageModel';
-import { buildWarrior } from './heroModels';
+import { buildWarrior, buildSamurai, buildNinja, WEAPONS as WAR_WEAPONS } from './heroModels';
 import { buildWeapon } from './weapons/index';
 import { weaponUnlocked } from '../meta';
 
@@ -15,6 +15,10 @@ const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrut
 const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
 const WEAPON_STORE = 'frostgrind.weapon.v2';
 const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STORE) || '{}'); } catch { return {}; } })();
+const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
+let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
+// Nahkämpfer aus heroModels.ts: Treffer-Moment geht an realMen.ts bzw. heroes.ts
+const HEROES = { krieger: () => buildWarrior({ bloom: PERF.bloom, weapon: warWeapon }), samurai: () => buildSamurai({ bloom: PERF.bloom }), ninja: () => buildNinja({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 // Der eingebaute Stab weicht der Waffe. Sein Gelenk bleibt: Das Modell hält es in jeder Pose aufrecht.
@@ -25,9 +29,9 @@ for (const [id, C] of Object.entries<any>(SKINS)) SKINS[id] = { ...C, addons(R, 
 } };
 
 const NO_FX = {};
-let hitHandler = null;
-// Treffer-Moment der Krieger-Animation (realMen.ts)
-export function onWarriorHit(fn) { hitHandler = fn; }
+const hitHandlers = [];
+// Treffer-Moment der Nahkampf-Animationen (realMen.ts, heroes.ts)
+export function onWarriorHit(fn) { hitHandlers.push(fn); }
 
 let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0;
 
@@ -57,11 +61,11 @@ function dispose(m) {
 function setSkin(id) {
   if (cur) dispose(cur);
   skin = id;
-  if (id === 'krieger') {
-    cur = buildWarrior({ bloom: PERF.bloom });
-    cur.onHit = (kind, x, z) => hitHandler?.(kind, x, z);
+  if (HEROES[id]) {
+    cur = HEROES[id]();
+    cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
-      return;
+    return;
   }
   cur = buildMage(id, { bloom: PERF.bloom });
   scene.add(cur.root);
@@ -72,14 +76,14 @@ function setSkin(id) {
 }
 
 function wield(id) {
-  if (skin === 'krieger') return;             // Der Krieger trägt sein Schwert fest
+  if (HEROES[skin]) return;                   // Nahkämpfer tragen ihre Waffen fest
   weapon?.dispose();
   weapon = buildWeapon(id);
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : 'alle'; };
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('ronin') ? 'samurai' : ids.includes('schatten') ? 'ninja' : 'alle'; };
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
@@ -95,9 +99,16 @@ export const mage = {
   get root() { return cur.root; },
   get anchors() { return weapon ? { ...cur.anchors, crystal: weapon.glowAnchor } : cur.anchors; },
   get trail() { return cur.trail; },
-  get fx() { return skin === 'krieger' ? NO_FX : cur.fx; },   // beim Krieger ist cur.fx die Effektgruppe, keine Spielregeln
+  get fx() { return HEROES[skin] ? NO_FX : cur.fx; },   // bei Nahkämpfern ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
   get weapon() { return weapon; },
+  get warWeapon() { return warWeapon; },
+  rate: 1,                                        // Animationstempo der Nahkämpfer (Blutrausch)
+  setWarWeapon(id) {                              // Real Men: Waffenwahl vor dem Run, bleibt gespeichert
+    warWeapon = id;
+    try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }
+    if (skin === 'krieger') setSkin('krieger');
+  },
   setSkin,
   setWeapon(id) {                                 // Wahl im Hauptmenü, gilt pro Skin und bleibt gespeichert
     chosen[skin] = id;
@@ -108,7 +119,7 @@ export const mage = {
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {
     const s = Math.max(0, dt) / 1000;
-    cur.update(s, anim);
+    cur.update(HEROES[skin] ? s * mage.rate : s, anim);
     if (!weapon) return;
     clock += s;
     lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);

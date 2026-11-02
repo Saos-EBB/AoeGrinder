@@ -142,7 +142,7 @@ export function updateHud() {
   $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax, 0, 1)})`;
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
-  $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}`;
+  $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
   $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';

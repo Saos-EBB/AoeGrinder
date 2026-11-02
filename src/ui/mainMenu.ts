@@ -5,6 +5,7 @@ import { $ } from '../util';
 import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult } from '../modifiers';
 import { WEAPONS } from '../models/weapons/index';
 import { mage } from '../models/mage';
+import { WAR_WEAPON_NAMES } from '../realMen';
 import { cam, autoCamOn, setAutoCam } from '../camera';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta, weaponUnlocked, weaponPrice } from '../meta';
@@ -93,7 +94,9 @@ export function renderMenu() {
   }
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  $('menuWeaponBox').hidden = !mage.weapon;
+  $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger';
+  if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Real Men: Startwahl, ohne Shop
+    weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
   if (mage.weapon) for (const w of WEAPONS) {
     const free = weaponUnlocked(w.id);
     const b = button('chip' + (w.id === mage.weapon.id ? ' selected' : '') + (free ? '' : ' locked'), free ? w.name : `🔒 ${w.name} · ${weaponPrice(w.id)}`, () => { mage.setWeapon(w.id); renderMenu(); }, free ? w.arch : 'Gesperrt: im Shop nach einem Abschluss kaufen');
