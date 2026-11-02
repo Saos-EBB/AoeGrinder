@@ -1,5 +1,6 @@
 // Bausteine für die Zonen-Dekoration. Wiederholte Dinge laufen als InstancedMesh, damit die Draw Calls klein bleiben.
 
+import { WORLD_K } from './config';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rand } from './util';
@@ -64,7 +65,9 @@ export function makeCtx(group, obstacles, heightAt) {
 }
 
 // Punkte im Kreisring, optional gefiltert
+// Karten-Streu (rMax ab 85 yd) wächst mit der Karte bei gleicher Dichte; kleinere Kreise gehören zu einem Bauwerk und bleiben.
 export function scatter(n, rMin, rMax, ok = (x, z) => true) {
+  if (rMax >= 85) { n = Math.round(n * WORLD_K * WORLD_K); rMax *= WORLD_K; if (rMin >= 90) rMin *= WORLD_K; }
   const out = [];
   for (let tries = 0; out.length < n && tries < n * 30; tries++) {
     const a = rand(0, Math.PI * 2), r = Math.sqrt(rand(rMin * rMin, rMax * rMax));
@@ -79,7 +82,7 @@ export function grass(ctx, n, hue, sat, light, ok?) {
   const geo = new THREE.ConeGeometry(0.12, 0.7, 3);
   geo.translate(0, 0.35, 0);
   const col = new THREE.Color();
-  const list = scatter(n, 0, 105, ok).map(p => ({ ...p, s: rand(0.35, 0.8), ry: rand(0, 6), tilt: rand(-0.3, 0.3), tiltZ: rand(-0.3, 0.3),
+  const list = scatter(n / WORLD_K, 0, 105, ok).map(p => ({ ...p, s: rand(0.35, 0.8), ry: rand(0, 6), tilt: rand(-0.3, 0.3), tiltZ: rand(-0.3, 0.3),
     color: col.setHSL(hue + rand(-0.03, 0.03), sat, light + rand(0, 0.08)).clone() }));
   ctx.place([{ geo, mat: lambert(0xffffff) }], list);
 }

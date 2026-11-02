@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, mods, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
+import { CFG, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
 import { aggroRadius, hitChance, xpForKill, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
@@ -42,7 +42,19 @@ export function fillPacks() {
 
 // Jeder tote Pack bekommt sofort Ersatz, ein Pack pro Frame, weil der Modellbau Zeit kostet. Darunter hält mobTarget die Mindestdichte.
 const respawn = { pending: 0, packs: 0 };
+const PACK_NEAR = 40, PACK_FAR = 100, PACK_DROP = 150;   // PH: Packs entstehen im Ring um den Spieler, unberührte weit hinten verschwinden
+
+function dropFarPack() {
+  const far = liveMobs().find(m => m.state === 'idle' && dist2d(m.pos, player.pos) > PACK_DROP);
+  if (!far) return;
+  const pack = state.mobs.filter(m => m.packId === far.packId);
+  if (!pack.every(m => !m.dead && m.state === 'idle')) return;
+  for (const m of pack) removeMob(m);
+  state.mobs = state.mobs.filter(m => m.packId !== far.packId);
+}
+
 export function updateRespawn() {
+  dropFarPack();
   const packs = livePackCount();
   respawn.pending += Math.max(0, respawn.packs - packs);
   if (respawn.pending > 0 || liveMobs().length < mobTarget()) {
@@ -55,11 +67,12 @@ export function updateRespawn() {
 export function spawnPack() {
   let center;
   for (let tries = 0; tries < 40; tries++) {
-    const a = rand(0, Math.PI * 2), r = rand(15, 85);
-    center = new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
-    const farFromPlayer = dist2d(center, player.pos) > 40;
+    // Rund um den Spieler, sonst verdünnt die große Karte die Dichte. // PH
+    const a = rand(0, Math.PI * 2), r = rand(PACK_NEAR, PACK_FAR);
+    center = new THREE.Vector3(player.pos.x + Math.cos(a) * r, 0, player.pos.z + Math.sin(a) * r);
+    const inMap = Math.hypot(center.x, center.z) < 85 * WORLD_K;
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
-    if (farFromPlayer && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
+    if (inMap && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
   }
   const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
   const size = base * modFactor('packSize');

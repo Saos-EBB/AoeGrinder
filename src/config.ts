@@ -2,6 +2,9 @@
 // "PH" = Platzhalter, nicht belegt.
 
 
+// Kartengröße: Radius-Faktor, 2 = vierfache Fläche. Bauwerke bleiben in der Mitte, Gelände und Streu wachsen mit. // PH
+export const WORLD_K = 2;
+
 // Performance-Schalter (Rechner ohne dedizierte GPU). Standardwerte entsprechen Artifact v4.
 export const PERF = {
   bloom: true,          // false: kein Bloom-Pass
@@ -42,7 +45,7 @@ export const CFG = {
   jumpSpeed: 8, gravity: 20,                        // PH: Sprungphysik läuft im Client, nicht im Server
   mobSpeed: 6.2,                                    // PH: steht pro Mob in creature_template.speed_run (DB)
   meleeRange: 2.2, swingTime: 2000,
-  playRadius: 98,
+  playRadius: 98 * WORLD_K,
   packCount: 9,
   curseSlow: 0.3,                                   // PH: Kurzen-Fluch
   mageHunch: 0.65,                                  // PH: gebückte Haltung des Magiers, 0 = aufrecht, 1 = stark

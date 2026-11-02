@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { scene, setEnv, blendFog } from './render';
 import { state, player } from './state';
 import { rand, clamp } from './util';
+import { WORLD_K } from './config';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
@@ -14,13 +15,13 @@ let nextStorm = 0, stormEnd = 0;
 export function heightAt(x, z) {
   let h = zone.height(x, z);
   const r = Math.hypot(x, z);
-  if (r > 92) h += Math.pow(r - 92, 1.45) * 0.4;     // Berge am Rand
+  if (r > 92 * WORLD_K) h += Math.pow(r - 92 * WORLD_K, 1.45) * 0.4;     // Berge am Rand
   return h;
 }
 
 // Terrain mit Vertex-Farben aus der Zone
 const terrain = (() => {
-  const size = 340, segs = 150;
+  const size = 340 * WORLD_K, segs = 150 * WORLD_K;
   const geo = new THREE.PlaneGeometry(size, size, segs, segs);
   geo.rotateX(-Math.PI / 2);
   const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));

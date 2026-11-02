@@ -3,6 +3,7 @@
 
 import * as THREE from 'three';
 import { clamp, rand, lerpTo } from './util';
+import { WORLD_K } from './config';
 import { addBox, addRoute } from './collision';
 import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
 
@@ -154,9 +155,9 @@ const tirisfal = {
 // ---------- Schlingendorntal: Ruinen von Zul'Kunda ----------
 const STV = {   // PH
   zig: [0, -17], clearing: 26,
-  river: [[-110, 42], [-60, 30], [-28, 38], [10, 40], [46, 30], [110, 44]],
+  river: [[-300, 42], [-110, 42], [-60, 30], [-28, 38], [10, 40], [46, 30], [110, 44], [300, 44]],
   paths: [[[0, 10], [-20, 34], [-48, 58], [-42, 94]], [[6, 12], [30, 22], [60, 12], [96, 8]], [[-12, 2], [-42, -6], [-66, -28], [-92, -30]], [[-8, -30], [-26, -56], [-16, 94 * -1]], [[14, -24], [44, -44], [70, -66]]],
-  beachX: 72, waterY: -1.1,
+  beachX: 72 * WORLD_K, waterY: -1.1,
 };
 const stvPath = (x, z) => pathsDist(x, z, STV.paths);
 const stvRiver = (x, z) => polyDist(x, z, STV.river);
@@ -213,7 +214,7 @@ function stvProps(ctx) {
   for (const c of cols) ctx.circle(c.x, c.z, 0.72 * c.s, 3.2 * c.s * c.sy);
   ctx.place(column, cols);
 
-  const water = new THREE.Mesh(new THREE.CircleGeometry(175, 48).rotateX(-Math.PI / 2),
+  const water = new THREE.Mesh(new THREE.CircleGeometry(175 * WORLD_K, 48).rotateX(-Math.PI / 2),
     new THREE.MeshLambertMaterial({ color: 0x3f8f8a, transparent: true, opacity: 0.8 }));
   water.position.y = STV.waterY;
   ctx.add(water);
@@ -331,7 +332,7 @@ const tanaris = {
 // ---------- Blackrock Depths: Die Schwarze Schmiede ----------
 const BRD = {   // PH
   forge: [0, -17], lavaY: -1,
-  rivers: [[[-120, 34], [-52, 26], [0, 37], [56, 24], [120, 34]], [[-120, -54], [-46, -45], [10, -58], [62, -43], [120, -52]]],
+  rivers: [[[-300, 34], [-120, 34], [-52, 26], [0, 37], [56, 24], [120, 34], [300, 34]], [[-300, -54], [-120, -54], [-46, -45], [10, -58], [62, -43], [120, -52], [300, -52]]],
   corridors: [[[-16, 10], [-22, 60], [-34, 100]], [[16, 10], [40, 60], [62, 92]], [[16, -14], [24, -72], [32, 100 * -1]], [[-14, -14], [-32, -72], [-40, 100 * -1]]],
 };
 const brdRiver = (x, z) => pathsDist(x, z, BRD.rivers);
@@ -342,7 +343,7 @@ function brdProps(ctx) {
   const fire = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.7, 0.6, 0.12), fog: false });
 
   // Lava: Fläche unter dem Gelände, sichtbar wo die Flüsse eingegraben sind
-  const lavaGeo = new THREE.PlaneGeometry(340, 340, 110, 110).rotateX(-Math.PI / 2);
+  const lavaGeo = new THREE.PlaneGeometry(340 * WORLD_K, 340 * WORLD_K, 110 * WORLD_K, 110 * WORLD_K).rotateX(-Math.PI / 2);
   const pos = lavaGeo.attributes.position, cols = [], hot = new THREE.Color(2.3, 0.62, 0.08), crust = new THREE.Color(0.5, 0.08, 0.02), c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
