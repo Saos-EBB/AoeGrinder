@@ -3,18 +3,19 @@
 import { player } from '../state';
 import { $ } from '../util';
 import { CARD_RARITIES } from '../config';
-import { meta, awardDust, rollShop, buy, priceOf, devSetDust, devUnlockAll, devReset } from '../meta';
+import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf, devSetDust, devUnlockAll, devReset } from '../meta';
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
-let offer = [], tierNow = 0;
+let offer = [], tierNow = 0, fromMenu = false;
 
 export function afterRun(completed) {
   const { dust, tier } = awardDust(completed);
   tierNow = tier;
   offer = tier ? rollShop(tier) : [];
+  if (tier) keepOffer(offer);
   $('deathStatsDust')?.remove();
   $('runRank').insertAdjacentHTML('afterend', `<div id="deathStatsDust" style="color:#efe0b8;font-weight:700;margin-top:6px">Knochenstaub +${dust}, jetzt ${meta.dust}${tier ? ` · Shop-Stufe ${tier}` : ''}</div>`);
   $('deathShopBtn').hidden = !tier;
@@ -54,8 +55,24 @@ $('deathShopBtn').addEventListener('click', () => {
   renderShop();
   syncPause();
 });
+// Aus dem Hauptmenü: letztes Angebot, zurück ins Menü ohne neuen Aufbau
+export function openMenuShop() {
+  fromMenu = true;
+  tierNow = menuTier();
+  offer = menuOffer();
+  $('shopClose').textContent = 'Zurück';
+  $('shopModal').classList.add('show');
+  renderShop();
+}
+$('menuShop').addEventListener('click', openMenuShop);
 $('shopClose').addEventListener('click', () => {
   $('shopModal').classList.remove('show');
+  if (fromMenu) {
+    fromMenu = false;
+    $('shopClose').textContent = 'Weiter zum Hauptmenü';
+    renderMenu();
+    return;
+  }
   $('deathShopBtn').hidden = true;
   $('restartBtn').hidden = false;
   $('deathMenuBtn').hidden = false;

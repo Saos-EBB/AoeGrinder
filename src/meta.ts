@@ -32,8 +32,8 @@ const RANK = ['grün', 'blau', 'lila', 'orange'];
 const FREE = ['grün'];
 
 function load() {
-  try { return { dust: 0, unlocked: [], bought: {}, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; }
-  catch { return { dust: 0, unlocked: [], bought: {} }; }
+  try { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], ...JSON.parse(localStorage.getItem(META.store) || '{}') }; }
+  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [] }; }
 }
 export const meta = load();
 const save = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
@@ -84,8 +84,18 @@ export function awardDust(completed) {
   const bonus = tier ? Math.round(META.dust.doneBonusAtTier3 * tier / 3) : 0;
   const dust = Math.round(player.level * META.dust.perLevel * scoreMult()) + bonus;
   meta.dust += dust;
+  meta.bestTier = Math.max(meta.bestTier, tier);
   save();
   return { dust, tier };
+}
+// Shop im Hauptmenü: letztes Angebot bleibt stehen, damit neu Öffnen nichts neu würfelt. Ohne Abschluss gilt Stufe 1.
+export const menuTier = () => Math.max(1, meta.bestTier);
+export function keepOffer(offer) { meta.offer = offer.map(e => e.key); save(); }
+export function menuOffer() {
+  const all = catalog();
+  let offer = meta.offer.map(k => all.find(e => e.key === k)).filter(Boolean);
+  if (!offer.length || offer.every(e => meta.unlocked.includes(e.key))) { offer = rollShop(menuTier()); keepOffer(offer); }
+  return offer;
 }
 export function rollShop(tier) {
   const s = META.shop, locked = catalog().filter(e => !meta.unlocked.includes(e.key));
@@ -109,4 +119,4 @@ export function rollShop(tier) {
 // ---------- Dev ----------
 export function devSetDust(v) { meta.dust = v; save(); }
 export function devUnlockAll() { meta.unlocked = catalog().map(e => e.key); save(); }
-export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {} }); save(); }
+export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [] }); save(); }

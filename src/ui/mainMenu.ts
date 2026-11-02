@@ -199,7 +199,7 @@ $('pauseGiveUp').addEventListener('click', () => {
 // Tastatur: A/D wechselt die Figur, Enter löst den fokussierten Knopf aus, Esc beendet das Bearbeiten
 addEventListener('keydown', e => {
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
-  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal'].some(id => $(id)?.classList.contains('show'))) return;
+  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
   if (e.code === 'KeyD') cycleChar(1);
 }, true);
