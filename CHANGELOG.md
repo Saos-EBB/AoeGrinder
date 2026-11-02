@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(meta): Speedrun-Zeit und Splits, Belagerung mit Zielen, Knochenstaub, Shop nach Abschluss, gesperrter Pool, Spielversion v14
 - feat(balance): Level-up heilt nur noch 5 % Leben, Wut bleibt beim Level-up, Spielversion v13
 - chore(docs): Pool-Liste mit Vorschlag für Startset und Shop
 - feat(ui): Leben, Mana und Castbar einzeln verschiebbar, Einrasten im Bearbeiten-Modus, Shift + Ziehen trennt

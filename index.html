@@ -153,11 +153,19 @@
   #bindList { display: grid; grid-template-columns: 1fr 110px 70px; gap: 4px 16px; text-align: left; margin: 14px 0; max-height: 45vh; overflow: auto; }
   #devZones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 4px; }
   #perf { position: fixed; top: 48px; right: 14px; z-index: 2; font: 600 11px/14px system-ui, sans-serif; color: #9cff9c; text-shadow: 0 1px 2px #000; pointer-events: none; font-variant-numeric: tabular-nums; }
+  #devMeta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
   #devCards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
   #bindList .group { grid-column: 1 / -1; margin-top: 8px; color: #f2c94c; font-family: Cinzel, serif; }
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
     border: 1px solid #6b5426; border-radius: 3px; cursor: pointer; }
   .bindBtn.waiting, .bindBtn.selected { border-color: #ffe27a; color: #ffe27a; }
+  #shopList { text-align: left; max-height: 60vh; overflow: auto; margin: 10px 0; }
+  #shopList h3 { margin: 10px 0 4px; font: 700 14px Cinzel, serif; color: #f2c94c; }
+  .shopItem { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 8px; margin-bottom: 4px; border: 2px solid; border-radius: 4px; background: #0008; cursor: pointer; width: 100%; color: #fff; font: 600 13px system-ui, sans-serif; }
+  .shopItem:disabled { opacity: .45; cursor: not-allowed; }
+  .shopItem.bought { opacity: .7; }
+  #menuDust { color: #efe0b8; font-weight: 700; margin-top: 8px; font-size: 13px; }
+  .chip.locked { opacity: .55; }
   #charBody { text-align: left; max-height: 60vh; overflow: auto; font-size: 14px; }
   #charBody table { width: 100%; border-collapse: collapse; }
   #charBody td { padding: 3px 6px; }
@@ -246,8 +254,11 @@
     <div class="title menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
     <div id="menuWeaponBox"><div class="title menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
     <p id="menuInfo"></p>
+    <div id="menuDust"></div>
   </div>
   <div id="menuRight" class="frame">
+    <div class="title menuHead">Rangliste: Zeit bis Level 100</div>
+    <div id="menuTimeBoard"></div>
     <div class="title menuHead">Rangliste: Punkte</div>
     <div id="menuBoard"></div>
     <div id="menuBoardBtn"></div>
@@ -290,6 +301,13 @@
       <button class="bindBtn" id="devLuck">Glück +25</button>
     </div>
     <button class="bindBtn" id="devPerf" style="width:100%;margin-bottom:14px"></button>
+    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Meta</div>
+    <div id="devMeta">
+      <button class="bindBtn" id="devDust">Staub +500</button>
+      <button class="bindBtn" id="devUnlock">Alles freischalten</button>
+      <button class="bindBtn" id="devMetaReset">Meta zurücksetzen</button>
+      <button class="bindBtn" id="devComplete">Run abschließen</button>
+    </div>
     <button class="smallBtn" id="settingsClose" style="width:auto;padding:6px 14px">Schließen</button>
   </div>
 </div>
@@ -304,6 +322,7 @@
   <div class="frame panel">
     <h1 class="title">Du bist gestorben</h1>
     <p id="deathStats"></p>
+    <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
     <button class="btn" id="restartBtn">Neuer Run</button>
     <button class="smallBtn" id="deathMenuBtn" style="width:auto;padding:6px 14px">Hauptmenü</button>
   </div>
@@ -319,6 +338,15 @@
       <button class="smallBtn" id="bindsReset" style="width:auto;padding:6px 14px">Standard</button>
       <button class="smallBtn" id="bindsClose" style="width:auto;padding:6px 14px">Schließen</button>
     </div>
+  </div>
+</div>
+
+<div id="shopModal" class="modal" style="z-index:4">
+  <div class="frame panel" style="width:min(820px,94vw);max-width:none">
+    <h1 class="title" style="font-size:26px">Shop</h1>
+    <p id="shopInfo"></p>
+    <div id="shopList"></div>
+    <button class="btn" id="shopClose">Weiter zum Hauptmenü</button>
   </div>
 </div>
 

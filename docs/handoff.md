@@ -22,7 +22,8 @@ Stand: v12 (`1793581709-10d4`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - **Modell:** `models/mageModel.ts` (aus dem Viewer: `buildMage`, `buildWarrior`), `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
 - `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo.
 - `src/realMen.ts`: Modus Real Men. Zahlen in `REALMEN` und `RUNES`, Wut steht in `player.mana`, Attacken sind Spells mit `press`. Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343).
-- `src/siege.ts`: Mob-Modus Belagerung, Mobs vom Kartenrand ohne Obergrenze, Rate in `SIEGE`, eigener Ranglisten-Tab.
+- `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
+- `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü.
 - `src/mobs.ts`, `mobTypes.ts`, `abilities.ts`: Spawn (Ring um den Spieler), KI, `damageMob`, Fähigkeiten.
 - `src/spells/`: ein Spell pro Datei, `core.ts` (Casts, `mobsInRadius`, `applySlow`, Felder), `fx.ts` (gemeinsame Optik), `relics.ts`, `supports.ts`. `src/cards.ts`: Level-Karten.
 - **Effekte:** `render.ts` (Composer, Bloom, Tiefentextur), `fx/spellFx.ts`, `fx/frostFx.ts`, `fireFx.ts`, `arcaneFx.ts`, `relicFx.ts`, `prims.ts`, `bolts.ts`, `impact.ts`, `shaders.ts`, `softPass.ts`, `particles.ts`, `sound.ts`.

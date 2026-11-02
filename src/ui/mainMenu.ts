@@ -2,11 +2,13 @@
 
 import { state, player } from '../state';
 import { $ } from '../util';
-import { MODIFIERS, MODES, modeId, mobMode, setMode, setCustomMods, activeModIds, scoreMult } from '../modifiers';
+import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult } from '../modifiers';
 import { WEAPONS } from '../models/weapons/index';
 import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
-import { loadRuns, byScore } from '../leaderboard';
+import { byScore, byTime, comboRuns } from '../leaderboard';
+import { meta, weaponUnlocked, weaponPrice } from '../meta';
+import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
@@ -54,17 +56,19 @@ function button(cls, text, onClick, title = '') {
 }
 
 function renderBoardPanel() {
-  const ids = activeModIds();
-  const rows = byScore(loadRuns().filter(r => Array.isArray(r.mods) && sameSet(r.mods, ids) && (r.mobMode ?? 'packs') === mobMode)).slice(0, UI.boardRows);
-  const box = $('menuBoard');
-  box.textContent = '';
-  if (!rows.length) { box.textContent = 'Noch keine Runs mit dieser Kombination.'; return; }
-  const table = document.createElement('table');
-  rows.forEach((r, i) => {            // Importierte Einträge sind fremde Daten: nur textContent
-    const tr = table.insertRow();
-    for (const v of [i + 1, Math.round(r.score).toLocaleString('de-DE'), `Lv ${r.level}`]) tr.insertCell().textContent = String(v);
-  });
-  box.appendChild(table);
+  const runs = comboRuns();
+  const fill = (box, rows, cells, empty) => {
+    box.textContent = '';
+    if (!rows.length) { box.textContent = empty; return; }
+    const table = document.createElement('table');
+    rows.forEach((r, i) => {          // Importierte Einträge sind fremde Daten: nur textContent
+      const tr = table.insertRow();
+      for (const v of [i + 1, ...cells(r)]) tr.insertCell().textContent = String(v);
+    });
+    box.appendChild(table);
+  };
+  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [Math.round(r.score).toLocaleString('de-DE'), `Lv ${r.level}`], 'Noch keine Runs mit dieser Kombination.');
+  fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [fmtTime(r.timeTo100), `${r.kills} Kills`], mobMode === 'packs' ? 'Noch kein Run bis Level 100.' : 'Nur bei Packs.');
 }
 
 export function renderMenu() {
@@ -91,11 +95,15 @@ export function renderMenu() {
   weapons.innerHTML = '';
   $('menuWeaponBox').hidden = !mage.weapon;
   if (mage.weapon) for (const w of WEAPONS) {
-    weapons.appendChild(button('chip' + (w.id === mage.weapon.id ? ' selected' : ''), w.name, () => { mage.setWeapon(w.id); renderMenu(); }, w.arch));
+    const free = weaponUnlocked(w.id);
+    const b = button('chip' + (w.id === mage.weapon.id ? ' selected' : '') + (free ? '' : ' locked'), free ? w.name : `🔒 ${w.name} · ${weaponPrice(w.id)}`, () => { mage.setWeapon(w.id); renderMenu(); }, free ? w.arch : 'Gesperrt: im Shop nach einem Abschluss kaufen');
+    b.disabled = !free;
+    weapons.appendChild(b);
   }
   $('menuTitle').textContent = CHARS[charIdx].name;
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
   $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
+  $('menuDust').textContent = `Knochenstaub: ${meta.dust}`;
   renderBoardPanel();
   if (nav) document.querySelector(`#startModal [data-nav="${CSS.escape(nav)}"]`)?.classList.add('navSel');
 }

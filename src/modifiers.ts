@@ -39,6 +39,8 @@ export function setMode(id) { modeId = id; }
 // Unabhängig vom Modus: 'packs' wie gehabt, 'siege' siehe siege.ts
 export let mobMode = 'packs';
 export function setMobMode(id) { mobMode = id; }
+export let siegeGoal = 0;                 // Minuten bis zum Abschluss, 0 = endlos
+export function setSiegeGoal(min) { siegeGoal = min; }
 export function setCustomMods(ids) { customMods = ids; }
 export function toggleCustomMod(id) {
   const mod = MODIFIERS.find(m => m.id === id);

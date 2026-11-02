@@ -7,6 +7,7 @@ import { scene } from '../render';
 import { activeModIds } from '../modifiers';
 import { buildMage, buildWarrior, SKINS } from './mageModel';
 import { buildWeapon } from './weapons/index';
+import { weaponUnlocked } from '../meta';
 
 // Standardwaffe pro Skin
 const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrute', arkan: 'zirkelstab' };
@@ -66,7 +67,7 @@ function setSkin(id) {
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
-  wield(chosen[id] ?? SKIN_WEAPON[id]);
+  wield(chosen[id] && weaponUnlocked(chosen[id]) ? chosen[id] : SKIN_WEAPON[id]);
 }
 
 function wield(id) {

@@ -5,17 +5,17 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { $, rand } from './util';
 import { WORLD_K } from './config';
-import { mobMode, setMobMode } from './modifiers';
+import { mobMode, setMobMode, siegeGoal, setSiegeGoal } from './modifiers';
 import { zone } from './world';
 import { spawnMob, enterCombat, pickMobType } from './mobs';
 import { run } from './score';
-import { resetGame } from './player';
+import { resetGame, completeRun } from './player';
 import { renderMenu } from './ui/mainMenu';
 
 // Mobs pro Sekunde = base + perLevel × (Level − 1) + perMinute × Minuten. // PH
 export const SIEGE = { base: 1, perLevel: 0.15, perMinute: 0.75, edgeR: 90 * WORLD_K, maxPerFrame: 3 };
 
-const NAMES = { packs: 'Packs', siege: 'Belagerung' };
+const CHOICES = [{ name: 'Packs', mode: 'packs', goal: 0 }, { name: 'Belagerung 5 min', mode: 'siege', goal: 5 }, { name: 'Belagerung 10 min', mode: 'siege', goal: 10 }, { name: 'Belagerung 15 min', mode: 'siege', goal: 15 }, { name: 'Belagerung endlos', mode: 'siege', goal: 0 }];
 let due = 0, fps = 60, lastFrame = performance.now();
 
 export const siegeRate = () => SIEGE.base + SIEGE.perLevel * (player.level - 1) + SIEGE.perMinute * state.now / 60000;
@@ -34,6 +34,7 @@ export function updateSiege(dt) {
   const hud = $('siegeHud');
   hud.hidden = mobMode !== 'siege';
   if (mobMode !== 'siege' || player.dead) return;
+  if (siegeGoal && state.now >= siegeGoal * 60000) return completeRun(`Ziel ${siegeGoal} min`);
   due += siegeRate() * dt / 1000;
   for (let n = 0; n < SIEGE.maxPerFrame && due >= 1; n++, due--) spawnFromEdge();   // Rest bleibt fällig, der Modellbau kostet Zeit
   const t = performance.now();                       // echte Zeit: dt ist im Spiel auf 50 ms gedeckelt, darunter wären es immer 20 FPS
@@ -41,7 +42,7 @@ export function updateSiege(dt) {
   lastFrame = t;
   const live = state.mobs.filter(m => !m.dead).length;
   if (live > (run.peakMobs ?? 0)) { run.peakMobs = live; run.peakFps = Math.round(fps); }
-  hud.textContent = `Belagerung · ${live} Mobs · Rekord ${run.peakMobs ?? 0} · +${siegeRate().toFixed(1).replace('.', ',')}/s · ${Math.round(fps)} FPS`;
+  hud.textContent = `Belagerung ${siegeGoal ? `noch ${Math.ceil((siegeGoal * 60000 - state.now) / 1000)} s` : 'endlos'} · ${live} Mobs · Rekord ${run.peakMobs ?? 0} · +${siegeRate().toFixed(1).replace('.', ',')}/s · ${Math.round(fps)} FPS`;
 }
 
 export function resetSiege() { due = 0; }
@@ -53,13 +54,13 @@ document.body.insertAdjacentHTML('beforeend', `<div id="siegeHud" hidden></div>`
 function renderMobPick() {
   const box = $('menuMobs');
   box.innerHTML = '';
-  for (const id of Object.keys(NAMES)) {
+  for (const c of CHOICES) {
     const b = document.createElement('button');
-    b.className = 'chip' + (id === mobMode ? ' selected' : '');
-    b.textContent = NAMES[id];
-    b.dataset.nav = NAMES[id];
-    b.title = id === 'siege' ? 'Mobs kommen vom Kartenrand, immer mehr pro Level und Minute, ohne Obergrenze' : 'Packs stehen auf der Karte';
-    b.addEventListener('click', () => { setMobMode(id); resetGame(); renderMobPick(); renderMenu(); });
+    b.className = 'chip' + (c.mode === mobMode && c.goal === siegeGoal ? ' selected' : '');
+    b.textContent = c.name;
+    b.dataset.nav = c.name;
+    b.title = c.mode === 'siege' ? 'Mobs kommen vom Kartenrand, immer mehr pro Level und Minute. Ziel überleben, danach der Shop' : 'Packs stehen auf der Karte. Abschluss bei Level 100';
+    b.addEventListener('click', () => { setMobMode(c.mode); setSiegeGoal(c.goal); resetGame(); renderMobPick(); renderMenu(); });
     box.appendChild(b);
   }
 }

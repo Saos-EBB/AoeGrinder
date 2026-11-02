@@ -20,6 +20,8 @@ import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
+import { noteSplits, resetSplits } from './leaderboard';
+import { mobMode } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 
 export function resetGame() {
@@ -39,13 +41,14 @@ export function resetGame() {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
     facing: Math.PI, slowUntil: 0, stunUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
-    channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, kills: 0,
+    channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, won: false, kills: 0,
   });
   cam.offset = 0;
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
   resetSiege();
+  resetSplits();
   blizCursor.visible = false;
   stopChannel();
   fillPacks();
@@ -140,7 +143,19 @@ export function gainXp(xp) {
   }
   if (player.level >= LEVEL_MAX) player.xp = 0;
   announceNewMobs(fromLevel);
+  noteSplits(fromLevel);
+  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return completeRun('Level 100');
   if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
+}
+
+// Abschluss: Level 100 bei Packs, Zeitziel in der Belagerung. Läuft durch den normalen Ergebnis-Screen.
+export function completeRun(reason) {
+  if (player.dead) return;
+  player.won = true;
+  player.lastHitBy = reason;
+  state.pendingLevelUps = 0;
+  $('cardModal').classList.remove('show');
+  die();
 }
 
 export function die() {

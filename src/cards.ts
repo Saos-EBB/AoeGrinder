@@ -7,6 +7,7 @@ import { modFactor } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
 import { stat, hasSpell, hasTag, tagsAllowed, modRule } from './spells/core';
 import { SUPPORTS } from './spells/supports';
+import { isUnlocked } from './meta';
 
 const pct = v => `${Math.round(v * 100)} %`;
 const num = v => String(v).replace('.', ',');
@@ -47,8 +48,8 @@ function runeCards() {
   const list = [];
   for (const id of state.slots) {
     if (!id) continue;
-    for (const r of SPELLS[id].runes ?? []) {
-      if (state.runes[id] === r.id) continue;
+    for (const [i, r] of (SPELLS[id].runes ?? []).entries()) {
+      if (state.runes[id] === r.id || !isUnlocked(`rune:${id}:${i}`)) continue;
       list.push({
         kind: 'rune', id: `rune-${id}-${r.id}`, spell: id, name: r.name, src: `Rune · ${SPELLS[id].name}`,
         desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.${state.runes[id] ? ' Ersetzt die aktive Rune.' : ''}`,
@@ -62,7 +63,7 @@ function runeCards() {
 function supportCards() {
   // Ein Support bleibt im Angebot, solange er auf einen im Modus erlaubten Spell wirkt
   const works = x => Object.keys(SPELLS).some(id => tagsAllowed(SPELLS[id].tags) && x.tags.some(t => hasTag(id, t)));
-  return SUPPORTS.filter(x => !state.supports[x.id] && works(x)).map(x => ({
+  return SUPPORTS.filter(x => !state.supports[x.id] && works(x) && isUnlocked(`support:${x.id}`)).map(x => ({
     kind: 'support', id: `support-${x.id}`, tags: x.tags, name: x.name, src: `Support · ${x.tags.join(', ')}`,
     desc: m => `${x.desc} +${pct(CARD_SPELL_DMG * m)} Schaden auf diese Spells.`,
     apply: m => {
@@ -75,7 +76,7 @@ function supportCards() {
 // Nur lila oder orange, max. 1 pro Run, ab Level 30
 function relicCards(forced = false) {
   if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
-  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && tagsAllowed(SPELLS[id].tags)).map(id => ({
+  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && tagsAllowed(SPELLS[id].tags) && (forced || isUnlocked(`relic:${id}`))).map(id => ({
     kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },

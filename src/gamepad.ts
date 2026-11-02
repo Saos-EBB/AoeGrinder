@@ -168,7 +168,10 @@ function menuButtons() {
     const card = moveSelection([...document.querySelectorAll('#cards .card')], step.x);
     if (pressed(CONFIRM_BTN)) card?.click();
   } else if (isOpen('deathModal') && !isOpen('bindModal')) {
-    if (pressed(CONFIRM_BTN)) $('restartBtn').click();
+    if (pressed(CONFIRM_BTN)) (!$('deathShopBtn').hidden ? $('deathShopBtn') : $('restartBtn')).click();
+  } else if (isOpen('shopModal')) {
+    const b = moveSelection([...document.querySelectorAll('#shopModal button:not(:disabled)')], step.y, 'navSel');
+    if (pressed(CONFIRM_BTN)) (b as any)?.click();
   } else if (isOpen('pauseModal')) {
     const b = moveSelection([...document.querySelectorAll('#pauseModal button')], step.y, 'navSel');
     if (pressed(CONFIRM_BTN)) (b as any)?.click();

@@ -1,5 +1,6 @@
 // Modus-Auswahl, Run-Ergebnis und Ranglisten-Ansicht. Hängt sich selbst ein, damit menus.ts und index.html unberührt bleiben.
 
+import { afterRun } from './shop';
 import { MODES, MODIFIERS, modeId, setMode, toggleCustomMod, activeModIds, scoreMult } from '../modifiers';
 import { resetGame, setLevel } from '../player';
 import { stopChannel, clearSpellEffects } from '../spells/core';
@@ -64,15 +65,16 @@ export function showRunResult() {
     <div id="runRank"></div>
     <input id="runNote" maxlength="120" placeholder="Notiz zum Run (optional)">`;
   $('runRecord').textContent = rank === 1 && entry.score > 0 ? 'Neuer Rekord!' : '';
-  $('runRank').textContent = `Platz ${rank} in ${entry.modeName} · Ursache: ${entry.cause} · Längste Combo ${entry.bestCombo} · Bester Multi-Kill ×${entry.bestMulti}${entry.mobMode === 'siege' ? ` · Höchstens ${fmt(entry.peakMobs)} Mobs gleichzeitig bei ${entry.peakFps} FPS` : ''}`;
+  $('runRank').textContent = `Platz ${rank} in ${entry.modeName} · Ursache: ${entry.cause} · Längste Combo ${entry.bestCombo} · Bester Multi-Kill ×${entry.bestMulti}${typeof entry.timeTo100 === 'number' ? ` · Level 100 in ${fmtTime(entry.timeTo100)}` : ''}${entry.mobMode === 'siege' ? ` · Höchstens ${fmt(entry.peakMobs)} Mobs gleichzeitig bei ${entry.peakFps} FPS` : ''}`;
   const note = $('runNote') as HTMLInputElement;
   ownKeys(note);
   note.addEventListener('change', () => setNote(entry.date, note.value));
-  document.querySelector('#deathModal h1').textContent = player.lastHitBy === 'Zeitlimit' ? 'Zeit abgelaufen' : 'Du bist gestorben';
+  document.querySelector('#deathModal h1').textContent = player.won ? 'Geschafft!' : player.lastHitBy === 'Zeitlimit' ? 'Zeit abgelaufen' : 'Du bist gestorben';
+  afterRun(!!player.won);
 }
 
 // ---------- Ranglisten-Ansicht ----------
-const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'siege', name: 'Belagerung' }, { id: 'all', name: 'Alle' }];
+const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'siege5', name: 'Belagerung 5' }, { id: 'siege10', name: 'Belagerung 10' }, { id: 'siege15', name: 'Belagerung 15' }, { id: 'siege0', name: 'Belagerung endlos' }, { id: 'all', name: 'Alle' }];
 const TOP = 10;
 let tab = 'normal', versionFilter = '', openDate = null;
 
@@ -117,7 +119,7 @@ function renderBoard() {
   if (!versions.includes(versionFilter)) versionFilter = '';
   sel.value = versionFilter;
 
-  const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'siege' ? r.mobMode === 'siege' : r.mode === tab && r.mobMode !== 'siege')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
+  const rows = byScore(all.filter(r => (tab === 'all' || (tab.startsWith('siege') ? r.mobMode === 'siege' && `siege${r.siegeGoal ?? 0}` === tab : r.mode === tab && r.mobMode !== 'siege')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
   const list = $('boardList');
   list.innerHTML = '';
   if (!rows.length) { list.innerHTML = '<div id="boardEmpty">Noch keine Runs in dieser Auswahl.</div>'; $('boardDetailBox').innerHTML = ''; return; }
