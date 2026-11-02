@@ -19,28 +19,29 @@ import { roll, forward, mobsOnLine, after, updateMelee, clearMelee } from './mel
 
 // Alle Zahlen hier, auch die der Runen (RUNES). [Classic] = WoW Classic, Quellen in docs/handoff.md; alles andere ist // PH
 export const REALMEN = {
-  rage: { max: 100, start: 0, perMobHit: 8, perSwingMax: 15, perHitTaken: 3, decayPerS: 1, outOfCombatMs: 5000 },
-  attack: { dmg: [28, 34], radius: 2.5 },
-  whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 10, speedMul: 0.7, tapMs: 300, minStart: 10 },   // trifft alle Mobs, Classic nur 4
-  smash: { dmg: [110, 130], radius: 4, rage: 20, cd: 6000 },
-  charge: { rage: 9 /* Classic Rang 1 */, range: 25 /* Classic */, cd: 15000 /* Classic */, stunMs: 1000 /* Classic */, speed: 30, hitRadius: 2.5, stunRadius: 3.5, dmg: [30, 40], stride: 7 },
+  armor: 0.25,                                     // weniger Schaden: steht mitten im Pack, ohne Blink und Nova
+  rage: { max: 100, start: 20, perMobHit: 8, perSwingMax: 15, perHitTaken: 2, decayPerS: 1, outOfCombatMs: 5000 },
+  attack: { dmg: [28, 34], radius: 3 },
+  whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 20, speedMul: 0.7, tapMs: 300, minStart: 10 },   // trifft alle Mobs, Classic nur 4
+  smash: { dmg: [110, 130], radius: 5, rage: 20, cd: 6000 },
+  charge: { rage: 9 /* Classic Rang 1 */, range: 25 /* Classic */, cd: 15000 /* Classic */, stunMs: 1000 /* Classic */, speed: 30, hitRadius: 2.5, stunRadius: 3.5, dmg: [50, 60], stride: 7 },
   warcry: { rage: 10, cd: 30000, ms: 900, buffMs: 15000, dmgMul: 1.2 },
-  thunderclap: { dmg: [10, 10] /* Classic */, radius: 8 /* Classic */, rage: 20 /* Classic */, cd: 6000 /* Classic-Client 3.x */, attackSlow: 0.1 /* Classic */, slowMs: 10000 /* Classic */, hitAt: 0.42 /* Treffer-Anteil im Modell */ },
+  thunderclap: { dmg: [30, 36] /* PH, Classic 10 war zu schwach */, radius: 8 /* Classic */, rage: 20 /* Classic */, cd: 6000 /* Classic-Client 3.x */, attackSlow: 0.1 /* Classic */, slowMs: 10000 /* Classic */, hitAt: 0.42 /* Treffer-Anteil im Modell */ },
   // Waffenwahl vor dem Run (models/mage.ts). Attacke 1 liegt im Hieb-Slot, Attacke 2 im Smash-Slot (Kosten und Abklingzeit wie Smash). Alles PH.
   weapons: {
     axes: {
-      atk1: { name: 'Raserei', desc: 'Vier schnelle Axthiebe, solange gehalten. Bringt Wut.', dmg: [14, 17], radius: 2 },
+      atk1: { name: 'Raserei', desc: 'Vier schnelle Axthiebe, solange gehalten. Bringt Wut.', dmg: [16, 20], radius: 2.5 },
       atk2: { name: 'Axtwurf', desc: 'Wirft eine Axt 8 yd nach vorn, sie trifft hin und zurück.', dmg: [60, 75], width: 1.2, backMs: 390 },
       frenzy: { max: 5, ms: 4000, haste: 0.06 },                         // Blutrausch: Stapel pro Axt-Treffer, je +6 % Tempo
     },
     hammer: {
-      atk1: { name: 'Erdspalter', desc: 'Schlag in den Boden, Risse laufen nach vorn.', dmg: [26, 32], radius: 1.5 },
+      atk1: { name: 'Erdspalter', desc: 'Schlag in den Boden, Risse laufen nach vorn.', dmg: [26, 32], radius: 2 },
       atk2: { name: 'Rundschlag', desc: 'Schwingt den Hammer einmal um dich.', dmg: [100, 120], radius: 3 },
       quakeMul: 0.5,                                                       // Nachbeben: 1 s später 50 % an derselben Stelle
     },
     anchor: {
       atk1: { name: 'Ankerwurf', desc: 'Wirft den Anker 9 yd und zieht Mobs am Einschlag zu dir.', dmg: [70, 85], radius: 2, pullRadius: 2.5, pullTo: 2 },
-      atk2: { name: 'Kettenwirbel', desc: 'Lässt den Anker an der Kette um dich kreisen.', dmg: [30, 36], radius: 4 },
+      atk2: { name: 'Kettenwirbel', desc: 'Lässt den Anker an der Kette um dich kreisen.', dmg: [30, 36], radius: 5 },
       mark: { ms: 5000, mul: 1.15 },                                       // Seelenfang: gezogene Mobs nehmen mehr Schaden
     },
   },

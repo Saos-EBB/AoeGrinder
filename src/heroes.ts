@@ -12,19 +12,21 @@ import { roll, forward, payMove, mobsOnLine, moveInWindow, inWindow, wave, updat
 
 // Alle Zahlen PH außer [Classic]. dmg mit zwei Bereichen: [erster Treffer, letzter Treffer].
 export const RONIN = {
-  attack: { dmg: [28, 34], radius: 2.5 },                                  // Kesagiri, Wut wie der Krieger-Grundangriff
-  iai: { dmg: [90, 110], width: 1.5, rage: 25, cd: 8000 },                 // Fahlmond-Iai: Linie Start → Ende
-  twoheavens: { dmg: [[50, 60], [40, 50]], radius: [2, 3], rage: 20, cd: 6000 },
-  crescent: { dmg: [70, 85], rage: 30, cd: 10000, speed: 14, range: 8, width: 3 },   // Seoi-Sichel: Welle durchschlägt alles
-  deathwatch: { dmg: [45, 55], radius: 5, rage: 40, cd: 20000 },           // Totenwacht: drei Wellen am Spieler
+  armor: 0.2,                                                              // weniger Schaden, siehe REALMEN.armor
+  attack: { dmg: [28, 34], radius: 3 },                                  // Kesagiri, Wut wie der Krieger-Grundangriff
+  iai: { dmg: [90, 110], width: 2.5, rage: 25, cd: 8000 },                 // Fahlmond-Iai: Linie Start → Ende
+  twoheavens: { dmg: [[50, 60], [40, 50]], radius: [3, 4], rage: 20, cd: 6000 },
+  crescent: { dmg: [70, 85], rage: 25, cd: 10000, speed: 14, range: 10, width: 4 },   // Seoi-Sichel: Welle durchschlägt alles
+  deathwatch: { dmg: [45, 55], radius: 6, rage: 35, cd: 20000 },           // Totenwacht: drei Wellen am Spieler
 };
 export const SCHATTEN = {
+  armor: 0.1,                                                              // weicht lieber aus: unangreifbar in Schritt und Rauch
   energy: { max: 100 /* Classic */, tick: 20 /* Classic */, tickMs: 2000 /* Classic */ },   // Schurke: https://strategywiki.org/wiki/World_of_Warcraft/Classes/Rogue
-  attack: { dmg: [16, 20], radius: 2 },                                    // Doppelschnitt, zwei Treffer
-  shadowstep: { dmg: [70, 85], width: 1.2, energy: 40, cd: 8000 },         // im Sprint nicht angreifbar
-  twinblades: { dmg: [[18, 22], [45, 55]], radius: [2, 3], energy: 35, cd: 6000 },
-  smokebomb: { dmg: [40, 50], radius: 3, slowRadius: 6, slow: 0.5, slowMs: 3000, energy: 50, cd: 15000 },
-  ghoststorm: { dmg: [40, 50], radius: 4.5, energy: 60, cd: 18000 },
+  attack: { dmg: [18, 22], radius: 3 },                                    // Doppelschnitt, zwei Treffer
+  shadowstep: { dmg: [70, 85], width: 2, energy: 30, cd: 8000 },         // im Sprint nicht angreifbar
+  twinblades: { dmg: [[18, 22], [45, 55]], radius: [3, 4], energy: 35, cd: 6000 },
+  smokebomb: { dmg: [40, 50], radius: 5, slowRadius: 6, slow: 0.5, slowMs: 3000, energy: 40, cd: 15000 },
+  ghoststorm: { dmg: [40, 50], radius: 6, energy: 50, cd: 18000 },
 };
 
 const avg = r => (r[0] + r[1]) / 2;
@@ -34,13 +36,13 @@ Object.assign(SPELLS, {
   rAttack: move('Ronin', 'Kesagiri', 'Diagonaler Schnitt, solange gehalten. Bringt Wut.', 0, 0, () => pressAttack(), avg(Ro.attack.dmg)),
   rIai: move('Ronin', 'Fahlmond-Iai', 'Zieht im Sprint 6 yd nach vorn, schneidet alles auf dem Weg.', Ro.iai.cd, Ro.iai.rage, () => pressMove('rIai'), avg(Ro.iai.dmg)),
   rTwo: move('Ronin', 'Zwei Himmel', 'Kreuzschnitt vor dir, dann eine Drehung mit beiden Klingen.', Ro.twoheavens.cd, Ro.twoheavens.rage, () => pressMove('rTwo'), avg(Ro.twoheavens.dmg[0])),
-  rCrescent: move('Ronin', 'Seoi-Sichel', 'Ōdachi-Schlag, eine Sichelwelle fliegt 8 yd geradeaus.', Ro.crescent.cd, Ro.crescent.rage, () => pressMove('rCrescent'), avg(Ro.crescent.dmg)),
-  rDeath: move('Ronin', 'Totenwacht', 'Drei Wellen um dich, 5 yd. Du bleibst stehen.', Ro.deathwatch.cd, Ro.deathwatch.rage, () => pressMove('rDeath'), avg(Ro.deathwatch.dmg)),
+  rCrescent: move('Ronin', 'Seoi-Sichel', 'Ōdachi-Schlag, eine Sichelwelle fliegt 10 yd geradeaus.', Ro.crescent.cd, Ro.crescent.rage, () => pressMove('rCrescent'), avg(Ro.crescent.dmg)),
+  rDeath: move('Ronin', 'Totenwacht', 'Drei Wellen um dich, 6 yd. Du bleibst stehen.', Ro.deathwatch.cd, Ro.deathwatch.rage, () => pressMove('rDeath'), avg(Ro.deathwatch.dmg)),
   nAttack: move('Schatten', 'Doppelschnitt', 'Zwei schnelle Schnitte, solange gehalten.', 0, 0, () => pressAttack(), avg(Sc.attack.dmg)),
   nStep: move('Schatten', 'Schattenschritt', 'Springt 7 yd nach vorn, im Sprung nicht angreifbar.', Sc.shadowstep.cd, Sc.shadowstep.energy, () => pressMove('nStep'), avg(Sc.shadowstep.dmg)),
   nTwin: move('Schatten', 'Zwielichtkreuz', 'Drei Wechselschnitte mit zwei Klingen, dann ein Kreuzschnitt.', Sc.twinblades.cd, Sc.twinblades.energy, () => pressMove('nTwin'), avg(Sc.twinblades.dmg[0])),
   nSmoke: move('Schatten', 'Rauchbombe', 'Verschwindet im Rauch, Mobs in 6 yd 50 % langsamer, Drehschnitt beim Auftauchen.', Sc.smokebomb.cd, Sc.smokebomb.energy, () => pressMove('nSmoke'), avg(Sc.smokebomb.dmg)),
-  nStorm: move('Schatten', 'Geisterklingensturm', 'Die Geisterklinge kreist dreimal um dich, 4,5 yd. Du bleibst stehen.', Sc.ghoststorm.cd, Sc.ghoststorm.energy, () => pressMove('nStorm'), avg(Sc.ghoststorm.dmg)),
+  nStorm: move('Schatten', 'Geisterklingensturm', 'Die Geisterklinge kreist dreimal um dich, 6 yd. Du bleibst stehen.', Sc.ghoststorm.cd, Sc.ghoststorm.energy, () => pressMove('nStorm'), avg(Sc.ghoststorm.dmg)),
 });
 
 // Slot-ID → Ability des Modells und Kosten
@@ -119,6 +121,9 @@ export function updateHeroes(dt) {
   }
   if (!act && player.stunUntil <= now && held(h.attackId)) pressAttack();
 }
+
+// Schadensfaktor der Nahkämpfer, Magier 1
+export const takenMul = () => 1 - ({ krieger: REALMEN.armor, samurai: Ro.armor, ninja: Sc.armor }[mage.skin] ?? 0);
 
 export const heroRooted = () => !!act;             // eigene Bewegung oder keine
 // Rauchbombe und Schattenschritt: nicht angreifbar
