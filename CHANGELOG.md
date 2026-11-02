@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(ui): Einstellungen im Pause-Menü
 - feat(meta): Shop auch im Hauptmenü
 - feat(balance): Level-up heilt 25 % Leben
 - feat(meta): Speedrun-Zeit und Splits, Belagerung mit Zielen, Knochenstaub, Shop nach Abschluss, gesperrter Pool, Spielversion v14

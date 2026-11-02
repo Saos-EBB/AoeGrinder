@@ -150,7 +150,9 @@ export function startRun() {
   ding();
 }
 $('startBtn').addEventListener('click', startRun);
-$('menuSettings').addEventListener('click', () => { $('settingsModal').classList.add('show'); });
+const openSettings = () => { $('settingsModal').classList.add('show'); };
+$('menuSettings').addEventListener('click', openSettings);
+$('pauseSettings').addEventListener('click', openSettings);
 $('settingsClose').addEventListener('click', () => { $('settingsModal').classList.remove('show'); syncPause(); });
 $('menuBinds').addEventListener('click', openBinds);
 const showAutoCam = () => { $('setAutoCam').textContent = `Auto-Kamera: ${autoCamOn() ? 'an' : 'aus'}`; $('setAutoCam').title = 'Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen'; };

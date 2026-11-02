@@ -84,4 +84,4 @@ const refresh = () => { renderMenu(); };
 $('devDust').addEventListener('click', () => { devSetDust(meta.dust + 500); refresh(); });
 $('devUnlock').addEventListener('click', () => { devUnlockAll(); refresh(); });
 $('devMetaReset').addEventListener('click', () => { devReset(); refresh(); });
-$('devComplete').addEventListener('click', () => { $('settingsClose').click(); if (!player.dead) completeRun('Dev'); });
+$('devComplete').addEventListener('click', () => { $('settingsClose').click(); $('pauseModal').classList.remove('show'); if (!player.dead) completeRun('Dev'); });
