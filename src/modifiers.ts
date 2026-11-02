@@ -36,6 +36,9 @@ export const activeModIds = () => MODES.find(m => m.id === modeId).mods ?? custo
 const active = () => MODIFIERS.filter(m => activeModIds().includes(m.id));
 
 export function setMode(id) { modeId = id; }
+// Unabhängig vom Modus: 'packs' wie gehabt, 'siege' siehe siege.ts
+export let mobMode = 'packs';
+export function setMobMode(id) { mobMode = id; }
 export function toggleCustomMod(id) {
   const mod = MODIFIERS.find(m => m.id === id);
   customMods = customMods.includes(id) ? customMods.filter(x => x !== id) : [...customMods.filter(x => !mod.excludes.includes(x)), id];

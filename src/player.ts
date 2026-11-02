@@ -19,6 +19,7 @@ import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
+import { resetSiege } from './siege';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 
 export function resetGame() {
@@ -43,6 +44,7 @@ export function resetGame() {
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
+  resetSiege();
   blizCursor.visible = false;
   stopChannel();
   fillPacks();

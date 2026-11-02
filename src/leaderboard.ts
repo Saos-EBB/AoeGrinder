@@ -2,7 +2,7 @@
 
 import { state, player } from './state';
 import { SCORE_VERSION } from './config';
-import { MODES, modeId, activeModIds, scoreMult } from './modifiers';
+import { MODES, modeId, mobMode, activeModIds, scoreMult } from './modifiers';
 import { run, scoreBreakdown } from './score';
 import { zone } from './world';
 
@@ -24,13 +24,13 @@ export const byScore = list => [...list].sort((a, b) => b.score - a.score);
 export function recordRun() {
   const b = scoreBreakdown();
   const entry = {
-    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name, mods: [...activeModIds()], mult: scoreMult(),
+    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'siege' ? ' · Belagerung' : ''), mobMode, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(),
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
     zone: zone.name, cause: player.lastHitBy ?? 'Unbekannt', version: SCORE_VERSION, note: '', build: '',
   };
   const list = [...loadRuns(), entry];
   saveRuns(list);
-  const rank = byScore(list.filter(r => r.mode === entry.mode)).indexOf(entry) + 1;
+  const rank = byScore(list.filter(r => r.mode === entry.mode && r.mobMode === entry.mobMode)).indexOf(entry) + 1;
   return { entry, rank };
 }
 

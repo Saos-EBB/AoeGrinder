@@ -9,7 +9,7 @@ import { groundAt, resolve, settle, steer, climbTarget } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
 import { reportKill } from './score';
-import { modFactor } from './modifiers';
+import { mobMode, modFactor } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
@@ -35,6 +35,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
+  if (mobMode === 'siege') return;
   while (liveMobs().length < mobTarget()) spawnPack();
   respawn.pending = 0;
   respawn.packs = livePackCount();
@@ -54,6 +55,7 @@ function dropFarPack() {
 }
 
 export function updateRespawn() {
+  if (mobMode === 'siege') return;
   dropFarPack();
   const packs = livePackCount();
   respawn.pending += Math.max(0, respawn.packs - packs);
@@ -62,6 +64,11 @@ export function updateRespawn() {
     spawnPack();
   }
   respawn.packs = livePackCount();
+}
+
+export function pickMobType() {
+  const unlocked = unlockedMobs(player.level), special = unlocked.slice(1);
+  return special.length && Math.random() < 0.5 ? pick(special) : unlocked[0];
 }
 
 export function spawnPack() {

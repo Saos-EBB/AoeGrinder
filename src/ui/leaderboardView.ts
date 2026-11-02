@@ -101,7 +101,7 @@ export function showRunResult() {
     <div id="runRank"></div>
     <input id="runNote" maxlength="120" placeholder="Notiz zum Run (optional)">`;
   $('runRecord').textContent = rank === 1 && entry.score > 0 ? 'Neuer Rekord!' : '';
-  $('runRank').textContent = `Platz ${rank} in ${entry.modeName} · Ursache: ${entry.cause} · Längste Combo ${entry.bestCombo} · Bester Multi-Kill ×${entry.bestMulti}`;
+  $('runRank').textContent = `Platz ${rank} in ${entry.modeName} · Ursache: ${entry.cause} · Längste Combo ${entry.bestCombo} · Bester Multi-Kill ×${entry.bestMulti}${entry.mobMode === 'siege' ? ` · Höchstens ${fmt(entry.peakMobs)} Mobs gleichzeitig bei ${entry.peakFps} FPS` : ''}`;
   const note = $('runNote') as HTMLInputElement;
   ownKeys(note);
   note.addEventListener('change', () => setNote(entry.date, note.value));
@@ -109,7 +109,7 @@ export function showRunResult() {
 }
 
 // ---------- Ranglisten-Ansicht ----------
-const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'all', name: 'Alle' }];
+const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'siege', name: 'Belagerung' }, { id: 'all', name: 'Alle' }];
 const TOP = 10;
 let tab = 'normal', versionFilter = '', openDate = null;
 
@@ -154,7 +154,7 @@ function renderBoard() {
   if (!versions.includes(versionFilter)) versionFilter = '';
   sel.value = versionFilter;
 
-  const rows = byScore(all.filter(r => (tab === 'all' || r.mode === tab) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
+  const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'siege' ? r.mobMode === 'siege' : r.mode === tab && r.mobMode !== 'siege')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
   const list = $('boardList');
   list.innerHTML = '';
   if (!rows.length) { list.innerHTML = '<div id="boardEmpty">Noch keine Runs in dieser Auswahl.</div>'; $('boardDetailBox').innerHTML = ''; return; }

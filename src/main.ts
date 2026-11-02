@@ -15,6 +15,7 @@ import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorp
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
+import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
@@ -36,6 +37,7 @@ function update(dt) {
     return true;
   });
   updateRespawn();
+  updateSiege(dt);
 }
 
 function updateVisuals(dt) {
