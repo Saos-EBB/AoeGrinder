@@ -1,12 +1,11 @@
-// Spielermodell: dünne Hülle um mageModel.ts (Magier) und heroModels.ts (Nahkämpfer) (Quelle ist der Viewer, dort ändern und neu ziehen).
+// Spielermodell: dünne Hülle um heroModels.ts (Magier und Nahkämpfer) (Quelle ist der Viewer, dort ändern und neu ziehen).
 // Der Skin kommt beim Run-Start aus dem Modus; mage bleibt dasselbe Objekt, damit Aufrufer nichts merken.
 
 import * as THREE from 'three';
 import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
-import { buildMage, SKINS } from './mageModel';
-import { buildWarrior, buildSamurai, buildNinja, WEAPONS as WAR_WEAPONS } from './heroModels';
+import { buildMage, SKINS, buildWarrior, buildSamurai, buildNinja, WEAPONS as WAR_WEAPONS } from './heroModels';
 import { buildWeapon } from './weapons/index';
 import { weaponUnlocked } from '../meta';
 

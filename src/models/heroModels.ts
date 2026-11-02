@@ -1,7 +1,7 @@
 // @ts-nocheck
-// Krieger (4 Waffen), Samurai und Ninja für Frost Grind. Automatisch aus dem Viewer „Frost Grind – MC-Modell“
+// Alle Spielfiguren für Frost Grind: Magier (4 Skins), Krieger (4 Waffen), Samurai und Ninja. Automatisch aus dem Viewer „Frost Grind – MC-Modell“
 // (slug 677fa515-4c5d-4dc3-9b50-181e9a15fcc6) gezogen. Änderungen am Modell gehören in den Viewer, nicht hierher.
-// Die Magier stehen auch im Viewer-Code, werden hier aber nicht exportiert (die kommen aus mageModel.ts).
+// Die Magier-Schnittstelle (SKINS, SKIN_FX, buildMage) steht am Ende; sie kam früher aus mageModel.ts und muss beim Neuziehen mit.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -3519,7 +3519,7 @@ function buildChar(P, C) {
 }
 
 // =====================================================================
-// Spiel-Schnittstelle: Krieger (4 Waffen), Samurai, Ninja. Die Magier kommen weiter aus mageModel.ts.
+// Spiel-Schnittstelle: Krieger (4 Waffen), Samurai, Ninja. Die Magier stehen ganz unten.
 // =====================================================================
 export const RUN_REF = 3.9;                                               // yd/s, bei denen die Schritte zum Boden passen (Rots Messwert für die Magier, hier ungeprüft)
 export const WEAPONS = ['sword', 'axes', 'hammer', 'anchor'];
@@ -3594,3 +3594,65 @@ export function buildSamurai({ bloom = false } = {}) {
 export function buildNinja({ bloom = false } = {}) {
   return wrap(NINJA, bloom, anim => anim.ability ? NINJA_ACTION[anim.ability] || null : anim.attack ? 'cast' : null);
 }
+
+// =====================================================================
+// Spiel-Schnittstelle: Magier (vorher mageModel.ts, Code unverändert übernommen)
+// =====================================================================
+function dimGlow(R) {                                   // ohne Bloom: Glühfarben auf ≤ 1, sonst brennen sie weiß aus
+  R.root.traverse(o => {
+    if (!o.isMesh) return;
+    const m = o.material;
+    if (m.isMeshLambertMaterial && m.emissiveMap) m.emissiveIntensity = 1;
+    if (m.isMeshBasicMaterial && m.vertexColors) {
+      const c = o.geometry.attributes.color;
+      for (let i = 0; i < c.count; i++) { const k = Math.max(1, c.getX(i), c.getY(i), c.getZ(i)); c.setXYZ(i, c.getX(i) / k, c.getY(i) / k, c.getZ(i) / k); }
+      c.needsUpdate = true;
+    }
+  });
+  if (R.crystal.material) norm(R.crystal.material.color);
+}
+
+// anim = { state: 'idle'|'run'|'back'|'air'|'sit'|'dead', speed, cast, channel, attack, frozen }
+// trail.mesh gehört in die Szene (Weltkoordinaten), nicht unter root.
+const norm = c => c.multiplyScalar(1 / Math.max(1, c.r, c.g, c.b));
+export const SKINS = { alle: HOOD, frost: ICE, feuer: FIRE, arkan: ARCANE };
+// Spielregeln pro Skin. Die Spiellogik wendet sie an; das Modell liefert nur Spuren (trail.zones()) und Werte.
+export const SKIN_FX = {
+  alle: {},
+  frost: { trail: 'frost', slow: 0.3, slowMs: 1500 },  // wie Improved Blizzard Rang 1 (mechanics-spec): 30 % für 1,5 s, solange der Mob auf einer Spur steht
+  feuer: { trail: 'fire', dps: 5 },                     // PLATZHALTER „bissi dmg“: Schaden pro Sekunde pro Mob, Spuren stapeln nicht
+  arkan: { speedMul: 1.1, float: true },                // schwebt, 10 % schneller, keine Spuren
+};
+export function buildMage(skin = 'alle', { bloom = false } = {}) {
+  const C = SKINS[skin] || SKINS.alle, R = buildChar(POLY.wenig, C), step = animator(R, C), watch = stepWatcher(R);
+  const trail = C.trail ? makeTrail(C.trail) : null;
+  if (!bloom) dimGlow(R);
+  let clock = 0;
+  return {
+    root: R.root,
+    anchors: { ...R.anchors, handR: R.armR.wrist },     // handR: für spätere Waffen (handoff-waffen)
+    trail,
+    fx: SKIN_FX[skin] || SKIN_FX.alle,
+    update(dt, anim = {}) {
+      const ms = Math.min(100, dt > 1 ? dt : dt * 1000);   // nimmt Sekunden oder Millisekunden
+      if (trail) trail.update(ms / 1000);
+      if (anim.frozen) return;                      // eingefroren: Pose bleibt stehen
+      clock += ms;
+      const st = anim.state || 'idle';
+      const loco = ['run', 'back', 'air', 'sit', 'dead'].includes(st) ? st : 'idle';
+      const action = anim.channel ? 'channel' : (anim.cast || anim.attack) ? 'cast' : null;
+      const speedK = anim.speed ? Math.min(1.8, Math.max(0.5, anim.speed / RUN_REF)) : 1;
+      step(ms, loco, action, clock, speedK);
+      if (!bloom) norm(R.crystal.material.color);   // Kapuze färbt den Kristall jedes Bild neu
+      if (trail && (loco === 'run' || loco === 'back')) { R.root.updateMatrixWorld(true); watch((x, y, z, a, side) => trail.add(x, y, z, a, side)); }
+    },
+  };
+}
+
+// =====================================================================
+// Krieger (Real Men Mode)
+// =====================================================================
+// anim = { state: 'idle'|'run'|'back'|'air'|'sit'|'dead', speed, attack, ability: null|'whirlwind'|'smash'|'thunderclap'|'warcry', frozen }
+// Eine Aktion startet bei Phase 0, sobald sie sich ändert. Einmal-Aktionen so lange gesetzt lassen, wie WAR_TIMING sagt.
+// onHit(kind, x, z): genau im Moment, in dem die Klinge trifft (kind 'cast' = Grundangriff, 'smash', 'thunderclap').
+// Wirbelwind meldet keine Treffer; das Spiel tickt selbst, solange ability === 'whirlwind'.
