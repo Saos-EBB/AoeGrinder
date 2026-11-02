@@ -49,7 +49,8 @@
   #hudEditBar[hidden], #hudGrid[hidden] { display: none; }
   #hudGrid { position: fixed; inset: 0; z-index: 1; pointer-events: none;
     background-image: linear-gradient(#ffffff2e 1px, transparent 1px), linear-gradient(90deg, #ffffff2e 1px, transparent 1px); }
-  #fsr { height: 3px; background: #ffffff22; margin-top: 3px; }
+  #hudMana { position: relative; }
+  #fsr { position: absolute; top: 100%; left: 0; right: 0; height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
   #status { font-size: 12px; color: #9cc4ff; min-height: 16px; margin-top: 2px; text-align: center; text-shadow: 0 1px 2px #000; }
 
@@ -228,7 +229,7 @@
 <div id="actionbar" class="frame"></div>
 <div id="hudGrid" hidden></div>
 <div id="hudEditBar" class="frame" hidden>
-  <span class="title">Ziehen verschiebt, nah heran dockt an, Mausrad ändert die Größe</span>
+  <span class="title">Ziehen verschiebt, nah heran rastet ein, Shift + Ziehen trennt, Mausrad ändert die Größe</span>
   <button class="bindBtn" id="hudEditGrid"></button>
   <button class="bindBtn" id="hudEditStep"></button>
   <button class="bindBtn" id="hudEditReset">Zurücksetzen</button>

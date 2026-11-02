@@ -4,7 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
-- feat(ui): Leben, Mana und Castbar einzeln verschiebbar, Andocken im Bearbeiten-Modus
+- feat(ui): Leben, Mana und Castbar einzeln verschiebbar, Einrasten im Bearbeiten-Modus, Shift + Ziehen trennt
 - feat(ui): Icons in der Zauberleiste
 - feat(ui): Auto-Kamera in den Einstellungen
 - feat(docs): README, Changelog, „Was ist los“ und AGENTS.md

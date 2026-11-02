@@ -5,11 +5,11 @@ import { UI } from './uiConfig';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
 const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
-export const DEFAULT_LAYOUT = {
+export const DEFAULT_LAYOUT: any = {
   hudHeader: { anchor: 'tc', x: 0, y: 0, scale: 1 },
-  hudHp: { anchor: 'c', x: -10, y: 24, scale: 1 },
-  hudMana: { anchor: 'c', x: 10, y: 24, scale: 1 },
-  hudCast: { anchor: 'c', x: 0, y: 28.5, scale: 1 },
+  hudHp: { anchor: 'c', x: -10, y: 24, scale: 1, links: ['hudMana', 'hudCast'] },
+  hudMana: { anchor: 'c', x: 10, y: 24, scale: 1, links: ['hudHp'] },
+  hudCast: { anchor: 'c', x: 0, y: 28, scale: 1, links: ['hudHp'] },
   actionbar: { anchor: 'bc', x: 0, y: -1, scale: 1 },
   hudEffects: { anchor: 'tl', x: 1, y: 8, scale: 1 },
   hudRelics: { anchor: 'cr', x: -1, y: -10, scale: 1 },
@@ -74,7 +74,10 @@ for (const id of Object.keys(layout)) {
   $(id).addEventListener('pointerdown', e => {
     if (!onDone) return;
     e.preventDefault(); e.stopPropagation();
-    drag = { id, x: e.clientX, y: e.clientY, ox: layout[id].x, oy: layout[id].y };
+    if (e.shiftKey) unlink(id);                      // Shift + Ziehen trennt das Element von seiner Gruppe
+    const start = {};
+    for (const g of group(id)) start[g] = { x: layout[g].x, y: layout[g].y };
+    drag = { id, x: e.clientX, y: e.clientY, start, free: e.shiftKey, dockTo: null };
   }, true);
   $(id).addEventListener('click', e => { if (onDone) { e.preventDefault(); e.stopPropagation(); } }, true);
   $(id).addEventListener('wheel', e => {             // Mausrad über dem Element ändert seine Größe
@@ -86,15 +89,31 @@ for (const id of Object.keys(layout)) {
     save();
   }, { passive: false });
 }
+// Eingerastete Elemente bilden eine Gruppe und wandern zusammen
+function group(id) {
+  const seen = new Set([id]);
+  for (const g of seen) for (const n of layout[g].links ?? []) seen.add(n);
+  return [...seen];
+}
+function link(a, b) {
+  (layout[a].links ??= []).includes(b) || layout[a].links.push(b);
+  (layout[b].links ??= []).includes(a) || layout[b].links.push(a);
+}
+function unlink(id) {
+  for (const n of layout[id].links ?? []) layout[n].links = layout[n].links.filter(x => x !== id);
+  layout[id].links = [];
+}
+
 // Andocken: Kommt ein Element nah an ein anderes, liegt es danach bündig daneben. Der Winkel zwischen den Mitten entscheidet:
-// im linken oder rechten Viertel seitlich, im oberen oder unteren darüber oder darunter. Gedockte Elemente bleiben einzeln ziehbar.
+// im linken oder rechten Viertel seitlich, im oberen oder unteren darüber oder darunter. Beim Loslassen rastet es ein.
 const clearDockMark = () => document.querySelectorAll('.hudDockTarget').forEach(el => el.classList.remove('hudDockTarget'));
 function dock(id) {
   clearDockMark();
+  drag.dockTo = null;
   const me = $(id).getBoundingClientRect();
   let best = null, bestGap = UI.hudDockPx;
   for (const other of Object.keys(layout)) {
-    if (other === id) continue;
+    if (other in drag.start) continue;
     const o = $(other).getBoundingClientRect();
     const gap = Math.max(o.left - me.right, me.left - o.right, o.top - me.bottom, me.top - o.bottom);
     if (gap < bestGap) { bestGap = gap; best = { other, o }; }
@@ -105,20 +124,30 @@ function dock(id) {
   const side = Math.abs(dx) > Math.abs(dy);
   const left = side ? (dx > 0 ? o.right : o.left - me.width) : o.left;
   const top = side ? o.top : (dy > 0 ? o.bottom : o.top - me.height);
-  layout[id].x += (left - me.left) / innerWidth * 100;
-  layout[id].y += (top - me.top) / innerHeight * 100;
+  for (const g in drag.start) {
+    layout[g].x += (left - me.left) / innerWidth * 100;
+    layout[g].y += (top - me.top) / innerHeight * 100;
+  }
   applyLayout();
+  drag.dockTo = best.other;
   $(best.other).classList.add('hudDockTarget');
 }
 
 addEventListener('pointermove', e => {
   if (!drag) return;
-  layout[drag.id].x = snap(drag.ox + (e.clientX - drag.x) / innerWidth * 100);
-  layout[drag.id].y = snap(drag.oy + (e.clientY - drag.y) / innerHeight * 100);
+  const s = drag.start[drag.id];
+  const dx = snap(s.x + (e.clientX - drag.x) / innerWidth * 100) - s.x, dy = snap(s.y + (e.clientY - drag.y) / innerHeight * 100) - s.y;
+  for (const g in drag.start) { layout[g].x = drag.start[g].x + dx; layout[g].y = drag.start[g].y + dy; }
   applyLayout();
-  dock(drag.id);
+  if (!drag.free) dock(drag.id);
 });
-addEventListener('pointerup', () => { if (drag) { drag = null; clearDockMark(); save(); } });
+addEventListener('pointerup', () => {
+  if (!drag) return;
+  if (drag.dockTo) link(drag.id, drag.dockTo);
+  drag = null;
+  clearDockMark();
+  save();
+});
 $('hudEditReset').addEventListener('click', () => {
   layout = structuredClone(DEFAULT_LAYOUT);
   try { localStorage.removeItem(STORE); } catch { /* egal */ }
