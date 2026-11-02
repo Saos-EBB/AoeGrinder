@@ -1,6 +1,6 @@
 import { state, player } from '../state';
 import { $ } from '../util';
-import { SPELLS, CARD_RARITIES, CARD_CLASSIC_EVERY } from '../config';
+import { SPELLS, CARD_RARITIES, CARD_CLASSIC_EVERY, LEVEL_UP_HEAL } from '../config';
 import { rollOffer, forcedOffer, rankAllSpells, cardPreview, cardStage } from '../cards';
 import { COLORS } from './colors';
 import { maxHp, maxMana } from '../formulas';
@@ -82,9 +82,9 @@ function chooseReplacement(id) {
   });
 }
 
-function refill() {                    // Ding füllt auf, außer Mana bei Kein Trinken: dort gibt es es nur über Regeneration
-  player.hp = maxHp();
-  if (!modRule('noDrink')) player.mana = maxMana();
+function refill() {                    // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
+  player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
+  if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
 }
 
 function finishCard() {
