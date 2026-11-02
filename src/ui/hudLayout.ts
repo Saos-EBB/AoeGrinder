@@ -4,10 +4,12 @@ import { $ } from '../util';
 import { UI } from './uiConfig';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
-const NAMES = { hudHeader: 'Kopfleiste', hudBars: 'Leben, Mana, Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
+const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
 export const DEFAULT_LAYOUT = {
   hudHeader: { anchor: 'tc', x: 0, y: 0, scale: 1 },
-  hudBars: { anchor: 'c', x: 0, y: 24, scale: 1 },
+  hudHp: { anchor: 'c', x: -10, y: 24, scale: 1 },
+  hudMana: { anchor: 'c', x: 10, y: 24, scale: 1 },
+  hudCast: { anchor: 'c', x: 0, y: 28.5, scale: 1 },
   actionbar: { anchor: 'bc', x: 0, y: -1, scale: 1 },
   hudEffects: { anchor: 'tl', x: 1, y: 8, scale: 1 },
   hudRelics: { anchor: 'cr', x: -1, y: -10, scale: 1 },
@@ -84,13 +86,39 @@ for (const id of Object.keys(layout)) {
     save();
   }, { passive: false });
 }
+// Andocken: Kommt ein Element nah an ein anderes, liegt es danach bündig daneben. Der Winkel zwischen den Mitten entscheidet:
+// im linken oder rechten Viertel seitlich, im oberen oder unteren darüber oder darunter. Gedockte Elemente bleiben einzeln ziehbar.
+const clearDockMark = () => document.querySelectorAll('.hudDockTarget').forEach(el => el.classList.remove('hudDockTarget'));
+function dock(id) {
+  clearDockMark();
+  const me = $(id).getBoundingClientRect();
+  let best = null, bestGap = UI.hudDockPx;
+  for (const other of Object.keys(layout)) {
+    if (other === id) continue;
+    const o = $(other).getBoundingClientRect();
+    const gap = Math.max(o.left - me.right, me.left - o.right, o.top - me.bottom, me.top - o.bottom);
+    if (gap < bestGap) { bestGap = gap; best = { other, o }; }
+  }
+  if (!best) return;
+  const { o } = best, dx = (me.left + me.right - o.left - o.right) / 2, dy = (me.top + me.bottom - o.top - o.bottom) / 2;
+  if (best.other === 'hudHeader' && Math.abs(dx) > Math.abs(dy)) return;   // Die Kopfleiste ist bildschirmbreit, seitlich gibt es nichts
+  const side = Math.abs(dx) > Math.abs(dy);
+  const left = side ? (dx > 0 ? o.right : o.left - me.width) : o.left;
+  const top = side ? o.top : (dy > 0 ? o.bottom : o.top - me.height);
+  layout[id].x += (left - me.left) / innerWidth * 100;
+  layout[id].y += (top - me.top) / innerHeight * 100;
+  applyLayout();
+  $(best.other).classList.add('hudDockTarget');
+}
+
 addEventListener('pointermove', e => {
   if (!drag) return;
   layout[drag.id].x = snap(drag.ox + (e.clientX - drag.x) / innerWidth * 100);
   layout[drag.id].y = snap(drag.oy + (e.clientY - drag.y) / innerHeight * 100);
   applyLayout();
+  dock(drag.id);
 });
-addEventListener('pointerup', () => { if (drag) { drag = null; save(); } });
+addEventListener('pointerup', () => { if (drag) { drag = null; clearDockMark(); save(); } });
 $('hudEditReset').addEventListener('click', () => {
   layout = structuredClone(DEFAULT_LAYOUT);
   try { localStorage.removeItem(STORE); } catch { /* egal */ }
