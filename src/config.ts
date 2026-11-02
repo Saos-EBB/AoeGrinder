@@ -28,7 +28,7 @@ export const SCORE_VERSION = 'v14';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
-export const LEVEL_UP_HEAL = 0.05;                        // Level-up heilt 5 % der maximalen Leben, Kevins Wunsch
+export const LEVEL_UP_HEAL = 0.25;                        // Level-up heilt 25 % der maximalen Leben, Kevins Wunsch
 export const LEVEL_MOB_DEF_STEP = 0.004, LEVEL_MOB_DEF_MAX = 0.4;   // Schadensreduktion der Mobs: 0,4 % pro Level über 1, höchstens 40 %
 export const LEVEL_HP_AT_20 = 1040, LEVEL_HP_STEP = 39;   // Leben auf Level 20, plus pro Level
 export const LEVEL_DMG_STEP = 0.05;                       // Schaden und Mob-Leben: +5 % des Level-1-Werts pro Level
