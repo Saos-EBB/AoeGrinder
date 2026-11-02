@@ -8,9 +8,9 @@ import { particles } from './fx/particles';
 import { mage } from './models/mage';
 import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
 import { hitstopDt } from './fx/impact';
-import { cam, updateCamera } from './camera';
+import { cam, updateCamera, updateAutoCam } from './camera';
 import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
-import { binds, mouse, pressSpell, pickGround } from './input';
+import { binds, mouse, mouseBtn, pressSpell, pickGround } from './input';
 import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
@@ -42,6 +42,7 @@ function update(dt) {
 }
 
 function updateVisuals(dt) {
+  updateAutoCam(dt, mouseBtn.left);
   updateCamera();
   if (player.targeting && !state.padAim) pickGround();
 

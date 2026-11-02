@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(ui): Auto-Kamera in den Einstellungen
 - feat(docs): README, Changelog, „Was ist los“ und AGENTS.md
 - feat(ui): Figur im Menü drehen und zoomen, HUD-Elemente skalieren, Raster mit Größe
 - fix(ui): Figur im Hauptmenü dreht sich nicht mehr

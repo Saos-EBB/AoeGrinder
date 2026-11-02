@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { player } from './state';
+import { state, player } from './state';
 import { rand } from './util';
 import { camera } from './render';
 import { heightAt, obstacles } from './world';
@@ -19,6 +19,24 @@ function segmentHitsCircle(a, b, c, r) {
   if (disc < 0) return 1;
   const t = (-B - Math.sqrt(disc)) / (2 * A);
   return t >= 0 && t <= 1 ? t : 1;
+}
+
+// Auto-Kamera: Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen. Ohne sie geht sie nur hinter die Blickrichtung (player.ts).
+// Ziehen mit der linken Maustaste hat Vorrang, rückwärts bleibt sie hinter der Figur.
+const AUTO_CAM_STORE = 'frostgrind.autocam.v1', AUTO_CAM_RATE = 3;   // PH: 1/s
+let autoCam = false;
+try { autoCam = localStorage.getItem(AUTO_CAM_STORE) === '1'; } catch { /* kein Storage */ }
+export const autoCamOn = () => autoCam;
+export function setAutoCam(on) {
+  autoCam = on;
+  try { localStorage.setItem(AUTO_CAM_STORE, on ? '1' : '0'); } catch { /* egal */ }
+}
+export function updateAutoCam(dt, dragging) {
+  if (!autoCam || state.paused || player.moveState === 'idle' || dragging) return;
+  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const target = player.moveState === 'back' || !player.grounded ? 0 : wrap(Math.atan2(player.vel.x, player.vel.z) - player.facing);
+  const now = wrap(cam.offset);
+  cam.offset = now + wrap(target - now) * (1 - Math.exp(-AUTO_CAM_RATE * dt / 1000));
 }
 
 export function updateCamera() {

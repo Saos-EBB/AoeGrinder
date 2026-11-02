@@ -7,7 +7,7 @@ import { scene } from './render';
 import { heightAt, zone, zoneId, buildWorld } from './world';
 import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
-import { cam } from './camera';
+import { cam, autoCamOn } from './camera';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards } from './ui/menus';
 import { mouseBtn, act } from './input';
@@ -214,7 +214,7 @@ export function updatePlayer(dt) {
   if (moved) {
     if (player.channel) stopChannel();   // Bewegung bricht Channel und Trinken ab
     if (player.drink) stopDrink();
-    if (!mouseBtn.left) cam.offset -= cam.offset * Math.min(1, s * 3);   // Kamera dreht sich langsam hinter den Spieler
+    if (!mouseBtn.left && !autoCamOn()) cam.offset -= cam.offset * Math.min(1, s * 3);   // Kamera dreht sich langsam hinter den Spieler
   }
   if (player.poison) {
     const pz = player.poison;

@@ -5,7 +5,7 @@ import { $ } from '../util';
 import { MODIFIERS, MODES, modeId, mobMode, setMode, setCustomMods, activeModIds, scoreMult } from '../modifiers';
 import { WEAPONS } from '../models/weapons/index';
 import { mage } from '../models/mage';
-import { cam } from '../camera';
+import { cam, autoCamOn, setAutoCam } from '../camera';
 import { loadRuns, byScore } from '../leaderboard';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
@@ -145,6 +145,9 @@ $('startBtn').addEventListener('click', startRun);
 $('menuSettings').addEventListener('click', () => { $('settingsModal').classList.add('show'); });
 $('settingsClose').addEventListener('click', () => { $('settingsModal').classList.remove('show'); syncPause(); });
 $('menuBinds').addEventListener('click', openBinds);
+const showAutoCam = () => { $('setAutoCam').textContent = `Auto-Kamera: ${autoCamOn() ? 'an' : 'aus'}`; $('setAutoCam').title = 'Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen'; };
+$('setAutoCam').addEventListener('click', () => { setAutoCam(!autoCamOn()); showAutoCam(); });
+showAutoCam();
 function editHud(backdrop) {
   $(backdrop).classList.add('hudHide');
   document.body.classList.remove('menu');
