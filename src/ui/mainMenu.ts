@@ -1,4 +1,4 @@
-// Hauptmenü fullscreen und Pause-Menü. Die Figur steht groß in der Hauptszene und dreht sich, drumherum die Auswahl.
+// Hauptmenü fullscreen und Pause-Menü. Die Figur steht groß in der Hauptszene, drumherum die Auswahl.
 
 import { state, player } from '../state';
 import { $ } from '../util';
@@ -103,12 +103,7 @@ export function renderMenu() {
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
 export const menuOpen = () => $('startModal').classList.contains('show');
-export function menuSpin(dt) {
-  if (!menuOpen()) return 0;
-  spin += dt / 1000 * UI.menuSpin;
-  return spin;
-}
-let spin = Math.PI;
+export const menuYaw = () => menuOpen() ? Math.PI : 0;   // Im Menü schaut die Figur zur Kamera
 export function enterMenu() {
   camSaved ??= { dist: cam.dist, pitch: cam.pitch, offset: cam.offset };
   Object.assign(cam, { dist: UI.menuCam.dist, pitch: UI.menuCam.pitch, offset: 0 });
