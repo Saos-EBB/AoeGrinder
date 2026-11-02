@@ -45,43 +45,6 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #boardMsg { min-height: 18px; font-size: 13px; color: #9cc4ff; }
   #runNote { width: 100%; font: 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 3px; }
 </style>`);
-$('startBtn').insertAdjacentHTML('beforebegin', `<div id="modePick"><div class="title" style="margin-bottom:6px">Modus</div>
-  <div id="modeBtns"></div><div id="modeMods"></div><div id="modeInfo"></div></div>`);
-
-// Modifikatoren wirken beim Aufbau des Runs: Mobs und Werte neu
-function changed() {
-  resetGame();
-  renderPick();
-}
-
-function renderPick() {
-  const btns = $('modeBtns'), box = $('modeMods');
-  btns.innerHTML = '';
-  for (const m of MODES) {
-    const b = document.createElement('button');
-    b.className = 'bindBtn' + (m.id === modeId ? ' selected' : '');
-    b.textContent = m.name;
-    b.addEventListener('click', () => { setMode(m.id); changed(); });
-    btns.appendChild(b);
-  }
-  box.innerHTML = '';
-  if (modeId === 'custom') for (const mod of MODIFIERS) {
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = activeModIds().includes(mod.id);
-    input.disabled = mod.excludes.some(id => activeModIds().includes(id));   // Gegenstück gewählt: erst dort abwählen
-    if (input.disabled) label.style.cssText = 'opacity:.4;cursor:not-allowed';
-    input.addEventListener('change', () => { toggleCustomMod(mod.id); changed(); });
-    label.append(input, `${mod.name} (${fmtMult(mod.scoreMult)})`);
-    label.title = mod.desc;
-    box.appendChild(label);
-  }
-  const names = MODIFIERS.filter(m => activeModIds().includes(m.id)).map(m => m.desc).join(' · ');
-  $('modeInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
-}
-renderPick();
-
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
 export function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
 
@@ -245,7 +208,7 @@ const boardButton = (cls, style) => {
   b.addEventListener('click', openBoard);
   return b;
 };
-$('startBtn').after(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
+$('menuBoardBtn').append(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
 $('restartBtn').after(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
 document.querySelector('#bindModal .row2').prepend(boardButton('smallBtn', 'width:auto;padding:6px 14px'));
 
@@ -255,7 +218,7 @@ for (const level of [1, 15, 16, 30, 31, 45, 46, 60, 61, 100]) {
   const b = document.createElement('button');
   b.className = 'bindBtn';
   b.textContent = String(level);
-  b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('bindsClose').click(); });
+  b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('settingsClose').click(); });
   $('devLevels').appendChild(b);
 }
 

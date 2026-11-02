@@ -7,11 +7,12 @@ import { scene } from '../render';
 import { activeModIds } from '../modifiers';
 import { buildMage, buildWarrior, SKINS } from './mageModel';
 import { buildWeapon } from './weapons/index';
-import { initWeaponMenu } from './weapons/menu';
 
 // Standardwaffe pro Skin
 const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrute', arkan: 'zirkelstab' };
 const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
+const WEAPON_STORE = 'frostgrind.weapon.v2';
+const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STORE) || '{}'); } catch { return {}; } })();
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 // Der eingebaute Stab weicht der Waffe. Sein Gelenk bleibt: Das Modell hält es in jeder Pose aufrecht.
@@ -26,7 +27,7 @@ let hitHandler = null;
 // Treffer-Moment der Krieger-Animation (realMen.ts)
 export function onWarriorHit(fn) { hitHandler = fn; }
 
-let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0, refreshMenu = () => {};
+let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0;
 
 function dispose(m) {
   weapon?.dispose();
@@ -58,16 +59,14 @@ function setSkin(id) {
     cur = buildWarrior({ bloom: PERF.bloom });
     cur.onHit = (kind, x, z) => hitHandler?.(kind, x, z);
     scene.add(cur.root, cur.fx.group);
-    refreshMenu();
-    return;
+      return;
   }
   cur = buildMage(id, { bloom: PERF.bloom });
   scene.add(cur.root);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
-  wield(SKIN_WEAPON[id]);
-  refreshMenu();
+  wield(chosen[id] ?? SKIN_WEAPON[id]);
 }
 
 function wield(id) {
@@ -98,7 +97,11 @@ export const mage = {
   get skin() { return skin; },
   get weapon() { return weapon; },
   setSkin,
-  setWeapon: wield,
+  setWeapon(id) {                                 // Wahl im Hauptmenü, gilt pro Skin und bleibt gespeichert
+    chosen[skin] = id;
+    try { localStorage.setItem(WEAPON_STORE, JSON.stringify(chosen)); } catch { /* egal */ }
+    wield(id);
+  },
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {
@@ -114,4 +117,3 @@ export const mage = {
 };
 
 setSkin(skinForRun());
-refreshMenu = initWeaponMenu(mage);

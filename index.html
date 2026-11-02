@@ -150,6 +150,41 @@
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
     border: 1px solid #6b5426; border-radius: 3px; cursor: pointer; }
   .bindBtn.waiting, .bindBtn.selected { border-color: #ffe27a; color: #ffe27a; }
+  #charBody { text-align: left; max-height: 60vh; overflow: auto; font-size: 14px; }
+  #charBody table { width: 100%; border-collapse: collapse; }
+  #charBody td { padding: 3px 6px; }
+  #charBody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  #charBody .dmgBar td { padding: 0 6px 5px; }
+  #charBody .dmgBar div { height: 4px; }
+  /* Hauptmenü */
+  body.menu #hudHeader, body.menu #hudBars, body.menu #actionbar, body.menu #hudEffects, body.menu #hudRelics, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
+  #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
+  #startModal.show { display: block; }
+  .hudHide { display: none !important; }
+  #menuLeft { position: absolute; top: 2vh; left: 1.5vw; width: 25vw; max-height: 72vh; overflow: auto; padding: 12px 14px; }
+  #menuLeft h1 { margin: 0 0 6px; font-size: 30px; }
+  #menuRight { position: absolute; top: 2vh; right: 1.5vw; width: 21vw; padding: 12px 14px; }
+  .menuHead { margin: 10px 0 5px; font-size: 14px; }
+  #menuInfo { font-size: 12px; color: #c9b88a; margin: 10px 0 0; }
+  .chipRow { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { font: 600 12px system-ui, sans-serif; padding: 4px 8px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 12px; cursor: pointer; }
+  .chip.selected { border-color: #ffe27a; color: #ffe27a; box-shadow: 0 0 6px #ffe27a88; }
+  .chip:disabled { opacity: .35; cursor: not-allowed; }
+  #menuBoard { font-size: 13px; color: #d8cfb8; min-height: 40px; }
+  #menuBoard table { width: 100%; border-collapse: collapse; }
+  #menuBoard td:nth-child(2) { text-align: right; color: #f2c94c; font-weight: 700; }
+  #menuBoard td:nth-child(3) { text-align: right; }
+  #menuBottom { position: absolute; left: 0; right: 0; bottom: 2vh; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #menuTitle { font-size: 30px; text-shadow: 0 2px 6px #000; }
+  #menuChars { display: flex; gap: 6px; }
+  .charTab { width: 150px; padding: 8px 4px; font: 700 14px Cinzel, serif; color: #f4ecd8; background: #0d0b08ee; border: 2px solid #6b5426; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .charTab small { font: 600 11px system-ui, sans-serif; color: #c9b88a; }
+  .charTab.selected { border-color: #f2c94c; color: #f2c94c; box-shadow: 0 0 10px #f2c94c88; }
+  #menuActions { display: flex; gap: 8px; align-items: center; }
+  #menuActions .smallBtn { margin: 0; width: auto; padding: 8px 14px; }
+  .navSel, #startModal button:focus-visible, .pauseBox button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
+  .pauseBox .smallBtn { margin: 0; }
   .row2 { display: flex; gap: 10px; justify-content: center; }
 </style>
 </head>
@@ -194,20 +229,56 @@
 <div id="overlay"></div>
 
 <div id="startModal" class="modal show">
-  <div class="frame panel">
+  <div id="menuLeft" class="frame">
     <h1 class="title">Frost Grind</h1>
-    <p>Prototyp: AoE-Grinden wie mit dem Classic-Mage. Ziehe Packs zusammen, Nova, Blizzard, kiten, trinken.
-      Jedes Level bringt eine Upgrade-Karte. Ein Tod beendet den Run.</p>
-    <div class="keys">
-      <b>W / S</b><span>vor / zurück · <b>A / D</b> drehen · <b>Q / E</b> seitwärts</span>
-      <b>Leertaste</b><span>springen · <b>R</b> Autorun</span>
-      <b>Linke Maus ziehen</b><span>Kamera drehen</span>
-      <b>Rechte Maus ziehen</b><span>Charakter drehen (A/D werden zu Seitwärts)</span>
-      <b>Beide Maustasten</b><span>vorwärts laufen</span>
-      <b>1–8</b><span>Zauber-Slots. Start: Nova · Arcane Explosion · Blizzard (+ Klick) · Cone of Cold · Blink · Trinken</span>
-      <b>Esc</b><span>Tastenbelegung ändern</span>
+    <div class="title menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
+    <div class="title menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
+    <div id="menuWeaponBox"><div class="title menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+    <p id="menuInfo"></p>
+  </div>
+  <div id="menuRight" class="frame">
+    <div class="title menuHead">Rangliste: Punkte</div>
+    <div id="menuBoard"></div>
+    <div id="menuBoardBtn"></div>
+  </div>
+  <div id="menuBottom">
+    <div class="title" id="menuTitle"></div>
+    <div id="menuChars"></div>
+    <div id="menuActions">
+      <button class="btn" id="startBtn">Run starten</button>
+      <button class="smallBtn" id="menuSettings">Einstellungen</button>
+      <button class="smallBtn" id="menuBinds">Keybinds</button>
+      <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
     </div>
-    <button class="btn" id="startBtn">Run starten</button>
+  </div>
+</div>
+
+<div id="pauseModal" class="modal">
+  <div class="frame panel pauseBox">
+    <h1 class="title" style="font-size:28px">Pause</h1>
+    <button class="btn" id="pauseResume">Weiter</button>
+    <button class="smallBtn" id="pauseChar">Charakterfenster</button>
+    <button class="smallBtn" id="pauseEdit">UI bearbeiten</button>
+    <button class="smallBtn" id="pauseBinds">Keybinds</button>
+    <button class="smallBtn" id="pauseGiveUp">Aufgeben</button>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal">
+  <div class="frame panel" style="max-height:92vh;overflow-y:auto">
+    <h1 class="title" style="font-size:26px">Einstellungen</h1>
+    <div id="settingsVol"></div>
+    <div class="title" style="text-align:left;margin:10px 0 6px">Dev: Zone wechseln</div>
+    <div id="devZones"></div>
+    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Karten</div>
+    <div id="devCards">
+      <select class="bindBtn" id="devKind"></select>
+      <select class="bindBtn" id="devTier"></select>
+      <button class="bindBtn" id="devForce">Karte erzwingen</button>
+      <button class="bindBtn" id="devLuck">Glück +25</button>
+    </div>
+    <button class="bindBtn" id="devPerf" style="width:100%;margin-bottom:14px"></button>
+    <button class="smallBtn" id="settingsClose" style="width:auto;padding:6px 14px">Schließen</button>
   </div>
 </div>
 
@@ -222,6 +293,7 @@
     <h1 class="title">Du bist gestorben</h1>
     <p id="deathStats"></p>
     <button class="btn" id="restartBtn">Neuer Run</button>
+    <button class="smallBtn" id="deathMenuBtn" style="width:auto;padding:6px 14px">Hauptmenü</button>
   </div>
 </div>
 
@@ -231,20 +303,19 @@
     <p style="margin:6px 0 0;font-size:13px">Feld anklicken, dann neue Taste drücken. Esc bricht ab.</p>
     <div id="help" style="font-size:12px;margin-top:8px"></div>
     <div id="bindList"></div>
-    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Zone wechseln</div>
-    <div id="devZones"></div>
-    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Karten</div>
-    <div id="devCards">
-      <select class="bindBtn" id="devKind"></select>
-      <select class="bindBtn" id="devTier"></select>
-      <button class="bindBtn" id="devForce">Karte erzwingen</button>
-      <button class="bindBtn" id="devLuck">Glück +25</button>
-    </div>
-    <button class="bindBtn" id="devPerf" style="width:100%;margin-bottom:14px"></button>
     <div class="row2">
       <button class="smallBtn" id="bindsReset" style="width:auto;padding:6px 14px">Standard</button>
       <button class="smallBtn" id="bindsClose" style="width:auto;padding:6px 14px">Schließen</button>
     </div>
+  </div>
+</div>
+
+<div id="charModal" class="modal" style="z-index:4">
+  <div class="frame panel" style="width:min(640px,92vw)">
+    <h1 class="title" style="font-size:26px">Charakter</h1>
+    <div id="charTabs" class="row2" style="margin:10px 0"></div>
+    <div id="charBody"></div>
+    <button class="smallBtn" id="charClose" style="width:auto;padding:6px 14px">Schließen (X)</button>
   </div>
 </div>
 

@@ -8,13 +8,12 @@ import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled }
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
-import { startMageRun } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
 import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
-const KIND_LOOK = { rang: { name: 'RANG', icon: '▲' }, spell: { name: 'NEUER SPELL', icon: '✦' }, rune: { name: 'RUNE', icon: '᛭' }, support: { name: 'SUPPORT', icon: '◆' }, relic: { name: 'RELIKT', icon: '♛' }, talent: { name: 'TALENT', icon: '★' }, luck: { name: 'GLÜCK', icon: '♣' } };
+const KIND_LOOK = { rang: { name: 'RANG', icon: '▲' }, spell: { name: 'NEUER SPELL', icon: '✦' }, rune: { name: 'RUNE', icon: '✧' }, support: { name: 'SUPPORT', icon: '◆' }, relic: { name: 'RELIKT', icon: '♛' }, talent: { name: 'TALENT', icon: '★' }, luck: { name: 'GLÜCK', icon: '♣' } };
 // Stichwörter und Prozentwerte im Kartentext
 function markWords(text) {
   let out = text.replace(/[+−-]?\d+(?:,\d+)? %/g, m => `<span class="pct">${m}</span>`);
@@ -93,7 +92,7 @@ function finishCard() {
   refill();
   $('cardModal').classList.remove('show');
   if (state.pendingLevelUps > 0) showCards();
-  else state.paused = false;
+  else syncPause();
 }
 
 // Tastenbelegung-Menü
@@ -101,7 +100,6 @@ let selectedPad = null;   // bleibt beim Neuaufbau der Liste gewählt
 export function openBinds() {
   state.paused = true;
   renderBinds();
-  renderDevZones();
   $('bindModal').classList.add('show');
 }
 export function closeResetConfirm() { $('resetModal').classList.remove('show'); }
@@ -110,7 +108,13 @@ export function closeBinds() {
   state.rebinding = null;
   state.padRebinding = null;
   $('bindModal').classList.remove('show');
-  state.paused = $('startModal').classList.contains('show') || $('cardModal').classList.contains('show') || player.dead;
+  syncPause();
+}
+
+// Pausiert, solange irgendein Fenster offen ist oder die Figur tot
+const BLOCKING = ['startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal'];
+export function syncPause() {
+  state.paused = player.dead || BLOCKING.some(id => $(id)?.classList.contains('show'));
 }
 export function renderBinds() {
   const list = $('bindList');
@@ -159,7 +163,7 @@ function renderDevZones() {
     const b = document.createElement('button');
     b.className = 'bindBtn' + (id === zoneId ? ' selected' : '');
     b.textContent = z.name;
-    b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); switchZone(id); closeBinds(); });
+    b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); switchZone(id); $('settingsClose').click(); });
     box.appendChild(b);
   }
 }
@@ -171,19 +175,18 @@ CARD_RARITIES.forEach((r, tier) => $('devTier').insertAdjacentHTML('beforeend', 
 $('devForce').addEventListener('click', () => {
   const offer = forcedOffer(($('devKind') as HTMLSelectElement).value, Number(($('devTier') as HTMLSelectElement).value));
   if (!offer.length) return showError('Keine Karte dieser Art verfügbar');
-  closeBinds();
+  $('settingsClose').click();
   state.pendingLevelUps++;
   showCards(offer);
 });
 $('devLuck').addEventListener('click', () => { player.luck += 25; });
 
-mountVolume($('bindList'), 'beforebegin');
-// Das Menü ist höher als kleine Fenster, ohne Scrollen wäre der Regler oben abgeschnitten
+mountVolume($('settingsVol'), 'beforeend');
 Object.assign($('bindList').parentElement.style, { maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' });
 
 // Ding-Sound
 let audio;
-function ding() {
+export function ding() {
   try {
     audio = audio || new AudioContext();
     const t = audio.currentTime;
@@ -199,23 +202,16 @@ function ding() {
   } catch { /* kein Audio – egal */ }
 }
 
-$('startBtn').addEventListener('click', () => {
-  $('startModal').classList.remove('show');
-  startMageRun();
-  resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
-  renderActionbar();
-  state.paused = false;
-  ding();
-});
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
   stopChannel(true);
   resetGame();
   resetSpells();
   renderActionbar();
-  state.paused = false;
+  syncPause();
 });
 $('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
+$('menuSettings').addEventListener('click', renderDevZones);
 $('bindsClose').addEventListener('click', closeBinds);
 // Abbrechen hat den Fokus, damit Enter oder Leertaste nichts löscht
 $('bindsReset').addEventListener('click', () => { state.rebinding = null; state.padRebinding = null; renderBinds(); $('resetModal').classList.add('show'); $('resetNo').focus(); });

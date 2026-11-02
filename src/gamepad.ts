@@ -1,5 +1,7 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
+import { charOpen, charTab, toggleChar } from './ui/charWindow';
+import { openPause, closePause, cycleChar } from './ui/mainMenu';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
@@ -10,7 +12,7 @@ import { blizCursor } from './fx/spellFx';
 import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
-import { openBinds, closeBinds, renderBinds } from './ui/menus';
+import { closeBinds, renderBinds } from './ui/menus';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -27,7 +29,7 @@ export const PAD_ACTIONS = [
   { id: 'nova',      label: 'Frost Nova',          btn: 3 },
   { id: 'blink',     label: 'Blink',               btn: 4 },
   { id: 'bliz',      label: 'Blizzard',            btn: 5 },
-  { id: 'help',      label: 'Hilfe',               btn: 8 },
+  { id: 'charWin',   label: 'Charakterfenster',    btn: 8 },
   { id: 'menu',      label: 'Pause und Belegung',  btn: 9 },
   { id: 'autorun',   label: 'Autorun',             btn: 10 },
   { id: 'camBehind', label: 'Kamera hinter Figur', btn: 11 },
@@ -61,7 +63,7 @@ const pressed = i => pad.down[i] && !pad.prev[i];   // Flanke: ein Druck löst g
 const PAD_EFFECTS = {
   jump() { state.jumpQueued = true; },
   autorun() { state.autorun = !state.autorun; },
-  help() { const h = $('help'); h.style.display = h.style.display === 'none' ? '' : 'none'; },
+  charWin() { toggleChar(); },
   camBehind() { cam.offset = 0; },
   zoomIn() { cam.dist = clamp(cam.dist - 1.5, 3, 35); },
   zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
@@ -94,7 +96,7 @@ function moveAim(s) {
 }
 
 function gameButtons() {
-  if (pressed(padBinds.menu)) return openBinds();
+  if (pressed(padBinds.menu)) return openPause();
   const cancelled = player.targeting && pressed(CANCEL_BTN);
   if (cancelled) cancelAim();
   const b = padBinds[aimAction];
@@ -129,11 +131,11 @@ function navStep() {
 }
 
 // Hebt den gewählten Eintrag der Liste hervor; ohne Auswahl den ersten (auch nach Neuaufbau der Liste)
-function moveSelection(items, step) {
-  const n = items.length, cur = items.findIndex(el => el.classList.contains('selected'));
+function moveSelection(items, step, cls = 'selected') {
+  const n = items.length, cur = items.findIndex(el => el.classList.contains(cls));
   const next = cur < 0 ? 0 : (cur + step + n) % n;
-  items[cur]?.classList.remove('selected');
-  items[next]?.classList.add('selected');
+  items[cur]?.classList.remove(cls);
+  items[next]?.classList.add(cls);
   return items[next];
 }
 
@@ -157,13 +159,27 @@ function captureRebind() {
 function menuButtons() {
   const step = navStep();
   if (isOpen('bindModal')) return bindMenuButtons(step);
+  if (charOpen()) {
+    if (step.x) charTab(step.x);
+    if (pressed(CANCEL_BTN)) toggleChar();
+    return;
+  }
   if (isOpen('cardModal') && !isOpen('bindModal')) {
     const card = moveSelection([...document.querySelectorAll('#cards .card')], step.x);
     if (pressed(CONFIRM_BTN)) card?.click();
   } else if (isOpen('deathModal') && !isOpen('bindModal')) {
     if (pressed(CONFIRM_BTN)) $('restartBtn').click();
-  } else if (isOpen('startModal') && !isOpen('bindModal')) {
-    if (pressed(CONFIRM_BTN)) $('startBtn').click();
+  } else if (isOpen('pauseModal')) {
+    const b = moveSelection([...document.querySelectorAll('#pauseModal button')], step.y, 'navSel');
+    if (pressed(CONFIRM_BTN)) (b as any)?.click();
+    else if (pressed(CANCEL_BTN) || pressed(padBinds.menu)) closePause();
+  } else if (isOpen('settingsModal')) {
+    if (pressed(CANCEL_BTN)) $('settingsClose').click();
+  } else if (isOpen('startModal')) {
+    if (pressed(4)) cycleChar(-1);                // L1, R1 wechseln die Figur
+    if (pressed(5)) cycleChar(1);
+    const b = moveSelection([...document.querySelectorAll('#startModal button:not(:disabled)')], step.x || step.y, 'navSel');
+    if (pressed(CONFIRM_BTN)) (b as any)?.click();
   }
 }
 
@@ -208,6 +224,7 @@ export function pollGamepad() {
   if (state.padRebinding) captureRebind();
   else if (!state.paused) gameButtons();
   else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();
+  else if (pressed(padBinds.charWin)) toggleChar();
   else menuButtons();
 }
 

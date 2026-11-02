@@ -36,14 +36,15 @@ export const RUNES = {
   longMs: 30000, fearMs: 2000, fearRadius: 8, angryRage: 20,         // Kampfschrei
   ragingRage: 20,                                                    // Ansturm
 };
+const avg = r => (r[0] + r[1]) / 2;
 const spell = (name, desc, cd, mana, ranks, press, showDmg?) => ({ name, desc, showDmg, ranks, tags: ['Krieger'], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press });
 // fixed: nie als Karte in anderen Modi
 Object.assign(SPELLS, {
-  wAttack: spell('Hieb', 'Zweihandschlag, solange gehalten. Bringt Wut.', 0, 0, ['dmg', 'radius'], () => pressAttack(), 31),
-  wWhirl: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', 0, 0, ['dmg', 'radius'], () => pressWhirl(), 20),
-  wSmash: spell('Smash', 'Sprung und Hieb in den Boden vor dir.', R.smash.cd, R.smash.rage, ['dmg', 'radius'], () => pressOnce('wSmash'), 120),
-  wClap: spell('Donnerknall', 'Stampfer: trifft alles um dich, Mobs schlagen langsamer.', R.thunderclap.cd, R.thunderclap.rage, ['dmg', 'radius'], () => pressOnce('wClap'), 10),
-  wCharge: spell('Ansturm', 'Stürmt nach vorn bis zum ersten Mob oder 25 yd, betäubt 1 s, bringt Wut.', R.charge.cd, 0, ['dmg'], () => pressCharge(), 35),
+  wAttack: spell('Hieb', 'Zweihandschlag, solange gehalten. Bringt Wut.', 0, 0, ['dmg', 'radius'], () => pressAttack(), avg(R.attack.dmg)),
+  wWhirl: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', 0, 0, ['dmg', 'radius'], () => pressWhirl(), avg(R.whirlwind.dmg)),
+  wSmash: spell('Smash', 'Sprung und Hieb in den Boden vor dir.', R.smash.cd, R.smash.rage, ['dmg', 'radius'], () => pressOnce('wSmash'), avg(R.smash.dmg)),
+  wClap: spell('Donnerknall', 'Stampfer: trifft alles um dich, Mobs schlagen langsamer.', R.thunderclap.cd, R.thunderclap.rage, ['dmg', 'radius'], () => pressOnce('wClap'), avg(R.thunderclap.dmg)),
+  wCharge: spell('Ansturm', 'Stürmt nach vorn bis zum ersten Mob oder 25 yd, betäubt 1 s, bringt Wut.', R.charge.cd, 0, ['dmg'], () => pressCharge(), avg(R.charge.dmg)),
   wCry: spell('Kampfschrei', '+20 % Schaden für 15 s.', R.warcry.cd, R.warcry.rage, [], () => pressOnce('wCry')),
 });
 

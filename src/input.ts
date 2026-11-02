@@ -8,9 +8,11 @@ import { renderer, camera } from './render';
 import { groundAt } from './collision';
 import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
-import { openBinds, closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
+import { closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
 import { refreshKeyLabels } from './ui/hud';
+import { charOpen, toggleChar } from './ui/charWindow';
+import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 
 export const ACTIONS = [
   { group: 'Bewegung' },
@@ -22,6 +24,8 @@ export const ACTIONS = [
   { id: 'strafeRight', label: 'Seitwärts rechts',  code: 'KeyE',   key: 'E' },
   { id: 'jump',        label: 'Springen',          code: 'Space',  key: 'Leertaste' },
   { id: 'autorun',     label: 'Autorun',           code: 'KeyR',   key: 'R' },
+  { group: 'Fenster' },
+  { id: 'charWin', label: 'Charakterfenster', code: 'KeyX', key: 'X' },
   { group: 'Zauber' },
   { id: 'nova',  label: 'Frost Nova',       code: 'Digit1', key: '1', spell: true },
   { id: 'ae',    label: 'Arcane Explosion', code: 'Digit2', key: '2', spell: true },
@@ -76,9 +80,12 @@ addEventListener('keydown', e => {
     return;
   }
   if (e.code === 'Escape') {
-    if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
+    if (charOpen()) toggleChar();
+    else if ($('settingsModal').classList.contains('show')) $('settingsClose').click();
+    else if (pauseOpen() && !$('bindModal').classList.contains('show')) closePause();
+    else if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
     else if ($('bindModal').classList.contains('show')) closeBinds();
-    else if (!state.paused) openBinds();
+    else if (!state.paused) openPause();
     return;
   }
   const id = actionForCode(e.code);
@@ -91,6 +98,7 @@ addEventListener('keyup', e => held.delete(e.code));
 
 function runAction(id) {
   if (SPELLS[id]) pressSpell(id);
+  if (id === 'charWin') toggleChar();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;

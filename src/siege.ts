@@ -10,6 +10,7 @@ import { zone } from './world';
 import { spawnMob, enterCombat, pickMobType } from './mobs';
 import { run } from './score';
 import { resetGame } from './player';
+import { renderMenu } from './ui/mainMenu';
 
 // Mobs pro Sekunde = base + perLevel × (Level − 1) + perMinute × Minuten. // PH
 export const SIEGE = { base: 1, perLevel: 0.15, perMinute: 0.75, edgeR: 90 * WORLD_K, maxPerFrame: 3 };
@@ -48,17 +49,17 @@ export function resetSiege() { due = 0; }
 document.head.insertAdjacentHTML('beforeend', `<style>#siegeHud { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; font: 700 14px system-ui, sans-serif; color: #ff9a7a; text-shadow: 0 1px 3px #000; }</style>`);
 document.body.insertAdjacentHTML('beforeend', `<div id="siegeHud" hidden></div>`);
 
-// Auswahl im Startfenster, unabhängig vom Modus
-$('startBtn').insertAdjacentHTML('beforebegin', `<div id="mobPick" style="margin:0 0 14px;text-align:left"><div class="title" style="margin-bottom:6px">Mobs</div><div id="mobBtns" style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px"></div></div>`);
+// Auswahl im Hauptmenü, unabhängig vom Modus
 function renderMobPick() {
-  const box = $('mobBtns');
+  const box = $('menuMobs');
   box.innerHTML = '';
   for (const id of Object.keys(NAMES)) {
     const b = document.createElement('button');
-    b.className = 'bindBtn' + (id === mobMode ? ' selected' : '');
+    b.className = 'chip' + (id === mobMode ? ' selected' : '');
     b.textContent = NAMES[id];
+    b.dataset.nav = NAMES[id];
     b.title = id === 'siege' ? 'Mobs kommen vom Kartenrand, immer mehr pro Level und Minute, ohne Obergrenze' : 'Packs stehen auf der Karte';
-    b.addEventListener('click', () => { setMobMode(id); resetGame(); renderMobPick(); });
+    b.addEventListener('click', () => { setMobMode(id); resetGame(); renderMobPick(); renderMenu(); });
     box.appendChild(b);
   }
 }

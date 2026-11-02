@@ -8,7 +8,7 @@ import { zone } from './world';
 import { groundAt, resolve, settle, steer, climbTarget } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
-import { reportKill } from './score';
+import { reportKill , run } from './score';
 import { mobMode, modFactor } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
@@ -296,6 +296,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false) {
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
   damageNumber(mob, dmg, crit, source);
+  run.dmgBySource[source] = (run.dmgBySource[source] || 0) + dmg;
   hitSparkFx(mob.pos, source);
 
   if (frozen && source !== 'nova' && Math.random() < CFG.novaBreakChance) mob.rootUntil = 0;

@@ -20,6 +20,7 @@ import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
+import { menuSpin, enterMenu } from './ui/mainMenu';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -45,7 +46,7 @@ function updateVisuals(dt) {
   if (player.targeting && !state.padAim) pickGround();
 
   mage.root.position.copy(player.pos);
-  mage.root.rotation.y = player.facing;
+  mage.root.rotation.y = player.facing + menuSpin(dt);
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
@@ -94,6 +95,7 @@ function loop(t) {
 }
 
 resetGame();
+enterMenu();
 refreshKeyLabels();
 requestAnimationFrame(loop);
 

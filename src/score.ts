@@ -8,7 +8,7 @@ import { SPELLS, SCORE_MULTI_WINDOW, SCORE_MULTI_STEP, SCORE_MULTI_MAX, SCORE_CO
 export const run: any = {};
 
 export function resetScore() {
-  Object.assign(run, { killPoints: 0, kills: 0, combo: 0, bestCombo: 0, lastKill: -1e9, casts: {}, lastMulti: 0, multiAt: -1e9, bestMulti: 0, bestPull: 0 });
+  Object.assign(run, { killPoints: 0, kills: 0, combo: 0, bestCombo: 0, lastKill: -1e9, casts: {}, lastMulti: 0, multiAt: -1e9, bestMulti: 0, bestPull: 0, dmgBySource: {} });
 }
 resetScore();
 
