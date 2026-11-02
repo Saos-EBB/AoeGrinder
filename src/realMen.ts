@@ -21,7 +21,7 @@ import { roll, forward, mobsOnLine, after, updateMelee, clearMelee } from './mel
 export const REALMEN = {
   rage: { max: 100, start: 0, perMobHit: 8, perSwingMax: 15, perHitTaken: 3, decayPerS: 1, outOfCombatMs: 5000 },
   attack: { dmg: [28, 34], radius: 2.5 },
-  whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 10, speedMul: 0.7, tapMs: 300 },   // trifft alle Mobs, Classic nur 4
+  whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 10, speedMul: 0.7, tapMs: 300, minStart: 10 },   // trifft alle Mobs, Classic nur 4
   smash: { dmg: [110, 130], radius: 4, rage: 20, cd: 6000 },
   charge: { rage: 9 /* Classic Rang 1 */, range: 25 /* Classic */, cd: 15000 /* Classic */, stunMs: 1000 /* Classic */, speed: 30, hitRadius: 2.5, stunRadius: 3.5, dmg: [30, 40], stride: 7 },
   warcry: { rage: 10, cd: 30000, ms: 900, buffMs: 15000, dmgMul: 1.2 },
@@ -130,7 +130,7 @@ function clearAttacks() {
   frenzy = 0; quakes = []; anchorAt = null; mage.rate = 1; player.resNote = '';
   clearMelee();
   attackUntil = 0; attackCtx = null;
-  whirlOn = false; whirlUntil = 0; whirlCtx = null;
+  whirlOn = false; whirlUntil = 0; whirlCtx = null; nextWhirlTick = 0;   // state.now startet pro Run bei 0
 }
 
 function pressAttack() {
@@ -141,7 +141,7 @@ function startAttackCycle() {
   if (state.now >= attackUntil) { attackUntil = state.now + timing().attack / mage.rate; attackCtx = makeCtx('wAttack'); swingRage = 0; }
 }
 function pressWhirl() {
-  if (player.mana <= 0) return showError('Nicht genug Wut');
+  if (!whirlOn && player.mana < R.whirlwind.minStart) return showError('Nicht genug Wut');
   whirlUntil = state.now + R.whirlwind.tapMs;
 }
 function pressOnce(id) {
@@ -291,7 +291,8 @@ export function updateRealMen(dt) {
   if (charge) updateCharge(s);
 
   const stunned = player.stunUntil > now;
-  const wantWhirl = !once && !charge && !stunned && player.mana > 0 && (held('wWhirl') || now < whirlUntil);
+  // Einmal an, läuft er bis 0 Wut; neu starten braucht minStart, sonst stottert er bei jedem kassierten Treffer an
+  const wantWhirl = !once && !charge && !stunned && player.mana >= (whirlOn ? 0.01 : R.whirlwind.minStart) && (held('wWhirl') || now < whirlUntil);
   if (wantWhirl) {
     if (!whirlOn) { whirlOn = true; whirlCtx = makeCtx('wWhirl'); attackUntil = 0; }
     if (now >= nextWhirlTick) {
