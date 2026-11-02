@@ -1,7 +1,7 @@
 # Frost Grind – Stand & Übergabe
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v14 (`__ARTIFACT_VERSION__`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/mageModel.ts` neu ziehen, danach `RUN_REF` prüfen.
 
