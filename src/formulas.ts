@@ -1,10 +1,10 @@
 // Formeln aus VMaNGOS, Abschnitte siehe docs/mechanics-spec.md
 
-import { player } from './state';
+import { state, player } from './state';
 import { rand, clamp } from './util';
-import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX } from './config';
+import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX, LEVEL_MAX, LEVEL_PACE, LEVEL_KILLS } from './config';
 import { stat, rune, echoCost, radiusMult } from './spells/core';
-import { modFactor } from './modifiers';
+import { modFactor, timeLimit } from './modifiers';
 
 // Spec §1
 export function aggroRadius(mob) {
@@ -51,7 +51,10 @@ export function xpColor(mobLevel) {
 }
 
 // PH: Werte für Level-Skalierung, Spielerstats und XP-Bedarf
-export const xpNeeded = () => (player.level * 5 + 45) * 10;
+export const xpNeeded = () => Math.round((player.level * 5 + 45) * (LEVEL_KILLS.base + LEVEL_KILLS.perLevel * player.level));
+// Level, auf dem der Run nach dieser Zeit stehen soll. Mit Zeitlimit gilt dessen Länge.
+const paceLevel = () => 1 + (LEVEL_MAX - 1) * state.now / (timeLimit() || LEVEL_PACE.minutes * 60000);
+export const paceXpMul = () => clamp(2 ** ((paceLevel() - player.level) / LEVEL_PACE.halfLevels), LEVEL_PACE.minMul, LEVEL_PACE.maxMul);
 const baseHp = () => LEVEL_HP_AT_20 + LEVEL_HP_STEP * (player.level - 20);
 const MANA_PER_HP = 4 / 3;                       // Mana = Leben + 1/3
 // Modi als eigener Faktor, damit Karten-Boni in jedem Modus relativ gleich wirken

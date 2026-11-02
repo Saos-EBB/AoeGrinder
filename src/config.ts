@@ -24,10 +24,13 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v14';
+export const SCORE_VERSION = 'v15';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
+// Pacing: ein Run bis Level 100 dauert etwa so lange. Vorsprung bremst die XP, Rückstand hebt sie (formulas.ts, paceXpMul). // PH
+export const LEVEL_PACE = { minutes: 15, halfLevels: 4, minMul: 0.15, maxMul: 2.5 };   // halfLevels: je so viele Level Vorsprung halbiert sich die XP
+export const LEVEL_KILLS = { base: 8, perLevel: 0.4 };    // Kills pro Level ohne Pacing: 8 auf Level 1, 48 auf Level 100. AoE trifft später viel mehr Mobs // PH
 export const LEVEL_UP_HEAL = 0.25;                        // Level-up heilt 25 % der maximalen Leben, Kevins Wunsch
 export const LEVEL_MOB_DEF_STEP = 0.004, LEVEL_MOB_DEF_MAX = 0.4;   // Schadensreduktion der Mobs: 0,4 % pro Level über 1, höchstens 40 %
 export const LEVEL_HP_AT_20 = 1040, LEVEL_HP_STEP = 39;   // Leben auf Level 20, plus pro Level
@@ -92,6 +95,9 @@ export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spe
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
 export const CARD_RELIC_LEVEL = 30;
+// Karten nur auf diesen Leveln, 31 pro Run: anfangs Build aufbauen, am Ende spielen. Bis Level "to" alle "every" Level. // PH
+export const CARD_LEVELS = [{ to: 10, every: 1 }, { to: 40, every: 3 }, { to: 100, every: 5 }];
+export const CARD_MIN_GAP = 15000;     // ms Spielzeit zwischen zwei Kartenfenstern, der Rest wartet // PH
 export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 
 // Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.

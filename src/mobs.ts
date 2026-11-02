@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
 import { CFG, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
-import { aggroRadius, hitChance, xpForKill, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
+import { aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
 import { groundAt, resolve, settle, steer, climbTarget } from './collision';
@@ -328,7 +328,7 @@ function killMob(mob) {
   reportKill(mob, mob.type.noXp ? 0 : xpForKill(mob.level));
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
   if (mob.type.noXp) return;
-  const xp = xpForKill(mob.level);
+  const xp = Math.round(xpForKill(mob.level) * paceXpMul());
   if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
 }
 

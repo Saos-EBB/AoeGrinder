@@ -11,8 +11,7 @@ Auftrag an Agent BLAU (Branch `blau-levels`). Alle neuen Zahlen sind `// PH`. St
   Explosions (ohne Karten). dmgMult(level) und mobMaxHp(level) danach auslegen.
   Per Test messen auf Level 1, 20, 50, 100, Werte in status-blau.md.
   Überholt auf Kevins Wunsch: Mob-Leben verdoppelt, dazu 0,4 % Schadensreduktion pro Level (höchstens 40 %). Rechnerisch 6 Explosions auf Level 1 und 20, 7 auf Level 50, 10 auf Level 100.
-- XP: Classic-Formel bleibt (ZD ab Level 60 = 17). xpNeeded so, dass ~10 gleichstufige Kills
-  pro Level reichen.
+- XP: Classic-Formel bleibt (ZD ab Level 60 = 17). Überholt: xpNeeded wächst von 8 Kills auf Level 1 bis 48 auf Level 100 (`LEVEL_KILLS`), dazu Pacing auf 15 Minuten (`LEVEL_PACE`, `paceXpMul`). Karten nur noch auf den Leveln aus `CARD_LEVELS`.
 - Level 100: kein Level-Up mehr, XP-Balken zeigt "Max-Level", Punkte laufen weiter.
 - Mob-Level: Spielerlevel −1 bis +2, mindestens 1, höchstens 102.
 

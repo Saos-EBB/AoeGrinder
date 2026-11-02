@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX } from './config';
+import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_LEVELS, CARD_MIN_GAP } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { scene } from './render';
 import { heightAt, zone, zoneId, buildWorld } from './world';
@@ -9,14 +9,15 @@ import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam, autoCamOn } from './camera';
 import { combatText, fmtTime } from './ui/hud';
-import { showCards } from './ui/menus';
+import { showCards, levelRefill } from './ui/menus';
+import { rankAllSpells } from './cards';
 import { mouseBtn, act } from './input';
 import { fillPacks, removeMob, announceNewMobs } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
-import { updateChannel, stopChannel, stopDrink } from './spells';
+import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
@@ -36,6 +37,7 @@ export function resetGame() {
   state.cardPicks = {};
   state.now = 0;
   state.pendingLevelUps = 0;
+  state.nextCardAt = 0;
   state.newMob = null;
   state.autorun = false;
   Object.assign(player, {
@@ -141,13 +143,27 @@ export function gainXp(xp) {
   while (player.level < LEVEL_MAX && player.xp >= xpNeeded()) {
     player.xp -= xpNeeded();
     player.level++;
-    state.pendingLevelUps++;
+    levelRefill();
+    if (!modRule('noCards')) state.pendingLevelUps += cardAtLevel(player.level) ? 1 : 0;
+    else if (player.level % CARD_CLASSIC_EVERY === 0) rankAllSpells();   // Classic pur: statt Karten ein Rang, das Spiel läuft weiter
   }
   if (player.level >= LEVEL_MAX) player.xp = 0;
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
   if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return completeRun('Level 100');
-  if (state.pendingLevelUps > 0 && !$('cardModal').classList.contains('show')) { levelUpFx(); showCards(); }
+  if (player.level > fromLevel) levelUpFx();
+  updateCardQueue();
+}
+
+function cardAtLevel(level) {
+  return level % CARD_LEVELS.find(b => level <= b.to).every === 0;
+}
+
+// Auch mehrere Level auf einmal öffnen nur ein Fenster, die übrigen kommen frühestens nach CARD_MIN_GAP Spielzeit
+export function updateCardQueue() {
+  if (state.pendingLevelUps <= 0 || state.now < state.nextCardAt || player.dead || $('cardModal').classList.contains('show')) return;
+  state.nextCardAt = state.now + CARD_MIN_GAP;
+  showCards();
 }
 
 // Abschluss: Level 100 bei Packs, Zeitziel in der Belagerung. Läuft durch den normalen Ergebnis-Screen.

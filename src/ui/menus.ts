@@ -1,7 +1,7 @@
 import { state, player } from '../state';
 import { $ } from '../util';
-import { SPELLS, CARD_RARITIES, CARD_CLASSIC_EVERY, LEVEL_UP_HEAL } from '../config';
-import { rollOffer, forcedOffer, rankAllSpells, cardPreview, cardStage } from '../cards';
+import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL } from '../config';
+import { rollOffer, forcedOffer, cardPreview, cardStage } from '../cards';
 import { COLORS } from './colors';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
@@ -23,10 +23,9 @@ function markWords(text) {
 
 // Level-Up-Karten
 export function showCards(offer?) {
-  if (!offer && modRule('noCards')) return classicLevelUp();
   offer ??= rollOffer();
   state.paused = true;
-  $('cardLvl').textContent = String(player.level - state.pendingLevelUps + 1);
+  $('cardLvl').textContent = String(player.level);
   $('cardHint').textContent = '';
   $('cards').innerHTML = '';
   for (const c of offer) {
@@ -48,15 +47,6 @@ export function showCards(offer?) {
   }
   $('cardModal').classList.add('show');
   ding();
-}
-
-// Classic pur: statt Karten alle 2 Level ein Rang, das Spiel läuft weiter
-function classicLevelUp() {
-  for (let lvl = player.level - state.pendingLevelUps + 1; lvl <= player.level; lvl++) {
-    if (lvl % CARD_CLASSIC_EVERY === 0) rankAllSpells();
-  }
-  state.pendingLevelUps = 0;
-  refill();
 }
 
 function pickCard(card) {
@@ -82,17 +72,15 @@ function chooseReplacement(id) {
   });
 }
 
-function refill() {                    // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
+export function levelRefill() {       // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
   player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
   if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
 }
 
 function finishCard() {
   state.pendingLevelUps--;
-  refill();
   $('cardModal').classList.remove('show');
-  if (state.pendingLevelUps > 0) showCards();
-  else syncPause();
+  syncPause();
 }
 
 // Tastenbelegung-Menü

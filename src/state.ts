@@ -6,7 +6,8 @@ export const state: any = {
   stormK: 0,            // Sandsturm, 0..1
   packCounter: 0,
   packDeaths: {},
-  pendingLevelUps: 0,
+  pendingLevelUps: 0,   // offene Kartenfenster
+  nextCardAt: 0,
   cardRanks: {},
   cardPicks: {},         // wie oft eine Karte gewählt wurde: Stufe und Build
   autorun: false,

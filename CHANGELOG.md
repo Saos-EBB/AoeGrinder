@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(balance): Run auf 15 Minuten ausgelegt: 31 Karten statt 99, höchstens ein Kartenfenster alle 15 s, XP bremst bei Vorsprung und hilft bei Rückstand; Punkte-Version v15
 - feat(spells): Neue Spells Eislanze, Gletscherspalte, Feuerball, Meteor, Arkanes Sperrfeuer und Arkane Woge, je mit 3 Runen
 - feat(modes): Nur Frost, Nur Feuer und Nur Arkan bieten nur noch Karten der eigenen Schule an
 - fix(realmen): Wirbelwind machte ab dem zweiten Run zeitweise keinen Schaden, stottert ohne Wut nicht mehr an

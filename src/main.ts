@@ -18,7 +18,7 @@ import { updateRealMen, realMenAnim } from './realMen';
 import { updateHeroes, heroAnim } from './heroes';
 import { updateSiege } from './siege';
 import { cast } from './spells';
-import { resetGame, updatePlayer, switchZone } from './player';
+import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 import './mobile';
@@ -42,6 +42,7 @@ function update(dt) {
   });
   updateRespawn();
   updateSiege(dt);
+  updateCardQueue();
 }
 
 function updateVisuals(dt) {
