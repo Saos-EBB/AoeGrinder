@@ -1,5 +1,9 @@
 # Build-Log
 
+## 2026-11-02 — chore: alle Branches in main
+**Was:** `mc-model`, `real-men`, `blau-assets`, `gruen-vfx` zusammengeführt, Effekte auf `groundAt`, Handoff neu, nur noch ein Agent.
+**Nicht gebaut:** keine Balance-Änderung, darum bleibt `SCORE_VERSION` v12.
+
 ## 2026-11-01 — feat(ui): Schadenszahlen größer
 **Was:** Wunsch von Kevin: Treffer 22 px, Crit 34 px, Schaden an der Figur 22 px.
 **Nicht gebaut:** Heilung, Widerstanden und XP bleiben, die sind keine Schadenszahlen.
