@@ -15,6 +15,7 @@ import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorp
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
+import { updateHeroes, heroAnim } from './heroes';
 import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
@@ -30,6 +31,7 @@ function update(dt) {
   updateAbilities(dt);
   updateSkinFx();
   updateRealMen(dt);
+  updateHeroes(dt);
   updateZoneEvent(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
@@ -54,7 +56,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...heroAnim(),
   });
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 

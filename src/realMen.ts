@@ -79,13 +79,13 @@ Object.assign(SPELLS.wCharge, { runes: [{ id: 'raging', name: 'Wütender Ansturm
 const isWarrior = () => mage.skin === 'krieger';
 
 // Taste oder Pad-Knopf des Slots, in dem die Attacke liegt
-function held(id) {
+export function held(id) {
   const action = SPELL_ACTIONS[state.slots.indexOf(id)];
   return !!action && (act(action) || !!pad.down[padBinds[action]]);
 }
 
 export function rageOnHit() {
-  if (isWarrior()) gainRage(R.rage.perHitTaken);
+  if (isWarrior() || mage.skin === 'samurai') gainRage(R.rage.perHitTaken);   // Ronin: gleiche Wut-Regeln
 }
 function gainRage(n) { player.mana = Math.min(R.rage.max, player.mana + n); }
 

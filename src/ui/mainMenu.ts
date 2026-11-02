@@ -24,6 +24,8 @@ const CHARS = [
   { mod: 'fire', name: 'Feuer-Skelett', sub: 'Feuer' },
   { mod: 'arcane', name: 'Arkan-Skelett', sub: 'Arkan' },
   { mod: 'realmen', name: 'Skelett-Krieger', sub: 'Real Men' },
+  { mod: 'ronin', name: 'Gebeinsamurai', sub: 'Ronin' },
+  { mod: 'schatten', name: 'Aschenschatten', sub: 'Schatten' },
 ];
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));

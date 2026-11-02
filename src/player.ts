@@ -23,6 +23,7 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
+import { resetHeroes, heroRooted, untouchable } from './heroes';
 
 export function resetGame() {
   startMageRun();
@@ -47,6 +48,7 @@ export function resetGame() {
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
+  resetHeroes();
   resetSiege();
   resetSplits();
   blizCursor.visible = false;
@@ -86,7 +88,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead) return;
+  if (player.dead || untouchable()) return;
   player.hp -= amount;
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
   player.lastHitBy = dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava';
@@ -178,7 +180,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted();
+  const stunned = player.stunUntil > state.now || rooted() || heroRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
