@@ -6,11 +6,11 @@ import { UI } from './uiConfig';
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
 const NAMES = { hudHeader: 'Kopfleiste', hudBars: 'Leben, Mana, Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
 export const DEFAULT_LAYOUT = {
-  hudHeader: { anchor: 'tc', x: 0, y: 0 },
-  hudBars: { anchor: 'c', x: 0, y: 24 },
-  actionbar: { anchor: 'bc', x: 0, y: -1 },
-  hudEffects: { anchor: 'tl', x: 1, y: 8 },
-  hudRelics: { anchor: 'cr', x: -1, y: -10 },
+  hudHeader: { anchor: 'tc', x: 0, y: 0, scale: 1 },
+  hudBars: { anchor: 'c', x: 0, y: 24, scale: 1 },
+  actionbar: { anchor: 'bc', x: 0, y: -1, scale: 1 },
+  hudEffects: { anchor: 'tl', x: 1, y: 8, scale: 1 },
+  hudRelics: { anchor: 'cr', x: -1, y: -10, scale: 1 },
 };
 const STORE = 'frostgrind.hud.v1';
 
@@ -29,7 +29,8 @@ export function applyLayout() {
   for (const id in layout) {
     const e = layout[id], [fx, fy] = ANCHORS[e.anchor], el = $(id);
     Object.assign(el.style, { position: 'fixed', right: 'auto', bottom: 'auto', margin: '0',
-      left: `${fx * 100 + e.x}%`, top: `${fy * 100 + e.y}%`, transform: `translate(${-fx * 100}%, ${-fy * 100}%)` });
+      left: `${fx * 100 + e.x}%`, top: `${fy * 100 + e.y}%`, transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${e.scale ?? 1})`,
+      transformOrigin: `${fx * 100}% ${fy * 100}%` });
     el.dataset.hudName = NAMES[id];
   }
 }
@@ -41,6 +42,7 @@ export function startHudEdit(done) {
   onDone = done;
   document.body.classList.add('hudEdit');
   $('hudEditBar').hidden = false;
+  showGrid();
 }
 export function stopHudEdit() {
   if (!onDone) return;
@@ -49,10 +51,23 @@ export function stopHudEdit() {
   drag = null;
   document.body.classList.remove('hudEdit');
   $('hudEditBar').hidden = true;
+  $('hudGrid').hidden = true;
   done();
 }
 
-const snap = v => Math.round(v / UI.gridPct) * UI.gridPct;
+// Raster: an rastet beim Ziehen ein und zeigt die Linien, aus heißt frei schieben
+let gridOn = true, gridStep = UI.gridSteps[0];
+const snap = v => gridOn ? Math.round(v / gridStep) * gridStep : Math.round(v * 10) / 10;
+function showGrid() {
+  $('hudEditGrid').textContent = `Raster: ${gridOn ? 'an' : 'aus'}`;
+  $('hudEditStep').textContent = `Größe: ${gridStep} %`;
+  ($('hudEditStep') as HTMLButtonElement).disabled = !gridOn;
+  const g = $('hudGrid');
+  g.hidden = !gridOn;
+  g.style.backgroundSize = `${gridStep}vw ${gridStep}vh`;
+}
+$('hudEditGrid').addEventListener('click', () => { gridOn = !gridOn; showGrid(); });
+$('hudEditStep').addEventListener('click', () => { gridStep = UI.gridSteps[(UI.gridSteps.indexOf(gridStep) + 1) % UI.gridSteps.length]; showGrid(); });
 for (const id of Object.keys(layout)) {
   $(id).addEventListener('pointerdown', e => {
     if (!onDone) return;
@@ -60,6 +75,14 @@ for (const id of Object.keys(layout)) {
     drag = { id, x: e.clientX, y: e.clientY, ox: layout[id].x, oy: layout[id].y };
   }, true);
   $(id).addEventListener('click', e => { if (onDone) { e.preventDefault(); e.stopPropagation(); } }, true);
+  $(id).addEventListener('wheel', e => {             // Mausrad über dem Element ändert seine Größe
+    if (!onDone) return;
+    e.preventDefault();
+    const { min, max, step } = UI.hudScale, next = (layout[id].scale ?? 1) - Math.sign(e.deltaY) * step;
+    layout[id].scale = Math.round(Math.min(max, Math.max(min, next)) * 100) / 100;
+    applyLayout();
+    save();
+  }, { passive: false });
 }
 addEventListener('pointermove', e => {
   if (!drag) return;

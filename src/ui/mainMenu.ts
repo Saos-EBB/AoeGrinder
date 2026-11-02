@@ -103,10 +103,25 @@ export function renderMenu() {
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
 export const menuOpen = () => $('startModal').classList.contains('show');
-export const menuYaw = () => menuOpen() ? Math.PI : 0;   // Im Menü schaut die Figur zur Kamera
+// Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
+let menuTurn = 0, turning = null;
+export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
+$('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
+addEventListener('pointermove', e => {
+  if (turning === null) return;
+  menuTurn += (e.clientX - turning) * UI.menuCam.turnPerPx;
+  turning = e.clientX;
+});
+addEventListener('pointerup', () => { turning = null; });
+$('startModal').addEventListener('wheel', e => {
+  if (e.target !== $('startModal')) return;           // In den Listen scrollt das Rad weiter
+  const { minDist, maxDist, zoomStep } = UI.menuCam;
+  cam.dist = Math.min(maxDist, Math.max(minDist, cam.dist + Math.sign(e.deltaY) * zoomStep));
+}, { passive: true });
 export function enterMenu() {
   camSaved ??= { dist: cam.dist, pitch: cam.pitch, offset: cam.offset };
   Object.assign(cam, { dist: UI.menuCam.dist, pitch: UI.menuCam.pitch, offset: 0 });
+  menuTurn = 0;
   document.body.classList.add('menu');
   $('startModal').classList.add('show');
   renderMenu();

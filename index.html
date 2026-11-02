@@ -42,8 +42,11 @@
     outline: 2px dashed #ffe27a; outline-offset: 1px; cursor: move; min-width: 90px; min-height: 26px; }
   body.hudEdit #hudHeader::after, body.hudEdit #hudBars::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after {
     content: attr(data-hud-name); position: absolute; top: 100%; left: 0; font: 700 11px system-ui; color: #ffe27a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
-  #hudEditBar { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
-  #hudEditBar[hidden] { display: none; }
+  #hudEditBar button { white-space: nowrap; }
+  #hudEditBar { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
+  #hudEditBar[hidden], #hudGrid[hidden] { display: none; }
+  #hudGrid { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background-image: linear-gradient(#ffffff2e 1px, transparent 1px), linear-gradient(90deg, #ffffff2e 1px, transparent 1px); }
   #fsr { height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
   #status { font-size: 12px; color: #9cc4ff; min-height: 16px; margin-top: 2px; text-align: center; text-shadow: 0 1px 2px #000; }
@@ -219,8 +222,11 @@
 <div id="hudEffects"></div>
 <div id="hudRelics"></div>
 <div id="actionbar" class="frame"></div>
+<div id="hudGrid" hidden></div>
 <div id="hudEditBar" class="frame" hidden>
-  <span class="title">UI bearbeiten: Elemente ziehen</span>
+  <span class="title">Ziehen verschiebt, Mausrad ändert die Größe</span>
+  <button class="bindBtn" id="hudEditGrid"></button>
+  <button class="bindBtn" id="hudEditStep"></button>
   <button class="bindBtn" id="hudEditReset">Zurücksetzen</button>
   <button class="bindBtn" id="hudEditDone">Fertig</button>
 </div>
