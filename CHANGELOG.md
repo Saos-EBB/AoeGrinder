@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(mobile): Startbildschirm fragt Desktop oder Handy; Handy erzwingt Vollbild und Querformat, ohne Sperre (iPhone, iframe) liegt die Seite um 90° gedreht
 - feat(mobile): Handy-Erkennung, Vollbild quer beim ersten Antippen, Touch-Steuerung mit 2 Sticks und 4 Tasten pro Seite, eigenes HUD-Layout, Menüs im Vollbild
 - chore(docs): Handoff und Übersicht auf v14
 - feat(docs): Credits für die Icons, auch in den Einstellungen

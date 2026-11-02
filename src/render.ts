@@ -5,10 +5,11 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { PERF } from './config';
+import { viewW, viewH } from './device';
 
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, PERF.maxPixelRatio));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(viewW(), viewH());
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 renderer.info.autoReset = false;   // der Composer rendert mehrmals pro Frame, gezählt und zurückgesetzt wird in ui/hud.ts
@@ -17,7 +18,7 @@ document.body.prepend(renderer.domElement);
 export const scene = new THREE.Scene();
 const fog = scene.fog = new THREE.Fog(0xffffff, 45, 185);
 
-export const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.3, 700);
+export const camera = new THREE.PerspectiveCamera(55, viewW() / viewH(), 0.3, 700);
 
 // Hauptlicht und Fülllicht, Werte kommen aus der Zone (setEnv)
 const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
@@ -27,11 +28,11 @@ scene.add(sun);
 
 // Bloom: nur sehr helle Farben (Zauber-Partikel, Kristall) leuchten
 // Eigener Puffer mit Tiefentextur: Soft Particles lesen sie (fx/softPass.ts). Der Composer klont sie für den zweiten Puffer.
-export const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
-  type: THREE.HalfFloatType, depthTexture: new THREE.DepthTexture(innerWidth, innerHeight) }));
+export const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(viewW(), viewH(), {
+  type: THREE.HalfFloatType, depthTexture: new THREE.DepthTexture(viewW(), viewH()) }));
 composer.setPixelRatio(renderer.getPixelRatio());
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.4, 1.5);
+const bloom = new UnrealBloomPass(new THREE.Vector2(viewW(), viewH()), 0.55, 0.4, 1.5);
 if (PERF.bloom) composer.addPass(bloom);
 // Vignette + leichte Farbtönung (warme Lichter, kühle Schatten)
 const post = new ShaderPass({
@@ -98,8 +99,8 @@ export function setEnv(e) {
 }
 
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+  camera.aspect = viewW() / viewH();
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
+  renderer.setSize(viewW(), viewH());
+  composer.setSize(viewW(), viewH());
 });

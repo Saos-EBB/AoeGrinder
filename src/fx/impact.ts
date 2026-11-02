@@ -1,6 +1,7 @@
 // Impact-Paket: Lichtblitz aus dem Licht-Pool, Schockwellen-Verzerrung, Kamera-Ruck, Hitstop.
 
 import * as THREE from 'three';
+import { viewW, viewH } from '../device';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { scene, camera, composer } from '../render';
 import { softPass } from './softPass';
@@ -93,7 +94,7 @@ export function updateImpact(dt) {
   } else kick = 0;
 
   camera.updateMatrixWorld();
-  shock.uniforms.uAspect.value = innerWidth / innerHeight;
+  shock.uniforms.uAspect.value = viewW() / viewH();
   const us = shock.uniforms.uWave.value;
   for (let i = waves.length - 1; i >= 0; i--) if ((fxClock.now - waves[i].start) >= waves[i].dur) waves.splice(i, 1);
   shock.enabled = waves.length > 0;

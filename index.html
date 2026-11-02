@@ -221,9 +221,6 @@
   .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
   #tMenu { position: absolute; top: 8px; right: 10px; width: 48px; height: 48px; font-size: 28px; line-height: 44px; text-align: center; z-index: 1;
     background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
-  #rotateHint { display: none; }
-  @media (orientation: portrait) { body.mobile #rotateHint { display: flex; position: fixed; inset: 0; z-index: 10; background: #0d0b08; color: #f2c94c;
-    align-items: center; justify-content: center; font: 700 22px Cinzel, serif; } }
   body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics { pointer-events: none; }
   body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
@@ -244,6 +241,15 @@
   body.mobile #menuBottom { bottom: 1vh; }
   body.mobile .charTab { width: 120px; padding: 10px 4px; }
   body.mobile #menuActions .smallBtn { padding: 12px 16px; }
+  /* Handy hochkant ohne Querformat-Sperre: Seite um 90° gedreht (device.ts updateRotation) */
+  html.rot body { position: fixed; top: 0; left: 100vw; width: 100vh; height: 100vw; transform-origin: 0 0; transform: rotate(90deg); }
+  html.rot #hudHeader { width: 100%; }
+  html.rot body.mobile .modal > .frame.panel { width: 100% !important; min-height: 100%; }
+  html.rot body.mobile .cards { width: 100%; max-height: 100%; }
+  html.rot body.mobile #menuLeft { width: 38vh; max-height: 60vw; }
+  html.rot body.mobile #menuRight { width: 30vh; max-height: 60vw; }
+  html.rot #hudHp, html.rot #hudMana { width: 20vh; }
+  html.rot #hudCast { width: 40vh; }
 </style>
 </head>
 <body>
@@ -418,6 +424,16 @@
   </div>
 </div>
 
-<script type="module" src="/src/main.ts"></script>
+<div id="deviceModal" class="modal show" style="z-index:20;background:#0d0b08">
+  <h1 class="title">Frost Grind</h1>
+  <p style="margin:0">Womit spielst du?</p>
+  <div class="row2">
+    <button class="btn" id="pickDesktop">Desktop</button>
+    <button class="btn" id="pickMobile">Handy</button>
+  </div>
+  <p style="margin:0;font-size:13px;color:#c9b88a">Handy: Vollbild, quer, Touch-Steuerung</p>
+</div>
+
+<script type="module" src="/src/boot.ts"></script>
 </body>
 </html>
