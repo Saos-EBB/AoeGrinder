@@ -1,2 +1,11 @@
-// Spell-ID → Bilddatei. Leer, solange es keine Icons mit klarer Lizenz gibt (docs/asset-audit.md): Der Slot zeigt dann Name und Schulfarbe.
-export const ICONS: Record<string, string> = {};
+// Spell-ID → Bilddatei. Fehlt ein Eintrag, zeigt der Slot Name und Schulfarbe. Herkunft: docs/asset-audit.md (Kevin: selbstgemacht, CC0).
+// @ts-ignore: Vite-Funktion
+const files: Record<string, string> = import.meta.glob('../assets/icons/*.png', { eager: true, query: '?url', import: 'default' });
+const icon = name => files[`../assets/icons/${name}.png`];
+
+export const ICONS: Record<string, string> = {
+  nova: icon('frostMissiles2'), coc: icon('frostMissiles'), bliz: icon('boltShower'), frostorb: icon('snowball'),
+  froststrike: icon('frostMissiles2'), frostbreath: icon('frostMissiles'),
+  ae: icon('boltCurrent'), voidorb: icon('plasmaBolt'), blink: icon('energySpear'), chain: icon('boltCurrent'),
+  flame: icon('flameBeam'), blast: icon('flameBolt'), hellfire: icon('flameAura'), firenova: icon('flameNova'), ragnaros: icon('fireball'), wClap: icon('flameDrop'), wCry: icon('flameAura2'),
+};

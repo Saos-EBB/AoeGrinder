@@ -62,7 +62,8 @@ export function renderActionbar() {
     if (!id) return;
     const el = document.createElement('div');
     el.className = `slot ${SPELLS[id].cls}`;
-    if (ICONS[id]) el.style.backgroundImage = `url(${ICONS[id]})`;
+    el.title = SPELLS[id].name;
+    if (ICONS[id]) { el.style.backgroundImage = `url(${ICONS[id]})`; el.classList.add('hasIcon'); }
     el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>`;
     el.addEventListener('click', () => castSpell(id));
     bar.appendChild(el);

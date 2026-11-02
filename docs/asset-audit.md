@@ -42,6 +42,8 @@ Gesichtet: alle 25 Dateien aus `~/Assets cc0/aoeGrinder`, entpackt nach `~/dev/f
 | `Maghar Mage` | Skin, 2 Icons | unklar | raus |
 | `Flame Spells`, `FrostMissiles`, `BTNblockblack`, `SnowBall - FireBall`, `Hero Ability Icon Set 3` | Zauber-Icons (BLP, DDS) | unklar: nur „credit the author“ | raus; als Vorlage für die Actionbar nur mit Erlaubnis der Autoren |
 
+Nachtrag 2026-11-02: Laut Kevin sind die Icon-Packs selbstgemachte CC0-Packs von Leuten, die Icons sind deshalb in `src/assets/icons/` eingebaut.
+
 ## Auffälligkeiten
 - `23-animated_chainsaw__low-poly_version.zip` enthält keine Kettensäge, sondern das Pack **KayKit Skeletons 1.1**. Die Lizenz gilt für das Pack, der Dateiname passt nicht.
 - Die Warcraft-Modelle tragen zum Teil „Blizzard Entertainment“ als Mit-Autor. Ohne Klärung gehören sie nicht in einen Build.
