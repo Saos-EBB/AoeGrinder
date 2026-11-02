@@ -5,7 +5,7 @@ import { state, player } from './state';
 import { $, rand } from './util';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
-import { WAR_TIMING } from './models/mageModel';
+import { WAR_TIMING } from './models/heroModels';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
 import { showError } from './ui/hud';
@@ -79,8 +79,8 @@ export function resetRealMen() {
 }
 
 const ONCE = {
-  wSmash: { def: R.smash, ability: 'smash', ms: WAR_TIMING.smash },
-  wClap: { def: R.thunderclap, ability: 'thunderclap', ms: WAR_TIMING.thunderclap },
+  wSmash: { def: R.smash, ability: 'smash', ms: WAR_TIMING.sword.smash },
+  wClap: { def: R.thunderclap, ability: 'thunderclap', ms: WAR_TIMING.sword.thunderclap },
   wCry: { def: R.warcry, ability: 'warcry', ms: R.warcry.ms },
 };
 const roll = (r: number[]) => rand(r[0], r[1]);
@@ -102,7 +102,7 @@ function pressAttack() {
   startAttackCycle();
 }
 function startAttackCycle() {
-  if (state.now >= attackUntil) { attackUntil = state.now + WAR_TIMING.cast; attackCtx = makeCtx('wAttack'); }
+  if (state.now >= attackUntil) { attackUntil = state.now + WAR_TIMING.sword.attack; attackCtx = makeCtx('wAttack'); }
 }
 function pressWhirl() {
   if (player.mana <= 0) return showError('Nicht genug Wut');
