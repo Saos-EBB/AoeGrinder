@@ -30,6 +30,7 @@ export function resetGame() {
   resetMods();
   resetScore();
   state.cardRanks = {};
+  state.cardPicks = {};
   state.now = 0;
   state.pendingLevelUps = 0;
   state.newMob = null;

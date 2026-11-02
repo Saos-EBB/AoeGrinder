@@ -8,6 +8,7 @@ export const state: any = {
   packDeaths: {},
   pendingLevelUps: 0,
   cardRanks: {},
+  cardPicks: {},         // wie oft eine Karte gewählt wurde: Stufe und Build
   autorun: false,
   jumpQueued: false,
   rebinding: null,      // Aktion, die gerade neu belegt wird

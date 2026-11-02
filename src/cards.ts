@@ -2,6 +2,8 @@
 
 import { state, player } from './state';
 import { pick } from './util';
+import { dmgMult, manaCost } from './formulas';
+import { modFactor } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
 import { stat, hasSpell, hasTag, tagsAllowed, modRule } from './spells/core';
 import { SUPPORTS } from './spells/supports';
@@ -99,6 +101,32 @@ function luckCards() {
     apply: m => { player.luck += CARD_LUCK * m; },
   }];
 }
+
+// Vorschau: echter Wert vorher → nachher. Die Karte selbst wird nicht angewendet, nur ihr Faktor nachgerechnet.
+const BASE_HIT = s => s.tickDmg ?? (s.min ? (s.min + s.max) / 2 : s.dmg ?? s.pulse ?? s.showDmg);
+export function spellValue(id, dmgBonus = 0) {
+  const base = BASE_HIT(SPELLS[id]);
+  return base ? Math.round(base * (stat(id).dmg + dmgBonus) * dmgMult() * modFactor('dmg')) : 0;
+}
+const hitUnit = s => s.tickDmg ? ' pro Tick' : '';
+function dmgLine(id, bonus) {
+  const s = SPELLS[id], now = spellValue(id);
+  return now ? `${s.name} ${now} → ${spellValue(id, bonus)}${hitUnit(s)}` : '';
+}
+export function cardPreview(c, m) {
+  if (c.kind === 'rang') {
+    const key = c.id.split('-').pop(), s = SPELLS[c.spell];
+    if (key === 'dmg') return dmgLine(c.spell, CARD_RANK.dmg * m);
+    if (key === 'mana') { const v = stat(c.spell).mana; return `${s.name} Mana ${manaCost(c.spell)} → ${Math.round(manaCost(c.spell) * Math.max(0.1, v - CARD_RANK.mana * m) / v)}`; }
+    if (key === 'radius' && s.radius) return `${s.name} Radius ${(s.radius * stat(c.spell).radius).toFixed(1)} → ${(s.radius * (stat(c.spell).radius + CARD_RANK.radius * m)).toFixed(1)} yd`;
+    return '';
+  }
+  if (c.kind === 'luck') return `Glück ${player.luck} → ${player.luck + CARD_LUCK * m}`;
+  const id = c.spell ?? c.learn ?? (c.tags && state.slots.find(x => x && c.tags.some(t => hasTag(x, t))));
+  return id && c.kind !== 'talent' ? dmgLine(id, CARD_SPELL_DMG * m) : '';
+}
+// Wie oft die Karte schon gewählt wurde, Talente zählen ihren Rang
+export const cardStage = c => c.kind === 'talent' ? state.cardRanks[c.id] || 0 : state.cardPicks[c.id] || 0;
 
 const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: relicCards, talent: talentCards, luck: luckCards };
 

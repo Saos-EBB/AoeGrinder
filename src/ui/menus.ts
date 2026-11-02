@@ -1,7 +1,8 @@
 import { state, player } from '../state';
 import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, CARD_CLASSIC_EVERY } from '../config';
-import { rollOffer, forcedOffer, rankAllSpells } from '../cards';
+import { rollOffer, forcedOffer, rankAllSpells, cardPreview, cardStage } from '../cards';
+import { COLORS } from './colors';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
@@ -13,6 +14,14 @@ import { zoneId } from '../world';
 import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
+const KIND_LOOK = { rang: { name: 'RANG', icon: '▲' }, spell: { name: 'NEUER SPELL', icon: '✦' }, rune: { name: 'RUNE', icon: '᛭' }, support: { name: 'SUPPORT', icon: '◆' }, relic: { name: 'RELIKT', icon: '♛' }, talent: { name: 'TALENT', icon: '★' }, luck: { name: 'GLÜCK', icon: '♣' } };
+// Stichwörter und Prozentwerte im Kartentext
+function markWords(text) {
+  let out = text.replace(/[+−-]?\d+(?:,\d+)? %/g, m => `<span class="pct">${m}</span>`);
+  for (const [word, color] of Object.entries(COLORS.keyword)) out = out.replace(new RegExp(`\\b${word}\\b`, 'g'), `<b style="color:${color}">${word}</b>`);
+  return out;
+}
+
 // Level-Up-Karten
 export function showCards(offer?) {
   if (!offer && modRule('noCards')) return classicLevelUp();
@@ -23,12 +32,18 @@ export function showCards(offer?) {
   $('cards').innerHTML = '';
   for (const c of offer) {
     const r = CARD_RARITIES[c.tier];
-    const el = document.createElement('div');
-    el.className = 'card frame';
+    const el = document.createElement('div'), stage = cardStage(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
+    const spell = SPELLS[c.spell ?? c.learn], school = COLORS.school[spell?.school ?? spell?.cls];
+    el.className = `card frame${c.kind === 'relic' ? ' relicCard' : ''}${stage ? ' improves' : ''}`;
     el.style.borderColor = r.color;
-    el.innerHTML = `<h3 class="title" style="color:${r.color}">${c.name}</h3>
+    el.style.setProperty('--rarity', r.color);
+    el.innerHTML = `<div class="kindBar" style="background:${COLORS.cardKind[c.kind] ?? COLORS.dim}"><span>${kind.icon}</span>${kind.name}</div>
+      <h3 class="title" style="color:${school ?? r.color}">${c.name}</h3>
       <div class="src">${c.src}</div>
-      <p>${c.desc(r.mult)}</p><div class="rank" style="color:${r.color}">${r.name} ×${String(r.mult).replace('.', ',')}</div>`;
+      <p>${markWords(c.desc(r.mult))}</p>
+      <div class="preview">${cardPreview(c, r.mult)}</div>
+      ${stage ? `<div class="stage">Stufe ${stage} → ${stage + 1}</div>` : ''}
+      <div class="rank" style="color:${r.color}">${r.name} ×${String(r.mult).replace('.', ',')}</div>`;
     el.addEventListener('click', () => pickCard(c));
     $('cards').appendChild(el);
   }
@@ -46,6 +61,7 @@ function classicLevelUp() {
 }
 
 function pickCard(card) {
+  state.cardPicks[card.id] = (state.cardPicks[card.id] || 0) + 1;
   card.apply(CARD_RARITIES[card.tier].mult);
   if (!card.learn) return finishCard();
   const free = state.slots.indexOf(null);
