@@ -284,6 +284,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false) {
 
   mob.castKey = castKey ?? source;
   amount *= modFactor('dmg');
+  if (mob.markUntil > state.now) amount *= mob.markMul;   // Seelenfang (realMen.ts)
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
     if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }
