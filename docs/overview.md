@@ -1,7 +1,7 @@
 # Frost Grind — Was ist los
 > Browser-Game, das Kevin aus Spaß baut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Komplett in Arbeit, der Look ist noch raw, Spells und Balance werden gerade ausprobiert.
 
-**Stand:** Live ist v12 auf [`main`](handoff.md#stand). Die neue UI (Hauptmenü, HUD, Karten, Charakterfenster) liegt noch auf Branch `ui` und wartet auf Kevins Test. Danach kommt [Meta Phase 1](ui-meta-konzept.md#meta-phase-1): Speedrun-Liste und Shop.
+**Stand:** Auf `main` liegt die neue UI, Artifact und GitHub stehen noch auf [v12](handoff.md#stand) ohne sie. In Arbeit ist [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) auf Branch `meta`: Speedrun-Liste und Shop, die [Pool-Liste](pool-liste.md) wartet auf Kevins Auswahl.
 
 ## Loslegen
 ```
@@ -32,7 +32,7 @@ npm run build        # eine dist/index.html fürs Artifact
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
-- Icons im Assets-Ordner haben unklare Lizenz und sind nicht eingebaut → [asset-audit](asset-audit.md)
+- Spell-Icons sind Fremd-Packs, Herkunft und Kevins Freigabe stehen im Audit → [asset-audit](asset-audit.md)
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)

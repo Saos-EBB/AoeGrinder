@@ -104,7 +104,7 @@ function unlink(id) {
   layout[id].links = [];
 }
 
-// Andocken: Kommt ein Element nah an ein anderes, liegt es danach bündig daneben. Der Winkel zwischen den Mitten entscheidet:
+// Andocken: Kommt ein Element nah an ein anderes, liegt es danach bündig daneben. Der Winkel zum Ziel entscheidet:
 // im linken oder rechten Viertel seitlich, im oberen oder unteren darüber oder darunter. Beim Loslassen rastet es ein.
 const clearDockMark = () => document.querySelectorAll('.hudDockTarget').forEach(el => el.classList.remove('hudDockTarget'));
 function dock(id) {
@@ -123,7 +123,7 @@ function dockOnce(id) {
   }
   if (!best) return false;
   const { o } = best, dx = (me.left + me.right - o.left - o.right) / 2, dy = (me.top + me.bottom - o.top - o.bottom) / 2;
-  const side = Math.abs(dx) > Math.abs(dy);
+  const side = Math.abs(dx) / o.width > Math.abs(dy) / o.height;   // Viertel über die Ecken des Ziels, sonst wäre neben breiten Leisten immer „seitlich“
   if (best.other === 'hudHeader' && side) return false;   // Die Kopfleiste ist bildschirmbreit, seitlich gibt es nichts
   const near = (a, b) => Math.abs(a - b) < UI.hudDockPx;
   const left = side ? (dx > 0 ? o.right : o.left - me.width) : near(me.left, o.left) ? o.left : near(me.right, o.right) ? o.right - me.width : me.left;
