@@ -11,11 +11,17 @@ import { onCrit } from '../fx/impact';
 import { zone } from '../world';
 import { run } from '../score';
 import { rune } from '../spells/core';
+import { SUPPORTS } from '../spells/supports';
+import { manaCost as costOf } from '../formulas';
+import { ICONS } from './icons';
+import { UI } from './uiConfig';
 import './hudLayout';
+
+document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
 export const overlay = $('overlay');
 
-function screenPos(pos, height) {
+export function screenPos(pos, height) {
   const p = new THREE.Vector3(pos.x, pos.y + height, pos.z).project(camera);
   if (p.z > 1) return null;
   return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight };
@@ -56,10 +62,11 @@ export function renderActionbar() {
     if (!id) return;
     const el = document.createElement('div');
     el.className = `slot ${SPELLS[id].cls}`;
-    el.innerHTML = `<span class="key"></span>${SPELLS[id].name}<div class="cd"></div><div class="cdText"></div>`;
+    if (ICONS[id]) el.style.backgroundImage = `url(${ICONS[id]})`;
+    el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>`;
     el.addEventListener('click', () => castSpell(id));
     bar.appendChild(el);
-    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
+    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
   });
   labelSlots();
 }
@@ -112,7 +119,7 @@ function updateBuildChips() {
   const chips = [];
   if (player.poison) chips.push(['Gift', player.poison.stacks]);
   for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
-  for (const id of Object.keys(state.supports ?? {})) chips.push([id, 0]);
+  for (const id of Object.keys(state.supports ?? {})) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
   for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
   const key = JSON.stringify(chips);
   if (key !== chipKey) {
@@ -172,6 +179,9 @@ export function updateHud() {
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
+    const cost = paysLife(id) ? 0 : costOf(id), maxCharges = rune(id)?.charges ?? 0;
+    sl.cost.textContent = cost > 0 ? cost : '';
+    sl.charges.textContent = maxCharges > 1 ? (player.charges[id] ?? []).filter(t => t <= state.now).length || (player.charges[id] ? 0 : maxCharges) : '';
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
     sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || (id === 'drink' && !!dr));
   }
