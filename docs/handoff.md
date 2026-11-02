@@ -27,7 +27,7 @@ Stand: v12 (`1793581709-10d4`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - `src/spells/`: ein Spell pro Datei, `core.ts` (Casts, `mobsInRadius`, `applySlow`, Felder), `fx.ts` (gemeinsame Optik), `relics.ts`, `supports.ts`. `src/cards.ts`: Level-Karten.
 - **Effekte:** `render.ts` (Composer, Bloom, Tiefentextur), `fx/spellFx.ts`, `fx/frostFx.ts`, `fireFx.ts`, `arcaneFx.ts`, `relicFx.ts`, `prims.ts`, `bolts.ts`, `impact.ts`, `shaders.ts`, `softPass.ts`, `particles.ts`, `sound.ts`.
 - **VFX-Labor:** `vfx.html` + `src/vfxLab.ts`, im Dev-Server unter `/vfx.html`, `npm run build:vfx`.
-- **Oberfläche:** `ui/hud.ts`, `ui/menus.ts`, `ui/scoreHud.ts`, `ui/leaderboardView.ts`. Punkte in `score.ts`, `leaderboard.ts`.
+- **Oberfläche:** `ui/hud.ts`, `ui/hudLayout.ts` (Anker, Bearbeiten-Modus), `ui/mainMenu.ts` (Hauptmenü, Pause), `ui/menus.ts` (Karten, Keybinds, `syncPause`), `ui/charWindow.ts`, `ui/dmgNumbers.ts`, `ui/scoreHud.ts`, `ui/leaderboardView.ts`. Farben in `ui/colors.ts`, Größen in `ui/uiConfig.ts`, Icons in `ui/icons.ts`. Konzept: `docs/ui-meta-konzept.md`. Punkte in `score.ts`, `leaderboard.ts`.
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
