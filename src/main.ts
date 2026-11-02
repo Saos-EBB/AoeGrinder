@@ -20,6 +20,7 @@ import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
+import './mobile';
 import { menuYaw, enterMenu } from './ui/mainMenu';
 
 function update(dt) {
