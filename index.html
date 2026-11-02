@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Frost Grind – Prototyp</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -202,6 +202,48 @@
   .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
   .pauseBox .smallBtn { margin: 0; }
   .row2 { display: flex; gap: 10px; justify-content: center; }
+
+  /* Handy (body.mobile, src/mobile.ts): Touch-Steuerung, eigenes Layout, Menüs im Vollbild */
+  #touchLayer { position: fixed; inset: 0; z-index: 2; touch-action: none; }
+  #touchLayer[hidden] { display: none; }
+  .tzone { position: absolute; bottom: 0; top: 30%; width: 50%; }
+  .tzone.tL { left: 0; } .tzone.tR { right: 0; }
+  .tbase { position: absolute; bottom: 24px; width: 120px; height: 120px; border-radius: 50%;
+    background: #ffffff14; border: 2px solid #ffffff44; pointer-events: none; }
+  .tL .tbase { left: 90px; } .tR .tbase { right: 24px; }
+  .tbase[style*="left"] { margin: -60px 0 0 -60px; }   /* beim Antippen liegt der Stick unter dem Daumen */
+  .tknob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px; border-radius: 50%; background: #ffffff55; border: 2px solid #fff8; }
+  .tbtns { position: absolute; bottom: 150px; display: grid; grid-template-columns: repeat(2, 58px); gap: 8px; z-index: 1; }
+  .tbL { left: 12px; } .tbR { right: 12px; }
+  .tbtn { width: 58px; height: 58px; border-radius: 50%; border: 2px solid #b8913f; background-size: cover; opacity: .85;
+    display: flex; align-items: center; justify-content: center; font: 700 10px/1.05 system-ui; text-align: center; text-shadow: 0 1px 2px #000; overflow: hidden; }
+  .tbtn.empty { background: #0006; border-color: #6b5426; opacity: .4; }
+  .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
+  #tMenu { position: absolute; top: 8px; right: 10px; width: 48px; height: 48px; font-size: 28px; line-height: 44px; text-align: center; z-index: 1;
+    background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
+  #rotateHint { display: none; }
+  @media (orientation: portrait) { body.mobile #rotateHint { display: flex; position: fixed; inset: 0; z-index: 10; background: #0d0b08; color: #f2c94c;
+    align-items: center; justify-content: center; font: 700 22px Cinzel, serif; } }
+  body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics { pointer-events: none; }
+  body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
+  body.mobile .modal { overflow: auto; justify-content: flex-start; }
+  body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
+  body.mobile .pauseBox { justify-content: center; }
+  body.mobile .btn { font-size: 22px; padding: 14px 28px; }
+  body.mobile .smallBtn, body.mobile .bindBtn { font-size: 17px; padding: 12px; }
+  body.mobile .chip { font-size: 15px; padding: 8px 12px; }
+  body.mobile .shopItem { font-size: 16px; padding: 12px; }
+  body.mobile #shopList, body.mobile #charBody { max-height: none; font-size: 16px; }
+  body.mobile #cardModal { justify-content: center; }
+  body.mobile .cards { width: 100vw; max-height: 100vh; padding: 8px; }
+  body.mobile #cardModal h1 { font-size: 22px; }
+  body.mobile .card p { font-size: 14px; }
+  body.mobile #menuLeft { width: 38vw; max-height: 60vh; top: 1vh; left: 1vw; padding: 8px 10px; }
+  body.mobile #menuRight { width: 30vw; max-height: 60vh; overflow: auto; top: 1vh; right: 1vw; padding: 8px 10px; }
+  body.mobile #menuLeft h1, body.mobile #menuTitle { font-size: 22px; }
+  body.mobile #menuBottom { bottom: 1vh; }
+  body.mobile .charTab { width: 120px; padding: 10px 4px; }
+  body.mobile #menuActions .smallBtn { padding: 12px 16px; }
 </style>
 </head>
 <body>

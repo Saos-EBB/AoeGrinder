@@ -13,6 +13,7 @@ import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
 import { closeBinds, renderBinds } from './ui/menus';
+import { touch, updateTouch } from './mobile';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -219,7 +220,12 @@ export function pollGamepad() {
   const left = gp ? deadzone(gp.axes[0], gp.axes[1]) : { x: 0, y: 0 };
   pad.move = { x: left.x, y: left.y && -left.y };   // nach oben gedrückt ist negativ
   pad.look = gp ? deadzone(gp.axes[2], gp.axes[3]) : { x: 0, y: 0 };
-  if (!player.targeting || !gp || state.paused) { if (state.padAim) cancelAim(); }
+  updateTouch();                                     // Touch-Steuerung (mobile.ts) wirkt wie ein zweites Pad
+  for (const id of touch.held) if (padBinds[id] >= 0) pad.down[padBinds[id]] = true;
+  if (touch.move.x || touch.move.y) pad.move = { ...touch.move };
+  if (touch.look.x || touch.look.y) pad.look = { ...touch.look };
+  const touching = touch.held.size > 0;
+  if (!player.targeting || (!gp && !touching) || state.paused) { if (state.padAim) cancelAim(); }
   if (state.lastInput !== 'pad' && (pad.down.some(Boolean) || pad.move.x || pad.move.y || pad.look.x || pad.look.y)) {
     state.lastInput = 'pad';
     refreshKeyLabels();
