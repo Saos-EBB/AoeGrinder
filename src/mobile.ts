@@ -5,7 +5,7 @@ import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { ICONS } from './ui/icons';
 import { openPause, menuOpen } from './ui/mainMenu';
-import { isMobile } from './device';
+import { device, goFullscreen, toView } from './device';
 
 
 export const touch = {
@@ -17,16 +17,6 @@ export const touch = {
 const STICK_R = 60;            // px, Ausschlag bis voll // PH
 const TAP_MS = 220, TAP_PX = 12;   // Tippen auf den rechten Stick = Springen // PH
 
-// Vollbild und Querformat brauchen eine Nutzergeste, daher beim ersten Antippen. iPhone-Safari kann beides nicht.
-function goFullscreen() {
-  const el: any = document.documentElement;
-  if (document.fullscreenElement || (document as any).webkitFullscreenElement) return;
-  const req = el.requestFullscreen?.bind(el) || el.webkitRequestFullscreen?.bind(el);
-  if (!req) return;
-  Promise.resolve(req({ navigationUI: 'hide' }))
-    .then(() => (screen.orientation as any)?.lock?.('landscape'))
-    .catch(() => { /* im iframe oder ohne Erlaubnis bleibt es beim normalen Fenster */ });
-}
 
 function stick(side: 'L' | 'R') {
   const zone = document.createElement('div'), base = document.createElement('div'), knob = document.createElement('div');
@@ -41,15 +31,16 @@ function stick(side: 'L' | 'R') {
   zone.addEventListener('touchstart', e => {
     e.preventDefault();
     if (id >= 0) return;
-    const t = e.changedTouches[0], r = zone.getBoundingClientRect();
-    id = t.identifier; ox = t.clientX; oy = t.clientY; t0 = performance.now(); maxD = 0;
-    base.style.left = `${ox - r.left}px`; base.style.top = `${oy - r.top}px`; base.style.bottom = 'auto'; base.style.right = 'auto';
+    const t = e.changedTouches[0], v = toView(t.clientX, t.clientY);   // in Seiten-Koordinaten, auch bei gedrehter Seite
+    id = t.identifier; ox = v.x; oy = v.y; t0 = performance.now(); maxD = 0;
+    base.style.left = `${ox - zone.offsetLeft}px`; base.style.top = `${oy - zone.offsetTop}px`; base.style.bottom = 'auto'; base.style.right = 'auto';
   }, { passive: false });
   zone.addEventListener('touchmove', e => {
     e.preventDefault();
     for (const t of e.changedTouches) {
       if (t.identifier !== id) continue;
-      let dx = t.clientX - ox, dy = t.clientY - oy;
+      const v = toView(t.clientX, t.clientY);
+      let dx = v.x - ox, dy = v.y - oy;
       const d = Math.hypot(dx, dy);
       maxD = Math.max(maxD, d);
       if (d > STICK_R) { dx *= STICK_R / d; dy *= STICK_R / d; }
@@ -85,7 +76,6 @@ function button(action: string) {
 
 let layer: HTMLElement, sticks: ReturnType<typeof stick>[] = [];
 function build() {
-  document.body.classList.add('mobile');
   layer = document.createElement('div');
   layer.id = 'touchLayer';
   sticks = [stick('L'), stick('R')];
@@ -103,10 +93,6 @@ function build() {
   menu.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); openPause(); }, { passive: false });
   layer.appendChild(menu);
   document.body.appendChild(layer);
-  const rot = document.createElement('div');
-  rot.id = 'rotateHint';
-  rot.textContent = 'Bitte quer halten';
-  document.body.appendChild(rot);
   addEventListener('touchend', goFullscreen, { capture: true });
   addEventListener('click', goFullscreen, { capture: true });
 }
@@ -133,4 +119,4 @@ export function updateTouch() {
   });
 }
 
-if (isMobile) build();
+if (device.mobile) build();

@@ -2,7 +2,7 @@
 
 import { $ } from '../util';
 import { UI } from './uiConfig';
-import { isMobile } from '../device';
+import { device } from '../device';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
 const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
@@ -25,8 +25,8 @@ const MOBILE_LAYOUT: any = {
   hudEffects: { anchor: 'tl', x: 1, y: 28, scale: 1 },
   hudRelics: { anchor: 'tr', x: -9, y: 11, scale: 0.7 },
 };
-if (isMobile) Object.assign(DEFAULT_LAYOUT, MOBILE_LAYOUT);
-const STORE = isMobile ? 'frostgrind.hud.mobile.v1' : 'frostgrind.hud.v1';
+if (device.mobile) Object.assign(DEFAULT_LAYOUT, MOBILE_LAYOUT);
+const STORE = device.mobile ? 'frostgrind.hud.mobile.v1' : 'frostgrind.hud.v1';
 
 function load() {
   const out = structuredClone(DEFAULT_LAYOUT);

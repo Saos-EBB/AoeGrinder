@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { viewW, viewH } from '../device';
 import { state, player } from '../state';
 import { $, rand, clamp, dist2d } from '../util';
 import { CFG, SPELLS, CARDS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
@@ -24,7 +25,7 @@ export const overlay = $('overlay');
 export function screenPos(pos, height) {
   const p = new THREE.Vector3(pos.x, pos.y + height, pos.z).project(camera);
   if (p.z > 1) return null;
-  return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight };
+  return { x: (p.x + 1) / 2 * viewW(), y: (1 - p.y) / 2 * viewH() };
 }
 
 export function combatText(pos, text, cls, height = 2) {
