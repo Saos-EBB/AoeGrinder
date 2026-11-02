@@ -1,7 +1,8 @@
 # Frost Grind – Stand & Übergabe
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
-Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+**Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
+Stand Artifact und Vercel: v14 mit Mobile und Nahkämpfern. `main` ist weiter, siehe unten. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/heroModels.ts` neu ziehen (alle Figuren; die Magier-Schnittstelle `SKINS`, `SKIN_FX`, `buildMage` am Ende muss mit), danach `RUN_REF` prüfen. Quelle von `heroModels.ts`: Handoff-Artifact https://claude.ai/artifact/WqUXFEaQYcN5VEC6zEgoym.
 
@@ -36,6 +37,7 @@ Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v15 (auf `main`, noch nicht deployt) – Run auf 15 Minuten ausgelegt: `LEVEL_PACE` bremst XP bei Vorsprung und hilft bei Rückstand, `LEVEL_KILLS` statt fester 10 Kills, 31 Karten auf festen Leveln (`CARD_LEVELS`), höchstens ein Kartenfenster alle 15 s (`CARD_MIN_GAP`), Heilung und Mana pro Level statt pro Karte. Schul-Modi nur noch mit Karten der eigenen Schule. 6 neue Spells, Nahkampf-Tuning, Wirbelwind-Fix. Getestet per Skript, nicht von Hand gespielt.
 - v14 – Neue UI: Hauptmenü, verschiebbares HUD mit Einrasten, Icons, Schadenszahlen, Karten mit echter Vorschau, Charakterfenster, Pause-Menü, Auto-Kamera. Meta Phase 1: Speedrun-Zeit mit Splits, Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Knochenstaub, gesperrter Pool, Shop nach Abschluss und im Hauptmenü, Credits. Level-up heilt 25 % Leben. Getestet per Skript in allen Modi, nicht von Hand gespielt.
 - v12 – Alle Branches in `main` zusammengeführt. Neues Spielermodell mit 4 Skins, 15 Waffen als Standard pro Skin und Skin-Effekte; Modus Nur Arkan (Leerenkugel zählt als Arkan); Modus Real Men mit 6 Attacken und je 3 Runen; Karten mit vierfacher Fläche; Mob-Modus Belagerung; Mobs mit doppeltem Leben und Schadensreduktion pro Level; neue Spell-Effekte, Sound und VFX-Labor, Effekte liegen über `groundAt`. Getestet per Skript in allen Modi, nicht von Hand gespielt.
 - v11 – Spells kennen die massiven Objekte: Blink stoppt vor Wänden und landet auf begehbaren Flächen, Bodenziele und Zielkreis liegen auf `groundAt`, Flächen-Spells treffen nur unter 3 yd Höhenunterschied (`SPELL_AOE_HEIGHT`, PH). Spielversion v11, weil die Höhenprüfung Treffer ändert. Details in `docs/status-gruen.md`. Getestet per Skript, nicht von Hand gespielt.
@@ -65,6 +67,8 @@ Stand: v14 (`1793588316-3651`, 2026-11-02), gebündelter Build aus diesem Repo. 
 - Spuren haben Lücken (rund 3 yd Abstand bei 0,45 yd Radius). Kein Einknicken beim Landen (`squat`).
 
 **Balance (alles `// PH`):**
+- Pacing: Mit festen Kill-Raten im Skript 14–16 Minuten bis Level 100, im echten Spiel ungeprüft. Die Bestzeit-Liste ist dadurch gedeckelt, Läufe unter etwa 14 Minuten sind kaum möglich.
+- Nur Arkan hat kein Relikt, die anderen Schulen haben je zwei.
 - Shop: Preise und Staub-Formel in `META`. Ein Abschluss ist für neue Angebote nötig; der schnellste Weg ist Belagerung 5 min.
 - Mana-Bedarf pro Kill etwa verdoppelt. Arcane only hat nur zwei Schadens-Spells. Donnerknall (10 Schaden, Classic) ist schwach. Real Men hat weder Trinken noch Blink.
 - Belagerung: Rate in `SIEGE`, „Größter Pull“ treibt die Punkte sehr hoch. Ohne Leash jagen gezogene Mobs unbegrenzt.
