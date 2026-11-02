@@ -1,0 +1,173 @@
+# Changelog
+
+Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
+
+## 2026-11-02
+
+- feat(docs): README, Changelog, „Was ist los“ und AGENTS.md
+- feat(ui): Figur im Menü drehen und zoomen, HUD-Elemente skalieren, Raster mit Größe
+- fix(ui): Figur im Hauptmenü dreht sich nicht mehr
+- chore(docs): UI-Konzept und Code-Karte
+- feat(ui): Hauptmenü, Pause-Menü, Charakterfenster und Waffenwahl pro Skin
+- feat(ui): Level-up-Karten größer, mit Typ, Stichwörtern und echter Vorschau
+- feat(ui): Schadenszahlen mit Kontur, Größe nach Schaden, Schulfarbe und Zusammenfassen
+- feat(ui): Zauberleiste mit Taste, Kosten, Ladungen und Mana-Schleier
+- feat(ui): HUD-Layout mit Anker, Versatz und Bearbeiten-Modus, neues Standard-Layout
+- chore(docs): Handoff neu, nur noch main, Artifact v12
+- feat(mobs): Mob-Modus Belagerung, Mobs vom Rand ohne Obergrenze
+- feat(world): Karten mit doppeltem Radius, Packs entstehen rund um den Spieler
+- feat(modes): Real Men in der eigenen Mischung, Schulen und Real Men schließen sich aus
+- chore(docs): Schrei, Ansturm und Runen im Stand real-men
+- feat(realmen): Runen auf allen sechs Attacken
+- feat(realmen): Ansturm
+- feat(realmen): Kampfschrei
+- chore(docs): Stand real-men, Quellen der Classic-Werte
+- feat(realmen): Grundangriff, Wirbelwind, Smash, Donnerknall und Wut
+- feat(realmen): Attacken in den Slots, Wut-Leiste statt Mana
+- feat(modes): Real Men, Krieger statt Magier mit eigener Rangliste
+- feat(model): mageModel mit buildWarrior aus dem Viewer
+- feat(balance): Mobs doppelt so viel Leben, Schadensreduktion pro Level
+- feat(modes): Leerenkugel wird Arkan, Arcane only mit eigenem Start-Kit
+- chore(docs): Stand mc-model, Mount, Agent Rot
+- fix(model): Waffe beim Sitzen und im Tod über dem Boden
+- fix(spells): schwächerer Slow verlängert stärkeren nicht
+- chore(score): Spielversion v12, Spuren ändern die Punkte
+- feat(modes): Arkan-Modus mit Arkan-Skin
+
+## 2026-11-01
+
+- fix(weapons): DEFAULT_WEAPON-Rest entfernt
+- fix(model): RUN_REF, Füße liefen zu langsam
+- feat(skins): Feuerspur schadet, Frostspur verlangsamt, Arkan läuft schneller
+- feat(model): Vanilla-Rig mit Skins statt altem Skelett
+- chore(docs): Stand und Messwerte Waffen
+- feat(mage): Waffe in der rechten Hand statt Stab auf dem Rücken, Dev-Auswahl
+- feat(waffen): 15 Waffen aus dem Viewer, gemergt zu Lambert-Mesh und Glow-Mesh
+- feat(waffen): Emitter und Blitze in einem Points-Draw-Call, Partikel in Welt-Koordinaten
+- feat(waffen): gemalte Texturen, Atlas und Partikel-Atlas
+- chore(docs): Artifact-Version v11 in handoff.md
+- chore(score): Spielversion v11, Stand in handoff.md
+- chore(docs): Leash in der Spec-Zusammenfassung, Stand gruen-terrain
+- fix(spells): Flächen-Spells prüfen die Höhe
+- fix(spells): Bodenziele und Zielkreis auf groundAt
+- fix(blink): stoppt vor Wänden, landet auf begehbaren Flächen
+- feat(ui): Schadenszahlen größer
+- chore(docs): Stand VFX in status-gruen-vfx.md
+- feat(vfx): Sound synthetisiert, Lautstärke im Esc-Menü
+- feat(vfx): Relikte neu
+- feat(vfx): Blitz und Natur neu
+- feat(vfx): Feuer-Gruppe neu
+- feat(vfx): Arkan und Leere neu
+- feat(vfx): Frost-Gruppe neu
+- feat(vfx): Blitz-Baustein mit Kern, Glühen, Ästen und Flackern
+- feat(vfx): Impact-Paket mit Licht-Pool, Schockwelle, Ruck und Hitstop
+- feat(vfx): Soft Particles im eigenen Puffer
+- feat(vfx): Shader-Bausteine und Effektqualität
+- feat(vfx): VFX-Labor als zweite Vite-Seite
+- chore(docs): Asset-Audit der heruntergeladenen Modelle
+- chore(docs): Stand v10 Teil Grün in handoff.md
+- chore(score): Spielversion v10
+- feat(mobs): kein Aggro-Verlust mehr, Leash entfernt
+- feat(mobs): mehr Mobs ab Level 1, enge Packs, sofortiger Respawn
+- chore(docs): Stand v10 Teil Blau in handoff.md
+- chore(docs): Stand massive Objekte in status-blau.md
+- feat(dev): Collider anzeigen im Esc-Menü
+- feat(zones): Blackrock Depths massiv, neue Statuen, Ausbruch aus Nischen
+- feat(zones): Tanaris massiv
+- feat(zones): Schlingendorntal massiv, Zikkurat begehbar
+- feat(zones): Tirisfal massiv, Wachturm mit Wendeltreppe
+- feat(collision): Spieler und Mobs mit resolve, groundAt und Ausweichen
+- feat(collision): Collider mit Höhe, groundAt, resolve, Raster
+- chore(docs): Map-Audit aller Zonen
+- chore(docs): Stand v9 Teil Grün in handoff.md
+- chore(score): Spielversion v9
+- fix(cards): keine Talente für verlernte Spells
+- chore(docs): Stand v9 Teil Blau in handoff.md
+
+## 2026-10-31
+
+- chore(docs): Stand Branch gruen-polish
+- feat(spells): echte Cast-ID für jeden Cast und Kanal
+- feat(score): Feld build der Rangliste beim Run-Ende füllen
+- feat(modes): Nur Frost, Nur Feuer, Kein Trinken, Classic pur, Kein Glück
+- feat(fx): Canvas-Texturen für die Bodenflächen der neuen Spells
+- fix(spells): kein Pushback durch Schaden über Zeit
+- fix(fx): Treffer-Funken nur in der Farbe der eigenen Schule
+- feat(gamepad): Slot 7/8 und Zielmodus in jedem Slot
+- fix(input): Taste 3 nicht mehr fest auf Blizzard
+- chore(docs): Stand blau-levels in status-blau.md
+- feat(score): castKey hat Vorrang vor Spell-ID und Zeitfenster
+- fix(score): Halbe Werte als eigener Faktor neben den Karten-Boni
+- feat(dev): Level setzen im Esc-Menü
+- feat(level): Mob-Freischaltung pro Zone mit Einblendung
+- feat(level): Level 1-100 mit neuer Skalierung und Messwerten
+- chore: ignore node_modules symlink
+- chore(docs): Stand v8 in handoff.md
+- chore(docs): Stand Punkte und Rangliste Teil 1
+- feat(score): Ranglisten-Ansicht, Export und Import
+- feat(score): Rangliste und Ergebnis auf dem Todesbildschirm
+- feat(score): Modifikatoren, Modi und Auswahl im Startbildschirm
+- feat(score): Punkte, Kill-Ereignis und HUD
+- chore(docs): Punkte-Spec ablegen
+- refactor(models): Draw Calls pro Mob senken, Materialien teilen
+- chore(docs): Spell- und Kartensystem in Stand v7
+- fix(spells): Knochenring ohne Bloom
+- feat(ui): Dev-Menü für Karten und Glück
+- feat(spells): Relikte
+- feat(spells): Leerenkugel, Wirbel, Bogenblitz
+- feat(spells): Hurrikan, Frostkugel, Kettenblitz
+- feat(spells): Castzeit, Flammenstoß, Druckwelle, Höllenfeuer
+- feat(spells): Supports
+- feat(spells): Runen und Dauerflächen fürs Start-Kit
+- feat(cards): Seltenheit, Glück und Ersatz-Auswahl
+- feat(spells): Tags, acht Slots und Actionbar 1-8
+- chore(docs): Spell-Spec und Status ablegen
+- chore(docs): Stand v7 und offene Leistungsmessung in handoff.md
+- feat(ui): Leistungsanzeige im Dev-Menü
+- feat(mobs): Lava schadet auch Mobs
+- feat(zones): Elvyn, der Wald vom Anfang mit Ebern
+- chore(docs): Stand v6 in handoff.md
+- fix(mobs): Sanitäter nur in jedem zweiten größeren Pack
+- feat(zones): Blackrock Depths mit fünf Mobs
+- feat(zones): Tanaris mit fünf Mobs und Sandsturm
+- feat(zones): Schlingendorntal mit fünf Mobs
+- feat(zones): Tirisfal mit fünf Mobs
+- feat(mobs): Fähigkeiten-Hooks und Typ-Werte
+- feat(zones): Zonen und Mob-Typen datengetrieben, Dev-Zonenwechsel
+- chore(docs): Zonen-Spec ablegen
+- feat(mage): Stab auf den Rücken
+- feat(mage): Griff im oberen Stabdrittel, beim Laufen waagerecht
+- feat(ui): Rückfrage vor dem Zurücksetzen der Belegung
+- fix(input): mittlere Maustaste und Seitentasten belegbar
+- refactor(mage): Teile pro Gelenk zusammenfassen
+- feat(mage): Einknicken bei der Landung
+- feat(mage): neues Rig mit 48 Gelenken und gebückter Haltung
+- chore(docs): Stand v5 in handoff.md
+- feat(gamepad): Vibration bei Crits und schweren Treffern
+- feat(gamepad): Tasten-Symbole je nach letzter Eingabe
+- feat(gamepad): Pad-Neubelegung im Tastenbelegungs-Menü
+- feat(gamepad): Start, Karten und Tod per Pad bedienbar
+- feat(gamepad): Blizzard-Zielmodus mit R1 halten, loslassen, Kreis abbrechen
+- feat(gamepad): Zauber, Sprung, Trinken, Autorun, Zoom auf die Tasten
+- feat(gamepad): Laufen mit linkem Stick, Kamera mit rechtem Stick
+- feat(gamepad): Pad erkennen, Achsen und Buttons pro Frame lesen
+- chore(docs): Controller-Spec ablegen
+- chore(docs): Stand der Repo-Migration in handoff.md
+- refactor(player): Bewegung, Physik, Mana auslagern
+- refactor(spells): cast und Spell-Logik auslagern
+- refactor(mobs): Spawn, KI, Leash, Flee auslagern
+- refactor(input): Tasten, Maus, Keybinds auslagern
+- refactor(ui): Menüs auslagern
+- refactor(ui): HUD auslagern
+- refactor(camera): Orbit-Kamera, Kollision, Shake
+- refactor(fx): Zaubereffekte auslagern
+- refactor(models): Eber auslagern
+- refactor(models): Skelett-Mage auslagern
+- refactor(fx): Partikelsystem auslagern
+- refactor(world): Terrain, Hindernisse, Kollision
+- refactor(render): Renderer, Composer, Himmel, Licht
+- refactor(formulas): Formeln mit Spec-Verweisen auslagern
+- refactor(config): CFG, SPELLS, CARDS und Performance-Schalter
+- refactor(util): Helfer in util.ts auslagern
+- refactor(state): gemeinsamen Spielzustand in state.ts bündeln
+- chore(repo): Vite + TypeScript, v4 unverändert in main.ts
