@@ -10,6 +10,7 @@ import { resetGame, switchZone } from '../player';
 import { startMageRun } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
+import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 // Level-Up-Karten
@@ -160,6 +161,10 @@ $('devForce').addEventListener('click', () => {
 });
 $('devLuck').addEventListener('click', () => { player.luck += 25; });
 
+mountVolume($('bindList'), 'beforebegin');
+// Das Menü ist höher als kleine Fenster, ohne Scrollen wäre der Regler oben abgeschnitten
+Object.assign($('bindList').parentElement.style, { maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' });
+
 // Ding-Sound
 let audio;
 function ding() {
@@ -170,7 +175,7 @@ function ding() {
       const osc = audio.createOscillator(), gain = audio.createGain();
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, t + delay);
-      gain.gain.exponentialRampToValueAtTime(0.25, t + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.42 * getVolume()), t + delay + 0.02);   // bei Standard 60 % wie bisher 0,25
       gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.9);
       osc.connect(gain).connect(audio.destination);
       osc.start(t + delay); osc.stop(t + delay + 1);

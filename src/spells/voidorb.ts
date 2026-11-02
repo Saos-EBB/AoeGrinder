@@ -3,12 +3,15 @@ import { player } from '../state';
 import { pullMob } from '../mobs';
 import { voidTex } from '../fx/spellFx';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
+import { vfxOld } from '../fx/shaders';
+import { voidSpiral, voidOpen } from '../fx/arcaneFx';
 import { fieldDecal, orbVisual, visuals, areaParticles, burstFx, SHADOW, VOID } from './fx';
 
 const PULL_PER_S = 4, MAX_SLOW = 0.4, FOLLOW_SPEED = 3, IMPLODE = 25, TWIN_OFFSET = 6;   // PH
 
 function spawnOrb(c, pos, radius, k) {
-  addField(c, { pos, radius, dur: voidorb.dur, visual: visuals(fieldDecal(voidTex, VOID, 0.8, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
+  if (!vfxOld()) voidOpen(pos, radius);
+  addField(c, { pos, radius, dur: voidorb.dur, visual: visuals(fieldDecal(voidTex, VOID, vfxOld() ? 0.8 : 0.5, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
     onUpdate(f, dt) {
       if (hasRune('voidorb', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);
@@ -18,7 +21,8 @@ function spawnOrb(c, pos, radius, k) {
         pullMob(m, f.pos, PULL_PER_S * dt / 1000);
         applySlow(m, MAX_SLOW * clamp(1 - dist2d(m.pos, f.pos) / f.radius, 0, 1), 200);
       }
-      areaParticles(f.pos, f.radius, 40 * k, dt, [SHADOW, VOID], { up: 1, size: 0.35, swirl: 6 });
+      if (vfxOld()) areaParticles(f.pos, f.radius, 40 * k, dt, [SHADOW, VOID], { up: 1, size: 0.35, swirl: 6 });
+      else voidSpiral(f.pos, f.radius, k, dt, [SHADOW, VOID, [1.4, 0.4, 2.2]]);
     },
     onTick(f) {
       for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, voidorb.pulse * k);

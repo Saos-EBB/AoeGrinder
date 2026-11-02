@@ -7,6 +7,7 @@ import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
 import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
+import { onCrit } from '../fx/impact';
 
 export const overlay = $('overlay');
 
@@ -17,6 +18,7 @@ function screenPos(pos, height) {
 }
 
 export function combatText(pos, text, cls, height = 2) {
+  if (cls === 'crit') onCrit();
   const p = screenPos(pos, height);
   if (!p) return;
   const el = document.createElement('div');

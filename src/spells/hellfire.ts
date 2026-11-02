@@ -3,7 +3,10 @@ import { maxHp } from '../formulas';
 import { burnTex } from '../fx/spellFx';
 import { combatText } from '../ui/hud';
 import { mobsInRadius, startChannel, stopChannel, hasRune } from './core';
-import { fieldDecal, areaParticles, FIRE, SHADOW } from './fx';
+import { fieldDecal, areaParticles, visuals, FIRE, SHADOW } from './fx';
+import { vfxOld } from '../fx/shaders';
+import { vortexVisual } from '../fx/prims';
+import { hellfireOpen, hellfirePulse } from '../fx/fireFx';
 
 const HEAL_PER_KILL = 0.05, GROW_PER_S = 1;   // PH
 
@@ -20,11 +23,16 @@ export const hellfire = {
     const ch = startChannel(c, player.pos, hellfire.channel);
     ch.mobile = hasRune('hellfire', 'walk');
     ch.radius = c.radius(hellfire.radius);
-    ch.visual = fieldDecal(burnTex, FIRE, 0.3, -0.3);
+    const floor = fieldDecal(burnTex, FIRE, vfxOld() ? 0.3 : 0.14, -0.3);
+    if (vfxOld()) { ch.visual = floor; return; }
+    ch.visual = visuals(floor, vortexVisual([1.6, 0.6, 0.1], [0.7, 0.08, 0.9], 3.4, { top: 0.82, scroll: 1.7, peak: 0.55, spin: -0.5, dens: 0.34 }));
+    ch.visual.update(player.pos, ch.radius);
+    hellfireOpen(player.pos, ch.radius);
   },
   tick(ch) {
     if (player.hp <= hellfire.lifePerTick) return stopChannel(true);   // Der Kanal bringt dich nicht selbst um
     player.hp -= hellfire.lifePerTick;
+    if (!vfxOld()) hellfirePulse(player.pos, ch.radius);
     const dmg = hellfire.tickDmg * (ch.mobile ? 0.5 : 1);
     for (const m of mobsInRadius(player.pos, ch.radius)) {
       if (ch.c.hit(m, dmg) && m.dead && hasRune('hellfire', 'heal')) {

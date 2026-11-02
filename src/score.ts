@@ -1,5 +1,6 @@
 // Punkte eines Runs. Liest vom Kill nur xp und mob.castKey: eine echte Cast-ID oder, als Fallback, die Spell-ID.
 
+import { onMultiKill } from './fx/impact';
 import { state, player } from './state';
 import { scoreMult } from './modifiers';
 import { SPELLS, SCORE_MULTI_WINDOW, SCORE_MULTI_STEP, SCORE_MULTI_MAX, SCORE_COMBO_WINDOW, SCORE_COMBO_DIV, SCORE_COMBO_MAX, SCORE_PULL_POINTS, SCORE_MINUTE_POINTS } from './config';
@@ -23,6 +24,7 @@ export function reportKill(mob, xp) {
   run.bestCombo = Math.max(run.bestCombo, run.combo);
   run.bestMulti = Math.max(run.bestMulti, cast.n);
   run.lastMulti = cast.n;
+  if (cast.n === 10) onMultiKill();   // PH
   run.multiAt = now;
   const mMulti = Math.min(SCORE_MULTI_MAX, 1 + SCORE_MULTI_STEP * (cast.n - 1));
   const mCombo = Math.min(SCORE_COMBO_MAX, 1 + run.combo / SCORE_COMBO_DIV);

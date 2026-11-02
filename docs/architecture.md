@@ -35,3 +35,6 @@ Frost Grind ist ein Browser-Roguelike: AoE-Grinden wie mit dem Classic-Mage, Thr
 - 2026-10-31: `state.ts` und `util.ts` ergänzen die handoff-Liste. ES-Module können fremde `let`-Variablen nicht zuweisen, und die Helfer werden fast überall gebraucht.
 - 2026-10-31: `strict` ist aus. Der Code ist 1:1 aus dem untypisierten Artifact übernommen, `tsc` prüft Imports und offensichtliche Typfehler.
 - 2026-10-31: Basis ist Artifact v4 (`1793417937-48fc`); das Verhalten bleibt gleich, Abweichungen von der Spec kommen in einem eigenen Schritt danach.
+
+## Spell-Optik (`src/fx/`)
+`shaders.ts` Bausteine, Uhr und Qualität · `softPass.ts` Partikel-Puffer gegen die Szenen-Tiefe · `impact.ts` Licht-Pool, Schockwelle, Ruck, Hitstop · `bolts.ts` alle Blitze in einem Draw Call · `prims.ts` Grundformen · `frostFx`, `arcaneFx`, `fireFx`, `relicFx` je Gruppe · `sound.ts` WebAudio. `spellFx.ts` und `spells/fx.ts` bleiben die Einstiege und schalten mit `vfxOld()` auf die alte Optik. `vfx.html` mit `src/vfxLab.ts` ist das Labor mit echtem Spell-Code.

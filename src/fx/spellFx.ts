@@ -9,6 +9,12 @@ import { groundAt } from '../collision';
 import { glowSprite, particles } from '../fx/particles';
 import { mage } from '../models/mage';
 import { shakeCamera } from '../camera';
+import { fxClock, fxUniforms, vfxOld } from './shaders';
+import { aeNew, blinkNew } from './arcaneFx';
+import { novaNew, coneNew, blizStartNew, blizMoveNew, blizStopNew, blizUpdateNew } from './frostFx';
+import { updateImpact } from './impact';
+
+export { fxClock };
 
 export const blizCursor = terrainDecal(new THREE.RingGeometry(0.93, 1, 64, 1),
   new THREE.MeshBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.9, depthWrite: false }));
@@ -206,6 +212,7 @@ function groundDecalFx(tex, center, radius, color, dur, { additive = false, spin
 
 const spikeGeo = new THREE.ConeGeometry(0.22, 1.5, 5);
 export function novaFx(pos, radius) {
+  if (!vfxOld()) return novaNew(pos, radius);
   groundDecalFx(iceTex, pos, radius, [1, 1, 1], 4000, { grow: 0.04, peak: 0.85 });
   shakeCamera(0.12);
   ringFx(pos, radius, FROST_WHITE, 450);
@@ -232,11 +239,12 @@ export function novaFx(pos, radius) {
     g.add(sp);
   }
   scene.add(g);
-  effects.push({ mesh: g, start: performance.now(), dur: 1000, shared: true,
+  effects.push({ mesh: g, start: fxClock.now, dur: 1000, shared: true,
     update: t => { const k = t < 0.15 ? t / 0.15 : 1; g.children.forEach(c => c.scale.set(1, k, 1)); mat.opacity = t < 0.6 ? 0.9 : 0.9 * (1 - (t - 0.6) / 0.4); } });
 }
 
 export function arcaneExplosionFx(pos, radius) {
+  if (!vfxOld()) return aeNew(pos, radius, runeTex);
   const c = new THREE.Vector3(pos.x, pos.y + 1, pos.z);
   groundDecalFx(runeTex, pos, radius, [1.8, 0.7, 2.4], 700, { additive: true, spin: 1.2, grow: 0.25 });
   flashFx(c, 0xd890ff, 6, 250);
@@ -255,6 +263,7 @@ export function arcaneExplosionFx(pos, radius) {
 }
 
 export function coneOfColdFx(range, angle) {
+  if (!vfxOld()) return coneNew(range, angle);
   const hand = new THREE.Vector3();
   mage.anchors.handL.getWorldPosition(hand);
   for (let i = 0; i < 150; i++) {
@@ -270,6 +279,7 @@ export function coneOfColdFx(range, angle) {
 }
 
 export function blinkFx(from, to) {
+  if (!vfxOld()) return blinkNew(from, to);
   for (const p of [from, to]) {
     const c = new THREE.Vector3(p.x, p.y + 1.2, p.z);
     flashFx(c, 0xd890ff, 5, 300);
@@ -329,7 +339,7 @@ export function ambientParticles(dt) {
   }
   if (player.channel?.id === 'bliz') {
     const c = player.channel.point, r = blizRadius();
-    for (let i = perFrame(40, dt); i > 0; i--) {             // wirbelnder Schnee
+    for (let i = perFrame(vfxOld() ? 40 : 18, dt); i > 0; i--) {   // wirbelnder Schnee
       const a = rand(0, Math.PI * 2), d = r * Math.sqrt(Math.random());
       particles.spawn({ x: c.x + Math.cos(a) * d, y: c.y + rand(4, 12), z: c.z + Math.sin(a) * d,
         vx: -Math.sin(a) * 3, vy: -rand(5, 9), vz: Math.cos(a) * 3, life: rand(0.8, 1.4), color: FROST_WHITE, size: rand(0.12, 0.25) });
@@ -359,19 +369,71 @@ export function ambientParticles(dt) {
 
 export function addEffect(mesh, dur, update) {
   scene.add(mesh);
-  effects.push({ mesh, start: performance.now(), dur, update });
+  effects.push({ mesh, start: fxClock.now, dur, update });
+}
+function disposeEffect(e) {
+  scene.remove(e.mesh);
+  if (e.shared) return;
+  e.mesh.material.dispose();
+  if (e.mesh.isInstancedMesh) e.mesh.dispose();
+  if (!e.mesh.sharedGeometry) e.mesh.geometry.dispose();
+}
+// Labor: alle laufenden Einmal-Effekte weg
+export function clearEffects() {
+  for (const e of effects) {
+    disposeEffect(e);
+  }
+  effects.length = 0;
 }
 export function updateEffects() {
-  const t0 = performance.now();
+  const real = performance.now();
+  const fxDt = Math.min(50, real - fxClock.last) * fxClock.scale;
+  fxClock.now += fxDt;
+  fxClock.last = real;
+  const t0 = fxUniforms.uTime.value = fxClock.now;
+  updateImpact(fxDt);
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i];
     const t = (t0 - e.start) / e.dur;
     if (t >= 1) {
-      scene.remove(e.mesh);
-      if (!e.shared) { e.mesh.geometry.dispose(); e.mesh.material.dispose(); }
+      disposeEffect(e);
       effects.splice(i, 1);
     } else e.update(t);
   }
+}
+// Wolke und Splitter des laufenden Blizzards
+export function updateBlizFx(dt) {
+  blizUpdateNew(dt);
+  if (!blizFx.g.visible) return;
+  const cl = blizFx.cloud;
+  cl.rotation.y += dt / 1000 * 0.4;
+  cl.scale.setScalar(lerpTo(cl.scale.x, blizRadius() / 8, Math.min(1, dt / 150)));   // Wolke baut sich auf
+  for (const sh of blizFx.shards) {
+    sh.position.y -= sh.userData.speed * dt / 1000;
+    if (sh.position.y < 0) {
+      const wx = blizFx.g.position.x + sh.position.x, wz = blizFx.g.position.z + sh.position.z;
+      for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: groundAt(wx, wz, blizFx.g.position.y) + 0.1, z: wz,
+        vx: rand(-2, 2), vy: rand(1, 3), vz: rand(-2, 2), grav: 6, life: rand(0.2, 0.4), color: FROST_WHITE, size: rand(0.12, 0.25) });
+      resetShard(sh, false);
+    }
+  }
+}
+export function blizStart(point, radius) {
+  if (!vfxOld()) return blizStartNew(point, radius);
+  blizFx.g.position.copy(point);
+  drape(blizFx.disc, point, radius);
+  for (const sh of blizFx.shards) resetShard(sh, true);
+  blizFx.g.visible = blizFx.disc.visible = true;
+  blizFx.cloud.scale.setScalar(radius / 8 * 0.2);
+}
+export function blizMove(point, radius) {
+  if (!vfxOld()) return blizMoveNew(point, radius);
+  blizFx.g.position.copy(point);
+  drape(blizFx.disc, point, radius);
+}
+export function blizStop() {
+  blizStopNew();
+  blizFx.g.visible = blizFx.disc.visible = false;
 }
 export function resetShard(sh, randomHeight) {
   const r = blizRadius() * Math.sqrt(Math.random()), a = rand(0, Math.PI * 2);

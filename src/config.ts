@@ -10,6 +10,14 @@ export const PERF = {
   bloom: true,          // false: kein Bloom-Pass
   maxParticles: 5000,   // Obergrenze des Partikelsystems
   maxPixelRatio: 2,     // Obergrenze für devicePixelRatio
+  vfxOld: false,        // true: alte Spell-Optik, Schalter im VFX-Labor
+  vfx: 'mittel',        // Effektqualität: 'niedrig', 'mittel' oder 'hoch' (VFX_QUALITY)
+};
+// PH: particleRes Auflösung des Partikel-Puffers, soft Weichzeichnung in yd, lights Lichter im Pool, shock Verzerrung, particleMul Anteil der Partikel
+export const VFX_QUALITY = {
+  niedrig: { particleRes: 0.5, soft: 0.8, lights: 1, shock: false, particleMul: 0.5, shards: 60, puffs: 8 },
+  mittel: { particleRes: 0.5, soft: 1.2, lights: 2, shock: true, particleMul: 0.8, shards: 110, puffs: 14 },
+  hoch: { particleRes: 1, soft: 1.2, lights: 4, shock: true, particleMul: 1, shards: 180, puffs: 22 },
 };
 
 // SCORE_*: Punkte und Rangliste, alles PH (docs/score-spec.md)

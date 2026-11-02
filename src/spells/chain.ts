@@ -8,14 +8,14 @@ const STEP_DELAY = 45;   // PH: ms je Sprung, damit man die Kette sieht
 const nearestFirst = (list, pos) => list.sort((a, b) => dist2d(a.pos, pos) - dist2d(b.pos, pos));
 
 // Kette von Ziel zu Ziel, auch für Bogenblitz. Alle Äste teilen sich dasselbe Budget an Sprüngen.
-export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = false, killBonus = 0, forkEvery = 0, overCorpses = false, onHit = null }) {
+export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = false, killBonus = 0, forkEvery = 0, overCorpses = false, onHit = null, boltColor = undefined }) {
   const run = { left: jumps, count: 0, seen: new Set() };
   const jump = (from, mob, amount) => {
     if (run.left <= 0) return;
     run.left--;
     run.count++;
     run.seen.add(mob);
-    boltFx(from, mob.pos);
+    boltFx(from, mob.pos, boltColor);
     if (!mob.dead) {
       if (c.hit(mob, amount)) onHit?.(mob);
       if (mob.dead) run.left += killBonus;

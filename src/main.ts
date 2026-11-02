@@ -1,13 +1,13 @@
 import { state, player } from './state';
-import { rand, clamp, dist2d, lerpTo } from './util';
+import { clamp, dist2d } from './util';
 import { CFG, SPELLS, mods } from './config';
 import { blizRadius } from './formulas';
 import { scene, composer, tickHeat } from './render';
 import { drape, zone, updateZoneEvent } from './world';
-import { groundAt } from './collision';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
-import { blizCursor, blizFx, FROST_WHITE, ambientParticles, updateEffects, resetShard } from './fx/spellFx';
+import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
+import { hitstopDt } from './fx/impact';
 import { cam, updateCamera } from './camera';
 import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
 import { binds, mouse, pressSpell, pickGround } from './input';
@@ -72,20 +72,7 @@ function updateVisuals(dt) {
     drape(blizCursor, aim, blizRadius());
     blizCursor.material.color.set(dist2d(player.pos, aim) <= SPELLS.bliz.range ? 0x7fd0ff : 0xff5050);
   }
-  if (blizFx.g.visible) {
-    const cl = blizFx.cloud;
-    cl.rotation.y += dt / 1000 * 0.4;
-    cl.scale.setScalar(lerpTo(cl.scale.x, blizRadius() / 8, Math.min(1, dt / 150)));   // Wolke baut sich auf
-    for (const sh of blizFx.shards) {
-      sh.position.y -= sh.userData.speed * (state.paused ? 0 : dt) / 1000;
-      if (sh.position.y < 0) {
-        const wx = blizFx.g.position.x + sh.position.x, wz = blizFx.g.position.z + sh.position.z;
-        for (let i = 0; i < 3; i++) particles.spawn({ x: wx, y: groundAt(wx, wz, blizFx.g.position.y) + 0.1, z: wz,
-          vx: rand(-2, 2), vy: rand(1, 3), vz: rand(-2, 2), grav: 6, life: rand(0.2, 0.4), color: FROST_WHITE, size: rand(0.12, 0.25) });
-        resetShard(sh, false);
-      }
-    }
-  }
+  updateBlizFx(state.paused ? 0 : dt);
   ambientParticles(state.paused ? 0 : dt);
   particles.update(state.paused ? 0 : dt);
   updateEffects();
@@ -96,7 +83,8 @@ function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();
-  if (!state.paused) { state.now += dt; update(dt); }
+  const simDt = hitstopDt(dt);
+  if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);
   composer.render();

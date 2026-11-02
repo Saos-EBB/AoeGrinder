@@ -1,5 +1,57 @@
 # Build-Log
 
+## 2026-11-01 — feat(ui): Schadenszahlen größer
+**Was:** Wunsch von Kevin: Treffer 22 px, Crit 34 px, Schaden an der Figur 22 px.
+**Nicht gebaut:** Heilung, Widerstanden und XP bleiben, die sind keine Schadenszahlen.
+
+## 2026-11-01 — chore(docs): Stand VFX in status-gruen-vfx.md
+**Was:** Messwerte, Prüfstand und offene Punkte; Testzugriffe im Labor für Speicher und Hitstop.
+**Nicht gebaut:** keine Qualitäts-Auswahl im Spielmenü, kein Merge, kein Publish des Spiels.
+
+## 2026-11-01 — feat(vfx): Sound synthetisiert
+**Was:** Vier Klangarten per WebAudio, Lautstärke-Regler im Esc-Menü mit Standard 60 %.
+**Nicht gebaut:** keine Audiodateien, kein Raumklang, kein Dauerton für Kanäle.
+
+## 2026-11-01 — feat(vfx): Relikte neu
+**Was:** Jedes Relikt bekommt einen eigenen großen Moment mit Hitstop, Säule oder Wand statt der gemeinsamen Explosion.
+**Nicht gebaut:** keine Boss-Modelle wie ein echter Hammer; `runChain` bekam nur die Blitzfarbe als Optik-Parameter.
+
+## 2026-11-01 — feat(vfx): Blitz und Natur neu
+**Was:** Kettenblitz und Bogenblitz laufen über den Blitz-Baustein, Hurrikan bekommt einen sichtbaren Trichter.
+**Nicht gebaut:** kein Schockwellen-Post-Pass pro Sprung, nur Licht und Funken, damit 50 Sprünge flüssig bleiben.
+
+## 2026-11-01 — feat(vfx): Feuer-Gruppe neu
+**Was:** Flammenstoß, Druckwelle und Höllenfeuer bekommen je einen eigenen Charakter statt derselben Explosion.
+**Nicht gebaut:** kein Vorwarn-Effekt während der 2 s Zauberzeit.
+
+## 2026-11-01 — feat(vfx): Arkan/Leere neu
+**Was:** Arcane Explosion, Blink und Leerenkugel; der Sog ist jetzt zu sehen, weil Partikel außen starten und zur Mitte spiralen.
+**Nicht gebaut:** keine Sogwirkung auf Mobs geändert, nur die Optik.
+
+## 2026-11-01 — feat(vfx): Frost-Gruppe neu
+**Was:** Nova, Cone of Cold, Blizzard, Wirbel und Frostkugel auf glatten Formen im Shader, weich rein und raus. `fieldDecal`, `orbVisual`, `burstFx` und `boltFx` nutzen ab jetzt die neuen Formen, das gilt für alle Spells, die sie aufrufen.
+**Nicht gebaut:** keine Wolken-Simulation, die Wolke besteht aus Rausch-Bällen.
+
+## 2026-11-01 — feat(vfx): Blitz-Baustein
+**Was:** Alle Blitze teilen einen Ringpuffer und einen Draw Call, Verblassen und Flackern laufen im Shader. Der alte `boltFx` baute pro Blitz Mesh und Material.
+**Nicht gebaut:** noch kein Spell nutzt ihn, das folgt in Schritt 3; im Labor als Testknopf.
+
+## 2026-11-01 — feat(vfx): Impact-Paket
+**Was:** Licht-Pool, Schockwellen-Verzerrung als Post-Pass (nur aktiv, solange eine läuft), Kamera-Ruck, Hitstop 40 ms bei Crit und Multi-Kill ab 10.
+**Nicht gebaut:** keine Änderung in `mobs.ts`: Crits kommen über `combatText` in `ui/hud.ts`, Multi-Kills über `reportKill` in `score.ts`, je eine Zeile; dazu der Hitstop in `main.ts`.
+
+## 2026-11-01 — feat(vfx): Soft Particles im eigenen Puffer
+**Was:** Partikel enden nicht mehr mit harter Kante am Boden. Der Puffer läuft auf „niedrig“ und „mittel“ in halber Auflösung, das spart Füllrate.
+**Nicht gebaut:** kein separater Tiefen-Durchgang der Szene (hätte alle Draw Calls verdoppelt), stattdessen liest der Pass die Tiefe des Szenen-Passes.
+
+## 2026-11-01 — feat(vfx): Shader-Bausteine und Effektqualität
+**Was:** Rauschen aus gebackener Textur, Fresnel, Auflösen, scrollende UVs als GLSL-Bausteine; Schalter `PERF.vfx` mit drei Stufen in `config.ts`.
+**Nicht gebaut:** kein Rauschen pro Pixel im Shader, keine Qualitäts-Auswahl im Spielmenü (Auftrag nennt `config.ts`).
+
+## 2026-11-01 — feat(vfx): VFX-Labor als zweite Vite-Seite
+**Was:** Kevin soll jeden Spell isoliert, in Zeitlupe und mit Messwerten sehen und alt gegen neu vergleichen können.
+**Nicht gebaut:** keine Kartenwahl, kein Mob-Verhalten, kein Spielerlauf; „Alt/Neu“ schaltet erst ab den neuen Spells etwas um.
+
 ## 2026-11-01 — chore(score): Spielversion v11
 **Was:** Die AoE-Höhenprüfung ändert Treffer, die Rangliste soll alte und neue Läufe trennen. Stand v11 in `handoff.md`.
 **Nicht gebaut:** —

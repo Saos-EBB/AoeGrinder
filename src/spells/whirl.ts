@@ -3,12 +3,20 @@ import { player } from '../state';
 import { pullMob } from '../mobs';
 import { novaFx, galeTex } from '../fx/spellFx';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
-import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
+import { fieldDecal, areaParticles, visuals, ICE, ICE_WHITE } from './fx';
+import { vortexVisual } from '../fx/prims';
+import { vfxOld } from '../fx/shaders';
 
 const FOLLOW_SPEED = 5, PULL_PER_S = 2, SMALL_OFFSET = 5;   // PH
 
+// Boden und niedriger Trichter; alte Optik nur der Boden
+function whirlVisual(k) {
+  const floor = fieldDecal(galeTex, ICE, 0.3, 2.4);
+  return vfxOld() ? floor : visuals(floor, vortexVisual([1.2, 1.9, 2.8], ICE, 3.6 * k, { peak: 0.42, top: 1.1, spin: 2.2 }));
+}
+
 function spawnWhirl(c, pos, radius, k) {
-  addField(c, { pos, radius, dur: whirl.dur, visual: fieldDecal(galeTex, ICE, 0.3, 2.4), tickMs: 1000,
+  addField(c, { pos, radius, dur: whirl.dur, visual: whirlVisual(k), tickMs: 1000,
     onUpdate(f, dt) {
       if (hasRune('whirl', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);
