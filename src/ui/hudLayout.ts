@@ -77,7 +77,7 @@ for (const id of Object.keys(layout)) {
     if (e.shiftKey) unlink(id);                      // Shift + Ziehen trennt das Element von seiner Gruppe
     const start = {};
     for (const g of group(id)) start[g] = { x: layout[g].x, y: layout[g].y };
-    drag = { id, x: e.clientX, y: e.clientY, start, free: e.shiftKey, dockTo: null };
+    drag = { id, x: e.clientX, y: e.clientY, start, free: e.shiftKey, dockTo: [] };
   }, true);
   $(id).addEventListener('click', e => { if (onDone) { e.preventDefault(); e.stopPropagation(); } }, true);
   $(id).addEventListener('wheel', e => {             // Mausrad über dem Element ändert seine Größe
@@ -109,28 +109,33 @@ function unlink(id) {
 const clearDockMark = () => document.querySelectorAll('.hudDockTarget').forEach(el => el.classList.remove('hudDockTarget'));
 function dock(id) {
   clearDockMark();
-  drag.dockTo = null;
+  drag.dockTo = [];
+  for (let pass = 0; pass < 2; pass++) if (!dockOnce(id)) break;   // Zweiter Durchgang: In einer Ecke rastet es an zwei Nachbarn ein
+}
+function dockOnce(id) {
   const me = $(id).getBoundingClientRect();
   let best = null, bestGap = UI.hudDockPx;
   for (const other of Object.keys(layout)) {
-    if (other in drag.start) continue;
+    if (other in drag.start || drag.dockTo.includes(other)) continue;
     const o = $(other).getBoundingClientRect();
-    const gap = Math.max(o.left - me.right, me.left - o.right, o.top - me.bottom, me.top - o.bottom);
+    const gap = Math.abs(Math.max(o.left - me.right, me.left - o.right, o.top - me.bottom, me.top - o.bottom));
     if (gap < bestGap) { bestGap = gap; best = { other, o }; }
   }
-  if (!best) return;
+  if (!best) return false;
   const { o } = best, dx = (me.left + me.right - o.left - o.right) / 2, dy = (me.top + me.bottom - o.top - o.bottom) / 2;
-  if (best.other === 'hudHeader' && Math.abs(dx) > Math.abs(dy)) return;   // Die Kopfleiste ist bildschirmbreit, seitlich gibt es nichts
   const side = Math.abs(dx) > Math.abs(dy);
-  const left = side ? (dx > 0 ? o.right : o.left - me.width) : o.left;
-  const top = side ? o.top : (dy > 0 ? o.bottom : o.top - me.height);
+  if (best.other === 'hudHeader' && side) return false;   // Die Kopfleiste ist bildschirmbreit, seitlich gibt es nichts
+  const near = (a, b) => Math.abs(a - b) < UI.hudDockPx;
+  const left = side ? (dx > 0 ? o.right : o.left - me.width) : near(me.left, o.left) ? o.left : near(me.right, o.right) ? o.right - me.width : me.left;
+  const top = !side ? (dy > 0 ? o.bottom : o.top - me.height) : near(me.top, o.top) ? o.top : near(me.bottom, o.bottom) ? o.bottom - me.height : me.top;
   for (const g in drag.start) {
     layout[g].x += (left - me.left) / innerWidth * 100;
     layout[g].y += (top - me.top) / innerHeight * 100;
   }
   applyLayout();
-  drag.dockTo = best.other;
+  drag.dockTo.push(best.other);
   $(best.other).classList.add('hudDockTarget');
+  return true;
 }
 
 addEventListener('pointermove', e => {
@@ -143,7 +148,7 @@ addEventListener('pointermove', e => {
 });
 addEventListener('pointerup', () => {
   if (!drag) return;
-  if (drag.dockTo) link(drag.id, drag.dockTo);
+  for (const other of drag.dockTo ?? []) link(drag.id, other);
   drag = null;
   clearDockMark();
   save();
