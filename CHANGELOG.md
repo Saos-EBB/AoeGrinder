@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- chore(docs): Handoff und Übersicht auf v14
 - feat(docs): Credits für die Icons, auch in den Einstellungen
 - feat(ui): Einstellungen im Pause-Menü
 - feat(meta): Shop auch im Hauptmenü

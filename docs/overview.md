@@ -1,7 +1,7 @@
 # Frost Grind — Was ist los
 > Browser-Game, das Kevin aus Spaß baut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Komplett in Arbeit, der Look ist noch raw, Spells und Balance werden gerade ausprobiert.
 
-**Stand:** Auf `main` liegt die neue UI, Artifact und GitHub stehen noch auf [v12](handoff.md#stand) ohne sie. [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) (Speedrun-Liste, Staub, Shop, [Pool](pool-liste.md)) liegt auf Branch `meta` und wartet auf Kevins Test.
+**Stand:** v14 auf `main` und [live](handoff.md#stand): neue UI, [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) mit Speedrun-Liste, Staub und Shop. Getestet per Skript, Kevins Handtest läuft.
 
 ## Loslegen
 ```
@@ -32,9 +32,9 @@ npm run build        # eine dist/index.html fürs Artifact
 - Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
-- Shop gibt es nur nach einem Abschluss, Staub auch nach einem Tod → [meta.ts](../src/meta.ts)
+- Der Shop öffnet nach einem Abschluss und im Hauptmenü, dort mit dem letzten Angebot. Staub gibt es auch nach einem Tod → [meta.ts](../src/meta.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
-- Spell-Icons sind Fremd-Packs, Herkunft und Kevins Freigabe stehen im Audit → [asset-audit](asset-audit.md)
+- Spell-Icons sind Fremd-Packs, Autoren und Quellen stehen in den Credits → [credits](credits.md)
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)
