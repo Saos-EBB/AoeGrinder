@@ -1,7 +1,7 @@
 # Frost Grind — Was ist los
 > Browser-Game, das Kevin aus Spaß baut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Komplett in Arbeit, der Look ist noch raw, Spells und Balance werden gerade ausprobiert.
 
-**Stand:** Auf `main` liegt die neue UI, Artifact und GitHub stehen noch auf [v12](handoff.md#stand) ohne sie. In Arbeit ist [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) auf Branch `meta`: Speedrun-Liste und Shop, die [Pool-Liste](pool-liste.md) wartet auf Kevins Auswahl.
+**Stand:** Auf `main` liegt die neue UI, Artifact und GitHub stehen noch auf [v12](handoff.md#stand) ohne sie. [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) (Speedrun-Liste, Staub, Shop, [Pool](pool-liste.md)) liegt auf Branch `meta` und wartet auf Kevins Test.
 
 ## Loslegen
 ```
@@ -22,7 +22,8 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/realMen.ts`, `skinFx.ts` | Modus Real Men, Skin-Effekte | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
-| `src/score.ts`, `leaderboard.ts` | Punkte und lokale Rangliste | [score-spec](score-spec.md) |
+| `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |
+| `src/meta.ts`, `ui/shop.ts` | Knochenstaub, gesperrter Pool, Shop | [pool-liste](pool-liste.md) |
 
 ## ⚠ Besonderheiten
 - `mageModel.ts` kommt aus dem Viewer: dort ändern und neu ziehen, danach `RUN_REF` prüfen → [handoff](handoff.md#offen)
@@ -31,6 +32,7 @@ npm run build        # eine dist/index.html fürs Artifact
 - Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
+- Shop gibt es nur nach einem Abschluss, Staub auch nach einem Tod → [meta.ts](../src/meta.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons sind Fremd-Packs, Herkunft und Kevins Freigabe stehen im Audit → [asset-audit](asset-audit.md)
 

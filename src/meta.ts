@@ -19,6 +19,7 @@ export const META = {
     offer: { 1: 4, 2: 5, 3: 6, 4: 7, 5: 8 }, offerPerExtraTier: 2,
     // Höchste Seltenheit pro Stufe; capped: davon höchstens so viele im Angebot
     top: { 1: ['blau'], 2: ['blau', 'lila'], 3: ['lila'], 4: ['lila', 'orange'] }, capped: 1,
+    sure: { 3: { lila: 2 }, 4: { lila: 3, orange: 1 }, 5: { lila: 3, orange: 2 } },   // Mindestens so viele, damit hohe Stufen spürbar besser sind
   },
   freeWeapons: ['pilgerast', 'grenzwaechter', 'glutrute', 'zirkelstab'],
   rarity: {
@@ -94,8 +95,10 @@ export function rollShop(tier) {
   // Gedeckelte Stufen zeigen die oberste Seltenheit nur einzeln
   const capRarity = top.length > 1 ? top[1] : null;
   const picks = [];
-  let capped = 0;
+  for (const [rarity, n] of Object.entries<any>(s.sure[Math.min(tier, 5)] ?? {})) picks.push(...allowed.filter(e => e.rarity === rarity).slice(0, n));
+  let capped = picks.filter(e => e.rarity === capRarity).length;
   for (const e of allowed) {
+    if (picks.includes(e)) continue;
     if (picks.length >= count) break;
     if (e.rarity === capRarity && ++capped > s.capped) continue;
     picks.push(e);
