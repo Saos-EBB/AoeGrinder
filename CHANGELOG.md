@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- docs: Vercel-Stand v20 nachgetragen
 - feat(ui): Rückfragen beim Löschen einer Waffe und beim Laden eines Spielstand-Codes als Fenster im Spiel statt Browser-Abfrage
 - feat(meta): Info-Karte mit allen Schichten beim Hovern über Waffen im Hauptmenü und im Shop-Inventar
 - feat(meta): Waffen-Baukasten für Magier: Waffen aus Typ (Stab, Zauberstab, Buch, Relikt), Kopf mit Fokus-Spell, Schaft-Wert, Element-Effekt (7 Elemente), Hersteller-Eigenheit, ab lila Anhänger, orange als Unikat mit altem Modell; Ergebnis-Karte in der Kiste, alte Waffen bleiben gültig, Spielversion v20
