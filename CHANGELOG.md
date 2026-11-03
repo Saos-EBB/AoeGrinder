@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(krieger): Schlachtblech mit leichtem rotem Schein, im Dunkeln besser zu sehen
 - feat(krieger): Schlachtblech ist die Standardwaffe des Strichkriegers und kommt nicht mehr aus der Magischen Kiste
 - feat(figuren): Eigene Sitz- und Ess-/Trink-Animation mit Requisite für alle Strichfiguren (Becher, Flasche, Tasse, Tee-Schale, Fleischkeule, Yakitori-Spieß)
 - feat(mobile): Hinweis-Banner „Handy-Steuerung noch buggy – in Arbeit“, Antippen blendet ihn aus

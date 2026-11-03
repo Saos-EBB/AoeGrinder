@@ -21,7 +21,24 @@ const hitHandlers = [];
 export function onWarriorHit(fn) { hitHandlers.push(fn); }
 
 // Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
-const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2 } };
+const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2, glow: [0.1, 0.008, 0.005], rim: [0.55, 0.05, 0.03], rimPower: 2.4 } };
+// Leichter roter Schein auf der Klinge, damit sie im Dunkeln lesbar bleibt: Grundglühen plus roter Rand
+function tintWeapon(w, hw) {
+  w.root.traverse(o => {
+    const m = o.material;
+    if (!o.isMesh || !m?.isMeshLambertMaterial || m.userData.tinted) return;
+    m.userData.tinted = true;
+    const prev = m.onBeforeCompile;
+    m.onBeforeCompile = (s, r) => {
+      prev?.call(m, s, r);
+      s.fragmentShader = s.fragmentShader.replace('#include <opaque_fragment>',
+        `outgoingLight += vec3(${hw.glow.join(',')}) + vec3(${hw.rim.join(',')}) * pow(1.0 - saturate(abs(dot(normalize(normal), normalize(vViewPosition)))), ${hw.rimPower.toFixed(1)});\n#include <opaque_fragment>`);
+    };
+    const key = m.customProgramCacheKey?.() ?? '';
+    m.customProgramCacheKey = () => `${key}|redGlow`;
+    m.needsUpdate = true;
+  });
+}
 let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 
 function dispose(m) {
@@ -58,7 +75,7 @@ function setSkin(id) {
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
     const hw = HERO_WEAPON[id];
-    if (hw) { heroWeapon = buildWeapon(hw.id); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
+    if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
   cur = buildStrichMagier(id, { bloom: PERF.bloom });
