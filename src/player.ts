@@ -25,7 +25,7 @@ import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
-import { resetKlinge } from './klinge';
+import { resetKlinge, klingeMoveMul, klingeRooted } from './klinge';
 
 export function resetGame() {
   startMageRun();
@@ -209,7 +209,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || heroRooted();
+  const stunned = player.stunUntil > state.now || rooted() || heroRooted() || klingeRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
@@ -227,7 +227,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul();
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul();
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

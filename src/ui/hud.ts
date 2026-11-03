@@ -181,7 +181,7 @@ export function updateHud() {
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
-    const cost = paysLife(id) ? 0 : costOf(id), maxCharges = rune(id)?.charges ?? 0;
+    const cost = paysLife(id) ? 0 : costOf(id), maxCharges = rune(id)?.charges ?? SPELLS[id].charges ?? 0;
     sl.cost.textContent = cost > 0 ? cost : '';
     sl.charges.textContent = maxCharges > 1 ? (player.charges[id] ?? []).filter(t => t <= state.now).length || (player.charges[id] ? 0 : maxCharges) : '';
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));

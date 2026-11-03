@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(klinge): Eigene Tasten Q, E, R, Maus 4, Maus 5, 1, 2, 3 (umbelegbar), zwei Haltungen mit Tempo, Reichweite, Abklingzeit-Kürzung, Schaden und Blutung bis 7 Stapel
 - feat(klinge): Modus Klingenstrich im Hauptmenü neben dem Skelett-Krieger, eigene Rangliste, Modell läuft im Spiel
 - feat(klinge): Modell Klingenstrich aus dem Viewer mit Kreisschnitt, Sitzen, Rückwärts, Sprung, Tod und Klon-Hilfe, Testseite unter /klinge.html
 

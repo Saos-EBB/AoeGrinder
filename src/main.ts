@@ -16,7 +16,7 @@ import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
 import { updateHeroes, heroAnim } from './heroes';
-import { klingeAnim } from './klinge';
+import { updateKlinge, klingeAnim } from './klinge';
 import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
@@ -35,6 +35,7 @@ function update(dt) {
   updateSkinFx();
   updateRealMen(dt);
   updateHeroes(dt);
+  updateKlinge(dt);
   updateZoneEvent(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen

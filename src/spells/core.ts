@@ -54,25 +54,27 @@ export const hasRune = (id, runeId) => state.runes[id] === runeId;
 export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
+const chargesOf = id => rune(id)?.charges ?? SPELLS[id].charges;
 export function cdEnd(id) {
-  const n = rune(id)?.charges;
+  const n = chargesOf(id);
   if (!n) return player.cds[id] || 0;
   player.charges[id] ??= Array(n).fill(0);
   return Math.min(...player.charges[id]);
 }
-function startCd(id) {
+export function startCd(id) {
   const cd = spellCd(id);
   if (!cd) return;
-  if (!rune(id)?.charges) { player.cds[id] = state.now + cd; return; }
+  if (!chargesOf(id)) { player.cds[id] = state.now + cd; return; }
+  cdEnd(id);                                // legt die Ladungen an, wenn der Start ohne Prüfung kommt
   const c = player.charges[id];
   c[c.indexOf(Math.min(...c))] = state.now + cd;
 }
 
-const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
+export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
 export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
 export const paysLife = id => supported('blood', id);
 export const radiusMult = id => stat(id).radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
-const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
+export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
