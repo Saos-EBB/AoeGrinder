@@ -110,7 +110,7 @@ export function damagePlayer(amount, dot = false) {
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
   if (!dot) rageOnHit();
   if (!dot) {                            // Gift-Ticks brechen weder Trinken noch Channel
-    if (player.drink) stopDrink();
+    if (player.drink && !player.drink.keepOnHit) stopDrink();
     pushbackChannel();
   }
   if (player.hp <= 0) die();
@@ -142,7 +142,7 @@ function regenerate(dt) {
   }
   if (player.drink) {                    // PH: 90 % Mana + 50 % HP über 18 s
     player.mana = Math.min(maxMana(), player.mana + maxMana() * 0.9 * dt / SPELLS.drink.dur);
-    player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.5 * dt / SPELLS.drink.dur);
+    player.hp = Math.min(maxHp(), player.hp + maxHp() * (player.drink.hp ?? 0.5) * dt / (player.drink.dur ?? SPELLS.drink.dur));   // Essen: eigene Werte
     const full = player.mana >= maxMana() && player.hp >= maxHp();
     if (state.now >= player.drink.end || full) stopDrink();
   }

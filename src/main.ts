@@ -16,7 +16,7 @@ import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
 import { updateHeroes, heroAnim } from './heroes';
-import { updateKlinge, klingeAnim } from './klinge';
+import { updateKlinge, klingeAnim, updateKlingeVisuals } from './klinge';
 import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
@@ -64,6 +64,7 @@ function updateVisuals(dt) {
     speed: player.moveSpeed, vy: player.vel.y, squat,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...heroAnim(), ...klingeAnim(),
   });
+  updateKlingeVisuals();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
   for (const m of state.mobs) {
