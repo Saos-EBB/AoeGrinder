@@ -10,7 +10,7 @@ import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
-import { MODIFIERS, activeModIds } from '../modifiers';
+import { MODIFIERS, activeModIds, modValue } from '../modifiers';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 
@@ -49,12 +49,16 @@ export function clearSpellEffects() {
 export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
 export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
 export const hasSpell = id => state.slots.includes(id);
-export const rune = id => SPELLS[id].runes?.find(r => r.id === state.runes[id]);
+// Arcane only läuft ohnehin beim Zaubern: Runen „Laufen erlaubt, halber Schaden“ werden dort zu +1 Ladung
+const WALK_CHARGE = { name: 'Zusatzladung', desc: '+1 Ladung.' };
+export const runesOf = id => modValue('castWhileMoving') ? SPELLS[id].runes?.map(r => r.id === 'walk' ? { ...WALK_CHARGE, id: 'walk', charges: (baseCharges(id) ?? 1) + 1 } : r) : SPELLS[id].runes;
+export const rune = id => runesOf(id)?.find(r => r.id === state.runes[id]);
 export const hasRune = (id, runeId) => state.runes[id] === runeId;
 export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
-const chargesOf = id => rune(id)?.charges ?? SPELLS[id].charges;
+const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
+export const chargesOf = id => rune(id)?.charges ?? baseCharges(id);
 export function cdEnd(id) {
   const n = chargesOf(id);
   if (!n) return player.cds[id] || 0;
@@ -89,7 +93,11 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
-      return damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'));
+      if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
+      const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'));
+      const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
+      if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {
@@ -137,6 +145,7 @@ export function castSpell(id, point?) {
   if (state.paused || player.dead) return;
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
+  if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
   if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
@@ -182,7 +191,7 @@ const DOT_SOURCES = ['Gift', 'Lava'];
 function updateCast() {
   const ct = player.casting;
   if (!ct) return;
-  if (Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded) { player.casting = null; return; }
+  if ((Math.hypot(player.vel.x, player.vel.z) > 0 && !modValue('castWhileMoving')) || !player.grounded) { player.casting = null; return; }
   if (player.hp < ct.hp && !DOT_SOURCES.includes(player.lastHitBy)) {
     const delay = ct.delays < 5 ? 1000 - ct.delays * 200 : 200;
     ct.delays++;

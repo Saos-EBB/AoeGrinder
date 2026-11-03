@@ -4,7 +4,7 @@ import { state, player } from '../state';
 import { $ } from '../util';
 import { CFG, SPELLS, CARDS } from '../config';
 import { maxHp, maxMana, spirit, dmgMult } from '../formulas';
-import { modFactor } from '../modifiers';
+import { modFactor, modValue } from '../modifiers';
 import { mage } from '../models/mage';
 import { run } from '../score';
 import { spellValue } from '../cards';
@@ -29,7 +29,7 @@ function statsTab() {
     ${row('Leben', `${Math.ceil(player.hp)} / ${maxHp()}`)}
     ${player.resLabel ? row('Haltung', player.resLabel) : row(rage ? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
     ${rage ? '' : row('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
-    ${row('Crit', pct(CFG.baseCrit))}
+    ${row('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
     ${row('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
     ${row('GCD', `${(CFG.gcd / 1000).toFixed(1).replace('.', ',')} s`)}
     ${row('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}

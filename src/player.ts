@@ -22,7 +22,8 @@ import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
-import { mobMode, cardPaceId } from './modifiers';
+import { mobMode, cardPaceId, modValue } from './modifiers';
+import { iceBlocked, updateIceBlock } from './spells/iceblock';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying } from './realMen';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
@@ -43,7 +44,7 @@ export function resetGame() {
   state.autorun = false;
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
-    facing: Math.PI, slowUntil: 0, stunUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
+    facing: Math.PI, slowUntil: 0, stunUntil: 0, iceUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, won: false, kills: 0,
   });
@@ -98,7 +99,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || klingeUntouchable() || warriorUntouchable()) return;
+  if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked()) return;
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
@@ -208,7 +209,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || klingeRooted();
+  const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
@@ -257,7 +258,7 @@ export function updatePlayer(dt) {
   }
 
   if (moved) {
-    if (player.channel) stopChannel();   // Bewegung bricht Channel und Trinken ab
+    if (player.channel && !modValue('castWhileMoving')) stopChannel();   // Bewegung bricht Channel und Trinken ab, außer in Arcane only
     if (player.drink) stopDrink();
     if (!mouseBtn.left && !autoCamOn()) cam.offset -= cam.offset * Math.min(1, s * 3);   // Kamera dreht sich langsam hinter den Spieler
   }
@@ -270,5 +271,6 @@ export function updatePlayer(dt) {
     }
   }
   updateChannel();
+  updateIceBlock();
   regenerate(dt);
 }

@@ -9,8 +9,8 @@ import { fieldDecal, areaParticles, burstFx, FIRE, EMBER } from './fx';
 const AFTER_BLINK = 5000, WANDER_SPEED = 3;   // PH
 
 export const flame = {
-  name: 'Flammenstoß', desc: '2 s Zauber aufs Bodenziel, Treffer + Brandfläche 8 s.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
-  mana: 195, cd: 0, castTime: 2000, min: 55, max: 65, burn: 12, burnDur: 8000, range: 30, radius: 8, ground: true,   // PH
+  name: 'Flammenstoß', desc: '0,5 s Zauber aufs Bodenziel, Treffer + Brandfläche 8 s.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
+  mana: 195, cd: 0, castTime: 500, min: 55, max: 65, burn: 12, burnDur: 8000, range: 30, radius: 8, ground: true,   // PH
   runes: [
     { id: 'blink', name: 'Heißer Sprung', desc: 'Sofort nach Blink.' },
     { id: 'wander', name: 'Feuerspur', desc: 'Fläche wandert zum Spieler.' },

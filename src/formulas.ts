@@ -69,7 +69,7 @@ export const mobDmgTaken = lvl => 1 - Math.min(LEVEL_MOB_DEF_MAX, LEVEL_MOB_DEF_
 export const mobHitDmg = lvl => Math.round(lvl * rand(0.9, 1.3));
 
 export function manaCost(id) {
-  const base = SPELLS[id].mana * stat(id).mana * (echoCost(id) ? 1.5 : 1);
+  const base = SPELLS[id].mana * stat(id).mana * (echoCost(id) ? 1.5 : 1) * modFactor('manaCost');   // Arcane only: +15 %
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {

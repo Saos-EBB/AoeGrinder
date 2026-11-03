@@ -4,6 +4,7 @@ import { state, player } from './state';
 import { mage } from './models/mage';
 import { damageMob } from './mobs';
 import { applySlow } from './spells/core';
+import { modValue } from './modifiers';
 
 const FIRE_TICK = 1000;   // ms; mob.trailTickAt pro Mob, darum stapeln mehrere Spuren nicht
 
@@ -21,7 +22,7 @@ export function updateSkinFx() {
     if (fx.slow) applySlow(m, fx.slow, fx.slowMs);
     if (fx.dps && state.now >= (m.trailTickAt ?? -Infinity)) {
       m.trailTickAt = state.now + FIRE_TICK;
-      damageMob(m, fx.dps, 'flame', 'env', true);    // Funken wie Feuer; 'env' zählt als Multi nur im Zeitfenster
+      damageMob(m, fx.dps * (modValue('dotMul') ?? 1), 'flame', 'env', true);    // Funken wie Feuer; 'env' zählt als Multi nur im Zeitfenster
     }
   }
 }
