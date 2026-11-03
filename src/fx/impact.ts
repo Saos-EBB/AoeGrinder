@@ -7,7 +7,7 @@ import { scene, camera, composer } from '../render';
 import { softPass } from './softPass';
 import { fxClock, quality, vfxOld } from './shaders';
 import { playSound } from './sound';
-import { W } from '../wucht';
+import { W, impactDecal } from '../wucht';
 
 // ---------- Licht-Pool: Die Anzahl ändert sich nur mit der Qualität, sonst würden alle Materialien neu kompiliert ----------
 const MAX_LIGHTS = 4;
@@ -121,6 +121,7 @@ export function updateImpact(dt) {
 // Alles zusammen für einen Einschlag
 export function impact(pos, color, { radius = 10, power = 300, kickBy = 0.25, sound = 'impact', volume = Math.min(1.4, 0.55 + radius * 0.035) } = {}) {   // PH
   playSound(sound, volume);
+  impactDecal(pos, color, radius);   // Wucht: Spur am Boden
   lightFlash(pos, color, power, radius * 3);
   shockwave(pos, radius);
   cameraKick(kickBy);

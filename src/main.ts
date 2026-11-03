@@ -34,6 +34,7 @@ import * as metaMod from './meta';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import { menuYaw, enterMenu } from './ui/mainMenu';
+import { updateWucht } from './wucht';
 import { initDunkel, updateDunkel } from './dunkel';
 
 function update(dt) {
@@ -96,6 +97,7 @@ function updateVisuals(dt) {
   ambientParticles(state.paused ? 0 : dt);
   particles.update(state.paused ? 0 : dt);
   updateEffects();
+  updateWucht();
 }
 
 let last = performance.now();
