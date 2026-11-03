@@ -5,6 +5,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 ## 2026-11-03
 
 - fix(vfx): VFX-Labor startet wieder (Import-Kreis bei `onWarriorHit`, fehlende Platzhalter der Punkte-Anzeige)
+- chore(docs): veraltete Status-Dateien und Vergleichsbilder gelöscht, GCD- und Lichtkegel-Reste aus der Doku entfernt
 - chore: toter Code entfernt (ungenutzte Helfer, Konstanten, Imports, Parameter), interne Exporte nicht mehr exportiert, Mathe-Helfer der Figuren aus `util.ts`
 - feat(ui): Minimap oben rechts, Blickrichtung oben, Mobs rot (im Kampf heller), Champions blau, Spieler als Pfeil; im UI-Bearbeiten verschiebbar und per Mausrad skalierbar
 - perf: Mob-Modelle sind ein SkinnedMesh pro Material (2 statt 14 Meshes), Gelenke dienen als Knochen; Level 30 etwa 1130 → 86 Draw Calls, gleiche Optik

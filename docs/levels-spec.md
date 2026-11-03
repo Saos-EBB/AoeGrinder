@@ -1,6 +1,6 @@
 # Level 1–100, Mob-Freischaltung, Hardmode-Fix
 
-Auftrag an Agent BLAU (Branch `blau-levels`). Alle neuen Zahlen sind `// PH`. Stand und Messwerte: `docs/status-blau.md`.
+Auftrag an Agent BLAU (Branch `blau-levels`). Alle neuen Zahlen sind `// PH`.
 
 ## 1. Level 1–100
 - Jeder Run startet auf Level 1, Maximum Level 100, in jeder Zone gleich.
@@ -9,7 +9,7 @@ Auftrag an Agent BLAU (Branch `blau-levels`). Alle neuen Zahlen sind `// PH`. St
   Zielwert: Level 20 ≈ heutiger Stand (1040 Leben, Mana = Leben × 4/3).
 - Balance-Regel Schaden: Auf JEDEM Level braucht ein gleichstufiger Start-Mob ca. 3 Arcane
   Explosions (ohne Karten). dmgMult(level) und mobMaxHp(level) danach auslegen.
-  Per Test messen auf Level 1, 20, 50, 100, Werte in status-blau.md.
+  Per Test messen auf Level 1, 20, 50, 100.
   Überholt auf Kevins Wunsch: Mob-Leben verdoppelt, dazu 0,4 % Schadensreduktion pro Level (höchstens 40 %). Rechnerisch 6 Explosions auf Level 1 und 20, 7 auf Level 50, 10 auf Level 100.
 - XP: Classic-Formel bleibt (ZD ab Level 60 = 17). Überholt: xpNeeded wächst von 8 Kills auf Level 1 bis 48 auf Level 100 (`LEVEL_KILLS`), dazu Pacing auf 15 Minuten (`LEVEL_PACE`, `paceXpMul`). Karten nach dem Kartentakt aus `CARD_PACES`, wählbar im Hauptmenü.
 - Level 100: kein Level-Up mehr, XP-Balken zeigt "Max-Level", Punkte laufen weiter.
@@ -59,4 +59,4 @@ Vor Änderungen an geteilten Dateien (mobs.ts, config.ts, index.html):
 3. Dev "Level setzen"
 4. Hardmode-Fix
 5. castKey-Vorrang
-6. status-blau.md aktualisieren, stoppen und berichten
+6. Stoppen und berichten
