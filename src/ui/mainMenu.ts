@@ -19,10 +19,10 @@ import { openBinds, closeBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 
 const CHARS = [
-  { mod: null, name: 'Kapuzenmagier', sub: 'Alle' },
-  { mod: 'frost', name: 'Eis-Skelett', sub: 'Frost' },
-  { mod: 'fire', name: 'Feuer-Skelett', sub: 'Feuer' },
-  { mod: 'arcane', name: 'Arkan-Skelett', sub: 'Arkan' },
+  { mod: null, name: 'Strichmagier', sub: 'Alle' },
+  { mod: 'frost', name: 'Eismagier', sub: 'Frost' },
+  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer' },
+  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan' },
   { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert' },
   { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung' },
 ];

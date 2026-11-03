@@ -2214,7 +2214,7 @@ function footprintTex(kind) {                                            // Skel
     }
   }));
 }
-function makeTrail(kind) {
+export function makeTrail(kind) {
   const mat = new THREE.MeshBasicMaterial({ map: footprintTex(kind), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
   const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.34, 0.62).rotateX(-Math.PI / 2).rotateY(Math.PI), mat, TRAIL.max);
   mesh.frustumCulled = false;
@@ -2241,7 +2241,7 @@ function makeTrail(kind) {
 }
 // Schritt = tiefster Punkt des Sprunggelenks in einem Schrittzyklus (der Fuß setzt nicht immer genau auf Ruhehöhe auf).
 // Ein Fuß gilt als „fällt“, sobald er 2 cm unter sein letztes Hoch sinkt; steigt er danach wieder, war das ein Schritt.
-function stepWatcher(R) {
+export function stepWatcher(R) {
   const foot = [{ hi: 0, lo: 0, falling: false }, { hi: 0, lo: 0, falling: false }], v = new THREE.Vector3(), base = new THREE.Vector3();
   return onStep => {
     R.root.getWorldPosition(base);
