@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
-import { aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
+import { CFG, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
+import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
 import { groundAt, resolve, settle, steer, climbTarget } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { ABILITIES } from './abilities';
 import { reportKill , run } from './score';
-import { mobMode, modFactor } from './modifiers';
+import { mobMode, modFactor, modValue } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { shakeCamera } from './camera';
@@ -274,13 +274,14 @@ export function applyRoot(mob, dur) {
 
 // Gibt true zurück, wenn der Zauber getroffen hat
 // noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
-export function damageMob(mob, amount, source, castKey?, noRoll = false) {
+// dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
+export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
   player.lastCombat = state.now;
 
-  if (!noRoll && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
+  if (!noRoll && !dark && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
   mob.castKey = castKey ?? source;
   amount *= modFactor('dmg');
@@ -290,9 +291,10 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false) {
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = !noRoll && Math.random() < CFG.baseCrit + (frozen ? mods.shatter : 0);
-  const dmg = Math.round(amount * dmgMult() * mobDmgTaken(mob.level) * (crit ? 1 + CFG.critBonus : 1));
+  const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
+  const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
+  if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
   damageNumber(mob, dmg, crit, source);

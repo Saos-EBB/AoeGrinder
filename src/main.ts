@@ -22,6 +22,17 @@ import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 import './mobile';
+import './ui/saveCode';
+// Für Tests: dieselben Modul-Instanzen wie im Spiel
+import * as coreMod from './spells/core';
+import * as configMod from './config';
+import * as formulasMod from './formulas';
+import * as playerMod from './player';
+import * as cardsMod from './cards';
+import * as weaponMod from './weaponRolls';
+import * as metaMod from './meta';
+import * as modifiersMod from './modifiers';
+import * as supportsMod from './spells/supports';
 import { menuYaw, enterMenu } from './ui/mainMenu';
 import { initDunkel, updateDunkel } from './dunkel';
 
@@ -109,4 +120,5 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
+  m: { core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod } };

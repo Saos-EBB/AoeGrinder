@@ -8,5 +8,5 @@ export const SUPPORTS = [
   { id: 'potency', name: 'Wirksamkeit', tags: ['Kanal'], desc: 'Kanäle und Dauereffekte: +40 % Dauer, +20 % Schaden über Zeit.' },
   { id: 'chain', name: 'Kette', tags: ['Geschoss'], desc: 'Springt nach Treffer zu 2 weiteren.' },
   { id: 'boneChill', name: 'Knochenkälte', tags: ['Frost'], desc: 'Verlangsamte Gegner nehmen +15 % Schaden.' },
-  { id: 'blood', name: 'Blutopfer', tags: ['Schatten', 'Feuer'], desc: 'Leben statt Mana.' },
+  { id: 'blood', name: 'Blutopfer', tags: ['Dunkel', 'Feuer'], desc: 'Leben statt Mana.' },
 ];

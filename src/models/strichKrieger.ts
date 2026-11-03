@@ -52,7 +52,7 @@ const Q_END = [
   P(IDLE, { y: 1.02, h: [0, -.2, 0], c: [-.2, -.2, 0], n: [-.35, .1, 0], hR: [-.1, 2.05, .35], hL: 'G', b: [0, .85, .5], e: [0, .3, -1], fL: [.28, .07, .1], fR: [-.3, .07, .35] }),
   P(IDLE, { y: .6, h: [0, 0, 0], c: [.75, 0, 0], n: [-.6, 0, 0], hR: [0, .82, .8], hL: 'G', b: [0, -.72, .7], e: [0, -1, 0], fL: [.4, .07, .3], fR: [-.4, .07, -.35] })
 ];
-const SIT = { y: .3, h: [-.1, 0, 0], c: [.35, 0, 0], n: [.1, 0, 0], hR: [-.5, .95, .3], b: [0, -1, .05], e: [0, 0, 1], hL: [.12, 1.08, .22], fL: [.32, .07, .6], fR: [-.3, .07, .62] };
+const SIT = { y: .32, h: [-.1, .15, 0], c: [.2, -.1, 0], n: [.1, 0, 0], hR: [-.55, 1.0, .25], b: [0, -1, .05], e: [0, 0, 1], hL: [.35, .75, .4], fL: [.42, .07, .75], fR: [-.3, .07, .45] };
 const DEAD = { y: .24, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hR: [-.75, .18, -.2], hL: [.7, .14, -.6], b: [-.5, -.02, .85], e: [0, 1, 0], fL: [.32, .07, .98], fR: [-.3, .07, 1.02] };
 
 export function buildStrichKrieger({ bloom = false } = {}) {
@@ -152,7 +152,17 @@ function swordGeo() {
   return mergeGeometries([prep(blade, C.iron), prep(edge, C.edge), prep(guard, C.guard), prep(grip, C.wrap), prep(pommel, C.guard)]);
 }
 const SWORD_GEO = swordGeo();
-const sword = new THREE.Mesh(SWORD_GEO, VMAT); root.add(sword);
+// Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
+const sword = new THREE.Group(); root.add(sword);
+const swordMesh = new THREE.Mesh(SWORD_GEO, VMAT); sword.add(swordMesh);
+let tipLen = 1.95, gripLen = .24;
+  // Fleischkeule zum Essen: Knochen + Fleisch, Griff im Ursprung, Fleisch nach +y
+  const meat = new THREE.Mesh(mergeGeometries([
+    prep(new THREE.CylinderGeometry(.025, .025, .22, 5).translate(0, -.02, 0), new THREE.Color(0xeee6d0)),
+    prep(new THREE.IcosahedronGeometry(.035, 0).translate(.02, -.14, 0), new THREE.Color(0xeee6d0)), prep(new THREE.IcosahedronGeometry(.035, 0).translate(-.02, -.14, 0), new THREE.Color(0xeee6d0)),
+    prep(new THREE.IcosahedronGeometry(.11, 1).scale(1, 1.35, 1).translate(0, .17, 0), new THREE.Color(0x8a3b1c)),
+    prep(new THREE.IcosahedronGeometry(.06, 0).translate(.06, .2, .05), new THREE.Color(0xa9552a))
+  ]), VMAT); meat.visible = false; root.add(meat);
 const auraRing = new THREE.Mesh(new THREE.RingGeometry(.7, 1.1, 40), new THREE.MeshBasicMaterial({ color: 0xe0141c, transparent: true, opacity: 0, depthWrite: false }));
 auraRing.rotation.x = -Math.PI / 2; fxGroup.add(auraRing);
 const SN = 8, SEG = .11;
@@ -207,8 +217,8 @@ function placeSword(dir, edge) {
   root.worldToLocal(armR.hand.getWorldPosition(_hp));
   sword.position.copy(_hp);
 }
-const gripL = () => sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), -.24);
-const tipPos = () => root.localToWorld(sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), 1.95));
+const gripL = () => sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), -gripLen);
+const tipPos = () => root.localToWorld(sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), tipLen));
   let lastGrip = [.2, 1.2, .3];
   function resolve(p) {
     const o: any = {};
@@ -261,12 +271,12 @@ function ghost() {
   const g = SkeletonUtils.clone(root); const mat = ghostBase.clone();
   g.traverse((o: any) => { if (o.isMesh) o.material = mat; });
   fxGroup.add(g);
-  fxList.push({ obj: g, t: 0, life: .4, upd: k => { mat.opacity = .3 * (1 - k); } });
+  fxList.push({ obj: g, t: 0, life: .4, shared: true, upd: k => { mat.opacity = .3 * (1 - k); } });
 }
 function updateFx(dt) {
   for (let i = fxList.length - 1; i >= 0; i--) {
     const f = fxList[i]; f.t += dt; const k = f.t / f.life;
-    if (k >= 1) { fxGroup.remove(f.obj); f.obj.traverse((o: any) => { if (o.isSkinnedMesh) o.skeleton.dispose(); else if (o.isMesh) o.geometry.dispose(); if (o.isMesh) o.material.dispose(); }); fxList.splice(i, 1); continue; }
+    if (k >= 1) { fxGroup.remove(f.obj); f.obj.traverse((o: any) => { if (o.isSkinnedMesh) o.skeleton.dispose(); else if (o.isMesh && !f.shared) o.geometry.dispose(); if (o.isMesh) o.material.dispose(); }); fxList.splice(i, 1); continue; }
     f.upd(k);
   }
 }
@@ -395,6 +405,7 @@ function defQ(step) {
     return { e: defE, whirl: defWhirl, leap: defLeap, exec: defExec, cry: defCry, last: defLast }[ability]?.();
   };
   const applyTuple = (e, v) => e.set(v[0], v[1], v[2]);
+  let eatK = { s: 0, k: 0 };
   let act = null, actKey = '', lastPose = resolve(IDLE), blendFrom = null, blendT = 0, runPh = 0, T = 0, lastLoco = 'idle', ready = false;
   function evalKeys(keys, u) {
     let i = 0; while (i < keys.length - 2 && u > keys[i + 1][0]) i++;
@@ -443,9 +454,13 @@ function defQ(step) {
     else if (loco === 'dead') pose = resolve(DEAD);
     else if (loco === 'sit') {
       pose = resolve(SIT);
-      const b = (Math.sin(T * 2.2) + 1) / 2;
-      pose.hL = [lerp(.3, .1, b), lerp(.72, 1.1, b), lerp(.38, .22, b)];
-      pose.n[0] = .1 + .15 * b;
+      // Biss alle 2,4 s: Keule zum Mund, Kopf reißt zur Seite, dann kauen
+      const k = (T % 2.4) / 2.4, b = k < .4 ? Math.sin(Math.PI * k / .4) ** .7 : 0, tear = k > .22 && k < .4 ? Math.sin(Math.PI * (k - .22) / .18) : 0;
+      const chew = k >= .4 ? Math.abs(Math.sin(T * 14)) * .06 : 0;
+      pose.hL = [lerp(.35, .08, b) + .12 * tear, lerp(.75, 1.25, b), lerp(.4, .28, b)];
+      pose.n = [.1 + .2 * b + chew, -.5 * tear, .15 * tear];
+      pose.c[0] = .2 + .2 * b;
+      eatK = { s: b, k };
     } else {
       pose = resolve(IDLE);
       // schweres Atmen: Brust hebt sich, Schultern mit
@@ -466,6 +481,13 @@ function defQ(step) {
     const g = gripL(); lastGrip = g.toArray();
     armIK(armL, pose.hL.map((v, i) => lerp(v, lastGrip[i], pose.g)));
     root.updateMatrixWorld(true);
+    // Fleischkeule beim Essen, nur dann ein Draw Call mehr
+    meat.visible = loco === 'sit' && !act;
+    if (meat.visible) {
+      root.worldToLocal(armL.hand.getWorldPosition(meat.position));
+      meat.quaternion.setFromUnitVectors(V(0, 1, 0), V(lerp(.3, -.7, eatK.s), lerp(.85, .35, eatK.s), lerp(.2, .1, eatK.s)).normalize());
+      if (eatK.k > .3 && eatK.k - s / 2.4 <= .3) emit(meat.getWorldPosition(V()).add(V(0, .1, 0)), 8, 1.5, 0x8a3b1c, 10, .5);
+    }
 
     // Wut-Aura: Dicke und Deckkraft wachsen mit der Wut, ohne Wut kein Draw Call
     rage = anim.rage ?? 0;
@@ -503,8 +525,15 @@ function defQ(step) {
     root, update, scarf: cloth, onHit: null,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
     fx: { group: fxGroup, crackAt, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
-    get tris() { return Math.round((body.geometry.attributes.position.count + sword.geometry.attributes.position.count) / 3 + (SN - 1) * 2); },
+    get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count) / 3 + (SN - 1) * 2); },
     get bloom() { return bloom; },
+    // Waffe aus models/weapons statt des eigenen Schwerts: Griff in der rechten Hand, Länge für Treffer und linke Hand aus der Waffe
+    setWeapon(w, scale = 1, tip = 1.95, grip = .24) {
+      swordMesh.visible = false;
+      w.root.scale.setScalar(scale);
+      sword.add(w.root);
+      tipLen = tip * scale; gripLen = grip * scale;
+    },
   };
   return model;
 }

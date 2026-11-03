@@ -3,14 +3,14 @@
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
-import { CFG, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
+import { CFG, mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
-import { MODIFIERS, activeModIds } from '../modifiers';
+import { MODIFIERS, activeModIds, modValue } from '../modifiers';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 
@@ -18,6 +18,8 @@ import { SUPPORTS } from './supports';
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
 export function modRule(key): any { return activeMods().find(m => m[key])?.[key]; }
 // Nur Frost, Nur Feuer und Nur Arkan lassen nur ihre Schule zu
+// Fokus-Waffe: ein Spell außerhalb der Schule kommt für den Run in den Pool
+export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 function startKit() {
@@ -49,12 +51,16 @@ export function clearSpellEffects() {
 export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
 export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
 export const hasSpell = id => state.slots.includes(id);
-export const rune = id => SPELLS[id].runes?.find(r => r.id === state.runes[id]);
+// Arcane only läuft ohnehin beim Zaubern: Runen „Laufen erlaubt, halber Schaden“ werden dort zu +1 Ladung
+const WALK_CHARGE = { name: 'Zusatzladung', desc: '+1 Ladung.' };
+export const runesOf = id => modValue('castWhileMoving') ? SPELLS[id].runes?.map(r => r.id === 'walk' ? { ...WALK_CHARGE, id: 'walk', charges: (baseCharges(id) ?? 1) + 1 } : r) : SPELLS[id].runes;
+export const rune = id => runesOf(id)?.find(r => r.id === state.runes[id]);
 export const hasRune = (id, runeId) => state.runes[id] === runeId;
 export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
-const chargesOf = id => rune(id)?.charges ?? SPELLS[id].charges;
+const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
+export const chargesOf = id => rune(id)?.charges ?? baseCharges(id);
 export function cdEnd(id) {
   const n = chargesOf(id);
   if (!n) return player.cds[id] || 0;
@@ -73,7 +79,7 @@ export function startCd(id) {
 export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
 export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
 export const paysLife = id => supported('blood', id);
-export const radiusMult = id => stat(id).radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
+export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
@@ -89,7 +95,11 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
-      return damageMob(m, dmg, id, castKey);
+      if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
+      const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'));
+      const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
+      if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {
@@ -100,7 +110,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       return landed;
     },
     radius: base => base * radiusMult(id) * radiusScale,
-    duration: base => base * (state.supports.potency ? 1.4 : 1),
+    duration: base => base * (state.supports.potency ? 1.4 : 1) * mods.durMul,
   };
   return c;
 }
@@ -137,6 +147,7 @@ export function castSpell(id, point?) {
   if (state.paused || player.dead) return;
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
+  if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
   if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
@@ -182,7 +193,7 @@ const DOT_SOURCES = ['Gift', 'Lava'];
 function updateCast() {
   const ct = player.casting;
   if (!ct) return;
-  if (Math.hypot(player.vel.x, player.vel.z) > 0 || !player.grounded) { player.casting = null; return; }
+  if ((Math.hypot(player.vel.x, player.vel.z) > 0 && !modValue('castWhileMoving')) || !player.grounded) { player.casting = null; return; }
   if (player.hp < ct.hp && !DOT_SOURCES.includes(player.lastHitBy)) {
     const delay = ct.delays < 5 ? 1000 - ct.delays * 200 : 200;
     ct.delays++;
@@ -273,7 +284,7 @@ function buildText() {
   const spells = owned.filter(id => !SPELLS[id].relic).map(id => rune(id) ? `${SPELLS[id].name} (${rune(id).name})` : SPELLS[id].name);
   const supports = SUPPORTS.filter(x => state.supports[x.id]).map(x => x.name);
   const relic = owned.find(id => SPELLS[id].relic);
-  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`].filter(Boolean).join(' · ');
+  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`, state.runWeapon && `Waffe: ${state.runWeapon}`].filter(Boolean).join(' · ');
 }
 
 // recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.

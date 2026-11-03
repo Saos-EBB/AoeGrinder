@@ -1,4 +1,5 @@
 import { player } from '../state';
+import { spendMana } from '../player';
 import { maxHp } from '../formulas';
 import { burnTex } from '../fx/spellFx';
 import { combatText } from '../ui/hud';
@@ -8,17 +9,17 @@ import { vfxOld } from '../fx/shaders';
 import { vortexVisual } from '../fx/prims';
 import { hellfireOpen, hellfirePulse } from '../fx/fireFx';
 
-const HEAL_PER_KILL = 0.05, GROW_PER_S = 1;   // PH
+const HEAL_PER_KILL = 0.05, GROW_PER_S = 1, HEAL_PER_TICK = 0.01;   // PH: 1 % max. Leben pro Tick
 
 export const hellfire = {
-  name: 'Höllenfeuer', desc: 'Kanal um dich, kostet Leben statt Mana.', ranks: ['dmg', 'radius'], tags: ['Feuer', 'Schatten', 'Kanal'], cls: 'shadow',
-  mana: 0, cd: 0, channel: 15000, tickDmg: 30, lifePerTick: 25, radius: 10,   // PH
+  name: 'Höllenfeuer', desc: 'Kanal um dich, kostet 20 Mana pro Tick und heilt dich um 1 % pro Tick.', ranks: ['dmg', 'radius'], tags: ['Feuer', 'Kanal'], cls: 'fire',
+  mana: 0, cd: 0, channel: 15000, tickDmg: 30, manaPerTick: 20, radius: 10,   // PH
   runes: [
     { id: 'heal', name: 'Seelenernte', desc: 'Heilt pro Kill.' },
     { id: 'walk', name: 'Brennender Gang', desc: 'Laufen erlaubt, halber Schaden.' },
     { id: 'grow', name: 'Ausbreitung', desc: 'Radius wächst pro Sekunde.' },
   ],
-  canCast: () => player.hp <= hellfire.lifePerTick ? 'Nicht genug Leben' : null,
+  canCast: () => player.mana < hellfire.manaPerTick ? 'Nicht genug Mana' : null,
   effect(c) {
     const ch = startChannel(c, player.pos, hellfire.channel);
     ch.mobile = hasRune('hellfire', 'walk');
@@ -30,8 +31,9 @@ export const hellfire = {
     hellfireOpen(player.pos, ch.radius);
   },
   tick(ch) {
-    if (player.hp <= hellfire.lifePerTick) return stopChannel(true);   // Der Kanal bringt dich nicht selbst um
-    player.hp -= hellfire.lifePerTick;
+    if (player.mana < hellfire.manaPerTick) return stopChannel(true);
+    spendMana(hellfire.manaPerTick);
+    player.hp = Math.min(maxHp(), player.hp + maxHp() * HEAL_PER_TICK);
     if (!vfxOld()) hellfirePulse(player.pos, ch.radius);
     const dmg = hellfire.tickDmg * (ch.mobile ? 0.5 : 1);
     for (const m of mobsInRadius(player.pos, ch.radius)) {

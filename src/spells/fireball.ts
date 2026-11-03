@@ -8,8 +8,8 @@ import { burnTex } from '../fx/spellFx';
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, BURN = { dmg: 16, ms: 4000 };   // PH
 
 export const fireball = {
-  name: 'Feuerball', desc: '1,5 s Zauber aufs nächste Ziel, explodiert mit 50 % Schaden drumherum.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Geschoss'], cls: 'fire',
-  mana: 110, cd: 0, castTime: 1500, min: 85, max: 100, radius: 4, range: 30,   // PH
+  name: 'Feuerball', desc: '0,35 s Zauber aufs nächste Ziel, explodiert mit 50 % Schaden drumherum.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Geschoss'], cls: 'fire',
+  mana: 110, cd: 0, castTime: 350, min: 85, max: 100, radius: 4, range: 30,   // PH
   runes: [
     { id: 'big', name: 'Große Explosion', desc: '+75 % Radius.' },
     { id: 'burn', name: 'Entzünden', desc: 'Hinterlässt 4 s Brandfläche.' },

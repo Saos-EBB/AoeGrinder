@@ -9,13 +9,8 @@ import { buildStrichMagier } from './strichMagier';
 import { buildKlinge } from './klingeModel';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { weaponUnlocked } from '../meta';
+import { equippedModel } from '../weaponRolls';
 
-// Standardwaffe pro Skin
-const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrute', arkan: 'zirkelstab' };
-const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
-const WEAPON_STORE = 'frostgrind.weapon.v2';
-const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STORE) || '{}'); } catch { return {}; } })();
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
@@ -25,11 +20,31 @@ const hitHandlers = [];
 // Treffer-Moment der Nahkampf-Animationen (realMen.ts, klinge.ts)
 export function onWarriorHit(fn) { hitHandlers.push(fn); }
 
-let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0;
+// Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
+const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2, glow: [0.1, 0.008, 0.005], rim: [0.55, 0.05, 0.03], rimPower: 2.4 } };
+// Leichter roter Schein auf der Klinge, damit sie im Dunkeln lesbar bleibt: Grundglühen plus roter Rand
+function tintWeapon(w, hw) {
+  w.root.traverse(o => {
+    const m = o.material;
+    if (!o.isMesh || !m?.isMeshLambertMaterial || m.userData.tinted) return;
+    m.userData.tinted = true;
+    const prev = m.onBeforeCompile;
+    m.onBeforeCompile = (s, r) => {
+      prev?.call(m, s, r);
+      s.fragmentShader = s.fragmentShader.replace('#include <opaque_fragment>',
+        `outgoingLight += vec3(${hw.glow.join(',')}) + vec3(${hw.rim.join(',')}) * pow(1.0 - saturate(abs(dot(normalize(normal), normalize(vViewPosition)))), ${hw.rimPower.toFixed(1)});\n#include <opaque_fragment>`);
+    };
+    const key = m.customProgramCacheKey?.() ?? '';
+    m.customProgramCacheKey = () => `${key}|redGlow`;
+    m.needsUpdate = true;
+  });
+}
+let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 
 function dispose(m) {
   weapon?.dispose();
-  weapon = null;
+  heroWeapon?.dispose();
+  weapon = heroWeapon = null;
   if (m.fx.group) {                           // Krieger: Bodeneffekte und Wirbel haben eigene Texturen
     scene.remove(m.fx.group);
     m.fx.group.traverse(o => { if (o.isMesh) { o.material.map?.dispose(); o.material.dispose(); o.geometry.dispose(); } });
@@ -59,6 +74,8 @@ function setSkin(id) {
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
+    const hw = HERO_WEAPON[id];
+    if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
   cur = buildStrichMagier(id, { bloom: PERF.bloom });
@@ -66,7 +83,7 @@ function setSkin(id) {
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
-  wield(chosen[id] && weaponUnlocked(chosen[id]) ? chosen[id] : SKIN_WEAPON[id]);
+  wield(equippedModel());   // Waffe aus dem Inventar, leer: Pilgerast
 }
 
 function wield(id) {
@@ -98,20 +115,16 @@ export const mage = {
   get hero() { return cur; },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
   setSkin,
-  setWeapon(id) {                                 // Wahl im Hauptmenü, gilt pro Skin und bleibt gespeichert
-    chosen[skin] = id;
-    try { localStorage.setItem(WEAPON_STORE, JSON.stringify(chosen)); } catch { /* egal */ }
-    wield(id);
-  },
+  refreshWeapon() { wield(equippedModel()); },   // Wahl im Hauptmenü
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {
     const s = Math.max(0, dt) / 1000;
     cur.update(s, anim);
-    if (!weapon) return;
     clock += s;
-    lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);
-    mount.position.y = (weapon.cane ? weapon.gripY - STAFF_FOOT : 0) + lift;
+    if (heroWeapon) { heroWeapon.combat = !!anim.ability; heroWeapon.update(s, clock); }
+    if (!weapon) return;
+    mount.position.y = weapon.cane ? weapon.gripY - STAFF_FOOT : 0;   // beim Sitzen legen die Strichmagier den Stab ab, das Gelenk trägt ihn
     weapon.combat = !!anim.channel || anim.cast > 0;
     weapon.update(s, clock);
   },

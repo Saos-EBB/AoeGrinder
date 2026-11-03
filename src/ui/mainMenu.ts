@@ -4,11 +4,11 @@ import { state, player } from '../state';
 import { $ } from '../util';
 import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult, cardPaceId, setCardPace } from '../modifiers';
 import { CARD_PACES } from '../config';
-import { WEAPONS } from '../models/weapons/index';
 import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
 import { byScore, byTime, comboRuns } from '../leaderboard';
-import { meta, weaponUnlocked, weaponPrice } from '../meta';
+import { meta } from '../meta';
+import { equip, equipped, weaponName, rarityOf, applyRunWeapon } from '../weaponRolls';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
@@ -99,11 +99,16 @@ export function renderMenu() {
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
   $('menuWeaponBox').hidden = !mage.weapon;
-  if (mage.weapon) for (const w of WEAPONS) {
-    const free = weaponUnlocked(w.id);
-    const b = button('chip' + (w.id === mage.weapon.id ? ' selected' : '') + (free ? '' : ' locked'), free ? w.name : `🔒 ${w.name} · ${weaponPrice(w.id)}`, () => { mage.setWeapon(w.id); renderMenu(); }, free ? w.arch : 'Gesperrt: im Shop nach einem Abschluss kaufen');
-    b.disabled = !free;
-    weapons.appendChild(b);
+  // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
+  if (mage.weapon) {
+    const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
+    weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), 'Pilgerast (ohne Effekt)', () => pickW(null)));
+    for (const w of meta.inv) {
+      const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id), rarityOf(w).name);
+      b.style.borderColor = rarityOf(w).color;
+      b.style.color = rarityOf(w).color;
+      weapons.appendChild(b);
+    }
   }
   $('menuTitle').textContent = CHARS[charIdx].name;
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
@@ -150,6 +155,7 @@ function leaveMenu() {
 export function startRun() {
   leaveMenu();
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
+  applyRunWeapon(!!mage.weapon);
   renderActionbar();
   syncPause();
   ding();
@@ -205,6 +211,7 @@ $('pauseGiveUp').addEventListener('click', () => {
 
 // Tastatur: A/D wechselt die Figur, Enter löst den fokussierten Knopf aus, Esc beendet das Bearbeiten
 addEventListener('keydown', e => {
+  if (e.target instanceof HTMLTextAreaElement) return;   // Spielstand-Code tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
   if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);

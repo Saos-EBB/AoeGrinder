@@ -5,7 +5,7 @@ import { pick } from './util';
 import { dmgMult, manaCost } from './formulas';
 import { modFactor } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
-import { stat, hasSpell, hasTag, tagsAllowed, modRule } from './spells/core';
+import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf } from './spells/core';
 import { SUPPORTS } from './spells/supports';
 import { isUnlocked } from './meta';
 
@@ -28,7 +28,7 @@ const RANK_APPLY = {
 function rankCards() {
   const list = [];
   for (const id of state.slots) {
-    if (!id || !tagsAllowed(SPELLS[id].tags)) continue;   // Blink und Trinken bleiben im Kit, bekommen im Schul-Modus aber keine Karten
+    if (!id || !spellAllowed(id)) continue;   // Blink und Trinken bleiben im Kit, bekommen im Schul-Modus aber keine Karten
     for (const key of SPELLS[id].ranks ?? []) list.push({
       kind: 'rang', id: `rang-${id}-${key}`, spell: id, name: SPELLS[id].name, src: 'Rang',
       desc: m => RANK_TEXT[key](SPELLS[id].name, m),
@@ -39,7 +39,7 @@ function rankCards() {
 }
 
 function newSpellCards() {
-  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].fixed && tagsAllowed(SPELLS[id].tags)).map(id => ({
+  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].fixed && spellAllowed(id) && (!SPELLS[id].onlyMode || modRule('onlyTag') === SPELLS[id].onlyMode)).map(id => ({
     kind: 'spell', id: `spell-${id}`, learn: id, name: SPELLS[id].name, src: `Neuer Spell · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { stat(id).dmg += CARD_SPELL_DMG * m; },
@@ -49,8 +49,8 @@ function newSpellCards() {
 function runeCards() {
   const list = [];
   for (const id of state.slots) {
-    if (!id || !tagsAllowed(SPELLS[id].tags)) continue;
-    for (const [i, r] of (SPELLS[id].runes ?? []).entries()) {
+    if (!id || !spellAllowed(id)) continue;
+    for (const [i, r] of (runesOf(id) ?? []).entries()) {
       const atMax = state.runes[id] === r.id && (state.cardPicks[`rune-${id}-${r.id}`] || 1) >= (r.stages ?? 1);   // stages: dieselbe Rune mehrmals
       if (atMax || !isUnlocked(`rune:${id}:${i}`)) continue;
       list.push({
@@ -79,7 +79,7 @@ function supportCards() {
 // Nur lila oder orange, max. 1 pro Run, ab Level 30
 function relicCards(forced = false) {
   if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
-  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && tagsAllowed(SPELLS[id].tags) && (forced || isUnlocked(`relic:${id}`))).map(id => ({
+  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && spellAllowed(id) && (forced || isUnlocked(`relic:${id}`) || state.poolExtra?.includes(id))).map(id => ({
     kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },

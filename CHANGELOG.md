@@ -4,6 +4,17 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(krieger): Schlachtblech mit leichtem rotem Schein, im Dunkeln besser zu sehen
+- feat(krieger): Schlachtblech ist die Standardwaffe des Strichkriegers und kommt nicht mehr aus der Magischen Kiste
+- feat(figuren): Eigene Sitz- und Ess-/Trink-Animation mit Requisite für alle Strichfiguren (Becher, Flasche, Tasse, Tee-Schale, Fleischkeule, Yakitori-Spieß)
+- feat(mobile): Hinweis-Banner „Handy-Steuerung noch buggy – in Arbeit“, Antippen blendet ihn aus
+- chore: heroModels.ts gelöscht (alte Magier, Krieger, Samurai, Ninja), nur die Strichfiguren bleiben; Spuren in models/trail.ts
+- feat(meta): Spielstand-Code im Hauptmenü (zeigen, kopieren, eingeben) mit Staub, Freischaltungen, Inventar und Ranglisten
+- feat(meta): Mage-Waffen mit gewürfeltem Effekt aus der Magischen Kiste (120 Staub), Inventar bis 15, Löschen gibt Staub zurück, Waffenwahl aus dem Inventar, alter Waffen-Kauf entfernt, Waffe in der Rangliste, Spielversion v19
+- chore(krieger): Äxte, Hammer und Anker auch aus heroModels.ts gelöscht, nur noch das Schwert
+- feat(modi): Schulen mit Stärken und Schwächen (Fire: Brand +50 %, Crit 15 %, Leben −10 %; Frost: Slow auf jeden Treffer, Eisblock; Arcane: Zaubern im Laufen, Blink 2 Ladungen, Leben −15 %, Mana +15 %), Flammenstoß 0,5 s, Feuerball 0,35 s
+- feat(modi): Höllenfeuer nur noch Feuer, kostet Mana und heilt; Entweihen und Blutopfer mit Tag Dunkel; Dunkel-Schaden trifft immer, ignoriert die Mob-Rüstung und heilt um 20 %
+- docs: Grundregel „NIE Pay-to-win“ in AGENTS.md
 - docs: Vercel-Stand nur dunkel
 - feat(dunkel): Das Spiel läuft immer dunkel, die helle Version ist raus, /dark führt weiter aufs Spiel
 - docs: Vercel-Stand v18 nachgetragen

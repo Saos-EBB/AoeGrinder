@@ -86,6 +86,7 @@ export function pressSpell(id) {
 }
 
 addEventListener('keydown', e => {
+  if (e.target instanceof HTMLTextAreaElement) return;   // Textfeld (Spielstand-Code): Tasten gehören dem Feld
   if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }
   if (state.rebinding) {
     e.preventDefault();
