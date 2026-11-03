@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- perf: Mob-Modelle sind ein SkinnedMesh pro Material (2 statt 14 Meshes), Gelenke dienen als Knochen; Level 30 etwa 1130 → 86 Draw Calls, gleiche Optik
 - perf: Mobs hinter dem Nebel (über 62 yd) werden nicht gezeichnet und nicht animiert, über 45 yd Animation jeden 2. Frame, Schatten nur im Lichtkreis (`PERF.mob*`); Level 30 etwa +35–50 % FPS, Bild gleich
 - feat(karten): Level-Karten zeigen „⇄ Ersetzt: …“, wenn sie eine aktive Rune, Echo oder einen Spell-Slot verdrängen
 - feat(ui): Waffen-Werte in festen Zeilen (Typ, Fokus, Wert, Element, Hersteller, Anhänger, Unikat) mit eigener Farbe pro Zeile, fehlende Schichten als „—“; in Hover-Karte und Kisten-Ergebnis
