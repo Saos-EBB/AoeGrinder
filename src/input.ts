@@ -13,6 +13,7 @@ import { cast } from './spells';
 import { refreshKeyLabels } from './ui/hud';
 import { charOpen, toggleChar } from './ui/charWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
+import { startDodge } from './player';
 
 export const ACTIONS = [
   { group: 'Bewegung' },
@@ -23,6 +24,7 @@ export const ACTIONS = [
   { id: 'strafeLeft',  label: 'Seitwärts links',   code: 'KeyQ',   key: 'Q' },
   { id: 'strafeRight', label: 'Seitwärts rechts',  code: 'KeyE',   key: 'E' },
   { id: 'jump',        label: 'Springen',          code: 'Space',  key: 'Leertaste' },
+  { id: 'dodge',       label: 'Ausweichen',        code: 'ShiftLeft', key: 'Shift' },
   { id: 'autorun',     label: 'Autorun',           code: 'KeyR',   key: 'R' },
   { group: 'Fenster' },
   { id: 'charWin', label: 'Charakterfenster', code: 'KeyX', key: 'X' },
@@ -120,6 +122,7 @@ function runAction(id) {
   if (SPELLS[id]) pressSpell(id);
   if (id === 'charWin') toggleChar();
   if (id === 'jump') state.jumpQueued = true;
+  if (id === 'dodge') startDodge();
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;
 }

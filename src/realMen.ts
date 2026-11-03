@@ -423,6 +423,8 @@ export function updateRealMen(dt) {
 
 const leapWindow = [TIMING.leap.move.from, TIMING.leap.move.to];
 export const warriorUntouchable = () => isWarrior() && cur?.id === 'wLeap' && inWindow(leapWindow, cur.start, cur.ms);
+// Dodge bricht den laufenden Move ab (Animation-Cancel), auch mitten im Schlag
+export function cancelWarriorMove() { if (!isWarrior() || !cur) return; cur = null; seq++; }
 export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
 export const takenMul = () => isWarrior() ? 1 - R.armor : 1;

@@ -11,6 +11,7 @@ import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
 import { MODIFIERS, activeModIds, modValue } from '../modifiers';
+import { dodgeRecovery } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 
@@ -148,6 +149,7 @@ export function castSpell(id, point?) {
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
+  if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
