@@ -17,13 +17,16 @@ document.body.prepend(renderer.domElement);
 
 export const scene = new THREE.Scene();
 const fog = scene.fog = new THREE.Fog(0xffffff, 45, 185);
+// Läuft nach jeder Änderung an Nebel und Himmel. Nur #dunkel setzt ihn (dunkel.ts), sonst bleibt alles wie von der Zone vorgegeben.
+let envHook = null;
+export function setEnvHook(fn) { envHook = fn; }
 
 export const camera = new THREE.PerspectiveCamera(55, viewW() / viewH(), 0.3, 700);
 
 // Hauptlicht und Fülllicht, Werte kommen aus der Zone (setEnv)
-const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+export const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffffff, 1);
+export const sun = new THREE.DirectionalLight(0xffffff, 1);
 scene.add(sun);
 
 // Bloom: nur sehr helle Farben (Zauber-Partikel, Kristall) leuchten
@@ -54,7 +57,7 @@ composer.addPass(post);
 composer.addPass(new OutputPass());
 
 // Himmel als Farbverlauf-Kuppel
-const skyUniforms = {
+export const skyUniforms = {
   top: { value: new THREE.Color() }, mid: { value: new THREE.Color() },
   horizon: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3() }, sunAmt: { value: 1 },
 };
@@ -84,6 +87,7 @@ export function blendFog(e, k, color, near, far) {
   skyUniforms.horizon.value.copy(fog.color);
   skyUniforms.top.value.set(e.top).lerp(tmpColor, k);
   skyUniforms.mid.value.set(e.mid).lerp(tmpColor, k);
+  envHook?.();
 }
 const tmpColor = new THREE.Color();
 
@@ -96,6 +100,7 @@ export function setEnv(e) {
   sun.color.set(e.sun); sun.intensity = e.sunPower; sun.position.set(...(e.sunPos as [number, number, number]));
   skyUniforms.top.value.set(e.top); skyUniforms.mid.value.set(e.mid); skyUniforms.horizon.value.set(e.fog);
   skyUniforms.sunDir.value.copy(sun.position).normalize(); skyUniforms.sunAmt.value = e.sunDisc;
+  envHook?.();
 }
 
 addEventListener('resize', () => {

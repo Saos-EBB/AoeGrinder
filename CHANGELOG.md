@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-03
+
+- feat(dunkel): Prototyp mit #dunkel in der URL: schwarzer Nebel, abgedunkelte Welt, Laterne am Spieler, nähere Kamera
+
 ## 2026-11-02
 
 - feat(dev): Level setzen gibt im Run die Karten des Kartentakts, direkt nacheinander
