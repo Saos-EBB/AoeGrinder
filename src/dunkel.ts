@@ -12,7 +12,7 @@ import { mage } from './models/mage';
 import { blizCursor } from './fx/spellFx';
 
 // Alle Zahlen des Modus. Alles // PH
-export const D = {
+const D = {
   fogColor: 0x050505, fogDensity: 0.035, fogStorm: 0.05,    // FogExp2, fogStorm kommt im Sandsturm dazu
   hemiMul: 0.18, sunMul: 0.12, skyTop: 0x020203, skyMid: 0x040405,
   // Lichtkreis: Spot senkrecht über der Figur, radius = Lichtkreis am Boden in yd

@@ -25,7 +25,7 @@ const LIGHTNING_HEX = 0x6fc8ff, LIGHTNING = [0.6, 1.2, 2.2];   // Blitzfarbe des
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
-export const REALMEN = {
+const REALMEN = {
   armor: 0.25,                                     // weniger Schaden: steht mitten im Pack, ohne Blink und Nova
   rage: { max: 100, perMobHit: 6, perSwingMax: 15, decayPerS: 4, idleMs: 3000, perHitTaken: 2 },
   mult: { rage: 0.6, hp: 1 },                      // Schaden ×(1 + 0,6 · Wut/100) · (1 + fehlendes Leben): volle Wut bei 10 % Leben ≈ ×3
@@ -412,7 +412,7 @@ function updateWhirl(s) {
 export function updateRealMen(dt) {
   if (!isWarrior() || player.dead) return;
   const now = state.now, s = dt / 1000;
-  updateMelee(dt);
+  updateMelee();
   updateOrbs(dt);
   if (undyingUntil > now) player.mana = R.rage.max;
   else if (now - lastRageAt > R.rage.idleMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);

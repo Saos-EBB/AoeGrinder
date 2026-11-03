@@ -49,7 +49,6 @@ function ext(shape, depth, bevel = false) {
   g.translate(0, 0, -depth / 2); return g;
 }
 
-export const SCHOOL = { Alle: '#cfcfcf', Frost: '#7fd4ff', Feuer: '#ff9a4a', Arkan: '#c49bff' };
 export const WEAPONS: any[] = [];
 const def = o => WEAPONS.push(o);
 

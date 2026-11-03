@@ -2,7 +2,7 @@ import { state, player } from './state';
 import { clamp, dist2d } from './util';
 import { CFG, SPELLS, mods, PERF } from './config';
 import { blizRadius } from './formulas';
-import { scene, composer, tickHeat, renderer, camera } from './render';
+import { composer, tickHeat, renderer, camera } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';

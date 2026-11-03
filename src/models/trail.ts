@@ -2,8 +2,8 @@
 // trail.mesh gehört in die Szene (Weltkoordinaten). stepWatcher meldet jeden Schritt eines Rigs mit legL/legR.ankle.
 
 import * as THREE from 'three';
+import { rand } from '../util';
 
-const rand = (a, b) => a + Math.random() * (b - a);
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function canvas(size, draw) { const c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size); return c; }
 function toTex(c) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }

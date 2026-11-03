@@ -3,6 +3,7 @@
 // Schnittstelle wie die anderen Figuren: update(dt, anim), Aktion startet bei Phase 0, sobald sie wechselt; dt > 1 gilt als ms.
 
 import * as THREE from 'three';
+import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
@@ -17,10 +18,6 @@ export const KLINGE_TIMING = {
 };
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-const outC = t => 1 - Math.pow(1 - t, 3);
 const EASE = { io: inOut, out: outC, lin: t => t };
 const TAU = Math.PI * 2;
 // Drehwinkel des Blutwirbels bei Fortschritt s (0–1). Das Spiel kreist die Mobs damit um die Figur.

@@ -5,7 +5,7 @@ import { CFG } from './config';
 import { clamp } from './util';
 
 export const STEP = 0.6;       // PH: Stufenhöhe in yd
-export const BODY_HEIGHT = 2;  // PH: Körperhöhe von Spieler und Mobs
+const BODY_HEIGHT = 2;  // PH: Körperhöhe von Spieler und Mobs
 const CELL = 8;                // PH: Rastergröße in yd
 
 export const colliders = [];

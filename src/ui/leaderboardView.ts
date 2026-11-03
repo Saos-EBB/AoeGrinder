@@ -1,8 +1,8 @@
 // Modus-Auswahl, Run-Ergebnis und Ranglisten-Ansicht. Hängt sich selbst ein, damit menus.ts und index.html unberührt bleiben.
 
 import { afterRun } from './shop';
-import { MODES, MODIFIERS, modeId, setMode, toggleCustomMod, activeModIds, scoreMult } from '../modifiers';
-import { resetGame, setLevel } from '../player';
+import { MODES, MODIFIERS } from '../modifiers';
+import { setLevel } from '../player';
 import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
 import { showColliders } from '../world';
@@ -47,7 +47,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #runNote { width: 100%; font: 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 3px; }
 </style>`);
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
-export function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
+function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
 
 const fmt = n => Math.round(n).toLocaleString('de-DE');
 

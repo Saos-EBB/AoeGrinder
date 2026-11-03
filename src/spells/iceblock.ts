@@ -7,7 +7,7 @@ import { iceTex, novaFx } from '../fx/spellFx';
 import { showError } from '../ui/hud';
 import { cdEnd, startCd, stopChannel, stopDrink } from './core';
 
-export const ICEBLOCK = { ms: 6000, cd: 90000, size: [1.5, 2.4, 1.5], opacity: 0.55, novaRadius: 3 };   // PH
+const ICEBLOCK = { ms: 6000, cd: 90000, size: [1.5, 2.4, 1.5], opacity: 0.55, novaRadius: 3 };   // PH
 
 let block = null;
 function makeBlock() {
@@ -18,7 +18,7 @@ function makeBlock() {
 }
 
 export function iceBlocked() { return player.iceUntil > state.now; }
-export function endIceBlock() {
+function endIceBlock() {
   if (!block) return;
   player.iceUntil = 0;
   scene.remove(block);

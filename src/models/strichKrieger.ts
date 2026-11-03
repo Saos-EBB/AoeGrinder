@@ -3,6 +3,7 @@
 // anim = { state, speed, ability: null|'q0'..'q3'|'e'|'whirl'|'leap'|'exec'|'cry'|'last', seq, rate, rage (0–100), frozen }. dt > 1 gilt als ms.
 
 import * as THREE from 'three';
+import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
@@ -20,10 +21,6 @@ export const STRICH_TIMING = {
 const WEAPON_SHAPE = { sword: { tip: 1.95, grip: .24 }, axe: { tip: 1.75, grip: .34 }, mace: { tip: 1.6, grip: .3 } };   // PH
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-const outC = t => 1 - Math.pow(1 - t, 3);
 const inC = t => t * t * t;
 const EASE = { io: inOut, out: outC, in: inC, lin: t => t };
 const TAU = Math.PI * 2;

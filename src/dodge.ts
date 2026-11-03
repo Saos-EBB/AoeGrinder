@@ -29,10 +29,10 @@ let dodge = null;                 // { start, dx, dz, from, to, charge, perfect 
 let charges = [0, 0];             // Zeitpunkt, ab dem die Ladung wieder bereit ist
 let lastEnd = -1e9, lastPerfect = false;
 
-export const dodgeActive = () => !!dodge && state.now < dodge.start + DG.ms;
+const dodgeActive = () => !!dodge && state.now < dodge.start + DG.ms;
 export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframeMs;
 export const dodgeRecovery = () => state.now < lastEnd + DG.recoveryMs;
-export const dodgeCharges = () => charges.filter(t => t <= state.now).length;
+const dodgeCharges = () => charges.filter(t => t <= state.now).length;
 
 // Modus für die Kombo-Regel: Normal, Fire only, Frost only, Arcane only, Strichkrieger, Klingenstrich
 export function dodgeMode() {
@@ -42,7 +42,7 @@ export function dodgeMode() {
 // Kombo: welche Regel gerade gilt und bis wann. consumeCombo(kind) löst sie genau einmal aus
 const KIND = { normal: 'freeMana', feuer: 'fireCrit', arkan: 'instant', krieger: 'smash', klinge: 'klingeQ' };
 let combo = null;
-export const comboActive = () => !!combo && state.now < combo.until;
+const comboActive = () => !!combo && state.now < combo.until;
 export const comboReady = kind => comboActive() && combo.kind === kind;
 export function consumeCombo(kind) {
   if (!comboReady(kind)) return false;
@@ -115,7 +115,6 @@ export function perfectDodge() {
   requestAnimationFrame(() => { flash.style.transition = `opacity ${DG.perfect.flashMs}ms ease-out`; flash.style.opacity = '0'; });
   combatText(player.pos, 'Perfekt', 'info', 2.8);
 }
-export const lastDodgePerfect = () => !!dodge?.perfect || lastPerfect;
 
 // Aus updatePlayer: setzt die Position zwischen festem Start- und Zielpunkt, schnell raus, weich rein. true = normale Steuerung aussetzen
 export function dodgeMove(pos, vel, onStep?) {

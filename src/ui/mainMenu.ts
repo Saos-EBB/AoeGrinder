@@ -18,7 +18,7 @@ import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
 import { startHudEdit, hudEditing, stopHudEdit } from './hudLayout';
 import { toggleChar } from './charWindow';
-import { openBinds, closeBinds, syncPause, ding } from './menus';
+import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 
 const CHARS = [
@@ -158,7 +158,7 @@ function leaveMenu() {
   $('startModal').classList.remove('show');
 }
 
-export function startRun() {
+function startRun() {
   leaveMenu();
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
   applyRunWeapon(!!mage.weapon);
