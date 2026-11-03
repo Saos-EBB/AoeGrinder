@@ -10,6 +10,7 @@ import { addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { combatText } from './ui/hud';
 import { activeModIds } from './modifiers';
+import { mods } from './config';
 
 // Alle Zahlen PH
 export const DG = {
@@ -49,7 +50,7 @@ export function consumeCombo(kind) {
 function startCombo(perfect) {
   const mode = dodgeMode(), ms = DG.combo[mode];
   if (!ms) return;
-  combo = { kind: KIND[mode], until: state.now + ms * (perfect ? DG.combo.perfectMul : 1) * (state.comboWindowMul ?? 1) };
+  combo = { kind: KIND[mode], until: state.now + ms * (perfect ? DG.combo.perfectMul : 1) * (mods.comboWindow ?? 1) };   // Karte Kombo-Meister
 }
 
 export function resetDodge() {
@@ -134,6 +135,7 @@ $('hudHp').appendChild(dots);
 let shownKey = '';
 const bar = document.getElementById('actionbar');
 export function updateDodgeHud() {
+  while (charges.length < DG.charges + (mods.dodgeCharges ?? 0)) charges.push(0);   // Karte Ausweichrolle
   const glow = comboActive() ? '0 0 16px 5px rgba(255,210,122,0.75)' : '';   // Kombo-Fenster: Leuchtrand um die Zauberleiste
   if (bar.style.boxShadow !== glow) bar.style.boxShadow = glow;
   const key = `${charges.length},${dodgeCharges()}`;

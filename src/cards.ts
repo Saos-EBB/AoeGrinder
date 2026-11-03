@@ -87,7 +87,7 @@ function relicCards(forced = false) {
 }
 
 function talentCards() {
-  const allowed = c => c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []);
+  const allowed = c => c.always || (c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []));
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs))).map(c => {
     const rank = state.cardRanks[c.id] || 0;
     return {
