@@ -66,9 +66,51 @@ function bake(root) {
   return lit;
 }
 
+// Ein Mob = wenige Draw Calls: alle Gelenk-Meshes werden zu einem SkinnedMesh pro Material (Vertex-Farben, Leuchtteile, doppelseitige Flügel).
+// Die Gelenk-Gruppen bleiben und dienen als Knochen: der Animations-Code dreht sie wie bisher, die GPU verformt das Mesh.
+const SKIN_KEEP = ['position', 'normal', 'color'];
+function skin(root, lit) {
+  root.updateMatrixWorld(true);
+  const bones = [];
+  root.traverse(o => { if (o.isGroup) bones.push(o); });
+  const groups = new Map();                          // Material-Schlüssel → { mat, lit, meshes }
+  for (const g of bones) for (const m of g.children) {
+    if (!m.isMesh) continue;
+    const isLit = lit.includes(m), key = isLit ? `lit${m.material.side}` : m.material;
+    if (!groups.has(key)) groups.set(key, { mat: m.material, lit: isLit, meshes: [] });
+    groups.get(key).meshes.push(m);
+  }
+  const skeleton = new THREE.Skeleton(bones as any), out = [];
+  for (const { mat, lit: isLit, meshes } of groups.values()) {
+    const geos = meshes.map(m => {
+      let g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+      for (const name of Object.keys(g.attributes)) if (!SKIN_KEEP.includes(name)) g.deleteAttribute(name);
+      if (!isLit) g.deleteAttribute('color');
+      g = g.applyMatrix4(m.matrixWorld);
+      const n = g.attributes.position.count, bi = bones.indexOf(m.parent);
+      const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
+      for (let i = 0; i < n; i++) { si[i * 4] = bi; sw[i * 4] = 1; }
+      g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
+      g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
+      return g;
+    });
+    const cached = new Set(cache.values());          // Grundformen aus memo() sind geteilt und bleiben
+    for (const m of meshes) { m.parent.remove(m); if (!cached.has(m.geometry)) m.geometry.dispose(); }
+    const sm = new THREE.SkinnedMesh(mergeGeometries(geos), mat);
+    root.add(sm);
+    sm.bind(skeleton, sm.matrixWorld);
+    // Feste, großzügige Hülle statt Neuberechnung aus der Pose (Tod, Sprung, Angriff bleiben drin)
+    sm.geometry.computeBoundingSphere();
+    sm.boundingSphere = sm.geometry.boundingSphere.clone();
+    sm.boundingSphere.radius *= 1.6;
+    if (isLit) out.push(sm);
+  }
+  return out;
+}
+
 // Gemeinsam: Eisblock, Treffer-Blitz, Slow- und Todesfarbe
 export function finish(root, tick, level, scale, ice = [1.5, 2.2, 1.5], iceY = 1) {
-  const lit = bake(root);
+  const lit = skin(root, bake(root));
   const iceMesh = new THREE.Mesh(Box(ice[0], ice[1], ice[2]), iceMat);
   iceMesh.position.y = iceY;
   iceMesh.visible = false;

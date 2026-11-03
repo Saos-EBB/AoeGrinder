@@ -63,11 +63,14 @@ export function initDunkel() {
   camera.updateProjectionMatrix();
 }
 
-// Nur Spieler und Mobs werfen Schatten. Selbstleuchtendes bleibt draußen, einmal pro Modell.
-function castShadows(root) {
-  if (!root || root.userData.dunkelShadow) return;
-  root.userData.dunkelShadow = true;
-  root.traverse(o => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent) o.castShadow = true; });
+// Nur Spieler und Mobs werfen Schatten. Selbstleuchtendes bleibt draußen. Die Liste wird einmal pro Modell gesammelt,
+// Mobs schalten nur um, wenn sie über PERF.mobShadowYd wechseln: außerhalb des Lichtkreises sieht man keinen Schatten.
+function castShadows(root, on = true) {
+  if (!root) return;
+  const list = root.userData.shadowMeshes ??= (() => { const l = []; root.traverse(o => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent) l.push(o); }); return l; })();
+  if (root.userData.shadowOn === on) return;
+  root.userData.shadowOn = on;
+  for (const o of list) o.castShadow = on;
 }
 
 // Echte Zeit, damit es auch in Pause und Menü weiterläuft
@@ -91,6 +94,6 @@ export function updateDunkel(dt) {
   fill.intensity = F.power + (F.closePower - F.power) * close;
   cam.dist = Math.min(cam.dist, D.cam.maxDist);
   castShadows(mage.root);
-  for (const m of state.mobs) castShadows(m.model.root);
+  for (const m of state.mobs) castShadows(m.model.root, Math.hypot(m.pos.x - p.x, m.pos.z - p.z) < PERF.mobShadowYd);
   if (D.flicker) updateFlicker(dt);
 }

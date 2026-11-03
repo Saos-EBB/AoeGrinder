@@ -131,7 +131,7 @@ export function spawnChampionPack(x, z, affixes) {
 export function removeMob(m) {
   scene.remove(m.model.root);
   m.plate.remove();
-  m.model.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose?.(); });
+  m.model.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose?.(); if (o.isSkinnedMesh) o.skeleton.dispose(); });
 }
 
 export function spawnMob(typeId, pos, level, packId) {

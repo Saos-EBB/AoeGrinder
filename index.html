@@ -38,11 +38,13 @@
   .fxChip { padding: 1px 6px; background: #000a; border: 1px solid #6b5426; border-radius: 3px; white-space: nowrap; }
   .fxChip b { color: #ffe27a; margin-left: 3px; }
   #hudRelics { display: flex; flex-direction: column; gap: 6px; }
+  #hudMap { line-height: 0; border-radius: 50%; box-shadow: 0 2px 10px #000a; }
+  #hudMap canvas { display: block; }
   .relicBox { width: 88px; padding: 8px 4px; text-align: center; font: 700 12px Cinzel, serif; color: #f2c94c; background: linear-gradient(#2a2010ee, #120d06ee);
     border: 3px solid #f2c94c; border-radius: 8px; box-shadow: 0 0 10px #f2c94c88; }
-  body.hudEdit #hudHeader, body.hudEdit #hudHp, body.hudEdit #hudMana, body.hudEdit #hudCast, body.hudEdit #actionbar, body.hudEdit #hudEffects, body.hudEdit #hudRelics {
+  body.hudEdit #hudHeader, body.hudEdit #hudHp, body.hudEdit #hudMana, body.hudEdit #hudCast, body.hudEdit #actionbar, body.hudEdit #hudEffects, body.hudEdit #hudRelics, body.hudEdit #hudMap {
     outline: 2px dashed #ffe27a; outline-offset: 1px; cursor: move; min-width: 90px; min-height: 26px; }
-  body.hudEdit #hudHeader::after, body.hudEdit #hudHp::after, body.hudEdit #hudMana::after, body.hudEdit #hudCast::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after {
+  body.hudEdit #hudHeader::after, body.hudEdit #hudHp::after, body.hudEdit #hudMana::after, body.hudEdit #hudCast::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after, body.hudEdit #hudMap::after {
     content: attr(data-hud-name); position: absolute; top: 100%; left: 0; font: 700 11px system-ui; color: #ffe27a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
   #hudEditBar button { white-space: nowrap; }
   #hudEditBar { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
@@ -102,7 +104,7 @@
 
   /* Nameplates + Kampftext */
   #overlay { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-  #hudHeader, #hudHp, #hudMana, #hudCast, #hudEffects, #hudRelics, #actionbar, #err { z-index: 2; }
+  #hudHeader, #hudHp, #hudMana, #hudCast, #hudEffects, #hudRelics, #hudMap, #actionbar, #err { z-index: 2; }
   .modal { z-index: 3; }
   .plate { position: absolute; width: 74px; margin-left: -37px; font-size: 11px; text-align: center;
     text-shadow: 0 1px 2px #000; font-weight: 600; }
@@ -175,7 +177,7 @@
   #charBody .dmgBar td { padding: 0 6px 5px; }
   #charBody .dmgBar div { height: 4px; }
   /* Hauptmenü */
-  body.menu #hudHeader, body.menu #hudHp, body.menu #hudMana, body.menu #hudCast, body.menu #actionbar, body.menu #hudEffects, body.menu #hudRelics, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
+  body.menu #hudHeader, body.menu #hudHp, body.menu #hudMana, body.menu #hudCast, body.menu #actionbar, body.menu #hudEffects, body.menu #hudRelics, body.menu #hudMap, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
   #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
   #startModal.show { display: block; }
   .hudHide { display: none !important; }
@@ -224,7 +226,7 @@
   .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
   #tMenu { position: absolute; top: 8px; right: 10px; width: 48px; height: 48px; font-size: 28px; line-height: 44px; text-align: center; z-index: 1;
     background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
-  body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics { pointer-events: none; }
+  body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics, body.mobile #hudMap { pointer-events: none; }
   body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
   body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
@@ -285,6 +287,7 @@
 </div>
 <div id="hudEffects"></div>
 <div id="hudRelics"></div>
+<div id="hudMap"></div>
 <div id="actionbar" class="frame"></div>
 <div id="hudGrid" hidden></div>
 <div id="hudEditBar" class="frame" hidden>

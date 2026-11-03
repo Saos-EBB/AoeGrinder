@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v22 von `main` (2026-11-03): dazu Klingenstrich-Q-Kette, kein GCD, strukturierte Waffen-Werte, Ersetzt-Hinweis auf Karten. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand Vercel: v22 von `main` (2026-11-03): dazu Klingenstrich-Q-Kette, kein GCD, strukturierte Waffen-Werte, Ersetzt-Hinweis auf Karten, Performance (Nebel-Culling, Mobs als SkinnedMesh), Minimap. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` ist gelöscht (alte Magier, Krieger, Samurai, Ninja); Spuren und `SKIN_FX` liegen in `models/trail.ts`.
 
@@ -36,10 +36,11 @@ Stand Vercel: v22 von `main` (2026-11-03): dazu Klingenstrich-Q-Kette, kein GCD,
 - `src/spells/`: ein Spell pro Datei, `core.ts` (Casts, `mobsInRadius`, `applySlow`, Felder), `fx.ts` (gemeinsame Optik), `relics.ts`, `supports.ts`. `src/cards.ts`: Level-Karten.
 - **Effekte:** `render.ts` (Composer, Bloom, Tiefentextur), `fx/spellFx.ts`, `fx/frostFx.ts`, `fireFx.ts`, `arcaneFx.ts`, `relicFx.ts`, `prims.ts`, `bolts.ts`, `impact.ts`, `shaders.ts`, `softPass.ts`, `particles.ts`, `sound.ts`.
 - **VFX-Labor:** `vfx.html` + `src/vfxLab.ts`, im Dev-Server unter `/vfx.html`, `npm run build:vfx`.
-- **Oberfläche:** `ui/hud.ts`, `ui/hudLayout.ts` (Anker, Bearbeiten-Modus), `ui/mainMenu.ts` (Hauptmenü, Pause), `ui/menus.ts` (Karten, Keybinds, `syncPause`), `ui/charWindow.ts`, `ui/dmgNumbers.ts`, `ui/scoreHud.ts`, `ui/leaderboardView.ts`. Farben in `ui/colors.ts`, Größen in `ui/uiConfig.ts`, Icons in `ui/icons.ts`. Konzept: `docs/ui-meta-konzept.md`. Punkte in `score.ts`, `leaderboard.ts`.
+- **Oberfläche:** `ui/hud.ts`, `ui/hudLayout.ts` (Anker, Bearbeiten-Modus), `ui/minimap.ts` (Minimap, Zahlen in `MINIMAP`), `ui/mainMenu.ts` (Hauptmenü, Pause), `ui/menus.ts` (Karten, Keybinds, `syncPause`), `ui/charWindow.ts`, `ui/dmgNumbers.ts`, `ui/scoreHud.ts`, `ui/leaderboardView.ts`. Farben in `ui/colors.ts`, Größen in `ui/uiConfig.ts`, Icons in `ui/icons.ts`. Konzept: `docs/ui-meta-konzept.md`. Punkte in `score.ts`, `leaderboard.ts`.
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v22 (auf `main`, auf Vercel) – Minimap (`ui/minimap.ts`). Mobs hinter dem Nebel ausgeblendet, Animation nach Abstand, Schatten nur im Lichtkreis (`PERF.mob*` in `config.ts`, Schleife in `main.ts`). Mob-Modelle in `creatures.ts` (`skin()`) als SkinnedMesh pro Material, die Gelenk-Gruppen sind die Knochen. Level 30: 1130 → 86 Draw Calls. Getestet per Skript und Bildvergleich.
 - v22 (auf `main`, auf Vercel) – Klingenstrich-Q als Schlag-Kette (`KLINGE.q.chain`, Dauern in `KLINGE_TIMING.qChain`), Endpose halten, Wegstecken nach Ablauf. Globaler Cooldown entfernt. Waffen-Werte in festen farbigen Zeilen (`effectRows`, `weaponStats`). Level-Karten zeigen, was sie ersetzen (`cardReplaces`). Dev-Knöpfe Inventar füllen/leeren. Getestet per Skript.
 - v21 (auf `main`, auf Vercel) – Dodge mit perfektem Dodge, Kombo pro Modus, 2 Karten. Licht in Dunkel als Kreis über der Figur. Packs doppelt so groß (`PACK_SIZE_MUL`), Champion-Packs 20 % ab Level 6, zu niedrige unberührte Packs werden außer Sicht ersetzt (`replaceStalePack`). „Große Packs“ bei Level 30: rund 436 Mobs, 31 FPS. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Waffen-Baukasten für Magier, Spielversion v20. Getestet per Skript.

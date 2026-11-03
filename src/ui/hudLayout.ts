@@ -5,7 +5,7 @@ import { UI } from './uiConfig';
 import { device } from '../device';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
-const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte' };
+const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte', hudMap: 'Minimap' };
 export const DEFAULT_LAYOUT: any = {
   hudHeader: { anchor: 'tc', x: 0, y: 0, scale: 1 },
   hudHp: { anchor: 'c', x: -10, y: 24, scale: 1, links: ['hudMana', 'hudCast'] },
@@ -14,6 +14,7 @@ export const DEFAULT_LAYOUT: any = {
   actionbar: { anchor: 'bc', x: 0, y: -1, scale: 1 },
   hudEffects: { anchor: 'tl', x: 1, y: 8, scale: 1 },
   hudRelics: { anchor: 'cr', x: -1, y: -10, scale: 1 },
+  hudMap: { anchor: 'tr', x: -1, y: 6, scale: 1 },
 };
 // Eigenes Layout am Handy: Sticks und Tasten liegen unten in den Ecken, das HUD oben // PH
 const MOBILE_LAYOUT: any = {
@@ -24,6 +25,7 @@ const MOBILE_LAYOUT: any = {
   actionbar: { anchor: 'bc', x: 0, y: -1, scale: 0.6 },
   hudEffects: { anchor: 'tl', x: 1, y: 28, scale: 1 },
   hudRelics: { anchor: 'tr', x: -9, y: 11, scale: 0.7 },
+  hudMap: { anchor: 'tr', x: -1, y: 11, scale: 0.6 },
 };
 if (device.mobile) Object.assign(DEFAULT_LAYOUT, MOBILE_LAYOUT);
 const STORE = device.mobile ? 'frostgrind.hud.mobile.v1' : 'frostgrind.hud.v1';
