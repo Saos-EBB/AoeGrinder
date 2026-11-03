@@ -24,7 +24,7 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
-import { resetDodge, tryDodge, dodgeVelocity, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
+import { resetDodge, tryDodge, dodgeMove, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
 import { mobsInRadius } from './spells/core';
 import { applyRoot } from './mobs';
 import { novaFx } from './fx/spellFx';
@@ -248,7 +248,7 @@ export function updatePlayer(dt) {
   strafe += pad.move.x;
   if (stunned) fwd = strafe = 0;
 
-  const dodging = dodgeVelocity(player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Geschwindigkeit selbst
+  const dodging = dodgeMove(player.pos, player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Position selbst
   if (player.grounded && !dodging) {
     const f = player.facing;
     let vx = Math.sin(f) * fwd - Math.cos(f) * strafe;

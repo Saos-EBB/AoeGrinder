@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- fix(dodge): Figur kippt nicht mehr in den Boden; Dodge läuft zwischen festem Start- und Zielpunkt, Wände und hohe Stufen kürzen ihn
 - feat(dodge): Dev-Schalter „Mob-Angriffe ×0,3“ in den Einstellungen zum Testen der i-Frames; Code-Karte
 - feat(dodge): Karten Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster +50 %) in allen Modi, Spielversion v21
 - feat(dodge): Eine Kombo pro Modus nach dem Dodge (Normal: Spell ohne Mana; Feuer: Feuerspur und sicherer Feuerball-Crit; Frost: Mini-Nova; Arkan: sofortiger Cast; Krieger: Move-Abbruch und stärkerer Smash; Klingenstrich: Q doppelt mit Blutung), perfekter Dodge verdoppelt das Fenster, Zauberleiste leuchtet

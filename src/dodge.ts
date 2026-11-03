@@ -6,6 +6,7 @@ import { $ } from './util';
 import { act } from './input';
 import { pad } from './gamepad';
 import { particles } from './fx/particles';
+import { groundAt, resolve, STEP } from './collision';
 import { addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { combatText } from './ui/hud';
@@ -24,7 +25,7 @@ export const DG = {
     miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6, klingeQMul: 2 },
 };
 
-let dodge = null;                 // { start, dx, dz, charge, perfect }
+let dodge = null;                 // { start, dx, dz, from, to, charge, perfect }: from und to stehen beim Start fest
 let charges = [0, 0];             // Zeitpunkt, ab dem die Ladung wieder bereit ist
 let lastEnd = -1e9, lastPerfect = false;
 
@@ -70,6 +71,19 @@ function direction() {
   return { dx: x / l, dz: z / l };
 }
 
+// Zielpunkt beim Start: den Weg in kleinen Schritten ablaufen und vor Wänden oder zu hohen Stufen stehen bleiben
+const SWEEP = 0.25, BODY = 0.45;
+function endPoint({ dx, dz }) {
+  const p = { x: player.pos.x, y: player.pos.y, z: player.pos.z }, probe = { x: 0, y: 0, z: 0 };
+  for (let d = SWEEP; d <= DG.yd + 1e-6; d += SWEEP) {
+    probe.x = player.pos.x + dx * d; probe.z = player.pos.z + dz * d;
+    probe.y = groundAt(probe.x, probe.z, p.y);
+    if (Math.abs(probe.y - p.y) > STEP || resolve(probe, BODY)) break;
+    p.x = probe.x; p.y = probe.y; p.z = probe.z;
+  }
+  return { x: p.x, z: p.z };
+}
+
 // Taste „Ausweichen“ (Shift, Pad L2). before: Hook des Modus (Krieger bricht seinen Move ab) und Abbrüche
 export function tryDodge(before) {
   if (state.paused || player.dead || !player.grounded || dodgeActive()) return false;
@@ -78,7 +92,8 @@ export function tryDodge(before) {
   if (i < 0) return false;
   charges[i] = state.now + DG.rechargeMs;
   before?.();
-  dodge = { start: state.now, ...direction(), charge: i, perfect: false };
+  const dir = direction();
+  dodge = { start: state.now, ...dir, from: { x: player.pos.x, z: player.pos.z }, to: endPoint(dir), charge: i, perfect: false };
   state.dodgeStats.n++;
   for (let k = 0; k < DG.dust; k++) {
     const a = Math.random() * Math.PI * 2;
@@ -102,12 +117,16 @@ export function perfectDodge() {
 }
 export const lastDodgePerfect = () => !!dodge?.perfect || lastPerfect;
 
-// Aus updatePlayer: setzt die Geschwindigkeit, solange der Dodge läuft. true = normale Steuerung aussetzen
-export function dodgeVelocity(vel, onStep?) {
+// Aus updatePlayer: setzt die Position zwischen festem Start- und Zielpunkt, schnell raus, weich rein. true = normale Steuerung aussetzen
+export function dodgeMove(pos, vel, onStep?) {
   if (!dodge) return false;
-  if (state.now >= dodge.start + DG.ms) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; startCombo(lastPerfect); return false; }
+  const u = Math.min(1, (state.now - dodge.start) / DG.ms), k = 1 - (1 - u) * (1 - u);
+  pos.x = dodge.from.x + (dodge.to.x - dodge.from.x) * k;
+  pos.z = dodge.from.z + (dodge.to.z - dodge.from.z) * k;
+  pos.y = groundAt(pos.x, pos.z, pos.y);
+  vel.x = vel.z = 0;
+  if (u >= 1) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; startCombo(lastPerfect); return true; }
   const speed = DG.yd / (DG.ms / 1000);
-  vel.x = dodge.dx * speed; vel.z = dodge.dz * speed;
   if (onStep && state.now - (dodge.lastStep ?? -1e9) >= DG.combo.trailStepYd / speed * 1000) { dodge.lastStep = state.now; onStep(dodge); }   // Fire only: Feuerspur
   player.moveState = 'run';
   player.moveSpeed = speed;
@@ -116,11 +135,11 @@ export function dodgeVelocity(vel, onStep?) {
 
 // Optik ohne Animation: Figur kippt in Dodge-Richtung und staucht sich kurz
 export function dodgeVisual(root) {
-  if (!dodgeActive()) { root.scale.setScalar(1); return; }
+  if (!dodgeActive()) { root.rotation.x = root.rotation.z = 0; root.scale.setScalar(1); return; }
   const u = (state.now - dodge.start) / DG.ms, k = Math.sin(u * Math.PI);
   const local = Math.atan2(dodge.dx, dodge.dz) - player.facing;   // Richtung relativ zur Figur
-  root.rotation.x += Math.cos(local) * DG.tilt * k;
-  root.rotation.z -= Math.sin(local) * DG.tilt * k;
+  root.rotation.x = Math.cos(local) * DG.tilt * k;   // gesetzt, nicht addiert: sonst kippt die Figur jedes Bild weiter
+  root.rotation.z = -Math.sin(local) * DG.tilt * k;
   root.scale.set(1 + DG.squash * k * 0.5, 1 - DG.squash * k, 1 + DG.squash * k * 0.5);
 }
 
