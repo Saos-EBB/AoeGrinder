@@ -23,8 +23,8 @@ import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
-import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
-import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
+import { resetRealMen, rageOnHit, moveMul, rooted, takenMul } from './realMen';
+import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
   startMageRun();
@@ -51,7 +51,7 @@ export function resetGame() {
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
-  resetHeroes();
+  resetKlinge();
   resetSiege();
   resetSplits();
   blizCursor.visible = false;
@@ -98,7 +98,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || untouchable()) return;
+  if (player.dead || klingeUntouchable()) return;
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
@@ -108,7 +108,7 @@ export function damagePlayer(amount, dot = false) {
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
   if (!dot) rageOnHit();
   if (!dot) {                            // Gift-Ticks brechen weder Trinken noch Channel
-    if (player.drink) stopDrink();
+    if (player.drink && !player.drink.keepOnHit) stopDrink();
     pushbackChannel();
   }
   if (player.hp <= 0) die();
@@ -140,7 +140,7 @@ function regenerate(dt) {
   }
   if (player.drink) {                    // PH: 90 % Mana + 50 % HP über 18 s
     player.mana = Math.min(maxMana(), player.mana + maxMana() * 0.9 * dt / SPELLS.drink.dur);
-    player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.5 * dt / SPELLS.drink.dur);
+    player.hp = Math.min(maxHp(), player.hp + maxHp() * (player.drink.hp ?? 0.5) * dt / (player.drink.dur ?? SPELLS.drink.dur));   // Essen: eigene Werte
     const full = player.mana >= maxMana() && player.hp >= maxHp();
     if (state.now >= player.drink.end || full) stopDrink();
   }
@@ -207,7 +207,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || heroRooted();
+  const stunned = player.stunUntil > state.now || rooted() || klingeRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
@@ -225,7 +225,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul();
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul();
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

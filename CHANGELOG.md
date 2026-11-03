@@ -4,6 +4,16 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- docs(klinge): Stand, Code-Karte und offene Punkte, Statuszeile zeigt beim Essen „Isst“
+- feat(dunkel): Prototyp liegt unter /dark, #dunkel geht weiter
+- chore: Gebeinsamurai (Ronin) und Aschenschatten (Schatten) aus dem Spiel entfernt, Kevins Wunsch
+- feat(klinge): Tags, Rang-Karten mit Tempo und je 3 Runen für 6 Moves, Spielversion v17
+- feat(klinge): Schattenklone auf Maus 5 (2 Kopien, 8 s, 50 % Schaden) und Essen auf Taste 3 (18 s bis volles Leben, Schaden bricht nicht ab)
+- feat(klinge): Moves Schnitt, Kreisschnitt, Strichschnitt, Blutwirbel und Aderlass mit Treffern aus der Animation
+- feat(klinge): Eigene Tasten Q, E, R, Maus 4, Maus 5, 1, 2, 3 (umbelegbar), zwei Haltungen mit Tempo, Reichweite, Abklingzeit-Kürzung, Schaden und Blutung bis 7 Stapel
+- feat(klinge): Modus Klingenstrich im Hauptmenü neben dem Skelett-Krieger, eigene Rangliste, Modell läuft im Spiel
+- feat(klinge): Modell Klingenstrich aus dem Viewer mit Kreisschnitt, Sitzen, Rückwärts, Sprung, Tod und Klon-Hilfe, Testseite unter /klinge.html
+
 - fix(dunkel): Modelle überstrahlen beim Reinzoomen nicht mehr, Licht kommt von der Kameraseite und wird nah neutraler
 - chore(dunkel): Messwerte und Vergleichsbilder ohne und mit #dunkel
 - feat(dunkel): Zoom bis höchstens 14, Blizzard-Zielkreis bleibt im Dunkeln sichtbar

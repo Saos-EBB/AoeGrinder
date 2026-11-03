@@ -38,6 +38,25 @@ export const ACTIONS = [
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
+// Klingenstrich hat eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
+const KLINGE_BIND_STORE = 'frostgrind.binds.klinge.v1';
+const KLINGE_SLOTS = { nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
+let klingeBinds = false, normalBinds = binds;
+function klingeDefaults() {
+  const b = { ...normalBinds }, used = Object.values(KLINGE_SLOTS).map(s => s[0]);
+  for (const id in b) if (used.includes(b[id].code)) b[id] = { code: '', key: '–' };
+  for (const [id, [code, key]] of Object.entries(KLINGE_SLOTS)) b[id] = { code, key };
+  return b;
+}
+export function useKlingeBinds(on) {
+  if (on === klingeBinds) return;
+  if (on) {
+    normalBinds = binds;
+    binds = klingeDefaults();
+    try { Object.assign(binds, JSON.parse(localStorage.getItem(KLINGE_BIND_STORE) || '{}')); } catch { /* kein Storage */ }
+  } else binds = normalBinds;
+  klingeBinds = on;
+}
 
 function defaultBinds() {
   const b = {};
@@ -50,7 +69,7 @@ function loadBinds() {
   return b;
 }
 export function saveBinds() {
-  try { localStorage.setItem(BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
+  try { localStorage.setItem(klingeBinds ? KLINGE_BIND_STORE : BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
 }
 export const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
 export const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
@@ -182,5 +201,6 @@ export function pickGround() {
 }
 
 export function resetBinds() {
-  binds = defaultBinds();
+  if (klingeBinds) { normalBinds = defaultBinds(); binds = klingeDefaults(); }
+  else binds = defaultBinds();
 }

@@ -24,7 +24,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v16';
+export const SCORE_VERSION = 'v17';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -90,7 +90,7 @@ export const CARD_RARITIES = [
   { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
-export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10 };   // PH
+export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10 };   // PH
 export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spell, Rune, Support, Relikt
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
@@ -128,9 +128,9 @@ export const CARDS = [
     desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
   { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
-  { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Ronin', 'Schatten'], max: 5,
+  { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Klinge'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Ronin', 'Schatten'], max: 3,
+  { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Klinge'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
   // Gegenstücke zu Arkane Macht und Arcane Mind, damit die Schul-Modi dieselben Grundwerte steigern können
   { id: 'iceheart', name: 'Eisherz', only: ['Frost'], max: 5,

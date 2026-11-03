@@ -24,9 +24,9 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - **Modell:** `models/heroModels.ts` (aus dem Viewer: `buildMage`, `buildWarrior` mit 4 Waffen, `buildSamurai`, `buildNinja`), `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
 - `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo.
 - `src/realMen.ts`: Modus Real Men. Zahlen in `REALMEN` und `RUNES`, Wut steht in `player.mana`, Attacken sind Spells mit `press`. Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343).
-- `src/melee.ts`: gemeinsame Helfer der Nahkämpfer (Kosten/Abklingzeit, Linie, Sprint, Bewegungsfenster, verzögerte Treffer, Wellen).
+- `src/melee.ts`: gemeinsame Helfer von Real Men und Klingenstrich (Kosten/Abklingzeit, Linie, Sprint, Bewegungsfenster, verzögerte Treffer, Wellen).
 - Real-Men-Waffen in `REALMEN.weapons` (`realMen.ts`), Wahl im Hauptmenü, gespeichert in `frostgrind.warWeapon`. Seelenfang wirkt über `mob.markUntil`/`markMul` in `damageMob`.
-- `src/heroes.ts`: Modi Ronin (Samurai, Wut nach `REALMEN.rage`) und Schatten (Ninja, Energie), Zahlen in `RONIN` und `SCHATTEN`.
+- `src/klinge.ts`: Modus Klingenstrich, alle Zahlen in `KLINGE`. Keine Ressource, `player.resLabel` zeigt die Haltung. `models/klingeModel.ts`: Figur, Aktionen, `cloneKlinge`, Testseite `/klinge.html`. Eigene Tasten in `useKlingeBinds` (`input.ts`).
 - `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
 - `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü, Shop im Hauptmenü. Credits: `docs/credits.md`.
 - `src/mobs.ts`, `mobTypes.ts`, `abilities.ts`: Spawn (Ring um den Spieler), KI, `damageMob`, Fähigkeiten.
@@ -37,6 +37,7 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v17 (Branch `klinge`, nicht gemergt, nicht deployt) – Neuer Nahkämpfer Klingenstrich, Gebeinsamurai und Aschenschatten entfernt (`buildSamurai`, `buildNinja` bleiben in `heroModels.ts`, weil die Datei aus dem Viewer kommt). Dunkel liegt unter `/dark`. Getestet per Skript, nicht von Hand gespielt.
 - v16 (auf `main`, noch nicht deployt) – Run auf 15 Minuten ausgelegt: `LEVEL_PACE` bremst XP bei Vorsprung und hilft bei Rückstand, `LEVEL_KILLS` statt fester 10 Kills, Kartentakt als Reihe im Hauptmenü (`CARD_PACES`: Gestaffelt mit 31 Karten, 1 pro Level, 1 pro 2 Level, 1 pro 3 Level) mit eigener Mindestlücke zwischen den Fenstern, Heilung und Mana pro Level statt pro Karte. Schul-Modi nur noch mit Karten der eigenen Schule. 6 neue Spells, Nahkampf-Tuning, Wirbelwind-Fix. Getestet per Skript, nicht von Hand gespielt.
 - v15 – Handy: Startbildschirm Desktop oder Handy, Vollbild quer (sonst um 90° gedrehte Seite), Touch mit 2 Sticks und je 4 Tasten, eigenes HUD-Layout, Menüs im Vollbild. Dazu Nahkämpfer aus PR #2 (Real-Men-Waffen, Ronin, Schatten, `heroModels.ts`). Getestet per Skript, nicht am echten Handy.
 - v14 – Neue UI: Hauptmenü, verschiebbares HUD mit Einrasten, Icons, Schadenszahlen, Karten mit echter Vorschau, Charakterfenster, Pause-Menü, Auto-Kamera. Meta Phase 1: Speedrun-Zeit mit Splits, Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Knochenstaub, gesperrter Pool, Shop nach Abschluss und im Hauptmenü, Credits. Level-up heilt 25 % Leben. Getestet per Skript in allen Modi, nicht von Hand gespielt.
@@ -67,7 +68,7 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - Füße rutschen: `speedK` bei 1,8 gedeckelt, etwa 1,2 Schrittzyklen pro Sekunde, altes Modell 2,1.
 - Spuren haben Lücken (rund 3 yd Abstand bei 0,45 yd Radius). Kein Einknicken beim Landen (`squat`).
 
-**Prototyp Dunkel (nur mit `#dunkel` in der URL, Zahlen in `D` in `src/dunkel.ts`):**
+**Prototyp Dunkel (unter `/dark` oder mit `#dunkel` in der URL; beim Deploy `vercel.json` neben `index.html` legen, sonst gibt `/dark` 404; Zahlen in `D` in `src/dunkel.ts`):**
 - Offen, ob der Look trägt. Einzige Stelle mit Schatten-Maps (ein Lichtkegel, Figur und Mobs). Draw Calls in der Testszene 601 ohne, 1135 mit `#dunkel`. FPS nur per Software-Rendering gemessen (5,0 / 4,1), am echten Rechner prüfen. Vergleich: `docs/dunkel-vorher.png`, `docs/dunkel-nachher.png`.
 
 **Balance (alles `// PH`):**
@@ -78,14 +79,18 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - Belagerung: Rate in `SIEGE`, „Größter Pull“ treibt die Punkte sehr hoch. Ohne Leash jagen gezogene Mobs unbegrenzt.
 - Weitere Platzhalter: Mob-Tempo, Trinkwerte, GCD, Radien, Crit, Sprungphysik.
 
-**Nahkämpfer (Krieger-Waffen, Ronin, Schatten), alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
+**Klingenstrich, alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
+- Kevin bestätigen: keine Ressource; Abklingzeit-Kürzung auch für Blutwirbel; Q und Strichschnitt in Zweihand teilen den Schaden auf 2 Schnitte; Einhand kürzt auch den Blutwirbel auf 2,6 s.
+- Aderlass zündet einmal, Klone geben je +50 %. Kein Haltungs-Faktor darauf, er steckt schon in den Stapeln. In Zweihand steckt die Figur links weg und zieht am Ende beide wieder.
+- Blutung ignoriert Crits. Keine Icons für die 8 Slots. Im Modus keine Seitwärts- und Autorun-Taste (Q, E, R belegt), Seitwärts geht mit rechter Maus plus A/D.
+- Ungetestet: Runen Jäger, Gerichteter Wurf, Blutzoll; Pad und Handy.
+
+**Nahkämpfer (Krieger-Waffen), alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
 - Donnerknall mit Äxten, Hammer, Anker: Das Modell meldet keinen Treffer (`hits` ohne `thunderclap`), das Spiel nutzt einen Timer bei 42 %. Besser im Viewer beheben.
 - Blutrausch zählt +1 pro Treffer-Moment mit mindestens einem Mob, nicht pro Mob.
 - Seelenfang zieht über `pullMob`; eingefrorene Mobs bleiben stehen, werden aber markiert.
-- Seoi-Sichel ist ein eigener Strahltest pro Frame (`melee.ts`), kein Geschoss-System.
-- Schatten: unangreifbar heißt nur kein Schaden, Mobs behalten die Aggro. Unangreifbarkeit im Skript nicht geprüft.
 - Alle Moves sperren die eigene Bewegung, solange sie laufen.
-- `RUN_REF` für Krieger, Samurai, Ninja ungeprüft. Keine Icons für die neuen Moves.
+- `RUN_REF` für den Krieger ungeprüft. Keine Icons für die neuen Moves.
 
 **Technik:**
 - Belagerung bei etwa 200–300 Mobs an der Grenze des Spielbaren, mit Zaubern ungemessen. Ansätze: Mob-Instancing, Nameplates.

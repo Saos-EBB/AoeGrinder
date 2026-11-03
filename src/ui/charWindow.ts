@@ -11,6 +11,7 @@ import { spellValue } from '../cards';
 import { SUPPORTS } from '../spells/supports';
 import { rune, stat } from '../spells/core';
 import { moveMul } from '../realMen';
+import { klingeMoveMul } from '../klinge';
 import { syncPause } from './menus';
 import { COLORS } from './colors';
 
@@ -26,10 +27,10 @@ function statsTab() {
   const schools: any[] = [...new Set(owned.map(id => SPELLS[id].school ?? SPELLS[id].cls))].filter(s => s !== 'util');
   return `<table>
     ${row('Leben', `${Math.ceil(player.hp)} / ${maxHp()}`)}
-    ${row(rage ? player.resName ?? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
+    ${player.resLabel ? row('Haltung', player.resLabel) : row(rage ? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
     ${rage ? '' : row('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
     ${row('Crit', pct(CFG.baseCrit))}
-    ${row('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul()).toFixed(1).replace('.', ',')} yd/s`)}
+    ${row('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
     ${row('GCD', `${(CFG.gcd / 1000).toFixed(1).replace('.', ',')} s`)}
     ${row('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}
     ${schools.map(s => {

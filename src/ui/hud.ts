@@ -143,10 +143,10 @@ export function updateHud() {
   $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax, 0, 1)})`;
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
-  $('manaText').textContent = `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
+  $('manaText').textContent = player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
-  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? 'Trinkt …' : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.label ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
 
   const need = xpNeeded();
   const atMax = player.level >= LEVEL_MAX;
@@ -171,7 +171,7 @@ export function updateHud() {
     const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
     $('castbar').style.display = 'block';
     $('castFill').style.transform = `scaleX(${left})`;
-    $('castText').textContent = `${ch ? SPELLS[ch.id].name : 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
+    $('castText').textContent = `${ch ? SPELLS[ch.id].name : dr.label ?? 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
   } else $('castbar').style.display = 'none';
 
   for (const [id, sl] of Object.entries<any>(slots)) {
@@ -181,11 +181,11 @@ export function updateHud() {
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';
-    const cost = paysLife(id) ? 0 : costOf(id), maxCharges = rune(id)?.charges ?? 0;
+    const cost = paysLife(id) ? 0 : costOf(id), maxCharges = rune(id)?.charges ?? SPELLS[id].charges ?? 0;
     sl.cost.textContent = cost > 0 ? cost : '';
     sl.charges.textContent = maxCharges > 1 ? (player.charges[id] ?? []).filter(t => t <= state.now).length || (player.charges[id] ? 0 : maxCharges) : '';
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
-    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || (id === 'drink' && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || ((id === 'drink' || id === 'kEat') && !!dr));
   }
 
   // Nameplates
