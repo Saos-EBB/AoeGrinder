@@ -9,6 +9,7 @@ import { particles } from './fx/particles';
 import { addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { combatText } from './ui/hud';
+import { activeModIds } from './modifiers';
 
 // Alle Zahlen PH
 export const DG = {
@@ -16,6 +17,9 @@ export const DG = {
   charges: 2, rechargeMs: 3000,
   tilt: 0.45, squash: 0.18, shake: 0.12, dust: 10,     // Optik: Kippen in Richtung, Stauchen über scale, Staub am Start
   perfect: { hitstopMs: 80, flashMs: 220 },            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
+  // Kombo pro Modus im Fenster nach dem Dodge-Ende (ms); ein perfekter Dodge verdoppelt es
+  combo: { normal: 1500, feuer: 2000, arkan: 1500, krieger: 1000, klinge: 1000, perfectMul: 2,
+    miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6, klingeQMul: 2 },
 };
 
 let dodge = null;                 // { start, dx, dz, charge, perfect }
@@ -27,8 +31,29 @@ export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframe
 export const dodgeRecovery = () => state.now < lastEnd + DG.recoveryMs;
 export const dodgeCharges = () => charges.filter(t => t <= state.now).length;
 
+// Modus für die Kombo-Regel: Normal, Fire only, Frost only, Arcane only, Strichkrieger, Klingenstrich
+export function dodgeMode() {
+  const ids = activeModIds();
+  return ids.includes('fire') ? 'feuer' : ids.includes('frost') ? 'frost' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('klinge') ? 'klinge' : 'normal';
+}
+// Kombo: welche Regel gerade gilt und bis wann. consumeCombo(kind) löst sie genau einmal aus
+const KIND = { normal: 'freeMana', feuer: 'fireCrit', arkan: 'instant', krieger: 'smash', klinge: 'klingeQ' };
+let combo = null;
+export const comboActive = () => !!combo && state.now < combo.until;
+export const comboReady = kind => comboActive() && combo.kind === kind;
+export function consumeCombo(kind) {
+  if (!comboReady(kind)) return false;
+  combo = null;
+  return true;
+}
+function startCombo(perfect) {
+  const mode = dodgeMode(), ms = DG.combo[mode];
+  if (!ms) return;
+  combo = { kind: KIND[mode], until: state.now + ms * (perfect ? DG.combo.perfectMul : 1) * (state.comboWindowMul ?? 1) };
+}
+
 export function resetDodge() {
-  dodge = null; lastEnd = -1e9;
+  dodge = null; lastEnd = -1e9; combo = null;
   charges = Array(DG.charges).fill(0);
   state.dodgeStats = { n: 0, perfect: 0 };
 }
@@ -76,11 +101,12 @@ export function perfectDodge() {
 export const lastDodgePerfect = () => !!dodge?.perfect || lastPerfect;
 
 // Aus updatePlayer: setzt die Geschwindigkeit, solange der Dodge läuft. true = normale Steuerung aussetzen
-export function dodgeVelocity(vel) {
+export function dodgeVelocity(vel, onStep?) {
   if (!dodge) return false;
-  if (state.now >= dodge.start + DG.ms) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; return false; }
+  if (state.now >= dodge.start + DG.ms) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; startCombo(lastPerfect); return false; }
   const speed = DG.yd / (DG.ms / 1000);
   vel.x = dodge.dx * speed; vel.z = dodge.dz * speed;
+  if (onStep && state.now - (dodge.lastStep ?? -1e9) >= DG.combo.trailStepYd / speed * 1000) { dodge.lastStep = state.now; onStep(dodge); }   // Fire only: Feuerspur
   player.moveState = 'run';
   player.moveSpeed = speed;
   return true;
@@ -106,7 +132,10 @@ const dots = document.createElement('div');
 Object.assign(dots.style, { display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '3px', height: '8px' });
 $('hudHp').appendChild(dots);
 let shownKey = '';
+const bar = document.getElementById('actionbar');
 export function updateDodgeHud() {
+  const glow = comboActive() ? '0 0 16px 5px rgba(255,210,122,0.75)' : '';   // Kombo-Fenster: Leuchtrand um die Zauberleiste
+  if (bar.style.boxShadow !== glow) bar.style.boxShadow = glow;
   const key = `${charges.length},${dodgeCharges()}`;
   if (key === shownKey) return;
   shownKey = key;

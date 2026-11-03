@@ -294,7 +294,7 @@ export function applyRoot(mob, dur) {
 // Gibt true zurück, wenn der Zauber getroffen hat
 // noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
 // dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
-export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false) {
+export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false, forceCrit = false) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
@@ -310,7 +310,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
+  const crit = forceCrit || !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);

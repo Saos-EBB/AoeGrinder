@@ -24,7 +24,10 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
-import { resetDodge, tryDodge, dodgeVelocity, dodgeIframes, perfectDodge } from './dodge';
+import { resetDodge, tryDodge, dodgeVelocity, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
+import { mobsInRadius } from './spells/core';
+import { applyRoot } from './mobs';
+import { novaFx } from './fx/spellFx';
 import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
@@ -212,13 +215,20 @@ export function die() {
 
 // Dodge (Taste Ausweichen): Sitzen, Kanal und Zauber brechen ab; Zauber laufen in Arcane only weiter. Krieger: bricht seinen Move ab
 export function startDodge() {
-  tryDodge(() => {
+  const from = player.pos.clone();
+  const ok = tryDodge(() => {
     stopDrink();
     stopChannel(true);
     if (!modValue('castWhileMoving')) player.casting = null;
     cancelWarriorMove();
   });
+  if (!ok || dodgeMode() !== 'frost') return;
+  const N = DG.combo.miniNova;                             // Frost only: Mini-Nova am Startpunkt, ohne Mana und Abklingzeit
+  for (const m of mobsInRadius(from, N.radius)) applyRoot(m, N.rootMs);
+  novaFx(from, N.radius);
 }
+// Fire only: Der Dodge legt Feuerspur wie die Schritte der Figur
+const dodgeTrail = d => mage.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
 
 // Bewegung wie in WoW: A/D drehen, Q/E (oder A/D mit rechter Maus) seitwärts,
 // kein Lenken in der Luft, Rückwärts langsamer.
@@ -238,7 +248,7 @@ export function updatePlayer(dt) {
   strafe += pad.move.x;
   if (stunned) fwd = strafe = 0;
 
-  const dodging = dodgeVelocity(player.vel);   // Dodge setzt die Geschwindigkeit selbst
+  const dodging = dodgeVelocity(player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Geschwindigkeit selbst
   if (player.grounded && !dodging) {
     const f = player.facing;
     let vx = Math.sin(f) * fwd - Math.cos(f) * strafe;
