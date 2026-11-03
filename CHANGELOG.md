@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(dunkel): Das Spiel läuft immer dunkel, die helle Version ist raus, /dark führt weiter aufs Spiel
 - docs: Vercel-Stand v18 nachgetragen
 - feat(magier): Basis-Strichmagier im 90er-Look: pinker Pelzmantel, weißer Fedora, Goldkette mit Medaillon
 - feat(magier): Strichmagier ersetzt die Skelett-Magier: Basis, Feuer, Eis und Arkan mit eigenen Bewegungen, Waffen und Spuren bleiben, Testseite unter /strich.html

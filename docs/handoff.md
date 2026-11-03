@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v18 von `main` (2026-11-03). Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Beim Deploy `vercel.json` neben `index.html` legen, sonst gibt `/dark` 404. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand Vercel: v18 von `main` (2026-11-03). Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` wird nur noch für `SKIN_FX`, `makeTrail`, `stepWatcher` und die alten Skin-Spuren gebraucht, der Rest (alte Magier, Krieger, Samurai, Ninja) ist ungenutzt.
 
@@ -68,8 +68,8 @@ Stand Vercel: v18 von `main` (2026-11-03). Stand Artifact: v15 (`1793625667-fc85
 - Füße rutschen: `speedK` bei 1,8 gedeckelt, etwa 1,2 Schrittzyklen pro Sekunde, altes Modell 2,1.
 - Spuren haben Lücken (rund 3 yd Abstand bei 0,45 yd Radius). Kein Einknicken beim Landen (`squat`).
 
-**Prototyp Dunkel (unter `/dark` oder mit `#dunkel` in der URL; beim Deploy `vercel.json` neben `index.html` legen, sonst gibt `/dark` 404; Zahlen in `D` in `src/dunkel.ts`):**
-- Offen, ob der Look trägt. Einzige Stelle mit Schatten-Maps (ein Lichtkegel, Figur und Mobs). Draw Calls in der Testszene 601 ohne, 1135 mit `#dunkel`. FPS nur per Software-Rendering gemessen (5,0 / 4,1), am echten Rechner prüfen. Vergleich: `docs/dunkel-vorher.png`, `docs/dunkel-nachher.png`.
+**Dunkel (immer an, Kevins Wunsch; `/dark` bleibt als alter Link über `vercel.json`; Zahlen in `D` in `src/dunkel.ts`):**
+- Einzige Stelle mit Schatten-Maps (ein Lichtkegel, Figur und Mobs). Draw Calls in der Testszene 601 ohne, 1135 mit `#dunkel`. FPS nur per Software-Rendering gemessen (5,0 / 4,1), am echten Rechner prüfen. Vergleich: `docs/dunkel-vorher.png`, `docs/dunkel-nachher.png`.
 
 **Balance (alles `// PH`):**
 - Pacing: Mit festen Kill-Raten im Skript 14–16 Minuten bis Level 100, im echten Spiel ungeprüft. Die Bestzeit-Liste ist dadurch gedeckelt, Läufe unter etwa 14 Minuten sind kaum möglich.

@@ -6,7 +6,7 @@
 ## Loslegen
 ```
 npm install
-npm run dev          # Spiel, /dark, VFX-Labor /vfx.html, Figuren-Tests /klinge.html und /strich.html
+npm run dev          # Spiel, VFX-Labor /vfx.html, Figuren-Tests /klinge.html und /strich.html
 npm run check        # tsc
 npm run build        # eine dist/index.html fürs Artifact
 ```
@@ -34,7 +34,7 @@ npm run build        # eine dist/index.html fürs Artifact
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Der Shop öffnet nach einem Abschluss und im Hauptmenü, dort mit dem letzten Angebot. Staub gibt es auch nach einem Tod → [meta.ts](../src/meta.ts)
-- Prototyp Dunkel läuft unter `/dark`, live braucht das `vercel.json` im Deploy-Ordner → [dunkel.ts](../src/dunkel.ts), [handoff](handoff.md#offen)
+- Das Spiel läuft immer dunkel, mit Schatten-Map am Lichtkegel, das kostet Draw Calls → [dunkel.ts](../src/dunkel.ts), [handoff](handoff.md#offen)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons sind Fremd-Packs, Autoren und Quellen stehen in den Credits → [credits](credits.md)
 

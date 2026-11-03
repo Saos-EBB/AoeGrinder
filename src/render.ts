@@ -17,7 +17,7 @@ document.body.prepend(renderer.domElement);
 
 export const scene = new THREE.Scene();
 const fog = scene.fog = new THREE.Fog(0xffffff, 45, 185);
-// Läuft nach jeder Änderung an Nebel und Himmel. Nur #dunkel setzt ihn (dunkel.ts), sonst bleibt alles wie von der Zone vorgegeben.
+// Läuft nach jeder Änderung an Nebel und Himmel. dunkel.ts setzt ihn, das VFX-Labor läuft ohne.
 let envHook = null;
 export function setEnvHook(fn) { envHook = fn; }
 
