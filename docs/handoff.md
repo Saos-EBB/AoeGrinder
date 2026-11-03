@@ -90,6 +90,7 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - Rüstung 25 % plus ×3 bei voller Wut und wenig Leben, dazu Letzter Atem: Balance ungeprüft. Runen fast alle ungetestet. Keine Icons außer Kampfschrei.
 
 **Strichmagier:**
+- Basis im 90er-Look (Viewer `1793671029-70f4`), Bewegungen noch neutral. Der Goldknauf des Viewers fehlt, weil die gewählte Waffe den Stab ersetzt. Lotussitz wirkt eher kniend als gekreuzt.
 - Zaubern läuft im Spiel höchstens 700 ms (`CAST_MS`), der Viewer zeigt 1,0–2,2 s, sonst hinkt die Figur hinterher. Der Stab des Viewers ist raus, die 15 Waffen hängen am Stabgelenk. „Ta-da“ und Lachanfall laufen nur im Idle. `RUN_REF` entfällt, die Spuren kommen weiter über `stepWatcher`; Abstände ungeprüft. Sitzen und Tod sind neu, im Viewer gab es sie nicht.
 
 **Technik:**

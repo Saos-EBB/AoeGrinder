@@ -53,7 +53,7 @@ const col = h => new THREE.Color(h);
 
 const L1 = .46, L2 = .46, A1 = .31, A2 = .29;
 const SKINS = {
-  base: { name: 'Basis', ink: col(0x2b2b33), accent: col(0x3c4a8a), orb: col(0x9fb4ff) },
+  base: { name: 'Basis', ink: col(0x2b2b33), accent: col(0x2a2622), orb: col(0xe2b13c) },
   fire: { name: 'Feuer', ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
   ice: { name: 'Eis', ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
   arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) }
@@ -327,6 +327,29 @@ export function buildStrichMagier(gameSkin = 'alle', { bloom = false } = {}) {
   // Der eingebaute Stab des Viewers weicht den 15 Waffen: nur das Gelenk bleibt, models/mage.ts hängt die Waffe daran
   F.crystal = new THREE.Object3D(); F.crystal.position.set(0, .79, 0); staff.add(F.crystal);
 
+  if (skin === 'base') {
+    // 90er-Zuhälter-Look: pinker Pelzmantel, weißer Fedora, dicke Goldkette, den Stab ersetzt die gewählte Waffe
+    const PINK = col(0xff5fb0), FUR = col(0xffa8d4), GOLD = col(0xe2b13c), HAT = col(0xf2ede4), BAND = col(0x1d1b18);
+    part(chest, new THREE.LatheGeometry([[0, -.06], [.12, -.04], [.13, .1], [.17, .33], [.2, .47], [.17, .57], [0, .6]]
+      .map(([a, b]) => new THREE.Vector2(a, b)), 8), PINK, [0, 0, 0], [0, Math.PI / 8, 0], [1.12, 1, .7]);
+    part(hips, new THREE.LatheGeometry([[.28, -.58], [.24, -.35], [.19, -.1], [.15, .08]].map(([a, b]) => new THREE.Vector2(a, b)), 8), PINK, [0, 0, 0], [0, Math.PI / 8, 0], [1.05, 1, .8]);
+    for (let i = 0; i < 9; i++) { const a = i / 9 * TAU; part(chest, new THREE.IcosahedronGeometry(.075, 0), FUR, [Math.sin(a) * .15, .55 + .03 * Math.cos(a * 2), Math.cos(a) * .11]); }
+    for (let i = 0; i < 6; i++) part(hips, new THREE.IcosahedronGeometry(.06, 0), FUR, [Math.sin(i / 6 * TAU) * .27, -.56, Math.cos(i / 6 * TAU) * .22]);
+    for (const a of [F.armL, F.armR]) {
+      part(a.ua, capDown(.074, A1), PINK);
+      part(a.fa, capDown(.068, A2 * .8), PINK);
+      for (let i = 0; i < 5; i++) { const q = i / 5 * TAU; part(a.fa, new THREE.IcosahedronGeometry(.045, 0), FUR, [Math.sin(q) * .07, -A2 * .8, Math.cos(q) * .07]); }
+    }
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12 * 2 - 1;
+      part(chest, new THREE.TorusGeometry(.028, .011, 3, 6), GOLD, [.13 * t, .3 + .26 * t * t, .13 - .02 * t * t], [i % 2 ? Math.PI / 2 : 0, 0, .3 * t]);
+    }
+    part(chest, new THREE.CylinderGeometry(.06, .06, .018, 8), GOLD, [0, .25, .135], [Math.PI / 2, 0, 0]);
+    part(head, new THREE.CylinderGeometry(.29, .29, .022, 10), HAT, [0, .3, 0], [-.08, 0, .1], [1, 1, .9]);
+    part(head, new THREE.CylinderGeometry(.14, .17, .17, 8), HAT, [.008, .39, 0], [-.08, 0, .1], [1, 1, .85]);
+    part(head, new THREE.CylinderGeometry(.172, .172, .04, 8), BAND, [.004, .33, 0], [-.08, 0, .1], [1, 1, .85]);
+    glow(chest, new THREE.OctahedronGeometry(.03, 0), col(0xfff3b0), [0, .25, .15]);
+  }
   if (skin === 'fire') {
     for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; flame(head, [Math.sin(a) * .1, .22, Math.cos(a) * .1], .3 + (i % 2) * .12, .07, [Math.cos(a) * .25, 0, -Math.sin(a) * .25]); }
     flame(head, [0, .28, 0], .45, .09);
