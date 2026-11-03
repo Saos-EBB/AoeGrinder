@@ -37,6 +37,7 @@ import { menuYaw, enterMenu } from './ui/mainMenu';
 import { updateWucht } from './wucht';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
+import { updateMinimap } from './ui/minimap';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -124,6 +125,7 @@ function loop(t) {
   composer.render();
   updatePerf(t);
   updateHud();
+  updateMinimap();
   requestAnimationFrame(loop);
 }
 
