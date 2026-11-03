@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- chore(dunkel): Messwerte und Vergleichsbilder ohne und mit #dunkel
 - feat(dunkel): Zoom bis höchstens 14, Blizzard-Zielkreis bleibt im Dunkeln sichtbar
 - feat(dunkel): Lichtkegel flackert alle 3–10 s kurz, abschaltbar über D.flicker
 - feat(dunkel): Licht wie in Hinter dir: Lichtkegel in Blickrichtung mit Schatten von Figur und Mobs, schwaches Rundum-Licht, exponentieller Nebel
