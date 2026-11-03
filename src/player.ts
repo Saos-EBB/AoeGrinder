@@ -24,6 +24,7 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
+import { W, addTrauma } from './wucht';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying } from './realMen';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
@@ -107,6 +108,7 @@ export function damagePlayer(amount, dot = false) {
   player.lastHitBy = dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava';
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
+  addTrauma(amount / maxHp() * W.shake.hurtK);   // Wucht: eigener Schaden wackelt
   if (amount > maxHp() * 0.05) rumble(0.7, 0.4, 180);   // PH: Rumble-Werte
   if (!dot) rageOnHit();
   if (!dot) {                            // Gift-Ticks brechen weder Trinken noch Channel

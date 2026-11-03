@@ -13,6 +13,7 @@ import { mobMode, modFactor, modValue } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
+import { W, addTrauma } from './wucht';
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
@@ -296,6 +297,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);
+  if (!noRoll) addTrauma(Math.min(0.12, dmg / mob.maxHp * W.shake.spellK));   // Wucht: Einschlag relativ zum Mob-Leben
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
