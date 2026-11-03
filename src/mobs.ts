@@ -301,7 +301,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   noteHit(crit);
   if (!noRoll) {                         // Wucht: Einschlag relativ zum Mob-Leben
     addTrauma(Math.min(0.12, dmg / mob.maxHp * W.shake.spellK));
-    if (dmg >= mob.maxHp * W.big.frac) bigHit(mob, schoolOf(source));
+    if (dmg >= mob.maxHp * W.big.frac) { bigHit(mob, schoolOf(source)); bigKnock(mob, dmg / mob.maxHp); }
   }
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
@@ -368,9 +368,15 @@ export function pullMob(mob, center, amount) {
   mob.pos.z += dz / d * step;
 }
 
+// Wucht: Knockback großer Treffer, 0,5–2 yd. Nicht bei gerooteten Mobs (Frost Nova), nicht bei Steinhaut (noKnock), nicht im Blutwirbel (knockbackMob)
+function bigKnock(mob, frac) {
+  if (mob.dead || mob.rootUntil > state.now) return;
+  knockbackMob(mob, player.pos, Math.min(W.knock.max, Math.max(W.knock.min, frac * W.knock.k)), W.knock.ms);
+}
+
 // Rückschlag im Bogen, weg vom Punkt
 export function knockbackMob(mob, center, dist, dur = 450) {
-  if (mob.dead || mob.leap || mob.orbit) return;   // orbit: hängt im Blutwirbel (klinge.ts)
+  if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hängt im Blutwirbel (klinge.ts), noKnock: Steinhaut (champions.ts)
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
   target.y = mob.pos.y;

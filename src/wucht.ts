@@ -3,6 +3,7 @@ import { cameraKick } from './fx/impact';
 import { scene } from './render';
 import { groundAt } from './collision';
 import { state } from './state';
+import { particles } from './fx/particles';
 
 // Wucht: Treffer fühlen sich über Timing und Wirkung auf die Umgebung an. Screenshake (Trauma), Hitstop-Anlässe, Kamera-Ruck,
 // Boden-Spuren, Trümmer und Knockback. Alle Zahlen in W. Hitstop, Kamera-Ruck und Lichtblitz selbst liegen in fx/impact.ts.
@@ -16,6 +17,9 @@ export const W = {
   // Großer Treffer: ab diesem Anteil am Mob-Leben. Kamera-Ruck nach vorn (fx/impact.ts cameraKick), höchstens einmal pro gap
   big: { frac: 0.2, kick: 0.22, gap: 120 },
   // Boden-Spuren: ein InstancedMesh, älteste wird überschrieben. size: Durchmesser in yd, Krieger-Riss kleiner, Champion-Kill groß
+  // Trümmer aus dem Partikelsystem; Knockback von großen Treffern weg vom Spieler, 0,5–2 yd je nach Wucht
+  debris: { min: 5, max: 10, speed: 2.5, up: [2.5, 5], grav: 14, life: [0.5, 0.9], size: [0.12, 0.22], color: [0.32, 0.26, 0.2] },
+  knock: { k: 2.5, min: 0.5, max: 2, ms: 300 },
   decal: { max: 40, lifeMs: 4000, fadeMs: 1500, size: 2.6, spellK: 0.7, minSize: 1.6, maxSize: 7, champion: 6, perFrame: 3, lift: 0.04 },
 };
 
@@ -57,6 +61,16 @@ export function bigHit(mob, school) {
   lastBig = now;
   cameraKick(W.big.kick);
   decal(mob.pos, school, W.decal.size);
+  debris(mob.pos);
+}
+const rnd = (a, b) => a + Math.random() * (b - a);
+export function debris(pos) {
+  const D = W.debris, n = Math.round(rnd(D.min, D.max));
+  for (let i = 0; i < n; i++) {
+    const a = rnd(0, Math.PI * 2), v = rnd(0.5, 1) * D.speed;
+    particles.spawn({ x: pos.x, y: pos.y + 0.3, z: pos.z, vx: Math.cos(a) * v, vy: rnd(D.up[0], D.up[1]), vz: Math.sin(a) * v,
+      grav: D.grav, life: rnd(D.life[0], D.life[1]), color: D.color, size: rnd(D.size[0], D.size[1]) });
+  }
 }
 
 // ---------- Boden-Spuren ----------
