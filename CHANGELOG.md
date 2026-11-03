@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(mobile): Hinweis-Banner „Handy-Steuerung noch buggy – in Arbeit“, Antippen blendet ihn aus
 - chore: heroModels.ts gelöscht (alte Magier, Krieger, Samurai, Ninja), nur die Strichfiguren bleiben; Spuren in models/trail.ts
 - feat(meta): Spielstand-Code im Hauptmenü (zeigen, kopieren, eingeben) mit Staub, Freischaltungen, Inventar und Ranglisten
 - feat(meta): Mage-Waffen mit gewürfeltem Effekt aus der Magischen Kiste (120 Staub), Inventar bis 15, Löschen gibt Staub zurück, Waffenwahl aus dem Inventar, alter Waffen-Kauf entfernt, Waffe in der Rangliste, Spielversion v19

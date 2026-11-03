@@ -119,4 +119,17 @@ export function updateTouch() {
   });
 }
 
-if (device.mobile) build();
+// Hinweis oben: Die Touch-Steuerung ist noch nicht fertig. Antippen blendet ihn aus.
+function banner() {
+  const el = document.createElement('div');
+  el.id = 'mobileBanner';
+  el.textContent = 'Handy-Steuerung noch buggy – in Arbeit. Am PC spielt es sich besser. ✕';
+  Object.assign(el.style, { position: 'fixed', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: '30', maxWidth: '92%',
+    padding: '6px 14px', background: '#7a1a10ee', color: '#fff3d6', border: '1px solid #f2c94c', borderTop: 'none', borderRadius: '0 0 8px 8px',
+    font: '600 13px system-ui, sans-serif', textAlign: 'center', cursor: 'pointer' });
+  el.addEventListener('click', () => el.remove());
+  el.addEventListener('touchend', e => { e.preventDefault(); el.remove(); });
+  document.body.appendChild(el);
+}
+
+if (device.mobile) { build(); banner(); }
