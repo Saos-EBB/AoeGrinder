@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(klinge): Modell kann die Q-Kette (Einhand 3 Schläge, Zweihand 4), hält die Endpose und steckt weg; /klinge.html zeigt alle Schläge
 - feat(packs): Packs doppelt so groß („Große Packs“ damit 4× früher), Champion-Packs öfter (20 % ab Level 6, 4 Mobs), unberührte Packs 4+ Level unter dir werden außer Sicht durch aktuelle ersetzt
 - fix(dunkel): Licht als Kreis um die Figur statt Kegel nach vorn und Aufhelllicht von der Kameraseite
 - fix(dodge): Figur kippt nicht mehr in den Boden; Dodge läuft zwischen festem Start- und Zielpunkt, Wände und hohe Stufen kürzen ihn

@@ -151,7 +151,7 @@ function pressQ() {
   if (act || state.now < attackUntil) return;
   stopDrink();
   attackRate = rateOf('kQ');
-  attackUntil = state.now + TIMING.q / attackRate;
+  attackUntil = state.now + TIMING.qChain[stance][0] / attackRate;   // Kette folgt im nächsten Schritt
   attackCtx = makeCtx('kQ', S().dmg, S().range);
   attackCtx.combo = consumeCombo('klingeQ');            // Dodge-Kombo: +100 % und ein Blutungs-Stapel
   player.lastCombat = state.now;

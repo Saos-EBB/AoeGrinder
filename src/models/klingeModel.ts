@@ -8,7 +8,10 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 // Dauern in ms bei Tempo 1. Die Spielregeln (Tempo, Reichweite) stehen in KLINGE (klinge.ts)
 export const KLINGE_TIMING = {
-  q: 600, e: 500, swap: 450, wirbel: 3400, ader: 1000,   // PH
+  e: 500, swap: 450, wirbel: 3400, ader: 1000,          // PH
+  // Q-Kette pro Haltung, ein Schlag pro Druck. Einhand: Ziehschnitt, Rückhand, Stoß mit Wegstecken. Zweihand: rechts, links, X-Schnitt, Wirbelsprung. PH aus dem Viewer
+  qChain: { 1: [420, 380, 1050], 2: [380, 380, 520, 900] },
+  sheathe: 420,                                          // Zeitfenster abgelaufen, Klinge draußen: kurz wegstecken, PH
   dash: { ms: 1000, move: { from: 0.2, to: 0.34 } },                     // Spiel bewegt den Spieler in diesem Fenster, PH
   wirbelFrom: 0.08, wirbelTo: 0.9,                                       // Drehung und Griff der Mobs, PH
 };
@@ -323,25 +326,73 @@ export function buildKlinge({ bloom = false } = {}) {
   // keys: [t, pose, ease] · ev: [t, fn] · tick(u)
   const hit = (kind, i = 0) => () => model.onHit?.(kind, root.position.x, root.position.z, i);
 
-  function defIai() {
-    const k1 = P(IDLE1, { y: .8, h: [0, .6, 0], c: [.38, -.62, 0], n: [-.25, .25, 0], fR: [-.14, .06, .5], bR: [.45, -.35, .82] });
-    const k2 = P(IDLE1, { y: .82, h: [0, -.55, 0], c: [.12, .45, 0], n: [-.1, -.25, 0], hR: [-.8, 1.58, .5], bR: [-.6, .62, .5],
-      hL: [.36, 1.0, -.05], fR: [-.2, .06, .72], fL: [.24, .06, -.36] });
-    return {
-      dur: KLINGE_TIMING.q, walk: true,
-      keys: [[0, IDLE1], [.18, k1], [.32, k2, 'out'], [.56, P(k2, { y: .8 })], [.72, P(k2, { hR: [-.5, 1.08, .5], bR: [-.15, -.55, .82] })],
-        [.88, P(IDLE1, { hR: 'H1', bR: SAYA_DIR, y: .86 })], [1, IDLE1]],
-      ev: [[.2, () => drawnR = true], [.26, () => arc([-.1, 1.3, .9], [-.3, .25, 2.3], 1.5, 2.6)], [.3, hit('q', 0)], [.86, () => drawnR = false]],
-    };
+  // ── Q-Kette aus dem Viewer (defQ): ein Schlag pro Druck. Zwischen den Schlägen hält die Figur die Endpose (hold), solange das Spiel anim.hold setzt.
+  const E_END = [
+    P(IDLE1, { y: .82, h: [0, -.55, 0], c: [.12, .45, 0], n: [-.1, -.25, 0], hR: [-.8, 1.58, .5], bR: [-.6, .62, .5], hL: [.36, 1.0, -.05], fR: [-.2, .06, .72], fL: [.24, .06, -.36] }),
+    P(IDLE1, { y: .8, h: [0, .45, 0], c: [.3, -.55, 0], n: [-.15, .35, 0], hR: [.55, 1.25, .55], bR: [.88, .05, .45], hL: [.4, .95, -.2], fR: [-.18, .06, .75], fL: [.3, .06, .05] }),
+  ];
+  const N_END = [
+    P(IDLE2, { y: .78, h: [0, .45, 0], c: [.45, .5, 0], n: [-.3, -.3, 0], hR: [.28, .95, .62], bR: [.6, -.5, .6], fL: [.3, .06, .1], fR: [-.28, .06, .5] }),
+    P(IDLE2, { y: .78, h: [0, -.45, 0], c: [.45, -.5, 0], n: [-.3, .3, 0], hL: [-.28, .95, .62], bL: [-.6, -.5, .6], hR: [-.45, 1.15, .25], bR: [-.4, .6, .65], fL: [.28, .06, .5], fR: [-.3, .06, .1] }),
+    P(IDLE2, { y: .76, h: [0, 0, 0], c: [.6, 0, 0], n: [-.45, 0, 0], hR: [-.48, .86, .68], bR: [-.62, -.42, .66], hL: [.48, .86, .68], bL: [.62, -.42, .66], fL: [.3, .06, .55], fR: [-.3, .06, -.3] }),
+  ];
+  const fwdW = () => V(Math.sin(root.rotation.y), 0, Math.cos(root.rotation.y));
+  function defQ(step) {
+    const D = KLINGE_TIMING.qChain[stance];
+    step = clamp(step | 0, 0, D.length - 1);
+    const dur = D[step];
+    if (stance === 1) {
+      if (step === 0) {   // Ziehschnitt: diagonal von unten links nach oben rechts
+        const k1 = P(IDLE1, { y: .8, h: [0, .6, 0], c: [.38, -.62, 0], n: [-.25, .25, 0], fR: [-.14, .06, .5], bR: [.45, -.35, .82] });
+        return { dur, walk: true, hold: E_END[0], keys: [[0, IDLE1], [.35, k1], [.65, E_END[0], 'out'], [1, E_END[0]]],
+          ev: [[.4, () => drawnR = true], [.5, () => arc([-.1, 1.3, .9], [-.3, .25, 2.3], 1.5, 2.6)], [.6, hit('q', 0)]] };
+      }
+      if (step === 1) {   // Rückhand waagrecht nach links
+        const w = P(E_END[0], { hR: [-.75, 1.3, .3], bR: [-.9, .1, .2], c: [.2, .55, 0] });
+        return { dur, walk: true, hold: E_END[1], keys: [[0, E_END[0]], [.3, w], [.62, E_END[1], 'out'], [1, E_END[1]]],
+          ev: [[.4, () => drawnR = true], [.42, () => arc([0, 1.25, .5], [-Math.PI / 2, 0, 0], 2.2, 2.6)], [.55, hit('q', 0)]] };
+      }
+      // Stoß, dann Nōtō: der Treffer fällt beim Klick des Wegsteckens
+      const pull = P(E_END[1], { y: .82, h: [0, -.2, 0], c: [.15, .25, 0], hR: [-.28, 1.28, -.2], bR: [0, .08, 1], hL: [.35, 1.05, .35], fR: [-.18, .06, .3], fL: [.22, .06, -.25] });
+      const thrust = P(IDLE1, { y: .68, h: [0, -.15, 0], c: [.55, 0, 0], n: [-.45, 0, 0], hR: [-.06, 1.3, 1.05], bR: [0, .03, 1], hL: [.45, 1.15, -.35], fR: [-.15, .06, 1.0], fL: [.22, .06, -.55] });
+      const noto = P(IDLE1, { y: .74, c: [.4, -.3, 0], n: [.25, 0, 0], hR: 'H1', bR: SAYA_DIR, fR: [-.15, .06, .7], fL: [.22, .06, -.45] });
+      const a: any = {};
+      return { dur, keys: [[0, E_END[1]], [.2, pull], [.32, thrust, 'out'], [.55, P(thrust, { y: .67 })], [.75, noto, 'out'], [.9, noto], [1, IDLE1]],
+        ev: [[0, () => drawnR = true],
+          [.32, () => { a.from = root.position.clone(); a.to = a.from.clone().addScaledVector(fwdW(), 5.6); streak(a.from, a.to, FX_LIGHT, .06, .7); }],
+          [.74, () => drawnR = false],
+          [.75, () => { streak(a.from, a.to, FX_RED, .14, .35); hit('q', 0)(); }]] };
+    }
+    const from = step === 0 ? IDLE2 : N_END[step - 1];
+    if (step === 0 || step === 1) {   // rechts diagonal, links diagonal
+      const w = step === 0 ? P(IDLE2, { y: .9, c: [-.05, -.4, 0], hR: [-.45, 1.88, .05], bR: [-.3, .7, -.62] })
+        : P(N_END[0], { y: .9, c: [-.05, .4, 0], hL: [.45, 1.88, .05], bL: [.3, .7, -.62] });
+      return { dur, walk: true, hold: N_END[step], keys: [[0, from], [.35, w], [.65, N_END[step], 'out'], [1, N_END[step]]],
+        ev: [[.5, () => arc([0, 1.3, .9], [0, step ? .3 : -.3, step ? .75 : -.75], 1.5, 2.4)], [.6, hit('q', 0)]] };
+    }
+    if (step === 2) {   // X-Schnitt
+      const k1 = P(IDLE2, { y: .92, c: [-.12, 0, 0], n: [-.05, 0, 0], hR: [.16, 1.88, .12], bR: [.55, .55, -.62], hL: [-.16, 1.88, .12], bL: [-.55, .55, -.62] });
+      return { dur, walk: true, hold: N_END[2], keys: [[0, from], [.35, k1], [.62, N_END[2], 'out'], [1, N_END[2]]],
+        ev: [[.5, () => arc([0, 1.25, .9], [0, 0, .75], 1.35, 2.2)], [.54, () => arc([0, 1.25, .95], [0, 0, -.75], 1.35, 2.2)], [.56, hit('q', 0)], [.62, hit('q', 1)]] };
+    }
+    // Wirbelsprung: hoch, eine volle Drehung mit beiden Klingen, Landung mit Druckwelle
+    const crouch = P(IDLE2, { y: .62, c: [.6, 0, 0], n: [-.5, 0, 0], hR: [-.35, 1.0, -.2], bR: [-.6, .3, -.75], hL: [.35, 1.0, -.2], bL: [.6, .3, -.75], fL: [.3, .06, .1], fR: [-.3, .06, -.1] });
+    const air = P(IDLE2, { y: 1.35, h: [0, 0, 0], c: [-.1, 0, 0], n: [-.1, 0, 0], hR: [-.85, 1.5, .05], bR: [-1, .05, .1], hL: [.85, 1.5, .05], bL: [1, .05, .1], fL: [.2, .5, .15], fR: [-.2, .42, -.1] });
+    const land = P(IDLE2, { y: .6, c: [.7, 0, 0], n: [-.55, 0, 0], hR: [-.7, .9, .4], bR: [-.7, -.4, .6], hL: [.7, .9, .4], bL: [.7, -.4, .6], fL: [.4, .06, .3], fR: [-.4, .06, -.3] });
+    return { dur, keys: [[0, from], [.2, crouch], [.32, air, 'out'], [.58, air], [.66, land, 'in'], [.85, land], [1, IDLE2]],
+      ev: [[.36, () => windG.visible = true], [.6, () => windG.visible = false],
+        [.66, () => { ring(root.position, FX_LIGHT, 4, .45); ring(root.position, FX_RED, 3, .35); hit('q', 0)(); }]],
+      tick(u) {
+        spinAng = TAU * clamp((u - .3) / .3, 0, 1);
+        windG.position.copy(root.position);
+        windArcs.forEach(m => { m.rotation.z = -(spinAng * 1.1 + m.userData.off); });
+      },
+      end() { spinAng = 0; windG.visible = false; } };
   }
-  function defX() {
-    const k1 = P(IDLE2, { y: .92, c: [-.12, 0, 0], n: [-.05, 0, 0], hR: [.16, 1.88, .12], bR: [.55, .55, -.62], hL: [-.16, 1.88, .12], bL: [-.55, .55, -.62] });
-    const k2 = P(IDLE2, { y: .76, h: [0, 0, 0], c: [.6, 0, 0], n: [-.45, 0, 0], hR: [-.48, .86, .68], bR: [-.62, -.42, .66], hL: [.48, .86, .68], bL: [.62, -.42, .66], fL: [.3, .06, .55], fR: [-.3, .06, -.3] });
-    return {
-      dur: KLINGE_TIMING.q, walk: true,
-      keys: [[0, IDLE2], [.25, k1], [.42, k2, 'out'], [.66, P(k2, { y: .75 })], [1, IDLE2]],
-      ev: [[.36, () => arc([0, 1.25, .9], [0, 0, .75], 1.35, 2.2)], [.4, () => arc([0, 1.25, .95], [0, 0, -.75], 1.35, 2.2)], [.38, hit('q', 0)], [.44, hit('q', 1)]],
-    };
+  // Zeitfenster abgelaufen, Klinge noch draußen: kurz wegstecken, ohne Treffer
+  function defSheathe() {
+    const from = holdPose ?? lastPose;
+    return { dur: KLINGE_TIMING.sheathe, walk: true, keys: [[0, from], [.6, P(IDLE1, { hR: 'H1', bR: SAYA_DIR, y: .86 }), 'out'], [1, IDLE1]], ev: [[.58, () => drawnR = false]] };
   }
   // Neu: schnelle Drehung mit ausgestreckter Klinge. Einhand zieht und steckt weg, Zweihand schwingt beide.
   function defKreis() {
@@ -446,12 +497,14 @@ export function buildKlinge({ bloom = false } = {}) {
     if (ability === 'wirbel') return defWirbel(anim.dur);
     if (ability === 'ader') return defAder();
     if (ability === 'swap') return defSwap(wanted);
-    if (attack === 'q') return stance === 1 ? defIai() : defX();
+    if (attack === 'q') return defQ(anim.step);
+    if (attack === 'sheathe') return stance === 1 ? defSheathe() : null;
     return null;                                     // 'clones' und 'eat' haben keine eigene Aktion
   };
 
   // ───────────────────────── Hauptschleife
   let eatK = 0;
+  let holdPose = null;           // Endpose des letzten Q-Schlags, steht bis zum nächsten Druck oder bis das Zeitfenster abläuft
   let act = null, actKey = '', lastPose = resolve(IDLE1), blendFrom = null, blendT = 0, runPh = 0, T = 0, lastLoco = 'idle', ready = false;
   function evalKeys(keys, u) {
     let i = 0; while (i < keys.length - 2 && u > keys[i + 1][0]) i++;
@@ -461,7 +514,7 @@ export function buildKlinge({ bloom = false } = {}) {
   }
   function cancel() {
     act?.def.end?.();
-    act = null; spinAng = 0; windG.visible = false;
+    act = null; holdPose = null; spinAng = 0; windG.visible = false;
   }
   function setStance(s, snap = false) {
     wanted = s;
@@ -482,11 +535,16 @@ export function buildKlinge({ bloom = false } = {}) {
       const def = key && loco !== 'dead' ? makeAction(ability, attack, anim) : null;
       if (def) {
         if (act) cancel();
+        const keepBlend = attack === 'q' && holdPose;   // Kette: Schlag beginnt genau in der gehaltenen Endpose
+        holdPose = null;
         def.ev.sort((x, y) => x[0] - y[0]);
         act = { def, t: 0, i: 0 };
-        blendFrom = lastPose; blendT = .12;
+        blendFrom = lastPose; blendT = keepBlend ? 0 : .12;
       }
     }
+    if (holdPose && (!anim.hold || loco === 'dead' || loco === 'air')) { holdPose = null; blendFrom = lastPose; blendT = .2; }
+    // Einhand ohne Schlag und ohne gehaltene Pose: Klinge steckt (z. B. nach Abbruch durch Laufen in den Sprung)
+    if (!act && !holdPose && stance === 1 && wanted === 1 && loco !== 'dead') drawnR = false;
     if (loco !== lastLoco) { blendFrom = lastPose; blendT = .15; lastLoco = loco; }
 
     let pose;
@@ -503,7 +561,18 @@ export function buildKlinge({ bloom = false } = {}) {
         const r = runPose(runPh);
         pose.y = r.y; pose.fL = r.fL; pose.fR = r.fR;
       }
-      if (u >= 1) { d.end?.(); act = null; blendFrom = pose; blendT = .1; }
+      if (u >= 1) {
+        d.end?.(); act = null;
+        if (d.hold && anim.hold) { holdPose = d.hold; blendT = 0; } else { blendFrom = pose; blendT = .1; }
+      }
+    } else if (holdPose) {
+      pose = resolve(holdPose);
+      pose.y += .01 * Math.sin(T * 6);
+      if (loco === 'run' || loco === 'back') {   // Halten im Laufen: Oberkörper bleibt, Beine laufen
+        if (!anim.frozen) runPh += s * (anim.speed || 7) / .55 * (loco === 'back' ? -1 : 1);
+        const r = runPose(runPh);
+        pose.y = r.y; pose.fL = r.fL; pose.fR = r.fR;
+      }
     } else if (loco === 'run' || loco === 'back') {
       if (!anim.frozen) runPh += s * (anim.speed || 7) / .55 * (loco === 'back' ? -1 : 1);
       pose = resolve(runPose(runPh, loco === 'back' ? .25 : .62));
