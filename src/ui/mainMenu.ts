@@ -10,7 +10,8 @@ import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
-import { equip, equipped, weaponName, effectLines, rarityOf, applyRunWeapon } from '../weaponRolls';
+import { equip, equipped, weaponName, rarityOf, applyRunWeapon } from '../weaponRolls';
+import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
@@ -108,9 +109,10 @@ export function renderMenu() {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
     weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), 'Pilgerast (ohne Effekt)', () => pickW(null)));
     for (const w of meta.inv) {
-      const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id), `${rarityOf(w).name}: ${effectLines(w).join('\n')}`);
+      const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id));   // Details zeigt die Info-Karte beim Hovern
       b.style.borderColor = rarityOf(w).color;
       b.style.color = rarityOf(w).color;
+      attachWeaponCard(b, w);
       weapons.appendChild(b);
     }
   }

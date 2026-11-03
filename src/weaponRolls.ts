@@ -37,6 +37,8 @@ export const ROLLS = {
 // Die 20 Magier-Spells für den Kopf-Fokus, je Schule
 export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'hurricane', 'frostorb', 'chain', 'voidorb', 'whirl', 'arc', 'icelance', 'glacier', 'fireball', 'meteor', 'barrage', 'surge'];
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
+// Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
+const TYPE_TEXT = { staff: 'Radius +10 %, Zauberzeit +10 %', wand: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', book: '+1 Ladung auf den Fokus-Spell, Manakosten −10 %', relic: 'Aura alle 3 s in 6 yd mit dem Element-Effekt, Dauereffekte +10 %' };
 const VALUE_TEXT = Object.fromEntries(Object.entries(VALUE_KEY).map(([t, k]) => [k, t]));
 
 const factor = tier => CARD_RARITIES[tier].mult;
@@ -72,7 +74,7 @@ export function effectLines(w) {
     return [`${pct((w.e === 'cd' ? -1 : 1) * ROLLS.values[w.e] * f)} ${VALUE_TEXT[w.e]}`];
   }
   const s = w.s, k = VALUE_KEY[s.value], k2 = VALUE_KEY[s.value2], el = ELEMENTS[s.element];
-  const lines = [`${TYPES[s.type].name}: ${TYPES[s.type].rule}`];
+  const lines = [`${TYPES[s.type].name}: ${TYPE_TEXT[s.type]}`];
   if (w.r >= 1) lines.push(`Fokus ${SPELLS[s.focus].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`);
   lines.push(`${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f)} ${s.value}`);
   if (s.element !== 'none') lines.push(`${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`);

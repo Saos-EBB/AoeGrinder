@@ -9,6 +9,7 @@ import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
 import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
 import { mage } from '../models/mage';
+import { attachWeaponCard } from './weaponCard';
 import { pick } from '../util';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
@@ -74,7 +75,7 @@ function chestBox() {
     const n = document.createElement('span'), t = document.createElement('span');
     n.textContent = weaponName(w);
     n.style.color = rarityOf(w).color;
-    row.title = effectLines(w).join('\n');
+    attachWeaponCard(row, w);
     t.textContent = `Löschen +${ROLLS.refund[w.r]}`;
     row.append(n, t);
     row.dataset.nav = `inv-${w.id}`;
