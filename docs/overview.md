@@ -6,7 +6,7 @@
 ## Loslegen
 ```
 npm install
-npm run dev          # Spiel, VFX-Labor unter /vfx.html
+npm run dev          # Spiel, /dark, VFX-Labor /vfx.html, Klingenstrich-Test /klinge.html
 npm run check        # tsc
 npm run build        # eine dist/index.html fürs Artifact
 ```
@@ -18,8 +18,8 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/world.ts`, `collision.ts`, `zones.ts` | Karten, Boden, massive Objekte | [map-audit](map-audit.md) |
 | `src/mobs.ts`, `abilities.ts`, `siege.ts` | Mobs, Fähigkeiten, Mob-Modus Belagerung | [zones-spec](zones-spec.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/models/` | Alle Figuren (Magier-Skins, Krieger mit 4 Waffen, Samurai, Ninja), 15 Magier-Waffen | [status-waffen](status-waffen.md) |
-| `src/realMen.ts`, `heroes.ts`, `melee.ts` | Nahkampf-Modi Real Men, Ronin, Schatten und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
+| `src/models/` | Alle Figuren (Magier-Skins, Krieger mit 4 Waffen, Klingenstrich), 15 Magier-Waffen | [status-waffen](status-waffen.md) |
+| `src/realMen.ts`, `klinge.ts`, `melee.ts` | Nahkampf-Modi Real Men, Klingenstrich und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
 | `src/skinFx.ts` | Skin-Effekte der Magier | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
@@ -29,11 +29,12 @@ npm run build        # eine dist/index.html fürs Artifact
 ## ⚠ Besonderheiten
 - `heroModels.ts` kommt aus dem Viewer: dort ändern und neu ziehen, die Magier-Schnittstelle am Dateiende muss mit, danach `RUN_REF` prüfen → [handoff](handoff.md#offen)
 - Effekte und Bodenziele nutzen `groundAt`, nicht `heightAt`, sonst liegen sie auf Plattformen falsch → [Code-Karte](handoff.md#code-karte)
-- Wut (Krieger, Samurai) und Energie (Ninja) stehen in `player.mana`, `player.rageMax` schaltet den Modus um → [realMen.ts](../src/realMen.ts), [heroes.ts](../src/heroes.ts)
+- Wut (Krieger) steht in `player.mana`, `player.rageMax` schaltet den Modus um; Klingenstrich hat keine Ressource und nutzt den Balken für die Haltung → [realMen.ts](../src/realMen.ts), [klinge.ts](../src/klinge.ts)
 - Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Der Shop öffnet nach einem Abschluss und im Hauptmenü, dort mit dem letzten Angebot. Staub gibt es auch nach einem Tod → [meta.ts](../src/meta.ts)
+- Prototyp Dunkel läuft unter `/dark`, live braucht das `vercel.json` im Deploy-Ordner → [dunkel.ts](../src/dunkel.ts), [handoff](handoff.md#offen)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons sind Fremd-Packs, Autoren und Quellen stehen in den Credits → [credits](credits.md)
 
