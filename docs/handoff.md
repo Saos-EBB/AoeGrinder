@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v18 von `main`, nur noch dunkel (2026-11-03). Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand Vercel: v19 von `main` (2026-11-03): nur dunkel, Modi-Konzept, Kiste, Spielstand-Code, Sitzen, Krieger-Waffen. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` ist gelöscht (alte Magier, Krieger, Samurai, Ninja); Spuren und `SKIN_FX` liegen in `models/trail.ts`.
 
@@ -37,7 +37,7 @@ Stand Vercel: v18 von `main`, nur noch dunkel (2026-11-03). Stand Artifact: v15 
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
-- v19 (Branch `modi`, nicht gemergt, nicht deployt) – Modi-Konzept: Tag Dunkel, Schulen mit Stärken und Schwächen, Eisblock, Flammenstoß 0,5 s und Feuerball 0,35 s, Mage-Waffen aus der Magischen Kiste (`weaponRolls.ts`, Inventar in `meta`), Spielstand-Code (`ui/saveCode.ts`), `heroModels.ts` gelöscht. Getestet per Skript, nicht von Hand gespielt.
+- v19 (auf `main`, auf Vercel) – Modi-Konzept: Tag Dunkel, Schulen mit Stärken und Schwächen, Eisblock, Flammenstoß 0,5 s und Feuerball 0,35 s, Mage-Waffen aus der Magischen Kiste (`weaponRolls.ts`, Inventar in `meta`), Spielstand-Code (`ui/saveCode.ts`), `heroModels.ts` gelöscht. Getestet per Skript, nicht von Hand gespielt.
 - v18 (auf `main`, auf Vercel) – Strichkrieger ersetzt den Skelett-Krieger samt 4 Waffen, Strichmagier ersetzt die Skelett-Magier. Getestet per Skript, nicht von Hand gespielt.
 - v17 (auf `main`) – Neuer Nahkämpfer Klingenstrich, Gebeinsamurai und Aschenschatten entfernt (`buildSamurai`, `buildNinja` bleiben in `heroModels.ts`, weil die Datei aus dem Viewer kommt). Dunkel liegt unter `/dark`. Getestet per Skript, nicht von Hand gespielt.
 - v16 (auf `main`, noch nicht deployt) – Run auf 15 Minuten ausgelegt: `LEVEL_PACE` bremst XP bei Vorsprung und hilft bei Rückstand, `LEVEL_KILLS` statt fester 10 Kills, Kartentakt als Reihe im Hauptmenü (`CARD_PACES`: Gestaffelt mit 31 Karten, 1 pro Level, 1 pro 2 Level, 1 pro 3 Level) mit eigener Mindestlücke zwischen den Fenstern, Heilung und Mana pro Level statt pro Karte. Schul-Modi nur noch mit Karten der eigenen Schule. 6 neue Spells, Nahkampf-Tuning, Wirbelwind-Fix. Getestet per Skript, nicht von Hand gespielt.
