@@ -86,7 +86,7 @@ export function held(id) {
 }
 
 export function rageOnHit() {
-  if (isWarrior() || mage.skin === 'samurai') gainRage(R.rage.perHitTaken);   // Ronin: gleiche Wut-Regeln
+  if (isWarrior()) gainRage(R.rage.perHitTaken);
 }
 function gainRage(n) { player.mana = Math.min(R.rage.max, player.mana + n); }
 
@@ -95,8 +95,8 @@ export function resetRealMen() {
   const on = isWarrior();
   player.rageMax = on ? R.rage.max : undefined;
   if (on) player.mana = R.rage.start;
-  if (on || mage.skin === 'samurai') $('manaFill').style.background = 'linear-gradient(#e0503c, #8a1a10)';
-  else if (mage.skin !== 'ninja') $('manaFill').style.background = '';
+  if (on) $('manaFill').style.background = 'linear-gradient(#e0503c, #8a1a10)';
+  else $('manaFill').style.background = '';
   if (on) nameSlots();
   clearAttacks();
 }
@@ -308,6 +308,8 @@ export function updateRealMen(dt) {
   if (!once && !charge && !whirlOn && !stunned && held('wAttack')) startAttackCycle();
 }
 
+// Schadensfaktor: nur der Krieger hat Rüstung
+export const takenMul = () => isWarrior() ? 1 - R.armor : 1;
 export const moveMul = () => whirlOn && !hasRune('wWhirl', 'stride') ? R.whirlwind.speedMul : 1;
 export const rooted = () => !!once || !!charge;    // eigene Bewegung oder keine
 

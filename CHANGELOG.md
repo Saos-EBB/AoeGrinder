@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- chore: Gebeinsamurai (Ronin) und Aschenschatten (Schatten) aus dem Spiel entfernt, Kevins Wunsch
 - feat(klinge): Tags, Rang-Karten mit Tempo und je 3 Runen für 6 Moves, Spielversion v17
 - feat(klinge): Schattenklone auf Maus 5 (2 Kopien, 8 s, 50 % Schaden) und Essen auf Taste 3 (18 s bis volles Leben, Schaden bricht nicht ab)
 - feat(klinge): Moves Schnitt, Kreisschnitt, Strichschnitt, Blutwirbel und Aderlass mit Treffern aus der Animation

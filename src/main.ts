@@ -15,7 +15,6 @@ import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorp
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
-import { updateHeroes, heroAnim } from './heroes';
 import { updateKlinge, klingeAnim, updateKlingeVisuals } from './klinge';
 import { updateSiege } from './siege';
 import { cast } from './spells';
@@ -34,7 +33,6 @@ function update(dt) {
   updateAbilities(dt);
   updateSkinFx();
   updateRealMen(dt);
-  updateHeroes(dt);
   updateKlinge(dt);
   updateZoneEvent(dt);
 
@@ -62,7 +60,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...heroAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht

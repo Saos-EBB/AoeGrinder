@@ -23,8 +23,7 @@ import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
-import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
-import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
+import { resetRealMen, rageOnHit, moveMul, rooted, takenMul } from './realMen';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -52,7 +51,6 @@ export function resetGame() {
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
-  resetHeroes();
   resetKlinge();
   resetSiege();
   resetSplits();
@@ -100,7 +98,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || untouchable() || klingeUntouchable()) return;
+  if (player.dead || klingeUntouchable()) return;
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
@@ -209,7 +207,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || heroRooted() || klingeRooted();
+  const stunned = player.stunUntil > state.now || rooted() || klingeRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;

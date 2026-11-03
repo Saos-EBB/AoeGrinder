@@ -1,5 +1,5 @@
-// Gemeinsame Helfer der Nahkämpfer (Real Men, Ronin, Schatten): Kosten und Abklingzeit, Linie, Sprint nach vorn,
-// verzögerte Treffer und Wellen. Zahlen stehen in den Configs der Modi (REALMEN, RONIN, SCHATTEN).
+// Gemeinsame Helfer der Nahkämpfer (Real Men, Klingenstrich): Kosten und Abklingzeit, Linie, Sprint nach vorn,
+// verzögerte Treffer und Wellen. Zahlen stehen in den Configs der Modi (REALMEN, KLINGE).
 
 import { state, player } from './state';
 import { rand } from './util';

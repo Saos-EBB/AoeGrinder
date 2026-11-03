@@ -112,7 +112,7 @@ const showStance = () => {
   $('manaFill').style.background = stance === 1 ? 'linear-gradient(#c8ccd6, #6a7080)' : 'linear-gradient(#d8343c, #7a1016)';
 };
 
-// Nach dem Zurücksetzen von Leben und Mana im Run-Start, nach resetRealMen und resetHeroes
+// Nach dem Zurücksetzen von Leben und Mana im Run-Start, nach resetRealMen
 export function resetKlinge() {
   player.resLabel = undefined;
   useKlingeBinds(on());
