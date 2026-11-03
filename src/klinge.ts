@@ -26,7 +26,20 @@ export const KLINGE = {
   },
   swap: { cd: 1000, bonus: 0.3 },                                                                            // PH
   bleed: { share: 0.33, ms: 5000, tickMs: 1000, max: 7 },                                                    // PH: 33 % des Treffers über 5 s, 7 Stapel pro Mob
-  q: { angle: 120, radius: 3, dmg: 30 },                                                                     // PH: Zweihand teilt den Schaden auf 2 Schnitte
+  // Q-Kette: ein Schlag pro Druck, nächster Druck im Zeitfenster nach dem Schlag, sonst wieder Schlag 1. Dauern in KLINGE_TIMING.qChain.
+  // Pro Schlag die Treffer-Ereignisse in Modell-Reihenfolge. Schaden vor dem Haltungs-Faktor. cone: Kegel in Grad, sonst rundum. line: Länge in yd. Alles PH
+  q: {
+    windowMs: 1000,
+    chain: {
+      1: [{ hits: [{ dmg: 25, cone: 115, radius: 3 }] },                         // Ziehschnitt
+        { hits: [{ dmg: 30, cone: 150, radius: 3 }] },                           // Rückhand waagrecht
+        { hits: [{ dmg: 55, line: 4, width: 1.2 }], rooted: true }],             // Stoß, Treffer beim Wegstecken; Reichweite ×1,4 macht 5,6 yd
+      2: [{ hits: [{ dmg: 30, cone: 115, radius: 3 }] },                         // rechts diagonal
+        { hits: [{ dmg: 30, cone: 115, radius: 3 }] },                           // links diagonal
+        { hits: [{ dmg: 25, cone: 126, radius: 3 }, { dmg: 25, cone: 126, radius: 3 }] },   // X-Schnitt
+        { hits: [{ dmg: 45, radius: 3.2, bleeds: 2 }], rooted: true }],          // Wirbelsprung, Landung mit Druckwelle, 2 Blutungs-Stapel
+    },
+  },
   e: { radius: 4, dmg: 15, slow: 0.4, slowMs: 3000, cd: 4000 },                                              // PH
   dash: { yd: { 1: 11, 2: 8 }, width: 1.2, dmg: 40, cd: 5000, charges: 2 },                                  // PH: Zweihand teilt den Schaden auf 2 Schnitte
   wirbel: { radius: 6, tick: 8, end: 20, throwYd: 8, throwMs: 500, cd: 25000, moveMul: 0.5, orbit: 2.5, pullMs: 450, spinK: 0.93, lift: 0.7 },   // PH
@@ -48,7 +61,7 @@ const K = KLINGE;
 // Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3
 const move = (name, desc, tags, cd, press, extra = {}) => ({ name, desc, ranks: [], tags: ['Klinge', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana: 0, press, ...extra });
 Object.assign(SPELLS, {
-  kQ: move('Schnitt', 'Kegel vor dir, solange gehalten.', ['Nahkampf', 'Fläche', 'Schnitt'], 0, () => pressQ(), { showDmg: K.q.dmg }),
+  kQ: move('Schnitt', 'Schlag-Kette, ein Schlag pro Druck. Einhand 3 Schläge, der letzte trifft beim Wegstecken. Zweihand 4 Schläge bis zum Wirbelsprung.', ['Nahkampf', 'Fläche', 'Schnitt'], 0, () => pressQ(), { showDmg: K.q.chain[1][0].hits[0].dmg }),
   kE: move('Kreisschnitt', 'Drehung um dich, verlangsamt 40 % für 3 s.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.e.cd, () => pressE(), { showDmg: K.e.dmg }),
   kR: move('Blutwirbel', 'Zieht Mobs an, sie kreisen um dich, am Ende fliegen sie weg. Du gehst mit 50 % Tempo.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.wirbel.cd, () => pressWirbel(), { showDmg: K.wirbel.tick }),
   kAder: move('Aderlass', 'Alle blutenden Mobs in 15 yd nehmen sofort ihre restliche Blutung ×1,5.', ['Blutung', 'Fläche'], K.ader.cd, () => pressAder()),
@@ -104,7 +117,10 @@ let stance = 1;
 let act = null;                 // laufender Move: { id, ability, start, ms, rate, ctx }
 let seq = 0;                    // zählt jeden Start, damit das Modell zweimal denselben Move erkennt
 let swapBonus = false;
-let attackUntil = 0, attackCtx = null, attackRate = 1;   // Q läuft den Schnitt immer zu Ende, Halten startet den nächsten
+let attackUntil = 0, attackCtx = null, attackRate = 1;   // Q läuft den Schlag immer zu Ende, Halten oder Puffer startet den nächsten
+const chain = { step: 0, until: 0, buffered: false };     // nächster Schlag der Kette, Ende des Zeitfensters, 1 gepufferter Druck
+let sheatheUntil = 0;                                     // Einhand: Fenster abgelaufen, Klinge wird weggesteckt (nur Optik)
+const resetChain = () => { chain.step = 0; chain.until = 0; chain.buffered = false; sheatheUntil = 0; };
 const bleeding = new Set<any>();
 let clones = [], clonesUntil = 0;
 let trails = [];                // Blutspuren: { a, b, until, next }
@@ -122,6 +138,7 @@ export function resetKlinge() {
   if (!on()) return;
   player.rageMax = 1; player.mana = 1;             // Keine Ressource: Balken zeigt die Haltung
   stance = 1; act = null; swapBonus = false; attackUntil = 0; attackCtx = null;
+  resetChain();
   bleeding.clear();
   trails = [];
   clearMelee();
@@ -142,20 +159,34 @@ function ready(id, grounded = true) {
 const rateOf = id => S().rate * (stat(id).tempo ?? 1);
 function startAct(id, ability, ms, rate = rateOf(id)) {
   attackUntil = 0;
+  resetChain();                                    // jeder andere Move bricht die Q-Kette ab
   act = { id, ability, start: state.now, ms: ms / rate, rate, ctx: makeCtx(id, S().dmg, S().range), from: { x: player.pos.x, y: player.pos.y, z: player.pos.z } };
   seq++;
   return act;
 }
 
 function pressQ() {
-  if (act || state.now < attackUntil) return;
+  if (act) return;
+  if (state.now < attackUntil) { chain.buffered = true; return; }
   stopDrink();
+  if (state.now > chain.until) chain.step = 0;
+  const n = chain.step, len = K.q.chain[stance].length;
   attackRate = rateOf('kQ');
-  attackUntil = state.now + TIMING.qChain[stance][0] / attackRate;   // Kette folgt im nächsten Schritt
+  attackUntil = state.now + TIMING.qChain[stance][n] / attackRate;
   attackCtx = makeCtx('kQ', S().dmg, S().range);
-  attackCtx.combo = consumeCombo('klingeQ');            // Dodge-Kombo: +100 % und ein Blutungs-Stapel
+  Object.assign(attackCtx, { step: n, stance, combo: consumeCombo('klingeQ') });   // Dodge-Kombo: +100 % und ein Blutungs-Stapel, für den ganzen Schlag
+  chain.step = (n + 1) % len;
+  chain.until = chain.step ? attackUntil + K.q.windowMs : 0;
+  chain.buffered = false; sheatheUntil = 0;
   player.lastCombat = state.now;
   seq++;
+}
+// Fenster abgelaufen: Kette auf Schlag 1. Einhand nach Schlag 1 oder 2 steckt die Klinge kurz weg, ohne Treffer.
+function updateChain() {
+  if (!chain.step || state.now < attackUntil || state.now <= chain.until) return;
+  const out = stance === 1;
+  resetChain();
+  if (out) { sheatheUntil = state.now + TIMING.sheathe / rateOf('kQ'); seq++; }
 }
 function pressE() {
   if (!act && ready('kE')) startAct('kE', 'e', TIMING.e);
@@ -175,6 +206,7 @@ function pressAder() {
 
 function pressEat() {
   if (act || state.now < attackUntil) return;
+  resetChain();
   if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
   player.drink = { start: state.now, end: state.now + K.eat.ms, dur: K.eat.ms, hp: 1, label: 'Essen', keepOnHit: true };
 }
@@ -256,14 +288,27 @@ function event(id, ctx, amount, targets, onMob?) {
 
 const angleTo = (m, o) => Math.atan2(Math.sin(Math.atan2(m.pos.x - o.x, m.pos.z - o.z) - player.facing), Math.cos(Math.atan2(m.pos.x - o.x, m.pos.z - o.z) - player.facing));
 
-function hitQ() {
-  const c = attackCtx, parts = stance === 2 ? 2 : 1, R = K.runes;
-  const cone = runeStage('kQ', 'cone'), angle = cone ? R.cone[Math.min(cone, R.cone.length) - 1] : K.q.angle;
-  const radius = K.q.radius + runeStage('kQ', 'reach') * R.reachYd;
-  const targets = o => mobsInRadius(o, c.radius(radius)).filter(m => Math.abs(angleTo(m, o)) <= angle * Math.PI / 360);
-  const k = c.combo ? DG.combo.klingeQMul : 1;
-  event('kQ', c, K.q.dmg / parts * k, targets, c.combo && stance === 1 ? m => addBleed(m, K.q.dmg * k * stat('kQ').dmg) : undefined);   // Zweihand blutet ohnehin
-  if (hasRune('kQ', 'echo')) after(R.echoMs, () => strike('kQ', c, K.q.dmg / parts * R.echoMul, targets));
+// Ein Treffer-Ereignis des laufenden Kettenschlags. Runen gelten pro Schlag: Weiter Bogen weitet Kegel, Lange Klinge verlängert Kegel, Linie und Radius, Nachhall wiederholt.
+function hitQ(i) {
+  const c = attackCtx, h = K.q.chain[c.stance][c.step]?.hits[i], R = K.runes;
+  if (!h) return;
+  const reach = runeStage('kQ', 'reach') * R.reachYd;
+  let targets;
+  if (h.line) {
+    const f = forward(), len = c.radius(h.line + reach);
+    targets = o => mobsOnLine(o, { x: o.x + f.x * len, z: o.z + f.z * len }, h.width);
+  } else {
+    const cone = runeStage('kQ', 'cone'), angle = h.cone ? Math.max(h.cone, cone ? R.cone[Math.min(cone, R.cone.length) - 1] : 0) : 360;
+    targets = o => mobsInRadius(o, c.radius(h.radius + reach)).filter(m => angle >= 360 || Math.abs(angleTo(m, o)) <= angle * Math.PI / 360);
+  }
+  const k = c.combo ? DG.combo.klingeQMul : 1, amount = h.dmg * k;
+  const extra = (h.bleeds ?? 1) - 1;
+  const onMob = m => {
+    if (c.combo && c.stance === 1) addBleed(m, amount * stat('kQ').dmg);           // Zweihand blutet ohnehin
+    for (let n = 0; n < extra && S().bleed; n++) addBleed(m, amount * stat('kQ').dmg * S().dmg * damageMult('kQ'));   // Wirbelsprung: zweiter Stapel
+  };
+  event('kQ', c, amount, targets, onMob);
+  if (hasRune('kQ', 'echo')) after(R.echoMs, () => strike('kQ', c, amount * R.echoMul, targets));
 }
 function hitE() {
   const c = act.ctx;
@@ -357,7 +402,7 @@ function hitAder() {
 
 onWarriorHit((kind, x, z, i) => {
   if (!on() || player.dead) return;
-  if (kind === 'q' && attackCtx) hitQ();
+  if (kind === 'q' && attackCtx) hitQ(i);
   else if (!act) return;
   else if (kind === 'e') hitE();
   else if (kind === 'dash') hitDash(i);
@@ -430,19 +475,22 @@ export function updateKlinge(dt) {
     updateWirbel();
     if (state.now >= act.start + act.ms) act = null;
   }
-  if (!act && player.stunUntil <= state.now && held('kQ')) pressQ();
+  updateChain();
+  if (!act && player.stunUntil <= state.now && (held('kQ') || chain.buffered) && state.now >= attackUntil) pressQ();
 }
 
 const dashWindow = [TIMING.dash.move.from, TIMING.dash.move.to];
 export const klingeUntouchable = () => on() && act?.id === 'kDash' && inWindow(dashWindow, act.start, act.ms);
 export const klingeMoveMul = () => !on() ? 1 : S().move * (act?.id === 'kR' ? K.wirbel.moveMul : 1);
-export const klingeRooted = () => on() && !!act && act.id !== 'kR';   // eigene Bewegung oder keine; im Wirbel geht er langsam weiter
+// Eigene Bewegung oder keine; im Wirbel geht er langsam weiter. Die Abschluss-Schläge der Q-Kette (Stoß, Wirbelsprung) stehen.
+export const klingeRooted = () => on() && (!!act && act.id !== 'kR' || state.now < attackUntil && !!K.q.chain[attackCtx?.stance]?.[attackCtx.step]?.rooted);
 
 export function klingeAnim() {
   if (!on() || player.dead) return {};
-  const attack = state.now < attackUntil;
-  return { ability: act?.ability ?? null, attack: attack ? 'q' : null, seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!((state.paused || hitstopActive()) && (act || attack)) };
+  const attack = state.now < attackUntil ? 'q' : state.now < sheatheUntil ? 'sheathe' : null;
+  return { ability: act?.ability ?? null, attack: act ? null : attack, step: attackCtx?.step ?? 0, hold: chain.step > 0 && state.now <= chain.until,
+    seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!((state.paused || hitstopActive()) && (act || attack)) };
 }
 
 // Für den Handtest
-(window as any).__klinge = { get stance() { return stance; }, get act() { return act; }, addBleed, bleeding, get swapBonus() { return swapBonus; }, get clones() { return clones.length; }, KLINGE };
+(window as any).__klinge = { get stance() { return stance; }, get act() { return act; }, chain, get attackUntil() { return attackUntil; }, get sheatheUntil() { return sheatheUntil; }, addBleed, bleeding, get swapBonus() { return swapBonus; }, get clones() { return clones.length; }, KLINGE };

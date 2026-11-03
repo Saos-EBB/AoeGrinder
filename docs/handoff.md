@@ -40,6 +40,7 @@ Stand Vercel: v21 von `main` (2026-11-03): dazu Dodge, Licht als Kreis, größer
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- Branch `klinge-qkette` (nicht gemergt) – Klingenstrich-Q als Schlag-Kette (`KLINGE.q.chain`, Dauern in `KLINGE_TIMING.qChain`), Endpose halten, Wegstecken nach Ablauf. Getestet per Skript.
 - v21 (auf `main`, auf Vercel) – Dodge mit perfektem Dodge, Kombo pro Modus, 2 Karten. Licht in Dunkel als Kreis über der Figur. Packs doppelt so groß (`PACK_SIZE_MUL`), Champion-Packs 20 % ab Level 6, zu niedrige unberührte Packs werden außer Sicht ersetzt (`replaceStalePack`). „Große Packs“ bei Level 30: rund 436 Mobs, 31 FPS. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Waffen-Baukasten für Magier, Spielversion v20. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Wucht und Champion-Packs. Getestet per Skript, nicht von Hand gespielt.
