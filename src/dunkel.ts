@@ -10,6 +10,7 @@ import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv, setEnvHook } f
 import { cam } from './camera';
 import { zone, terrain } from './world';
 import { mage } from './models/mage';
+import { blizCursor } from './fx/spellFx';
 
 export const dunkelOn = location.hash === '#dunkel';
 
@@ -20,7 +21,7 @@ export const D = {
   lamp: { color: 0xffc48a, power: 18, range: 34, angle: 0.62, penumbra: 0.6, decay: 0.8, height: 2.5, ahead: 0.5, aim: 14, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
   fill: { color: 0xffc48a, power: 14, range: 10, decay: 1.6, height: 1.8 },   // zeigt Figur und Mobs direkt neben dir
   flicker: true, flickerEvery: [3000, 10000], flickerFor: [100, 500], flickerLow: 0.15, flickerHigh: 0.9, flickerCalm: 0.7, flickerRate: 30,   // wie Hinter dir, ohne Blackouts
-  cam: { dist: 7, pitch: 0.2, fov: 68 },
+  cam: { dist: 7, pitch: 0.2, fov: 68, maxDist: 14 },
 };
 
 let lamp = null, fill = null;
@@ -54,6 +55,9 @@ export function initDunkel() {
   fill = new THREE.PointLight(D.fill.color, D.fill.power, D.fill.range, D.fill.decay);
   scene.add(fill);
 
+  // Zielkreis liegt auch weit draußen sichtbar im Dunkeln
+  blizCursor.material.fog = false;
+  blizCursor.material.needsUpdate = true;
   Object.assign(cam, { dist: D.cam.dist, pitch: D.cam.pitch });
   camera.fov = D.cam.fov;
   camera.updateProjectionMatrix();
@@ -81,6 +85,7 @@ export function updateDunkel(dt) {
   lamp.position.set(p.x + fx * L.ahead, p.y + L.height, p.z + fz * L.ahead);
   lamp.target.position.set(p.x + fx * L.aim, p.y, p.z + fz * L.aim);
   fill.position.set(p.x, p.y + D.fill.height, p.z);
+  cam.dist = Math.min(cam.dist, D.cam.maxDist);
   castShadows(mage.root);
   for (const m of state.mobs) castShadows(m.model.root);
   if (D.flicker) updateFlicker(dt);
