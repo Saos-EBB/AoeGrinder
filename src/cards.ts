@@ -16,11 +16,13 @@ const RANK_TEXT = {
   dmg: (name, m) => `${name}: +${pct(CARD_RANK.dmg * m)} Schaden.`,
   mana: (name, m) => `${name}: −${pct(CARD_RANK.mana * m)} Mana.`,
   radius: (name, m) => `${name}: +${pct(CARD_RANK.radius * m)} Radius.`,
+  tempo: (name, m) => `${name}: +${pct(CARD_RANK.tempo * m)} Tempo.`,
 };
 const RANK_APPLY = {
   dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
   mana: (s, m) => { s.mana = Math.max(0.1, s.mana - CARD_RANK.mana * m); },   // PH: Untergrenze
   radius: (s, m) => { s.radius += CARD_RANK.radius * m; },
+  tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Klingenstrich: Dauer der Aktion
 };
 
 function rankCards() {
@@ -49,10 +51,11 @@ function runeCards() {
   for (const id of state.slots) {
     if (!id || !tagsAllowed(SPELLS[id].tags)) continue;
     for (const [i, r] of (SPELLS[id].runes ?? []).entries()) {
-      if (state.runes[id] === r.id || !isUnlocked(`rune:${id}:${i}`)) continue;
+      const atMax = state.runes[id] === r.id && (state.cardPicks[`rune-${id}-${r.id}`] || 1) >= (r.stages ?? 1);   // stages: dieselbe Rune mehrmals
+      if (atMax || !isUnlocked(`rune:${id}:${i}`)) continue;
       list.push({
         kind: 'rune', id: `rune-${id}-${r.id}`, spell: id, name: r.name, src: `Rune · ${SPELLS[id].name}`,
-        desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.${state.runes[id] ? ' Ersetzt die aktive Rune.' : ''}`,
+        desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.${state.runes[id] && state.runes[id] !== r.id ? ' Ersetzt die aktive Rune.' : ''}`,
         apply: m => { state.runes[id] = r.id; stat(id).dmg += CARD_SPELL_DMG * m; },
       });
     }

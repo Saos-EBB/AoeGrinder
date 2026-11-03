@@ -2,18 +2,19 @@
 // damit Leiste, Tasten, Pad und Karten mitlaufen. Modell und Treffer-Momente kommen aus models/klingeModel.ts.
 
 import { state, player } from './state';
-import { $ } from './util';
-import { SPELLS } from './config';
+import { $, dist2d } from './util';
+import { SPELLS, CFG } from './config';
 import { mage, onWarriorHit } from './models/mage';
 import { KLINGE_TIMING as TIMING, wirbelSpin, cloneKlinge } from './models/klingeModel';
 import { scene } from './render';
-import { useKlingeBinds } from './input';
+import { useKlingeBinds, pickGround, mouse } from './input';
 import { held } from './realMen';
-import { groundAt } from './collision';
+import { groundAt, resolve } from './collision';
 import { showError } from './ui/hud';
-import { damageMob, knockbackMob } from './mobs';
-import { makeCtx, stat, cdEnd, startCd, damageMult, stopDrink, mobsInRadius, applySlow, supported } from './spells/core';
-import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine } from './melee';
+import { maxHp } from './formulas';
+import { damageMob, knockbackMob, applyRoot, pullMob } from './mobs';
+import { makeCtx, stat, cdEnd, startCd, damageMult, stopDrink, mobsInRadius, applySlow, supported, hasRune } from './spells/core';
+import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
 
 // Alle Zahlen hier. Alles // PH
 export const KLINGE = {
@@ -30,6 +31,14 @@ export const KLINGE = {
   ader: { radius: 15, mul: 1.5, cd: 6000 },                                                                  // PH
   clones: { cd: 60000, ms: 8000, side: 1.5, dmg: 0.5 },                                                      // PH
   eat: { ms: 18000 },                                                                                        // PH: 18 s bis 100 % Leben
+  runes: {                                                                                                   // alles PH
+    cone: [180, 360], echoMs: 300, echoMul: 0.5, reachYd: 1,                                                 // Schnitt
+    freezeMs: 1000, pullYd: 2,                                                                               // Kreisschnitt
+    trailRaw: 15, trailMs: 4000, trailTickMs: 1000, backMs: 150,                                             // Strichschnitt
+    longMs: 1000, throwBehind: 50,                                                                           // Blutwirbel
+    jumpYd: 5, killCdMs: 3000, heal: 0.1,                                                                    // Aderlass
+    miniRadius: 3, miniDmg: 10, bonus: 0.6,                                                                  // Haltung
+  },
   echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },                                       // Supports Echo und Großes Echo wie in core.ts
 };
 const K = KLINGE;
@@ -46,11 +55,48 @@ Object.assign(SPELLS, {
   kDash: move('Strichschnitt', 'Sprint, dabei nicht angreifbar. Danach trifft es alles auf der Linie.', ['Nahkampf', 'Bewegung', 'Linie'], K.dash.cd, () => pressDash(), { showDmg: K.dash.dmg, charges: K.dash.charges }),
   kEat: move('Essen', 'Sitzen und in 18 s alles Leben auffüllen. Bewegung oder Angriff bricht ab, Schaden nicht.', [], 0, () => pressEat()),
 });
+// Wie bei Real Men gilt pro Move eine Rune. stages: mehrere Stufen derselben Rune (Karte zählt in state.cardPicks).
+const ranks = (ids, list) => { for (const id of ids) SPELLS[id].ranks = list; };
+ranks(['kQ', 'kE', 'kR', 'kDash'], ['dmg', 'radius', 'tempo']);
+ranks(['kAder'], ['dmg', 'radius']);
+SPELLS.kQ.runes = [
+  { id: 'cone', name: 'Weiter Bogen', desc: 'Kegel 180°, zweite Stufe 360°.', stages: 2 },
+  { id: 'echo', name: 'Nachhall', desc: 'Zweiter Schnitt nach 0,3 s mit 50 %.' },
+  { id: 'reach', name: 'Lange Klinge', desc: '+1 yd Radius pro Stufe.', stages: 3 },
+];
+SPELLS.kE.runes = [
+  { id: 'freeze', name: 'Eisschnitt', desc: 'Friert 1 s ein statt zu verlangsamen.' },
+  { id: 'pull', name: 'Sog', desc: 'Zieht Mobs 2 yd zu dir.' },
+  { id: 'charges', name: 'Doppelte Drehung', desc: '2 Ladungen.', charges: 2 },
+];
+SPELLS.kDash.runes = [
+  { id: 'reset', name: 'Nachsetzen', desc: 'Ein Kill setzt eine Ladung zurück.' },
+  { id: 'trail', name: 'Blutspur', desc: 'Zweihand: Wer über die Linie läuft, blutet.' },
+  { id: 'back', name: 'Rückstrich', desc: 'Zurück zum Start, schneidet erneut.' },
+];
+SPELLS.kR.runes = [
+  { id: 'follow', name: 'Jäger', desc: 'Folgt der Maus.' },
+  { id: 'direct', name: 'Gerichteter Wurf', desc: 'Wirft alle nach vorn statt rundum.' },
+  { id: 'long', name: 'Langer Wirbel', desc: '+1 s Dauer.' },
+];
+SPELLS.kAder.runes = [
+  { id: 'jump', name: 'Übersprung', desc: 'Gezündete Stapel springen auf 1 Mob in 5 yd über.' },
+  { id: 'killCd', name: 'Blutzoll', desc: 'Kill durch Aderlass: −3 s Blutwirbel-Abklingzeit.' },
+  { id: 'heal', name: 'Lebenssaft', desc: 'Heilt 10 % des Schadens.' },
+];
+SPELLS.kSwap.runes = [
+  { id: 'mini', name: 'Wechselschnitt', desc: 'Der Wechsel macht einen kleinen Kreisschnitt.' },
+  { id: 'bonus', name: 'Überraschung', desc: 'Wechsel-Bonus +60 % statt +30 %.' },
+  { id: 'nocd', name: 'Fließender Wechsel', desc: 'Wechsel ohne Abklingzeit.', cdMul: 0 },
+];
+
 // Nicht in Object.keys: keine Karte, nur Farbe für Funken und Schadenszahlen
 Object.defineProperty(SPELLS, 'kBleed', { value: { name: 'Blutung', cls: 'fire', school: 'warrior', tags: [] }, enumerable: false });
 
 const on = () => mage.skin === 'klinge';
 const S = () => K.stance[stance];
+const swapMul = () => swapBonus ? 1 + (hasRune('kSwap', 'bonus') ? K.runes.bonus : K.swap.bonus) : 1;
+const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`] || 1 : 0;
 
 let stance = 1;
 let act = null;                 // laufender Move: { id, ability, start, ms, rate, ctx }
@@ -59,6 +105,7 @@ let swapBonus = false;
 let attackUntil = 0, attackCtx = null, attackRate = 1;   // Q läuft den Schnitt immer zu Ende, Halten startet den nächsten
 const bleeding = new Set<any>();
 let clones = [], clonesUntil = 0;
+let trails = [];                // Blutspuren: { a, b, until, next }
 
 const showStance = () => {
   player.resLabel = S().name;
@@ -74,6 +121,7 @@ export function resetKlinge() {
   player.rageMax = 1; player.mana = 1;             // Keine Ressource: Balken zeigt die Haltung
   stance = 1; act = null; swapBonus = false; attackUntil = 0; attackCtx = null;
   bleeding.clear();
+  trails = [];
   clearMelee();
   clearClones();
   mage.hero.setStance(1, true);
@@ -115,7 +163,8 @@ function pressDash() {
 }
 function pressWirbel() {
   if (act || !ready('kR')) return;
-  startAct('kR', 'wirbel', TIMING.wirbel).caught = [];
+  const dur = TIMING.wirbel + (hasRune('kR', 'long') ? K.runes.longMs : 0);
+  Object.assign(startAct('kR', 'wirbel', dur), { caught: [], dur });
 }
 function pressAder() {
   if (!act && ready('kAder')) startAct('kAder', 'ader', TIMING.ader);
@@ -176,7 +225,7 @@ function reduceCds(ms) {
 
 // Ein Treffer-Ereignis: gibt die Zahl der Treffer zurück. Der Haltungs-Schaden steckt im Kontext.
 export function strike(id, ctx, amount, targets, onMob?) {
-  const mul = swapBonus ? 1 + K.swap.bonus : 1;
+  const mul = swapMul();
   let landed = 0;
   for (const o of origins()) for (const m of targets(o)) {
     const dmg = amount * mul * o.mul;
@@ -205,16 +254,40 @@ function event(id, ctx, amount, targets, onMob?) {
 const angleTo = (m, o) => Math.atan2(Math.sin(Math.atan2(m.pos.x - o.x, m.pos.z - o.z) - player.facing), Math.cos(Math.atan2(m.pos.x - o.x, m.pos.z - o.z) - player.facing));
 
 function hitQ() {
-  const c = attackCtx, parts = stance === 2 ? 2 : 1;
-  event('kQ', c, K.q.dmg / parts, o => mobsInRadius(o, c.radius(K.q.radius)).filter(m => Math.abs(angleTo(m, o)) <= K.q.angle * Math.PI / 360));
+  const c = attackCtx, parts = stance === 2 ? 2 : 1, R = K.runes;
+  const cone = runeStage('kQ', 'cone'), angle = cone ? R.cone[Math.min(cone, R.cone.length) - 1] : K.q.angle;
+  const radius = K.q.radius + runeStage('kQ', 'reach') * R.reachYd;
+  const targets = o => mobsInRadius(o, c.radius(radius)).filter(m => Math.abs(angleTo(m, o)) <= angle * Math.PI / 360);
+  event('kQ', c, K.q.dmg / parts, targets);
+  if (hasRune('kQ', 'echo')) after(R.echoMs, () => strike('kQ', c, K.q.dmg / parts * R.echoMul, targets));
 }
 function hitE() {
   const c = act.ctx;
-  event('kE', c, K.e.dmg, o => mobsInRadius(o, c.radius(K.e.radius)), m => applySlow(m, K.e.slow, K.e.slowMs));
+  event('kE', c, K.e.dmg, o => mobsInRadius(o, c.radius(K.e.radius)), m => {
+    if (hasRune('kE', 'freeze')) applyRoot(m, K.runes.freezeMs); else applySlow(m, K.e.slow, K.e.slowMs);
+    if (hasRune('kE', 'pull')) pullMob(m, player.pos, K.runes.pullYd);
+  });
 }
-function hitDash() {
-  const c = act.ctx, a = act.from, b = { x: player.pos.x, z: player.pos.z }, parts = stance === 2 ? 2 : 1;
-  event('kDash', c, K.dash.dmg / parts, o => mobsOnLine({ x: a.x + o.ox, z: a.z + o.oz }, { x: b.x + o.ox, z: b.z + o.oz }, K.dash.width));
+function hitDash(i) {
+  const c = act.ctx, a = act.from, b = { x: player.pos.x, y: player.pos.y, z: player.pos.z }, parts = stance === 2 ? 2 : 1, R = K.runes;
+  const targets = o => mobsOnLine({ x: a.x + o.ox, z: a.z + o.oz }, { x: b.x + o.ox, z: b.z + o.oz }, K.dash.width);
+  let killed = false;
+  const onMob = m => { killed ||= m.dead; };
+  event('kDash', c, K.dash.dmg / parts, targets, onMob);
+  if (killed && hasRune('kDash', 'reset')) {
+    const ch = player.charges.kDash;
+    ch[ch.indexOf(Math.max(...ch))] = 0;
+  }
+  if (i !== parts - 1) return;                      // Der Rest gilt einmal pro Sprint
+  if (hasRune('kDash', 'trail') && stance === 2) {
+    trails.push({ a, b, until: state.now + R.trailMs, next: state.now + R.trailTickMs });
+    const V = mage.hero.root.position.constructor;
+    mage.hero.fx.streak(new V(a.x, a.y, a.z), new V(b.x, b.y, b.z), mage.hero.fx.RED, 0.3, R.trailMs / 1000, 0.1);
+  }
+  if (hasRune('kDash', 'back')) after(R.backMs, () => {
+    player.pos.set(a.x, a.y, a.z);
+    strike('kDash', c, K.dash.dmg / parts, targets);
+  });
 }
 function pullWirbel() {
   const c = act.ctx;
@@ -233,7 +306,9 @@ function tickWirbel() {
 function endWirbel() {
   const a = act, W = K.wirbel;
   strike('kR', a.ctx, W.end, wirbelTargets(a));
-  for (const m of a.caught) { m.orbit = null; if (m.dead) continue; m.pos.y = groundAt(m.pos.x, m.pos.z, player.pos.y); knockbackMob(m, player.pos, W.throwYd, W.throwMs); }
+  // Gerichteter Wurf: Mitte weit hinter dem Spieler, damit alle nach vorn fliegen
+  const f = forward(), R = K.runes.throwBehind, from = hasRune('kR', 'direct') ? { x: player.pos.x - f.x * R, z: player.pos.z - f.z * R } : player.pos;
+  for (const m of a.caught) { m.orbit = null; if (m.dead) continue; m.pos.y = groundAt(m.pos.x, m.pos.z, player.pos.y); knockbackMob(m, from, W.throwYd, W.throwMs); }
   a.caught = [];
 }
 // Mobs im Griff des Wirbels: Position setzen, sie laufen nach ihrer KI, darum nach updateMob
@@ -257,12 +332,18 @@ function hitAder() {
   const list = mobsInRadius(player.pos, c.radius(A.radius), Infinity).filter(m => m.bleeds?.length);
   if (!list.length) return;
   // Die Stapel gibt es nur einmal: Klone zünden nicht selbst, sie geben je 50 % dazu
-  const mul = (swapBonus ? 1 + K.swap.bonus : 1) * A.mul * stat('kAder').dmg * damageMult('kAder') * (1 + clones.length * K.clones.dmg);
+  const mul = swapMul() * A.mul * stat('kAder').dmg * damageMult('kAder') * (1 + clones.length * K.clones.dmg);
   for (const m of list) {
-    const rest = m.bleeds.reduce((sum, b) => sum + b.tick * b.left, 0);
+    const rest = m.bleeds.reduce((sum, b) => sum + b.tick * b.left, 0), stacks = m.bleeds, hpBefore = m.hp, R = K.runes;
     m.bleeds = [];
     showBleed(m);
     damageMob(m, rest * mul, 'kAder', c.castKey, true);
+    if (hasRune('kAder', 'heal')) player.hp = Math.min(maxHp(), player.hp + (hpBefore - m.hp) * R.heal);
+    if (hasRune('kAder', 'killCd') && m.dead && player.cds.kR) player.cds.kR -= R.killCdMs;
+    if (hasRune('kAder', 'jump')) {
+      const near = mobsInRadius(m.pos, R.jumpYd, Infinity).filter(o => o !== m && !list.includes(o)).sort((p, q) => dist2d(p.pos, m.pos) - dist2d(q.pos, m.pos))[0];
+      if (near) { near.bleeds = [...(near.bleeds ?? []), ...stacks].slice(-K.bleed.max); bleeding.add(near); }
+    }
     mage.hero.fx.blood({ x: m.pos.x, y: m.pos.y + 1.2, z: m.pos.z }, 30, 5);
     mage.hero.fx.ring(m.pos, mage.hero.fx.RED, 2.2, 0.5);
   }
@@ -275,11 +356,12 @@ onWarriorHit((kind, x, z, i) => {
   if (kind === 'q' && attackCtx) hitQ();
   else if (!act) return;
   else if (kind === 'e') hitE();
-  else if (kind === 'dash') hitDash();
+  else if (kind === 'dash') hitDash(i);
   else if (kind === 'wirbelPull') pullWirbel();
   else if (kind === 'wirbelTick') tickWirbel();
   else if (kind === 'wirbelEnd') endWirbel();
   else if (kind === 'ader') hitAder();
+  else if (kind === 'swap' && hasRune('kSwap', 'mini')) strike('kSwap', act.ctx, K.runes.miniDmg, o => mobsInRadius(o, act.ctx.radius(K.runes.miniRadius)));
 });
 
 // Blutung: jeder Treffer ein eigener Stapel, der 8. ersetzt den ältesten. raw ist der Schaden vor den Spielerfaktoren, damit damageMob sie nur einmal rechnet.
@@ -311,13 +393,36 @@ function showBleed(m) {
   m.plateBleed.style.color = '#ff4048';
 }
 
+// Blutspur: pro Tick ein Stapel für alle auf der Linie
+function updateTrails() {
+  const R = K.runes;
+  trails = trails.filter(t => state.now < t.until);
+  for (const t of trails) {
+    if (state.now < t.next) continue;
+    t.next += R.trailTickMs;
+    for (const m of mobsOnLine(t.a, t.b, K.dash.width)) addBleed(m, R.trailRaw * stat('kDash').dmg);
+  }
+}
+// Rune Jäger: Der Wirbel zieht zum Mauszeiger, mit dem Wirbel-Tempo
+function followMouse(dt) {
+  pickGround();
+  const dx = mouse.ground.x - player.pos.x, dz = mouse.ground.z - player.pos.z, d = Math.hypot(dx, dz);
+  if (d < 0.5) return;
+  const step = Math.min(d, CFG.runSpeed * klingeMoveMul() * dt / 1000), y0 = player.pos.y;
+  player.pos.x += dx / d * step; player.pos.z += dz / d * step;
+  resolve(player.pos, 0.45);
+  player.pos.y = groundAt(player.pos.x, player.pos.z, y0);
+}
+
 export function updateKlinge(dt) {
   if (!on() || player.dead) return;
   updateMelee(dt);
   updateBleeds();
   if (clones.length && state.now >= clonesUntil) clearClones();
+  updateTrails();
   if (act) {
     if (act.id === 'kDash') moveInWindow({ ...TIMING.dash.move, yd: act.yd }, act.start, act.ms, dt);
+    if (act.id === 'kR' && hasRune('kR', 'follow')) followMouse(dt);
     updateWirbel();
     if (state.now >= act.start + act.ms) act = null;
   }
@@ -332,7 +437,7 @@ export const klingeRooted = () => on() && !!act && act.id !== 'kR';   // eigene 
 export function klingeAnim() {
   if (!on() || player.dead) return {};
   const attack = state.now < attackUntil;
-  return { ability: act?.ability ?? null, attack: attack ? 'q' : null, seq, rate: act?.rate ?? attackRate, frozen: !!(state.paused && (act || attack)) };
+  return { ability: act?.ability ?? null, attack: attack ? 'q' : null, seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!(state.paused && (act || attack)) };
 }
 
 // Für den Handtest
