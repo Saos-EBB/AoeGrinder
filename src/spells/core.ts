@@ -3,7 +3,7 @@
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
-import { CFG, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
+import { CFG, mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
@@ -18,6 +18,8 @@ import { SUPPORTS } from './supports';
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
 export function modRule(key): any { return activeMods().find(m => m[key])?.[key]; }
 // Nur Frost, Nur Feuer und Nur Arkan lassen nur ihre Schule zu
+// Fokus-Waffe: ein Spell außerhalb der Schule kommt für den Run in den Pool
+export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 function startKit() {
@@ -77,7 +79,7 @@ export function startCd(id) {
 export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
 export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
 export const paysLife = id => supported('blood', id);
-export const radiusMult = id => stat(id).radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
+export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
@@ -108,7 +110,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       return landed;
     },
     radius: base => base * radiusMult(id) * radiusScale,
-    duration: base => base * (state.supports.potency ? 1.4 : 1),
+    duration: base => base * (state.supports.potency ? 1.4 : 1) * mods.durMul,
   };
   return c;
 }
@@ -282,7 +284,7 @@ function buildText() {
   const spells = owned.filter(id => !SPELLS[id].relic).map(id => rune(id) ? `${SPELLS[id].name} (${rune(id).name})` : SPELLS[id].name);
   const supports = SUPPORTS.filter(x => state.supports[x.id]).map(x => x.name);
   const relic = owned.find(id => SPELLS[id].relic);
-  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`].filter(Boolean).join(' · ');
+  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`, state.runWeapon && `Waffe: ${state.runWeapon}`].filter(Boolean).join(' · ');
 }
 
 // recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.

@@ -7,6 +7,9 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
+import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, rarityOf } from '../weaponRolls';
+import { mage } from '../models/mage';
+import { pick } from '../util';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
@@ -23,11 +26,67 @@ export function afterRun(completed) {
   $('deathMenuBtn').hidden = !!tier;
 }
 
+// Magische Kiste: kurzes Würfeln, dann liegt die Waffe im Inventar. Animation: Namen wechseln schnell und werden langsamer. // PH: Zeiten
+const SPIN = { steps: 16, startMs: 40, growMs: 12 };
+let spinning = false;
+function chestBox() {
+  const box = document.createElement('div');
+  const h = document.createElement('h3');
+  h.textContent = `Magische Kiste · Inventar ${meta.inv.length}/${ROLLS.invMax}`;
+  const b = document.createElement('button');
+  b.className = 'shopItem';
+  b.style.borderColor = '#f2c94c';
+  const name = document.createElement('span'), tag = document.createElement('span');
+  name.textContent = inventoryFull() ? 'Erst einen Stab löschen' : 'Zufällige Mage-Waffe ziehen';
+  tag.textContent = `${ROLLS.price} Staub`;
+  b.append(name, tag);
+  b.disabled = spinning || inventoryFull() || meta.dust < ROLLS.price;
+  b.dataset.nav = 'chest';
+  b.addEventListener('click', () => {
+    const w = buyChest();
+    if (!w) return;
+    spinning = true;
+    b.disabled = true;
+    let i = 0;
+    const step = () => {
+      const show = i < SPIN.steps ? { ...rollWeapon(), r: pick([0, 1, 2, 3, 4, 5]) } : w;
+      name.textContent = weaponName(show);
+      b.style.borderColor = name.style.color = rarityOf(show).color;
+      if (i++ < SPIN.steps) { setTimeout(step, SPIN.startMs + SPIN.growMs * i); return; }
+      spinning = false;
+      setTimeout(renderShop, 900);
+    };
+    step();
+  });
+  box.append(h, b);
+  // Inventar: löschen gibt Staub zurück
+  for (const w of meta.inv) {
+    const row = document.createElement('button');
+    row.className = 'shopItem';
+    row.style.borderColor = rarityOf(w).color;
+    const n = document.createElement('span'), t = document.createElement('span');
+    n.textContent = weaponName(w);
+    n.style.color = rarityOf(w).color;
+    t.textContent = `Löschen +${ROLLS.refund[w.r]}`;
+    row.append(n, t);
+    row.dataset.nav = `inv-${w.id}`;
+    row.addEventListener('click', () => {
+      if (spinning || !confirm(`${weaponName(w)} löschen? Du bekommst ${ROLLS.refund[w.r]} Staub zurück.`)) return;
+      deleteWeapon(w.id);
+      mage.refreshWeapon();
+      renderShop();
+    });
+    box.appendChild(row);
+  }
+  return box;
+}
+
 function renderShop() {
   $('shopInfo').textContent = `Knochenstaub: ${meta.dust} · Shop-Stufe ${tierNow}`;
   const box = $('shopList');
   box.textContent = '';
-  if (!offer.length) { box.textContent = 'Alles für diese Stufe ist schon freigeschaltet.'; return; }
+  box.appendChild(chestBox());
+  if (!offer.length) { box.insertAdjacentText('beforeend', 'Alles für diese Stufe ist schon freigeschaltet.'); return; }
   for (const type of [...new Set(offer.map(e => e.type))]) {
     const h = document.createElement('h3');
     h.textContent = type;

@@ -9,13 +9,9 @@ import { buildStrichMagier } from './strichMagier';
 import { buildKlinge } from './klingeModel';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { weaponUnlocked } from '../meta';
+import { equippedModel } from '../weaponRolls';
 
-// Standardwaffe pro Skin
-const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrute', arkan: 'zirkelstab' };
 const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
-const WEAPON_STORE = 'frostgrind.weapon.v2';
-const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STORE) || '{}'); } catch { return {}; } })();
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
@@ -66,7 +62,7 @@ function setSkin(id) {
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
-  wield(chosen[id] && weaponUnlocked(chosen[id]) ? chosen[id] : SKIN_WEAPON[id]);
+  wield(equippedModel());   // Waffe aus dem Inventar, leer: Pilgerast
 }
 
 function wield(id) {
@@ -98,11 +94,7 @@ export const mage = {
   get hero() { return cur; },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
   setSkin,
-  setWeapon(id) {                                 // Wahl im Hauptmenü, gilt pro Skin und bleibt gespeichert
-    chosen[skin] = id;
-    try { localStorage.setItem(WEAPON_STORE, JSON.stringify(chosen)); } catch { /* egal */ }
-    wield(id);
-  },
+  refreshWeapon() { wield(equippedModel()); },   // Wahl im Hauptmenü
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {

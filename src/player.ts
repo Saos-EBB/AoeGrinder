@@ -227,7 +227,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul();
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul;
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

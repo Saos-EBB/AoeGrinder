@@ -8,6 +8,8 @@ import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled }
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
+import { applyRunWeapon } from '../weaponRolls';
+import { mage } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
 import { mountVolume, getVolume } from '../fx/sound';
@@ -195,6 +197,7 @@ $('restartBtn').addEventListener('click', () => {
   stopChannel(true);
   resetGame();
   resetSpells();
+  applyRunWeapon(!!mage.weapon);
   renderActionbar();
   syncPause();
 });

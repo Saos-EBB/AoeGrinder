@@ -291,7 +291,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
+  const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
