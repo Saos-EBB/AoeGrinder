@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(ui): Waffen-Werte in festen Zeilen (Typ, Fokus, Wert, Element, Hersteller, Anhänger, Unikat) mit eigener Farbe pro Zeile, fehlende Schichten als „—“; in Hover-Karte und Kisten-Ergebnis
 - feat(dev): Einstellungen, Dev: Meta: Knöpfe „Inventar zufällig füllen“ (Kisten-Waffen bis 15, ohne Staub) und „Inventar leeren“
 - feat(spells): Kein globaler Cooldown mehr, jeder Zauber hat nur seine eigene Abklingzeit; GCD-Zeile im Charakterfenster entfernt, Spielversion v22
 - feat(klinge): Q ist eine Schlag-Kette, ein Schlag pro Druck, 1 s Zeitfenster, 1 Druck gepuffert. Einhand: Ziehschnitt, Rückhand, Stoß mit Treffer beim Wegstecken (Linie 5,6 yd). Zweihand: rechts, links, X-Schnitt, Wirbelsprung mit Druckwelle

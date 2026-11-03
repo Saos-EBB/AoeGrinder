@@ -7,9 +7,9 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf } from '../weaponRolls';
 import { mage } from '../models/mage';
-import { attachWeaponCard } from './weaponCard';
+import { attachWeaponCard, weaponStats } from './weaponCard';
 import { askConfirm } from './confirm';
 import { pick } from '../util';
 
@@ -62,10 +62,12 @@ function chestBox() {
     step();
   });
   const card = document.createElement('div');   // Ergebnis-Karte des letzten Zugs
-  Object.assign(card.style, { whiteSpace: 'pre-line', fontSize: '12px', textAlign: 'left', border: '1px solid transparent', borderRadius: '4px', padding: '4px 8px', margin: '0 0 6px' });
+  Object.assign(card.style, { fontSize: '12px', textAlign: 'left', border: '1px solid transparent', borderRadius: '4px', padding: '4px 8px', margin: '0 0 6px' });
   if (lastPull) {                                // Ergebnis: Name und alle Schichten der Waffe
-    card.textContent = `${weaponName(lastPull)}\n${effectLines(lastPull).join('\n')}`;
-    card.style.borderColor = card.style.color = rarityOf(lastPull).color;
+    const name = Object.assign(document.createElement('div'), { textContent: weaponName(lastPull) });
+    Object.assign(name.style, { color: rarityOf(lastPull).color, fontWeight: '700', marginBottom: '4px' });
+    card.append(name, weaponStats(lastPull));
+    card.style.borderColor = rarityOf(lastPull).color;
   }
   box.append(h, b, card);
   // Inventar: löschen gibt Staub zurück
