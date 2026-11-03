@@ -12,6 +12,10 @@ export const PERF = {
   maxPixelRatio: 2,     // Obergrenze für devicePixelRatio
   vfxOld: false,        // true: alte Spell-Optik, Schalter im VFX-Labor
   vfx: 'mittel',        // Effektqualität: 'niedrig', 'mittel' oder 'hoch' (VFX_QUALITY)
+  // Mobs nach Kamera-Abstand in yd: dahinter liegt der Nebel (FogExp2 0,035) bei über 99 % bzw. 92 %. shadowYd ab Spieler: Lichtkreis 13 yd + Rand
+  mobHideYd: 62,        // weiter weg: nicht zeichnen, nicht animieren
+  mobHalfYd: 45,        // weiter weg: Animation jeden 2. Frame
+  mobShadowYd: 18,      // nur näher am Spieler werfen Mobs Schatten
 };
 // PH: particleRes Auflösung des Partikel-Puffers, soft Weichzeichnung in yd, lights Lichter im Pool, shock Verzerrung, particleMul Anteil der Partikel
 export const VFX_QUALITY = {

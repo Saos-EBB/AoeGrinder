@@ -1,8 +1,8 @@
 import { state, player } from './state';
 import { clamp, dist2d } from './util';
-import { CFG, SPELLS, mods } from './config';
+import { CFG, SPELLS, mods, PERF } from './config';
 import { blizRadius } from './formulas';
-import { scene, composer, tickHeat, renderer } from './render';
+import { scene, composer, tickHeat, renderer, camera } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
@@ -80,9 +80,18 @@ function updateVisuals(dt) {
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
+  frameNo++;
   for (const m of state.mobs) {
+    // Hinter dem Nebel: weder zeichnen noch animieren. Im Halbdunkel jeden 2. Frame mit doppeltem dt.
+    const d = camera.position.distanceTo(m.pos), show = d < PERF.mobHideYd;
+    if (m.model.root.visible !== show) m.model.root.visible = show;
+    if (!show) { m.animDt = 0; if (m.dead) sinkCorpse(m); continue; }
+    m.animDt = (m.animDt ?? 0) + dt;
+    if (d > PERF.mobHalfYd && (frameNo + m.packId) % 2) continue;
+    const mdt = m.animDt;
+    m.animDt = 0;
     const attackT = (state.now - m.attackAt) / 400 * mobAttackSlow();   // Dev: Angriffe sichtbar langsamer
-    m.model.update(dt, {
+    m.model.update(mdt, {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
       frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
@@ -103,7 +112,7 @@ function updateVisuals(dt) {
   updateWucht();
 }
 
-let last = performance.now();
+let last = performance.now(), frameNo = 0;
 function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
