@@ -38,7 +38,7 @@ export const ACTIONS = [
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
-// Klingenstrich hat eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
+// Die Nahkämpfer Klingenstrich und Strichkrieger haben eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
 const KLINGE_BIND_STORE = 'frostgrind.binds.klinge.v1';
 const KLINGE_SLOTS = { nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
 let klingeBinds = false, normalBinds = binds;

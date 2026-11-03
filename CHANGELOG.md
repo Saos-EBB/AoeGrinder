@@ -4,6 +4,9 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(magier): Basis-Strichmagier im 90er-Look: pinker Pelzmantel, weißer Fedora, Goldkette mit Medaillon
+- feat(magier): Strichmagier ersetzt die Skelett-Magier: Basis, Feuer, Eis und Arkan mit eigenen Bewegungen, Waffen und Spuren bleiben, Testseite unter /strich.html
+- feat(krieger): Strichkrieger ersetzt den Skelett-Krieger samt Waffenwahl: Riesenschwert, Wut-Aura, mehr Wut und weniger Leben machen mehr Schaden, 8 Slots, je 3 Runen, Spielversion v18
 - docs(klinge): Stand, Code-Karte und offene Punkte, Statuszeile zeigt beim Essen „Isst“
 - feat(dunkel): Prototyp liegt unter /dark, #dunkel geht weiter
 - chore: Gebeinsamurai (Ronin) und Aschenschatten (Schatten) aus dem Spiel entfernt, Kevins Wunsch

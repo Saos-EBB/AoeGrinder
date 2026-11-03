@@ -4,7 +4,7 @@
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
 Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. `main` ist weiter, siehe unten. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
-**Modell-Quelle:** Viewer „Frost Grind – MC-Modell“ (slug `677fa515-4c5d-4dc3-9b50-181e9a15fcc6`). Änderungen am Modell dort machen und `src/models/heroModels.ts` neu ziehen (alle Figuren; die Magier-Schnittstelle `SKINS`, `SKIN_FX`, `buildMage` am Ende muss mit), danach `RUN_REF` prüfen. Quelle von `heroModels.ts`: Handoff-Artifact https://claude.ai/artifact/WqUXFEaQYcN5VEC6zEgoym.
+**Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` wird nur noch für `SKIN_FX`, `makeTrail`, `stepWatcher` und die alten Skin-Spuren gebraucht, der Rest (alte Magier, Krieger, Samurai, Ninja) ist ungenutzt.
 
 ## Regeln
 1. Es gibt nur noch `main` und einen Agenten, keine parallelen Branches oder Worktrees mehr.
@@ -21,11 +21,10 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - **Welt:** `world.ts` (`heightAt`, Terrain, `buildWorld`), `collision.ts` (`groundAt`, `resolve`, begehbare Flächen; für Effekte und Bodenziele immer `groundAt`), `zones.ts`, `props.ts` (`scatter` skaliert Karten-Streu mit `WORLD_K`).
 - **Spieler:** `player.ts`, `input.ts`, `gamepad.ts`, `camera.ts`.
 - **Handy:** `boot.ts` (Startbildschirm Desktop oder Handy, lädt danach `main.ts`; `?mobile=1` oder `0` überspringt ihn), `device.ts` (`device.mobile`, Vollbild und Querformat-Sperre, sonst `html.rot` mit um 90° gedrehter Seite; `viewW`/`viewH`/`toView` statt `innerWidth`/`innerHeight`), `mobile.ts` (Touch-Sticks und 8 Slot-Tasten, Tippen auf den rechten Stick springt). Touch läuft über `pad` in `gamepad.ts`. Eigenes HUD-Layout in `ui/hudLayout.ts`, CSS unter `body.mobile` und `html.rot` in `index.html`.
-- **Modell:** `models/heroModels.ts` (aus dem Viewer: `buildMage`, `buildWarrior` mit 4 Waffen, `buildSamurai`, `buildNinja`), `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
+- **Modell:** `models/strichMagier.ts`, `models/strichKrieger.ts`, `models/klingeModel.ts`, Testseiten `/strich.html` und `/klinge.html`, `models/mage.ts` (Hülle, Skin aus dem Modus, `SKIN_WEAPON`), `models/weapons/` (15 Waffen, siehe `docs/status-waffen.md`), `models/creatures.ts`, `models/boar.ts`.
 - `src/skinFx.ts`: Feuerspur 5 dps, Frostspur 30 % Slow, Arkan +10 % Tempo.
-- `src/realMen.ts`: Modus Real Men. Zahlen in `REALMEN` und `RUNES`, Wut steht in `player.mana`, Attacken sind Spells mit `press`. Classic-Werte: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind), [Donnerknall Rang 1](https://classicdb.ch/?spell=6343), [Abklingzeit 6 s](https://wowclassicdb.com/wotlk/spell/6343).
+- `src/realMen.ts`: Modus Strichkrieger (Modus-ID bleibt `realmen`). Alle Zahlen in `REALMEN`, Wut steht in `player.mana`, Faktor `rageMul`. Moves sind Spells mit `press`. Wirbelwind-Radius Classic: [Wirbelwind](https://vanilla-wow-archive.fandom.com/wiki/Whirlwind).
 - `src/melee.ts`: gemeinsame Helfer von Real Men und Klingenstrich (Kosten/Abklingzeit, Linie, Sprint, Bewegungsfenster, verzögerte Treffer, Wellen).
-- Real-Men-Waffen in `REALMEN.weapons` (`realMen.ts`), Wahl im Hauptmenü, gespeichert in `frostgrind.warWeapon`. Seelenfang wirkt über `mob.markUntil`/`markMul` in `damageMob`.
 - `src/klinge.ts`: Modus Klingenstrich, alle Zahlen in `KLINGE`. Keine Ressource, `player.resLabel` zeigt die Haltung. `models/klingeModel.ts`: Figur, Aktionen, `cloneKlinge`, Testseite `/klinge.html`. Eigene Tasten in `useKlingeBinds` (`input.ts`).
 - `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
 - `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü, Shop im Hauptmenü. Credits: `docs/credits.md`.
@@ -37,6 +36,7 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v18 (Branch `strich`, nicht gemergt, nicht deployt) – Strichkrieger ersetzt den Skelett-Krieger samt 4 Waffen, Strichmagier ersetzt die Skelett-Magier. Getestet per Skript, nicht von Hand gespielt.
 - v17 (Branch `klinge`, nicht gemergt, nicht deployt) – Neuer Nahkämpfer Klingenstrich, Gebeinsamurai und Aschenschatten entfernt (`buildSamurai`, `buildNinja` bleiben in `heroModels.ts`, weil die Datei aus dem Viewer kommt). Dunkel liegt unter `/dark`. Getestet per Skript, nicht von Hand gespielt.
 - v16 (auf `main`, noch nicht deployt) – Run auf 15 Minuten ausgelegt: `LEVEL_PACE` bremst XP bei Vorsprung und hilft bei Rückstand, `LEVEL_KILLS` statt fester 10 Kills, Kartentakt als Reihe im Hauptmenü (`CARD_PACES`: Gestaffelt mit 31 Karten, 1 pro Level, 1 pro 2 Level, 1 pro 3 Level) mit eigener Mindestlücke zwischen den Fenstern, Heilung und Mana pro Level statt pro Karte. Schul-Modi nur noch mit Karten der eigenen Schule. 6 neue Spells, Nahkampf-Tuning, Wirbelwind-Fix. Getestet per Skript, nicht von Hand gespielt.
 - v15 – Handy: Startbildschirm Desktop oder Handy, Vollbild quer (sonst um 90° gedrehte Seite), Touch mit 2 Sticks und je 4 Tasten, eigenes HUD-Layout, Menüs im Vollbild. Dazu Nahkämpfer aus PR #2 (Real-Men-Waffen, Ronin, Schatten, `heroModels.ts`). Getestet per Skript, nicht am echten Handy.
@@ -85,12 +85,13 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - Blutung ignoriert Crits. Keine Icons für die 8 Slots. Im Modus keine Seitwärts- und Autorun-Taste (Q, E, R belegt), Seitwärts geht mit rechter Maus plus A/D.
 - Ungetestet: Runen Jäger, Gerichteter Wurf, Blutzoll; Pad und Handy.
 
-**Nahkämpfer (Krieger-Waffen), alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
-- Donnerknall mit Äxten, Hammer, Anker: Das Modell meldet keinen Treffer (`hits` ohne `thunderclap`), das Spiel nutzt einen Timer bei 42 %. Besser im Viewer beheben.
-- Blutrausch zählt +1 pro Treffer-Moment mit mindestens einem Mob, nicht pro Mob.
-- Seelenfang zieht über `pullMob`; eingefrorene Mobs bleiben stehen, werden aber markiert.
-- Alle Moves sperren die eigene Bewegung, solange sie laufen.
-- `RUN_REF` für den Krieger ungeprüft. Keine Icons für die neuen Moves.
+**Strichkrieger, alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
+- Kevin bestätigen: Halten von Q schlägt weiter (Entwurf: ein Schlag pro Druck); Kosten und Abklingzeiten der neuen Moves sind frei gesetzt; Wirbelwind behält Radius 8 aus dem Spiel, der Viewer zeigt 3,2.
+- Rüstung 25 % plus ×3 bei voller Wut und wenig Leben, dazu Letzter Atem: Balance ungeprüft. Runen fast alle ungetestet. Keine Icons außer Kampfschrei.
+
+**Strichmagier:**
+- Basis im 90er-Look (Viewer `1793671029-70f4`), Bewegungen noch neutral. Der Goldknauf des Viewers fehlt, weil die gewählte Waffe den Stab ersetzt. Lotussitz wirkt eher kniend als gekreuzt.
+- Zaubern läuft im Spiel höchstens 700 ms (`CAST_MS`), der Viewer zeigt 1,0–2,2 s, sonst hinkt die Figur hinterher. Der Stab des Viewers ist raus, die 15 Waffen hängen am Stabgelenk. „Ta-da“ und Lachanfall laufen nur im Idle. `RUN_REF` entfällt, die Spuren kommen weiter über `stepWatcher`; Abstände ungeprüft. Sitzen und Tod sind neu, im Viewer gab es sie nicht.
 
 **Technik:**
 - Belagerung bei etwa 200–300 Mobs an der Grenze des Spielbaren, mit Zaubern ungemessen. Ansätze: Mob-Instancing, Nameplates.

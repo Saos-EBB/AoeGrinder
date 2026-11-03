@@ -1,81 +1,63 @@
-// Real Men: Skelett-Krieger mit Wut statt Mana. Die vier Attacken liegen als Spells in den Slots, damit Leiste, Tasten, Pad und Karten mitlaufen.
-// Wut steht in player.mana, player.rageMax meldet den Modus an maxMana und die Regeneration.
+// Real Men: Strichkrieger mit Riesenschwert und Wut statt Mana. Die Moves liegen als Spells in den Slots, damit Leiste, Tasten, Pad und Karten mitlaufen.
+// Wut steht in player.mana, player.rageMax meldet den Modus an maxMana und die Regeneration. Modell und Treffer-Momente: models/strichKrieger.ts.
 
 import { state, player } from './state';
-import { $ } from './util';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
-import { WAR_TIMING } from './models/heroModels';
+import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
 import { showError } from './ui/hud';
-import { slowSwing, applyRoot, pullMob } from './mobs';
-import { groundAt, resolve, STEP } from './collision';
-import { makeCtx, mobsInRadius, hasRune, applySlow } from './spells/core';
-import { spellCd, maxHp } from './formulas';
+import { applyRoot, pullMob, knockbackMob } from './mobs';
+import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported } from './spells/core';
+import { maxHp } from './formulas';
 import { shakeCamera } from './camera';
-import { combatText } from './ui/hud';
-import { roll, forward, mobsOnLine, after, updateMelee, clearMelee } from './melee';
+import { $, rand, clamp } from './util';
+import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
 
-// Alle Zahlen hier, auch die der Runen (RUNES). [Classic] = WoW Classic, Quellen in docs/handoff.md; alles andere ist // PH
+// Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
 export const REALMEN = {
   armor: 0.25,                                     // weniger Schaden: steht mitten im Pack, ohne Blink und Nova
-  rage: { max: 100, start: 20, perMobHit: 8, perSwingMax: 15, perHitTaken: 2, decayPerS: 1, outOfCombatMs: 5000 },
-  attack: { dmg: [28, 34], radius: 3 },
-  whirlwind: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 20, speedMul: 0.7, tapMs: 300, minStart: 10 },   // trifft alle Mobs, Classic nur 4
-  smash: { dmg: [110, 130], radius: 5, rage: 20, cd: 6000 },
-  charge: { rage: 9 /* Classic Rang 1 */, range: 25 /* Classic */, cd: 15000 /* Classic */, stunMs: 1000 /* Classic */, speed: 30, hitRadius: 2.5, stunRadius: 3.5, dmg: [50, 60], stride: 7 },
-  warcry: { rage: 10, cd: 30000, ms: 900, buffMs: 15000, dmgMul: 1.2 },
-  thunderclap: { dmg: [30, 36] /* PH, Classic 10 war zu schwach */, radius: 8 /* Classic */, rage: 20 /* Classic */, cd: 6000 /* Classic-Client 3.x */, attackSlow: 0.1 /* Classic */, slowMs: 10000 /* Classic */, hitAt: 0.42 /* Treffer-Anteil im Modell */ },
-  // Waffenwahl vor dem Run (models/mage.ts). Attacke 1 liegt im Hieb-Slot, Attacke 2 im Smash-Slot (Kosten und Abklingzeit wie Smash). Alles PH.
-  weapons: {
-    axes: {
-      atk1: { name: 'Raserei', desc: 'Vier schnelle Axthiebe, solange gehalten. Bringt Wut.', dmg: [16, 20], radius: 2.5 },
-      atk2: { name: 'Axtwurf', desc: 'Wirft eine Axt 8 yd nach vorn, sie trifft hin und zurück.', dmg: [60, 75], width: 1.2, backMs: 390 },
-      frenzy: { max: 5, ms: 4000, haste: 0.06 },                         // Blutrausch: Stapel pro Axt-Treffer, je +6 % Tempo
-    },
-    hammer: {
-      atk1: { name: 'Erdspalter', desc: 'Schlag in den Boden, Risse laufen nach vorn.', dmg: [26, 32], radius: 2 },
-      atk2: { name: 'Rundschlag', desc: 'Schwingt den Hammer einmal um dich.', dmg: [100, 120], radius: 3 },
-      quakeMul: 0.5,                                                       // Nachbeben: 1 s später 50 % an derselben Stelle
-    },
-    anchor: {
-      atk1: { name: 'Ankerwurf', desc: 'Wirft den Anker 9 yd und zieht Mobs am Einschlag zu dir.', dmg: [70, 85], radius: 2, pullRadius: 2.5, pullTo: 2 },
-      atk2: { name: 'Kettenwirbel', desc: 'Lässt den Anker an der Kette um dich kreisen.', dmg: [30, 36], radius: 5 },
-      mark: { ms: 5000, mul: 1.15 },                                       // Seelenfang: gezogene Mobs nehmen mehr Schaden
-    },
+  rage: { max: 100, perMobHit: 6, perSwingMax: 15, decayPerS: 4, idleMs: 3000, perHitTaken: 2 },
+  mult: { rage: 0.6, hp: 1 },                      // Schaden ×(1 + 0,6 · Wut/100) · (1 + fehlendes Leben): volle Wut bei 10 % Leben ≈ ×3
+  q: { dmg: [28, 24, 30, 55], radius: [2.9, 3.2, 2.9], halfAngle: [0.9, 1.4, 0.9], smashRadius: 3, knock: 6, comboMs: 1300 },
+  e: { dmg: 26, cd: 8000, rage: 15, waves: 5, stepYd: 1.6, stepMs: 70, width: 2.6, knock: 3.5 },
+  whirl: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 20, speedMul: 0.7, tapMs: 300, minStart: 10 },
+  leap: { dmg: 60, yd: 10, radius: 4, knock: 7, cd: 10000, rage: 15 },
+  exec: { dmg: 90, radius: 4.2, halfAngle: 0.55, knock: 8, cd: 12000, rage: 35 },   // Viewer: 30 × 3
+  last: { ms: 5000, cd: 60000 },
+  cry: { rage: 40, cd: 20000, radius: 8, knock: 3 },
+  eat: { ms: 18000 },
+  echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },
+  runes: {
+    wide: 1.5, leech: 0.01, wrath: 1.5,                     // Schlagfolge
+    longWaves: 3, stunMs: 1000,                             // Bodenbrecher
+    frenzyCost: 0.5, frenzyDmg: 0.8, pullPerS: 4,           // Wirbelwind
+    leapRadius: 1.5, leapStunMs: 2000,                      // Sturzsprung
+    lowBelow: 0.3, lowMul: 2, wideAngle: 1.5, killRage: 30, // Hinrichtung
+    cryRage: 70, fearMs: 2000, shockDmg: 40,                // Kampfschrei
   },
 };
+const R = REALMEN, RU = R.runes;
 
-const R = REALMEN;
-export const WAR_WEAPON_NAMES = { sword: 'Zweihänder', axes: 'Zwillingsäxte', hammer: 'Grabhammer', anchor: 'Seelenanker' };
-export const RUNES = {
-  wide: 1.6, leechPct: 0.01, wrathMul: 1.5, wrathMax: 25,            // Hieb
-  frenzyCost: 0.5, frenzyDmg: 0.8, maelstromPull: 4,                 // Wirbelwind
-  quakeRadius: 1.5, stunMs: 2000, executeBelow: 0.3, executeMul: 2,  // Smash
-  shockRadius: 1.5, frostSlow: 0.3, frostMs: 5000, stormRage: 5, stormMax: 30,   // Donnerknall
-  longMs: 30000, fearMs: 2000, fearRadius: 8, angryRage: 20,         // Kampfschrei
-  ragingRage: 20,                                                    // Ansturm
-};
-const avg = r => (r[0] + r[1]) / 2;
-const spell = (name, desc, cd, mana, ranks, press, showDmg?) => ({ name, desc, showDmg, ranks, tags: ['Krieger'], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press });
-// fixed: nie als Karte in anderen Modi
+const spell = (name, desc, tags, ranks, cd, mana, press, showDmg?, runes?) => ({ name, desc, showDmg, ranks, tags: ['Krieger', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press, runes });
+// Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3. fixed: nie als Karte in anderen Modi
 Object.assign(SPELLS, {
-  wAttack: spell('Hieb', 'Zweihandschlag, solange gehalten. Bringt Wut.', 0, 0, ['dmg', 'radius'], () => pressAttack(), avg(R.attack.dmg)),
-  wWhirl: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', 0, 0, ['dmg', 'radius'], () => pressWhirl(), avg(R.whirlwind.dmg)),
-  wSmash: spell('Smash', 'Sprung und Hieb in den Boden vor dir.', R.smash.cd, R.smash.rage, ['dmg', 'radius'], () => pressOnce('wSmash'), avg(R.smash.dmg)),
-  wClap: spell('Donnerknall', 'Stampfer: trifft alles um dich, Mobs schlagen langsamer.', R.thunderclap.cd, R.thunderclap.rage, ['dmg', 'radius'], () => pressOnce('wClap'), avg(R.thunderclap.dmg)),
-  wCharge: spell('Ansturm', 'Stürmt nach vorn bis zum ersten Mob oder 25 yd, betäubt 1 s, bringt Wut.', R.charge.cd, 0, ['dmg'], () => pressCharge(), avg(R.charge.dmg)),
-  wCry: spell('Kampfschrei', '+20 % Schaden für 15 s.', R.warcry.cd, R.warcry.rage, [], () => pressOnce('wCry')),
+  wQ: spell('Schlagfolge', 'Vier Schläge, der vierte ein Sprung-Smash. Bringt Wut.', ['Nahkampf', 'Fläche'], ['dmg', 'radius', 'tempo'], 0, 0, () => pressQ(), R.q.dmg[0], [
+    { id: 'wide', name: 'Weiter Schwung', desc: '+50 % Radius.' }, { id: 'leech', name: 'Blutdurst', desc: 'Heilt 1 % Leben pro getroffenem Mob.' }, { id: 'wrath', name: 'Wutschlag', desc: '+50 % Wut pro Schlag.' }]),
+  wE: spell('Bodenbrecher', 'Klinge in den Boden, Risse laufen 8 yd nach vorn und schleudern weg.', ['Nahkampf', 'Linie', 'Fläche'], ['dmg', 'tempo'], R.e.cd, R.e.rage, () => pressMove('wE', 'e', TIMING.e, R.e.rage), R.e.dmg, [
+    { id: 'long', name: 'Tiefe Risse', desc: 'Risse laufen 5 yd weiter.' }, { id: 'stun', name: 'Erdstoß', desc: 'Betäubt 1 s.' }, { id: 'charges', name: 'Zweiter Stoß', desc: '2 Ladungen.', charges: 2 }]),
+  wR: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', ['Nahkampf', 'Fläche'], ['dmg', 'radius'], 0, 0, () => pressWhirl(), (R.whirl.dmg[0] + R.whirl.dmg[1]) / 2, [
+    { id: 'stride', name: 'Sturmschritt', desc: 'Volles Lauftempo im Wirbel.' }, { id: 'frenzy', name: 'Rasender Tanz', desc: 'Halbe Wutkosten, −20 % Schaden.' }, { id: 'maelstrom', name: 'Mahlstrom', desc: 'Zieht Mobs zu dir.' }]),
+  wExec: spell('Hinrichtung', 'Langes Ausholen, ein gewaltiger Schlag im Kegel vor dir.', ['Nahkampf', 'Fläche'], ['dmg', 'tempo'], R.exec.cd, R.exec.rage, () => pressMove('wExec', 'exec', TIMING.exec, R.exec.rage), R.exec.dmg, [
+    { id: 'low', name: 'Gnadenstoß', desc: 'Doppelter Schaden unter 30 % Leben des Ziels.' }, { id: 'wide', name: 'Breite Klinge', desc: '+50 % Kegel.' }, { id: 'refund', name: 'Blutgier', desc: 'Ein Kill gibt 30 Wut.' }]),
+  wLast: spell('Letzter Atem', 'Schwert in den Boden, Brüllen: 5 s nicht unter 1 Leben, Wut voll.', [], [], R.last.cd, 0, () => pressMove('wLast', 'last', TIMING.last, 0)),
+  wCry: spell('Kampfschrei', '+40 Wut und eine Druckwelle, die Mobs wegstößt.', [], [], R.cry.cd, 0, () => pressMove('wCry', 'cry', TIMING.cry, 0), undefined, [
+    { id: 'rage', name: 'Zorniger Schrei', desc: '+70 statt +40 Wut.' }, { id: 'fear', name: 'Schreckensschrei', desc: 'Betäubt Mobs in 8 yd für 2 s.' }, { id: 'shock', name: 'Schockwelle', desc: 'Die Druckwelle macht Schaden.' }]),
+  wLeap: spell('Sturzsprung', '10 yd Sprung, in der Luft nicht angreifbar. Die Landung schleudert weg.', ['Nahkampf', 'Bewegung', 'Fläche'], ['dmg', 'radius', 'tempo'], R.leap.cd, R.leap.rage, () => pressMove('wLeap', 'leap', TIMING.leap.ms, R.leap.rage), R.leap.dmg, [
+    { id: 'quake', name: 'Beben', desc: '+50 % Radius.' }, { id: 'stun', name: 'Einschlag', desc: 'Betäubt 2 s.' }, { id: 'haste', name: 'Hast', desc: 'Halbe Abklingzeit.', cdMul: 0.5 }]),
+  wEat: spell('Essen', 'Sitzen und in 18 s alles Leben auffüllen. Bewegung oder Angriff bricht ab, Schaden nicht.', [], [], 0, 0, () => pressEat()),
 });
-
-// Karten bieten sie an wie bei den Magiern, pro Attacke gilt eine Rune
-Object.assign(SPELLS.wAttack, { runes: [{ id: 'wide', name: 'Weiter Schwung', desc: '+60 % Radius.' }, { id: 'leech', name: 'Blutdurst', desc: 'Heilt 1 % Leben pro getroffenem Mob.' }, { id: 'wrath', name: 'Wutschlag', desc: '+50 % Wut pro Schlag, bis 25.' }] });
-Object.assign(SPELLS.wWhirl, { runes: [{ id: 'stride', name: 'Sturmschritt', desc: 'Volles Lauftempo im Wirbel.' }, { id: 'frenzy', name: 'Rasender Tanz', desc: 'Halbe Wutkosten, −20 % Schaden.' }, { id: 'maelstrom', name: 'Mahlstrom', desc: 'Zieht Mobs zu dir.' }] });
-Object.assign(SPELLS.wSmash, { runes: [{ id: 'quake', name: 'Beben', desc: '+50 % Radius.' }, { id: 'stun', name: 'Schmetterschlag', desc: 'Betäubt 2 s.' }, { id: 'execute', name: 'Hinrichten', desc: 'Doppelter Schaden unter 30 % Leben.' }] });
-Object.assign(SPELLS.wClap, { runes: [{ id: 'shock', name: 'Schockwelle', desc: '+50 % Radius.' }, { id: 'frost', name: 'Erschütterung', desc: 'Zusätzlich 30 % Slow für 5 s.' }, { id: 'storm', name: 'Gewitterzorn', desc: '+5 Wut pro Mob, bis 30.' }] });
-Object.assign(SPELLS.wCry, { runes: [{ id: 'long', name: 'Langer Atem', desc: 'Hält 30 s.' }, { id: 'fear', name: 'Schreckensschrei', desc: 'Betäubt Mobs in 8 yd für 2 s.' }, { id: 'angry', name: 'Zorniger Schrei', desc: 'Gibt 20 Wut, statt 10 zu kosten.' }] });
-Object.assign(SPELLS.wCharge, { runes: [{ id: 'raging', name: 'Wütender Ansturm', desc: 'Gibt 20 statt 9 Wut.' }, { id: 'haste', name: 'Hast', desc: 'Halbe Abklingzeit.', cdMul: 0.5 }, { id: 'break', name: 'Durchbruch', desc: 'Stoppt nicht am ersten Mob, trifft alle auf dem Weg.' }] });
 
 const isWarrior = () => mage.skin === 'krieger';
 
@@ -85,239 +67,215 @@ export function held(id) {
   return !!action && (act(action) || !!pad.down[padBinds[action]]);
 }
 
-export function rageOnHit() {
-  if (isWarrior()) gainRage(R.rage.perHitTaken);
-}
-function gainRage(n) { player.mana = Math.min(R.rage.max, player.mana + n); }
+let cur = null;                 // laufender Move: { id, ability, start, ms, rate, ctx, from }
+let seq = 0, combo = 0, comboUntil = 0, lastRageAt = 0, undyingUntil = 0;
+let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0;
+
+const gainRage = n => { player.mana = Math.min(R.rage.max, player.mana + n); };
+export function rageOnHit() { if (isWarrior()) gainRage(R.rage.perHitTaken); }
+// Mehr Wut und weniger Leben: mehr Schaden
+const rageMul = () => (1 + R.mult.rage * player.mana / R.rage.max) * (1 + R.mult.hp * clamp(1 - player.hp / maxHp(), 0, 1));
 
 // Nach dem Zurücksetzen von Leben und Mana im Run-Start
 export function resetRealMen() {
   const on = isWarrior();
   player.rageMax = on ? R.rage.max : undefined;
-  if (on) player.mana = R.rage.start;
-  if (on) $('manaFill').style.background = 'linear-gradient(#e0503c, #8a1a10)';
-  else $('manaFill').style.background = '';
-  if (on) nameSlots();
-  clearAttacks();
-}
-
-const SWORD = { atk1: { name: SPELLS.wAttack.name, desc: SPELLS.wAttack.desc, dmg: R.attack.dmg }, atk2: { name: SPELLS.wSmash.name, desc: SPELLS.wSmash.desc, dmg: R.smash.dmg } };
-const weaponDef = () => R.weapons[mage.warWeapon] ?? SWORD;
-const timing = () => WAR_TIMING[mage.warWeapon] ?? WAR_TIMING.sword;
-// Slot-Namen und Schaden in der Leiste folgen der Waffe
-function nameSlots() {
-  const w = weaponDef();
-  for (const [id, a] of [['wAttack', w.atk1], ['wSmash', w.atk2]]) Object.assign(SPELLS[id], { name: a.name, desc: a.desc, showDmg: avg(a.dmg) });
-}
-
-const ONCE = {
-  wSmash: { def: R.smash, ability: 'smash', ms: () => timing().smash },
-  wClap: { def: R.thunderclap, ability: 'thunderclap', ms: () => WAR_TIMING.sword.thunderclap },
-  wCry: { def: R.warcry, ability: 'warcry', ms: () => R.warcry.ms },
-};
-
-let once = null;
-let swingRage = 0;                                 // Wut aus dem laufenden Grundangriff, gedeckelt auf perSwingMax
-let frenzy = 0, frenzyAt = 0;                      // Blutrausch-Stapel, letzter Axt-Treffer
-let quakes = [];                                   // offene Nachbeben: Radius und Schaden des Hammer-Treffers
-let anchorAt = null;                               // Einschlag des Ankerwurfs, Ziel für den Rückzug                                   // laufender Smash oder Donnerknall: { id, ability, until, ctx }
-let attackUntil = 0, attackCtx = null;             // Grundangriff: läuft den Zyklus immer zu Ende, ein Tippen gibt einen ganzen
-let cryUntil = 0;
-let charge = null;                                 // { left, ctx, seen, paid }
-let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0;
-
-function clearAttacks() {
-  once = null; cryUntil = 0; charge = null;
-  frenzy = 0; quakes = []; anchorAt = null; mage.rate = 1; player.resNote = '';
-  clearMelee();
-  attackUntil = 0; attackCtx = null;
+  $('manaFill').style.background = on ? 'linear-gradient(#e0503c, #8a1a10)' : '';
+  player.resNote = '';
+  cur = null; seq = 0; combo = 0; comboUntil = 0; lastRageAt = 0; undyingUntil = 0;
   whirlOn = false; whirlUntil = 0; whirlCtx = null; nextWhirlTick = 0;   // state.now startet pro Run bei 0
+  if (on) { player.mana = 0; clearMelee(); }
 }
 
-function pressAttack() {
-  if (once || charge) return;
-  startAttackCycle();
+const rateOf = id => stat(id).tempo ?? 1;
+function startMove(id, ability, ms) {
+  whirlOn = false; whirlUntil = 0;
+  const rate = rateOf(id);
+  cur = { id, ability, start: state.now, ms: ms / rate, rate, ctx: makeCtx(id), from: { x: player.pos.x, y: player.pos.y, z: player.pos.z } };
+  seq++;
 }
-function startAttackCycle() {
-  if (state.now >= attackUntil) { attackUntil = state.now + timing().attack / mage.rate; attackCtx = makeCtx('wAttack'); swingRage = 0; }
+function pressQ() {
+  if (cur) return;
+  stopDrink();
+  if (state.now > comboUntil) combo = 0;
+  const step = combo;
+  combo = (combo + 1) % TIMING.q.length;
+  player.lastCombat = state.now;
+  startMove('wQ', `q${step}`, TIMING.q[step]);
+  cur.walk = step < TIMING.q.length - 1;           // der Sprung-Smash steht, die anderen Schläge gehen im Laufen
+}
+function pressMove(id, ability, ms, cost) {
+  if (cur) return;
+  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
+  if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (player.mana < cost) return showError('Nicht genug Wut');
+  stopDrink();
+  player.mana -= cost;
+  startCd(id);
+  player.lastCombat = state.now;
+  startMove(id, ability, ms);
 }
 function pressWhirl() {
-  if (!whirlOn && player.mana < R.whirlwind.minStart) return showError('Nicht genug Wut');
-  whirlUntil = state.now + R.whirlwind.tapMs;
+  if (!whirlOn && player.mana < R.whirl.minStart) return showError('Nicht genug Wut');
+  stopDrink();
+  whirlUntil = state.now + R.whirl.tapMs;
 }
-function pressOnce(id) {
-  const o = ONCE[id];
-  if (once || charge) return;
+function pressEat() {
+  if (cur || whirlOn) return;
   if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
-  if ((player.cds[id] || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
-  if (player.mana < o.def.rage && !(id === 'wCry' && hasRune('wCry', 'angry'))) return showError('Nicht genug Wut');
-  if (!(id === 'wCry' && hasRune('wCry', 'angry'))) player.mana -= o.def.rage;
-  player.cds[id] = state.now + spellCd(id);
-  player.lastCombat = state.now;
-  attackUntil = 0; whirlOn = false; whirlUntil = 0;
-  once = { id, ability: o.ability, until: state.now + o.ms() / mage.rate, ctx: makeCtx(id) };
-  if (id === 'wCry') shout();
-  // Axt, Hammer und Anker melden im Modell keinen Donnerknall-Treffer: Zeitpunkt wie beim Schwert (42 %)
-  if (id === 'wClap' && mage.warWeapon !== 'sword') after(o.ms() * R.thunderclap.hitAt / mage.rate, clap);
+  player.drink = { start: state.now, end: state.now + R.eat.ms, dur: R.eat.ms, hp: 1, label: 'Essen', keepOnHit: true };
 }
 
-function pressCharge() {
-  if (once || charge) return;
-  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
-  if ((player.cds.wCharge || 0) > state.now) return showError('Fähigkeit ist noch nicht bereit');
-  player.cds.wCharge = state.now + spellCd('wCharge');
-  attackUntil = 0; whirlOn = false; whirlUntil = 0;
-  charge = { left: R.charge.range, ctx: makeCtx('wCharge'), seen: new Set(), paid: false };
-}
-
-// Läuft nach updatePlayer: Eingaben sind gesperrt, Wände und Stufen stoppen wie beim Laufen
-function updateCharge(s) {
-  const step = Math.min(charge.left, R.charge.speed * s), pos = player.pos, x = pos.x + Math.sin(player.facing) * step, z = pos.z + Math.cos(player.facing) * step;
-  const y0 = pos.y;
-  pos.x = x; pos.z = z;
-  resolve(pos, 0.45);
-  const moved = Math.hypot(pos.x - x, pos.z - z) < step * 0.5;
-  const g = groundAt(pos.x, pos.z, y0);
-  if (Math.abs(g - y0) <= STEP) pos.y = g;
-  else { pos.x -= Math.sin(player.facing) * step; pos.z -= Math.cos(player.facing) * step; charge.left = 0; }
-  charge.left = moved ? charge.left - step : 0;
-  const hit = mobsInRadius(pos, R.charge.hitRadius).length > 0;
-  const through = hasRune('wCharge', 'break');
-  if (hit) {
-    for (const m of mobsInRadius(pos, R.charge.stunRadius)) {
-      if (charge.seen.has(m)) continue;
-      charge.seen.add(m);
-      if (strike(charge.ctx, m, R.charge.dmg)) applyRoot(m, R.charge.stunMs);
-    }
-    if (!charge.paid) { charge.paid = true; gainRage(hasRune('wCharge', 'raging') ? RUNES.ragingRage : R.charge.rage); shakeCamera(0.2); }
+// Ein Treffer-Ereignis: Wut kommt nur, wenn etwas getroffen wurde, und ist pro Schlag gedeckelt
+function strike(ctx, amount, targets, onMob?, rageK = 1) {
+  let landed = 0;
+  const mul = rageMul();
+  for (const m of targets()) {
+    if (!ctx.hit(m, amount(m) * mul)) continue;
+    landed++;
+    onMob?.(m);
+    mage.hero.fx.blood(m.pos.x, m.pos.y + 1.1, m.pos.z);
   }
-  if ((hit && !through) || charge.left <= 0) charge = null;
+  if (landed) {
+    gainRage(Math.min(R.rage.perSwingMax * rageK, landed * R.rage.perMobHit * rageK));
+    lastRageAt = state.now;
+    shakeCamera(Math.min(0.35, 0.08 + 0.02 * landed));
+  }
+  return landed;
 }
-
-function shout() {
-  cryUntil = state.now + (hasRune('wCry', 'long') ? RUNES.longMs : R.warcry.buffMs);
-  if (hasRune('wCry', 'angry')) gainRage(RUNES.angryRage);
-  if (hasRune('wCry', 'fear')) for (const m of mobsInRadius(player.pos, RUNES.fearRadius)) applyRoot(m, RUNES.fearMs);
-  combatText(player.pos, 'Kampfschrei!', 'info', 2.6);
-  shakeCamera(0.2);
+// Mit den Supports Echo und Großes Echo: dieselbe Wirkung später noch einmal
+function event(id, ctx, amount, targets, onMob?, rageK = 1) {
+  const n = strike(ctx, amount, targets, onMob, rageK), E = R.echo;
+  if (supported('bigEcho', id)) E.bigMs.forEach((ms, i) => after(ms, () => strike(ctx, m => amount(m) * E.bigMul[i], targets, onMob, rageK)));
+  else if (supported('echo', id)) after(E.ms, () => strike(ctx, m => amount(m) * E.mul, targets, onMob, rageK));
+  return n;
 }
-const strike = (c, m, dmg, mul = 1) => c.hit(m, roll(dmg) * mul * (state.now < cryUntil ? R.warcry.dmgMul : 1));
-
-// Treffer-Moment aus der Animation; die Position ist Schwertspitze oder Spieler
-onWarriorHit((kind, x, z, i) => {
-  if (!isWarrior() || player.dead) return;
-  const at = { x, y: player.pos.y, z };
-  if (['atk1', 'atk2', 'nachbeben', 'anker'].includes(kind)) return weaponHit(kind, at, i);   // Donnerknall geht mit jeder Waffe
-  if (kind === 'cast' && attackCtx) {
-    let landed = 0;
-    const wide = hasRune('wAttack', 'wide') ? RUNES.wide : 1, wrath = hasRune('wAttack', 'wrath');
-    for (const m of mobsInRadius(at, attackCtx.radius(R.attack.radius) * wide)) if (strike(attackCtx, m, R.attack.dmg)) landed++;
-    gainRage(Math.min(wrath ? RUNES.wrathMax : R.rage.perSwingMax, landed * R.rage.perMobHit * (wrath ? RUNES.wrathMul : 1)));
-    if (hasRune('wAttack', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RUNES.leechPct * landed);
-  } else if (kind === 'smash' && once?.id === 'wSmash') {
-    for (const m of mobsInRadius(at, once.ctx.radius(R.smash.radius) * (hasRune('wSmash', 'quake') ? RUNES.quakeRadius : 1))) {
-      const low = hasRune('wSmash', 'execute') && m.hp < m.maxHp * RUNES.executeBelow;
-      if (strike(once.ctx, m, R.smash.dmg, low ? RUNES.executeMul : 1) && hasRune('wSmash', 'stun')) applyRoot(m, RUNES.stunMs);
-    }
-  } else if (kind === 'thunderclap' && once?.id === 'wClap') clap();
+const inCone = (o, r, half) => mobsInRadius(o, r).filter(m => {
+  const a = Math.atan2(m.pos.x - o.x, m.pos.z - o.z) - player.facing;
+  return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) <= half;
 });
 
-function clap() {
-  if (once?.id !== 'wClap') return;
-  {
-    let landed = 0;
-    for (const m of mobsInRadius(player.pos, once.ctx.radius(R.thunderclap.radius) * (hasRune('wClap', 'shock') ? RUNES.shockRadius : 1))) {
-      if (!strike(once.ctx, m, R.thunderclap.dmg)) continue;
-      landed++;
-      m.clapUntil = state.now + R.thunderclap.slowMs;
-      if (hasRune('wClap', 'frost')) applySlow(m, RUNES.frostSlow, RUNES.frostMs);
-    }
-    if (hasRune('wClap', 'storm')) gainRage(Math.min(RUNES.stormMax, landed * RUNES.stormRage));
+function hitQ(step, at) {
+  const c = cur.ctx, wide = hasRune('wQ', 'wide') ? RU.wide : 1, rageK = hasRune('wQ', 'wrath') ? RU.wrath : 1;
+  const leech = m => { if (hasRune('wQ', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RU.leech); return m; };
+  if (step === R.q.dmg.length - 1) {
+    const r = c.radius(R.q.smashRadius) * wide;
+    event('wQ', c, () => R.q.dmg[step], () => mobsInRadius(at, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, R.q.knock); }, rageK);
+  } else {
+    const r = c.radius(R.q.radius[step]) * wide;
+    event('wQ', c, () => R.q.dmg[step], () => inCone(player.pos, r, R.q.halfAngle[step]), leech, rageK);
   }
 }
-
-// Axt, Hammer, Anker: Attacke 1 = 'atk1' im Grundangriff, Attacke 2 = 'atk2' im Smash-Slot
-function weaponHit(kind, at, i) {
-  const w = weaponDef(), wpn = mage.warWeapon;
-  const area = (c, center, r, dmg, mul = 1) => mobsInRadius(center, c.radius(r)).filter(m => strike(c, m, dmg, mul));
-  let hits = [], hitR = 0, hitDmg = null, ctx = null;
-  if (kind === 'atk1' && attackCtx) {
-    ctx = attackCtx; hitR = w.atk1.radius; hitDmg = w.atk1.dmg;
-    hits = area(ctx, at, hitR, hitDmg);
-    const add = Math.min(hits.length * R.rage.perMobHit, R.rage.perSwingMax * 2 - swingRage);   // Deckel pro Zyklus wie zwei Schwerthiebe
-    if (add > 0) { swingRage += add; gainRage(add); }
-    if (wpn === 'anchor') anchorAt = at;
-  } else if (kind === 'atk2' && once?.id === 'wSmash') {
-    ctx = once.ctx;
-    if (wpn === 'axes') {                          // hin und zurück auf derselben Linie
-      const from = { x: player.pos.x, z: player.pos.z }, line = () => mobsOnLine(from, at, w.atk2.width).filter(m => strike(ctx, m, w.atk2.dmg));
-      hits = line();
-      after(w.atk2.backMs, () => { if (isWarrior()) addFrenzy(line().length); });
-    } else { hitR = w.atk2.radius; hitDmg = w.atk2.dmg; hits = area(ctx, at, hitR, hitDmg); }
-  } else if (kind === 'nachbeben') {
-    const q = quakes.shift();
-    if (q) area(q.ctx, at, q.r, q.dmg, R.weapons.hammer.quakeMul);
-    return;
-  } else if (kind === 'anker') {
-    const a = R.weapons.anchor, f = forward(), to = { x: player.pos.x + f.x * a.atk1.pullTo, z: player.pos.z + f.z * a.atk1.pullTo };
-    for (const m of mobsInRadius(anchorAt ?? at, a.atk1.pullRadius)) {
-      pullMob(m, to, 99);
-      m.markUntil = state.now + a.mark.ms; m.markMul = a.mark.mul;
-    }
-    anchorAt = null;
-    return;
-  } else return;
-  if (wpn === 'axes') addFrenzy(hits.length);
-  if (wpn === 'hammer') quakes.push({ ctx, r: hitR, dmg: hitDmg });   // das Modell meldet nach jedem Riss ein Nachbeben
+// Bodenbrecher: eine Welle pro Stück Strecke, jeder Mob nur einmal
+function hitE(at) {
+  const c = cur.ctx, f = forward(), E = R.e, seen = new Set(), waves = E.waves + (hasRune('wE', 'long') ? RU.longWaves : 0);
+  let rage = 0;
+  for (let i = 0; i < waves; i++) after(i * E.stepMs, () => {
+    if (!isWarrior()) return;
+    const a = { x: at.x + f.x * E.stepYd * i, z: at.z + f.z * E.stepYd * i }, b = { x: a.x + f.x * E.stepYd, z: a.z + f.z * E.stepYd };
+    mage.hero.fx.crackAt(a.x, a.z, f.x, f.z);
+    const list = mobsOnLine(a, b, E.width).filter(m => !seen.has(m));
+    for (const m of list) seen.add(m);
+    const landed = event('wE', c, () => E.dmg, () => list, eHit, 0);   // Wut gedeckelt pro Bodenbrecher, nicht pro Welle
+    const gain = Math.min(R.rage.perSwingMax - rage, landed * R.rage.perMobHit);
+    if (gain > 0) { rage += gain; gainRage(gain); }
+  });
 }
-function addFrenzy(n) {
-  if (!n) return;
-  const f = R.weapons.axes.frenzy;
-  frenzy = Math.min(f.max, frenzy + 1); frenzyAt = state.now;
+const eHit = m => { if (m.dead) return; knockbackMob(m, player.pos, R.e.knock); if (hasRune('wE', 'stun')) applyRoot(m, RU.stunMs); };
+function hitLeap() {
+  const c = cur.ctx, r = c.radius(R.leap.radius) * (hasRune('wLeap', 'quake') ? RU.leapRadius : 1);
+  event('wLeap', c, () => R.leap.dmg, () => mobsInRadius(player.pos, r), m => {
+    if (m.dead) return;
+    knockbackMob(m, player.pos, R.leap.knock);
+    if (hasRune('wLeap', 'stun')) applyRoot(m, RU.leapStunMs);
+  });
+}
+function hitExec() {
+  const c = cur.ctx, X = R.exec, half = X.halfAngle * (hasRune('wExec', 'wide') ? RU.wideAngle : 1);
+  event('wExec', c, m => X.dmg * (hasRune('wExec', 'low') && m.hp < m.maxHp * RU.lowBelow ? RU.lowMul : 1), () => inCone(player.pos, c.radius(X.radius), half), m => {
+    if (m.dead) { if (hasRune('wExec', 'refund')) gainRage(RU.killRage); return; }
+    knockbackMob(m, player.pos, X.knock);
+  });
+  shakeCamera(0.5);
+}
+function hitCry() {
+  const C = R.cry, c = cur.ctx;
+  gainRage(hasRune('wCry', 'rage') ? RU.cryRage : C.rage);
+  lastRageAt = state.now;
+  shakeCamera(0.3);
+  const list = mobsInRadius(player.pos, C.radius);
+  if (hasRune('wCry', 'shock')) strike(c, () => RU.shockDmg, () => list);
+  for (const m of list) {
+    if (m.dead) continue;
+    knockbackMob(m, player.pos, C.knock);
+    if (hasRune('wCry', 'fear')) applyRoot(m, RU.fearMs);
+  }
+}
+function hitLast() {
+  undyingUntil = state.now + R.last.ms;
+  player.mana = R.rage.max;
+  shakeCamera(0.5);
+}
+
+// Treffer-Moment aus der Animation; die Position ist die Schwertspitze oder der Spieler
+onWarriorHit((kind, x, z, i) => {
+  if (!isWarrior() || player.dead || !cur) return;
+  const at = { x, y: player.pos.y, z };
+  if (kind === 'q') hitQ(i, at);
+  else if (kind === 'e') hitE(at);
+  else if (kind === 'leap') hitLeap();
+  else if (kind === 'exec') hitExec();
+  else if (kind === 'cry') hitCry();
+  else if (kind === 'last') hitLast();
+});
+
+function updateWhirl(s) {
+  const W = R.whirl, frenzy = hasRune('wR', 'frenzy');
+  // Einmal an, läuft er bis 0 Wut; neu starten braucht minStart, sonst stottert er bei jedem kassierten Treffer an
+  const want = !cur && player.stunUntil <= state.now && player.mana >= (whirlOn ? 0.01 : W.minStart) && (held('wR') || state.now < whirlUntil);
+  if (!want) { whirlOn = false; return; }
+  if (!whirlOn) { whirlOn = true; whirlCtx = makeCtx('wR'); seq++; }
+  const r = whirlCtx.radius(W.radius);
+  if (state.now >= nextWhirlTick) {
+    nextWhirlTick = state.now + W.tickMs;
+    player.lastCombat = state.now;
+    event('wR', whirlCtx, () => rand(W.dmg[0], W.dmg[1]) * (frenzy ? RU.frenzyDmg : 1), () => mobsInRadius(player.pos, r), undefined, 0);   // Wirbelwind kostet Wut, er bringt keine
+  }
+  if (hasRune('wR', 'maelstrom')) for (const m of mobsInRadius(player.pos, r)) pullMob(m, player.pos, RU.pullPerS * s);
+  player.mana = Math.max(0, player.mana - W.ragePerS * (frenzy ? RU.frenzyCost : 1) * s);
 }
 
 export function updateRealMen(dt) {
   if (!isWarrior() || player.dead) return;
   const now = state.now, s = dt / 1000;
-  for (const m of state.mobs) if (m.clapUntil > now) slowSwing(m, R.thunderclap.attackSlow, dt);
-  if (now - player.lastCombat > R.rage.outOfCombatMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
-  if (once && now >= once.until) once = null;
   updateMelee(dt);
-  if (mage.warWeapon === 'axes') {
-    const f = R.weapons.axes.frenzy;
-    if (frenzy && now - frenzyAt > f.ms) frenzy = 0;
-    mage.rate = 1 + f.haste * frenzy;
-    player.resNote = frenzy ? `Blutrausch ${frenzy}` : '';
-  }
-  if (charge) updateCharge(s);
-
-  const stunned = player.stunUntil > now;
-  // Einmal an, läuft er bis 0 Wut; neu starten braucht minStart, sonst stottert er bei jedem kassierten Treffer an
-  const wantWhirl = !once && !charge && !stunned && player.mana >= (whirlOn ? 0.01 : R.whirlwind.minStart) && (held('wWhirl') || now < whirlUntil);
-  if (wantWhirl) {
-    if (!whirlOn) { whirlOn = true; whirlCtx = makeCtx('wWhirl'); attackUntil = 0; }
-    if (now >= nextWhirlTick) {
-      nextWhirlTick = now + R.whirlwind.tickMs;
-      player.lastCombat = now;
-      for (const m of mobsInRadius(player.pos, whirlCtx.radius(R.whirlwind.radius))) strike(whirlCtx, m, R.whirlwind.dmg, hasRune('wWhirl', 'frenzy') ? RUNES.frenzyDmg : 1);
+  if (undyingUntil > now) player.mana = R.rage.max;
+  else if (now - lastRageAt > R.rage.idleMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
+  if (cur) {
+    if (cur.id === 'wLeap') moveInWindow({ ...TIMING.leap.move, yd: R.leap.yd }, cur.start, cur.ms, dt);
+    if (now >= cur.start + cur.ms) {
+      if (cur.id === 'wQ') comboUntil = now + R.q.comboMs;
+      cur = null;
     }
-    if (hasRune('wWhirl', 'maelstrom')) for (const m of mobsInRadius(player.pos, whirlCtx.radius(R.whirlwind.radius))) pullMob(m, player.pos, RUNES.maelstromPull * s);
-    player.mana = Math.max(0, player.mana - R.whirlwind.ragePerS * (hasRune('wWhirl', 'frenzy') ? RUNES.frenzyCost : 1) * s);
-  } else whirlOn = false;
-
-  if (!once && !charge && !whirlOn && !stunned && held('wAttack')) startAttackCycle();
+  }
+  updateWhirl(s);
+  if (!cur && !whirlOn && player.stunUntil <= now && held('wQ')) pressQ();   // Ein Druck, ein Schlag; Halten schlägt weiter
+  player.resNote = `Schaden ×${rageMul().toFixed(2).replace('.', ',')}${undyingUntil > now ? ' · Letzter Atem' : ''}`;
 }
 
+const leapWindow = [TIMING.leap.move.from, TIMING.leap.move.to];
+export const warriorUntouchable = () => isWarrior() && cur?.id === 'wLeap' && inWindow(leapWindow, cur.start, cur.ms);
+export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
 export const takenMul = () => isWarrior() ? 1 - R.armor : 1;
-export const moveMul = () => whirlOn && !hasRune('wWhirl', 'stride') ? R.whirlwind.speedMul : 1;
-export const rooted = () => !!once || !!charge;    // eigene Bewegung oder keine
+export const moveMul = () => whirlOn && !hasRune('wR', 'stride') ? R.whirl.speedMul : 1;
+export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Bewegung oder keine
 
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  const attack = state.now < attackUntil;
-  const busy = once || charge || whirlOn || attack;
-  if (charge && !state.paused) return { state: 'run', speed: R.charge.stride };
-  return { ability: once?.ability ?? (whirlOn ? 'whirlwind' : null), attack, frozen: !!(state.paused && busy) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!(state.paused && (cur || whirlOn)) };
 }
+
+// Für den Handtest
+(window as any).__krieger = { get cur() { return cur; }, get combo() { return combo; }, rageMul, get undying() { return undyingUntil; }, REALMEN };

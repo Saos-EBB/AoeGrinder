@@ -11,7 +11,7 @@ export const MODIFIERS = [
   { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], onlyTag: 'Feuer' },
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge'], startKit: ['ae', 'voidorb', null, null, 'blink', 'drink'], onlyTag: 'Arkan' },
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
-  { id: 'realmen', name: 'Real Men', desc: 'Skelett-Krieger mit Zweihänder und Wut statt Mana', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge'], startKit: ['wAttack', 'wWhirl', 'wSmash', 'wClap', 'wCry', 'wCharge'], onlyTag: 'Krieger' },
+  { id: 'realmen', name: 'Real Men', desc: 'Strichkrieger mit Riesenschwert: Wut statt Mana, mehr Wut und weniger Leben machen mehr Schaden', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge'], startKit: ['wQ', 'wE', 'wR', 'wExec', 'wLast', 'wCry', 'wLeap', 'wEat'], onlyTag: 'Krieger' },
   // Nahkämpfer aus klinge.ts: keine Ressource, nur Abklingzeiten
   { id: 'klinge', name: 'Klingenstrich', desc: 'Strichmännchen mit 2 Katanas, Einhand oder Zweihand, nur Abklingzeiten', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen'], startKit: ['kQ', 'kE', 'kR', 'kAder', 'kClones', 'kSwap', 'kDash', 'kEat'], onlyTag: 'Klinge' },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
@@ -26,7 +26,7 @@ export const MODES = [
   { id: 'frostonly', name: 'Frost only', mods: ['frost'] },
   { id: 'fireonly', name: 'Fire only', mods: ['fire'] },
   { id: 'arcaneonly', name: 'Arcane only', mods: ['arcane'] },
-  { id: 'realmen', name: 'Real Men', mods: ['realmen'] },
+  { id: 'realmen', name: 'Strichkrieger', mods: ['realmen'] },
   { id: 'klinge', name: 'Klingenstrich', mods: ['klinge'] },
   { id: 'classic', name: 'Classic', mods: ['classic'] },
   { id: 'custom', name: 'Eigene Mischung', mods: null },   // frei wählbar

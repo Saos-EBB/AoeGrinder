@@ -1,12 +1,13 @@
-// Spielermodell: dünne Hülle um heroModels.ts (Magier und Nahkämpfer) (Quelle ist der Viewer, dort ändern und neu ziehen).
+// Spielermodell: dünne Hülle um die Figuren der Viewer (strichMagier.ts, strichKrieger.ts, klingeModel.ts).
 // Der Skin kommt beim Run-Start aus dem Modus; mage bleibt dasselbe Objekt, damit Aufrufer nichts merken.
 
 import * as THREE from 'three';
 import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
-import { buildMage, SKINS, buildWarrior, WEAPONS as WAR_WEAPONS } from './heroModels';
+import { buildStrichMagier } from './strichMagier';
 import { buildKlinge } from './klingeModel';
+import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
 import { weaponUnlocked } from '../meta';
 
@@ -15,18 +16,9 @@ const SKIN_WEAPON = { alle: 'pilgerast', frost: 'grenzwaechter', feuer: 'glutrut
 const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
 const WEAPON_STORE = 'frostgrind.weapon.v2';
 const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STORE) || '{}'); } catch { return {}; } })();
-const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
-let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
-// Nahkämpfer aus heroModels.ts: Treffer-Moment geht an realMen.ts bzw. klinge.ts
-const HEROES = { krieger: () => buildWarrior({ bloom: PERF.bloom, weapon: warWeapon }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
+// Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
+const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
-
-// Der eingebaute Stab weicht der Waffe. Sein Gelenk bleibt: Das Modell hält es in jeder Pose aufrecht.
-for (const [id, C] of Object.entries<any>(SKINS)) SKINS[id] = { ...C, addons(R, M, CC) {
-  C.addons?.(R, M, CC);
-  for (const o of [...R.staff.children]) if (o !== R.crystal && o !== R.crystalGlow) R.staff.remove(o);
-  R.crystal.visible = R.crystalGlow.visible = false;
-} };
 
 const NO_FX = {};
 const hitHandlers = [];
@@ -69,8 +61,8 @@ function setSkin(id) {
     if (cur.scarf) scene.add(cur.scarf);
     return;
   }
-  cur = buildMage(id, { bloom: PERF.bloom });
-  scene.add(cur.root);
+  cur = buildStrichMagier(id, { bloom: PERF.bloom });
+  scene.add(cur.root, cur.scarf);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
@@ -105,13 +97,6 @@ export const mage = {
   get skin() { return skin; },
   get hero() { return cur; },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
-  get warWeapon() { return warWeapon; },
-  rate: 1,                                        // Animationstempo der Nahkämpfer (Blutrausch)
-  setWarWeapon(id) {                              // Real Men: Waffenwahl vor dem Run, bleibt gespeichert
-    warWeapon = id;
-    try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }
-    if (skin === 'krieger') setSkin('krieger');
-  },
   setSkin,
   setWeapon(id) {                                 // Wahl im Hauptmenü, gilt pro Skin und bleibt gespeichert
     chosen[skin] = id;
@@ -122,7 +107,7 @@ export const mage = {
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {
     const s = Math.max(0, dt) / 1000;
-    cur.update(HEROES[skin] ? s * mage.rate : s, anim);
+    cur.update(s, anim);
     if (!weapon) return;
     clock += s;
     lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);

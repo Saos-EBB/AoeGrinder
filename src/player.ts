@@ -23,7 +23,7 @@ import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
-import { resetRealMen, rageOnHit, moveMul, rooted, takenMul } from './realMen';
+import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying } from './realMen';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -98,9 +98,10 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || klingeUntouchable()) return;
+  if (player.dead || klingeUntouchable() || warriorUntouchable()) return;
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
+  if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
   player.lastHitBy = dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava';
   player.lastCombat = state.now;
