@@ -68,6 +68,8 @@ export const CFG = {
 
 // SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie hier.
 export const SPELLS: any = {};
+// Dunkel-Schaden (Tag Dunkel): trifft immer, ignoriert die Schadensreduktion der Mobs, heilt um diesen Anteil // PH
+export const DARK_HEAL = 0.2;
 export const SPELL_AOE_HEIGHT = 3;   // PH: yd Höhenunterschied zur Wirkfläche, ab dem Flächen-Spells nicht mehr treffen
 export const SPELL_SLOTS = 8;
 export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink'];

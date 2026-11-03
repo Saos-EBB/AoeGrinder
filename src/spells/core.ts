@@ -89,7 +89,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
-      return damageMob(m, dmg, id, castKey);
+      return damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'));
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
     hitProjectile(m, amount) {

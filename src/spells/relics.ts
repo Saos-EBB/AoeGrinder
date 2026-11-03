@@ -29,7 +29,7 @@ export const ragnaros = {
 };
 
 export const desecrate = {
-  name: 'Entweihen', relic: true, desc: 'Schattenfläche aufs Bodenziel 10 s, wächst mit jedem Tick, der trifft.', ranks: ['dmg', 'mana', 'radius'], tags: ['Schatten', 'Fläche'], cls: 'shadow',
+  name: 'Entweihen', relic: true, desc: 'Dunkle Fläche aufs Bodenziel 10 s, wächst mit jedem Tick, der trifft. Dunkel-Schaden trifft immer, ignoriert die Rüstung und heilt dich.', ranks: ['dmg', 'mana', 'radius'], tags: ['Dunkel', 'Fläche'], cls: 'shadow',
   mana: 250, cd: 40000, dur: 10000, tickDmg: 20, range: 30, radius: 6, grow: 0.6, ground: true,
   effect(c, point) {
     if (!vfxOld()) desecrateOpen(point, c.radius(desecrate.radius));
