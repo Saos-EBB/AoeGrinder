@@ -24,7 +24,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v21';
+export const SCORE_VERSION = 'v22';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -53,7 +53,6 @@ export const CFG = {
   regenTick: 2000, fiveSecRule: 5000,               // Player::Regenerate, SetLastManaUse
   critBonus: 0.5,                                   // SpellCriticalDamageBonus
   baseCrit: 0.05,                                   // PH
-  gcd: 1500,                                        // PH (StartRecoveryTime aus Spelldaten)
   novaBreakChance: 0.25,                            // PH
   runSpeed: 7, backSpeed: 4.5, turnSpeed: 3.141594, // baseMoveSpeed[] in Unit.cpp (yd/s, rad/s)
   walkSpeed: 2.5,                                   // VMaNGOS src/game/Objects/Unit.cpp, baseMoveSpeed[MOVE_WALK], Zeile 69

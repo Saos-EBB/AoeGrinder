@@ -52,7 +52,7 @@ export function resetGame() {
   Object.assign(player, {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
     facing: Math.PI, slowUntil: 0, stunUntil: 0, iceUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
-    lastManaUse: -1e9, nextRegen: CFG.regenTick, gcdUntil: 0, cds: {}, castAnimUntil: 0,
+    lastManaUse: -1e9, nextRegen: CFG.regenTick, cds: {}, castAnimUntil: 0,
     channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, won: false, kills: 0,
   });
   cam.offset = 0;

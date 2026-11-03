@@ -4,6 +4,12 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(karten): Level-Karten zeigen „⇄ Ersetzt: …“, wenn sie eine aktive Rune, Echo oder einen Spell-Slot verdrängen
+- feat(ui): Waffen-Werte in festen Zeilen (Typ, Fokus, Wert, Element, Hersteller, Anhänger, Unikat) mit eigener Farbe pro Zeile, fehlende Schichten als „—“; in Hover-Karte und Kisten-Ergebnis
+- feat(dev): Einstellungen, Dev: Meta: Knöpfe „Inventar zufällig füllen“ (Kisten-Waffen bis 15, ohne Staub) und „Inventar leeren“
+- feat(spells): Kein globaler Cooldown mehr, jeder Zauber hat nur seine eigene Abklingzeit; GCD-Zeile im Charakterfenster entfernt, Spielversion v22
+- feat(klinge): Q ist eine Schlag-Kette, ein Schlag pro Druck, 1 s Zeitfenster, 1 Druck gepuffert. Einhand: Ziehschnitt, Rückhand, Stoß mit Treffer beim Wegstecken (Linie 5,6 yd). Zweihand: rechts, links, X-Schnitt, Wirbelsprung mit Druckwelle
+- feat(klinge): Modell kann die Q-Kette (Einhand 3 Schläge, Zweihand 4), hält die Endpose und steckt weg; /klinge.html zeigt alle Schläge
 - feat(packs): Packs doppelt so groß („Große Packs“ damit 4× früher), Champion-Packs öfter (20 % ab Level 6, 4 Mobs), unberührte Packs 4+ Level unter dir werden außer Sicht durch aktuelle ersetzt
 - fix(dunkel): Licht als Kreis um die Figur statt Kegel nach vorn und Aufhelllicht von der Kameraseite
 - fix(dodge): Figur kippt nicht mehr in den Boden; Dodge läuft zwischen festem Start- und Zielpunkt, Wände und hohe Stufen kürzen ihn

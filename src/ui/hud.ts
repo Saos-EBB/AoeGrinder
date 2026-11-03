@@ -176,8 +176,8 @@ export function updateHud() {
 
   for (const [id, sl] of Object.entries<any>(slots)) {
     const own = spellCdEnd(id);
-    const total = own > player.gcdUntil ? spellCd(id) : CFG.gcd;
-    const left = Math.max(0, Math.max(own, player.gcdUntil) - state.now);
+    const total = spellCd(id);
+    const left = Math.max(0, own - state.now);
     const pct = left > 0 ? left / total * 100 : 0;
     sl.cd.style.background = pct > 0 ? `conic-gradient(#000a ${pct}%, transparent 0)` : 'none';
     sl.cdText.textContent = own - state.now > 1500 ? Math.ceil(left / 1000) : '';

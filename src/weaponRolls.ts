@@ -67,22 +67,29 @@ export function rollWeapon() {
 
 // Text: alte Waffen (e, m) wie bisher, neue aus den Schichten
 const oldModelName = id => WEAPONS.find(x => x.id === id)?.name ?? id;
-export function effectLines(w) {
-  const f = factor(w.r);
+// Feste Zeilen in fester Reihenfolge, damit jede Wirkung bei jeder Waffe an derselben Stelle steht. text null = Schicht fehlt (Seltenheit zu niedrig o. Ä.).
+// Farben pro Zeile in COLORS.weaponRow (ui/colors.ts), das Element bringt seine eigene Farbe mit.
+export const WEAPON_ROWS = [['type', 'Typ'], ['focus', 'Fokus'], ['value', 'Wert'], ['element', 'Element'], ['maker', 'Hersteller'], ['extra', 'Anhänger'], ['unique', 'Unikat']];
+export function effectRows(w) {
+  const f = factor(w.r), rows: any = Object.fromEntries(WEAPON_ROWS.map(([kind, label]) => [kind, { kind, label, text: null, color: null }]));
+  const focus = id => `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`;
+  const value = (k, mul = 1) => `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f * mul)} ${VALUE_TEXT[k]}`;
   if (!isNew(w)) {
-    if (w.e.startsWith('f:')) return [`Fokus ${SPELLS[w.e.slice(2)].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`];
-    return [`${pct((w.e === 'cd' ? -1 : 1) * ROLLS.values[w.e] * f)} ${VALUE_TEXT[w.e]}`];
+    if (w.e.startsWith('f:')) rows.focus.text = focus(w.e.slice(2));
+    else rows.value.text = value(w.e);
+  } else {
+    const s = w.s, el = ELEMENTS[s.element];
+    rows.type.text = `${TYPES[s.type].name}: ${TYPE_TEXT[s.type]}`;
+    if (w.r >= 1) rows.focus.text = focus(s.focus);
+    rows.value.text = value(VALUE_KEY[s.value]);
+    if (s.element !== 'none') Object.assign(rows.element, { text: `${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`, color: `#${el.color.toString(16).padStart(6, '0')}` });
+    rows.maker.text = `${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`;
+    if (s.extra !== 'none') rows.extra.text = `${EXTRAS[s.extra]}: ${value(VALUE_KEY[s.value2], 0.5)}`;
+    if (s.unique) rows.unique.text = oldModelName(s.unique);
   }
-  const s = w.s, k = VALUE_KEY[s.value], k2 = VALUE_KEY[s.value2], el = ELEMENTS[s.element];
-  const lines = [`${TYPES[s.type].name}: ${TYPE_TEXT[s.type]}`];
-  if (w.r >= 1) lines.push(`Fokus ${SPELLS[s.focus].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`);
-  lines.push(`${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f)} ${s.value}`);
-  if (s.element !== 'none') lines.push(`${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`);
-  lines.push(`${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`);
-  if (s.extra !== 'none') lines.push(`${EXTRAS[s.extra]}: ${pct((k2 === 'cd' ? -1 : 1) * ROLLS.values[k2] * f / 2)} ${s.value2}`);
-  if (s.unique) lines.push(`Unikat: ${oldModelName(s.unique)}`);
-  return lines;
+  return WEAPON_ROWS.map(([kind]) => rows[kind]);
 }
+export const effectLines = w => effectRows(w).filter(r => r.text).map(r => `${r.label}: ${r.text}`);
 export const effectText = w => effectLines(w).join(' · ');
 export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
 export const rarityOf = w => CARD_RARITIES[w.r];
@@ -114,6 +121,16 @@ export function deleteWeapon(id) {
   saveMeta();
 }
 export function equip(id) { meta.equipped = id; saveMeta(); }
+// Dev: Inventar bis zum Limit mit Waffen aus der Kiste füllen, ohne Staub; leeren ohne Rückgabe
+export function devFillInventory() {
+  while (!inventoryFull()) meta.inv.push(rollWeapon());
+  saveMeta();
+}
+export function devClearInventory() {
+  meta.inv = [];
+  meta.equipped = null;
+  saveMeta();
+}
 
 // Werte auf mods/stat. cd und cast sind Anteile (−0,05 = 5 % weniger)
 function applyValue(key, v) {

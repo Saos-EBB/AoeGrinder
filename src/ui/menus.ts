@@ -1,7 +1,7 @@
 import { state, player } from '../state';
 import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL } from '../config';
-import { rollOffer, forcedOffer, cardPreview, cardStage } from '../cards';
+import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
 import { COLORS } from './colors';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
@@ -32,7 +32,7 @@ export function showCards(offer?) {
   $('cards').innerHTML = '';
   for (const c of offer) {
     const r = CARD_RARITIES[c.tier];
-    const el = document.createElement('div'), stage = cardStage(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
+    const el = document.createElement('div'), stage = cardStage(c), rep = cardReplaces(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
     const spell = SPELLS[c.spell ?? c.learn], school = COLORS.school[spell?.school ?? spell?.cls];
     el.className = `card frame${c.kind === 'relic' ? ' relicCard' : ''}${stage ? ' improves' : ''}`;
     el.style.borderColor = r.color;
@@ -41,6 +41,7 @@ export function showCards(offer?) {
       <h3 class="title" style="color:${school ?? r.color}">${c.name}</h3>
       <div class="src">${c.src}</div>
       <p>${markWords(c.desc(r.mult))}</p>
+      ${rep ? `<div class="replaces">⇄ ${rep.label}: <b>${rep.name}</b></div>` : ''}
       <div class="preview">${cardPreview(c, r.mult)}</div>
       ${stage ? `<div class="stage">Stufe ${stage} → ${stage + 1}</div>` : ''}
       <div class="rank" style="color:${r.color}">${r.name} ×${String(r.mult).replace('.', ',')}</div>`;

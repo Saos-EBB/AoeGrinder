@@ -55,7 +55,7 @@ function runeCards() {
       if (atMax || !isUnlocked(`rune:${id}:${i}`)) continue;
       list.push({
         kind: 'rune', id: `rune-${id}-${r.id}`, spell: id, name: r.name, src: `Rune · ${SPELLS[id].name}`,
-        desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.${state.runes[id] && state.runes[id] !== r.id ? ' Ersetzt die aktive Rune.' : ''}`,
+        desc: m => `${r.desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
         apply: m => { state.runes[id] = r.id; stat(id).dmg += CARD_SPELL_DMG * m; },
       });
     }
@@ -131,6 +131,18 @@ export function cardPreview(c, m) {
   return id && c.kind !== 'talent' ? dmgLine(id, CARD_SPELL_DMG * m) : '';
 }
 // Wie oft die Karte schon gewählt wurde, Talente zählen ihren Rang
+// Was die Karte verdrängt: aktive Rune desselben Spells, Echo und Großes Echo schließen sich aus, voller Spell-Slot. null = nichts.
+export function cardReplaces(c) {
+  if (c.kind === 'rune') {
+    const cur = state.runes[c.spell], rune = cur && cur !== c.id.split('-').pop() && SPELLS[c.spell].runes?.find(r => r.id === cur);
+    return rune ? { label: 'Ersetzt', name: rune.name } : null;
+  }
+  if (c.id === 'support-bigEcho' && state.supports.echo) return { label: 'Ersetzt', name: 'Echo' };
+  if (c.id === 'support-echo' && state.supports.bigEcho) return { label: 'Wirkt nicht neben', name: 'Großes Echo' };
+  if (c.kind === 'spell' && !state.slots.includes(null)) return { label: 'Slots voll, ersetzt danach', name: 'einen Spell deiner Wahl' };
+  return null;
+}
+
 export const cardStage = c => c.kind === 'talent' ? state.cardRanks[c.id] || 0 : state.cardPicks[c.id] || 0;
 
 const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: relicCards, talent: talentCards, luck: luckCards };
