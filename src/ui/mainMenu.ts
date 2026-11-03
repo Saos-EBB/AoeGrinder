@@ -8,6 +8,7 @@ import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
+import { WAR_WEAPON_NAMES } from '../realMen';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon } from '../weaponRolls';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
@@ -98,7 +99,9 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  $('menuWeaponBox').hidden = !mage.weapon;
+  $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger';
+  if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Strichkrieger: feste Waffe vor dem Run
+    weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };

@@ -9,7 +9,15 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 // Dauern in ms. Die Spielregeln stehen in REALMEN (realMen.ts)
 export const STRICH_TIMING = {
   q: [520, 480, 500, 820], e: 950, leap: { ms: 1300, move: { from: 0.22, to: 0.66 } }, exec: 1400, cry: 1000, last: 1500,   // PH
+  // Pro Waffe: Dauer der Schläge, von E und Maus 4. pose: welche Schwert-Pose ein Schlag nutzt (Axt: der Spalthieb ist der Sprung-Smash ohne Sprung)
+  weapons: {
+    sword: { q: [520, 480, 500, 820], pose: [0, 1, 2, 3], e: 950, exec: 1400 },
+    axe: { q: [560, 520, 750], pose: [0, 1, 3], e: 700, exec: 1400 },
+    mace: { q: [450, 450, 450, 450], pose: [0, 1, 2, 0], e: 950, exec: 1100 },   // Tempo +30 % gibt das Spiel über anim.rate
+  },
 };
+// Form der Waffen: Spitze (Treffer) und linke Hand ab dem Griff. Das Schwert ersetzt im Spiel das Schlachtblech (models/mage.ts)
+const WEAPON_SHAPE = { sword: { tip: 1.95, grip: .24 }, axe: { tip: 1.75, grip: .34 }, mace: { tip: 1.6, grip: .3 } };   // PH
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -55,7 +63,8 @@ const Q_END = [
 const SIT = { y: .32, h: [-.1, .15, 0], c: [.2, -.1, 0], n: [.1, 0, 0], hR: [-.55, 1.0, .25], b: [0, -1, .05], e: [0, 0, 1], hL: [.35, .75, .4], fL: [.42, .07, .75], fR: [-.3, .07, .45] };
 const DEAD = { y: .24, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hR: [-.75, .18, -.2], hL: [.7, .14, -.6], b: [-.5, -.02, .85], e: [0, 1, 0], fL: [.32, .07, .98], fR: [-.3, .07, 1.02] };
 
-export function buildStrichKrieger({ bloom = false } = {}) {
+export function buildStrichKrieger({ bloom = false, weapon = 'sword' } = {}) {
+  const W = STRICH_TIMING.weapons[weapon] ?? STRICH_TIMING.weapons.sword;
   const fxGroup = new THREE.Group();
   const VMAT = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad });
   VMAT.onBeforeCompile = s => {
@@ -152,10 +161,44 @@ function swordGeo() {
   return mergeGeometries([prep(blade, C.iron), prep(edge, C.edge), prep(guard, C.guard), prep(grip, C.wrap), prep(pommel, C.guard)]);
 }
 const SWORD_GEO = swordGeo();
+// Holzfälleraxt: langer Holzstiel, kurzer breiter Kopf ganz oben, Schneide auf +x, Spaltkeil hinten
+function axeGeo() {
+  const wood = new THREE.Color(0x6b4a2a), leather = new THREE.Color(0x3a2a1c);
+  const shaft = new THREE.CylinderGeometry(.034, .04, 2.1, 6).translate(0, .75, 0);
+  const wraps = [-.18, -.05, .08].map(y => prep(new THREE.CylinderGeometry(.046, .046, .07, 6).translate(0, y, 0), leather));
+  const notch = [.5, .62, .74].map(y => prep(new THREE.BoxGeometry(.075, .012, .075).translate(0, y, 0), leather));
+  const s = new THREE.Shape([[.03, 1.36], [.34, 1.18], [.6, 1.34], [.68, 1.6], [.6, 1.88], [.34, 2.0], [.03, 1.84]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const head = new THREE.ExtrudeGeometry(s, { depth: .05, bevelEnabled: false }).translate(0, 0, -.025);
+  const edge = new THREE.ExtrudeGeometry(new THREE.Shape([[.58, 1.32], [.68, 1.6], [.58, 1.9], [.54, 1.87], [.63, 1.6], [.54, 1.35]].map(([x, y]) => new THREE.Vector2(x, y))), { depth: .056, bevelEnabled: false }).translate(0, 0, -.028);
+  const wedge = new THREE.ConeGeometry(.1, .28, 4).rotateZ(Math.PI / 2).translate(-.16, 1.6, 0);
+  const cap = new THREE.BoxGeometry(.12, .56, .08).translate(0, 1.6, 0);
+  return mergeGeometries([prep(shaft, wood), ...wraps, ...notch, prep(head, C.iron), prep(edge, C.edge), prep(wedge, C.iron), prep(cap, C.guard)]);
+}
+// Streitkolben: beschlagener Stiel, Kopf mit 6 Flanschen. Die blauen Risse liegen im Glüh-Mesh
+function maceGeo() {
+  const shaft = new THREE.CylinderGeometry(.038, .044, 1.75, 6).translate(0, .6, 0);
+  const bands = [-.15, .35, .85, 1.3].map(y => prep(new THREE.CylinderGeometry(.052, .052, .06, 6).translate(0, y, 0), C.edge));
+  const core = prep(new THREE.IcosahedronGeometry(.15, 0).scale(1, 1.25, 1).translate(0, 1.6, 0), C.iron);
+  const flanges = [0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.035, .34, .15).translate(0, 1.6, .15).rotateY(i / 6 * Math.PI * 2 + Math.PI / 6), C.guard));
+  const spike = prep(new THREE.ConeGeometry(.05, .16, 5).translate(0, 1.86, 0), C.edge);
+  const pommel = prep(new THREE.IcosahedronGeometry(.06, 0).translate(0, -.27, 0), C.guard);
+  return mergeGeometries([prep(shaft, C.wrap), ...bands, core, ...flanges, spike, pommel]);
+}
+function maceGlowGeo() {
+  const blue = new THREE.Color(0x6fc8ff);
+  return mergeGeometries([0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.012, .26, .02).translate(0, 1.6, .2).rotateY(i / 6 * Math.PI * 2), blue)));
+}
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
 const sword = new THREE.Group(); root.add(sword);
-const swordMesh = new THREE.Mesh(SWORD_GEO, VMAT); sword.add(swordMesh);
-let tipLen = 1.95, gripLen = .24;
+const swordMesh = new THREE.Mesh(weapon === 'axe' ? axeGeo() : weapon === 'mace' ? maceGeo() : SWORD_GEO, VMAT); sword.add(swordMesh);
+let tipLen = WEAPON_SHAPE[weapon]?.tip ?? 1.95, gripLen = WEAPON_SHAPE[weapon]?.grip ?? .24;
+// Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller
+let maceGlow = null;
+if (weapon === 'mace') {
+  maceGlow = new THREE.Mesh(maceGlowGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }));
+  if (bloom) maceGlow.material.color.setScalar(2.2);
+  sword.add(maceGlow);
+}
   // Fleischkeule zum Essen: Knochen + Fleisch, Griff im Ursprung, Fleisch nach +y
   const meat = new THREE.Mesh(mergeGeometries([
     prep(new THREE.CylinderGeometry(.025, .025, .22, 5).translate(0, -.02, 0), new THREE.Color(0xeee6d0)),
@@ -327,7 +370,7 @@ function impact(p, r, nCr = 6) {
   // Treffer-Moment an der Schwertspitze
   const hitTip = (kind, i = 0) => { const p = tipPos(); model.onHit?.(kind, p.x, p.z, i); };
   const hitRoot = (kind, i = 0) => model.onHit?.(kind, root.position.x, root.position.z, i);
-function defQ(step) {
+function defQ(step, hitI = step) {
   const from = step === 0 ? IDLE : Q_END[step - 1];
   const W = [
     P(IDLE, { y: .9, h: [0, -.3, 0], c: [.15, -.45, 0], hR: [-.3, 1.95, -.05], hL: 'G', b: [.15, .6, -.8], e: [0, 1, 0], fR: [-.3, .07, -.15] }),
@@ -345,10 +388,19 @@ function defQ(step) {
   }], [tHit, () => {
     if (step === 3) { const p = tipPos(); impact(p, 4.5, 7); }
     else emit(tipPos(), 8, 3, 0x8f877a, 12, .5);
-    hitTip('q', step);
+    hitTip('q', hitI);
   }]];
   return { dur, keys, ev, walk: step < 3 };
 }
+  // Kahlschlag (Axt): einmal rundum mit ausgestreckter Axt, Treffer am Spieler
+  function defSpin() {
+    const wind = P(IDLE, { y: .9, h: [0, .5, 0], c: [.3, .6, 0], n: [-.2, -.3, 0], hR: [.55, 1.3, -.3], hL: 'G', b: [.9, .2, -.4], e: [0, 0, 1], fL: [.32, .07, .1], fR: [-.32, .07, -.2] });
+    const out = P(IDLE, { y: .82, h: [0, 0, 0], c: [.3, 0, .1], n: [-.15, 0, 0], hR: [-.7, 1.15, .25], hL: 'G', b: [-1, -.05, .15], e: [0, 0, 1], fL: [.36, .07, .05], fR: [-.36, .07, -.05] });
+    return { dur: W.e, keys: [[0, IDLE], [.25, wind, 'out'], [.4, out], [.8, out], [1, IDLE]],
+      ev: [[.5, () => { arc([0, 1.0, 0], [-Math.PI / 2, 0, 0], 2.8, 5.8, .35); hitRoot('e'); }]],
+      tick(u) { spinAng = TAU * inOut(clamp((u - .3) / .5, 0, 1)); },
+      end() { spinAng = 0; } };
+  }
   function defE() {
   const up = P(IDLE, { y: 1.0, c: [-.25, 0, 0], n: [-.2, 0, 0], hR: [-.05, 2.2, -.1], hL: 'G', b: [0, .35, -.94], e: [0, 1, 0], fL: [.32, .07, .1], fR: [-.32, .07, -.15] });
   const slam = P(IDLE, { y: .62, h: [0, 0, 0], c: [.85, 0, 0], n: [-.7, 0, 0], hR: [0, .75, .82], hL: 'G', b: [0, -.8, .6], e: [0, -1, 0], fL: [.42, .07, .28], fR: [-.42, .07, -.35] });
@@ -401,8 +453,14 @@ function defQ(step) {
         [.72, () => { flare = 1.5; ring(root.position, 0xd8121c, 12, .8, .12); emit(root.position.clone().setY(gy() + .3), 60, 6, 0xe0141c, 2, 1.4); hitRoot('last'); }]] };
   }
   const makeAction = ability => {
-    if (ability?.[0] === 'q') return defQ(+ability[1]);
-    return { e: defE, whirl: defWhirl, leap: defLeap, exec: defExec, cry: defCry, last: defLast }[ability]?.();
+    if (ability?.[0] === 'q') {
+      const i = +ability[1], d = defQ(W.pose[i] ?? i, i);
+      d.dur = W.q[i] ?? d.dur;
+      return d;
+    }
+    const d = { e: weapon === 'axe' ? defSpin : defE, whirl: defWhirl, leap: defLeap, exec: defExec, cry: defCry, last: defLast }[ability]?.();
+    if (ability === 'e' || ability === 'exec') d.dur = W[ability];
+    return d;
   };
   const applyTuple = (e, v) => e.set(v[0], v[1], v[2]);
   let eatK = { s: 0, k: 0 };
@@ -522,10 +580,10 @@ function defQ(step) {
   // Risse von Bodenbrecher: das Spiel meldet jede Welle
   const crackAt = (x, z, dx, dz) => { const q = V(x, 0, z); crack(q, V(dx, 0, dz).applyAxisAngle(V(0, 1, 0), (Math.random() - .5) * .5), 1.9, 1.4); emit(V(x, gy() + .1, z), 8, 3, 0x8f877a, 12, .7); };
   const model: any = {
-    root, update, scarf: cloth, onHit: null,
+    root, update, scarf: cloth, onHit: null, weapon,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
-    fx: { group: fxGroup, crackAt, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
-    get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count) / 3 + (SN - 1) * 2); },
+    fx: { group: fxGroup, crackAt, ring, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
+    get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count + (maceGlow ? maceGlow.geometry.attributes.position.count : 0)) / 3 + (SN - 1) * 2); },
     get bloom() { return bloom; },
     // Waffe aus models/weapons statt des eigenen Schwerts: Griff in der rechten Hand, Länge für Treffer und linke Hand aus der Waffe
     setWeapon(w, scale = 1, tip = 1.95, grip = .24) {

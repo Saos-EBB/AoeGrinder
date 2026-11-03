@@ -87,6 +87,8 @@ Stand Vercel: v18 von `main`, nur noch dunkel (2026-11-03). Stand Artifact: v15 
 - Blutung ignoriert Crits. Keine Icons für die 8 Slots. Im Modus keine Seitwärts- und Autorun-Taste (Q, E, R belegt), Seitwärts geht mit rechter Maus plus A/D.
 - Ungetestet: Runen Jäger, Gerichteter Wurf, Blutzoll; Pad und Handy.
 
+**Strichkrieger-Waffen (Branch `waffen`):** Riesenschwert (Schlachtblech), Holzfälleraxt, Streitkolben; Wahl vor dem Run, gespeichert in `frostgrind.warWeapon`. Zahlen und Kits in `REALMEN.weapons` und `KITS` (`realMen.ts`), Modelle und Schlag-Dauern in `strichKrieger.ts` (`STRICH_TIMING.weapons`). Modelle selbst gebaut, nicht aus dem Viewer. Runen für Q und Maus 4 von Axt und Kolben fehlen noch. Die Runen-Freischaltungen im Shop gelten pro Slot, also für alle drei Waffen gemeinsam.
+
 **Strichkrieger, alles `// PH`, getestet per Skript, nicht von Hand gespielt:**
 - Kevin bestätigen: Halten von Q schlägt weiter (Entwurf: ein Schlag pro Druck); Kosten und Abklingzeiten der neuen Moves sind frei gesetzt; Wirbelwind behält Radius 8 aus dem Spiel, der Viewer zeigt 3,2.
 - Rüstung 25 % plus ×3 bei voller Wut und wenig Leben, dazu Letzter Atem: Balance ungeprüft. Runen fast alle ungetestet. Keine Icons außer Kampfschrei.

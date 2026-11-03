@@ -138,6 +138,7 @@ function renderBoard() {
     tr.addEventListener('click', () => { openDate = openDate === r.date ? null : r.date; renderBoard(); });
   });
   list.appendChild(table);
+  list.insertAdjacentHTML('beforeend', '<div style="opacity:.7;font-size:12px;margin-top:4px">Zeile anklicken: Details mit Build und Waffe</div>');
   renderDetail(rows.find(r => r.date === openDate));
 }
 
@@ -161,6 +162,7 @@ function renderDetail(r) {
   add('Zone', r.zone);
   add('Todesursache', r.cause);
   add('Spielversion', r.version);
+  add('Build', r.build || '–');   // Spells, Runen, Supports, Relikt und Waffe des Runs
   if (r.note) add('Notiz', r.note);
   box.appendChild(grid);
 }

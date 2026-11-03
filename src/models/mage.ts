@@ -12,7 +12,11 @@ import { buildWeapon } from './weapons/index';
 import { equippedModel } from '../weaponRolls';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
-const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
+// Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
+const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
+const WAR_WEAPONS = ['sword', 'axe', 'mace'];
+let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
+const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warWeapon }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 const NO_FX = {};
@@ -74,7 +78,7 @@ function setSkin(id) {
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
-    const hw = HERO_WEAPON[id];
+    const hw = id === 'krieger' && warWeapon !== 'sword' ? null : HERO_WEAPON[id];   // Axt und Kolben baut das Modell selbst
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
@@ -112,7 +116,13 @@ export const mage = {
   get trail() { return cur.trail; },
   get fx() { return HEROES[skin] ? NO_FX : cur.fx; },   // bei Nahkämpfern ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
-  get hero() { return cur; },                     // Klingenstrich: Effekte und Haltung des Modells
+  get hero() { return cur; },
+  get warWeapon() { return warWeapon; },
+  setWarWeapon(id) {
+    warWeapon = id;
+    try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }
+    if (skin === 'krieger') setSkin('krieger');
+  },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
   setSkin,
   refreshWeapon() { wield(equippedModel()); },   // Wahl im Hauptmenü
