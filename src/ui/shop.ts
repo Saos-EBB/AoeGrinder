@@ -7,7 +7,7 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
@@ -153,4 +153,7 @@ const refresh = () => { renderMenu(); };
 $('devDust').addEventListener('click', () => { devSetDust(meta.dust + 500); refresh(); });
 $('devUnlock').addEventListener('click', () => { devUnlockAll(); refresh(); });
 $('devMetaReset').addEventListener('click', () => { devReset(); refresh(); });
+const refreshInv = () => { refresh(); if ($('shopModal').classList.contains('show')) renderShop(); };
+$('devInvFill').addEventListener('click', () => { devFillInventory(); refreshInv(); });
+$('devInvClear').addEventListener('click', () => { devClearInventory(); refreshInv(); });
 $('devComplete').addEventListener('click', () => { $('settingsClose').click(); $('pauseModal').classList.remove('show'); if (!player.dead) completeRun('Dev'); });

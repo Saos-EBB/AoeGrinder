@@ -114,6 +114,16 @@ export function deleteWeapon(id) {
   saveMeta();
 }
 export function equip(id) { meta.equipped = id; saveMeta(); }
+// Dev: Inventar bis zum Limit mit Waffen aus der Kiste füllen, ohne Staub; leeren ohne Rückgabe
+export function devFillInventory() {
+  while (!inventoryFull()) meta.inv.push(rollWeapon());
+  saveMeta();
+}
+export function devClearInventory() {
+  meta.inv = [];
+  meta.equipped = null;
+  saveMeta();
+}
 
 // Werte auf mods/stat. cd und cast sind Anteile (−0,05 = 5 % weniger)
 function applyValue(key, v) {
