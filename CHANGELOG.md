@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- fix(dunkel): Licht als Kreis um die Figur statt Kegel nach vorn und Aufhelllicht von der Kameraseite
 - fix(dodge): Figur kippt nicht mehr in den Boden; Dodge läuft zwischen festem Start- und Zielpunkt, Wände und hohe Stufen kürzen ihn
 - feat(dodge): Dev-Schalter „Mob-Angriffe ×0,3“ in den Einstellungen zum Testen der i-Frames; Code-Karte
 - feat(dodge): Karten Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster +50 %) in allen Modi, Spielversion v21
