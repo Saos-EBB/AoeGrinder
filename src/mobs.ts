@@ -314,6 +314,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);
+  if (state.weaponHit && !noRoll && SPELLS[source] && !SPELLS[source].fixed) state.weaponHit(mob, dmg, crit, { burnMob, pullMob });   // Mage-Waffe: Element, Lebensraub (weaponRolls.ts)
   if (!noRoll) {                         // Wucht: Einschlag relativ zum Mob-Leben
     addTrauma(Math.min(0.12, dmg / mob.maxHp * W.shake.spellK));
     if (dmg >= mob.maxHp * W.big.frac) { bigHit(mob, schoolOf(source)); bigKnock(mob, dmg / mob.maxHp); }

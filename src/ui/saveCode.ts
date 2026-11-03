@@ -16,7 +16,7 @@ const loadRunsRaw = () => { try { return JSON.parse(localStorage.getItem(SAVE_CO
 
 export function exportCode() {
   const data = { v: SAVE_CODE.version, d: meta.dust, u: meta.unlocked, b: meta.bought, t: meta.bestTier, o: meta.offer,
-    i: meta.inv.map(w => [w.e, w.r, w.m]), q: meta.inv.findIndex(w => w.id === meta.equipped), r: loadRunsRaw() };
+    i: meta.inv.map(w => w.v === 2 ? { r: w.r, s: w.s } : [w.e, w.r, w.m]), q: meta.inv.findIndex(w => w.id === meta.equipped), r: loadRunsRaw() };
   const b64 = toB64(JSON.stringify(data));
   return b64 + check(b64);
 }
@@ -31,7 +31,8 @@ export function importCode(code, replace = true) {
   try { data = JSON.parse(fromB64(b64)); } catch { return 'Der Code ist beschädigt.'; }
   if (data?.v !== SAVE_CODE.version) return `Der Code hat Version ${data?.v ?? '?'}, erwartet ist ${SAVE_CODE.version}.`;
   if (!replace) return null;
-  const inv = (data.i ?? []).map(([e, r, m], n) => ({ id: n + 1, e, r, m }));
+  // Alte Waffen als [Effekt, Seltenheit, Modell], Baukasten-Waffen als { r, s }
+  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : { id: n + 1, v: 2, r: w.r, s: w.s });
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
     equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length });
   saveMeta();

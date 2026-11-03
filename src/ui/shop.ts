@@ -7,7 +7,7 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, rarityOf } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { pick } from '../util';
 
@@ -28,7 +28,7 @@ export function afterRun(completed) {
 
 // Magische Kiste: kurzes Würfeln, dann liegt die Waffe im Inventar. Animation: Namen wechseln schnell und werden langsamer. // PH: Zeiten
 const SPIN = { steps: 16, startMs: 40, growMs: 12 };
-let spinning = false;
+let spinning = false, lastPull = null;   // lastPull: Ergebnis-Karte bleibt bis zum nächsten Zug stehen
 function chestBox() {
   const box = document.createElement('div');
   const h = document.createElement('h3');
@@ -54,11 +54,18 @@ function chestBox() {
       b.style.borderColor = name.style.color = rarityOf(show).color;
       if (i++ < SPIN.steps) { setTimeout(step, SPIN.startMs + SPIN.growMs * i); return; }
       spinning = false;
+      lastPull = w;
       setTimeout(renderShop, 900);
     };
     step();
   });
-  box.append(h, b);
+  const card = document.createElement('div');   // Ergebnis-Karte des letzten Zugs
+  Object.assign(card.style, { whiteSpace: 'pre-line', fontSize: '12px', textAlign: 'left', border: '1px solid transparent', borderRadius: '4px', padding: '4px 8px', margin: '0 0 6px' });
+  if (lastPull) {                                // Ergebnis: Name und alle Schichten der Waffe
+    card.textContent = `${weaponName(lastPull)}\n${effectLines(lastPull).join('\n')}`;
+    card.style.borderColor = card.style.color = rarityOf(lastPull).color;
+  }
+  box.append(h, b, card);
   // Inventar: löschen gibt Staub zurück
   for (const w of meta.inv) {
     const row = document.createElement('button');
@@ -67,6 +74,7 @@ function chestBox() {
     const n = document.createElement('span'), t = document.createElement('span');
     n.textContent = weaponName(w);
     n.style.color = rarityOf(w).color;
+    row.title = effectLines(w).join('\n');
     t.textContent = `Löschen +${ROLLS.refund[w.r]}`;
     row.append(n, t);
     row.dataset.nav = `inv-${w.id}`;

@@ -12,7 +12,7 @@ import { combatText, fmtTime } from './ui/hud';
 import { showCards, levelRefill } from './ui/menus';
 import { rankAllSpells } from './cards';
 import { mouseBtn, act } from './input';
-import { fillPacks, removeMob, announceNewMobs } from './mobs';
+import { fillPacks, removeMob, announceNewMobs, burnMob, pullMob } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import './ui/scoreHud';
@@ -24,6 +24,7 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
+import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying } from './realMen';
@@ -276,5 +277,6 @@ export function updatePlayer(dt) {
   }
   updateChannel();
   updateIceBlock();
+  updateWeaponAura({ burnMob, pullMob });
   regenerate(dt);
 }
