@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(figuren): Eigene Sitz- und Ess-/Trink-Animation mit Requisite für alle Strichfiguren (Becher, Flasche, Tasse, Tee-Schale, Fleischkeule, Yakitori-Spieß)
 - feat(mobile): Hinweis-Banner „Handy-Steuerung noch buggy – in Arbeit“, Antippen blendet ihn aus
 - chore: heroModels.ts gelöscht (alte Magier, Krieger, Samurai, Ninja), nur die Strichfiguren bleiben; Spuren in models/trail.ts
 - feat(meta): Spielstand-Code im Hauptmenü (zeigen, kopieren, eingeben) mit Staub, Freischaltungen, Inventar und Ranglisten

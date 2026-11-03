@@ -11,7 +11,6 @@ import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
 import { equippedModel } from '../weaponRolls';
 
-const SIT_LIFT = 0.35;     // Figur sackt beim Sitzen und im Tod ab, die Waffe bleibt so über dem Boden, // PH
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
@@ -102,8 +101,7 @@ export const mage = {
     cur.update(s, anim);
     if (!weapon) return;
     clock += s;
-    lift += ((anim.state === 'sit' || anim.state === 'dead' ? SIT_LIFT : 0) - lift) * Math.min(1, s * 6);
-    mount.position.y = (weapon.cane ? weapon.gripY - STAFF_FOOT : 0) + lift;
+    mount.position.y = weapon.cane ? weapon.gripY - STAFF_FOOT : 0;   // beim Sitzen legen die Strichmagier den Stab ab, das Gelenk trägt ihn
     weapon.combat = !!anim.channel || anim.cast > 0;
     weapon.update(s, clock);
   },

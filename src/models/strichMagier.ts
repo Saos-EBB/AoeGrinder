@@ -72,6 +72,37 @@ function glowMat(glowU) {
   return m;
 }
 
+// Requisiten zum Trinken: Griffpunkt im Ursprung, Öffnung nach +y
+function makeProp(skin) {
+  const L = [];
+  const add = (g, c, pos = [0, 0, 0], rot = [0, 0, 0]) => L.push(prep(g, col(c), new THREE.Matrix4().compose(V(pos[0], pos[1], pos[2]), new THREE.Quaternion().setFromEuler(new THREE.Euler(rot[0], rot[1], rot[2])), V(1, 1, 1))));
+  if (skin === 'base') { // Zuhälter-Becher: Gold, Steine, lila Inhalt
+    add(new THREE.CylinderGeometry(.045, .05, .012, 8), 0xe2b13c, [0, -.07, 0]);
+    add(new THREE.CylinderGeometry(.012, .014, .07, 5), 0xe2b13c, [0, -.035, 0]);
+    add(new THREE.CylinderGeometry(.06, .03, .09, 8), 0xe2b13c, [0, .045, 0]);
+    add(new THREE.CylinderGeometry(.055, .055, .006, 8), 0x8a2be2, [0, .088, 0]);
+    for (let i = 0; i < 4; i++) { const a = i / 4 * TAU; add(new THREE.OctahedronGeometry(.014, 0), i % 2 ? 0xe0142a : 0x22c06a, [Math.sin(a) * .047, .05, Math.cos(a) * .047]); }
+  }
+  if (skin === 'fire') { // Flasche mit kleiner Flamme
+    add(new THREE.CylinderGeometry(.035, .035, .14, 6), 0x6b3a12, [0, 0, 0]);
+    add(new THREE.CylinderGeometry(.013, .03, .06, 6), 0x6b3a12, [0, .1, 0]);
+    add(new THREE.CylinderGeometry(.036, .036, .05, 6), 0xf2e6c8, [0, -.01, 0]);
+    add(new THREE.ConeGeometry(.02, .07, 5), 0xffa31a, [0, .165, 0]);
+  }
+  if (skin === 'ice') { // heiße Tasse
+    add(new THREE.CylinderGeometry(.045, .04, .09, 8), 0xc84b32, [0, .02, 0]);
+    add(new THREE.CylinderGeometry(.041, .041, .006, 8), 0x5a2e1a, [0, .064, 0]);
+    add(new THREE.TorusGeometry(.025, .008, 3, 8), 0xc84b32, [.05, .02, 0], [0, 0, 0]);
+  }
+  if (skin === 'arcane') { // Tee-Schale
+    add(new THREE.LatheGeometry([[0, -.02], [.035, -.02], [.06, .02], [.075, .045]].map(([a, b]) => new THREE.Vector2(a, b)), 10), 0x9fc7a8);
+    add(new THREE.CylinderGeometry(.062, .062, .004, 10), 0x7a8f3a, [0, .03, 0]);
+  }
+  const m = new THREE.Mesh(mergeGeometries(L), new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad }));
+  m.visible = false; return m;
+}
+
+// Runen: 8 Glyphen in einer Canvas-Textur, als ein Mesh aus 8 Quads
 function makeRunes() {
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 64;
   const c = cv.getContext('2d'); c.strokeStyle = '#fff'; c.lineWidth = 5; c.lineCap = 'round';
@@ -133,10 +164,16 @@ function applyPose(F, p) {
   if (p.sf) _hp.lerp(V(p.sp[0], p.sp[1], p.sp[2]), p.sf);
   F.staff.position.copy(_hp);
   R.updateMatrixWorld(true);
+  // Requisite beim Trinken: an der linken Hand, 1,5-fach, damit man sie aus der Spielkamera erkennt
+  F.prop.visible = p.ps > .02;
+  if (F.prop.visible) {
+    R.worldToLocal(F.armL.hand.getWorldPosition(_hp));
+    F.prop.position.copy(_hp); F.prop.quaternion.setFromUnitVectors(UP, V(p.pd[0], p.pd[1], p.pd[2]).normalize()); F.prop.scale.setScalar(p.ps * 1.5);
+  }
 }
 
-const KEYS = ['y', 'h', 'c', 'n', 'hL', 'hR', 'b', 'fL', 'fR', 'kp', 'sf', 'sp', 'toe'];
-const DEF = { kp: 0, sf: 0, sp: [-.7, 1, 0], toe: 0 };
+const KEYS = ['y', 'h', 'c', 'n', 'hL', 'hR', 'b', 'fL', 'fR', 'kp', 'sf', 'sp', 'toe', 'pd', 'ps'];
+const DEF = { kp: 0, sf: 0, sp: [-.7, 1, 0], toe: 0, pd: [0, 1, 0], ps: 0 };   // pd/ps: Richtung und Größe der Requisite beim Trinken
 const P = (base, o = {}): any => Object.assign({}, DEF, base, o);
 const cp = p => { const o: any = {}; for (const k of KEYS) o[k] = Array.isArray(p[k]) ? p[k].slice() : p[k]; return o; };
 function mix(a, b, u) { const o: any = {}; for (const k of KEYS) o[k] = Array.isArray(a[k]) ? a[k].map((v, i) => lerp(v, b[k][i], u)) : lerp(a[k], b[k], u); return o; }
@@ -152,7 +189,7 @@ function runBase(ph, A = .5, lift = .28) {
   const s = Math.sin(ph), c = Math.cos(ph);
   return { fL: [.12, .06 + lift * Math.max(0, c), A * s], fR: [-.12, .06 + lift * Math.max(0, -c), -A * s], s, c };
 }
-const ANIM = {
+const ANIM: any = {
   // ── Basis: ruhig, neutral
   base: {
     idle: t => { const p = cp(N); const br = Math.sin(t * 1.8); p.y += .01 * br; p.c[0] += .025 * br; return p; },
@@ -282,8 +319,33 @@ const ANIM = {
   }
 };
 const FLOAT = { arcane: .42 };
-// Sitzen (Trinken) und Tod gibt es im Viewer nicht
-const SIT = P(N, { y: .3, c: [.1, 0, 0], n: [.1, 0, 0], hL: [.26, .55, .3], hR: [-.3, .62, .32], b: [0, 1, .08], fL: [-.2, .06, .24], fR: [.2, .06, .3], kp: 1 });
+// Schluck-Rhythmus: 0 = Ruhe, 1 = am Mund. Periode in s, Anteil am Mund
+function sip(t, per, frac = .35) { const k = (t % per) / per; return k < frac ? Math.sin(Math.PI * k / frac) ** .6 : 0; }
+const STAFF_DOWN = { sf: 1, sp: [-.62, .04, .05], b: [.05, .03, 1] };
+ANIM.base.sit = t => { // lümmelt, zurückgelehnt, Becher mit Stil
+  const s = sip(t, 3.2);
+  return P(N, { ...STAFF_DOWN, sp: [.62, .04, .05], y: .26, h: [-.12, .25, 0], c: [-.32 + .1 * s, -.15, 0], n: [.12 - .3 * s, -.2, -.12 + .1 * s],
+    fL: [.14, .06, .72], fR: [-.22, .06, .3], hR: [-.36, .22, -.32],
+    hL: [lerp(.32, .03, s), lerp(.62, .98, s), lerp(.38, .14, s)], pd: [lerp(0, -.1, s), lerp(1, .55, s), lerp(.05, -.8, s)], ps: 1 });
+};
+ANIM.fire.sit = t => { // wippt, Beine weit, trommelt, ext die Flasche
+  const s = sip(t, 3.6, .45), sw = Math.sin(t * 3);
+  return P(N, { ...STAFF_DOWN, y: .28, h: [-.05, .15 * sw, .1 * sw], c: [.15 - .65 * s, .2 * sw, .08 * Math.sin(t * 7)], n: [-.1 - .55 * s, .3 * Math.tanh(4 * Math.sin(t * 1.9)), .3 * (1 - s)],
+    fL: [.38, .06 + .05 * Math.max(0, Math.sin(t * 6)), .42], fR: [-.38, .06 + .05 * Math.max(0, -Math.sin(t * 6)), .4],
+    hR: [-.32, .52 + .06 * Math.abs(Math.sin(t * 12)), .48],
+    hL: [lerp(.48 + .12 * sw, .04, s), lerp(.85 + .15 * Math.sin(t * 4), 1.12, s), lerp(.35, .12, s)], pd: [lerp(.4 * sw, 0, s), lerp(1, -.55, s), lerp(0, -.85, s)], ps: 1 });
+};
+ANIM.ice.sit = t => { // Knie angezogen, Tasse mit beiden Händen, zittert
+  const s = sip(t, 3.0), j = Math.sin(t * 57) * .6 + Math.sin(t * 39) * .4;
+  const hx = lerp(.07, .05, s), hy = lerp(.72, 1.0, s) + .005 * j, hz = lerp(.4, .26, s);
+  return P(N, { ...STAFF_DOWN, y: .25, h: [0, 0, 0], c: [.36 - .1 * s, .01 * j, .018 * j], n: [-.05 + .15 * s, .02 * j, .02 * j],
+    fL: [.1, .06, .28], fR: [-.1, .06, .28], hL: [hx, hy, hz], hR: [-hx - .02, hy, hz], pd: [0, lerp(1, .7, s), lerp(0, -.7, s)], ps: 1 });
+};
+ANIM.arcane.sit = t => { // Lotus, Tee-Schale mit beiden Händen, langsam
+  const p = ANIM.arcane.idle(t), s = sip(t, 6, .45);
+  return P(p, { hL: [.07, lerp(.96, 1.12, s), lerp(.32, .22, s)], hR: [-.07, lerp(.96, 1.12, s), lerp(.32, .22, s)], n: [lerp(.1, .3, s), 0, 0], pd: [0, lerp(1, .85, s), lerp(0, -.5, s)], ps: 1 });
+};
+// Tod gibt es im Viewer nicht
 const DEAD = P(N, { y: .2, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hL: [.62, .12, -.55], hR: [-.6, .12, -.3], b: [-.2, .05, 1], fL: [.3, .06, .9], fR: [-.28, .06, .96], sf: 0 });
 const airOf = (A, t) => P(A.run(0.3), { fL: [.16, .36, .18], fR: [-.16, .26, -.2] });
 
@@ -391,6 +453,7 @@ export function buildStrichMagier(gameSkin = 'alle', { bloom = false } = {}) {
   F.body = build(F.parts, F.mat);
   F.glowMesh = F.glow.length ? build(F.glow, glowMat(glowU)) : null;
   if (skin === 'arcane') { F.runes = makeRunes(); F.root.add(F.runes); }
+  F.prop = makeProp(skin); F.root.add(F.prop);
 
   // Partikel in Weltkoordinaten
 const PN = 500, pGeo = new THREE.BufferGeometry();
@@ -458,7 +521,7 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
       if (mode === 'cast') p = kf(castKeys, castU);
       else if (mode === 'run') p = A.run(runT);
       else if (mode === 'chan') p = A.chan(F.t);
-      else if (mode === 'sit') p = skin === 'arcane' ? A.idle(F.t) : cp(SIT);
+      else if (mode === 'sit') p = A.sit(F.t);
       else if (mode === 'dead') p = cp(DEAD);
       else if (mode === 'air') p = airOf(A, F.t);
       else p = A.idle(F.t);
@@ -491,6 +554,11 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
         F.runes.material.opacity = .75 + .25 * Math.sin(F.t * 3);
         F.runes.visible = mode !== 'dead';
         if (Math.random() < s * 4) emit(F.root.position.clone().add(V((Math.random() - .5) * 1.4, .2, (Math.random() - .5) * 1.4)), 1, V(0, .5, 0), 0xc58bff, -.1, 1.4, .1);
+      }
+      if (mode === 'sit') {                       // Dampf aus Tasse und Schale, Feuer rülpst nach dem Exen
+        const pp = F.prop.getWorldPosition(V()).add(V(0, .1, 0));
+        if ((skin === 'ice' || skin === 'arcane') && Math.random() < s * 8) emit(pp, 1, V(0, .35, 0), 0xffffff, -.05, 1.2, .05);
+        if (skin === 'fire') { const k = F.t % 3.6; if (k > 1.62 && k - s <= 1.62) emit(F.head.getWorldPosition(V()).add(V(0, .1, .2)), 30, V(0, .6, 1.6), 0xff7a1a, -1, .6, .1); }
       }
       updateParts(s);
       if (trail && moving) { F.root.updateMatrixWorld(true); watch((x, y, z, a, side) => trail.add(x, y, z, a, side)); }

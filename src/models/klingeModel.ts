@@ -8,7 +8,7 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 // Dauern in ms bei Tempo 1. Die Spielregeln (Tempo, Reichweite) stehen in KLINGE (klinge.ts)
 export const KLINGE_TIMING = {
-  q: 600, e: 500, swap: 450, wirbel: 3400, ader: 1000, eatBreath: 2.3,   // PH
+  q: 600, e: 500, swap: 450, wirbel: 3400, ader: 1000,   // PH
   dash: { ms: 1000, move: { from: 0.2, to: 0.34 } },                     // Spiel bewegt den Spieler in diesem Fenster, PH
   wirbelFrom: 0.08, wirbelTo: 0.9,                                       // Drehung und Griff der Mobs, PH
 };
@@ -72,9 +72,6 @@ const IDLE1 = { y: .9, h: [0, .35, 0], c: [.22, -.3, 0], n: [-.15, -.05, 0], hL:
   fL: [.22, .06, -.22], fR: [-.14, .06, .32] };
 const IDLE2 = { y: .84, h: [0, -.25, 0], c: [.35, .2, 0], n: [-.35, .05, 0], hL: [.38, 1.02, .42], hR: [-.42, 1.32, .48],
   bL: [.45, -.25, .85], bR: [-.25, .62, .75], fL: [.3, .06, .3], fR: [-.28, .06, -.28] };
-// Schneidersitz, die Klingen liegen quer über den Knien
-const SIT = { y: .3, h: [0, 0, 0], c: [.14, 0, 0], n: [.12, 0, 0], hL: [.42, .46, .34], hR: [-.42, .5, .46], bL: [-1, .03, .04], bR: [1, .03, -.04],
-  fL: [-.2, .06, .2], fR: [.2, .06, .3] };
 const DEAD = { y: .2, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hL: [.62, .12, -.55], hR: [-.6, .12, -.3], bL: [.8, -.02, -.5], bR: [-.7, -.02, .6],
   fL: [.3, .06, .9], fR: [-.28, .06, .96] };
 
@@ -155,6 +152,11 @@ export function buildKlinge({ bloom = false } = {}) {
   })), VMAT);
   body.frustumCulled = false; root.add(body); body.bind(new THREE.Skeleton(bones));
   const swordR = katana(root), swordL = katana(root);
+  // Yakitori-Spieß zum Essen: Griff unten im Ursprung, Spitze nach +y
+  const skewer = new THREE.Mesh(mergeGeometries([
+    prep(new THREE.CylinderGeometry(.007, .007, .36, 4).translate(0, .14, 0), new THREE.Color(0xd9c39a)),
+    ...[0, 1, 2, 3].map(i => prep(new THREE.BoxGeometry(.05, .045, .05).rotateY(i * .6).translate(0, .14 + i * .055, 0), new THREE.Color(i % 2 ? 0x8a4a22 : 0x6b3416)))
+  ]), VMAT); skewer.visible = false; root.add(skewer);
 
   // Stirnband-Enden (Verlet-Kette, eigenes Band-Mesh in Weltkoordinaten)
   const SN = 11, SEG = .12;
@@ -186,11 +188,9 @@ export function buildKlinge({ bloom = false } = {}) {
     lower.quaternion.copy(_q2.copy(upper.quaternion).invert().multiply(_q));
   }
   const _w = V(), _pw = V(), _rq = new THREE.Quaternion(), _sq = new THREE.Quaternion();
-  let kneesOut = false;
   function legIK(l, f) {
     root.localToWorld(_w.set(f[0], f[1], f[2]));
-    if (kneesOut) root.localToWorld(_pw.set(l.side * 2, .5, .7));   // Schneidersitz: Knie nach außen
-    else root.localToWorld(_pw.set(f[0] + l.side * .15, .7, f[2] + 2));
+    root.localToWorld(_pw.set(f[0] + l.side * .15, .7, f[2] + 2));
     ik(l.th, l.sh, L1, L2, _w, _pw);
     l.sh.updateWorldMatrix(true, false);
     l.sh.getWorldQuaternion(_sq); root.getWorldQuaternion(_rq);
@@ -451,6 +451,7 @@ export function buildKlinge({ bloom = false } = {}) {
   };
 
   // ───────────────────────── Hauptschleife
+  let eatK = 0;
   let act = null, actKey = '', lastPose = resolve(IDLE1), blendFrom = null, blendT = 0, runPh = 0, T = 0, lastLoco = 'idle', ready = false;
   function evalKeys(keys, u) {
     let i = 0; while (i < keys.length - 2 && u > keys[i + 1][0]) i++;
@@ -509,14 +510,17 @@ export function buildKlinge({ bloom = false } = {}) {
     } else if (loco === 'air') pose = resolve(airPose());
     else if (loco === 'dead') pose = resolve(DEAD);
     else if (sit) {
-      pose = resolve(SIT);
-      const b = Math.sin(T * KLINGE_TIMING.eatBreath);
-      pose.y += .01 * b; pose.c[0] += .035 * b; pose.n[0] -= .02 * b;
+      // Seiza: kniet auf den Fersen, rechte Hand auf dem Oberschenkel, Spieß in der linken; alle 2,8 s ein Bissen, Fleisch seitlich abziehen, kauen
+      const k = (T % 2.8) / 2.8, b = k < .45 ? Math.sin(Math.PI * k / .45) ** .7 : 0;
+      const sl = k > .2 && k < .4 ? (k - .2) / .2 : k >= .4 && k < .45 ? 1 : 0;
+      const chew = k >= .45 ? Math.abs(Math.sin(T * 13)) * .05 : 0;
+      pose = resolve(P(IDLE1, { y: .36, h: [0, 0, 0], c: [.08 + .1 * b, 0, 0], n: [.05 + .1 * b + chew, -.15 * sl, .2 * b], hR: [-.16, .44, .26],
+        hL: [lerp(.22, .02, b) + .16 * sl, lerp(.56, 1.04, b), lerp(.36, .27, b)], fL: [.12, .05, -.3], fR: [-.12, .05, -.3] }));
+      eatK = b;
     } else {
       pose = resolve(IDLE());
       pose.y += .012 * Math.sin(T * 2.3); pose.c[0] += .03 * Math.sin(T * 2.3);
     }
-    kneesOut = sit && !act;
     root.rotation.y += spinAng;
 
     if (blendT > 0 && blendFrom) { blendT -= s; pose = mix(blendFrom, pose, 1 - clamp(blendT / .12, 0, 1)); }
@@ -529,7 +533,13 @@ export function buildKlinge({ bloom = false } = {}) {
     armIK(armL, pose.hL); armIK(armR, pose.hR);
     root.updateMatrixWorld(true);
     placeSword(swordR, armR.hand, pose.bR); placeSword(swordL, armL.hand, pose.bL);
-    swordR.visible = drawnR || sit; swordL.visible = drawnL || sit;
+    // Beim Essen stecken beide Klingen in der Scheide, der Spieß liegt in der linken Hand (+1 Draw Call nur dann)
+    swordR.visible = drawnR && !sit; swordL.visible = drawnL && !sit;
+    skewer.visible = sit && !act;
+    if (skewer.visible) {
+      root.worldToLocal(armL.hand.getWorldPosition(skewer.position));
+      skewer.quaternion.setFromUnitVectors(V(0, 1, 0), V(lerp(.25, -1, eatK), lerp(.9, .12, eatK), lerp(.35, .15, eatK)).normalize());
+    }
     saya1.hilt.scale.setScalar(swordR.visible ? 1e-4 : 1); saya2.hilt.scale.setScalar(swordL.visible ? 1e-4 : 1);
 
     // Stirnband
