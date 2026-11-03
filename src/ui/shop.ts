@@ -10,6 +10,7 @@ import { syncPause } from './menus';
 import { ROLLS, buyChest, deleteWeapon, inventoryFull, rollWeapon, weaponName, effectLines, rarityOf } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
+import { askConfirm } from './confirm';
 import { pick } from '../util';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
@@ -79,8 +80,8 @@ function chestBox() {
     t.textContent = `Löschen +${ROLLS.refund[w.r]}`;
     row.append(n, t);
     row.dataset.nav = `inv-${w.id}`;
-    row.addEventListener('click', () => {
-      if (spinning || !confirm(`${weaponName(w)} löschen? Du bekommst ${ROLLS.refund[w.r]} Staub zurück.`)) return;
+    row.addEventListener('click', async () => {
+      if (spinning || !await askConfirm('Waffe löschen?', `${weaponName(w)} löschen? Du bekommst ${ROLLS.refund[w.r]} Staub zurück.`, 'Löschen')) return;
       deleteWeapon(w.id);
       mage.refreshWeapon();
       renderShop();

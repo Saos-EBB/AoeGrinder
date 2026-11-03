@@ -5,6 +5,7 @@ import { $ } from '../util';
 import { meta, saveMeta } from '../meta';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
+import { askConfirm } from './confirm';
 
 export const SAVE_CODE = { version: 1, runsStore: 'frostgrind.runs.v1', checkLen: 4 };
 
@@ -80,7 +81,7 @@ $('codeAction').addEventListener('click', async () => {
   }
   const err = importCode(text.value, false);
   if (err) { $('codeMsg').textContent = err; return; }
-  if (!confirm('Spielstand ersetzen?')) return;
+  if (!await askConfirm('Spielstand ersetzen?', 'Der jetzige Spielstand mit Staub, Freischaltungen, Waffen und Ranglisten wird überschrieben.', 'Ersetzen')) return;
   importCode(text.value);
   modal.classList.remove('show');
   mage.refreshWeapon();
