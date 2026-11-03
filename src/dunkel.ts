@@ -3,6 +3,7 @@
 
 import * as THREE from 'three';
 import { state, player } from './state';
+import { rand } from './util';
 import { PERF } from './config';
 import { device } from './device';
 import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv, setEnvHook } from './render';
@@ -18,10 +19,13 @@ export const D = {
   hemiMul: 0.18, sunMul: 0.12, skyTop: 0x020203, skyMid: 0x040405,
   lamp: { color: 0xffc48a, power: 18, range: 34, angle: 0.62, penumbra: 0.6, decay: 0.8, height: 2.5, ahead: 0.5, aim: 14, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
   fill: { color: 0xffc48a, power: 14, range: 10, decay: 1.6, height: 1.8 },   // zeigt Figur und Mobs direkt neben dir
+  flicker: true, flickerEvery: [3000, 10000], flickerFor: [100, 500], flickerLow: 0.15, flickerHigh: 0.9, flickerCalm: 0.7, flickerRate: 30,   // wie Hinter dir, ohne Blackouts
   cam: { dist: 7, pitch: 0.2, fov: 68 },
 };
 
 let lamp = null, fill = null;
+let flick = 1, nextFlick = 0, flickUntil = 0;
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;   // Bewegung reduziert: kein hartes Wechseln
 const fog = new THREE.FogExp2(D.fogColor, D.fogDensity);
 
 function darken() {
@@ -62,11 +66,22 @@ function castShadows(root) {
   root.traverse(o => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent) o.castShadow = true; });
 }
 
-export function updateDunkel() {
+// Echte Zeit, damit es auch in Pause und Menü weiterläuft
+function updateFlicker(dt) {
+  const now = performance.now();
+  if (now > nextFlick) { nextFlick = now + rand(D.flickerEvery[0], D.flickerEvery[1]); flickUntil = now + rand(D.flickerFor[0], D.flickerFor[1]); }
+  const wild = Math.random() < 0.5 ? D.flickerLow : D.flickerHigh;
+  const target = now < flickUntil ? (calm ? D.flickerCalm : wild) : 1;
+  flick += (target - flick) * Math.min(1, dt / 1000 * D.flickerRate);
+  lamp.intensity = D.lamp.power * flick;
+}
+
+export function updateDunkel(dt) {
   const L = D.lamp, p = player.pos, fx = Math.sin(player.facing), fz = Math.cos(player.facing);
   lamp.position.set(p.x + fx * L.ahead, p.y + L.height, p.z + fz * L.ahead);
   lamp.target.position.set(p.x + fx * L.aim, p.y, p.z + fz * L.aim);
   fill.position.set(p.x, p.y + D.fill.height, p.z);
   castShadows(mage.root);
   for (const m of state.mobs) castShadows(m.model.root);
+  if (D.flicker) updateFlicker(dt);
 }

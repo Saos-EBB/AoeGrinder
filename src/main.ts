@@ -48,7 +48,7 @@ function update(dt) {
 
 function updateVisuals(dt) {
   updateAutoCam(dt, mouseBtn.left);
-  if (dunkelOn) updateDunkel();
+  if (dunkelOn) updateDunkel(dt);
   updateCamera();
   if (player.targeting && !state.padAim) pickGround();
 
