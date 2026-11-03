@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v20 von `main` (2026-11-03): dazu Wucht, Champion-Packs, Waffen-Baukasten. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand Vercel: v21 von `main` (2026-11-03): dazu Dodge, Licht als Kreis, größere Packs. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` ist gelöscht (alte Magier, Krieger, Samurai, Ninja); Spuren und `SKIN_FX` liegen in `models/trail.ts`.
 
@@ -29,6 +29,7 @@ Stand Vercel: v20 von `main` (2026-11-03): dazu Wucht, Champion-Packs, Waffen-Ba
 - `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
 - `src/wucht.ts`: Zahlen in `W`. Trauma-Wackeln hinter `shakeCamera()`, Hitstop selbst in `fx/impact.ts` (Zeitlupe `W.hitstop.scale`, Crit nur bei Einzelziel über `noteHit`), große Treffer ab `W.big.frac` des Mob-Lebens: Kamera-Ruck, Boden-Spur (ein InstancedMesh), Trümmer, Knockback (`bigKnock` in `mobs.ts`). `src/champions.ts`: Zahlen in `C`, Spawn in `spawnPack`, Dev-Knopf in den Einstellungen.
 - `src/models/weapons/baukasten.ts`: Waffen-Baukasten aus dem Viewer (https://claude.ai/artifact/McdzspSdum69PJUhrWJjKy), 4 Typen ohne Nebenhand, statische Teile pro Material verschmolzen. `weaponRolls.ts` würfelt die Schichten (`ROLLS`), alte Waffen `{ e, r, m }` bleiben gültig, neue sind `{ v: 2, r, s }`.
+- `src/dodge.ts`: Ausweichen, Zahlen in `DG`. i-Frames in `damagePlayer`, Bewegung über `dodgeVelocity` in `updatePlayer`, Kombo pro Modus über `consumeCombo` (Spell-Kern, `realMen.ts`, `klinge.ts`), Start-Effekte (Mini-Nova, Feuerspur) in `startDodge` (`player.ts`).
 - `src/weaponRolls.ts`: Mage-Waffen (Effekt × Seltenheit), Kiste, Inventar, Wirkung über `mods`/`stat`/`state.poolExtra`, Zahlen in `ROLLS`. `ui/saveCode.ts`: Spielstand-Code. Modus-Regeln (`dotMul`, `baseCrit`, `hitSlow`, `castWhileMoving`, `blinkCharges`, `manaCost`) stehen in `MODIFIERS`, gelesen über `modValue`.
 - `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü, Shop im Hauptmenü. Credits: `docs/credits.md`.
 - `src/mobs.ts`, `mobTypes.ts`, `abilities.ts`: Spawn (Ring um den Spieler), KI, `damageMob`, Fähigkeiten.
@@ -39,6 +40,7 @@ Stand Vercel: v20 von `main` (2026-11-03): dazu Wucht, Champion-Packs, Waffen-Ba
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v21 (auf `main`, auf Vercel) – Dodge mit perfektem Dodge, Kombo pro Modus, 2 Karten. Licht in Dunkel als Kreis über der Figur. Packs doppelt so groß (`PACK_SIZE_MUL`), Champion-Packs 20 % ab Level 6, zu niedrige unberührte Packs werden außer Sicht ersetzt (`replaceStalePack`). „Große Packs“ bei Level 30: rund 436 Mobs, 31 FPS. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Waffen-Baukasten für Magier, Spielversion v20. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Wucht und Champion-Packs. Getestet per Skript, nicht von Hand gespielt.
 - v19 (auf `main`, auf Vercel) – Modi-Konzept: Tag Dunkel, Schulen mit Stärken und Schwächen, Eisblock, Flammenstoß 0,5 s und Feuerball 0,35 s, Mage-Waffen aus der Magischen Kiste (`weaponRolls.ts`, Inventar in `meta`), Spielstand-Code (`ui/saveCode.ts`), `heroModels.ts` gelöscht. Getestet per Skript, nicht von Hand gespielt.

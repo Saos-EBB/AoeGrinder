@@ -24,7 +24,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v20';
+export const SCORE_VERSION = 'v21';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -40,6 +40,9 @@ export const LEVEL_UNLOCKS = [16, 31, 46, 61];            // Ab diesen Spielerle
 export const LEVEL_NEW_MOB_BANNER = 3000;                 // Anzeigedauer "Neuer Gegner"
 export const LEVEL_MIN_MOBS = 40;                         // So viele Mobs leben mindestens auf der Karte
 export const LEVEL_PACK_MIN = 4, LEVEL_PACK_MAX = 6;      // Kleinstes Pack ab Level 1
+export const PACK_SIZE_MUL = 2;                           // PH: Grundfaktor auf jede Packgröße, „Große Packs“ kommt noch obendrauf
+export const PACK_STALE_LEVELS = 4;                       // PH: unberührte Packs so viele Level unter dir werden durch aktuelle ersetzt
+export const PACK_STALE_DIST = 30;                        // PH: aber nur außerhalb dieser Entfernung, damit nichts vor dir aufploppt
 export const LEVEL_PACK_SPREAD = 3;                       // Mobs liegen bis zu so viele yd um die Pack-Mitte
 
 export const CFG = {
@@ -79,7 +82,7 @@ export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink', 'sl
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
 export function resetMods() {
-  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1 });
+  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1 });
 }
 
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
@@ -130,6 +133,11 @@ export const CARDS = [
     desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
   { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
+  // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
+  { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
+    desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
+  { id: 'comboWindow', name: 'Kombo-Meister', always: true, tags: ['Bewegung'], max: 2,
+    desc: (r, m) => `Kombo-Fenster nach dem Dodge +${Math.round(50 * m)} %.`, apply: (r, m) => { mods.comboWindow += 0.5 * m; } },   // PH
   { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Klinge'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
   { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Klinge'], max: 3,

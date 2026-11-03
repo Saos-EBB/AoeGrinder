@@ -15,9 +15,10 @@ import { blizCursor } from './fx/spellFx';
 export const D = {
   fogColor: 0x050505, fogDensity: 0.035, fogStorm: 0.05,    // FogExp2, fogStorm kommt im Sandsturm dazu
   hemiMul: 0.18, sunMul: 0.12, skyTop: 0x020203, skyMid: 0x040405,
-  lamp: { color: 0xffc48a, power: 18, range: 34, angle: 0.62, penumbra: 0.6, decay: 0.8, height: 2.5, ahead: 0.5, aim: 14, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
-  // Zeigt Figur und Mobs neben dir. Sitzt auf der Kameraseite in festem Abstand, also keine Überstrahlung beim Reinzoomen. Nah wird es neutraler und schwächer, damit das Modell seine Farben behält.
-  fill: { color: 0xffc48a, closeColor: 0xfff1e2, power: 9, closePower: 6, range: 12, decay: 1.6, height: 1.1, toCam: 3.5, closeFrom: 9, closeTo: 3 },
+  // Lichtkreis: Spot senkrecht über der Figur, radius = Lichtkreis am Boden in yd
+  lamp: { color: 0xffc48a, power: 34, range: 40, radius: 13, penumbra: 0.55, decay: 0.8, height: 10, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
+  // Hellt Figur und Mobs neben dir auf, mittig über der Figur (rundum gleich). Nah wird es neutraler und schwächer, damit das Modell seine Farben behält.
+  fill: { color: 0xffc48a, closeColor: 0xfff1e2, power: 9, closePower: 6, range: 12, decay: 1.6, height: 2.4, closeFrom: 9, closeTo: 3 },
   flicker: true, flickerEvery: [3000, 10000], flickerFor: [100, 500], flickerLow: 0.15, flickerHigh: 0.9, flickerCalm: 0.7, flickerRate: 30,   // wie Hinter dir, ohne Blackouts
   cam: { dist: 7, pitch: 0.2, fov: 68, maxDist: 14 },
 };
@@ -45,7 +46,7 @@ export function initDunkel() {
   terrain.receiveShadow = true;
 
   const L = D.lamp, size = PERF.vfx === 'niedrig' || device.mobile ? L.shadowLow : L.shadow;
-  lamp = new THREE.SpotLight(L.color, L.power, L.range, L.angle, L.penumbra, L.decay);
+  lamp = new THREE.SpotLight(L.color, L.power, L.range, Math.atan(L.radius / L.height), L.penumbra, L.decay);
   lamp.castShadow = true;
   lamp.shadow.mapSize.set(size, size);
   lamp.shadow.bias = L.bias;
@@ -80,11 +81,11 @@ function updateFlicker(dt) {
 }
 
 export function updateDunkel(dt) {
-  const L = D.lamp, p = player.pos, fx = Math.sin(player.facing), fz = Math.cos(player.facing);
-  lamp.position.set(p.x + fx * L.ahead, p.y + L.height, p.z + fz * L.ahead);
-  lamp.target.position.set(p.x + fx * L.aim, p.y, p.z + fz * L.aim);
-  const F = D.fill, dx = camera.position.x - p.x, dz = camera.position.z - p.z, flat = Math.hypot(dx, dz) || 1;
-  fill.position.set(p.x + dx / flat * F.toCam, p.y + F.height, p.z + dz / flat * F.toCam);
+  const L = D.lamp, p = player.pos;
+  lamp.position.set(p.x, p.y + L.height, p.z);   // senkrecht darüber: Lichtkreis rundum statt Kegel nach vorn
+  lamp.target.position.set(p.x, p.y, p.z);
+  const F = D.fill;
+  fill.position.set(p.x, p.y + F.height, p.z);
   const close = clamp((F.closeFrom - cam.dist) / (F.closeFrom - F.closeTo), 0, 1);
   fill.color.setHex(F.color).lerp(tmpColor.setHex(F.closeColor), close);
   fill.intensity = F.power + (F.closePower - F.power) * close;

@@ -110,7 +110,7 @@ export function updatePerf(t) {
   if (!perfOn) return;
   perfFrames++;
   if (t - perfSince < 500) return;
-  $('perf').textContent = `${Math.round(perfFrames * 1000 / (t - perfSince))} FPS · ${calls} Calls · ${state.mobs.length} Mobs`;
+  $('perf').textContent = `${Math.round(perfFrames * 1000 / (t - perfSince))} FPS · ${calls} Calls · ${state.mobs.length} Mobs · Dodges ${state.dodgeStats?.n ?? 0}, perfekt ${state.dodgeStats?.perfect ?? 0}`;
   perfFrames = 0;
   perfSince = t;
 }

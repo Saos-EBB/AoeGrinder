@@ -4,6 +4,14 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(packs): Packs doppelt so groß („Große Packs“ damit 4× früher), Champion-Packs öfter (20 % ab Level 6, 4 Mobs), unberührte Packs 4+ Level unter dir werden außer Sicht durch aktuelle ersetzt
+- fix(dunkel): Licht als Kreis um die Figur statt Kegel nach vorn und Aufhelllicht von der Kameraseite
+- fix(dodge): Figur kippt nicht mehr in den Boden; Dodge läuft zwischen festem Start- und Zielpunkt, Wände und hohe Stufen kürzen ihn
+- feat(dodge): Dev-Schalter „Mob-Angriffe ×0,3“ in den Einstellungen zum Testen der i-Frames; Code-Karte
+- feat(dodge): Karten Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster +50 %) in allen Modi, Spielversion v21
+- feat(dodge): Eine Kombo pro Modus nach dem Dodge (Normal: Spell ohne Mana; Feuer: Feuerspur und sicherer Feuerball-Crit; Frost: Mini-Nova; Arkan: sofortiger Cast; Krieger: Move-Abbruch und stärkerer Smash; Klingenstrich: Q doppelt mit Blutung), perfekter Dodge verdoppelt das Fenster, Zauberleiste leuchtet
+- feat(dodge): Perfekter Dodge, wenn ein Treffer in die i-Frames fällt: Ladung zurück, Hitstop, weißer Rand, „Perfekt“; Zähler im Leistungsfenster
+- feat(dodge): Ausweichen in allen Modi (Shift, Pad L2, umbelegbar): 4 yd in 0,25 s, 0,2 s unverwundbar, 2 Ladungen à 3 s, bricht Sitzen, Kanal und Zauber ab (Arcane only zaubert weiter), Krieger bricht seinen Move ab
 - docs: Vercel-Stand v20 nachgetragen
 - feat(ui): Rückfragen beim Löschen einer Waffe und beim Laden eines Spielstand-Codes als Fenster im Spiel statt Browser-Abfrage
 - feat(meta): Info-Karte mit allen Schichten beim Hovern über Waffen im Hauptmenü und im Shop-Inventar

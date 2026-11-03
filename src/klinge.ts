@@ -6,6 +6,7 @@ import { $, dist2d } from './util';
 import { SPELLS, CFG } from './config';
 import { mage, onWarriorHit } from './models/mage';
 import { hitstopActive } from './fx/impact';
+import { DG, consumeCombo } from './dodge';
 import { KLINGE_TIMING as TIMING, wirbelSpin, cloneKlinge } from './models/klingeModel';
 import { scene } from './render';
 import { useKlingeBinds, pickGround, mouse } from './input';
@@ -152,6 +153,7 @@ function pressQ() {
   attackRate = rateOf('kQ');
   attackUntil = state.now + TIMING.q / attackRate;
   attackCtx = makeCtx('kQ', S().dmg, S().range);
+  attackCtx.combo = consumeCombo('klingeQ');            // Dodge-Kombo: +100 % und ein Blutungs-Stapel
   player.lastCombat = state.now;
   seq++;
 }
@@ -259,7 +261,8 @@ function hitQ() {
   const cone = runeStage('kQ', 'cone'), angle = cone ? R.cone[Math.min(cone, R.cone.length) - 1] : K.q.angle;
   const radius = K.q.radius + runeStage('kQ', 'reach') * R.reachYd;
   const targets = o => mobsInRadius(o, c.radius(radius)).filter(m => Math.abs(angleTo(m, o)) <= angle * Math.PI / 360);
-  event('kQ', c, K.q.dmg / parts, targets);
+  const k = c.combo ? DG.combo.klingeQMul : 1;
+  event('kQ', c, K.q.dmg / parts * k, targets, c.combo && stance === 1 ? m => addBleed(m, K.q.dmg * k * stat('kQ').dmg) : undefined);   // Zweihand blutet ohnehin
   if (hasRune('kQ', 'echo')) after(R.echoMs, () => strike('kQ', c, K.q.dmg / parts * R.echoMul, targets));
 }
 function hitE() {

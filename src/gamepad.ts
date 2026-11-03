@@ -1,5 +1,6 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
+import { startDodge } from './player';
 import { charOpen, charTab, toggleChar } from './ui/charWindow';
 import { openPause, closePause, cycleChar } from './ui/mainMenu';
 import * as THREE from 'three';
@@ -25,6 +26,7 @@ export const pad = {
 // Aktion -> Button-Index im Standard-Mapping
 export const PAD_ACTIONS = [
   { id: 'jump',      label: 'Springen',            btn: 0 },
+  { id: 'dodge',     label: 'Ausweichen',          btn: 6 },   // L2; B (○) ist Cone of Cold und Abbruch
   { id: 'coc',       label: 'Cone of Cold',        btn: 1 },
   { id: 'ae',        label: 'Arcane Explosion',    btn: 2 },
   { id: 'nova',      label: 'Frost Nova',          btn: 3 },
@@ -63,6 +65,7 @@ const pressed = i => pad.down[i] && !pad.prev[i];   // Flanke: ein Druck löst g
 
 const PAD_EFFECTS = {
   jump() { state.jumpQueued = true; },
+  dodge() { startDodge(); },
   autorun() { state.autorun = !state.autorun; },
   charWin() { toggleChar(); },
   camBehind() { cam.offset = 0; },

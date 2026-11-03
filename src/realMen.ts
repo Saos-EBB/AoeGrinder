@@ -5,7 +5,8 @@ import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
 import { hitstopActive, hitstop } from './fx/impact';
-import { W } from './wucht';
+import { W, addTrauma, decal } from './wucht';
+import { DG, consumeCombo } from './dodge';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
@@ -160,6 +161,7 @@ function pressQ() {
   combo = (combo + 1) % Q.length;
   player.lastCombat = state.now;
   startMove('wQ', `q${step}`, Q[step]);
+  if ((w === 'sword' && step === 3) || (w === 'axe' && step === 2)) cur.combo = consumeCombo('smash');   // Dodge-Kombo: Smash im Fenster
   cur.walk = !((w === 'sword' && step === 3) || (w === 'axe' && step === 2));   // Sprung-Smash und Spalthieb stehen, die anderen Schläge gehen im Laufen
 }
 function pressMove(id, ability, ms, cost) {
@@ -172,6 +174,7 @@ function pressMove(id, ability, ms, cost) {
   startCd(id);
   player.lastCombat = state.now;
   startMove(id, ability, ms);
+  if (id === 'wLeap' || id === 'wExec') cur.combo = consumeCombo('smash');
 }
 function pressWhirl() {
   if (!whirlOn && player.mana < R.whirl.minStart) return showError('Nicht genug Wut');
@@ -189,7 +192,7 @@ function pressEat() {
 let stealK = 1, forceChain = false;
 function strike(ctx, amount, targets, onMob?, rageK = 1) {
   let landed = 0;
-  const W = WP(), mul = rageMul() * W.dmgMul;
+  const W = WP(), mul = rageMul() * W.dmgMul * (cur?.combo ? DG.combo.smashMul : 1);   // Dodge-Kombo: +50 % auf den Smash
   for (const m of targets()) {
     const hp0 = m.hp, dmg = amount(m) * mul;
     if (!ctx.hit(m, dmg)) continue;
@@ -233,7 +236,11 @@ function chainFrom(ctx, first, dmg) {
 }
 
 // Wucht: Smash-Treffer mit mindestens einem Mob stoppen kurz die Zeit
-const smash = landed => { if (landed) hitstop(W.hitstop.smashMs); return landed; };
+const smash = landed => {
+  if (landed) hitstop(W.hitstop.smashMs);
+  if (cur?.combo) { addTrauma(DG.combo.smashTrauma); decal(player.pos, 3, DG.combo.smashDecal); hitstop(W.hitstop.championMs); }   // großer Wucht-Treffer
+  return landed;
+};
 function hitQAxe(step) {
   const c = cur.ctx, Q = WP().q, n = event('wQ', c, () => Q.dmg[step], () => inCone(player.pos, c.radius(Q.radius[step]), Q.halfAngle[step]));
   if (step === Q.dmg.length - 1) smash(n);   // Spalthieb
@@ -349,10 +356,10 @@ function hitExec() {
   if (weaponId() === 'axe') return hitExecAxe();
   if (weaponId() === 'mace') return hitExecMace();
   const c = cur.ctx, X = R.exec, half = X.halfAngle * (hasRune('wExec', 'wide') ? RU.wideAngle : 1);
-  event('wExec', c, m => X.dmg * (hasRune('wExec', 'low') && m.hp < m.maxHp * RU.lowBelow ? RU.lowMul : 1), () => inCone(player.pos, c.radius(X.radius), half), m => {
+  smash(event('wExec', c, m => X.dmg * (hasRune('wExec', 'low') && m.hp < m.maxHp * RU.lowBelow ? RU.lowMul : 1), () => inCone(player.pos, c.radius(X.radius), half), m => {
     if (m.dead) { if (hasRune('wExec', 'refund')) gainRage(RU.killRage); return; }
     knockbackMob(m, player.pos, X.knock);
-  }) && hitstop(W.hitstop.smashMs);
+  }));
   shakeCamera(0.5);
 }
 function hitCry() {
@@ -423,6 +430,8 @@ export function updateRealMen(dt) {
 
 const leapWindow = [TIMING.leap.move.from, TIMING.leap.move.to];
 export const warriorUntouchable = () => isWarrior() && cur?.id === 'wLeap' && inWindow(leapWindow, cur.start, cur.ms);
+// Dodge bricht den laufenden Move ab (Animation-Cancel), auch mitten im Schlag
+export function cancelWarriorMove() { if (!isWarrior() || !cur) return; cur = null; seq++; }
 export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
 export const takenMul = () => isWarrior() ? 1 - R.armor : 1;

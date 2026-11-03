@@ -11,6 +11,7 @@ import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
 import { MODIFIERS, activeModIds, modValue } from '../modifiers';
+import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 
@@ -86,7 +87,7 @@ export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported(
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
 let castCounter = 0;
 export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
-  const c = {
+  const c: any = {
     id,
     castKey,
     hit(m, amount) {
@@ -96,7 +97,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
-      const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'));
+      const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
       return landed;
@@ -148,13 +149,14 @@ export function castSpell(id, point?) {
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
+  if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (state.now < player.gcdUntil || cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
-  const life = paysLife(id);
-  if (life ? player.hp <= cost : player.mana < cost) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
+  const life = paysLife(id), freeOk = comboReady('freeMana');   // Dodge-Kombo Normal: nächster Spell ohne Mana
+  if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
   if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
@@ -167,21 +169,25 @@ export function castSpell(id, point?) {
   player.gcdUntil = state.now + CFG.gcd;
   player.targeting = false;
   blizCursor.visible = false;
-  const castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul;   // castMul: Waffen-Typ und Hersteller
-  if (!castTime) return release(id, point);
-  player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp };
+  // Dodge-Kombos: Normal kein Mana, Arcane only sofort, Fire only Feuerball crittet
+  const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
+  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul;   // castMul: Waffen-Typ und Hersteller
+  if (castTime && consumeCombo('instant')) castTime = 0;
+  if (!castTime) return release(id, point, opts);
+  player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp, opts };
 }
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
-function release(id, point) {
-  const s = SPELLS[id], cost = manaCost(id);
+function release(id, point, opts: any = {}) {
+  const s = SPELLS[id], cost = opts.free ? 0 : manaCost(id);
   const life = paysLife(id);
-  if (life ? player.hp <= cost : player.mana < cost) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
+  if (!opts.free && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
   if (life) player.hp -= cost; else spendMana(cost);
   startCd(id);
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
   const c: any = makeCtx(id);
   c.cost = cost;
+  c.forceCrit = !!opts.crit;
   s.effect(c, point);
   scheduleEchoes(id, point, c.castKey);
 }
@@ -203,7 +209,7 @@ function updateCast() {
   player.castAnimUntil = state.now + 200;
   if (state.now < ct.end) return;
   player.casting = null;
-  release(ct.id, ct.point);
+  release(ct.id, ct.point, ct.opts);
 }
 
 // PH: Faktoren von Großes Echo. Ein Kanal würde sich selbst abbrechen, deshalb wiederholt keins der Echos ihn.

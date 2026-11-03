@@ -35,6 +35,7 @@ import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import { menuYaw, enterMenu } from './ui/mainMenu';
 import { updateWucht } from './wucht';
+import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 
 function update(dt) {
@@ -75,10 +76,12 @@ function updateVisuals(dt) {
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
+  dodgeVisual(mage.root);
+  updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
   for (const m of state.mobs) {
-    const attackT = (state.now - m.attackAt) / 400;
+    const attackT = (state.now - m.attackAt) / 400 * mobAttackSlow();   // Dev: Angriffe sichtbar langsamer
     m.model.update(dt, {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
       frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,

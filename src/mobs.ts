@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, SPELLS, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
+import { CFG, SPELLS, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL, PACK_STALE_LEVELS, PACK_STALE_DIST } from './config';
 import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
@@ -14,6 +14,7 @@ import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
+import { mobAttackSlow } from './dodge';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
@@ -37,7 +38,7 @@ const levelPackSize = () => clamp(3 + Math.floor((player.level - 20) / 2) + zone
 const liveMobs = () => state.mobs.filter(m => !m.dead);
 const livePackCount = () => new Set(liveMobs().map(m => m.packId)).size;
 // Nie unter dem Startwert; ab dem Level, wo die Packs wachsen, skaliert die Dichte wie bisher mit Packanzahl × Packgröße
-const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * modFactor('packSize');
+const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * PACK_SIZE_MUL * modFactor('packSize');
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
@@ -60,9 +61,22 @@ function dropFarPack() {
   state.mobs = state.mobs.filter(m => m.packId !== far.packId);
 }
 
+// Unberührte Packs, die durch deinen Levelaufstieg zu niedrig sind, weichen einem aktuellen Pack an derselben Stelle. Einer pro Frame.
+function replaceStalePack() {
+  const stale = liveMobs().find(m => m.state === 'idle' && !m.assistAt && m.level <= player.level - PACK_STALE_LEVELS && dist2d(m.home, player.pos) > PACK_STALE_DIST);
+  if (!stale) return;
+  const pack = state.mobs.filter(m => m.packId === stale.packId);
+  if (!pack.every(m => !m.dead && m.state === 'idle' && !m.assistAt && dist2d(m.pos, player.pos) > PACK_STALE_DIST)) return;
+  const center = pack.reduce((c, m) => c.add(m.home), new THREE.Vector3()).divideScalar(pack.length);
+  for (const m of pack) removeMob(m);
+  state.mobs = state.mobs.filter(m => m.packId !== stale.packId);
+  spawnPack(center);
+}
+
 export function updateRespawn() {
   if (mobMode === 'siege') return;
   dropFarPack();
+  replaceStalePack();
   const packs = livePackCount();
   respawn.pending += Math.max(0, respawn.packs - packs);
   if (respawn.pending > 0 || liveMobs().length < mobTarget()) {
@@ -77,9 +91,9 @@ export function pickMobType() {
   return special.length && Math.random() < 0.5 ? pick(special) : unlocked[0];
 }
 
-export function spawnPack() {
-  let center;
-  for (let tries = 0; tries < 40; tries++) {
+export function spawnPack(at = null) {
+  let center = at;
+  for (let tries = 0; !at && tries < 40; tries++) {
     // Rund um den Spieler, sonst verdünnt die große Karte die Dichte. // PH
     const a = rand(0, Math.PI * 2), r = rand(PACK_NEAR, PACK_FAR);
     center = new THREE.Vector3(player.pos.x + Math.cos(a) * r, 0, player.pos.z + Math.sin(a) * r);
@@ -90,8 +104,8 @@ export function spawnPack() {
   const champ = rollChampionPack();                    // Champion-Pack statt normalem Pack
   if (champ) return spawnChampionPack(center.x, center.z, champ);
   const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
-  const size = base * modFactor('packSize');
-  const spread = Math.max(LEVEL_PACK_SPREAD, base / 2);   // große Packs brauchen wieder mehr Platz
+  const size = base * PACK_SIZE_MUL * modFactor('packSize');
+  const spread = Math.max(LEVEL_PACK_SPREAD, Math.sqrt(size) * 1.5);   // große Packs brauchen mehr Platz
   const packId = ++state.packCounter;
   const unlocked = unlockedMobs(player.level), special = unlocked.slice(1);
   for (let i = 0; i < size; i++) {
@@ -242,7 +256,7 @@ export function updateMob(mob, dt) {
     if (mob.ability?.onUpdate?.(mob, dt)) { /* Fähigkeit steuert selbst */ }
     else if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
     else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
-      mob.nextSwing = state.now + CFG.swingTime / (mob.swingMul ?? 1);   // Champion „Schnell“
+      mob.nextSwing = state.now + CFG.swingTime / (mob.swingMul ?? 1) / mobAttackSlow();   // Champion „Schnell“, Dev-Schalter
       hitPlayer(mob);
     }
     faceMob(mob, player.pos);
@@ -294,7 +308,7 @@ export function applyRoot(mob, dur) {
 // Gibt true zurück, wenn der Zauber getroffen hat
 // noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
 // dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
-export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false) {
+export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false, forceCrit = false) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
@@ -310,7 +324,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
+  const crit = forceCrit || !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);

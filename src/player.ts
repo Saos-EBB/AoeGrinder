@@ -24,10 +24,14 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
+import { resetDodge, tryDodge, dodgeMove, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
+import { mobsInRadius } from './spells/core';
+import { applyRoot } from './mobs';
+import { novaFx } from './fx/spellFx';
 import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
-import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying } from './realMen';
+import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -55,6 +59,7 @@ export function resetGame() {
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
+  resetDodge();
   resetKlinge();
   resetSiege();
   resetSplits();
@@ -103,6 +108,7 @@ export function setLevel(level) {
 
 export function damagePlayer(amount, dot = false) {
   if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked()) return;
+  if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
@@ -207,6 +213,23 @@ export function die() {
   }, 900);
 }
 
+// Dodge (Taste Ausweichen): Sitzen, Kanal und Zauber brechen ab; Zauber laufen in Arcane only weiter. Krieger: bricht seinen Move ab
+export function startDodge() {
+  const from = player.pos.clone();
+  const ok = tryDodge(() => {
+    stopDrink();
+    stopChannel(true);
+    if (!modValue('castWhileMoving')) player.casting = null;
+    cancelWarriorMove();
+  });
+  if (!ok || dodgeMode() !== 'frost') return;
+  const N = DG.combo.miniNova;                             // Frost only: Mini-Nova am Startpunkt, ohne Mana und Abklingzeit
+  for (const m of mobsInRadius(from, N.radius)) applyRoot(m, N.rootMs);
+  novaFx(from, N.radius);
+}
+// Fire only: Der Dodge legt Feuerspur wie die Schritte der Figur
+const dodgeTrail = d => mage.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
+
 // Bewegung wie in WoW: A/D drehen, Q/E (oder A/D mit rechter Maus) seitwärts,
 // kein Lenken in der Luft, Rückwärts langsamer.
 export function updatePlayer(dt) {
@@ -225,7 +248,8 @@ export function updatePlayer(dt) {
   strafe += pad.move.x;
   if (stunned) fwd = strafe = 0;
 
-  if (player.grounded) {
+  const dodging = dodgeMove(player.pos, player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Position selbst
+  if (player.grounded && !dodging) {
     const f = player.facing;
     let vx = Math.sin(f) * fwd - Math.cos(f) * strafe;
     let vz = Math.cos(f) * fwd + Math.sin(f) * strafe;
