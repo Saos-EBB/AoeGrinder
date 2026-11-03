@@ -2633,291 +2633,6 @@ const WARRIOR = { ...SKIN, ...WAR_MOVES, id: 'warrior', name: 'Skelett-Krieger',
 WARRIOR.atk1 = WAR_MOVES.cast; WARRIOR.atk2 = WAR_MOVES.smash;
 
 // =====================================================================
-// Krieger-Waffen: gleicher Körper, je eigene Waffe, Haltung, 2 Attacken und eine Eigenschaft.
-// Attacke 1 / 2 = Aktionen 'atk1' / 'atk2'. hits: Dauer (ms) und Anteile, an denen getroffen wird.
-// Geworfenes (Axt, Anker) hängt an einem Gelenk unter root und folgt sonst der Hand (follow).
-// Spiel: R.onHit(kind, x, z, i) wie beim Schwert; kind z. B. 'atk1', 'nachbeben', 'anker'.
-// =====================================================================
-const wGlowMat = rgb => { const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb) }); m.userData = { cell: 1, kind: 'glow' }; return m; };
-const BLOOD = wGlowMat([2.4, 0.25, 0.12]), SOUL = wGlowMat([0.35, 2.2, 1.5]);
-const _inv = new THREE.Matrix4(), _m4 = new THREE.Matrix4(), _p = new THREE.Vector3(), _h = new THREE.Vector3(), _d = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
-function follow(R, j, hold) {                                            // Gelenk unter root auf die Lage eines Haltepunkts setzen
-  _inv.copy(R.root.matrixWorld).invert(); _m4.multiplyMatrices(_inv, hold.matrixWorld); _m4.decompose(j.position, j.quaternion, j.scale);
-}
-const localPos = (R, obj, out) => R.root.worldToLocal(obj.getWorldPosition(out));
-const groundAt = (R, lx, lz, out = new THREE.Vector3()) => R.root.localToWorld(out.set(lx, 0, lz));   // lokaler Punkt am Boden → Welt
-const easeOut = u => 1 - (1 - u) ** 2, seg = (k, a, b) => Math.min(1, Math.max(0, (k - a) / (b - a)));
-const rootOf = j => { while (j.parent) j = j.parent; return j; };
-const glowOf = R => R.glowMesh || (R.glowMesh = R.root.children.find(o => o.isSkinnedMesh && o.material.isMeshBasicMaterial));
-const warIdle = carry => function (t, ph) {
-  const b = Math.sin(ph * 0.9);
-  Object.assign(t, STAND, carry, { hipsY: 0.965 + b * 0.006, lean: 0.18 + b * 0.025, headZ: Math.sin(ph * 0.4) * 0.05 });
-  t.rSh += b * 0.03; t.lSh += b * 0.02;
-};
-const warGait = (carry, swing = {}) => function (j, t, ph) {
-  WAR_MOVES.gait(j, t, ph); Object.assign(t, carry);
-  const sw = Math.sin(ph); for (const k in swing) t[k] += sw * swing[k];
-};
-const WEAPON_BASE = { ...WARRIOR, atlasKey: 'warrior', addons(R) { R.fx = makeWarriorFx(); } };
-
-// ---------- 1 · Schlachterpaar: zwei Bartäxte (Furor / Barbar) ----------
-// Attacke 1 Raserei: 4 schnelle Hiebe, rechts-links im Wechsel.
-// Attacke 2 Axtwurf: linke Axt fliegt drehend 8 m geradeaus und kommt zurück, trifft auf dem Hin- und Rückweg.
-// Eigenschaft Blutrausch: jeder Treffer +1 Stapel (max. 5, verfällt nach 4 s ohne Treffer), je Stapel +6 % Angriffstempo.
-//   Sichtbar: Augen und Axtschneiden glühen mit jedem Stapel stärker.
-function axe(p, M, s) {                                                  // Stiel entlang +y, Blatt nach s·x, Griff bei y 0
-  add(p, tube([[0, -0.13, 0], [0, 0.25, 0.003], [0, 0.62, 0]], 0.019, 2, 5), M.woodTube);
-  add(p, subUV(new THREE.SphereGeometry(0.03, 5, 3), 0, 0, 1, 0.7), M.pants, 0, -0.14, 0);
-  add(p, subUV(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 6), 0, 0, 1, 0.7), M.pants, 0, 0.46, 0);           // Tülle
-  const sh = new THREE.Shape(); sh.moveTo(0.02, 0.54); sh.lineTo(0.1, 0.58); sh.quadraticCurveTo(0.19, 0.67, 0.27, 0.68);
-  sh.quadraticCurveTo(0.34, 0.46, 0.25, 0.24); sh.lineTo(0.17, 0.28); sh.quadraticCurveTo(0.09, 0.38, 0.02, 0.39); sh.closePath();
-  const blade = new THREE.ExtrudeGeometry(sh, { depth: 0.022, bevelEnabled: false, curveSegments: 4 }).translate(0, 0, -0.011);
-  setUV(blade, (x, y) => [0.5 + x / 0.56, (y - 0.24) / 0.44]); blade.scale(s, 1, 1);
-  add(p, blade, M.sleeve);
-  const edge = []; for (let i = 0; i <= 5; i++) { const t = i / 5, u = 1 - t; edge.push([s * (u * u * 0.272 + 2 * u * t * 0.345 + t * t * 0.252), u * u * 0.68 + 2 * u * t * 0.46 + t * t * 0.24, 0]); }
-  add(p, tube(edge, 0.007, 6, 3), BLOOD);                                                                       // Schneide glüht (Blutrausch)
-  add(p, new THREE.ConeGeometry(0.022, 0.13, 5).rotateZ(s * Math.PI / 2).translate(-s * 0.09, 0.47, 0), M.satin);  // Dorn hinten
-}
-function axesWeapon(armR, armL, M, C) {
-  const w = joint(armR.wrist, 0.018, -0.088, 0.004); w.rotation.x = C.weaponX;
-  axe(w, M, -1);
-  const holdL = joint(armL.wrist, -0.018, -0.088, 0.004); holdL.rotation.x = C.weaponX;
-  const axL = joint(rootOf(armL.wrist)); axe(axL, M, 1);                // fliegt frei, sonst folgt sie holdL
-  return { staff: w, holdL, axL, crystal: joint(w, 0, 0.46, 0), crystalGlow: null };
-}
-const AX_CARRY = { rSh: -0.2, rShZ: -0.18, rEl: -0.7, wpn: 1.35, lSh: -0.2, lShZ: 0.18, lEl: -0.7, wpnL: 1.35, gripL: 1 };
-const AX_P = {
-  rWind: { rSh: -2.7, rShZ: -0.35, rEl: -1.1, wpn: -0.6, twist: 0.35, lean: 0.05 },
-  rHit: { rSh: -0.7, rShZ: 0.25, rEl: -0.15, wpn: 0.2, twist: -0.4, lean: 0.4, hipsY: 0.92, jaw: 0.35 },
-  lWind: { lSh: -2.7, lShZ: 0.35, lEl: -1.1, wpnL: -0.6, twist: -0.35, lean: 0.05 },
-  lHit: { lSh: -0.7, lShZ: -0.25, lEl: -0.15, wpnL: 0.2, twist: 0.4, lean: 0.4, hipsY: 0.92, jaw: 0.35 },
-  throwWind: { lSh: -2.9, lShZ: 0.5, lEl: -1.6, wpnL: -0.4, twist: -0.6, lean: -0.15, rSh: -0.9, rShZ: -0.2, rEl: -0.6, headX: -0.1 },
-  throwRel: { lSh: -1.6, lShZ: -0.2, lEl: -0.05, wpnL: 0.3, twist: 0.45, lean: 0.35, hipsY: 0.93, lKnee: 0.45, rKnee: 0.15, lHip: -0.5, jaw: 0.4 },
-  catch: { lSh: -1.4, lShZ: 0.3, lEl: -0.4, twist: 0.1, lean: 0.15 },
-};
-const AX_THROW = { dur: 1400, out: [0.25, 0.5], back: [0.5, 0.78], reach: 8 };
-const WAR_AXES = { ...WEAPON_BASE, id: 'warAxes', name: 'Krieger · Schlachterpaar', weapon: axesWeapon,
-  idle: warIdle(AX_CARRY), gait: warGait(AX_CARRY, { rSh: -0.5, lSh: 0.5 }),
-  hits: { atk1: [900, [0.14, 0.39, 0.64, 0.89]], atk2: [AX_THROW.dur, [0.5]] },
-  atk1(t, time) {                                                        // Raserei: 4 Hiebe à 225 ms, rechts-links
-    const k = wave(time, 900), i = Math.min(3, Math.floor(k * 4)), u = k * 4 - i, L = i % 2, P = AX_P;
-    Object.assign(t, STAND, AX_CARRY);
-    const wind = L ? P.lWind : P.rWind, hit = L ? P.lHit : P.rHit;
-    mix(t, wind, smooth(0, 0.42, u) * (1 - smooth(0.42, 0.56, u))); mix(t, hit, smooth(0.42, 0.56, u) * (1 - smooth(0.85, 1, u) * (i < 3 ? 1 : 0)));
-    if (i === 3) mix(t, AX_CARRY, smooth(0.8, 1, u));
-  },
-  atk2(t, time) {                                                        // Axtwurf mit links, Fangen
-    const k = wave(time, AX_THROW.dur), P = AX_P;
-    Object.assign(t, STAND, AX_CARRY);
-    mix(t, P.throwWind, smooth(0, 0.2, k) * (1 - smooth(0.2, 0.27, k)));
-    mix(t, P.throwRel, smooth(0.2, 0.27, k) * (1 - smooth(0.45, 0.7, k)));
-    mix(t, P.catch, smooth(0.6, 0.76, k) * (1 - smooth(0.82, 1, k)));
-  },
-  tick(R, time) {
-    R.root.updateMatrixWorld(true);
-    const T = AX_THROW, k = R.action === 'atk2' ? wave(R.actTime, T.dur) : 0;
-    const out = seg(k, ...T.out), back = seg(k, ...T.back), flying = k > T.out[0] && k < T.back[1];
-    if (!flying) follow(R, R.axL, R.holdL);
-    else {
-      localPos(R, R.holdL, _h); const tgt = _d.set(-0.15, 1.15, T.reach);
-      if (k < T.back[0]) _p.lerpVectors(_h, tgt, easeOut(out)); else _p.lerpVectors(tgt, _h, back * back);
-      _p.y += Math.sin(Math.PI * (k < T.back[0] ? out : 1 - back)) * 0.25;
-      R.axL.position.copy(_p); R.axL.rotation.set(-time / 38, 0, -0.35); R.axL.scale.setScalar(1);
-    }
-    if (time - (R.rageT ?? -1e9) > 4000) R.rage = 0;                    // Blutrausch verfällt
-    R.rageGlow = lerp(R.rageGlow ?? 1, 1 + 0.32 * (R.rage || 0), 0.12);
-    glowOf(R).material.color.setScalar(R.rageGlow);
-  },
-  hitFx(R, action, i, y, time) {
-    R.rage = Math.min(5, (R.rage || 0) + 1); R.rageT = time;
-    if (action === 'atk2') { groundAt(R, -0.15, AX_THROW.reach, tmpV); R.fx.spawn('dust', tmpV.x, y, tmpV.z, 0.45); }
-    else (i % 2 ? R.axL : R.crystal).getWorldPosition(tmpV);
-    if (R.onHit) R.onHit(action, tmpV.x, tmpV.z, i);
-  },
-};
-WAR_AXES.cast = WAR_AXES.atk1; WAR_AXES.smash = WAR_AXES.atk2; WAR_AXES.hits.cast = WAR_AXES.hits.atk1; WAR_AXES.hits.smash = WAR_AXES.hits.atk2;
-
-// ---------- 2 · Grabhammer: Zweihand-Hammer mit Eisenkopf (Waffen-Krieger / Tauren) ----------
-// Attacke 1 Erdspalter: Schlag über Kopf, eine Spalte läuft 5 Risse weit (je 1,6 m) nach vorn.
-// Attacke 2 Rundschlag: eine volle Drehung mit ausgestrecktem Hammer, trifft alles im Kreis (ca. 3 m).
-// Eigenschaft Nachbeben: 1 s nach jedem Treffer bebt dieselbe Stelle noch einmal (50 % Schaden).
-function hammerWeapon(armR, armL, M, C) {
-  const w = joint(armR.wrist, 0.018, -0.088, 0.004); w.rotation.x = C.weaponX;
-  add(w, tube([[0, -0.36, 0], [0, 0.4, 0.004], [0, 1.18, 0]], 0.024, 3, 5), M.woodTube);                      // Stiel
-  add(w, subUV(new THREE.SphereGeometry(0.04, 5, 3), 0, 0, 1, 0.7), M.pants, 0, -0.37, 0);
-  for (const y of [0.15, 0.95]) add(w, subUV(new THREE.CylinderGeometry(0.032, 0.032, 0.06, 6), 0, 0, 1, 0.7), M.pants, 0, y, 0);   // Eisenringe
-  add(w, subUV(new THREE.BoxGeometry(0.27, 0.27, 0.56), ...EMBLEM), M.pants, 0, 1.27, 0);                      // Kopf, Schädelwappen auf jeder Seite
-  for (const z of [-1, 1]) add(w, subUV(new THREE.BoxGeometry(0.31, 0.31, 0.05), 0, 0, 1, 0.7), M.pants, 0, 1.27, z * 0.29);   // Schlagflächen
-  for (const [x, z] of [[0, 0], [0.09, 0.17], [-0.09, -0.17]]) add(w, new THREE.ConeGeometry(0.03, 0.14, 5).translate(0, 0.07, 0), M.satin, x, 1.405, z);   // Dornen oben
-  return { staff: w, crystal: joint(w, 0, 1.27, 0.3), crystalGlow: null };   // crystal = vordere Schlagfläche
-}
-const HAM_P = {
-  swingWind: { twist: 1.0, rSh: -0.7, rShZ: -1.1, rEl: -0.3, wpn: 0.9, lSh: -0.9, lShZ: 0.5, lEl: -0.5, lean: 0.15, hipsY: 0.92, lKnee: 0.4, rKnee: 0.4, gripL: 1 },
-  swing: { rSh: -0.25, rShZ: -1.45, rEl: -0.05, wpn: 1.06, lSh: -0.3, lShZ: 0.5, lEl: -1.2, lean: 0.05, hipsY: 0.9, lKnee: 0.45, rKnee: 0.45, jaw: 0.5, gripL: 1 },
-  stagger: { lean: 0.45, hipsY: 0.88, lKnee: 0.6, rKnee: 0.3, lHip: -0.4, rSh: -0.5, rShZ: -0.3, rEl: -0.4, wpn: 1.2, headX: 0.3 },
-};
-const HAM_SWING = [0.28, 0.6];
-const WAR_HAMMER = { ...WEAPON_BASE, id: 'warHammer', name: 'Krieger · Grabhammer', weapon: hammerWeapon,
-  hits: { atk1: [1400, [0.47]], atk2: [1500, [0.44]] },
-  atk1(t, time) { WAR_MOVES.smash(t, wave(time, 1400) * 1300); },        // gleiche Bewegung wie Smash, 1,4 s
-  atk2(t, time) {                                                        // Rundschlag: ausholen, eine Drehung, nachtaumeln
-    const k = wave(time, 1500), P = HAM_P, u = seg(k, ...HAM_SWING);
-    Object.assign(t, STAND);
-    mix(t, P.swingWind, smooth(0, 0.25, k) * (1 - smooth(0.26, 0.34, k)));
-    mix(t, P.swing, smooth(0.26, 0.32, k) * (1 - smooth(0.58, 0.7, k)));
-    mix(t, P.stagger, smooth(0.58, 0.7, k) * (1 - smooth(0.85, 1, k)));
-    t.spinY = -Math.PI * 2 * smooth(0, 1, u);
-  },
-  hitFx(R, action, i, y, time) {
-    const quake = (lx, lz, k, kind, delay) => R.fx.schedule(delay, () => {
-      groundAt(R, lx, lz, tmpV); R.fx.spawn('dust', tmpV.x, y, tmpV.z, k); if (R.onHit) R.onHit(kind, tmpV.x, tmpV.z, i);
-    });
-    if (action === 'atk2') {                                             // Rundschlag: Ring um den Krieger
-      groundAt(R, 0, 0, tmpV); R.fx.spawn('dust', tmpV.x, y, tmpV.z, 2.1); R.fx.spawn('dust', tmpV.x, y, tmpV.z, 1.2);
-      if (R.onHit) R.onHit(action, tmpV.x, tmpV.z, i);
-      quake(0, 0, 2.1, 'nachbeben', 1000);
-      return;
-    }
-    localPos(R, R.crystal, _p);                                          // Erdspalter: Spalte läuft von der Schlagfläche nach vorn
-    for (let n = 0; n < 5; n++) {
-      const lz = _p.z + n * 1.6, lx = _p.x;
-      R.fx.schedule(n * 80, () => { groundAt(R, lx, lz, tmpV); R.fx.spawn('crack', tmpV.x, y, tmpV.z, n ? 0.75 : 1); if (!n) R.fx.spawn('dust', tmpV.x, y, tmpV.z); if (R.onHit) R.onHit(action, tmpV.x, tmpV.z, n); });
-      quake(lx, lz, 0.9, 'nachbeben', 1000 + n * 80);
-    }
-  },
-};
-WAR_HAMMER.cast = WAR_HAMMER.atk1; WAR_HAMMER.hits.cast = WAR_HAMMER.hits.atk1;
-
-// ---------- 3 · Seelenanker: Schiffsanker an einer Kette (sammelt Mobs) ----------
-// Attacke 1 Ankerwurf: Anker fliegt 9 m geradeaus, bohrt sich ein, wird zurückgerissen und zieht getroffene Mobs mit.
-// Attacke 2 Kettenwirbel: Anker kreist zwei Runden auf Hüfthöhe (Radius bis 4 m), Treffer bei jeder halben Runde.
-// Eigenschaft Seelenfang: Mobs, die der Anker zieht, sind 5 s markiert und nehmen 15 % mehr Schaden aus allen Quellen.
-function chainTex() {
-  const t = toTex(canvas(64, (g, s) => {
-    g.lineCap = 'round';
-    for (const [y, side] of [[16, false], [48, true]]) {
-      if (side) { g.fillStyle = '#2a2b30'; g.fillRect(s / 2 - 5, y - 18, 10, 36); g.fillStyle = '#9a9ea8'; g.fillRect(s / 2 - 2, y - 16, 3, 32); }
-      else { g.strokeStyle = '#26272c'; g.lineWidth = 9; g.beginPath(); g.ellipse(s / 2, y, 14, 19, 0, 0, 7); g.stroke(); g.strokeStyle = '#8f939d'; g.lineWidth = 4; g.beginPath(); g.ellipse(s / 2, y, 14, 19, 0, -2.4, -0.4); g.stroke(); }
-    }
-  }));
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
-}
-function makeChain(n = 26, radial = 4, r = 0.028) {                     // Röhre mit fester Topologie, Punkte kommen pro Frame
-  const geo = new THREE.BufferGeometry(), pos = new Float32Array((n + 1) * (radial + 1) * 3), uv = new Float32Array((n + 1) * (radial + 1) * 2), idx = [];
-  for (let i = 0; i < n; i++) for (let a = 0; a < radial; a++) { const p = i * (radial + 1) + a, q = p + radial + 1; idx.push(p, q, p + 1, p + 1, q, q + 1); }
-  geo.setIndex(idx); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: chainTex(), alphaTest: 0.5, side: THREE.DoubleSide }));
-  mesh.userData.keep = true; mesh.frustumCulled = false;
-  const T = new THREE.Vector3(), N = new THREE.Vector3(), B = new THREE.Vector3(), v = new THREE.Vector3();
-  mesh.setPoints = pts => {                                              // pts: n+1 Vektoren im root-Raum
-    let len = 0;
-    for (let i = 0; i <= n; i++) {
-      T.subVectors(pts[Math.min(n, i + 1)], pts[Math.max(0, i - 1)]).normalize();
-      N.crossVectors(T, Math.abs(T.y) > 0.9 ? v.set(1, 0, 0) : UP).normalize(); B.crossVectors(T, N);
-      if (i) len += pts[i].distanceTo(pts[i - 1]);
-      for (let a = 0; a <= radial; a++) {
-        const ang = a / radial * Math.PI * 2, o = (i * (radial + 1) + a);
-        v.copy(pts[i]).addScaledVector(N, Math.cos(ang) * r).addScaledVector(B, Math.sin(ang) * r);
-        pos.set([v.x, v.y, v.z], o * 3); uv.set([a / radial, len / 0.16], o * 2);
-      }
-    }
-    geo.attributes.position.needsUpdate = geo.attributes.uv.needsUpdate = true; geo.computeVertexNormals();
-  };
-  return mesh;
-}
-function anchorWeapon(armR, armL, M, C) {
-  const hold = joint(armR.wrist, 0.018, -0.088, 0.004); hold.rotation.x = C.weaponX;
-  const anc = joint(rootOf(armR.wrist));                                 // fliegt frei, sonst folgt er hold
-  add(anc, new THREE.TorusGeometry(0.065, 0.016, 4, 8), M.pants, 0, -0.24, 0);                               // Ring für die Kette
-  add(anc, tube([[0, -0.17, 0], [0, 0.4, 0.003], [0, 1.02, 0]], 0.034, 3, 6), M.pants);                    // Schaft
-  add(anc, subUV(new THREE.BoxGeometry(0.44, 0.05, 0.05), 0, 0, 1, 0.7), M.pants, 0, 0.16, 0);               // Stock (Querbalken)
-  for (const s of [-1, 1]) {
-    add(anc, tube([[0, 1.0, 0], [s * 0.2, 0.98, 0], [s * 0.36, 0.84, 0], [s * 0.42, 0.66, 0]], 0.036, 6, 5, { taper: 0.35 }), M.pants);   // Arme
-    const f = new THREE.Shape(); f.moveTo(-0.075, 0); f.lineTo(0.075, 0); f.lineTo(0, -0.2); f.closePath();
-    const fl = new THREE.ExtrudeGeometry(f, { depth: 0.028, bevelEnabled: false }).translate(0, 0, -0.014);
-    setUV(fl, (x, y) => [x / 0.15 + 0.5, -y / 0.2]); fl.rotateZ(s * 0.35);
-    add(anc, fl, M.sleeve, s * 0.41, 0.72, 0);                                                               // Flunken
-    add(anc, tube([[s * 0.36, 0.71, 0.016], [s * 0.42, 0.56, 0.016]], 0.006, 2, 3), SOUL);                    // Seelenglut auf den Flunken
-  }
-  add(anc, new THREE.ConeGeometry(0.035, 0.16, 5).translate(0, 1.08, 0), M.satin);                          // Dorn am Kreuz
-  for (const y of [0.42, 0.6, 0.78]) add(anc, new THREE.TorusGeometry(0.04, 0.008, 3, 8).rotateX(Math.PI / 2), SOUL, 0, y, 0);   // Runenringe
-  const ring = joint(anc, 0, -0.24, 0), belt = joint(armL.shoulder.parent.parent, 0.17, 0.06, 0.1);   // Kettenende am Gürtel (links, an der Hüfte)
-  return { staff: hold, hold, anc, ring, belt, crystal: joint(anc, 0, 0.9, 0), crystalGlow: null };
-}
-const ANC = { throwDur: 1300, out: [0.2, 0.42], stuck: 0.52, back: 0.85, reach: 9, spinDur: 1600 };
-const ANC_P = {
-  wind: { rSh: 0.7, rShZ: -0.3, rEl: -1.0, wpn: -0.3, twist: 0.55, lean: -0.1, lSh: -1.3, lShZ: 0.1, lEl: -0.2, gripL: 0, headX: 0 },
-  release: { rSh: -1.75, rShZ: 0.05, rEl: -0.05, wpn: 0.6, twist: -0.5, lean: 0.4, hipsY: 0.92, lSh: 0.4, lShZ: 0.3, lEl: -0.4, lKnee: 0.5, rKnee: 0.15, lHip: -0.55, jaw: 0.45 },
-  brace: { rSh: -1.2, rShZ: 0.15, rEl: -0.3, lSh: -1.1, lShZ: -0.15, lEl: -0.4, gripL: 1, lean: -0.25, hipsY: 0.9, lKnee: 0.55, rKnee: 0.2, lHip: -0.6, rHip: 0.15 },
-  yank: { rSh: 0.35, rShZ: -0.1, rEl: -1.3, lSh: 0.25, lShZ: 0.1, lEl: -1.3, gripL: 1, lean: -0.45, hipsY: 0.92, twist: 0.3, jaw: 0.6, headX: -0.25 },
-  spin: { rSh: -1.35, rShZ: 0.3, rEl: -0.1, lSh: -1.35, lShZ: -0.3, lEl: -0.1, gripL: 1, lean: -0.3, hipsY: 0.9, lKnee: 0.4, rKnee: 0.4, headX: -0.1, jaw: 0.35 },
-};
-function sagPts(A, B, L, n, out) {                                      // Kette zwischen A und B mit Durchhang (Länge L)
-  const d = A.distanceTo(B), drop = L > d ? Math.sqrt(L * L - d * d) * 0.5 : 0;
-  for (let i = 0; i <= n; i++) { const t = i / n; out.push(new THREE.Vector3().lerpVectors(A, B, t).add(_d.set(0, -4 * t * (1 - t) * drop, 0))); }
-  return out;
-}
-const WAR_ANCHOR = { ...WEAPON_BASE, id: 'warAnchor', name: 'Krieger · Seelenanker', weapon: anchorWeapon,
-  addons(R) { R.fx = makeWarriorFx(); R.chain = makeChain(); R.root.add(R.chain); },
-  hits: { atk1: [ANC.throwDur, [0.42, 0.7]], atk2: [ANC.spinDur, [0.25, 0.5, 0.75, 0.97]] },
-  atk1(t, time) {                                                        // Ankerwurf: ausholen, schleudern, Kette greifen, zurückreißen
-    const k = wave(time, ANC.throwDur), P = ANC_P;
-    Object.assign(t, STAND);
-    mix(t, P.wind, smooth(0, 0.17, k) * (1 - smooth(0.17, 0.24, k)));
-    mix(t, P.release, smooth(0.17, 0.24, k) * (1 - smooth(0.36, 0.46, k)));
-    mix(t, P.brace, smooth(0.36, 0.46, k) * (1 - smooth(0.52, 0.6, k)));
-    mix(t, P.yank, smooth(0.52, 0.6, k) * (1 - smooth(0.82, 0.95, k)));
-  },
-  atk2(t, time) {                                                        // Kettenwirbel: zwei Runden, Anker kreist auf Hüfthöhe
-    const k = wave(time, ANC.spinDur);
-    Object.assign(t, STAND); mix(t, ANC_P.spin, smooth(0, 0.08, k) * (1 - smooth(0.92, 1, k)));
-    t.spinY = k * Math.PI * 4;
-  },
-  anchorPos(R, k, kind, time) {                                          // null = in der Hand, sonst Lage im root-Raum
-    if (kind === 'atk1') {
-      if (k < ANC.out[0] || k > ANC.back) return null;
-      const T = _d.set(0, 0.35, ANC.reach);
-      if (k < ANC.out[1]) { const u = easeOut(seg(k, ...ANC.out)); return _p.lerpVectors(_h, T, u).add(new THREE.Vector3(0, Math.sin(Math.PI * u) * 1.1, 0)); }
-      if (k < ANC.stuck) return _p.copy(T);
-      const u = seg(k, ANC.stuck, ANC.back); return _p.lerpVectors(T, _h, u * u).add(new THREE.Vector3(0, Math.sin(Math.PI * u) * 0.5, 0));
-    }
-    if (kind === 'atk2') {
-      if (k < 0.04 || k > 0.96) return null;
-      const r = 0.7 + 3.3 * smooth(0.04, 0.22, k) * (1 - smooth(0.8, 0.96, k)), a = R.hips.rotation.y - 0.35;
-      return _p.set(Math.sin(a) * r, 0.95 + Math.sin(k * 25) * 0.08, Math.cos(a) * r);
-    }
-    return null;
-  },
-  tick(R, time) {
-    R.root.updateMatrixWorld(true);
-    const kind = R.action === 'atk1' || R.action === 'cast' ? 'atk1' : R.action === 'atk2' ? 'atk2' : null;
-    const k = kind ? wave(R.actTime, kind === 'atk1' ? ANC.throwDur : ANC.spinDur) : 0;
-    localPos(R, R.armR.wrist, _h);
-    const p = kind && this.anchorPos(R, k, kind, time);
-    if (!p) follow(R, R.anc, R.hold);
-    else {
-      R.anc.position.copy(p);
-      const dir = new THREE.Vector3().subVectors(p, _h);
-      if (kind === 'atk1' && k >= ANC.out[1] && k < ANC.stuck) dir.set(0, -0.7, 1);   // steckt schräg im Boden
-      R.anc.quaternion.setFromUnitVectors(UP, dir.normalize()); R.anc.scale.setScalar(1);
-    }
-    R.anc.updateMatrixWorld(true);
-    const S = localPos(R, R.belt, new THREE.Vector3()), E = localPos(R, R.ring, new THREE.Vector3()), H = _h.clone(), pts = [];
-    if (!p) sagPts(S, E, Math.max(1.15, S.distanceTo(E) * 1.1), 26, pts);              // hängt vom Gürtel zum Anker in der Hand
-    else { sagPts(S, H, Math.max(0.8, S.distanceTo(H) * 1.1), 8, pts); pts.pop(); sagPts(H, E, H.distanceTo(E) * (kind === 'atk2' ? 1.0 : 1.02) + 0.05, 18, pts); }
-    R.chain.setPoints(pts);
-  },
-  hitFx(R, action, i, y, time) {
-    if (action === 'atk2') { groundAt(R, 0, 0, tmpV); R.fx.spawn('dust', tmpV.x, y, tmpV.z, 2.4); if (R.onHit) R.onHit(action, tmpV.x, tmpV.z, i); return; }
-    if (i) R.anc.getWorldPosition(tmpV); else groundAt(R, 0, ANC.reach, tmpV);
-    if (i === 0) { R.fx.spawn('crack', tmpV.x, y, tmpV.z, 0.55); R.fx.spawn('dust', tmpV.x, y, tmpV.z, 0.7); }
-    else R.fx.spawn('dust', tmpV.x, y, tmpV.z, 0.5);                   // Rückriss: Mobs werden mitgezogen (Seelenfang)
-    if (R.onHit) R.onHit(i ? 'anker' : action, tmpV.x, tmpV.z, i);
-  },
-};
-WAR_ANCHOR.cast = WAR_ANCHOR.atk1; WAR_ANCHOR.hits.cast = WAR_ANCHOR.hits.atk1;
-
-// =====================================================================
 // Gebeinsamurai: eigener untoter Samurai auf dem Vanilla-Rig. Lackrüstung (Kabuto mit Sichelkrone, Sode, Dō,
 // Kusazuri), Hakama, Geisterblaue Augen. Drei eigene Klingen: Katana „Fahlmond“ und Wakizashi „Glutzahn“ an der
 // linken Hüfte, Ōdachi „Grabwind“ quer auf dem Rücken. Er hält nie mehr als zwei Klingen gleichzeitig.
@@ -3349,7 +3064,7 @@ const NINJA = { ...WEAPON_BASE, id: 'ninja', name: 'Ninja · Aschenschatten', at
 };
 
 
-const CHARS = [HOOD, ICE, FIRE, ARCANE, WARRIOR, WAR_AXES, WAR_HAMMER, WAR_ANCHOR, SAMURAI, NINJA];
+const CHARS = [HOOD, ICE, FIRE, ARCANE, WARRIOR, SAMURAI, NINJA];
 const GROUPS = { magier: ['hood', 'ice', 'fire', 'arcane'], krieger: ['warrior', 'warAxes', 'warHammer', 'warAnchor'], samurai: ['samurai', 'ninja'] };
 
 // =====================================================================
@@ -3522,12 +3237,9 @@ function buildChar(P, C) {
 // Spiel-Schnittstelle: Krieger (4 Waffen), Samurai, Ninja. Die Magier stehen ganz unten.
 // =====================================================================
 export const RUN_REF = 3.9;                                               // yd/s, bei denen die Schritte zum Boden passen (Rots Messwert für die Magier, hier ungeprüft)
-export const WEAPONS = ['sword', 'axes', 'hammer', 'anchor'];
-const WEAPON_CHAR = { sword: WARRIOR, axes: WAR_AXES, hammer: WAR_HAMMER, anchor: WAR_ANCHOR };
 // Dauer der Aktionen (ms) und Anteile, an denen onHit feuert. Das Spiel hält eine Aktion so lange gesetzt.
 export const WAR_TIMING = {
   sword: { attack: 1200, smash: 1300, thunderclap: 1500 },
-  axes: { attack: 900, smash: 1400 }, hammer: { attack: 1400, smash: 1500 }, anchor: { attack: 1300, smash: 1600 },
   whirlwind: null, warcry: null,                                          // laufen, solange gesetzt
 };
 export const SAMURAI_TIMING = {
@@ -3569,18 +3281,10 @@ function wrap(C, bloom, toAction) {
   R.onHit = (kind, x, z, i) => { if (api.onHit) api.onHit(kind, x, z, i); };
   return api;
 }
-// weapon: 'sword' | 'axes' | 'hammer' | 'anchor'
-// anim.attack → Attacke 1 der Waffe (Schwert: Kombo). anim.ability: 'smash' → Attacke 2 der Waffe (Schwert: Smash),
-// 'whirlwind' | 'thunderclap' | 'warcry' gehen mit jeder Waffe.
-// onHit(kind, x, z, i): Schwert 'cast'|'smash'|'thunderclap'; andere Waffen 'atk1'|'atk2', Hammer zusätzlich 'nachbeben', Anker 'anker' (Rückzug).
-export function buildWarrior({ bloom = false, weapon = 'sword' } = {}) {
-  const C = WEAPON_CHAR[weapon] || WARRIOR, sword = C === WARRIOR;
-  return wrap(C, bloom, anim => {
-    if (anim.ability === 'smash') return sword ? 'smash' : 'atk2';
-    if (anim.ability) return anim.ability;
-    if (anim.attack) return sword ? 'cast' : 'atk1';
-    return null;
-  });
+// Nur noch das Schwert (Äxte, Hammer, Anker gelöscht). Im Spiel läuft der Strichkrieger, diese Figur ist ungenutzt.
+// anim.attack → Kombo, anim.ability: 'smash' | 'whirlwind' | 'thunderclap' | 'warcry'. onHit(kind, x, z, i): 'cast' | 'smash' | 'thunderclap'.
+export function buildWarrior({ bloom = false } = {}) {
+  return wrap(WARRIOR, bloom, anim => anim.ability || (anim.attack ? 'cast' : null));
 }
 // anim.attack → Kesagiri; anim.ability: 'iai' | 'twoheavens' | 'crescent' | 'deathwatch'
 // onHit(kind, x, z, i): 'cast' (Klinge), 'atk1' (Ende des Iai-Sprints, Linie vom Start; i 0 = nur Staub beim Start, ohne onHit),
