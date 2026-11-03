@@ -38,6 +38,7 @@ export function resetGame() {
   state.now = 0;
   state.pendingLevelUps = 0;
   state.nextCardAt = 0;
+  state.cardRush = false;
   state.newMob = null;
   state.autorun = false;
   Object.assign(player, {
@@ -78,7 +79,7 @@ export function switchZone(id) {
   fillPacks();
 }
 
-// Dev: Level setzen. Mobs kommen neu, damit die Freischaltung sofort zu sehen ist; Karten bleiben
+// Dev: Level setzen. Mobs kommen neu, damit die Freischaltung sofort zu sehen ist. Im Run gibt es nach oben die Karten des Kartentakts, ohne Lücke; bisherige Karten bleiben
 export function setLevel(level) {
   const fromLevel = player.level;
   player.level = level;
@@ -87,6 +88,13 @@ export function setLevel(level) {
   player.mana = maxMana();
   switchZone(zoneId);
   announceNewMobs(fromLevel);
+  if ($('startModal').classList.contains('show')) return;
+  for (let lvl = fromLevel + 1; lvl <= level; lvl++) {
+    if (!modRule('noCards')) state.pendingLevelUps += cardAtLevel(lvl) ? 1 : 0;
+    else if (lvl % CARD_CLASSIC_EVERY === 0) rankAllSpells();
+  }
+  state.cardRush = state.pendingLevelUps > 0;
+  updateCardQueue();
 }
 
 export function damagePlayer(amount, dot = false) {
@@ -163,7 +171,8 @@ function cardAtLevel(level) {
 
 // Auch mehrere Level auf einmal öffnen nur ein Fenster, die übrigen kommen frühestens nach der Lücke des Kartentakts
 export function updateCardQueue() {
-  if (state.pendingLevelUps <= 0 || state.now < state.nextCardAt || player.dead || $('cardModal').classList.contains('show')) return;
+  if (state.pendingLevelUps <= 0) { state.cardRush = false; return; }
+  if ((state.now < state.nextCardAt && !state.cardRush) || player.dead || $('cardModal').classList.contains('show')) return;
   state.nextCardAt = state.now + cardPace().gap;
   showCards();
 }

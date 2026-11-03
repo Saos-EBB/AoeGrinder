@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-02
 
+- feat(dev): Level setzen gibt im Run die Karten des Kartentakts, direkt nacheinander
 - feat(ui): Neue Reihe Karten im Hauptmenü: Gestaffelt, 1 pro Level, 1 pro 2 Level, 1 pro 3 Level
 - feat(balance): Nahkämpfer: mehr Reichweite und weniger Kosten, Schutz gegen Treffer (Krieger 25 %, Ronin 20 %, Schatten 10 %), Talente Kampfkunst und Knochenpanzer, Donnerknall stärker, Start mit 20 Wut
 - feat(balance): Run auf 15 Minuten ausgelegt: 31 Karten statt 99, höchstens ein Kartenfenster alle 15 s, XP bremst bei Vorsprung und hilft bei Rückstand; Punkte-Version v15

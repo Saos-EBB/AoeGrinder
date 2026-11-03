@@ -8,6 +8,7 @@ export const state: any = {
   packDeaths: {},
   pendingLevelUps: 0,   // offene Kartenfenster
   nextCardAt: 0,
+  cardRush: false,      // Dev: offene Karten ohne Lücke nacheinander
   cardRanks: {},
   cardPicks: {},         // wie oft eine Karte gewählt wurde: Stufe und Build
   autorun: false,
