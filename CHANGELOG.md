@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(wucht): Kamera-Ruck nach vorn bei großen Treffern (ab 20 % Mob-Leben), über den vorhandenen cameraKick
 - feat(wucht): Hitstop verlangsamt auf 5 % statt anzuhalten, höchstens einer pro 200 ms, auch bei Krieger-Smash und wenn der Spieler ≥ 15 % Leben verliert
 - feat(wucht): Screenshake mit Trauma-Modell (Einschläge nach Schaden, eigener Schaden, gedeckelt pro Frame), Einstellung Bildschirmwackeln an/aus/stark
 - fix(wucht): Hitstop bei Crits nur noch auf Einzelziele, Nahkampf-Figuren frieren im Hitstop mit ein, Mobs im Blutwirbel ohne Knockback

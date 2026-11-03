@@ -1,3 +1,5 @@
+import { cameraKick } from './fx/impact';
+
 // Wucht: Treffer fühlen sich über Timing und Wirkung auf die Umgebung an. Screenshake (Trauma), Hitstop-Anlässe, Kamera-Ruck,
 // Boden-Spuren, Trümmer und Knockback. Alle Zahlen in W. Hitstop, Kamera-Ruck und Lichtblitz selbst liegen in fx/impact.ts.
 
@@ -7,6 +9,8 @@ export const W = {
   shake: { max: 0.45, decay: 1.4, freq: 22, frameCap: 0.18, spellK: 0.5, hurtK: 1.4, strong: 1.8 },
   // Spielzeit läuft im Hitstop mit scale weiter; höchstens einer pro gap. Anlässe: Crit auf Einzelziel, Champion-Kill, Krieger-Smash, Spieler verliert ≥ hurtPct Leben
   hitstop: { scale: 0.05, gap: 200, critMs: 50, smashMs: 70, championMs: 90, hurtMs: 80, hurtPct: 0.15 },
+  // Großer Treffer: ab diesem Anteil am Mob-Leben. Kamera-Ruck nach vorn (fx/impact.ts cameraKick), höchstens einmal pro gap
+  big: { frac: 0.2, kick: 0.22, gap: 120 },
 };
 
 // Einstellung „Bildschirmwackeln“: an, aus, stark
@@ -37,4 +41,13 @@ export function shakeOffset(dtMs) {
   const k = shakeMode === 'aus' ? 0 : trauma * trauma * W.shake.max * (shakeMode === 'stark' ? W.shake.strong : 1);
   const f = W.shake.freq;
   return { x: k * (Math.sin(clock * f) + 0.5 * Math.sin(clock * f * 2.3 + 1.7)) / 1.5, y: k * (Math.sin(clock * f * 1.3 + 0.6) + 0.5 * Math.sin(clock * f * 2.9 + 3.1)) / 1.5 };
+}
+
+// Großer Treffer am Mob (mobs.ts damageMob): Kamera-Ruck. school: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger
+let lastBig = -1e9;
+export function bigHit(mob, school) {
+  const now = performance.now();
+  if (now - lastBig < W.big.gap) return;
+  lastBig = now;
+  cameraKick(W.big.kick);
 }

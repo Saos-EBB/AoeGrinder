@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
+import { CFG, SPELLS, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD } from './config';
 import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
@@ -13,7 +13,9 @@ import { mobMode, modFactor, modValue } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
-import { W, addTrauma } from './wucht';
+import { W, addTrauma, bigHit } from './wucht';
+// Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
+const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
@@ -297,7 +299,10 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);
-  if (!noRoll) addTrauma(Math.min(0.12, dmg / mob.maxHp * W.shake.spellK));   // Wucht: Einschlag relativ zum Mob-Leben
+  if (!noRoll) {                         // Wucht: Einschlag relativ zum Mob-Leben
+    addTrauma(Math.min(0.12, dmg / mob.maxHp * W.shake.spellK));
+    if (dmg >= mob.maxHp * W.big.frac) bigHit(mob, schoolOf(source));
+  }
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
