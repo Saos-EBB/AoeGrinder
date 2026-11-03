@@ -25,7 +25,7 @@ import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
-import { resetKlinge, klingeMoveMul, klingeRooted } from './klinge';
+import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
   startMageRun();
@@ -100,7 +100,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || untouchable()) return;
+  if (player.dead || untouchable() || klingeUntouchable()) return;
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
