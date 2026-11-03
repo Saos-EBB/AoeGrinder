@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(dunkel): Licht wie in Hinter dir: Lichtkegel in Blickrichtung mit Schatten von Figur und Mobs, schwaches Rundum-Licht, exponentieller Nebel
 - feat(dunkel): Prototyp mit #dunkel in der URL: schwarzer Nebel, abgedunkelte Welt, Laterne am Spieler, nähere Kamera
 
 ## 2026-11-02

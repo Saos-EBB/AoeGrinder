@@ -20,7 +20,7 @@ export function heightAt(x, z) {
 }
 
 // Terrain mit Vertex-Farben aus der Zone
-const terrain = (() => {
+export const terrain = (() => {
   const size = 340 * WORLD_K, segs = 150 * WORLD_K;
   const geo = new THREE.PlaneGeometry(size, size, segs, segs);
   geo.rotateX(-Math.PI / 2);
