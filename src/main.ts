@@ -2,7 +2,7 @@ import { state, player } from './state';
 import { clamp, dist2d } from './util';
 import { CFG, SPELLS, mods } from './config';
 import { blizRadius } from './formulas';
-import { scene, composer, tickHeat } from './render';
+import { scene, composer, tickHeat, renderer } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { mage } from './models/mage';
@@ -16,6 +16,7 @@ import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
 import { updateHeroes, heroAnim } from './heroes';
+import { klingeAnim } from './klinge';
 import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
@@ -60,7 +61,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...heroAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...heroAnim(), ...klingeAnim(),
   });
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
@@ -108,4 +109,4 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, get zone() { return zone; }, switchZone, spawnMob, enterCombat };
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat };

@@ -6,6 +6,7 @@ import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
 import { buildMage, SKINS, buildWarrior, buildSamurai, buildNinja, WEAPONS as WAR_WEAPONS } from './heroModels';
+import { buildKlinge } from './klingeModel';
 import { buildWeapon } from './weapons/index';
 import { weaponUnlocked } from '../meta';
 
@@ -17,7 +18,7 @@ const chosen = (() => { try { return JSON.parse(localStorage.getItem(WEAPON_STOR
 const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
 let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
 // Nahkämpfer aus heroModels.ts: Treffer-Moment geht an realMen.ts bzw. heroes.ts
-const HEROES = { krieger: () => buildWarrior({ bloom: PERF.bloom, weapon: warWeapon }), samurai: () => buildSamurai({ bloom: PERF.bloom }), ninja: () => buildNinja({ bloom: PERF.bloom }) };
+const HEROES = { krieger: () => buildWarrior({ bloom: PERF.bloom, weapon: warWeapon }), samurai: () => buildSamurai({ bloom: PERF.bloom }), ninja: () => buildNinja({ bloom: PERF.bloom }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 // Der eingebaute Stab weicht der Waffe. Sein Gelenk bleibt: Das Modell hält es in jeder Pose aufrecht.
@@ -39,9 +40,10 @@ function dispose(m) {
   weapon = null;
   if (m.fx.group) {                           // Krieger: Bodeneffekte und Wirbel haben eigene Texturen
     scene.remove(m.fx.group);
-    m.fx.group.traverse(o => { if (o.isMesh) { o.material.map.dispose(); o.material.dispose(); o.geometry.dispose(); } });
+    m.fx.group.traverse(o => { if (o.isMesh) { o.material.map?.dispose(); o.material.dispose(); o.geometry.dispose(); } });
     m.root.traverse(o => { if (o.userData.keep) o.material.map?.dispose(); });
   }
+  if (m.scarf) { scene.remove(m.scarf); m.scarf.geometry.dispose(); m.scarf.material.dispose(); }   // Klingenstrich: Band in Weltkoordinaten
   scene.remove(m.root);
   m.root.traverse(o => {
     if (o.isSkinnedMesh) o.skeleton.dispose();
@@ -64,6 +66,7 @@ function setSkin(id) {
     cur = HEROES[id]();
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
+    if (cur.scarf) scene.add(cur.scarf);
     return;
   }
   cur = buildMage(id, { bloom: PERF.bloom });
@@ -82,7 +85,7 @@ function wield(id) {
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('ronin') ? 'samurai' : ids.includes('schatten') ? 'ninja' : 'alle'; };
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('ronin') ? 'samurai' : ids.includes('schatten') ? 'ninja' : ids.includes('klinge') ? 'klinge' : 'alle'; };
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
@@ -100,6 +103,7 @@ export const mage = {
   get trail() { return cur.trail; },
   get fx() { return HEROES[skin] ? NO_FX : cur.fx; },   // bei Nahkämpfern ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
+  get hero() { return cur; },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
   get warWeapon() { return warWeapon; },
   rate: 1,                                        // Animationstempo der Nahkämpfer (Blutrausch)

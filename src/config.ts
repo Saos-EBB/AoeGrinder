@@ -128,9 +128,9 @@ export const CARDS = [
     desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
   { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
-  { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Ronin', 'Schatten'], max: 5,
+  { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Ronin', 'Schatten', 'Klinge'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Ronin', 'Schatten'], max: 3,
+  { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Ronin', 'Schatten', 'Klinge'], max: 3,
     desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
   // Gegenstücke zu Arkane Macht und Arcane Mind, damit die Schul-Modi dieselben Grundwerte steigern können
   { id: 'iceheart', name: 'Eisherz', only: ['Frost'], max: 5,

@@ -25,6 +25,7 @@ import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId } from './modifiers';
 import { resetRealMen, rageOnHit, moveMul, rooted } from './realMen';
 import { resetHeroes, heroRooted, untouchable, takenMul } from './heroes';
+import { resetKlinge } from './klinge';
 
 export function resetGame() {
   startMageRun();
@@ -52,6 +53,7 @@ export function resetGame() {
   player.mana = maxMana();
   resetRealMen();
   resetHeroes();
+  resetKlinge();
   resetSiege();
   resetSplits();
   blizCursor.visible = false;
