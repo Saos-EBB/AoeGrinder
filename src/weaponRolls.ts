@@ -18,6 +18,7 @@ export const ROLLS = {
   darkMinTier: 3,                              // Fokus Entweihen erst ab blau
   values: { dmg: 0.03, crit: 0.02, cd: 0.03, mana: 0.05, hp: 0.05, regen: 0.03, speed: 0.02, radius: 0.03, dur: 0.05 },   // bei weiß
   fallback: 'pilgerast',                       // leeres Inventar: Pilgerast ohne Effekt
+  notForMages: ['schlachtblech'],              // Standardwaffe des Strichkriegers, nicht in der Kiste
 };
 // Die 20 Magier-Spells, dazu Entweihen (Dunkel)
 export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'hurricane', 'frostorb', 'chain', 'voidorb', 'whirl', 'arc', 'icelance', 'glacier', 'fireball', 'meteor', 'barrage', 'surge'];
@@ -38,8 +39,9 @@ function rollTier() {
 // Modell aus der Schule des Effekts; Wert-Effekte und Entweihen: beliebig
 function rollModel(effect) {
   const school = isFocus(effect) ? SPELLS[focusSpell(effect)]?.tags.map(t => SCHOOL[t]).find(Boolean) : null;
-  const list = school ? WEAPONS.filter(w => w.school === school) : WEAPONS;
-  return pick(list.length ? list : WEAPONS).id;
+  const mage = WEAPONS.filter(w => !ROLLS.notForMages.includes(w.id));
+  const list = school ? mage.filter(w => w.school === school) : mage;
+  return pick(list.length ? list : mage).id;
 }
 export function rollWeapon() {
   const tier = rollTier();

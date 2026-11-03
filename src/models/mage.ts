@@ -20,11 +20,14 @@ const hitHandlers = [];
 // Treffer-Moment der Nahkampf-Animationen (realMen.ts, klinge.ts)
 export function onWarriorHit(fn) { hitHandlers.push(fn); }
 
-let cur = null, skin = null, weapon = null, mount = null, clock = 0, lift = 0;
+// Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
+const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2 } };
+let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 
 function dispose(m) {
   weapon?.dispose();
-  weapon = null;
+  heroWeapon?.dispose();
+  weapon = heroWeapon = null;
   if (m.fx.group) {                           // Krieger: Bodeneffekte und Wirbel haben eigene Texturen
     scene.remove(m.fx.group);
     m.fx.group.traverse(o => { if (o.isMesh) { o.material.map?.dispose(); o.material.dispose(); o.geometry.dispose(); } });
@@ -54,6 +57,8 @@ function setSkin(id) {
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
+    const hw = HERO_WEAPON[id];
+    if (hw) { heroWeapon = buildWeapon(hw.id); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
   cur = buildStrichMagier(id, { bloom: PERF.bloom });
@@ -99,8 +104,9 @@ export const mage = {
   update(dt, anim) {
     const s = Math.max(0, dt) / 1000;
     cur.update(s, anim);
-    if (!weapon) return;
     clock += s;
+    if (heroWeapon) { heroWeapon.combat = !!anim.ability; heroWeapon.update(s, clock); }
+    if (!weapon) return;
     mount.position.y = weapon.cane ? weapon.gripY - STAFF_FOOT : 0;   // beim Sitzen legen die Strichmagier den Stab ab, das Gelenk trägt ihn
     weapon.combat = !!anim.channel || anim.cast > 0;
     weapon.update(s, clock);

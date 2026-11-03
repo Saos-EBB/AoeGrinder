@@ -261,7 +261,7 @@ export function buildKlinge({ bloom = false } = {}) {
     const g = SkeletonUtils.clone(root) as THREE.Object3D, mat = new THREE.MeshBasicMaterial({ color: 0x9aa0a8, transparent: true, opacity: .35, depthWrite: false });
     g.traverse((o: any) => { if (o.isMesh) o.material = mat; });
     fxGroup.add(g);
-    fxList.push({ obj: g, t: 0, life: .45, upd: k => { mat.opacity = .35 * (1 - k); } });
+    fxList.push({ obj: g, t: 0, life: .45, shared: true, upd: k => { mat.opacity = .35 * (1 - k); } });
   }
   function updateFx(s) {
     for (let i = fxList.length - 1; i >= 0; i--) {
@@ -270,7 +270,7 @@ export function buildKlinge({ bloom = false } = {}) {
         fxGroup.remove(f.obj);
         f.obj.traverse(o => {
           if (o.isSkinnedMesh) o.skeleton.dispose();   // Nachbild: Geometrie gehört der Figur
-          else if (o.isMesh) o.geometry.dispose();
+          else if (o.isMesh && !f.shared) o.geometry.dispose();
           if (o.isMesh) o.material.dispose();
         });
         fxList.splice(i, 1); continue;

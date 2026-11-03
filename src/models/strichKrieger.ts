@@ -152,7 +152,10 @@ function swordGeo() {
   return mergeGeometries([prep(blade, C.iron), prep(edge, C.edge), prep(guard, C.guard), prep(grip, C.wrap), prep(pommel, C.guard)]);
 }
 const SWORD_GEO = swordGeo();
-const sword = new THREE.Mesh(SWORD_GEO, VMAT); root.add(sword);
+// Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
+const sword = new THREE.Group(); root.add(sword);
+const swordMesh = new THREE.Mesh(SWORD_GEO, VMAT); sword.add(swordMesh);
+let tipLen = 1.95, gripLen = .24;
   // Fleischkeule zum Essen: Knochen + Fleisch, Griff im Ursprung, Fleisch nach +y
   const meat = new THREE.Mesh(mergeGeometries([
     prep(new THREE.CylinderGeometry(.025, .025, .22, 5).translate(0, -.02, 0), new THREE.Color(0xeee6d0)),
@@ -214,8 +217,8 @@ function placeSword(dir, edge) {
   root.worldToLocal(armR.hand.getWorldPosition(_hp));
   sword.position.copy(_hp);
 }
-const gripL = () => sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), -.24);
-const tipPos = () => root.localToWorld(sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), 1.95));
+const gripL = () => sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), -gripLen);
+const tipPos = () => root.localToWorld(sword.position.clone().addScaledVector(V(0, 1, 0).applyQuaternion(sword.quaternion), tipLen));
   let lastGrip = [.2, 1.2, .3];
   function resolve(p) {
     const o: any = {};
@@ -268,12 +271,12 @@ function ghost() {
   const g = SkeletonUtils.clone(root); const mat = ghostBase.clone();
   g.traverse((o: any) => { if (o.isMesh) o.material = mat; });
   fxGroup.add(g);
-  fxList.push({ obj: g, t: 0, life: .4, upd: k => { mat.opacity = .3 * (1 - k); } });
+  fxList.push({ obj: g, t: 0, life: .4, shared: true, upd: k => { mat.opacity = .3 * (1 - k); } });
 }
 function updateFx(dt) {
   for (let i = fxList.length - 1; i >= 0; i--) {
     const f = fxList[i]; f.t += dt; const k = f.t / f.life;
-    if (k >= 1) { fxGroup.remove(f.obj); f.obj.traverse((o: any) => { if (o.isSkinnedMesh) o.skeleton.dispose(); else if (o.isMesh) o.geometry.dispose(); if (o.isMesh) o.material.dispose(); }); fxList.splice(i, 1); continue; }
+    if (k >= 1) { fxGroup.remove(f.obj); f.obj.traverse((o: any) => { if (o.isSkinnedMesh) o.skeleton.dispose(); else if (o.isMesh && !f.shared) o.geometry.dispose(); if (o.isMesh) o.material.dispose(); }); fxList.splice(i, 1); continue; }
     f.upd(k);
   }
 }
@@ -522,8 +525,15 @@ function defQ(step) {
     root, update, scarf: cloth, onHit: null,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
     fx: { group: fxGroup, crackAt, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
-    get tris() { return Math.round((body.geometry.attributes.position.count + sword.geometry.attributes.position.count) / 3 + (SN - 1) * 2); },
+    get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count) / 3 + (SN - 1) * 2); },
     get bloom() { return bloom; },
+    // Waffe aus models/weapons statt des eigenen Schwerts: Griff in der rechten Hand, Länge für Treffer und linke Hand aus der Waffe
+    setWeapon(w, scale = 1, tip = 1.95, grip = .24) {
+      swordMesh.visible = false;
+      w.root.scale.setScalar(scale);
+      sword.add(w.root);
+      tipLen = tip * scale; gripLen = grip * scale;
+    },
   };
   return model;
 }
