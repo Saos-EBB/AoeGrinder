@@ -23,6 +23,7 @@ import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 import './mobile';
 import { menuYaw, enterMenu } from './ui/mainMenu';
+import { dunkelOn, initDunkel, updateDunkel } from './dunkel';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -47,6 +48,7 @@ function update(dt) {
 
 function updateVisuals(dt) {
   updateAutoCam(dt, mouseBtn.left);
+  if (dunkelOn) updateDunkel(dt);
   updateCamera();
   if (player.targeting && !state.padAim) pickGround();
 
@@ -100,6 +102,7 @@ function loop(t) {
 }
 
 resetGame();
+if (dunkelOn) initDunkel();
 enterMenu();
 refreshKeyLabels();
 requestAnimationFrame(loop);

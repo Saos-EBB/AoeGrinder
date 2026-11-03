@@ -2,6 +2,15 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-03
+
+- fix(dunkel): Modelle überstrahlen beim Reinzoomen nicht mehr, Licht kommt von der Kameraseite und wird nah neutraler
+- chore(dunkel): Messwerte und Vergleichsbilder ohne und mit #dunkel
+- feat(dunkel): Zoom bis höchstens 14, Blizzard-Zielkreis bleibt im Dunkeln sichtbar
+- feat(dunkel): Lichtkegel flackert alle 3–10 s kurz, abschaltbar über D.flicker
+- feat(dunkel): Licht wie in Hinter dir: Lichtkegel in Blickrichtung mit Schatten von Figur und Mobs, schwaches Rundum-Licht, exponentieller Nebel
+- feat(dunkel): Prototyp mit #dunkel in der URL: schwarzer Nebel, abgedunkelte Welt, Laterne am Spieler, nähere Kamera
+
 ## 2026-11-02
 
 - feat(dev): Level setzen gibt im Run die Karten des Kartentakts, direkt nacheinander

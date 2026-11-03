@@ -67,6 +67,9 @@ Stand Artifact und Vercel: v15 mit Mobile und Nahkämpfern (Artifact `1793625667
 - Füße rutschen: `speedK` bei 1,8 gedeckelt, etwa 1,2 Schrittzyklen pro Sekunde, altes Modell 2,1.
 - Spuren haben Lücken (rund 3 yd Abstand bei 0,45 yd Radius). Kein Einknicken beim Landen (`squat`).
 
+**Prototyp Dunkel (nur mit `#dunkel` in der URL, Zahlen in `D` in `src/dunkel.ts`):**
+- Offen, ob der Look trägt. Einzige Stelle mit Schatten-Maps (ein Lichtkegel, Figur und Mobs). Draw Calls in der Testszene 601 ohne, 1135 mit `#dunkel`. FPS nur per Software-Rendering gemessen (5,0 / 4,1), am echten Rechner prüfen. Vergleich: `docs/dunkel-vorher.png`, `docs/dunkel-nachher.png`.
+
 **Balance (alles `// PH`):**
 - Pacing: Mit festen Kill-Raten im Skript 14–16 Minuten bis Level 100, im echten Spiel ungeprüft. Die Bestzeit-Liste ist dadurch gedeckelt, Läufe unter etwa 14 Minuten sind kaum möglich.
 - Nur Arkan hat kein Relikt, die anderen Schulen haben je zwei.
