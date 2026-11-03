@@ -2632,6 +2632,29 @@ const WARRIOR = { ...SKIN, ...WAR_MOVES, id: 'warrior', name: 'Skelett-Krieger',
   eye: 0xff4a2a, eyeCol: [3, 0.55, 0.25], animate: warriorAnimate };
 WARRIOR.atk1 = WAR_MOVES.cast; WARRIOR.atk2 = WAR_MOVES.smash;
 
+// Helfer aus dem gelöschten Abschnitt Krieger-Waffen, Samurai und Ninja bauen darauf auf
+const wGlowMat = rgb => { const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(...rgb) }); m.userData = { cell: 1, kind: 'glow' }; return m; };
+const BLOOD = wGlowMat([2.4, 0.25, 0.12]), SOUL = wGlowMat([0.35, 2.2, 1.5]);
+const _inv = new THREE.Matrix4(), _m4 = new THREE.Matrix4(), _p = new THREE.Vector3(), _h = new THREE.Vector3(), _d = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+function follow(R, j, hold) {                                            // Gelenk unter root auf die Lage eines Haltepunkts setzen
+  _inv.copy(R.root.matrixWorld).invert(); _m4.multiplyMatrices(_inv, hold.matrixWorld); _m4.decompose(j.position, j.quaternion, j.scale);
+}
+const localPos = (R, obj, out) => R.root.worldToLocal(obj.getWorldPosition(out));
+const groundAt = (R, lx, lz, out = new THREE.Vector3()) => R.root.localToWorld(out.set(lx, 0, lz));   // lokaler Punkt am Boden → Welt
+const easeOut = u => 1 - (1 - u) ** 2, seg = (k, a, b) => Math.min(1, Math.max(0, (k - a) / (b - a)));
+const rootOf = j => { while (j.parent) j = j.parent; return j; };
+const glowOf = R => R.glowMesh || (R.glowMesh = R.root.children.find(o => o.isSkinnedMesh && o.material.isMeshBasicMaterial));
+const warIdle = carry => function (t, ph) {
+  const b = Math.sin(ph * 0.9);
+  Object.assign(t, STAND, carry, { hipsY: 0.965 + b * 0.006, lean: 0.18 + b * 0.025, headZ: Math.sin(ph * 0.4) * 0.05 });
+  t.rSh += b * 0.03; t.lSh += b * 0.02;
+};
+const warGait = (carry, swing = {}) => function (j, t, ph) {
+  WAR_MOVES.gait(j, t, ph); Object.assign(t, carry);
+  const sw = Math.sin(ph); for (const k in swing) t[k] += sw * swing[k];
+};
+const WEAPON_BASE = { ...WARRIOR, atlasKey: 'warrior', addons(R) { R.fx = makeWarriorFx(); } };
+
 // =====================================================================
 // Gebeinsamurai: eigener untoter Samurai auf dem Vanilla-Rig. Lackrüstung (Kabuto mit Sichelkrone, Sode, Dō,
 // Kusazuri), Hakama, Geisterblaue Augen. Drei eigene Klingen: Katana „Fahlmond“ und Wakizashi „Glutzahn“ an der
