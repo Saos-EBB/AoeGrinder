@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(spells): Kein globaler Cooldown mehr, jeder Zauber hat nur seine eigene Abklingzeit; GCD-Zeile im Charakterfenster entfernt, Spielversion v22
 - feat(klinge): Q ist eine Schlag-Kette, ein Schlag pro Druck, 1 s Zeitfenster, 1 Druck gepuffert. Einhand: Ziehschnitt, Rückhand, Stoß mit Treffer beim Wegstecken (Linie 5,6 yd). Zweihand: rechts, links, X-Schnitt, Wirbelsprung mit Druckwelle
 - feat(klinge): Modell kann die Q-Kette (Einhand 3 Schläge, Zweihand 4), hält die Endpose und steckt weg; /klinge.html zeigt alle Schläge
 - feat(packs): Packs doppelt so groß („Große Packs“ damit 4× früher), Champion-Packs öfter (20 % ab Level 6, 4 Mobs), unberührte Packs 4+ Level unter dir werden außer Sicht durch aktuelle ersetzt

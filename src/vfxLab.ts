@@ -168,7 +168,6 @@ function loop(t) {
   player.hp = 1e7;
   player.mana = 1e7;
   player.cds = {};
-  player.gcdUntil = 0;
   updateChannel();
   for (const m of state.mobs) {
     m.hp = m.maxHp;

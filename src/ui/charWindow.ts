@@ -31,7 +31,6 @@ function statsTab() {
     ${rage ? '' : row('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
     ${row('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
     ${row('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
-    ${row('GCD', `${(CFG.gcd / 1000).toFixed(1).replace('.', ',')} s`)}
     ${row('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}
     ${schools.map(s => {
       const best = Math.max(...owned.filter(id => (SPELLS[id].school ?? SPELLS[id].cls) === s).map(id => spellValue(id)));

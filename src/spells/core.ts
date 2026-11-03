@@ -3,7 +3,7 @@
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
-import { CFG, mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
+import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
@@ -150,10 +150,10 @@ export function castSpell(id, point?) {
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
-  if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit, kein GCD
+  if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
-  if (state.now < player.gcdUntil || cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
   const cost = manaCost(id);
   const life = paysLife(id), freeOk = comboReady('freeMana');   // Dodge-Kombo Normal: nächster Spell ohne Mana
   if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
@@ -166,7 +166,6 @@ export function castSpell(id, point?) {
   stopChannel(true);
   stopDrink();
   player.casting = null;
-  player.gcdUntil = state.now + CFG.gcd;
   player.targeting = false;
   blizCursor.visible = false;
   // Dodge-Kombos: Normal kein Mana, Arcane only sofort, Fire only Feuerball crittet
