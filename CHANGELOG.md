@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- docs: Grundregel „NIE Pay-to-win“ in AGENTS.md
 - docs: Vercel-Stand nur dunkel
 - feat(dunkel): Das Spiel läuft immer dunkel, die helle Version ist raus, /dark führt weiter aufs Spiel
 - docs: Vercel-Stand v18 nachgetragen
