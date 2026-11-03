@@ -1,7 +1,7 @@
 # Frost Grind — Was ist los
 > Browser-Game, das Kevin aus Spaß baut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Komplett in Arbeit, der Look ist noch raw, Spells und Balance werden gerade ausprobiert.
 
-**Stand:** v14 auf `main` und [live](handoff.md#stand): neue UI, [Meta Phase 1](ui-meta-konzept.md#meta-phase-1) mit Speedrun-Liste, Staub und Shop. Getestet per Skript, Kevins Handtest läuft.
+**Stand:** v22 auf `main` und [live](handoff.md#stand): drei Klassen (Strichmagier, Strichkrieger, Klingenstrich), Dodge, Waffen-Baukasten, Minimap. Getestet per Skript, Kevins Handtest läuft.
 
 ## Loslegen
 ```
@@ -18,11 +18,11 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/world.ts`, `collision.ts`, `zones.ts` | Karten, Boden, massive Objekte | [map-audit](map-audit.md) |
 | `src/mobs.ts`, `abilities.ts`, `siege.ts` | Mobs, Fähigkeiten, Mob-Modus Belagerung | [zones-spec](zones-spec.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/models/` | Alle Figuren (Strichmagier mit 4 Skins, Strichkrieger, Klingenstrich), 15 Magier-Waffen | [status-waffen](status-waffen.md) |
+| `src/models/` | Alle Figuren (Strichmagier mit 4 Skins, Strichkrieger, Klingenstrich), Mob-Rigs, Waffen-Baukasten | [Code-Karte](handoff.md#code-karte) |
 | `src/realMen.ts`, `klinge.ts`, `melee.ts` | Nahkampf-Modi Strichkrieger, Klingenstrich und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
 | `src/skinFx.ts` | Skin-Effekte der Magier | [Code-Karte](handoff.md#code-karte) |
 | `src/wucht.ts`, `champions.ts` | Treffer-Gefühl (Wackeln, Hitstop-Anlässe, Boden-Spuren, Trümmer, Knockback) und Champion-Packs mit Affixen | [Code-Karte](handoff.md#code-karte) |
-| `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
+| `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [Code-Karte](handoff.md#code-karte) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |
 | `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, gesperrter Pool, Shop, Magische Kiste mit Mage-Waffen, Spielstand-Code | [pool-liste](pool-liste.md) |
@@ -36,7 +36,8 @@ npm run build        # eine dist/index.html fürs Artifact
 - Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Der Shop öffnet nach einem Abschluss und im Hauptmenü, dort mit dem letzten Angebot. Staub gibt es auch nach einem Tod → [meta.ts](../src/meta.ts)
-- Das Spiel läuft immer dunkel, mit Schatten-Map am Lichtkegel, das kostet Draw Calls → [dunkel.ts](../src/dunkel.ts), [handoff](handoff.md#offen)
+- Das Spiel läuft immer dunkel. Mobs hinter dem Nebel werden nicht gezeichnet, Schatten gibt es nur im Lichtkreis (`PERF.mob*`) → [dunkel.ts](../src/dunkel.ts), [config.ts](../src/config.ts)
+- Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons sind Fremd-Packs, Autoren und Quellen stehen in den Credits → [credits](credits.md)
 

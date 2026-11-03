@@ -6,10 +6,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
-export const RARITY = [
+const RARITY = [
   { name: 'grau', color: '#b0b0b0', mult: 0.5 }, { name: 'weiß', color: '#ffffff', mult: 1 }, { name: 'grün', color: '#3fe05a', mult: 2 },
   { name: 'blau', color: '#4aa3ff', mult: 3 }, { name: 'lila', color: '#c573ff', mult: 4 }, { name: 'orange', color: '#ff9a2e', mult: 5 }];
-export const WEIGHTS = [5, 20, 35, 25, 11, 4];
 export const TYPES = {
   staff: { name: 'Langer Stab', noun: 'stab', g: 'm', slot: 'beide Hände', rule: 'Radius +10 %, Kanäle +1 Tick, Zauberzeit +10 %', heads: ['kristall', 'kaefig', 'gabel', 'ring', 'sichel'] },
   wand: { name: 'Zauberstab', noun: 'zauberstab', g: 'm', slot: 'Haupthand', rule: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', heads: ['splitter', 'kugel', 'klaue', 'nadel'] },
@@ -21,7 +20,6 @@ export const HEADS = {   // Name im Waffennamen, Schule des Fokus-Spells (Form v
   kaefig: ['Käfig', 'Feuer'], gabel: ['Gabel', 'Feuer'], klaue: ['Klauen', 'Feuer'], maul: ['Maul', 'Feuer'], laterne: ['Laternen', 'Feuer'],
   ring: ['Ring', 'Arkan'], kugel: ['Kugel', 'Arkan'], auge: ['Augen', 'Arkan'], rune: ['Runen', 'Arkan'], siegel: ['Siegel', 'Frost'], schaedel: ['Schädel', 'Arkan'], herz: ['Herz', 'Feuer'],
 };
-export const SCHOOL_SPELLS = { Frost: 'Blizzard, Frostnova, Kältekegel …', Feuer: 'Feuerball, Flammenstoß, Meteor …', Arkan: 'Arkane Explosion, Blinzeln …' };
 // Schaft/Körper: Form zeigt die Wert-Gruppe; Name je Typ
 export const SHAFTS = {
   gerade: { values: ['Schaden', 'Crit'], names: { staff: 'gerade', wand: 'gerade', book: 'schlicht', relic: 'Ring' } },
@@ -30,7 +28,6 @@ export const SHAFTS = {
   segmentiert: { values: ['Mana', 'Dauereffekte'], names: { staff: 'segmentiert', wand: 'segmentiert', book: 'Metallecken', relic: 'Käfig' } },
   umwickelt: { values: ['Radius'], names: { staff: 'umwickelt', wand: 'umwickelt', book: 'Kette', relic: 'Kette' } },
 };
-export const VALUE_BASE = { Schaden: 3, Crit: 2, Abklingzeit: -3, Mana: 5, Leben: 5, 'Regen im Kampf': 3, Lauftempo: 2, Radius: 3, Dauereffekte: 5 };
 export const EXTRAS = { baender: 'Bänder', ketten: 'Ketten', federn: 'Federn', gloeckchen: 'Glöckchen' };
 export const ELEMENTS = {
   none: { name: 'keins', color: 0x000000, adj: '' },
@@ -50,9 +47,6 @@ export const MAKERS = {
   brandt: { name: 'Kriegsschmiede Brandt', gen: 'der Kriegsschmiede', trait: 'Leben +10 %, 2 % Lebensraub', main: 'steel', accent: 'steel', detail: 'leather', thick: 1.1, radial: 6, bend: 0, float: false },
 };
 
-function rng(seed) { let s = seed >>> 0 || 1; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
-const pickR = (r, a) => a[Math.floor(r() * a.length)];
-const pct = v => `${v > 0 ? '+' : '−'}${String(Math.round(Math.abs(v) * 10) / 10).replace('.', ',')} %`;
 export function weaponNameOf(s) {
   const T = TYPES[s.type], el = ELEMENTS[s.element], adj = el.adj ? `${el.adj}${T.g === 'm' ? 'er' : 'es'} ` : '';
   return `${adj}${HEADS[s.head][0]}${T.noun} ${MAKERS[s.maker].gen}`;

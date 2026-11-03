@@ -7,7 +7,7 @@ import { CFG } from '../config';
 import { cam } from '../camera';
 import { COLORS } from './colors';
 
-export const MINIMAP = {
+const MINIMAP = {
   px: 150,               // Kantenlänge in CSS-Pixeln, die Größe im Spiel kommt aus dem HUD-Layout (Mausrad)
   yd: 55,                // Radius der Karte in yd
   everyMs: 50,           // Neu zeichnen höchstens alle 50 ms

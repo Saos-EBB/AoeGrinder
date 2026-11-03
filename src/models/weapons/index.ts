@@ -6,7 +6,6 @@ import { FX } from './fx';
 import { WEAPONS } from './defs';
 import { atlasFor, ATLAS_TILE } from './textures';
 
-export { WEAPONS };
 const LIT_GAIN = 1.9;                            // der Viewer hatte Environment-Licht und PBR, das Abendlicht im Spiel macht Lambert sonst fast schwarz, // PH
 const INSET = 1 / (ATLAS_TILE * 4);              // Kachelrand, damit der Filter nicht in die Nachbarkachel greift
 

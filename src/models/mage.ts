@@ -20,9 +20,10 @@ const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: 
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 const NO_FX = {};
-const hitHandlers = [];
+// Liste an einer Funktions-Deklaration: existiert schon, wenn ein Import-Kreis klinge.ts/realMen.ts vor dieser Datei auswertet (vfx.html)
+function hitHandlers(): any[] { return (hitHandlers as any).list ??= []; }
 // Treffer-Moment der Nahkampf-Animationen (realMen.ts, klinge.ts)
-export function onWarriorHit(fn) { hitHandlers.push(fn); }
+export function onWarriorHit(fn) { hitHandlers().push(fn); }
 
 // Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
 const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2, glow: [0.1, 0.008, 0.005], rim: [0.55, 0.05, 0.03], rimPower: 2.4 } };
@@ -75,14 +76,14 @@ function setSkin(id) {
   skin = id;
   if (HEROES[id]) {
     cur = HEROES[id]();
-    cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers) fn(kind, x, z, i); };
+    cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers()) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
     const hw = id === 'krieger' && warWeapon !== 'sword' ? null : HERO_WEAPON[id];   // Axt und Kolben baut das Modell selbst
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
-  cur = buildStrichMagier(id, { bloom: PERF.bloom });
+  cur = buildStrichMagier(id);
   scene.add(cur.root, cur.scarf);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();

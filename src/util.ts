@@ -7,6 +7,9 @@ export const randInt = (a, b) => Math.floor(rand(a, b + 1));
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const dist2d = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 export const lerpTo = (cur, target, k) => cur + (target - cur) * k;
+// Easing für Posen-Keyframes der Figuren
+export const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+export const outC = t => 1 - Math.pow(1 - t, 3);
 
 export function part(geo, mat, x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(geo, mat);

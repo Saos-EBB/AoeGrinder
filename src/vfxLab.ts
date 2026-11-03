@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { state, player } from './state';
-import { $, clamp, rand } from './util';
+import { $, clamp } from './util';
 import { CFG, SPELLS, PERF } from './config';
 import { camera, renderer, composer } from './render';
 import { particles } from './fx/particles';
@@ -13,7 +13,6 @@ import { bolt } from './fx/bolts';
 import { mountVolume } from './fx/sound';
 import { hitstopDt, impact, onMultiKill } from './fx/impact';
 import { shakeOffset } from './wucht';
-import { cam } from './camera';
 import { spawnMob, updateMob, removeMob } from './mobs';
 import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune } from './spells';
 import { resetGame, switchZone } from './player';

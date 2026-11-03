@@ -46,7 +46,7 @@ export const hurricane = {
       if (hasRune('hurricane', 'pull')) pullMob(m, ch.point, PULL_PER_S * dt / 1000);
     }
     ch.visual.update(ch.point, ch.radius);
-    areaParticles(ch.point, ch.radius, 70, dt, [NATURE, [1.4, 2, 1.4]], { up: 7, size: 0.3, swirl: 9, life: 1, pull: 1.4 });
+    areaParticles(ch.point, ch.radius, 70, dt, [NATURE, [1.4, 2, 1.4]], { up: 7, size: 0.3, swirl: 9, life: 1 });
   },
   onChannelEnd(ch) { ch.visual.remove(); },
 };

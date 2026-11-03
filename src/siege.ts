@@ -13,12 +13,12 @@ import { resetGame, completeRun } from './player';
 import { renderMenu } from './ui/mainMenu';
 
 // Mobs pro Sekunde = base + perLevel × (Level − 1) + perMinute × Minuten. // PH
-export const SIEGE = { base: 1, perLevel: 0.15, perMinute: 0.75, edgeR: 90 * WORLD_K, maxPerFrame: 3 };
+const SIEGE = { base: 1, perLevel: 0.15, perMinute: 0.75, edgeR: 90 * WORLD_K, maxPerFrame: 3 };
 
 const CHOICES = [{ name: 'Packs', mode: 'packs', goal: 0 }, { name: 'Belagerung 5 min', mode: 'siege', goal: 5 }, { name: 'Belagerung 10 min', mode: 'siege', goal: 10 }, { name: 'Belagerung 15 min', mode: 'siege', goal: 15 }, { name: 'Belagerung endlos', mode: 'siege', goal: 0 }];
 let due = 0, fps = 60, lastFrame = performance.now();
 
-export const siegeRate = () => SIEGE.base + SIEGE.perLevel * (player.level - 1) + SIEGE.perMinute * state.now / 60000;
+const siegeRate = () => SIEGE.base + SIEGE.perLevel * (player.level - 1) + SIEGE.perMinute * state.now / 60000;
 
 function spawnFromEdge() {
   for (let tries = 0; tries < 20; tries++) {

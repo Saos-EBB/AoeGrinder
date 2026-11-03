@@ -112,7 +112,7 @@ Farben: rot ≥ pl+5, orange ≥ pl+3, gelb ≥ pl-2, grün > gray, sonst grau.
 ## 12. Global Cooldown
 
 `Objects/SpellCaster.cpp` ~Z. 2398: GCD = `StartRecoveryTime` aus den Spelldaten. `[verifiziert]`
-Den Wert 1500 ms für Mage-Spells habe ich nicht aus den Daten gezogen. `[offen]` Platzhalter: 1500 ms.
+Im Spiel bewusst entfernt (2026-11-03): jeder Spell hat nur seine eigene Abklingzeit.
 
 ## 13. Bewegung
 
@@ -156,6 +156,5 @@ Wichtig: **Blizzard slowt ohne Talent nicht.** Das passt gut als Roguelike-Upgra
 ## Offene Punkte
 - Crit-Chance-Formel (Int → Crit %)
 - Trinkwerte (Mana/s, Dauer)
-- GCD-Wert aus Spelldaten bestätigen
 - Radien Blizzard / Nova / CoC
 - Frost-Nova-Break-Regel genau (pro Treffer oder Schadensschwelle)

@@ -22,7 +22,7 @@ blizCursor.visible = false;
 scene.add(blizCursor);
 
 // Blizzard-Effekt (Boden + fallende Eissplitter)
-export const blizFx = (() => {
+const blizFx = (() => {
   const g = new THREE.Group();
   const disc = terrainDecal(new THREE.RingGeometry(0, 1, 48, 8),
     new THREE.MeshBasicMaterial({ color: 0x9fdcff, transparent: true, opacity: 0.12, depthWrite: false }));
@@ -435,7 +435,7 @@ export function blizStop() {
   blizStopNew();
   blizFx.g.visible = blizFx.disc.visible = false;
 }
-export function resetShard(sh, randomHeight) {
+function resetShard(sh, randomHeight) {
   const r = blizRadius() * Math.sqrt(Math.random()), a = rand(0, Math.PI * 2);
   sh.position.set(Math.cos(a) * r, randomHeight ? rand(0, 16) : rand(14, 18), Math.sin(a) * r);
 }

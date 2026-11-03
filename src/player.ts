@@ -3,7 +3,6 @@ import { state, player } from './state';
 import { $, clamp } from './util';
 import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_PACES } from './config';
 import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
-import { scene } from './render';
 import { heightAt, zone, zoneId, buildWorld } from './world';
 import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';

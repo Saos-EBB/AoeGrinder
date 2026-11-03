@@ -6,7 +6,7 @@ import { WORLD_K } from './config';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
-import { clearColliders, colliders, resolve, groundAt } from './collision';
+import { clearColliders, colliders, groundAt } from './collision';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -116,7 +116,6 @@ export function updateZoneEvent(dt) {
 }
 
 // Für spells/blink.ts, alles andere ruft collision.ts direkt
-export function collide(pos, radius) { resolve(pos, radius); }
 
 // Blizzard-Zielkreis
 // Flache Kreise/Ringe, deren Vertices der Fläche unter der Mitte folgen: Gelände, Plattform oder Stufe darunter

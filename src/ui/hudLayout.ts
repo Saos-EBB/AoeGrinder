@@ -6,7 +6,7 @@ import { device } from '../device';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
 const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte', hudMap: 'Minimap' };
-export const DEFAULT_LAYOUT: any = {
+const DEFAULT_LAYOUT: any = {
   hudHeader: { anchor: 'tc', x: 0, y: 0, scale: 1 },
   hudHp: { anchor: 'c', x: -10, y: 24, scale: 1, links: ['hudMana', 'hudCast'] },
   hudMana: { anchor: 'c', x: 10, y: 24, scale: 1, links: ['hudHp'] },
@@ -41,7 +41,7 @@ function load() {
 let layout = load();
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(layout)); } catch { /* egal */ } };
 
-export function applyLayout() {
+function applyLayout() {
   for (const id in layout) {
     const e = layout[id], [fx, fy] = ANCHORS[e.anchor], el = $(id);
     Object.assign(el.style, { position: 'fixed', right: 'auto', bottom: 'auto', margin: '0',

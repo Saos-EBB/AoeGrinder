@@ -7,7 +7,7 @@ import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 import { askConfirm } from './confirm';
 
-export const SAVE_CODE = { version: 1, runsStore: 'frostgrind.runs.v1', checkLen: 4 };
+const SAVE_CODE = { version: 1, runsStore: 'frostgrind.runs.v1', checkLen: 4 };
 
 // Prüfsumme: einfacher Hash über den Base64-Teil, 4 Hex-Zeichen
 const check = s => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 65521; return h.toString(16).padStart(SAVE_CODE.checkLen, '0'); };
@@ -15,7 +15,7 @@ const toB64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 const fromB64 = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
 const loadRunsRaw = () => { try { return JSON.parse(localStorage.getItem(SAVE_CODE.runsStore) || '[]'); } catch { return []; } };
 
-export function exportCode() {
+function exportCode() {
   const data = { v: SAVE_CODE.version, d: meta.dust, u: meta.unlocked, b: meta.bought, t: meta.bestTier, o: meta.offer,
     i: meta.inv.map(w => w.v === 2 ? { r: w.r, s: w.s } : [w.e, w.r, w.m]), q: meta.inv.findIndex(w => w.id === meta.equipped), r: loadRunsRaw() };
   const b64 = toB64(JSON.stringify(data));
@@ -23,7 +23,7 @@ export function exportCode() {
 }
 
 // Gibt eine Fehlermeldung zurück oder null, wenn der Code passt. replace: wirklich laden.
-export function importCode(code, replace = true) {
+function importCode(code, replace = true) {
   const s = String(code).replace(/\s+/g, '');
   if (s.length <= SAVE_CODE.checkLen) return 'Der Code ist zu kurz.';
   const b64 = s.slice(0, -SAVE_CODE.checkLen);

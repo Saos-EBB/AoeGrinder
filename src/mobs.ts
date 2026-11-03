@@ -91,7 +91,7 @@ export function pickMobType() {
   return special.length && Math.random() < 0.5 ? pick(special) : unlocked[0];
 }
 
-export function spawnPack(at = null) {
+function spawnPack(at = null) {
   let center = at;
   for (let tries = 0; !at && tries < 40; tries++) {
     // Rund um den Spieler, sonst verdünnt die große Karte die Dichte. // PH
@@ -117,7 +117,7 @@ export function spawnPack(at = null) {
 }
 
 // Champion-Pack: C.size Mobs gleichen Typs an einer Stelle, alle mit denselben Affixen (champions.ts)
-export function spawnChampionPack(x, z, affixes) {
+function spawnChampionPack(x, z, affixes) {
   const packId = ++state.packCounter, unlocked = unlockedMobs(player.level), typeId = pick(unlocked);
   for (let i = 0; i < C.size; i++) {
     const level = Math.max(1, player.level + randInt(0, 1));

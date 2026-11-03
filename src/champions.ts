@@ -25,7 +25,7 @@ export const C = {
     stone: { name: 'Steinhaut', taken: 0.7 },                 // erhaltener Schaden, dazu immun gegen Knockback
   },
 };
-export const AFFIX_IDS = Object.keys(C.affixes);
+const AFFIX_IDS = Object.keys(C.affixes);
 
 // Würfelt beim Pack-Spawn: null oder die Affixe des Packs
 export function rollChampionPack() {

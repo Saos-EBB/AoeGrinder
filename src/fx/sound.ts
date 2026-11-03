@@ -21,7 +21,7 @@ function audio() {
 }
 
 export const getVolume = () => volume;
-export function setVolume(v) {
+function setVolume(v) {
   volume = v;
   if (master) master.gain.value = v;
   try { localStorage.setItem(VOLUME_KEY, String(v)); } catch { /* kein Storage */ }

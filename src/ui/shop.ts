@@ -127,7 +127,7 @@ $('deathShopBtn').addEventListener('click', () => {
   syncPause();
 });
 // Aus dem Hauptmenü: letztes Angebot, zurück ins Menü ohne neuen Aufbau
-export function openMenuShop() {
+function openMenuShop() {
   fromMenu = true;
   tierNow = menuTier();
   offer = menuOffer();

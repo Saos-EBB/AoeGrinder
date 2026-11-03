@@ -3,14 +3,11 @@
 // Gleiche Schnittstelle wie buildMage: anim = { state, speed, cast, channel, squat, frozen }, anchors.crystal hängt am Stabgelenk (dort sitzt die Waffe), trail und fx bleiben.
 
 import * as THREE from 'three';
+import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-const outC = t => 1 - Math.pow(1 - t, 3);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 const sine = t => .5 - .5 * Math.cos(Math.PI * t);
 const EASE = { io: inOut, out: outC, back: outBack, lin: t => t, sine };
@@ -182,7 +179,6 @@ function kf(keys, u) {
   const [t0, p0] = keys[i], [t1, p1, e] = keys[i + 1];
   return mix(p0, p1, (EASE[e] || inOut)(clamp((u - t0) / Math.max(1e-4, t1 - t0), 0, 1)));
 }
-const add = (p, k, v) => { p[k] = p[k].map((x, i) => x + (v[i] || 0)); };
 
 const N = P({ y: .98, h: [0, 0, 0], c: [.05, 0, 0], n: [0, 0, 0], hL: [.3, .95, .06], hR: [-.3, 1.08, .14], b: [0, 1, .04], fL: [.13, .06, 0], fR: [-.13, .06, 0] });
 function runBase(ph, A = .5, lift = .28) {
@@ -349,7 +345,7 @@ ANIM.arcane.sit = t => { // Lotus, Tee-Schale mit beiden Händen, langsam
 const DEAD = P(N, { y: .2, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hL: [.62, .12, -.55], hR: [-.6, .12, -.3], b: [-.2, .05, 1], fL: [.3, .06, .9], fR: [-.28, .06, .96], sf: 0 });
 const airOf = (A, t) => P(A.run(0.3), { fL: [.16, .36, .18], fR: [-.16, .26, -.2] });
 
-export function buildStrichMagier(gameSkin = 'alle', { bloom = false } = {}) {
+export function buildStrichMagier(gameSkin = 'alle') {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin], glowU = { uTime: { value: 0 } };
   const S = SKINS[skin];
   const F: any = { skin, S, bones: [], parts: [], glow: [], t: 0, last: null, blendFrom: null, blendT: 0, freeze: 0 };

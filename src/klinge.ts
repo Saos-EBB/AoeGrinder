@@ -19,7 +19,7 @@ import { makeCtx, stat, cdEnd, startCd, damageMult, stopDrink, mobsInRadius, app
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
 
 // Alle Zahlen hier. Alles // PH
-export const KLINGE = {
+const KLINGE = {
   stance: {
     1: { name: 'Einhand · Iai', move: 1.25, rate: 1.3, range: 1.4, dmg: 1, cdOnHit: 500, bleed: false },     // PH
     2: { name: 'Zweihand · Nitō', move: 1, rate: 1, range: 1, dmg: 2.5, cdOnHit: 0, bleed: true },           // PH
@@ -259,7 +259,7 @@ function reduceCds(ms) {
 }
 
 // Ein Treffer-Ereignis: gibt die Zahl der Treffer zurück. Der Haltungs-Schaden steckt im Kontext.
-export function strike(id, ctx, amount, targets, onMob?) {
+function strike(id, ctx, amount, targets, onMob?) {
   const mul = swapMul();
   let landed = 0;
   for (const o of origins()) for (const m of targets(o)) {
@@ -414,7 +414,7 @@ onWarriorHit((kind, x, z, i) => {
 });
 
 // Blutung: jeder Treffer ein eigener Stapel, der 8. ersetzt den ältesten. raw ist der Schaden vor den Spielerfaktoren, damit damageMob sie nur einmal rechnet.
-export function addBleed(m, raw) {
+function addBleed(m, raw) {
   const B = K.bleed, ticks = Math.round(B.ms / B.tickMs);
   m.bleeds ??= [];
   m.bleeds.push({ tick: raw * B.share / ticks, left: ticks, next: state.now + B.tickMs });
@@ -465,7 +465,7 @@ function followMouse(dt) {
 
 export function updateKlinge(dt) {
   if (!on() || player.dead) return;
-  updateMelee(dt);
+  updateMelee();
   updateBleeds();
   if (clones.length && state.now >= clonesUntil) clearClones();
   updateTrails();
