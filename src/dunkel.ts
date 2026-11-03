@@ -1,4 +1,4 @@
-// Prototyp „Dunkel“: gleiche Mechanik, Licht und Stimmung wie im Horror-Spiel „Hinter dir“. Nur aktiv mit #dunkel in der URL, gelesen beim Laden.
+// Prototyp „Dunkel“: gleiche Mechanik, Licht und Stimmung wie im Horror-Spiel „Hinter dir“. Nur aktiv unter /dark (oder mit #dunkel in der URL), gelesen beim Laden.
 // Ohne Hash läuft hier nichts: keine zusätzlichen Lichter, keine zusätzlichen Draw Calls.
 
 import * as THREE from 'three';
@@ -12,7 +12,7 @@ import { zone, terrain } from './world';
 import { mage } from './models/mage';
 import { blizCursor } from './fx/spellFx';
 
-export const dunkelOn = location.hash === '#dunkel';
+export const dunkelOn = /^\/dark\/?$/.test(location.pathname) || location.hash === '#dunkel';
 
 // Alle Zahlen des Modus. Alles // PH
 export const D = {
