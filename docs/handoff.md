@@ -29,6 +29,7 @@ Stand Vercel: v20 von `main` (2026-11-03): dazu Wucht, Champion-Packs, Waffen-Ba
 - `src/siege.ts`: Mob-Modus Belagerung mit Zielen 5, 10, 15 Minuten und endlos, Rate in `SIEGE`, je ein Ranglisten-Tab.
 - `src/wucht.ts`: Zahlen in `W`. Trauma-Wackeln hinter `shakeCamera()`, Hitstop selbst in `fx/impact.ts` (Zeitlupe `W.hitstop.scale`, Crit nur bei Einzelziel über `noteHit`), große Treffer ab `W.big.frac` des Mob-Lebens: Kamera-Ruck, Boden-Spur (ein InstancedMesh), Trümmer, Knockback (`bigKnock` in `mobs.ts`). `src/champions.ts`: Zahlen in `C`, Spawn in `spawnPack`, Dev-Knopf in den Einstellungen.
 - `src/models/weapons/baukasten.ts`: Waffen-Baukasten aus dem Viewer (https://claude.ai/artifact/McdzspSdum69PJUhrWJjKy), 4 Typen ohne Nebenhand, statische Teile pro Material verschmolzen. `weaponRolls.ts` würfelt die Schichten (`ROLLS`), alte Waffen `{ e, r, m }` bleiben gültig, neue sind `{ v: 2, r, s }`.
+- `src/dodge.ts`: Ausweichen, Zahlen in `DG`. i-Frames in `damagePlayer`, Bewegung über `dodgeVelocity` in `updatePlayer`, Kombo pro Modus über `consumeCombo` (Spell-Kern, `realMen.ts`, `klinge.ts`), Start-Effekte (Mini-Nova, Feuerspur) in `startDodge` (`player.ts`).
 - `src/weaponRolls.ts`: Mage-Waffen (Effekt × Seltenheit), Kiste, Inventar, Wirkung über `mods`/`stat`/`state.poolExtra`, Zahlen in `ROLLS`. `ui/saveCode.ts`: Spielstand-Code. Modus-Regeln (`dotMul`, `baseCrit`, `hitSlow`, `castWhileMoving`, `blinkCharges`, `manaCost`) stehen in `MODIFIERS`, gelesen über `modValue`.
 - `src/meta.ts`: Knochenstaub, gesperrter Pool, Shop-Stufen und Preise in `META` (`docs/pool-liste.md`). `ui/shop.ts`: Ablauf Ergebnis → Shop → Hauptmenü, Shop im Hauptmenü. Credits: `docs/credits.md`.
 - `src/mobs.ts`, `mobTypes.ts`, `abilities.ts`: Spawn (Ring um den Spieler), KI, `damageMob`, Fähigkeiten.
@@ -39,6 +40,7 @@ Stand Vercel: v20 von `main` (2026-11-03): dazu Wucht, Champion-Packs, Waffen-Ba
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- Branch `dodge` (nicht gemergt) – Dodge mit perfektem Dodge, Kombo pro Modus, 2 Karten, Spielversion v21. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Waffen-Baukasten für Magier, Spielversion v20. Getestet per Skript.
 - v20 (auf `main`, auf Vercel) – Wucht und Champion-Packs. Getestet per Skript, nicht von Hand gespielt.
 - v19 (auf `main`, auf Vercel) – Modi-Konzept: Tag Dunkel, Schulen mit Stärken und Schwächen, Eisblock, Flammenstoß 0,5 s und Feuerball 0,35 s, Mage-Waffen aus der Magischen Kiste (`weaponRolls.ts`, Inventar in `meta`), Spielstand-Code (`ui/saveCode.ts`), `heroModels.ts` gelöscht. Getestet per Skript, nicht von Hand gespielt.

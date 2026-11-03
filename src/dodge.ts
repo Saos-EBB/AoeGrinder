@@ -17,7 +17,8 @@ export const DG = {
   yd: 4, ms: 250, iframeMs: 200, recoveryMs: 100,     // Weg, Dauer, unverwundbar ab Start, danach kein Cast
   charges: 2, rechargeMs: 3000,
   tilt: 0.45, squash: 0.18, shake: 0.12, dust: 10,     // Optik: Kippen in Richtung, Stauchen über scale, Staub am Start
-  perfect: { hitstopMs: 80, flashMs: 220 },            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
+  perfect: { hitstopMs: 80, flashMs: 220 },
+  devMobSlow: 0.3,                                     // Dev-Schalter: Mob-Angriffe so viel langsamer, zum Testen der i-Frames            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
   // Kombo pro Modus im Fenster nach dem Dodge-Ende (ms); ein perfekter Dodge verdoppelt es
   combo: { normal: 1500, feuer: 2000, arkan: 1500, krieger: 1000, klinge: 1000, perfectMul: 2,
     miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6, klingeQMul: 2 },
@@ -143,3 +144,13 @@ export function updateDodgeHud() {
   shownKey = key;
   dots.innerHTML = charges.map((t, i) => `<span style="width:8px;height:8px;border-radius:50%;border:1px solid #e8d8a8;background:${i < dodgeCharges() ? '#e8d8a8' : 'transparent'}"></span>`).join('');
 }
+
+// Dev: Mob-Angriffe sichtbar verlangsamen (Einstellungen)
+const devBtn = document.createElement('button');
+devBtn.className = 'bindBtn';
+devBtn.style.cssText = 'width:100%;margin-bottom:14px';
+const showDev = () => { devBtn.textContent = `Dev: Mob-Angriffe ×${String(DG.devMobSlow).replace('.', ',')}: ${state.devMobSlow ? 'an' : 'aus'}`; };
+devBtn.addEventListener('click', () => { state.devMobSlow = !state.devMobSlow; showDev(); });
+$('devPerf').after(devBtn);
+showDev();
+export const mobAttackSlow = () => state.devMobSlow ? DG.devMobSlow : 1;

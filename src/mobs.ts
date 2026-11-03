@@ -14,6 +14,7 @@ import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
+import { mobAttackSlow } from './dodge';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
@@ -242,7 +243,7 @@ export function updateMob(mob, dt) {
     if (mob.ability?.onUpdate?.(mob, dt)) { /* Fähigkeit steuert selbst */ }
     else if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
     else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
-      mob.nextSwing = state.now + CFG.swingTime / (mob.swingMul ?? 1);   // Champion „Schnell“
+      mob.nextSwing = state.now + CFG.swingTime / (mob.swingMul ?? 1) / mobAttackSlow();   // Champion „Schnell“, Dev-Schalter
       hitPlayer(mob);
     }
     faceMob(mob, player.pos);
