@@ -7,17 +7,20 @@ import { act } from './input';
 import { pad } from './gamepad';
 import { particles } from './fx/particles';
 import { addTrauma } from './wucht';
+import { hitstop } from './fx/impact';
+import { combatText } from './ui/hud';
 
 // Alle Zahlen PH
 export const DG = {
   yd: 4, ms: 250, iframeMs: 200, recoveryMs: 100,     // Weg, Dauer, unverwundbar ab Start, danach kein Cast
   charges: 2, rechargeMs: 3000,
   tilt: 0.45, squash: 0.18, shake: 0.12, dust: 10,     // Optik: Kippen in Richtung, Stauchen über scale, Staub am Start
+  perfect: { hitstopMs: 80, flashMs: 220 },            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
 };
 
-let dodge = null;                 // { start, dx, dz }
+let dodge = null;                 // { start, dx, dz, charge, perfect }
 let charges = [0, 0];             // Zeitpunkt, ab dem die Ladung wieder bereit ist
-let lastEnd = -1e9;
+let lastEnd = -1e9, lastPerfect = false;
 
 export const dodgeActive = () => !!dodge && state.now < dodge.start + DG.ms;
 export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframeMs;
@@ -48,7 +51,7 @@ export function tryDodge(before) {
   if (i < 0) return false;
   charges[i] = state.now + DG.rechargeMs;
   before?.();
-  dodge = { start: state.now, ...direction() };
+  dodge = { start: state.now, ...direction(), charge: i, perfect: false };
   state.dodgeStats.n++;
   for (let k = 0; k < DG.dust; k++) {
     const a = Math.random() * Math.PI * 2;
@@ -59,10 +62,23 @@ export function tryDodge(before) {
   return true;
 }
 
+// Ein Angriff oder Geschoss hätte in den i-Frames getroffen (player.ts damagePlayer): höchstens einmal pro Dodge
+export function perfectDodge() {
+  if (!dodge || dodge.perfect) return;
+  dodge.perfect = true;
+  charges[dodge.charge] = state.now;
+  state.dodgeStats.perfect++;
+  hitstop(DG.perfect.hitstopMs);
+  flash.style.transition = 'none'; flash.style.opacity = '1';
+  requestAnimationFrame(() => { flash.style.transition = `opacity ${DG.perfect.flashMs}ms ease-out`; flash.style.opacity = '0'; });
+  combatText(player.pos, 'Perfekt', 'info', 2.8);
+}
+export const lastDodgePerfect = () => !!dodge?.perfect || lastPerfect;
+
 // Aus updatePlayer: setzt die Geschwindigkeit, solange der Dodge läuft. true = normale Steuerung aussetzen
 export function dodgeVelocity(vel) {
   if (!dodge) return false;
-  if (state.now >= dodge.start + DG.ms) { dodge = null; lastEnd = state.now; return false; }
+  if (state.now >= dodge.start + DG.ms) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; return false; }
   const speed = DG.yd / (DG.ms / 1000);
   vel.x = dodge.dx * speed; vel.z = dodge.dz * speed;
   player.moveState = 'run';
@@ -79,6 +95,11 @@ export function dodgeVisual(root) {
   root.rotation.z -= Math.sin(local) * DG.tilt * k;
   root.scale.set(1 + DG.squash * k * 0.5, 1 - DG.squash * k, 1 + DG.squash * k * 0.5);
 }
+
+// Weißer Rand beim perfekten Dodge
+const flash = document.createElement('div');
+Object.assign(flash.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '2', opacity: '0', boxShadow: 'inset 0 0 70px 18px rgba(255,255,255,0.85)' });
+document.body.appendChild(flash);
 
 // Anzeige: kleine Punkte unter der Lebensleiste, einer pro Ladung
 const dots = document.createElement('div');

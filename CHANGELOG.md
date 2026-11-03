@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(dodge): Perfekter Dodge, wenn ein Treffer in die i-Frames fällt: Ladung zurück, Hitstop, weißer Rand, „Perfekt“; Zähler im Leistungsfenster
 - feat(dodge): Ausweichen in allen Modi (Shift, Pad L2, umbelegbar): 4 yd in 0,25 s, 0,2 s unverwundbar, 2 Ladungen à 3 s, bricht Sitzen, Kanal und Zauber ab (Arcane only zaubert weiter), Krieger bricht seinen Move ab
 - docs: Vercel-Stand v20 nachgetragen
 - feat(ui): Rückfragen beim Löschen einer Waffe und beim Laden eines Spielstand-Codes als Fenster im Spiel statt Browser-Abfrage

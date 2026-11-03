@@ -24,7 +24,7 @@ import { resetSiege } from './siege';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
-import { resetDodge, tryDodge, dodgeVelocity, dodgeIframes } from './dodge';
+import { resetDodge, tryDodge, dodgeVelocity, dodgeIframes, perfectDodge } from './dodge';
 import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
@@ -105,7 +105,7 @@ export function setLevel(level) {
 
 export function damagePlayer(amount, dot = false) {
   if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked()) return;
-  if (!dot && dodgeIframes()) return;                      // Dodge: Angriffe und Geschosse gehen durch, Gift und Lava nicht
+  if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
