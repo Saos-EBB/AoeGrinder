@@ -83,7 +83,7 @@ function updateVisuals(dt) {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
       frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
-      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1),
+      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
     });
     if (m.dead) sinkCorpse(m);
   }

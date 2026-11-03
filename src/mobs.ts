@@ -14,6 +14,7 @@ import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
+import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
 import { shakeCamera } from './camera';
@@ -86,6 +87,8 @@ export function spawnPack() {
     const farFromPacks = state.mobs.every(m => m.dead || dist2d(m.home, center) > 18);
     if (inMap && farFromPacks && (zone.spawnOk?.(center.x, center.z) ?? true)) break;
   }
+  const champ = rollChampionPack();                    // Champion-Pack statt normalem Pack
+  if (champ) return spawnChampionPack(center.x, center.z, champ);
   const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
   const size = base * modFactor('packSize');
   const spread = Math.max(LEVEL_PACK_SPREAD, base / 2);   // große Packs brauchen wieder mehr Platz
@@ -98,6 +101,17 @@ export function spawnPack() {
     spawnMob(typeId, pos, level, packId);
   }
 }
+
+// Champion-Pack: C.size Mobs gleichen Typs an einer Stelle, alle mit denselben Affixen (champions.ts)
+export function spawnChampionPack(x, z, affixes) {
+  const packId = ++state.packCounter, unlocked = unlockedMobs(player.level), typeId = pick(unlocked);
+  for (let i = 0; i < C.size; i++) {
+    const level = Math.max(1, player.level + randInt(0, 1));
+    const m = spawnMob(typeId, new THREE.Vector3(x + rand(-2, 2), 0, z + rand(-2, 2)), level, packId);
+    makeChampion(m, affixes);
+  }
+}
+(window as any).__champ = { spawnNear: (off = 0) => spawnChampionPack(player.pos.x + 10 + off, player.pos.z + 10, rollAffixes()) };
 
 // Modelle sind pro Mob verschmolzen, Geometrie und Material müssen mit weg
 export function removeMob(m) {
@@ -189,8 +203,9 @@ export function faceMob(mob, target) {
 // Mob trifft den Spieler, von Nahkampf und Fähigkeiten genutzt
 export function hitPlayer(mob, mul = 1) {
   mob.attackAt = state.now;
-  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * mul);
+  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * mul);
   damagePlayer(dmg);
+  if (mob.champion) championHitPlayer(mob);
   mob.ability?.onHit?.(mob, dmg);
 }
 
@@ -227,7 +242,7 @@ export function updateMob(mob, dt) {
     if (mob.ability?.onUpdate?.(mob, dt)) { /* Fähigkeit steuert selbst */ }
     else if (d > CFG.meleeRange) moveMob(mob, player.pos, dt);
     else if (state.now >= mob.nextSwing && mob.rootUntil <= state.now) {
-      mob.nextSwing = state.now + CFG.swingTime;
+      mob.nextSwing = state.now + CFG.swingTime / (mob.swingMul ?? 1);   // Champion „Schnell“
       hitPlayer(mob);
     }
     faceMob(mob, player.pos);
@@ -288,7 +303,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   if (!noRoll && !dark && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
 
   mob.castKey = castKey ?? source;
-  amount *= modFactor('dmg');
+  amount *= modFactor('dmg') * (mob.takenMul ?? 1);   // takenMul: Champion „Steinhaut“
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
     if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }
@@ -335,10 +350,12 @@ function killMob(mob) {
   mob.rootUntil = 0;
   mob.plate.style.display = 'none';
   player.kills++;
-  reportKill(mob, mob.type.noXp ? 0 : xpForKill(mob.level));
+  const xpMul = mob.xpMul ?? 1;                         // Champions: XP und Punkte ×3
+  reportKill(mob, mob.type.noXp ? 0 : xpForKill(mob.level) * xpMul);
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
+  if (mob.champion) championDied(mob, damagePlayer);
   if (mob.type.noXp) return;
-  const xp = Math.round(xpForKill(mob.level) * paceXpMul());
+  const xp = Math.round(xpForKill(mob.level) * xpMul * paceXpMul());
   if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
 }
 
@@ -388,3 +405,5 @@ export function knockbackMob(mob, center, dist, dur = 450) {
 export function slowSwing(mob, pct, dt) {
   mob.nextSwing += dt * (1 / (1 - pct) - 1);
 }
+
+devChampionUi(spawnChampionPack);

@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(champions): Champion-Packs ab Level 10 (8 %): 3 Mobs, Leben ×3, Schaden ×1,3, XP und Punkte ×3, blau leuchtend, ein Affix (ab Level 40 zwei): Schnell, Stark, Feuer-verzaubert, Kälte-verzaubert, Steinhaut; Kill mit Hitstop, Wackeln und großem Riss; Dev-Knopf zum Spawnen
 - feat(wucht): Trümmer bei großen Einschlägen, Knockback 0,5–2 yd (nicht bei gerooteten Mobs und Steinhaut), höchstens 2 Lichtblitze gleichzeitig
 - feat(wucht): Boden-Spuren je Schule (Brandfleck, Eisfleck, Lila-Riss, Riss) in einem InstancedMesh, 40 Stück, blenden nach 4 s aus
 - feat(wucht): Kamera-Ruck nach vorn bei großen Treffern (ab 20 % Mob-Leben), über den vorhandenen cameraKick
