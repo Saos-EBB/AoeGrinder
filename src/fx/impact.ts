@@ -71,6 +71,11 @@ export function hitstop() {
   lastStop = performance.now();
   stopLeft = HITSTOP_MS;
 }
+// Läuft gerade ein Hitstop? Die Nahkampf-Figuren frieren dann mit ein (klinge.ts, realMen.ts)
+export const hitstopActive = () => stopLeft > 0;
+// Crits lösen Hitstop nur aus, wenn im Frame genau ein Treffer fiel (Einzelziel). Beim AoE-Grinden mit vielen Treffern stockt es so nicht.
+let frameHits = 0, frameCrit = false;
+export function noteHit(crit) { frameHits++; if (crit) frameCrit = true; }
 // Liefert die Spielzeit dieses Frames
 export function hitstopDt(dt) {
   if (stopLeft <= 0) return dt;
@@ -82,6 +87,8 @@ export function hitstopDt(dt) {
 // Einmal pro Frame aus updateEffects, nach der Kamera
 const proj = new THREE.Vector3();
 export function updateImpact(dt) {
+  if (frameCrit && frameHits === 1) hitstop();
+  frameHits = 0; frameCrit = false;
   syncLights();
   for (const s of lights) {
     const t = (fxClock.now - s.start) / s.dur;
@@ -119,5 +126,5 @@ export function impact(pos, color, { radius = 10, power = 300, kickBy = 0.25, so
 }
 
 // Crit (ui/hud.ts) und Multi-Kill ab 10 (score.ts)
-export function onCrit() { hitstop(); cameraKick(0.12); }
+export function onCrit() { cameraKick(0.12); }   // Hitstop für Crits kommt über noteHit (nur Einzelziel)
 export function onMultiKill() { hitstop(); cameraKick(0.6); }

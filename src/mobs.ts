@@ -12,6 +12,7 @@ import { reportKill , run } from './score';
 import { mobMode, modFactor, modValue } from './modifiers';
 import { particles } from './fx/particles';
 import { hitSparkFx } from './fx/spellFx';
+import { noteHit } from './fx/impact';
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
@@ -294,6 +295,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   const crit = !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
+  noteHit(crit);
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
@@ -361,7 +363,7 @@ export function pullMob(mob, center, amount) {
 
 // Rückschlag im Bogen, weg vom Punkt
 export function knockbackMob(mob, center, dist, dur = 450) {
-  if (mob.dead || mob.leap) return;
+  if (mob.dead || mob.leap || mob.orbit) return;   // orbit: hängt im Blutwirbel (klinge.ts)
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
   target.y = mob.pos.y;

@@ -4,6 +4,7 @@
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
+import { hitstopActive } from './fx/impact';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
@@ -428,7 +429,7 @@ export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Beweg
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!(state.paused && (cur || whirlOn)) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest

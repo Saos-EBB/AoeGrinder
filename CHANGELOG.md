@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- fix(wucht): Hitstop bei Crits nur noch auf Einzelziele, Nahkampf-Figuren frieren im Hitstop mit ein, Mobs im Blutwirbel ohne Knockback
 - docs: Vercel-Stand v19 nachgetragen
 - feat(krieger): Strichkrieger wählt vor dem Run Riesenschwert, Holzfälleraxt (Lebensraub, Kahlschlag, Fällen) oder Streitkolben (Kettenblitz, Donnerschlag mit Betäubung, Kugelblitz); Build samt Waffe in den Run-Details der Rangliste
 - feat(krieger): Schlachtblech mit leichtem rotem Schein, im Dunkeln besser zu sehen
