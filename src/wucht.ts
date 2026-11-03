@@ -5,6 +5,8 @@
 export const W = {
   // Trauma 0..1 steigt mit Treffern, fällt pro Sekunde. Versatz = Trauma² × max. frameCap: so viel Trauma höchstens pro Frame (30 Blizzard-Ticks bleiben ruhig)
   shake: { max: 0.45, decay: 1.4, freq: 22, frameCap: 0.18, spellK: 0.5, hurtK: 1.4, strong: 1.8 },
+  // Spielzeit läuft im Hitstop mit scale weiter; höchstens einer pro gap. Anlässe: Crit auf Einzelziel, Champion-Kill, Krieger-Smash, Spieler verliert ≥ hurtPct Leben
+  hitstop: { scale: 0.05, gap: 200, critMs: 50, smashMs: 70, championMs: 90, hurtMs: 80, hurtPct: 0.15 },
 };
 
 // Einstellung „Bildschirmwackeln“: an, aus, stark

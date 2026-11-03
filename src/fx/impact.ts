@@ -7,6 +7,7 @@ import { scene, camera, composer } from '../render';
 import { softPass } from './softPass';
 import { fxClock, quality, vfxOld } from './shaders';
 import { playSound } from './sound';
+import { W } from '../wucht';
 
 // ---------- Licht-Pool: Die Anzahl ändert sich nur mit der Qualität, sonst würden alle Materialien neu kompiliert ----------
 const MAX_LIGHTS = 4;
@@ -64,12 +65,12 @@ export function cameraKick(amount) { if (!vfxOld()) kick = Math.max(kick, amount
 const tmp = new THREE.Vector3();
 
 // ---------- Hitstop: Spielzeit steht kurz, Effekte laufen weiter ----------
-const HITSTOP_MS = 40, HITSTOP_GAP = 250;   // PH: Abstand, sonst stottert es bei vielen Crits
+// Werte in W.hitstop (wucht.ts): Spielzeit läuft mit scale weiter, höchstens ein Hitstop pro gap
 let stopLeft = 0, lastStop = -1e9;
-export function hitstop() {
-  if (vfxOld() || performance.now() - lastStop < HITSTOP_GAP) return;
+export function hitstop(ms = W.hitstop.critMs) {
+  if (vfxOld() || performance.now() - lastStop < W.hitstop.gap) return;
   lastStop = performance.now();
-  stopLeft = HITSTOP_MS;
+  stopLeft = ms;
 }
 // Läuft gerade ein Hitstop? Die Nahkampf-Figuren frieren dann mit ein (klinge.ts, realMen.ts)
 export const hitstopActive = () => stopLeft > 0;
@@ -81,13 +82,13 @@ export function hitstopDt(dt) {
   if (stopLeft <= 0) return dt;
   const used = Math.min(stopLeft, dt);
   stopLeft -= used;
-  return dt - used;
+  return dt - used + used * W.hitstop.scale;
 }
 
 // Einmal pro Frame aus updateEffects, nach der Kamera
 const proj = new THREE.Vector3();
 export function updateImpact(dt) {
-  if (frameCrit && frameHits === 1) hitstop();
+  if (frameCrit && frameHits === 1) hitstop(W.hitstop.critMs);
   frameHits = 0; frameCrit = false;
   syncLights();
   for (const s of lights) {
