@@ -115,7 +115,7 @@ const showStance = () => {
 // Nach dem Zurücksetzen von Leben und Mana im Run-Start, nach resetRealMen
 export function resetKlinge() {
   player.resLabel = undefined;
-  useKlingeBinds(on());
+  useKlingeBinds(on() || mage.skin === 'krieger');
   clearClones();
   if (!on()) return;
   player.rageMax = 1; player.mana = 1;             // Keine Ressource: Balken zeigt die Haltung
