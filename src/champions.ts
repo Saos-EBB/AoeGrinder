@@ -13,7 +13,7 @@ import { W, addTrauma, decal } from './wucht';
 
 // Alle Zahlen PH
 export const C = {
-  chance: 0.08, minLevel: 10, secondAffixLevel: 40, size: 3,
+  chance: 0.2, minLevel: 6, secondAffixLevel: 40, size: 4,
   hp: 3, dmg: 1.3, xp: 3,                                   // XP und damit Punkte ×3
   plateColor: '#8fc4ff',                                    // Name und Affixe im Nameplate
   trauma: 0.6,                                              // Kill: starkes Wackeln, Hitstop W.hitstop.championMs, großer Riss W.decal.champion

@@ -40,6 +40,9 @@ export const LEVEL_UNLOCKS = [16, 31, 46, 61];            // Ab diesen Spielerle
 export const LEVEL_NEW_MOB_BANNER = 3000;                 // Anzeigedauer "Neuer Gegner"
 export const LEVEL_MIN_MOBS = 40;                         // So viele Mobs leben mindestens auf der Karte
 export const LEVEL_PACK_MIN = 4, LEVEL_PACK_MAX = 6;      // Kleinstes Pack ab Level 1
+export const PACK_SIZE_MUL = 2;                           // PH: Grundfaktor auf jede Packgröße, „Große Packs“ kommt noch obendrauf
+export const PACK_STALE_LEVELS = 4;                       // PH: unberührte Packs so viele Level unter dir werden durch aktuelle ersetzt
+export const PACK_STALE_DIST = 30;                        // PH: aber nur außerhalb dieser Entfernung, damit nichts vor dir aufploppt
 export const LEVEL_PACK_SPREAD = 3;                       // Mobs liegen bis zu so viele yd um die Pack-Mitte
 
 export const CFG = {
