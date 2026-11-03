@@ -1,6 +1,6 @@
 // Klingenstrich: Figur, IK, Posen, Aktionen und Effekte aus dem Viewer klingenstrich-viewer.html, dazu Kreisschnitt, Sitzen, Rückwärts, Sprung, Tod und Klone.
 // Vanilla-Technik: ein SkinnedMesh, Gewicht 1, Vertex-Farben, 3-Stufen-Toon. Das Modell bewegt den Spieler nicht: Sprint und Treffer macht klinge.ts über onHit.
-// Schnittstelle wie heroModels: update(dt, anim), Aktion startet bei Phase 0, sobald sie wechselt; dt > 1 gilt als ms.
+// Schnittstelle wie die anderen Figuren: update(dt, anim), Aktion startet bei Phase 0, sobald sie wechselt; dt > 1 gilt als ms.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';

@@ -24,10 +24,11 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |
-| `src/meta.ts`, `ui/shop.ts` | Knochenstaub, gesperrter Pool, Shop | [pool-liste](pool-liste.md) |
+| `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, gesperrter Pool, Shop, Magische Kiste mit Mage-Waffen, Spielstand-Code | [pool-liste](pool-liste.md) |
 
 ## ⚠ Besonderheiten
-- Die Figuren kommen aus den Viewern, Quellen stehen im [handoff](handoff.md). `heroModels.ts` ist fast nur noch Altbestand, gebraucht werden `SKIN_FX` und die Spuren
+- Es gibt nur noch Strichfiguren; sie kommen aus den Viewern, Quellen im [handoff](handoff.md). Spuren und Skin-Regeln liegen in [trail.ts](../src/models/trail.ts)
+- Grundregel: NIE Pay-to-win, der Shop läuft nur über erspielten Staub → [AGENTS.md](../AGENTS.md)
 - Effekte und Bodenziele nutzen `groundAt`, nicht `heightAt`, sonst liegen sie auf Plattformen falsch → [Code-Karte](handoff.md#code-karte)
 - Modus-ID des Strichkriegers bleibt `realmen`, Skin `krieger`. Wut steht in `player.mana`, `player.rageMax` schaltet den Modus um; Klingenstrich hat keine Ressource und nutzt den Balken für die Haltung → [realMen.ts](../src/realMen.ts), [klinge.ts](../src/klinge.ts)
 - Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)

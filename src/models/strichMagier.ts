@@ -1,10 +1,10 @@
-// Strichmagier: Basis-Figur mit den Skins Feuer, Eis und Arkan aus dem Viewer „Frost Grind – Strichmagier“ (magier.html). Ersetzt das Skelett aus heroModels.ts im Spiel.
+// Strichmagier: Basis-Figur mit den Skins Feuer, Eis und Arkan aus dem Viewer „Frost Grind – Strichmagier“ (magier.html). Ersetzt die alten Skelett-Magier.
 // Ein SkinnedMesh für den Körper, eins für alles, was leuchtet oder brennt, bei Arkan die Runen. Jeder Skin hat eigene Bewegungen.
 // Gleiche Schnittstelle wie buildMage: anim = { state, speed, cast, channel, squat, frozen }, anchors.crystal hängt am Stabgelenk (dort sitzt die Waffe), trail und fx bleiben.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { makeTrail, stepWatcher, SKIN_FX, SKINS as OLD_SKINS } from './heroModels';
+import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -420,7 +420,7 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
     pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
   }
 
-  const trail = OLD_SKINS[gameSkin]?.trail ? makeTrail(OLD_SKINS[gameSkin].trail) : null;
+  const trail = SKIN_FX[gameSkin]?.trail ? makeTrail(SKIN_FX[gameSkin].trail) : null;
   const watch = stepWatcher({ root: F.root, legL: { ankle: F.legL.ft }, legR: { ankle: F.legR.ft } });
   const fl = FLOAT[skin] || 0;
   let loco = 'idle', mode = 'idle', castT = -1, castKeys = null, runT = 0, wasCast = false;
