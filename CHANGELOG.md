@@ -4,6 +4,8 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(klinge): Modell Klingenstrich aus dem Viewer mit Kreisschnitt, Sitzen, Rückwärts, Sprung, Tod und Klon-Hilfe, Testseite unter /klinge.html
+
 - fix(dunkel): Modelle überstrahlen beim Reinzoomen nicht mehr, Licht kommt von der Kameraseite und wird nah neutraler
 - chore(dunkel): Messwerte und Vergleichsbilder ohne und mit #dunkel
 - feat(dunkel): Zoom bis höchstens 14, Blizzard-Zielkreis bleibt im Dunkeln sichtbar
