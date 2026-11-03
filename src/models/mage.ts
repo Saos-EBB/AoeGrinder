@@ -9,7 +9,7 @@ import { buildStrichMagier } from './strichMagier';
 import { buildKlinge } from './klingeModel';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { equippedModel } from '../weaponRolls';
+import { buildEquipped } from '../weaponRolls';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -87,13 +87,13 @@ function setSkin(id) {
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
   cur.anchors.crystal.parent.add(mount);
-  wield(equippedModel());   // Waffe aus dem Inventar, leer: Pilgerast
+  wield();   // Waffe aus dem Inventar, leer: Pilgerast
 }
 
-function wield(id) {
+function wield() {
   if (HEROES[skin]) return;                   // Nahkämpfer tragen ihre Waffen fest
   weapon?.dispose();
-  weapon = buildWeapon(id);
+  weapon = buildEquipped();
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
@@ -125,7 +125,7 @@ export const mage = {
   },                     // Klingenstrich: Effekte und Haltung des Modells
   get weapon() { return weapon; },
   setSkin,
-  refreshWeapon() { wield(equippedModel()); },   // Wahl im Hauptmenü
+  refreshWeapon() { wield(); },   // Wahl im Hauptmenü
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {

@@ -21,6 +21,7 @@ npm run build        # eine dist/index.html fürs Artifact
 | `src/models/` | Alle Figuren (Strichmagier mit 4 Skins, Strichkrieger, Klingenstrich), 15 Magier-Waffen | [status-waffen](status-waffen.md) |
 | `src/realMen.ts`, `klinge.ts`, `melee.ts` | Nahkampf-Modi Strichkrieger, Klingenstrich und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
 | `src/skinFx.ts` | Skin-Effekte der Magier | [Code-Karte](handoff.md#code-karte) |
+| `src/wucht.ts`, `champions.ts` | Treffer-Gefühl (Wackeln, Hitstop-Anlässe, Boden-Spuren, Trümmer, Knockback) und Champion-Packs mit Affixen | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [status-gruen-vfx](status-gruen-vfx.md) |
 | `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |

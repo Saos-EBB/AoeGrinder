@@ -4,6 +4,16 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-03
 
+- feat(ui): Rückfragen beim Löschen einer Waffe und beim Laden eines Spielstand-Codes als Fenster im Spiel statt Browser-Abfrage
+- feat(meta): Info-Karte mit allen Schichten beim Hovern über Waffen im Hauptmenü und im Shop-Inventar
+- feat(meta): Waffen-Baukasten für Magier: Waffen aus Typ (Stab, Zauberstab, Buch, Relikt), Kopf mit Fokus-Spell, Schaft-Wert, Element-Effekt (7 Elemente), Hersteller-Eigenheit, ab lila Anhänger, orange als Unikat mit altem Modell; Ergebnis-Karte in der Kiste, alte Waffen bleiben gültig, Spielversion v20
+- feat(champions): Champion-Packs ab Level 10 (8 %): 3 Mobs, Leben ×3, Schaden ×1,3, XP und Punkte ×3, blau leuchtend, ein Affix (ab Level 40 zwei): Schnell, Stark, Feuer-verzaubert, Kälte-verzaubert, Steinhaut; Kill mit Hitstop, Wackeln und großem Riss; Dev-Knopf zum Spawnen
+- feat(wucht): Trümmer bei großen Einschlägen, Knockback 0,5–2 yd (nicht bei gerooteten Mobs und Steinhaut), höchstens 2 Lichtblitze gleichzeitig
+- feat(wucht): Boden-Spuren je Schule (Brandfleck, Eisfleck, Lila-Riss, Riss) in einem InstancedMesh, 40 Stück, blenden nach 4 s aus
+- feat(wucht): Kamera-Ruck nach vorn bei großen Treffern (ab 20 % Mob-Leben), über den vorhandenen cameraKick
+- feat(wucht): Hitstop verlangsamt auf 5 % statt anzuhalten, höchstens einer pro 200 ms, auch bei Krieger-Smash und wenn der Spieler ≥ 15 % Leben verliert
+- feat(wucht): Screenshake mit Trauma-Modell (Einschläge nach Schaden, eigener Schaden, gedeckelt pro Frame), Einstellung Bildschirmwackeln an/aus/stark
+- fix(wucht): Hitstop bei Crits nur noch auf Einzelziele, Nahkampf-Figuren frieren im Hitstop mit ein, Mobs im Blutwirbel ohne Knockback
 - docs: Vercel-Stand v19 nachgetragen
 - feat(krieger): Strichkrieger wählt vor dem Run Riesenschwert, Holzfälleraxt (Lebensraub, Kahlschlag, Fällen) oder Streitkolben (Kettenblitz, Donnerschlag mit Betäubung, Kugelblitz); Build samt Waffe in den Run-Details der Rangliste
 - feat(krieger): Schlachtblech mit leichtem rotem Schein, im Dunkeln besser zu sehen

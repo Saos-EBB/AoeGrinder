@@ -4,6 +4,8 @@
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
+import { hitstopActive, hitstop } from './fx/impact';
+import { W } from './wucht';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
@@ -230,9 +232,11 @@ function chainFrom(ctx, first, dmg) {
   }
 }
 
+// Wucht: Smash-Treffer mit mindestens einem Mob stoppen kurz die Zeit
+const smash = landed => { if (landed) hitstop(W.hitstop.smashMs); return landed; };
 function hitQAxe(step) {
-  const c = cur.ctx, Q = WP().q;
-  event('wQ', c, () => Q.dmg[step], () => inCone(player.pos, c.radius(Q.radius[step]), Q.halfAngle[step]));
+  const c = cur.ctx, Q = WP().q, n = event('wQ', c, () => Q.dmg[step], () => inCone(player.pos, c.radius(Q.radius[step]), Q.halfAngle[step]));
+  if (step === Q.dmg.length - 1) smash(n);   // Spalthieb
 }
 function hitQMace(step) {
   const c = cur.ctx, Q = WP().q;
@@ -249,7 +253,7 @@ function hitQ(step, at) {
   const leech = m => { if (hasRune('wQ', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RU.leech); return m; };
   if (step === R.q.dmg.length - 1) {
     const r = c.radius(R.q.smashRadius) * wide;
-    event('wQ', c, () => R.q.dmg[step], () => mobsInRadius(at, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, R.q.knock); }, rageK);
+    smash(event('wQ', c, () => R.q.dmg[step], () => mobsInRadius(at, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, R.q.knock); }, rageK));
   } else {
     const r = c.radius(R.q.radius[step]) * wide;
     event('wQ', c, () => R.q.dmg[step], () => inCone(player.pos, r, R.q.halfAngle[step]), leech, rageK);
@@ -300,11 +304,11 @@ function hitE(at) {
 const eHit = m => { if (m.dead) return; knockbackMob(m, player.pos, R.e.knock); if (hasRune('wE', 'stun')) applyRoot(m, RU.stunMs); };
 function hitLeap() {
   const c = cur.ctx, r = c.radius(R.leap.radius) * (hasRune('wLeap', 'quake') ? RU.leapRadius : 1);
-  event('wLeap', c, () => R.leap.dmg, () => mobsInRadius(player.pos, r), m => {
+  smash(event('wLeap', c, () => R.leap.dmg, () => mobsInRadius(player.pos, r), m => {
     if (m.dead) return;
     knockbackMob(m, player.pos, R.leap.knock);
     if (hasRune('wLeap', 'stun')) applyRoot(m, RU.leapStunMs);
-  });
+  }));
 }
 // Fällen: Linie nach vorn, unter 20 % Leben stirbt der Mob sofort und heilt
 function hitExecAxe() {
@@ -348,7 +352,7 @@ function hitExec() {
   event('wExec', c, m => X.dmg * (hasRune('wExec', 'low') && m.hp < m.maxHp * RU.lowBelow ? RU.lowMul : 1), () => inCone(player.pos, c.radius(X.radius), half), m => {
     if (m.dead) { if (hasRune('wExec', 'refund')) gainRage(RU.killRage); return; }
     knockbackMob(m, player.pos, X.knock);
-  });
+  }) && hitstop(W.hitstop.smashMs);
   shakeCamera(0.5);
 }
 function hitCry() {
@@ -428,7 +432,7 @@ export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Beweg
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!(state.paused && (cur || whirlOn)) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest

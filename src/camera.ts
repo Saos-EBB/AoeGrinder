@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { state, player } from './state';
-import { rand } from './util';
 import { camera } from './render';
 import { heightAt, obstacles } from './world';
+import { addTrauma, shakeOffset } from './wucht';
 
 // Kamera wie in WoW: Orbit um den Spieler
-export const cam = { offset: 0, pitch: 0.45, dist: 16, shake: 0 };
+export const cam = { offset: 0, pitch: 0.45, dist: 16 };
 
-// Kamera-Wackeln (z. B. bei Crits): klingt schnell ab
-export function shakeCamera(amount) { cam.shake = Math.max(cam.shake || 0, amount); }
+// Kamera-Wackeln: Trauma-Modell in wucht.ts, amount wie bisher (0,1 klein … 1 stark)
+export function shakeCamera(amount) { addTrauma(amount); }
 
 // Anteil t (0..1) auf der Strecke a→b (nur x/z), an dem sie den Kreis trifft; 1 = kein Treffer
 function segmentHitsCircle(a, b, c, r) {
@@ -39,6 +39,7 @@ export function updateAutoCam(dt, dragging) {
   cam.offset = now + wrap(target - now) * (1 - Math.exp(-AUTO_CAM_RATE * dt / 1000));
 }
 
+let lastShake = performance.now();
 export function updateCamera() {
   const yaw = player.facing + cam.offset;
   const target = new THREE.Vector3(player.pos.x, player.pos.y + 1.8, player.pos.z);
@@ -56,10 +57,9 @@ export function updateCamera() {
   const minY = heightAt(camera.position.x, camera.position.z) + 0.5;   // nicht unter den Boden
   if (camera.position.y < minY) camera.position.y = minY;
   camera.lookAt(target);
-  if (cam.shake > 0.001) {
-    camera.position.x += rand(-1, 1) * cam.shake;
-    camera.position.y += rand(-1, 1) * cam.shake;
-    cam.shake *= 0.86;
-  }
+  const sh = shakeOffset(performance.now() - lastShake);
+  lastShake = performance.now();
+  camera.position.x += sh.x;
+  camera.position.y += sh.y;
 
 }

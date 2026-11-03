@@ -5,6 +5,7 @@ import { state, player } from './state';
 import { $, dist2d } from './util';
 import { SPELLS, CFG } from './config';
 import { mage, onWarriorHit } from './models/mage';
+import { hitstopActive } from './fx/impact';
 import { KLINGE_TIMING as TIMING, wirbelSpin, cloneKlinge } from './models/klingeModel';
 import { scene } from './render';
 import { useKlingeBinds, pickGround, mouse } from './input';
@@ -437,7 +438,7 @@ export const klingeRooted = () => on() && !!act && act.id !== 'kR';   // eigene 
 export function klingeAnim() {
   if (!on() || player.dead) return {};
   const attack = state.now < attackUntil;
-  return { ability: act?.ability ?? null, attack: attack ? 'q' : null, seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!(state.paused && (act || attack)) };
+  return { ability: act?.ability ?? null, attack: attack ? 'q' : null, seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!((state.paused || hitstopActive()) && (act || attack)) };
 }
 
 // Für den Handtest

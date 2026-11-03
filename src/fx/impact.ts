@@ -7,9 +7,10 @@ import { scene, camera, composer } from '../render';
 import { softPass } from './softPass';
 import { fxClock, quality, vfxOld } from './shaders';
 import { playSound } from './sound';
+import { W, impactDecal, debris } from '../wucht';
 
 // ---------- Licht-Pool: Die Anzahl ändert sich nur mit der Qualität, sonst würden alle Materialien neu kompiliert ----------
-const MAX_LIGHTS = 4;
+const MAX_LIGHTS = 2;   // Wucht: höchstens 2 Lichtblitze gleichzeitig
 const lights = [];
 function syncLights() {
   const want = vfxOld() ? 0 : Math.min(MAX_LIGHTS, quality().lights);
@@ -64,24 +65,31 @@ export function cameraKick(amount) { if (!vfxOld()) kick = Math.max(kick, amount
 const tmp = new THREE.Vector3();
 
 // ---------- Hitstop: Spielzeit steht kurz, Effekte laufen weiter ----------
-const HITSTOP_MS = 40, HITSTOP_GAP = 250;   // PH: Abstand, sonst stottert es bei vielen Crits
+// Werte in W.hitstop (wucht.ts): Spielzeit läuft mit scale weiter, höchstens ein Hitstop pro gap
 let stopLeft = 0, lastStop = -1e9;
-export function hitstop() {
-  if (vfxOld() || performance.now() - lastStop < HITSTOP_GAP) return;
+export function hitstop(ms = W.hitstop.critMs) {
+  if (vfxOld() || performance.now() - lastStop < W.hitstop.gap) return;
   lastStop = performance.now();
-  stopLeft = HITSTOP_MS;
+  stopLeft = ms;
 }
+// Läuft gerade ein Hitstop? Die Nahkampf-Figuren frieren dann mit ein (klinge.ts, realMen.ts)
+export const hitstopActive = () => stopLeft > 0;
+// Crits lösen Hitstop nur aus, wenn im Frame genau ein Treffer fiel (Einzelziel). Beim AoE-Grinden mit vielen Treffern stockt es so nicht.
+let frameHits = 0, frameCrit = false;
+export function noteHit(crit) { frameHits++; if (crit) frameCrit = true; }
 // Liefert die Spielzeit dieses Frames
 export function hitstopDt(dt) {
   if (stopLeft <= 0) return dt;
   const used = Math.min(stopLeft, dt);
   stopLeft -= used;
-  return dt - used;
+  return dt - used + used * W.hitstop.scale;
 }
 
 // Einmal pro Frame aus updateEffects, nach der Kamera
 const proj = new THREE.Vector3();
 export function updateImpact(dt) {
+  if (frameCrit && frameHits === 1) hitstop(W.hitstop.critMs);
+  frameHits = 0; frameCrit = false;
   syncLights();
   for (const s of lights) {
     const t = (fxClock.now - s.start) / s.dur;
@@ -113,11 +121,13 @@ export function updateImpact(dt) {
 // Alles zusammen für einen Einschlag
 export function impact(pos, color, { radius = 10, power = 300, kickBy = 0.25, sound = 'impact', volume = Math.min(1.4, 0.55 + radius * 0.035) } = {}) {   // PH
   playSound(sound, volume);
+  impactDecal(pos, color, radius);   // Wucht: Spur am Boden und Trümmer
+  debris(pos);
   lightFlash(pos, color, power, radius * 3);
   shockwave(pos, radius);
   cameraKick(kickBy);
 }
 
 // Crit (ui/hud.ts) und Multi-Kill ab 10 (score.ts)
-export function onCrit() { hitstop(); cameraKick(0.12); }
+export function onCrit() { cameraKick(0.12); }   // Hitstop für Crits kommt über noteHit (nur Einzelziel)
 export function onMultiKill() { hitstop(); cameraKick(0.6); }

@@ -6,10 +6,12 @@ import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreM
 import { CARD_PACES } from '../config';
 import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
+import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon } from '../weaponRolls';
+import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
@@ -107,9 +109,10 @@ export function renderMenu() {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
     weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), 'Pilgerast (ohne Effekt)', () => pickW(null)));
     for (const w of meta.inv) {
-      const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id), rarityOf(w).name);
+      const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id));   // Details zeigt die Info-Karte beim Hovern
       b.style.borderColor = rarityOf(w).color;
       b.style.color = rarityOf(w).color;
+      attachWeaponCard(b, w);
       weapons.appendChild(b);
     }
   }
@@ -171,6 +174,14 @@ $('settingsClose').addEventListener('click', () => { $('settingsModal').classLis
 $('menuBinds').addEventListener('click', openBinds);
 const showAutoCam = () => { $('setAutoCam').textContent = `Auto-Kamera: ${autoCamOn() ? 'an' : 'aus'}`; $('setAutoCam').title = 'Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen'; };
 $('setAutoCam').addEventListener('click', () => { setAutoCam(!autoCamOn()); showAutoCam(); });
+// Bildschirmwackeln: an, aus, stark
+const shakeBtn = document.createElement('button');
+shakeBtn.className = 'bindBtn';
+shakeBtn.style.cssText = 'width:100%;margin-top:8px';
+const showShake = () => { shakeBtn.textContent = `Bildschirmwackeln: ${shakeModeNow()}`; };
+shakeBtn.addEventListener('click', () => { setShakeMode(SHAKE_MODES[(SHAKE_MODES.indexOf(shakeModeNow()) + 1) % SHAKE_MODES.length]); showShake(); });
+$('setAutoCam').after(shakeBtn);
+showShake();
 showAutoCam();
 function editHud(backdrop) {
   $(backdrop).classList.add('hudHide');

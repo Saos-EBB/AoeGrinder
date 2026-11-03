@@ -34,6 +34,7 @@ import * as metaMod from './meta';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import { menuYaw, enterMenu } from './ui/mainMenu';
+import { updateWucht } from './wucht';
 import { initDunkel, updateDunkel } from './dunkel';
 
 function update(dt) {
@@ -82,7 +83,7 @@ function updateVisuals(dt) {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
       frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
-      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1),
+      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
     });
     if (m.dead) sinkCorpse(m);
   }
@@ -96,6 +97,7 @@ function updateVisuals(dt) {
   ambientParticles(state.paused ? 0 : dt);
   particles.update(state.paused ? 0 : dt);
   updateEffects();
+  updateWucht();
 }
 
 let last = performance.now();

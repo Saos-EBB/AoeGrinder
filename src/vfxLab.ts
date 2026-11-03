@@ -12,6 +12,7 @@ import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } 
 import { bolt } from './fx/bolts';
 import { mountVolume } from './fx/sound';
 import { hitstopDt, impact, onMultiKill } from './fx/impact';
+import { shakeOffset } from './wucht';
 import { cam } from './camera';
 import { spawnMob, updateMob, removeMob } from './mobs';
 import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune } from './spells';
@@ -185,11 +186,9 @@ function loop(t) {
   controls.update();
   // Wackeln und Ruck nur für dieses Bild, OrbitControls behält die eigene Position
   saved.copy(camera.position);
-  if (cam.shake > 0.001) {
-    camera.position.x += rand(-1, 1) * cam.shake;
-    camera.position.y += rand(-1, 1) * cam.shake;
-    cam.shake *= 0.86;
-  }
+  const sh = shakeOffset(dt);   // Trauma-Modell aus wucht.ts wie im Spiel
+  camera.position.x += sh.x;
+  camera.position.y += sh.y;
   updateEffects();
   composer.render();
   camera.position.copy(saved);

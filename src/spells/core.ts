@@ -60,7 +60,7 @@ export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
 const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
-export const chargesOf = id => rune(id)?.charges ?? baseCharges(id);
+export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = state.bonusCharges?.[id] ?? 0; return bonus ? (n ?? 1) + bonus : n; };   // bonus: Buch
 export function cdEnd(id) {
   const n = chargesOf(id);
   if (!n) return player.cds[id] || 0;
@@ -167,7 +167,7 @@ export function castSpell(id, point?) {
   player.gcdUntil = state.now + CFG.gcd;
   player.targeting = false;
   blizCursor.visible = false;
-  const castTime = s.instantCast?.() ? 0 : s.castTime;
+  const castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul;   // castMul: Waffen-Typ und Hersteller
   if (!castTime) return release(id, point);
   player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp };
 }
