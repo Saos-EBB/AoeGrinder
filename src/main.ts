@@ -38,6 +38,9 @@ import { updateWucht } from './wucht';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
+import { updateMarks } from './spells/arcmark';
+import { phoenixRise } from './spells/phoenix';
+import { meterStage } from './schoolMeter';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -68,15 +71,18 @@ function updateVisuals(dt) {
 
   mage.root.position.copy(player.pos);
   mage.root.rotation.y = player.facing + menuYaw();
+  const rise = phoenixRise();                                      // Phönix: Figur wächst aus dem Boden hoch
+  mage.root.scale.set(1, 0.15 + 0.85 * rise, 1);
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
+  updateMarks();
   dodgeVisual(mage.root);
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht

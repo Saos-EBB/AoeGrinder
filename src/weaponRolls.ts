@@ -34,8 +34,11 @@ export const ROLLS = {
   notForMages: ['schlachtblech'],                      // Standardwaffe des Strichkriegers
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
-// Die 20 Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'hurricane', 'frostorb', 'chain', 'voidorb', 'whirl', 'arc', 'icelance', 'glacier', 'fireball', 'meteor', 'barrage', 'surge'];
+// Die Magier-Spells für den Kopf-Fokus, je Schule
+export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark', 'phoenix', 'detonate'];
+// Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes)
+const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
+const focusId = id => FOCUS_REPLACE[id] ?? id;
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
 const TYPE_TEXT = { staff: 'Radius +10 %, Zauberzeit +10 %', wand: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', book: '+1 Ladung auf den Fokus-Spell, Manakosten −10 %', relic: 'Aura alle 3 s in 6 yd mit dem Element-Effekt, Dauereffekte +10 %' };
@@ -72,7 +75,7 @@ const oldModelName = id => WEAPONS.find(x => x.id === id)?.name ?? id;
 export const WEAPON_ROWS = [['type', 'Typ'], ['focus', 'Fokus'], ['value', 'Wert'], ['element', 'Element'], ['maker', 'Hersteller'], ['extra', 'Anhänger'], ['unique', 'Unikat']];
 export function effectRows(w) {
   const f = factor(w.r), rows: any = Object.fromEntries(WEAPON_ROWS.map(([kind, label]) => [kind, { kind, label, text: null, color: null }]));
-  const focus = id => `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`;
+  const focus = raw => { const id = focusId(raw); return `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`; };
   const value = (k, mul = 1) => `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f * mul)} ${VALUE_TEXT[k]}`;
   if (!isNew(w)) {
     if (w.e.startsWith('f:')) rows.focus.text = focus(w.e.slice(2));
@@ -144,8 +147,8 @@ function applyValue(key, v) {
   if (key === 'radius') mods.radius += v;
   if (key === 'dur') mods.durMul += v;
 }
-function applyFocus(id, f) {
-  const s = stat(id);
+function applyFocus(raw, f) {
+  const id = focusId(raw), s = stat(id);
   s.dmg += ROLLS.focus.dmg * f;
   s.radius += ROLLS.focus.radius * f;
   if (!tagsAllowed(SPELLS[id].tags)) state.poolExtra.push(id);   // für diesen Run in den Pool
@@ -171,7 +174,7 @@ export function applyRunWeapon(magier) {
   if (T.radius) mods.radius += T.radius;
   if (T.cast) mods.castMul += T.cast;
   if (T.cd) applyValue('cd', -T.cd);
-  if (T.charges && w.r >= 1) state.bonusCharges = { [s.focus]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
+  if (T.charges && w.r >= 1) state.bonusCharges = { [focusId(s.focus)]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
   if (T.manaCost) mods.manaCostMul += T.manaCost;
   if (T.dur) mods.durMul += T.dur;
   if (T.aura && s.element !== 'none') state.weaponAura = { el: s.element, f, next: state.now + ROLLS.aura.everyMs, M };

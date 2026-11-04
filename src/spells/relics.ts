@@ -14,8 +14,36 @@ import { ragnarosNew, frostChargeNew, frostbreathNew, froststrikeOpen, frostHit,
 import { shakeCamera } from '../camera';
 import { applyRoot, knockbackMob } from '../mobs';
 import { mobsInRadius, addField, schedule } from './core';
-import { runChain, nearestMob } from './chain';
-import { fieldDecal, areaParticles, burstFx, visuals, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
+import { fieldDecal, areaParticles, burstFx, boltFx, visuals, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
+
+const STEP_DELAY = 45;   // PH: ms je Sprung, damit man die Kette sieht
+
+const nearestFirst = (list, pos) => list.sort((a, b) => dist2d(a.pos, pos) - dist2d(b.pos, pos));
+
+// Kette von Ziel zu Ziel (Frostschlag). Alle Äste teilen sich dasselbe Budget an Sprüngen.
+function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = false, killBonus = 0, forkEvery = 0, overCorpses = false, onHit = null, boltColor = undefined }) {
+  const run = { left: jumps, count: 0, seen: new Set() };
+  const jump = (from, mob, amount) => {
+    if (run.left <= 0) return;
+    run.left--;
+    run.count++;
+    run.seen.add(mob);
+    boltFx(from, mob.pos, boltColor);
+    if (!mob.dead) {
+      if (c.hit(mob, amount)) onHit?.(mob);
+      if (mob.dead) run.left += killBonus;
+    }
+    const pool = nearestFirst(state.mobs.filter(o => o !== mob && (!o.dead || overCorpses) && dist2d(o.pos, mob.pos) <= range && (repeat || !run.seen.has(o))), mob.pos);
+    const branches = forkEvery && run.count % forkEvery === 0 ? 2 : 1;
+    for (const next of pool.slice(0, branches)) {
+      run.seen.add(next);   // sonst nehmen beide Äste dasselbe Ziel
+      schedule(STEP_DELAY, () => jump(mob.pos, next, amount * falloff));
+    }
+  };
+  jump(player.pos, first, dmg);
+}
+
+const nearestMob = range => nearestFirst(mobsInRadius(player.pos, range, Infinity), player.pos)[0];
 
 export const ragnaros = {
   name: 'Zorn des Ragnaros', relic: true, desc: 'Feuerschlag 15 yd, alle fliegen weg.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
@@ -116,7 +144,7 @@ function boneRing(pos, radius) {
 }
 
 export const bonecage = {
-  name: 'Knochengefängnis', relic: true, desc: 'Knochenring um ein Pack, 6 s gefangen, Kettenblitz + Leerenkugel +50 % darin.', ranks: ['mana', 'radius'], tags: ['Knochen', 'Fläche'], cls: 'bone',
+  name: 'Knochengefängnis', relic: true, desc: 'Knochenring um ein Pack, 6 s gefangen, Leerenkugel + Arkane Geschosse +50 % darin.', ranks: ['mana', 'radius'], tags: ['Knochen', 'Fläche'], cls: 'bone',
   mana: 150, cd: 35000, dur: 6000, range: 30, radius: 8, ground: true,
   effect(c, point) {
     const radius = c.radius(bonecage.radius), caught = mobsInRadius(point, radius);

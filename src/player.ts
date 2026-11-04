@@ -31,6 +31,8 @@ import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
+import { phoenixRevive } from './spells/phoenix';
+import { resetMeter, updateMeter } from './schoolMeter';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -52,13 +54,14 @@ export function resetGame() {
     pos: new THREE.Vector3(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z), vel: new THREE.Vector3(), grounded: true,
     facing: Math.PI, slowUntil: 0, stunUntil: 0, iceUntil: 0, poison: null, moveState: 'idle', moveSpeed: CFG.runSpeed, landAt: -1e9, level: LEVEL_START, xp: 0,
     lastManaUse: -1e9, nextRegen: CFG.regenTick, cds: {}, castAnimUntil: 0,
-    channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, won: false, kills: 0,
+    channel: null, drink: null, targeting: false, lastCombat: -1e9, dead: false, won: false, kills: 0, invulnUntil: 0, rebornUntil: 0, riseAt: -1e9,
   });
   cam.offset = 0;
   player.hp = maxHp();
   player.mana = maxMana();
   resetRealMen();
   resetDodge();
+  resetMeter();
   resetKlinge();
   resetSiege();
   resetSplits();
@@ -106,7 +109,7 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false) {
-  if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked()) return;
+  if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
   if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
@@ -123,7 +126,7 @@ export function damagePlayer(amount, dot = false) {
     if (player.drink && !player.drink.keepOnHit) stopDrink();
     pushbackChannel();
   }
-  if (player.hp <= 0) die();
+  if (player.hp <= 0 && !phoenixRevive()) die();
 }
 
 // Channel-Pushback: 1000, 800, 600, 400, 200, 200 ... ms (Spell::DelayedChannel)
@@ -301,5 +304,6 @@ export function updatePlayer(dt) {
   updateChannel();
   updateIceBlock();
   updateWeaponAura({ burnMob, pullMob });
+  updateMeter(dt);
   regenerate(dt);
 }

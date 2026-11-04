@@ -17,6 +17,8 @@ export const SKIN_FX = {
 };
 
 const TRAIL = { max: 10, life: 5, r: 0.45 };                             // r = Wirkradius fürs Spiel
+// Stufen der Kill-Anzeige (0 … 3): je Stufe größer, länger, mehr Abdrücke, höchstens +5. Wirkradius bleibt TRAIL.r // PH
+const STAGE = { extra: 5, lifePer: 1, scalePer: 0.3 };
 function footprintTex(kind) {                                            // Fußabdruck, additiv: Schwarz = unsichtbar
   return toTex(canvas(128, (g, s) => {
     const w = s / 2, foot = () => {                                      // Ferse, schmale Mitte, Ballen, 5 Zehen (Großzehe rechts)
@@ -38,25 +40,27 @@ function footprintTex(kind) {                                            // Fuß
 }
 export function makeTrail(kind) {
   const mat = new THREE.MeshBasicMaterial({ map: footprintTex(kind), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-  const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.34, 0.62).rotateX(-Math.PI / 2).rotateY(Math.PI), mat, TRAIL.max);
+  const cap = TRAIL.max + STAGE.extra;
+  const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.34, 0.62).rotateX(-Math.PI / 2).rotateY(Math.PI), mat, cap);
   mesh.frustumCulled = false;
   const prints = [], m = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
-  let next = 0;
+  let next = 0, limit = TRAIL.max, life = TRAIL.life, scale = 1;
   const trail = {
     mesh, kind,
-    add(x, y, z, ang, side) { prints[next] = { x, y, z, ang, side, age: 0 }; next = (next + 1) % TRAIL.max; },
+    add(x, y, z, ang, side) { if (next >= limit) next = 0; prints[next] = { x, y, z, ang, side, age: 0, life, k: scale }; next = (next + 1) % limit; },
+    setStage(k) { limit = TRAIL.max + Math.round(STAGE.extra * k / 3); life = TRAIL.life + STAGE.lifePer * k; scale = 1 + STAGE.scalePer * k; },
     update(dt) {                                                         // dt in Sekunden
-      for (let i = 0; i < TRAIL.max; i++) {
+      for (let i = 0; i < cap; i++) {
         const p = prints[i];
         if (p) p.age += dt;
-        if (!p || p.age >= TRAIL.life) { mesh.setMatrixAt(i, m.makeScale(0, 0, 0)); mesh.setColorAt(i, c.setScalar(0)); continue; }
-        const fade = 1 - smooth(TRAIL.life - 1, TRAIL.life, p.age), flick = kind === 'fire' ? 0.75 + 0.25 * Math.sin(p.age * 18 + i * 2) : 1;
-        mesh.setMatrixAt(i, m.compose(v.set(p.x, p.y + 0.012, p.z), q.setFromAxisAngle(up, p.ang), sc.set(p.side, 1, 1)));
+        if (!p || p.age >= p.life) { mesh.setMatrixAt(i, m.makeScale(0, 0, 0)); mesh.setColorAt(i, c.setScalar(0)); continue; }
+        const fade = 1 - smooth(p.life - 1, p.life, p.age), flick = kind === 'fire' ? 0.75 + 0.25 * Math.sin(p.age * 18 + i * 2) : 1;
+        mesh.setMatrixAt(i, m.compose(v.set(p.x, p.y + 0.012, p.z), q.setFromAxisAngle(up, p.ang), sc.set(p.side * p.k, 1, p.k)));
         mesh.setColorAt(i, c.setScalar(fade * flick));
       }
       mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true;
     },
-    zones: () => prints.filter(p => p && p.age < TRAIL.life).map(p => ({ x: p.x, z: p.z, r: TRAIL.r })),   // fürs Spiel: wo brennt/friert es gerade
+    zones: () => prints.filter(p => p && p.age < p.life).map(p => ({ x: p.x, z: p.z, r: TRAIL.r })),   // fürs Spiel: wo brennt/friert es gerade
   };
   trail.update(0);
   return trail;

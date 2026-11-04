@@ -5,6 +5,7 @@ import { rand, clamp } from './util';
 import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX, LEVEL_MAX, LEVEL_PACE, LEVEL_KILLS } from './config';
 import { stat, rune, echoCost, radiusMult } from './spells/core';
 import { modFactor, timeLimit } from './modifiers';
+import { meterCdMul } from './schoolMeter';
 
 // Spec §1
 export function aggroRadius(mob) {
@@ -73,7 +74,7 @@ export function manaCost(id) {
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {
-  return (rune(id)?.cdMul ?? 1) * baseCd(id) * mods.cdMul;   // cdMul: Waffe
+  return (rune(id)?.cdMul ?? 1) * baseCd(id) * mods.cdMul * (stat(id).cd ?? 1) * meterCdMul();   // cdMul: Waffe, stat.cd: Rang-Karte, Kill-Anzeige Arkan voll
 }
 function baseCd(id) {
   return id === 'nova' ? Math.max(1000, SPELLS.nova.cd - mods.novaCd) : SPELLS[id].cd;   // PH: Untergrenze

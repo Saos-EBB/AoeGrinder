@@ -14,6 +14,7 @@ import { MODIFIERS, activeModIds, modValue } from '../modifiers';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
+import { meterDmgMul, meterSlow, meterFrostFull } from '../schoolMeter';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -83,8 +84,17 @@ export const paysLife = id => supported('blood', id);
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
+// Arkan-Treffer melden sich hier (Arkanes Mal, arcmark.ts): fn(mob, spellId, Schaden vor Wurf und Rüstung)
+// Liste an einer Funktions-Deklaration: arcmark.ts kann im Import-Kreis vor dem Rest dieser Datei laufen
+function arcaneHooks(): any[] { return (arcaneHooks as any).list ??= []; }
+export function onArcaneHit(fn) { arcaneHooks().push(fn); }
+
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
+let tickEnd = 0;      // Ende der Fläche oder des Kanals, der gerade tickt
+// Brand: ein Feuer-Tick lässt den Mob brennen, solange die Quelle läuft, höchstens BURN_STICK ms nach dem letzten Tick (Brandmal-Detonation)
+const BURN_STICK = 3000;   // PH
+export const burnLeft = m => m.burn && m.burn.until > state.now ? m.burn.dps * (m.burn.until - state.now) / 1000 : 0;
 let castCounter = 0;
 export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
   const c: any = {
@@ -94,12 +104,16 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
-      if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
-      if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
+      if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
+      if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
+      dmg *= meterDmgMul();                                                 // Kill-Anzeige Feuer voll
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      if (landed && !m.dead && meterFrostFull()) applySlow(m, 0, slow?.ms ?? 2000);   // Kill-Anzeige Frost voll: jeder Treffer, applySlow legt den Bonus drauf
+      if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
+      if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
@@ -125,6 +139,7 @@ export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
 
 // Stärkster Slow gilt; ein schwächerer verlängert ihn nicht, abgelaufener Slow zählt nicht mehr
 export function applySlow(mob, pct, dur) {
+  pct = meterSlow(pct);                     // Kill-Anzeige Frost voll
   if (mob.slowUntil <= state.now) mob.slowPct = 0;
   if (pct < mob.slowPct) return;
   mob.slowUntil = pct > mob.slowPct ? state.now + dur : Math.max(mob.slowUntil, state.now + dur);
@@ -157,7 +172,7 @@ export function castSpell(id, point?) {
   const cost = manaCost(id);
   const life = paysLife(id), freeOk = comboReady('freeMana');   // Dodge-Kombo Normal: nächster Spell ohne Mana
   if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
-  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
+  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range) + (stat(id).range ?? 0)) return showError('Außer Reichweite');   // stat.range: Rang-Karte
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
   const fail = s.canCast?.();
@@ -235,6 +250,7 @@ function updateFields(dt) {
     f.onUpdate?.(f, dt);
     f.pos.y = groundAt(f.pos.x, f.pos.z, f.pos.y);   // wandernde Flächen bleiben am Boden
     inTick = true;
+    tickEnd = f.end;
     while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
     inTick = false;
     if (state.now >= f.end) {
@@ -262,6 +278,7 @@ export function updateChannel() {
   while (player.channel === ch && ch.nextTick <= state.now && ch.nextTick <= ch.end) {
     ch.nextTick += 1000;
     inTick = true;
+    tickEnd = ch.end;
     s.tick(ch);
     inTick = false;
   }

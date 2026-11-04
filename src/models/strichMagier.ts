@@ -3,7 +3,7 @@
 // Gleiche Schnittstelle wie buildMage: anim = { state, speed, cast, channel, squat, frozen }, anchors.crystal hängt am Stabgelenk (dort sitzt die Waffe), trail und fx bleiben.
 
 import * as THREE from 'three';
-import { clamp, lerpTo as lerp, inOut, outC } from '../util';
+import { clamp, pick, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 
@@ -100,7 +100,7 @@ function makeProp(skin) {
 }
 
 // Runen: 8 Glyphen in einer Canvas-Textur, als ein Mesh aus 8 Quads
-function makeRunes() {
+function runeCanvas() {
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 64;
   const c = cv.getContext('2d'); c.strokeStyle = '#fff'; c.lineWidth = 5; c.lineCap = 'round';
   let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
@@ -111,7 +111,10 @@ function makeRunes() {
     if (rnd() < .5) { c.moveTo(ox + 6, oy + 22); c.arc(ox + 20, oy + 22, 14, Math.PI, TAU * rnd()); }
     c.stroke();
   }
-  const tex = new THREE.CanvasTexture(cv);
+  return cv;
+}
+function makeRunes() {
+  const tex = new THREE.CanvasTexture(runeCanvas());
   const geos = [];
   for (let i = 0; i < 8; i++) {
     const g = new THREE.PlaneGeometry(.2, .2);
@@ -120,6 +123,40 @@ function makeRunes() {
   }
   const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshBasicMaterial({ map: tex, color: 0x9a4dff, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
   m.position.y = 1.15; return m;
+}
+
+// Partikel pro Sekunde je Stufe der Kill-Anzeige, Feuer am Körper und Frost am Körper // PH
+const STAGE_FX = { fire: [0, 14, 32, 70], ice: [0, 8, 18, 40] };
+const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchteile über die Frames verteilt
+
+// Kill-Anzeige (Stufe 0 … 3, anim.stage): Arkan trägt Runen direkt am Körper, alle in einem InstancedMesh. Die ersten counts[Stufe] Anker sind sichtbar.
+const BODY_RUNES = { size: .12, counts: [1, 4, 9, 16], glow: .6 };   // PH
+function makeBodyRunes(F) {
+  const anchors = [
+    [F.head, [0, .18, .19]], [F.chest, [0, .38, .15]], [F.chest, [0, .38, -.15]], [F.hips, [0, 0, .17]],
+    [F.armL.ua, [.07, -.12, 0]], [F.armR.ua, [-.07, -.12, 0]], [F.armL.fa, [.06, -.12, 0]], [F.armR.fa, [-.06, -.12, 0]], [F.head, [0, .18, -.19]],
+    [F.legL.th, [.09, -.18, 0]], [F.legR.th, [-.09, -.18, 0]], [F.legL.sh, [.07, -.15, 0]], [F.legR.sh, [-.07, -.15, 0]], [F.chest, [.17, .25, 0]], [F.chest, [-.17, .25, 0]], [F.hips, [0, 0, -.17]],
+  ].map(([bone, o]: any) => ({ bone, local: new THREE.Matrix4().compose(V(...o), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), Math.atan2(o[0], o[2])), V(1, 1, 1)) }));
+  const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(runeCanvas()), color: 0x9a4dff, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+  mat.onBeforeCompile = s => { s.vertexShader = 'attribute float glyph;\n' + s.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  vMapUv.x = (vMapUv.x + glyph) / 8.0;'); };
+  const geo = new THREE.PlaneGeometry(BODY_RUNES.size, BODY_RUNES.size);
+  geo.setAttribute('glyph', new THREE.InstancedBufferAttribute(Float32Array.from(anchors, (_, i) => i % 8), 1));
+  const mesh = new THREE.InstancedMesh(geo, mat, anchors.length);
+  mesh.frustumCulled = false; mesh.count = 0;
+  const inv = new THREE.Matrix4(), m = new THREE.Matrix4(), base = new THREE.Color(0x9a4dff);
+  return {
+    mesh,
+    update(stage, t, dead) {
+      const n = dead || stage < 0 ? 0 : BODY_RUNES.counts[stage];
+      mesh.count = n; mesh.visible = n > 0;
+      if (!n) return;
+      F.root.updateMatrixWorld(true);
+      inv.copy(F.root.matrixWorld).invert();
+      for (let i = 0; i < n; i++) mesh.setMatrixAt(i, m.multiplyMatrices(inv, anchors[i].bone.matrixWorld).multiply(anchors[i].local));
+      mesh.instanceMatrix.needsUpdate = true;
+      mat.color.copy(base).multiplyScalar(1 + BODY_RUNES.glow * stage * (stage === 3 ? 1.4 + .3 * Math.sin(t * 6) : 1));   // voll: heller, pulsiert, Bloom fängt es auf
+    },
+  };
 }
 
 const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = V(0, -1, 0);
@@ -381,6 +418,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
     return { th, sh, ft, side };
   };
   F.armL = arm(1); F.armR = arm(-1); F.legL = leg(1); F.legR = leg(-1);
+  F.burnBones = [F.chest, F.chest, head, hips, F.armL.ua, F.armR.ua, F.armL.fa, F.armR.fa, F.legL.th, F.legR.th, F.legL.sh, F.legR.sh];   // Kill-Anzeige: Partikel am Körper
   const staff = F.staff = B(F.root);
   // Der eingebaute Stab des Viewers weicht den 15 Waffen: nur das Gelenk bleibt, models/mage.ts hängt die Waffe daran
   F.crystal = new THREE.Object3D(); F.crystal.position.set(0, .79, 0); staff.add(F.crystal);
@@ -448,7 +486,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
   };
   F.body = build(F.parts, F.mat);
   F.glowMesh = F.glow.length ? build(F.glow, glowMat(glowU)) : null;
-  if (skin === 'arcane') { F.runes = makeRunes(); F.root.add(F.runes); }
+  if (skin === 'arcane') { F.runes = makeRunes(); F.root.add(F.runes); F.bodyRunes = makeBodyRunes(F); F.root.add(F.bodyRunes.mesh); }
   F.prop = makeProp(skin); F.root.add(F.prop);
 
   // Partikel in Weltkoordinaten
@@ -529,10 +567,25 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
       if (fl && mode !== 'dead') F.root.position.y += fl + .07 * Math.sin(F.t * 1.3);
       applyPose(F, p);
 
-      // Skin-Effekte
+      // Skin-Effekte. stage: Stufe der Kill-Anzeige 0 … 3, -1 = keine (Normal-Modus, Labor)
+      const stage = anim.stage ?? -1;
+      if (trail && stage !== F.stage) trail.setStage(Math.max(0, stage));
+      F.stage = stage;
+      const body = () => pick(F.burnBones).getWorldPosition(V());
+      if (skin === 'fire') pts.material.size = .06 * (1 + .3 * Math.max(0, stage));
+      if (skin === 'fire' && stage > 0) {             // Körper brennt mehr: Flammen an zufälligen Gelenken, größere Punkte
+        const n = rate(STAGE_FX.fire[stage] * s);
+        for (let i = 0; i < n; i++) emit(body(), 1, V(0, 1 + Math.random(), 0), Math.random() < .55 ? 0xff7a1a : 0xffd04a, -.6, .5 + .15 * stage, .14);
+      }
+      if (skin === 'ice' && stage > 0) {              // Reif und Eiskristalle rieseln vom Körper
+        const n = rate(STAGE_FX.ice[stage] * s);
+        for (let i = 0; i < n; i++) emit(body(), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18);
+      }
+      F.bodyRunes?.update(stage, F.t, mode === 'dead');
+      if (skin === 'arcane') { const g = Math.max(0, stage) / 3; F.mat.emissive.setRGB(.28 * g * g, .08 * g * g, .5 * g * g); }   // voll: Körper glüht
       if (skin === 'ice') {
         const fr = A.cast.freeze;
-        let target = mode === 'chan' ? .35 : 0;
+        let target = mode === 'chan' ? .35 : Math.max(0, stage) * .12;   // Kill-Anzeige: Körper bleibt bereift
         if (castU > fr[0] && castU < fr[1]) target = 1;
         F.freeze = lerp(F.freeze, target, Math.min(1, s * (target > F.freeze ? 10 : 4)));
         F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);

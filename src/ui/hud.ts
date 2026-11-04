@@ -17,6 +17,8 @@ import { manaCost as costOf } from '../formulas';
 import { ICONS } from './icons';
 import { UI } from './uiConfig';
 import './hudLayout';
+import { meterSchool, meterValue } from '../schoolMeter';
+import { SCHOOL_METER } from '../config';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
@@ -135,6 +137,19 @@ function updateBuildChips() {
   }
 }
 
+// Kill-Anzeige unter Mana, nur in den Schul-Modi
+let meterKey = '';
+function updateMeterBar() {
+  const school = meterSchool(), el = $('meter');
+  el.hidden = !school;
+  if (!school) return;
+  const M = SCHOOL_METER[school], v = meterValue(), full = v >= 1;
+  if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
+  $('meterFill').style.transform = `scaleX(${v})`;
+  $('meterText').textContent = full ? M.full : `${M.name} ${Math.floor(v * 100)} %`;
+  el.classList.toggle('full', full);
+}
+
 export function updateHud() {
   saveRunBuild();
   const hpMax = maxHp(), manaMax = maxMana();
@@ -144,6 +159,7 @@ export function updateHud() {
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
   $('manaText').textContent = player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
+  updateMeterBar();
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
   $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.label ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';

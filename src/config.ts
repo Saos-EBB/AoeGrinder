@@ -28,7 +28,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v22';
+export const SCORE_VERSION = 'v23';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -88,6 +88,14 @@ export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1 });
 }
 
+// Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
+export const SCHOOL_METER = {
+  perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
+  Feuer: { name: 'Glut', color: '#ff7a1a', full: 'Glut voll: +25 % Schaden', dmg: 0.25 },
+  Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
+  Arkan: { name: 'Fokus', color: '#c573ff', full: 'Fokus voll: −25 % Abklingzeit', cd: 0.25 },
+};
+
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
 export const CARD_RARITIES = [
   { name: 'grau',   color: '#b0b0b0', mult: 0.5, weight: 30 },
@@ -98,7 +106,7 @@ export const CARD_RARITIES = [
   { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
-export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10 };   // PH
+export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink)
 export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spell, Rune, Support, Relikt
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };
