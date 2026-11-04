@@ -96,10 +96,10 @@ function relicCards(forced = false) {
 
 function talentCards() {
   const allowed = c => c.always || (c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []));
-  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs))).map(c => {
+  return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs)) && (c.offerChance == null || Math.random() < c.offerChance)).map(c => {   // offerChance: seltene Karten
     const rank = state.cardRanks[c.id] || 0;
     return {
-      kind: 'talent', id: c.id, name: c.name, src: `Talent · Rang ${rank + 1} / ${c.max}`,
+      kind: 'talent', id: c.id, name: c.name, src: `Talent · Rang ${rank + 1} / ${c.max}`, minTier: c.minTier,   // minTier 5: immer orange
       desc: m => c.desc(rank, m),
       apply: m => { c.apply(rank, m); state.cardRanks[c.id] = rank + 1; },
     };

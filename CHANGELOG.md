@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(balance): Sprünge verdoppelt: Kettenblitz 100, Bogenblitz 10, Karten und Runen geben doppelt so viele (Leitfähigkeit +20/+4, Überschlag +40, Funkenregen +8, Weiter Bogen +6, Entladung +10 pro Kill); neue orange Talent-Karte Gewitterkaskade: alle Sprünge ×2 (selten, einmal pro Run); Spielversion v30
 - feat(balance): Kettenblitz zaubert in 0,35 s statt 1,5 s; Flächenschaden des Blitzmagiers halbiert (Kettenblitz, Bogenblitz, Blitzschlag, Kugelblitz, Entladung); dafür je eine 4. Rune mit mehr Schlägen (Überschlag, Funkenregen, Dreifachschlag, Schnellzapper, Blitzhagel, Nachentladung) und 5 Talente nur im Blitz only (Leitfähigkeit, Donnerhall, Sturmfront, Kugelnetz, Sturmherz); Spielversion v29
 - feat(ui): Info-Karten zu den Spells beim Hovern: Start-Kit unter dem Figurennamen im Hauptmenü, „Deine Spells“ im Pause-Menü, Slots der Aktionsleiste; zeigt Beschreibung, Kosten (Mana, Ladung, Leben, Wut), Abklingzeit, Zauberzeit, Reichweite, Schaden und die Runen (aktive mit ★)
 - feat(waffen)!: Waffen-Elemente nur noch aus Schulen im Spiel: Gift und Void raus, Blut neu (Treffer legt 1 Infekt-Stapel, tropfender Kopf); alte Waffen werden umgestellt (Gift → Blut, Void → Arkan); Spielversion v28

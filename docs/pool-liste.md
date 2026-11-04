@@ -159,4 +159,4 @@ Die Runen-Freischaltungen der Krieger gelten pro Slot, also für alle drei Waffe
 
 ## Talente
 
-Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung. Nur im Schul-Modus: Eisherz (Frost), Glutherz und Glutseele (Feuer). Nur Blitz only: Leitfähigkeit, Donnerhall, Sturmfront, Kugelnetz, Sturmherz. Nur Nahkampf: Kampfkunst, Knochenpanzer. In allen Modi: Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster nach dem Dodge).
+Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung. Nur im Schul-Modus: Eisherz (Frost), Glutherz und Glutseele (Feuer). Nur Blitz only: Leitfähigkeit, Donnerhall, Sturmfront, Kugelnetz, Sturmherz, Gewitterkaskade (immer orange, selten). Nur Nahkampf: Kampfkunst, Knochenpanzer. In allen Modi: Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster nach dem Dodge).
