@@ -1,6 +1,6 @@
 # Pool-Liste: Vorschlag Startset und Shop
 
-Stand 2026-11-02, aus dem Code gelesen. **Vorschlag, Kevin entscheidet.** Seltenheit gibt es für diese Einträge im Spiel noch nicht (Karten würfeln sie beim Ziehen), sie ist hier neu vergeben und zählt nur für den Shop.
+Stand 2026-11-04 (v23), aus dem Code gelesen. **Vorschlag, Kevin entscheidet.** Seltenheit gibt es für diese Einträge im Spiel noch nicht (Karten würfeln sie beim Ziehen), sie ist hier neu vergeben und zählt nur für den Shop.
 
 ## Shop-Stufen
 
@@ -12,52 +12,48 @@ Stand 2026-11-02, aus dem Code gelesen. **Vorschlag, Kevin entscheidet.** Selten
 | Belagerung endlos ab 20 min, Packs mit 1 Mod | 5 | orange |
 | jeder weitere Mod | +1 | siehe offene Fragen |
 
-## Waffen (Preis 150)
+## Magische Kiste (120 Staub)
 
-| Name | Schule | Vorschlag |
-|---|---|---|
-| Pilgerast | Alle | frei |
-| Knöchelzweig | Arkan | gesperrt |
-| Grenzwächterstab Nr. 47 | Frost | frei |
-| Schlachtblech | Alle | gesperrt |
-| Runenzunge | Arkan | gesperrt |
-| Glutrute | Feuer | frei |
-| Zirkelstab | Arkan | frei |
-| Lampenhaken | Feuer | gesperrt |
-| Erntemond | Frost | gesperrt |
-| Totenglocke | Frost | gesperrt |
-| Eidstumpf | Feuer | gesperrt |
-| Tidenast | Frost | gesperrt |
-| Kammerschlüssel | Arkan | gesperrt |
-| Sandwender | Arkan | gesperrt |
-| Frostzahn | Frost | gesperrt |
+Keine feste Waffen-Tabelle mehr: Die Kiste würfelt eine Magier-Waffe aus Schichten (Typ, Kopf mit Fokus-Spell, Schaft, Element, Hersteller, Seltenheit), Inventar höchstens 15. Ab orange kommt eins der alten Modelle als Unikat. Zahlen in `ROLLS` (`src/weaponRolls.ts`), Fokus-Spells in `FOCUS_SPELLS`. Waffen mit dem Fokus eines entfernten Spells bleiben gültig und wirken auf den Ersatz: Kettenblitz, Bogenblitz und Arkanes Sperrfeuer → Arkane Geschosse, Hurrikan → Blizzard.
 
 ## Spells
 
-Alle frei, die Krieger-Attacken und Trinken gehören fest zum Modus.
+Alle frei. Trinken, Eisblock, die Krieger- und die Klingenstrich-Moves gehören fest zum Modus.
 
-| Name | Schule |
+| Name | Schule | Tags |
+|---|---|---|
+| Frost Nova | Frost | Frost, Nova |
+| Arcane Explosion | Arkan | Arkan, Nova |
+| Blizzard | Frost | Frost, Fläche, Kanal |
+| Cone of Cold | Frost | Frost, Fläche |
+| Blink | Arkan | Arkan, Bewegung |
+| Flammenstoß | Feuer | Feuer, Fläche |
+| Druckwelle | Feuer | Feuer, Nova |
+| Höllenfeuer | Feuer | Feuer, Kanal |
+| Frostkugel | Frost | Frost, Geschoss, Fläche |
+| Leerenkugel | Arkan | Arkan, Leere, Fläche |
+| Wirbel | Frost | Frost, Nova, Fläche |
+| Eislanze | Frost | Frost, Geschoss |
+| Gletscherspalte | Frost | Frost, Fläche |
+| Feuerball | Feuer | Feuer, Geschoss |
+| Meteor | Feuer | Feuer, Fläche |
+| Phönix | Feuer | Feuer, Nova |
+| Brandmal-Detonation | Feuer | Feuer, Fläche |
+| Arkane Geschosse | Arkan | Arkan, Geschoss, Kanal |
+| Arkanes Mal | Arkan | Arkan, Fläche, Kontrolle |
+| Arkane Woge | Arkan | Arkan, Fläche |
+
+Fest im Modus:
+
+| Modus | Moves |
 |---|---|
-| Frost Nova | frost |
-| Arcane Explosion | arcane |
-| Blizzard | frost |
-| Cone of Cold | frost |
-| Blink | arcane |
-| Flammenstoß | fire |
-| Druckwelle | fire |
-| Höllenfeuer | shadow |
-| Hurrikan | nature |
-| Frostkugel | frost |
-| Kettenblitz | lightning |
-| Leerenkugel | arcane |
-| Wirbel | frost |
-| Bogenblitz | lightning |
-| Eislanze | frost |
-| Gletscherspalte | frost |
-| Feuerball | fire |
-| Meteor | fire |
-| Arkanes Sperrfeuer | arcane |
-| Arkane Woge | arcane |
+| Frost only | Eisblock (Taste, nur dort) |
+| Strichkrieger, Riesenschwert | Schlagfolge, Bodenbrecher, Wirbelwind, Hinrichtung, Letzter Atem, Kampfschrei, Sturzsprung, Essen |
+| Strichkrieger, Holzfälleraxt | wie Riesenschwert, aber Hackfolge, Kahlschlag, Fällen statt Schlagfolge, Bodenbrecher, Hinrichtung |
+| Strichkrieger, Streitkolben | wie Riesenschwert, aber Donnerfolge, Donnerschlag, Kugelblitz statt Schlagfolge, Bodenbrecher, Hinrichtung |
+| Klingenstrich | Schnitt, Kreisschnitt, Blutwirbel, Aderlass, Schattenklone, Haltung, Strichschnitt, Essen |
+
+Entfernt in v23: Kettenblitz, Bogenblitz, Hurrikan, Arkanes Sperrfeuer.
 
 ## Relikte
 
@@ -97,19 +93,35 @@ Regel: erste Rune jedes Spells grün und frei, zweite blau und gesperrt, dritte 
 | Flammenstoß | Heißer Sprung | Feuerspur | Flächenbrand |
 | Druckwelle | Implosion | Feuerring | Kurzer Stoß |
 | Höllenfeuer | Seelenernte | Brennender Gang | Ausbreitung |
-| Hurrikan | Auge des Sturms | Sturmläufer | Gewitter |
 | Frostkugel | Bumerang | Eisstern | Kalte Splitter |
-| Kettenblitz | Wiederkehr | Entladung | Gabelung |
 | Leerenkugel | Leerenbegleiter | Implosion | Zwillinge |
 | Wirbel | Eisläufer | Dreifach | Mahlstrom |
-| Bogenblitz | Weiter Bogen | Schock | Totenleiter |
-| Hieb | Weiter Schwung | Blutdurst | Wutschlag |
+| Eislanze | Breite Lanze | Kalte Spitze | Schnelle Lanze |
+| Gletscherspalte | Sofortbruch | Nachbeben | Weite Spalte |
+| Feuerball | Große Explosion | Entzünden | Schnellwurf |
+| Meteor | Meteorschauer | Glutkrater | Einschlag |
+| Phönix | Asche | Ewige Glut | Wiedergeburt |
+| Brandmal-Detonation | Kettenbrand | Großer Knall | Nachglühen |
+| Arkane Geschosse | Splitter | Schnellfeuer | Arkane Ladung |
+| Arkanes Mal | Lähmendes Mal | Kettenmal | Großes Mal |
+| Arkane Woge | Breite Woge | Rücksog | Doppelwoge |
+| Schlagfolge | Weiter Schwung | Blutdurst | Wutschlag |
+| Bodenbrecher | Tiefe Risse | Erdstoß | Zweiter Stoß |
 | Wirbelwind | Sturmschritt | Rasender Tanz | Mahlstrom |
-| Smash | Beben | Schmetterschlag | Hinrichten |
-| Donnerknall | Schockwelle | Erschütterung | Gewitterzorn |
-| Ansturm | Wütender Ansturm | Hast | Durchbruch |
-| Kampfschrei | Langer Atem | Schreckensschrei | Zorniger Schrei |
+| Hinrichtung | Gnadenstoß | Breite Klinge | Blutgier |
+| Kampfschrei | Zorniger Schrei | Schreckensschrei | Schockwelle |
+| Sturzsprung | Beben | Einschlag | Hast |
+| Kahlschlag (Axt) | Weite Ernte | Gierige Klinge | Zweiter Schwung |
+| Donnerschlag (Kolben) | Weiter Ring | Überladung | Nachhall |
+| Schnitt | Weiter Bogen | Nachhall | Lange Klinge |
+| Kreisschnitt | Eisschnitt | Sog | Doppelte Drehung |
+| Blutwirbel | Jäger | Gerichteter Wurf | Langer Wirbel |
+| Aderlass | Übersprung | Blutzoll | Lebenssaft |
+| Haltung | Wechselschnitt | Überraschung | Fließender Wechsel |
+| Strichschnitt | Nachsetzen | Blutspur | Rückstrich |
+
+Die Runen-Freischaltungen der Krieger gelten pro Slot, also für alle drei Waffen gemeinsam.
 
 ## Talente
 
-Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung.
+Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung. Nur im Schul-Modus: Eisherz (Frost), Glutherz und Glutseele (Feuer). Nur Nahkampf: Kampfkunst, Knochenpanzer. In allen Modi: Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster nach dem Dodge).
