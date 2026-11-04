@@ -15,6 +15,7 @@ import { WEAPONS } from './models/weapons/defs';
 import { buildWeapon } from './models/weapons/index';
 import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBaukastenWeapon } from './models/weapons/baukasten';
 import { pick, dist2d } from './util';
+import { infect } from './infect';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
@@ -28,8 +29,8 @@ export const ROLLS = {
   values: { dmg: 0.03, crit: 0.02, cd: 0.03, mana: 0.05, hp: 0.05, regen: 0.03, speed: 0.02, radius: 0.03, dur: 0.05 },   // Schaft, bei weiß; Anhänger halb
   elementChance: [0, 0.25, 0.5, 1, 1, 1],              // Anteil der Waffen mit Element je Seltenheit
   procChance: 0.05,                                    // Element-Effekt pro Treffer bei weiß, × Seltenheit
-  element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6, pullYd: 4, pull: 1,
-    poisonMax: 5, poisonPct: 0.02, poisonMs: 5000, darkMul: 0.3, darkHeal: 0.2 },
+  element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6,
+    infectStacks: 1, darkMul: 0.3, darkHeal: 0.2 },
   maker: { grab: { dmg: 0.1, cast: 0.1 }, stern: { crit: 0.05, critMana: 0.01 }, morra: { dur: 0.15, random: 0.05 }, vey: { cd: -0.05, mana: 0.1 }, brandt: { hp: 0.1, lifesteal: 0.02 } },
   notForMages: ['schlachtblech'],                      // Standardwaffe des Strichkriegers
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
@@ -207,14 +208,7 @@ function weaponHit(m, dmg, crit, api, el, chance, M) {
     const next = state.mobs.filter(o => !o.dead && o !== m && dist2d(o.pos, m.pos) <= E.chainYd).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, E.chainN);
     for (const o of next) { boltFx(m.pos, o.pos, [2.4, 2.2, 0.8]); api.burnMob(o, Math.max(1, Math.round(dmg * E.chainMul))); }
   }
-  if (el === 'void') for (const o of state.mobs) if (!o.dead && o !== m && dist2d(o.pos, m.pos) <= E.pullYd) api.pullMob(o, m.pos, E.pull);
-  if (el === 'gift' && !m.dead) {
-    const p = m.wPoison ??= { stacks: 0, until: 0 };
-    const running = p.until > state.now;
-    p.stacks = Math.min(E.poisonMax, p.stacks + 1);
-    p.until = state.now + E.poisonMs;
-    if (!running) { const tick = () => { if (m.dead || state.now > p.until) { p.stacks = 0; return; } api.burnMob(m, Math.max(1, Math.round(m.maxHp * E.poisonPct * p.stacks))); schedule(1000, tick); }; schedule(1000, tick); }
-  }
+  if (el === 'blut' && !m.dead) infect(m, E.infectStacks);   // Infekt des Blutmagiers, tickt in jedem Modus (blood.ts)
   if (el === 'dunkel' && !m.dead) {
     const extra = Math.max(1, Math.round(dmg * E.darkMul));
     api.burnMob(m, extra);                                       // fester Schaden ohne Wurf und Rüstung wie Dunkel

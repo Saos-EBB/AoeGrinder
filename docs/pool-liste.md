@@ -16,6 +16,8 @@ Stand 2026-11-04 (v23), aus dem Code gelesen. **Vorschlag, Kevin entscheidet.** 
 
 Keine feste Waffen-Tabelle mehr: Die Kiste würfelt eine Magier-Waffe aus Schichten (Typ, Kopf mit Fokus-Spell, Schaft, Element, Hersteller, Seltenheit), Inventar höchstens 15. Ab orange kommt eins der alten Modelle als Unikat. Zahlen in `ROLLS` (`src/weaponRolls.ts`), Fokus-Spells in `FOCUS_SPELLS`. Waffen mit dem Fokus eines entfernten Spells bleiben gültig und wirken auf den Ersatz: Kettenblitz, Bogenblitz und Arkanes Sperrfeuer → Arkane Geschosse, Hurrikan → Blizzard. Das bleibt für Waffen von vor v26 so; neue Waffen (`s.fv`) können Kettenblitz und Bogenblitz wirklich als Fokus haben. Kopf Gabel = Blitz.
 
+Elemente (`ELEMENTS` in `models/weapons/baukasten.ts`, Wirkung in `weaponHit`): Frost (Slow), Feuer (Brand), Arkan (Mana zurück), Blitz (Kettenblitz), Blut (+1 Infekt-Stapel), Dunkel (True Damage, heilt). Seit v28 sind Gift und Void raus; gespeicherte Waffen werden beim Laden umgestellt: Gift → Blut, Void → Arkan.
+
 ## Spells
 
 Alle frei. Trinken, Eisblock, die Krieger- und die Klingenstrich-Moves gehören fest zum Modus.

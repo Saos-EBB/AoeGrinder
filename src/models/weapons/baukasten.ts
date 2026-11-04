@@ -36,8 +36,7 @@ export const ELEMENTS = {
   feuer: { name: 'Feuer', color: 0xff7a22, adj: 'Glühend', fx: 'Brand: 30 % des Treffers über 3 s' },
   arkan: { name: 'Arkan', color: 0xd070ff, adj: 'Runisch', fx: '2 % Mana zurück' },
   blitz: { name: 'Blitz', color: 0xffe866, adj: 'Knisternd', fx: 'Kettenblitz: 40 % auf 3 Mobs in 6 yd' },
-  void: { name: 'Void', color: 0x7a3cff, adj: 'Hohl', fx: 'Sog: Mobs in 4 yd 1 yd zum Trefferpunkt' },
-  gift: { name: 'Gift', color: 0x7dff3a, adj: 'Faulig', fx: 'Gift stapelt bis 5×, je 2 % Schaden/s' },
+  blut: { name: 'Blut', color: 0xe0202e, adj: 'Blutig', fx: 'Infekt: +1 Stapel (1 % Leben/s je Stapel, heilt dich)' },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
   dunkel: { name: 'Dunkel', color: 0xff2440, adj: 'Finster', fx: 'True Damage, heilt 20 %' },
 };
 export const MAKERS = {
@@ -183,11 +182,6 @@ function addExtra(g, spec, H, mats) {
   if (spec.extra === 'gloeckchen') for (const sx of [-1, 1]) { const b = new THREE.Group(); b.position.set(sx * 0.03, -0.06, 0); E.add(b); mesh(new THREE.ConeGeometry(0.022, 0.04, 10, 1, true), mats.accent, b); mesh(new THREE.SphereGeometry(0.008, 6, 4), mats.accent, b, 0, -0.02, 0); tubeAlong([V(0, 0.02, 0), V(0, 0.06, 0)], 0.002, 3, mats.detail, b); }
 }
 const dotTex = canvasTex(64, (g, s) => { const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(0.4, 'rgba(255,255,255,0.5)'); grd.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = grd; g.fillRect(0, 0, s, s); });
-const voidTex = canvasTex(128, (g, s) => {   // dunkler Ring mit violettem Rand, Mitte frei: der Kopf bleibt sichtbar
-  const c = s / 2, grd = g.createRadialGradient(c, c, 0, c, c, c);
-  grd.addColorStop(0, 'rgba(0,0,0,0)'); grd.addColorStop(0.32, 'rgba(0,0,0,0)'); grd.addColorStop(0.45, 'rgba(4,0,10,0.95)'); grd.addColorStop(0.7, 'rgba(10,0,25,0.9)'); grd.addColorStop(0.82, 'rgba(150,80,255,0.9)'); grd.addColorStop(1, 'rgba(120,60,255,0)');
-  g.fillStyle = grd; g.fillRect(0, 0, s, s);
-});
 const smokeTex = canvasTex(64, (g, s) => { const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); grd.addColorStop(0, 'rgba(255,255,255,0.8)'); grd.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = grd; g.fillRect(0, 0, s, s); });
 // Partikel-Bewegung je Element (lokal um den Kopf)
 const MOTION = {
@@ -195,17 +189,14 @@ const MOTION = {
   feuer: (p, v, dt) => { p.y += dt * (0.35 + v.x); p.x += (Math.random() - 0.5) * dt * 0.2; return p.y > 0.45; },
   arkan: (p, v, dt, t) => { const a = v.y + t * 1.4, r = 0.16 + v.x * 0.5; p.set(Math.cos(a) * r, Math.sin(t * 2 + v.y) * 0.08, Math.sin(a) * r); return false; },
   blitz: (p, v, dt) => { if (Math.random() < dt * 8) p.set((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4); return false; },
-  void: (p, v, dt) => { p.multiplyScalar(1 - dt * 1.6); p.applyAxisAngle(UPV, dt * 2); return p.length() < 0.03; },
-  gift: (p, v, dt) => { v.z += dt * 0.6; p.y -= dt * v.z; return p.y < -0.6; },
+  blut: (p, v, dt) => { v.z += dt * 0.6; p.y -= dt * v.z; return p.y < -0.6; },
   dunkel: (p, v, dt) => { p.y += dt * 0.12; p.x += Math.sin(p.y * 6 + v.y) * dt * 0.04; return p.y > 0.55; },
 };
-const UPV = V(0, 1, 0);
 function spawnP(el, p, v) {
   v.set(Math.random() * 0.2, Math.random() * 7, 0);
   if (el === 'frost') p.set((Math.random() - 0.5) * 0.3, Math.random() * 0.2, (Math.random() - 0.5) * 0.3);
   else if (el === 'feuer' || el === 'dunkel') p.set((Math.random() - 0.5) * 0.08, 0, (Math.random() - 0.5) * 0.08);
-  else if (el === 'void') { p.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(0.28 + Math.random() * 0.12); }
-  else if (el === 'gift') p.set((Math.random() - 0.5) * 0.06, -0.03, (Math.random() - 0.5) * 0.06);
+  else if (el === 'blut') p.set((Math.random() - 0.5) * 0.06, -0.03, (Math.random() - 0.5) * 0.06);
   else p.set((Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3);
 }
 function addElement(g, spec, H, size) {
@@ -216,17 +207,16 @@ function addElement(g, spec, H, size) {
     if (el === 'frost') for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, m = mesh(new THREE.ConeGeometry(size * 0.12, size * (0.5 + (k % 2) * 0.3), 5).rotateX(Math.PI), new THREE.MeshLambertMaterial({ color: 0xd8f4ff, transparent: true, opacity: 0.85, emissive: 0x1a3040 }), H, Math.cos(a) * size * 0.45, -size * 0.35, Math.sin(a) * size * 0.45); }
     if (el === 'feuer') for (let k = 0; k < 2; k++) { const m = mesh(new THREE.ConeGeometry(size * (0.35 - k * 0.12), size * (1.4 - k * 0.4), 8, 1, true).translate(0, size * (0.7 - k * 0.2), 0), new THREE.MeshBasicMaterial({ color: k ? 0xffe28a : 0xff6a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), H, 0, size * 0.3, 0); fx.flames.push(m); }
     if (el === 'arkan') { const rt = runeTex(); for (let k = 0; k < 3; k++) { const m = mesh(new THREE.PlaneGeometry(size * 0.5, size * 0.5), new THREE.MeshBasicMaterial({ map: rt, color: col.clone().multiplyScalar(1.5), transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), H); m.userData.orbit = k / 3 * Math.PI * 2; fx.spinners.push(m); } }
-    if (el === 'void') { const hole = new THREE.Sprite(new THREE.SpriteMaterial({ map: voidTex, depthWrite: false })); hole.scale.setScalar(size * 2.6); H.add(hole); }
-    if (el === 'gift') for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(size * 0.12, 8, 6), new THREE.MeshBasicMaterial({ color: col }), H, (Math.random() - 0.5) * size, -size * 0.4 - Math.random() * size * 0.3, (Math.random() - 0.5) * size).userData.drip = Math.random();
+    if (el === 'blut') for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(size * 0.12, 8, 6), new THREE.MeshBasicMaterial({ color: col }), H, (Math.random() - 0.5) * size, -size * 0.4 - Math.random() * size * 0.3, (Math.random() - 0.5) * size).userData.drip = Math.random();
     if (el === 'dunkel') { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: 0x100008, depthWrite: false })); s.scale.setScalar(size * 2.6); H.add(s); }
   }
   if (spec.rarity >= 3) {
-    if (el !== 'dunkel' && el !== 'void') { const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: col.clone().multiplyScalar(0.9), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.45 })); aura.scale.setScalar(size * 3.2); H.add(aura); fx.aura = aura; }
+    if (el !== 'dunkel') { const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: col.clone().multiplyScalar(0.9), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.45 })); aura.scale.setScalar(size * 3.2); H.add(aura); fx.aura = aura; }
     const n = spec.rarity >= 5 ? 80 : 40, pos = new Float32Array(n * 3), P = [], Vv = [];
-    for (let i = 0; i < n; i++) { const p = V(0, 0, 0), v = V(0, 0, 0); spawnP(el, p, v); if (el === 'frost' || el === 'feuer' || el === 'dunkel' || el === 'gift') p.y += (Math.random() - 0.5) * 0.4; P.push(p); Vv.push(v); }
+    for (let i = 0; i < n; i++) { const p = V(0, 0, 0), v = V(0, 0, 0); spawnP(el, p, v); if (el === 'frost' || el === 'feuer' || el === 'dunkel' || el === 'blut') p.y += (Math.random() - 0.5) * 0.4; P.push(p); Vv.push(v); }
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const dark = el === 'dunkel';
-    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dark ? smokeTex : dotTex, color: dark ? 0x1a0a10 : col.clone().multiplyScalar(1.4), size: dark ? 0.12 : el === 'gift' ? 0.045 : 0.035, transparent: true, depthWrite: false, blending: dark ? THREE.NormalBlending : THREE.AdditiveBlending, opacity: dark ? 0.7 : 1 }));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dark ? smokeTex : dotTex, color: dark ? 0x1a0a10 : col.clone().multiplyScalar(1.4), size: dark ? 0.12 : el === 'blut' ? 0.045 : 0.035, transparent: true, depthWrite: false, blending: dark ? THREE.NormalBlending : THREE.AdditiveBlending, opacity: dark ? 0.7 : 1 }));
     H.add(pts); fx.parts = { pts, P, Vv, el };
     if (el === 'blitz') for (let k = 0; k < 2; k++) { const l = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(8 * 3), 3)), new THREE.LineBasicMaterial({ color: new THREE.Color(0xfff6c0).multiplyScalar(2) })); H.add(l); fx.arcs.push(l); }
   }

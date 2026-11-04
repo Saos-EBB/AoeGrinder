@@ -2,7 +2,7 @@
 // Kein Schutz gegen Cheaten, Einzelspieler. Eingabe ersetzt den Spielstand nach Rückfrage.
 
 import { $ } from '../util';
-import { meta, saveMeta } from '../meta';
+import { meta, saveMeta, fixWeapon } from '../meta';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 import { askConfirm } from './confirm';
@@ -33,7 +33,7 @@ function importCode(code, replace = true) {
   if (data?.v !== SAVE_CODE.version) return `Der Code hat Version ${data?.v ?? '?'}, erwartet ist ${SAVE_CODE.version}.`;
   if (!replace) return null;
   // Alte Waffen als [Effekt, Seltenheit, Modell], Baukasten-Waffen als { r, s }
-  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : { id: n + 1, v: 2, r: w.r, s: w.s });
+  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : fixWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
     equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length });
   saveMeta();

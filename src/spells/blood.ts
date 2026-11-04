@@ -18,17 +18,13 @@ import { blinkTo } from './blink';
 import { spendMana } from '../player';
 import { mobsInRadius, addField, applySlow, startChannel, makeCtx, onBloodHit, cdEnd, startCd, noteCastStart, stopChannel, stopDrink, paysLife } from './core';
 import { boltFx, burstFx, fieldDecal, areaParticles } from './fx';
+import { infect, infectStacks } from '../infect';
+export { infect, infectStacks };
 
 const B = BLOOD, I = B.infect;
 const RED = [1.3, 0.05, 0.08], DARK = [0.5, 0.02, 0.04];
 
 // ---------- Infekt ----------
-export const infectStacks = m => m.infect && m.infect.until > state.now ? Math.min(I.maxStacks, Math.ceil((m.infect.until - state.now) / I.stackMs)) : 0;
-export function infect(m, n = 1) {
-  if (m.dead) return;
-  const fresh = !infectStacks(m), left = fresh ? 0 : m.infect.until - state.now;
-  m.infect = { until: state.now + Math.min(I.maxStacks * I.stackMs, left + n * I.stackMs), next: fresh ? state.now + I.tickMs : m.infect.next };
-}
 onBloodHit(m => infect(m));
 // Ein infizierter Mob stirbt: Blutlache
 onMobDeath(m => { if (infectStacks(m)) spawnPool(m.pos.clone()); });
