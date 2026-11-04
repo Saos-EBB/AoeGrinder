@@ -88,6 +88,14 @@ export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1 });
 }
 
+// Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
+export const SCHOOL_METER = {
+  perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
+  Feuer: { name: 'Glut', color: '#ff7a1a', full: 'Glut voll: +25 % Schaden', dmg: 0.25 },
+  Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
+  Arkan: { name: 'Fokus', color: '#c573ff', full: 'Fokus voll: −25 % Abklingzeit', cd: 0.25 },
+};
+
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
 export const CARD_RARITIES = [
   { name: 'grau',   color: '#b0b0b0', mult: 0.5, weight: 30 },

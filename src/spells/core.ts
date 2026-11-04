@@ -14,6 +14,7 @@ import { MODIFIERS, activeModIds, modValue } from '../modifiers';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
+import { meterDmgMul, meterSlow, meterFrostFull } from '../schoolMeter';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -106,9 +107,11 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
+      dmg *= meterDmgMul();                                                 // Kill-Anzeige Feuer voll
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      if (landed && !m.dead && meterFrostFull()) applySlow(m, 0, slow?.ms ?? 2000);   // Kill-Anzeige Frost voll: jeder Treffer, applySlow legt den Bonus drauf
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       return landed;
@@ -136,6 +139,7 @@ export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
 
 // Stärkster Slow gilt; ein schwächerer verlängert ihn nicht, abgelaufener Slow zählt nicht mehr
 export function applySlow(mob, pct, dur) {
+  pct = meterSlow(pct);                     // Kill-Anzeige Frost voll
   if (mob.slowUntil <= state.now) mob.slowPct = 0;
   if (pct < mob.slowPct) return;
   mob.slowUntil = pct > mob.slowPct ? state.now + dur : Math.max(mob.slowUntil, state.now + dur);

@@ -32,6 +32,7 @@ import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { phoenixRevive } from './spells/phoenix';
+import { resetMeter, updateMeter } from './schoolMeter';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -60,6 +61,7 @@ export function resetGame() {
   player.mana = maxMana();
   resetRealMen();
   resetDodge();
+  resetMeter();
   resetKlinge();
   resetSiege();
   resetSplits();
@@ -302,5 +304,6 @@ export function updatePlayer(dt) {
   updateChannel();
   updateIceBlock();
   updateWeaponAura({ burnMob, pullMob });
+  updateMeter(dt);
   regenerate(dt);
 }
