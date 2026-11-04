@@ -11,6 +11,8 @@ const meter = { value: 0, lastKill: -1e9 };
 // Schule des Modus oder null (Normal-Modus und Nahkämpfer haben keine Anzeige)
 export const meterSchool = (): 'Feuer' | 'Frost' | 'Arkan' | null => { const t = modValue('onlyTag'); return t === 'Feuer' || t === 'Frost' || t === 'Arkan' ? t : null; };
 export const meterValue = () => meter.value;
+// Stufe fürs Modell (models/strichMagier.ts): 0–24 %, 25–49 %, 50–99 %, voll; -1 ohne Anzeige
+export const meterStage = () => !meterSchool() ? -1 : meter.value >= 1 ? 3 : meter.value >= 0.5 ? 2 : meter.value >= 0.25 ? 1 : 0;
 const full = school => meter.value >= 1 && meterSchool() === school;
 
 export function resetMeter() { meter.value = 0; meter.lastKill = -1e9; }

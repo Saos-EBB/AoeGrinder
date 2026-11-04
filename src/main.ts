@@ -40,6 +40,7 @@ import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
+import { meterStage } from './schoolMeter';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -78,7 +79,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
   updateMarks();

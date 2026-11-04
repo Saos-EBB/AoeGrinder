@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-04
 
+- feat(figur): Die Strichmagier zeigen die Kill-Anzeige in 4 Stufen: Feuer brennt am ganzen Körper, Frost bereift und rieselt Eis, Arkan trägt 1 → 16 Runen am Körper und glüht voll; Fußspuren werden größer, halten länger, bis zu 15 statt 10
 - feat(modi): Kill-Anzeige in Frost only, Fire only und Arcane only unter dem Mana-Balken: +2 % pro Kill (Champion +10 %), nach 3 s ohne Kill −5 %/s; voll pulsiert sie und gibt Feuer +25 % Schaden, Frost +35 % Slow auf jeden Treffer (höchstens 80 %), Arkan −25 % Abklingzeiten
 - feat(spells): Blink-Rangkarten geben +3 yd Reichweite oder −10 % Abklingzeit statt weniger Mana; Blink selbst macht weiter keinen Schaden
 - feat(spells): Phönix (passiver Slot, CD 90 s: statt zu sterben explodierst du mit 2,5-fachem Meteor-Schaden, Rückstoß, Brandfläche, stehst mit 50 % Leben auf, 1,5 s unverwundbar; Runen Asche, Ewige Glut, Wiedergeburt) und Brandmal-Detonation (zündet brennende Mobs in 20 yd, Restbrand ×1,5 als Explosion; Runen Kettenbrand, Großer Knall, Nachglühen); Fire only startet mit Phönix; neue Rang-Karte Abklingzeit
