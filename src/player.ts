@@ -111,14 +111,14 @@ export function setLevel(level) {
   updateCardQueue();
 }
 
-export function damagePlayer(amount, dot = false) {
+export function damagePlayer(amount, dot = false, source = '') {
   if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
   if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
   player.hp -= amount;
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
-  player.lastHitBy = dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava';
+  player.lastHitBy = source || (dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava');
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   addTrauma(amount / maxHp() * W.shake.hurtK);   // Wucht: eigener Schaden wackelt
@@ -309,7 +309,8 @@ export function updatePlayer(dt) {
   updateChannel();
   updateIceBlock();
   updateWeaponAura({ burnMob, pullMob });
-  updateMeter(dt);
+  const overheat = updateMeter(dt);                         // Hitze: überhitzt brennt er selbst
+  if (overheat) damagePlayer(maxHp() * overheat, true, 'Überhitzt');
   updateRandomMage(dt);
   regenerate(dt);
 }

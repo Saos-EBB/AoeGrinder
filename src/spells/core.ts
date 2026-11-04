@@ -15,7 +15,7 @@ import { buffDmgMul } from '../buffs';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
-import { meterDmgMul, meterSlow, meterFrostFull } from '../schoolMeter';
+import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -109,11 +109,13 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
-      dmg *= meterDmgMul() * buffDmgMul();                                  // Kill-Anzeige Feuer voll, Getränke des ?-Magiers
+      if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
+      dmg *= buffDmgMul();                                                  // Getränke des ?-Magiers
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
       if (landed && !m.dead && meterFrostFull()) applySlow(m, 0, slow?.ms ?? 2000);   // Kill-Anzeige Frost voll: jeder Treffer, applySlow legt den Bonus drauf
+      if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       return landed;
@@ -197,7 +199,7 @@ export function castSpell(id, point?) {
 // Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts). Liste an einer Funktion: Import-Kreis
 function castStartHooks(): any[] { return (castStartHooks as any).list ??= []; }
 export function onCastStart(fn) { castStartHooks().push(fn); }
-export function noteCastStart(id) { for (const fn of castStartHooks()) fn(id); }
+export function noteCastStart(id) { meterCast(SPELLS[id].tags); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
 function release(id, point, opts: any = {}) {
@@ -215,7 +217,7 @@ function release(id, point, opts: any = {}) {
 }
 
 // damagePlayer trägt diese Quellen ein, wenn der letzte Schaden ein Tick war
-const DOT_SOURCES = ['Gift', 'Lava'];
+const DOT_SOURCES = ['Gift', 'Lava', 'Überhitzt'];
 
 // Zauber läuft: Bewegung bricht ab, Treffer schieben auf (Spec §7: maximal bis zur vollen Castzeit)
 function updateCast() {

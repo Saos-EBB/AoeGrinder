@@ -28,7 +28,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v24';
+export const SCORE_VERSION = 'v25';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -109,7 +109,9 @@ export const RANDOM_MAGE = {
 // Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
 export const SCHOOL_METER = {
   perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
-  Feuer: { name: 'Glut', color: '#ff7a1a', full: 'Glut voll: +25 % Schaden', dmg: 0.25 },
+  // Feuer: Hitze statt Kills. Treffer heizen, Hitze macht Schaden und Brand stärker, ab max brennt er selbst bis unter overheatUntil
+  Feuer: { name: 'Hitze', color: '#ff7a1a', hot: '#ff2a12', hotFrom: 80, full: 'Überhitzt', max: 100, perHit: 1.5, coolDelayMs: 1500, coolPerS: 10,
+    dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500 },
   Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
   Arkan: { name: 'Fokus', color: '#c573ff', full: 'Fokus voll: −25 % Abklingzeit', cd: 0.25 },
 };
