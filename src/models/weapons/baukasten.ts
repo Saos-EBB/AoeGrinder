@@ -17,7 +17,8 @@ export const TYPES = {
 };
 export const HEADS = {   // Name im Waffennamen, Schule des Fokus-Spells (Form verrät die Schule)
   kristall: ['Kristall', 'Frost'], sichel: ['Sichel', 'Frost'], splitter: ['Splitter', 'Frost'], nadel: ['Nadel', 'Frost'],
-  kaefig: ['Käfig', 'Feuer'], gabel: ['Gabel', 'Feuer'], klaue: ['Klauen', 'Feuer'], maul: ['Maul', 'Feuer'], laterne: ['Laternen', 'Feuer'],
+  kaefig: ['Käfig', 'Feuer'], gabel: ['Gabel', 'Blitz'],   // Gabel: Blitzableiter, seit v26 Blitz-Fokus
+  klaue: ['Klauen', 'Feuer'], maul: ['Maul', 'Feuer'], laterne: ['Laternen', 'Feuer'],
   ring: ['Ring', 'Arkan'], kugel: ['Kugel', 'Arkan'], auge: ['Augen', 'Arkan'], rune: ['Runen', 'Arkan'], siegel: ['Siegel', 'Frost'], schaedel: ['Schädel', 'Arkan'], herz: ['Herz', 'Feuer'],
 };
 // Schaft/Körper: Form zeigt die Wert-Gruppe; Name je Typ

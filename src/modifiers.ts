@@ -13,7 +13,7 @@ export const MODIFIERS = [
     dotMul: 1.5, baseCrit: 0.15, hp: 0.9 },   // PH: Dauerschaden mit Tag Feuer, Grund-Crit, Leben
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge', 'blitz'], startKit: ['ae', 'voidorb', 'arcmissiles', 'arcmark', 'blink', 'drink'], onlyTag: 'Arkan',
     castWhileMoving: true, blinkCharges: 2, hp: 0.85, manaCost: 1.15 },   // PH: Zaubern und Kanäle im Laufen, Leben, Manakosten
-  { id: 'blitz', name: 'Nur Blitz', desc: 'nur Blitz-Spells und -Karten, Batterie statt Mana, Aufladen statt Trinken, Blink bleibt', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge'], startKit: ['chain', 'arc', null, null, 'blink', 'recharge'], onlyTag: 'Blitz', noDrink: true,
+  { id: 'blitz', name: 'Nur Blitz', desc: 'nur Blitz-Spells und -Karten, Batterie statt Mana, Aufladen statt Trinken, Blink bleibt', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge'], startKit: ['chain', 'arc', 'strike', 'ball', 'blink', 'recharge'], onlyTag: 'Blitz', noDrink: true,
     battery: true },   // PH: Batterie in battery.ts, Zahlen in BATTERY (config.ts)
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
   { id: 'realmen', name: 'Real Men', desc: 'Strichkrieger mit Riesenschwert: Wut statt Mana, mehr Wut und weniger Leben machen mehr Schaden', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge', 'blitz'], startKit: ['wQ', 'wE', 'wR', 'wExec', 'wLast', 'wCry', 'wLeap', 'wEat'], onlyTag: 'Krieger' },

@@ -35,10 +35,11 @@ export const ROLLS = {
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark', 'phoenix', 'detonate'];
-// Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes)
+export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm'];
+// Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes).
+// Kettenblitz und Bogenblitz sind seit v26 zurück: nur neue Waffen (s.fv) meinen sie wirklich, alte bleiben beim Ersatz
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
-const focusId = id => FOCUS_REPLACE[id] ?? id;
+const focusId = (id, w?) => w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id;
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
 const TYPE_TEXT = { staff: 'Radius +10 %, Zauberzeit +10 %', wand: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', book: '+1 Ladung auf den Fokus-Spell, Manakosten −10 %', relic: 'Aura alle 3 s in 6 yd mit dem Element-Effekt, Dauereffekte +10 %' };
@@ -62,7 +63,7 @@ export function rollWeapon() {
     seed: Math.floor(Math.random() * 1e9), rarity: r, type: t, maker: pick(Object.keys(MAKERS)), head, shaft, value,
     focus: pick(FOCUS_SPELLS.filter(id => SPELLS[id]?.tags.includes(school))),
     element: Math.random() < ROLLS.elementChance[r] ? pick(els) : 'none',
-    extra: r >= 4 ? pick(Object.keys(EXTRAS)) : 'none', value2: pick(Object.keys(VALUE_KEY)),
+    extra: r >= 4 ? pick(Object.keys(EXTRAS)) : 'none', value2: pick(Object.keys(VALUE_KEY)), fv: 1,   // fv: Fokus nach v26, wird nicht ersetzt
   };
   if (r === 5) s.unique = pick(WEAPONS.filter(w => !ROLLS.notForMages.includes(w.id))).id;   // Unikat: eins der alten Modelle
   return { id: ++meta.nextWeapon, v: 2, r, s };
@@ -75,7 +76,7 @@ const oldModelName = id => WEAPONS.find(x => x.id === id)?.name ?? id;
 export const WEAPON_ROWS = [['type', 'Typ'], ['focus', 'Fokus'], ['value', 'Wert'], ['element', 'Element'], ['maker', 'Hersteller'], ['extra', 'Anhänger'], ['unique', 'Unikat']];
 export function effectRows(w) {
   const f = factor(w.r), rows: any = Object.fromEntries(WEAPON_ROWS.map(([kind, label]) => [kind, { kind, label, text: null, color: null }]));
-  const focus = raw => { const id = focusId(raw); return `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`; };
+  const focus = raw => { const id = focusId(raw, w); return `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`; };
   const value = (k, mul = 1) => `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f * mul)} ${VALUE_TEXT[k]}`;
   if (!isNew(w)) {
     if (w.e.startsWith('f:')) rows.focus.text = focus(w.e.slice(2));
@@ -147,8 +148,8 @@ function applyValue(key, v) {
   if (key === 'radius') mods.radius += v;
   if (key === 'dur') mods.durMul += v;
 }
-function applyFocus(raw, f) {
-  const id = focusId(raw), s = stat(id);
+function applyFocus(raw, f, w) {
+  const id = focusId(raw, w), s = stat(id);
   s.dmg += ROLLS.focus.dmg * f;
   s.radius += ROLLS.focus.radius * f;
   if (!tagsAllowed(SPELLS[id].tags)) state.poolExtra.push(id);   // für diesen Run in den Pool
@@ -166,7 +167,7 @@ export function applyRunWeapon(magier) {
   const f = factor(w.r);
   state.runWeapon = `${weaponName(w)} (${rarityOf(w).name})`;
   if (!isNew(w)) {                                              // alte Waffe: ein Effekt
-    if (w.e.startsWith('f:')) applyFocus(w.e.slice(2), f);
+    if (w.e.startsWith('f:')) applyFocus(w.e.slice(2), f, w);
     else applyValue(w.e, ROLLS.values[w.e] * f * (w.e === 'cd' ? 1 : 1));
     return;
   }
@@ -174,11 +175,11 @@ export function applyRunWeapon(magier) {
   if (T.radius) mods.radius += T.radius;
   if (T.cast) mods.castMul += T.cast;
   if (T.cd) applyValue('cd', -T.cd);
-  if (T.charges && w.r >= 1) state.bonusCharges = { [focusId(s.focus)]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
+  if (T.charges && w.r >= 1) state.bonusCharges = { [focusId(s.focus, w)]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
   if (T.manaCost) mods.manaCostMul += T.manaCost;
   if (T.dur) mods.durMul += T.dur;
   if (T.aura && s.element !== 'none') state.weaponAura = { el: s.element, f, next: state.now + ROLLS.aura.everyMs, M };
-  if (w.r >= 1) applyFocus(s.focus, f);
+  if (w.r >= 1) applyFocus(s.focus, f, w);
   applyValue(VALUE_KEY[s.value], ROLLS.values[VALUE_KEY[s.value]] * f);
   if (s.extra !== 'none') applyValue(VALUE_KEY[s.value2], ROLLS.values[VALUE_KEY[s.value2]] * f / 2);
   if (M.dmg) mods.dmg += M.dmg;

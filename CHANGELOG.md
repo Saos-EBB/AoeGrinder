@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(spells): Neue Blitz-Spells Blitzschlag (Bodenziel 3 yd, betäubt 0,5 s), Kugelblitz (langsame Kugel 20 yd, zappt alle 0,5 s in 5 yd), Entladung (Nova 8 yd, Schaden = Ladung × 3, leert die Batterie) und Gewitter (Feld 8 s, alle 0,5 s ein Blitz), je mit 3 Runen; Blitz only startet mit Kettenblitz, Bogenblitz, Blitzschlag, Kugelblitz, Blink und Aufladen; im ?-Magier sind alle Blitz-Spells Offensiv; Waffen mit Gabel-Kopf haben jetzt einen Blitz-Fokus
 - feat(modi): Blitz only nutzt eine Batterie statt Mana (gelber Balken, 0–100): +8/s und +3 pro getroffenem Gegner; voll ist sie überladen, der nächste Blitz-Zauber macht doppelten Schaden, betäubt alle Getroffenen 0,5 s und leert sie; Aufladen statt Trinken (2 s stehen, +60)
 - feat(modi): Neuer Modus Blitz only (Blitzmagier im Hauptmenü, ×1,4 Punkte, eigene Rangliste), startet mit Kettenblitz, Bogenblitz, Blink und Trinken
 - feat(spells): Kettenblitz und Bogenblitz sind zurück (Tag Blitz, Stand vor v23); alte Waffen mit diesem Fokus behalten Arkane Geschosse; Spielversion v26
