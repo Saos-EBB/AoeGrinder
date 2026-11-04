@@ -22,7 +22,7 @@ import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 
 const CHARS = [
-  { mod: null, name: 'Strichmagier', sub: 'Alle' },
+  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen' },
   { mod: 'frost', name: 'Eismagier', sub: 'Frost' },
   { mod: 'fire', name: 'Feuermagier', sub: 'Feuer' },
   { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan' },

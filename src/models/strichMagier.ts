@@ -19,7 +19,7 @@ const CAST_MS = 700;
 const CAST_HOLD = 0.55;       // Hier wartet die Pose, solange ein längerer Zauber läuft
 const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
 // Skin-IDs im Spiel → Skins des Viewers
-const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane' };
+const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'rand' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
 
 const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
 grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
@@ -53,7 +53,8 @@ const SKINS = {
   base: { name: 'Basis', ink: col(0x2b2b33), accent: col(0x2a2622), orb: col(0xe2b13c) },
   fire: { name: 'Feuer', ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
   ice: { name: 'Eis', ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
-  arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) }
+  arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) },
+  rand: { name: '?', ink: col(0x0b0b0e), accent: col(0x16161b), orb: col(0xe8e2ff) },   // ?-Magier: ganz schwarz, leuchtende Fragezeichen
 };
 const FLAME = { base: col(0xff5a12), tip: col(0xffd84a) };
 
@@ -97,6 +98,15 @@ function makeProp(skin) {
   }
   const m = new THREE.Mesh(mergeGeometries(L), new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad }));
   m.visible = false; return m;
+}
+
+// Fragezeichen aus Bogen, Strich und Punkt, Größe h, steht auf y = 0, schaut nach +z
+function qParts(h) {
+  const r = h * .22, t = h * .055;
+  const arc = new THREE.TorusGeometry(r, t, 3, 10, Math.PI * 1.5); arc.rotateZ(-Math.PI / 2); arc.translate(0, h * .72, 0);
+  const stem = new THREE.CylinderGeometry(t, t, h * .22, 4); stem.translate(0, h * .4, 0);
+  const dot = new THREE.IcosahedronGeometry(t * 1.4, 0); dot.translate(0, h * .1, 0);
+  return [arc, stem, dot];
 }
 
 // Runen: 8 Glyphen in einer Canvas-Textur, als ein Mesh aus 8 Quads
@@ -352,6 +362,7 @@ const ANIM: any = {
   }
 };
 const FLOAT = { arcane: .42 };
+ANIM.rand = ANIM.base;   // ?-Magier: Basis-Bewegungen, beim Trinken die des gewürfelten Getränks (anim.drinkSkin)
 // Schluck-Rhythmus: 0 = Ruhe, 1 = am Mund. Periode in s, Anteil am Mund
 function sip(t, per, frac = .35) { const k = (t % per) / per; return k < frac ? Math.sin(Math.PI * k / frac) ** .6 : 0; }
 const STAFF_DOWN = { sf: 1, sp: [-.62, .04, .05], b: [.05, .03, 1] };
@@ -461,6 +472,23 @@ export function buildStrichMagier(gameSkin = 'alle') {
     icicle(head, [0, .03, .12], .1, .03, [Math.PI, 0, 0]); icicle(head, [.05, .04, .11], .07, .022, [Math.PI, 0, 0]); icicle(head, [-.05, .04, .11], .07, .022, [Math.PI, 0, 0]);
     glow(chest, new THREE.OctahedronGeometry(.05, 0), S.orb, [0, .35, .1], [0, 0, 0], [.7, 1.4, .7]);
   }
+  if (skin === 'rand') {
+    // Fragezeichen übersät, alle im Glüh-Mesh: [Gelenk, Ort, Drehung um y, Größe]
+    const Q = col(0xd8ccff);
+    const marks: any[] = [[head, [0, .2, .17], 0, .14], [head, [.15, .2, 0], 1.57, .1], [head, [-.15, .22, 0], -1.57, .1], [head, [0, .22, -.17], 3.14, .12],
+      [chest, [.06, .3, .13], 0, .14], [chest, [-.07, .14, .12], 0, .1], [chest, [0, .3, -.13], 3.14, .16], [chest, [.15, .4, 0], 1.57, .1], [chest, [-.15, .4, 0], -1.57, .1], [hips, [0, -.05, .13], 0, .1],
+      [F.armL.ua, [.06, -.15, 0], 1.57, .09], [F.armR.ua, [-.06, -.15, 0], -1.57, .09], [F.armL.fa, [.05, -.14, 0], 1.57, .08], [F.armR.fa, [-.05, -.14, 0], -1.57, .08],
+      [F.legL.th, [.08, -.2, .02], 1, .1], [F.legR.th, [-.08, -.2, .02], -1, .1], [F.legL.sh, [.06, -.2, .03], .8, .09], [F.legR.sh, [-.06, -.2, .03], -.8, .09]];
+    for (const [bone, pos, ry, h] of marks) {
+      const off = V(...pos).add(V(Math.sin(ry), 0, Math.cos(ry)).multiplyScalar(.02));
+      for (const g of qParts(h)) glow(bone, g, Q, [off.x, off.y - h / 2, off.z], [0, ry, 0]);
+    }
+    // 3 schwebende Fragezeichen um den Kopf, ein Mesh, dreht sich im Update
+    const parts = [];
+    for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; for (const g of qParts(.2)) parts.push(prep(g, col(0xf0eaff), new THREE.Matrix4().compose(V(Math.sin(a) * .38, .28 + .05 * i, Math.cos(a) * .38), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), a), V(1, 1, 1)))); }
+    F.halo = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshBasicMaterial({ vertexColors: true }));
+    head.add(F.halo);
+  }
   if (skin === 'arcane') {
     glow(head, new THREE.OctahedronGeometry(.035, 0), S.orb, [0, .2, .17], [0, 0, 0], [1, 1.5, .5]);
     for (const a of [F.armL, F.armR]) glow(a.hand, new THREE.IcosahedronGeometry(.05, 0), S.orb, [0, -.02, 0]);
@@ -487,7 +515,11 @@ export function buildStrichMagier(gameSkin = 'alle') {
   F.body = build(F.parts, F.mat);
   F.glowMesh = F.glow.length ? build(F.glow, glowMat(glowU)) : null;
   if (skin === 'arcane') { F.runes = makeRunes(); F.root.add(F.runes); F.bodyRunes = makeBodyRunes(F); F.root.add(F.bodyRunes.mesh); }
-  F.prop = makeProp(skin); F.root.add(F.prop);
+  if (skin === 'rand') {        // alle 4 Getränke, sichtbar ist das gewürfelte (anim.drinkSkin)
+    F.props = Object.fromEntries(['base', 'fire', 'ice', 'arcane'].map(k => [k, makeProp(k)]));
+    for (const p of Object.values<any>(F.props)) F.root.add(p);
+    F.prop = F.props.base;
+  } else { F.prop = makeProp(skin); F.root.add(F.prop); }
 
   // Partikel in Weltkoordinaten
 const PN = 500, pGeo = new THREE.BufferGeometry();
@@ -555,7 +587,11 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
       if (mode === 'cast') p = kf(castKeys, castU);
       else if (mode === 'run') p = A.run(runT);
       else if (mode === 'chan') p = A.chan(F.t);
-      else if (mode === 'sit') p = A.sit(F.t);
+      else if (mode === 'sit') {
+        const drinkA = F.props && ANIM[anim.drinkSkin] ? ANIM[anim.drinkSkin] : A;
+        if (F.props) { const next = F.props[anim.drinkSkin] ?? F.props.base; if (next !== F.prop) { F.prop.visible = false; F.prop = next; } }
+        p = drinkA.sit(F.t);
+      }
       else if (mode === 'dead') p = cp(DEAD);
       else if (mode === 'air') p = airOf(A, F.t);
       else p = A.idle(F.t);
@@ -582,6 +618,7 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
         for (let i = 0; i < n; i++) emit(body(), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18);
       }
       F.bodyRunes?.update(stage, F.t, mode === 'dead');
+      if (F.halo) { F.halo.rotation.y += s * 1.2; F.halo.position.y = .04 * Math.sin(F.t * 2); F.halo.visible = mode !== 'dead'; }
       if (skin === 'arcane') { const g = Math.max(0, stage) / 3; F.mat.emissive.setRGB(.28 * g * g, .08 * g * g, .5 * g * g); }   // voll: Körper glüht
       if (skin === 'ice') {
         const fr = A.cast.freeze;

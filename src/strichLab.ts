@@ -22,7 +22,7 @@ ground.rotation.x = -Math.PI / 2; scene.add(ground);
 const krieger = buildStrichKrieger();
 scene.add(krieger.root, krieger.fx.group, krieger.scarf);
 krieger.onHit = () => {};
-const mages = ['alle', 'feuer', 'frost', 'arkan'].map(id => buildStrichMagier(id));
+const mages = ['alle', 'feuer', 'frost', 'arkan', 'zufall'].map(id => buildStrichMagier(id));
 for (const m of mages) scene.add(m.root, m.scarf);
 const X = { k: -5.2, m: [-2.2, 0, 2.2, 4.4] };
 

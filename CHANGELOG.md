@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-05
+
+- feat(figur): Der Normal-Modus heißt jetzt ?-Magier, die Figur ist ein schwarzer Strichmagier voller leuchtender Fragezeichen mit 3 kreisenden „?“ um den Kopf; der Zuhälter-Look bleibt im Code, ist aber nicht mehr wählbar; Spielversion v24
+
 ## 2026-11-04
 
 - docs: Pool-Liste auf Code-Stand (neue und entfernte Spells, Krieger- und Klingenstrich-Moves, Eisblock, Magische Kiste statt Waffen-Tabelle, Dodge-Talente), Spell-Spec mit den neuen Spells und der Kill-Anzeige
