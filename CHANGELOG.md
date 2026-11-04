@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-04
 
+- feat(spells): Arkane Geschosse ersetzen Arkanes Sperrfeuer (Kanal 3 s, 5 Geschosse aufs Ziel; Runen Splitter, Schnellfeuer, Arkane Ladung); neu Arkanes Mal (Bodenziel, markiert 8 s, ein anderer Arkan-Treffer lässt es mit +80 % platzen; Runen Lähmendes Mal, Kettenmal, Großes Mal); Arcane only startet mit beiden
 - feat(spells)!: Kettenblitz, Bogenblitz und Hurrikan entfernt; Knochengefängnis verstärkt jetzt Leerenkugel und Arkane Geschosse; alte Waffen mit diesem Fokus wirken auf den Ersatz (Hurrikan → Blizzard), Spielversion v23
 
 ## 2026-11-03

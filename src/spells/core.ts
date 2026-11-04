@@ -83,6 +83,11 @@ export const paysLife = id => supported('blood', id);
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
+// Arkan-Treffer melden sich hier (Arkanes Mal, arcmark.ts): fn(mob, spellId, Schaden vor Wurf und Rüstung)
+// Liste an einer Funktions-Deklaration: arcmark.ts kann im Import-Kreis vor dem Rest dieser Datei laufen
+function arcaneHooks(): any[] { return (arcaneHooks as any).list ??= []; }
+export function onArcaneHit(fn) { arcaneHooks().push(fn); }
+
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
 let castCounter = 0;
@@ -99,6 +104,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten

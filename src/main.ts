@@ -38,6 +38,7 @@ import { updateWucht } from './wucht';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
+import { updateMarks } from './spells/arcmark';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -77,6 +78,7 @@ function updateVisuals(dt) {
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
+  updateMarks();
   dodgeVisual(mage.root);
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht

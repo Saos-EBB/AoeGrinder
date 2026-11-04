@@ -35,9 +35,9 @@ export const ROLLS = {
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge'];
+export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark'];
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes)
-const FOCUS_REPLACE = { chain: 'barrage', arc: 'barrage', hurricane: 'bliz' };
+const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
 const focusId = id => FOCUS_REPLACE[id] ?? id;
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
