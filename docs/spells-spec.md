@@ -106,6 +106,22 @@ Ersetzt den Normal-Modus (ID bleibt `normal`, Rangliste läuft weiter, `SCORE_VE
 | Heiße Tasse | Gegner in 8 yd 50 % langsamer, solange er sitzt; danach Leben voll über 6 s |
 | Tee-Schale | Mana voll, 10 s Abklingzeiten −30 % |
 
+## Blutmagier (v27, Entwurf aus `claude/blutmagier-konzept.md`)
+Modus Blut only (`blood`, ×1,4), Skin `blut`. Zahlen in `BLOOD` (`config.ts`), Spells in `spells/blood.ts`. Grundwerte: −40 % Leben, +40 % Schaden, Zauber kosten Leben (Anteil der max. Leben, `lifePct`), bei weniger Leben mehr Schaden (bei 0 Leben +60 %, linear), kein Trinken, keine Regeneration außerhalb des Kampfes.
+- **Infekt** (passiv): jeder Treffer eines Blut-Spells hängt 4 s an, höchstens 5 Stapel = 20 s. Pro Sekunde 1 % der Mob-Leben × Stapel als fester Schaden, du heilst um denselben Betrag. Mob dunkelrot, Tropfen, Stapel-Zahl am Namensschild.
+- **Blutlachen** bei Sprung-Landung und beim Tod eines Infizierten: 6 s, 3 yd, Gegner 20 % langsamer und 5 Schaden pro s (mit Infekt), du heilst darin 1 %/s. Höchstens 8.
+
+| Spell | Im Spiel | Kosten | CD |
+|---|---|---|---|
+| Blutpeitsche | Kegel 6 yd vor dir, 40–48 (zusätzlich zum Konzept: Grundzauber ohne CD) | 2 % | – |
+| Blutsprung | Halten lädt, 0,2 s → 6 yd bis 1,2 s → 18 yd (nach 1,5 s springt er von selbst). Landung: 60–72 in 4 yd, Rückstoß 5 yd, Lache. Beim Laden 40 % Tempo, in der Luft nicht angreifbar. Im ?-Magier ohne Halten 12 yd | 4 % | 8 s |
+| Saugen | Kanal 3 s, alle 0,5 s 14 auf alle in 6 yd, je Treffer 1 % Leben Heilung und Infekt | 5 % | 6 s |
+| Blutwelle | 12 yd nach vorn, 6 yd breit, 50–60, schiebt 5 yd weg | 4 % | 5 s |
+| Verkleben | nur Infizierte in 15 yd: zur Mitte ihres Klumpens gezogen (Mob mit den meisten infizierten Nachbarn in 5 yd), 2 s festgeklebt | 3 % | 10 s |
+| Zerfließen | 3 s Lache bis 15 yd, nicht angreifbar, kein Zaubern, Infekt alle 0,5 s; danach alle darin zur Mitte und 2 s betäubt | 10 % | 45 s |
+
+Im ?-Magier: Blutpeitsche Offensiv, Blutwelle und Saugen Defensiv, Verkleben und Blutsprung Utility, Zerfließen nicht. Runen gibt es noch keine.
+
 ## Blitzmagier (v26)
 Modus Blitz only (`blitz`, ×1,4), Skin `blitz`. Kettenblitz und Bogenblitz sind zurück (Stand vor v23). Alte Waffen mit Fokus Kettenblitz oder Bogenblitz behalten Arkane Geschosse; neue Waffen tragen `s.fv` und meinen den Spell wirklich. Der Waffen-Kopf Gabel hat jetzt einen Blitz-Fokus.
 - **Batterie** statt Mana (`battery.ts`, Zahlen in `BATTERY`): 0–100, +8/s, +3 pro getroffenem Gegner. Spells kosten `charge` oder Mana / 8. Voll = überladen: keine Regeneration, der nächste Blitz-Zauber macht ×2 Schaden und betäubt alle Getroffenen 0,5 s, danach ist sie leer.

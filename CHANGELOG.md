@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(figur): Blutmagier-Skin: dunkelrot, tropfende Hände, Herz pulsiert bei wenig Leben, beim Laden des Sprungs geduckt, in der Luft gestreckt, beim Zerfließen sackt er zusammen; Pool-Liste und Spell-Spec nachgezogen
 - feat(modi): Neuer Modus Blut only (Blutmagier, ×1,4): Zauber kosten Leben, −40 % Leben, +40 % Schaden, mehr Schaden bei wenig Leben; Infekt stapelt bis 5 (20 s) und heilt dich um den Schaden; Blutpeitsche, Blutsprung (halten lädt bis 18 yd), Saugen, Blutwelle, Verkleben, Zerfließen; Blutlachen bei Landung und beim Tod Infizierter; Blut-Spells auch im ?-Magier; Spielversion v27
 - feat(figur): Blitzmagier-Skin: dunkelblau mit gelbem Zickzack und Blitz-Kamm, Funken an den Händen, beim Aufladen Hand hoch mit Lichtbogen zwischen den Händen, überladen sprühen Funken vom Kopf; Pool-Liste und Spell-Spec nachgezogen
 - feat(spells): Neue Blitz-Spells Blitzschlag (Bodenziel 3 yd, betäubt 0,5 s), Kugelblitz (langsame Kugel 20 yd, zappt alle 0,5 s in 5 yd), Entladung (Nova 8 yd, Schaden = Ladung × 3, leert die Batterie) und Gewitter (Feld 8 s, alle 0,5 s ein Blitz), je mit 3 Runen; Blitz only startet mit Kettenblitz, Bogenblitz, Blitzschlag, Kugelblitz, Blink und Aufladen; im ?-Magier sind alle Blitz-Spells Offensiv; Waffen mit Gabel-Kopf haben jetzt einen Blitz-Fokus

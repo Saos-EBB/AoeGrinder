@@ -19,7 +19,7 @@ const CAST_MS = 700;
 const CAST_HOLD = 0.55;       // Hier wartet die Pose, solange ein längerer Zauber läuft
 const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
 // Skin-IDs im Spiel → Skins des Viewers
-const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'rand', blitz: 'bolt' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
+const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'rand', blitz: 'bolt', blut: 'blood' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
 
 const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
 grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
@@ -54,6 +54,7 @@ const SKINS = {
   fire: { name: 'Feuer', ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
   ice: { name: 'Eis', ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
   arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) },
+  blood: { name: 'Blut', ink: col(0x3a0a10), accent: col(0x7a0f1a), orb: col(0xff2a3a) },   // Blutmagier: dunkelrot, tropfende Hände
   bolt: { name: 'Blitz', ink: col(0x1a2030), accent: col(0xd8b21a), orb: col(0xffe14a) },   // Blitzmagier: Funken an den Händen
   rand: { name: '?', ink: col(0x0b0b0e), accent: col(0x16161b), orb: col(0xe8e2ff) },   // ?-Magier: ganz schwarz, leuchtende Fragezeichen
 };
@@ -364,7 +365,8 @@ const ANIM: any = {
 };
 const FLOAT = { arcane: .42 };
 ANIM.rand = ANIM.base;
-ANIM.bolt = ANIM.base;   // Blitzmagier: Basis-Bewegungen, beim Aufladen Hand hoch (anim.charge)   // ?-Magier: Basis-Bewegungen, beim Trinken die des gewürfelten Getränks (anim.drinkSkin)
+ANIM.bolt = ANIM.base;
+ANIM.blood = ANIM.base;   // Blutmagier: Basis-Bewegungen; Feder beim Laden über anim.squat, Zerfließen und Strecken skaliert main.ts   // Blitzmagier: Basis-Bewegungen, beim Aufladen Hand hoch (anim.charge)   // ?-Magier: Basis-Bewegungen, beim Trinken die des gewürfelten Getränks (anim.drinkSkin)
 // Schluck-Rhythmus: 0 = Ruhe, 1 = am Mund. Periode in s, Anteil am Mund
 function sip(t, per, frac = .35) { const k = (t % per) / per; return k < frac ? Math.sin(Math.PI * k / frac) ** .6 : 0; }
 const STAFF_DOWN = { sf: 1, sp: [-.62, .04, .05], b: [.05, .03, 1] };
@@ -491,6 +493,10 @@ export function buildStrichMagier(gameSkin = 'alle') {
     F.halo = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshBasicMaterial({ vertexColors: true }));
     head.add(F.halo);
   }
+  if (skin === 'blood') {
+    for (const a of [F.armL, F.armR]) { glow(a.hand, new THREE.IcosahedronGeometry(.06, 0), S.orb, [0, -.03, 0]); glow(a.hand, new THREE.ConeGeometry(.025, .09, 4), S.orb, [0, -.1, 0], [Math.PI, 0, 0]); }
+    glow(chest, new THREE.OctahedronGeometry(.05, 0), S.orb, [0, .4, .12], [0, 0, 0], [1, 1.3, .6]);   // Herz
+  }
   if (skin === 'bolt') {
     for (const a of [F.armL, F.armR]) glow(a.hand, new THREE.IcosahedronGeometry(.055, 0), S.orb, [0, -.02, 0]);
     // Zickzack auf der Brust und ein Blitz-Kamm auf dem Kopf
@@ -533,7 +539,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
     F.props = Object.fromEntries(['base', 'fire', 'ice', 'arcane'].map(k => [k, makeProp(k)]));
     for (const p of Object.values<any>(F.props)) F.root.add(p);
     F.prop = F.props.base;
-  } else { F.prop = makeProp(skin === 'bolt' ? 'base' : skin); F.root.add(F.prop); }   // Blitz trinkt nicht, die Requisite bleibt unsichtbar
+  } else { F.prop = makeProp(skin === 'bolt' || skin === 'blood' ? 'base' : skin); F.root.add(F.prop); }   // Blitz trinkt nicht, die Requisite bleibt unsichtbar
 
   // Partikel in Weltkoordinaten
 const PN = 500, pGeo = new THREE.BufferGeometry();
@@ -637,6 +643,12 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
         for (let i = 0; i < n; i++) emit(body(), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18);
       }
       F.bodyRunes?.update(stage, F.t, mode === 'dead');
+      if (skin === 'blood') {                         // Tropfende Hände, Herzschlag bei wenig Leben
+        const n = rate(8 * s);
+        for (let i = 0; i < n; i++) emit(pick([F.armL.hand, F.armR.hand]).getWorldPosition(V()).add(V(0, -.08, 0)), 1, V(0, -.3, 0), Math.random() < .6 ? 0xb01020 : 0x60060c, 6, .6, .04);
+        const low = anim.lowHp ?? 1, beat = low < .35 ? Math.max(0, Math.sin(F.t * (6 + (.35 - low) * 20))) ** 6 : 0;
+        F.mat.emissive.setRGB(.6 * beat, 0, .04 * beat);
+      }
       if (skin === 'bolt') {                          // Funken an den Händen, überladen auch vom Kopf, Lichtbogen beim Aufladen
         const hands = [F.armL.hand, F.armR.hand];
         const n = rate((anim.charge ? 40 : 6) * s);

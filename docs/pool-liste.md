@@ -48,6 +48,12 @@ Alle frei. Trinken, Eisblock, die Krieger- und die Klingenstrich-Moves gehören 
 | Kugelblitz | Blitz | Blitz, Geschoss, Fläche |
 | Entladung | Blitz | Blitz, Nova |
 | Gewitter | Blitz | Blitz, Fläche |
+| Blutpeitsche | Blut | Blut, Fläche |
+| Blutsprung | Blut | Blut, Bewegung, Fläche |
+| Saugen | Blut | Blut, Kanal, Heilung |
+| Blutwelle | Blut | Blut, Fläche, Kontrolle |
+| Verkleben | Blut | Blut, Kontrolle |
+| Zerfließen | Blut | Blut, Fläche, Kontrolle |
 
 ## ?-Magier (Modus `normal`, v24)
 
@@ -55,9 +61,9 @@ Keine Spell-Karten, keine Runen. 4 feste Tasten würfeln aus Kategorien (`RANDOM
 
 | Taste | Kategorie | Pool | CD |
 |---|---|---|---|
-| 1 | Offensiv | Arcane Explosion, Arkane Woge, Arkane Geschosse, Feuerball, Flammenstoß, Meteor, Brandmal-Detonation, Frostkugel, Eislanze, Blizzard, Blitzschlag, Kugelblitz, Entladung, Gewitter, Kettenblitz, Bogenblitz | 1 s |
-| 2 | Defensiv | Frost Nova, Eisblock, Druckwelle, Cone of Cold, Wirbel, Gletscherspalte, Höllenfeuer | 6 s |
-| 3 | Utility | Blink, Leerenkugel, Arkanes Mal | 5 s |
+| 1 | Offensiv | Arcane Explosion, Arkane Woge, Arkane Geschosse, Feuerball, Flammenstoß, Meteor, Brandmal-Detonation, Frostkugel, Eislanze, Blizzard, Blitzschlag, Kugelblitz, Entladung, Gewitter, Kettenblitz, Bogenblitz, Blutpeitsche | 1 s |
+| 2 | Defensiv | Frost Nova, Eisblock, Druckwelle, Cone of Cold, Wirbel, Gletscherspalte, Höllenfeuer, Blutwelle, Saugen | 6 s |
+| 3 | Utility | Blink, Leerenkugel, Arkanes Mal, Verkleben, Blutsprung | 5 s |
 | 4 | Drink Something | Goldbecher, Feuerschnaps, Heiße Tasse, Tee-Schale | 30 s |
 
 Rang-Karten: Offensiv +15 % Schaden auf alle Offensiv-Spells, Defensiv +10 % Dauer und Radius, Utility −10 % Abklingzeit der Kategorie. Supports, Relikte, Talente und Glück bleiben. Waffen-Fokus wirkt, wenn der Spell gewürfelt wird.
@@ -68,6 +74,7 @@ Fest im Modus:
 |---|---|
 | Frost only | Eisblock (Taste; im ?-Magier auch über Defensiv) |
 | Blitz only | Aufladen statt Trinken |
+| Blut only | kein Trinken; Blut-Spells haben noch keine Runen |
 | Strichkrieger, Riesenschwert | Schlagfolge, Bodenbrecher, Wirbelwind, Hinrichtung, Letzter Atem, Kampfschrei, Sturzsprung, Essen |
 | Strichkrieger, Holzfälleraxt | wie Riesenschwert, aber Hackfolge, Kahlschlag, Fällen statt Schlagfolge, Bodenbrecher, Hinrichtung |
 | Strichkrieger, Streitkolben | wie Riesenschwert, aber Donnerfolge, Donnerschlag, Kugelblitz statt Schlagfolge, Bodenbrecher, Hinrichtung |
