@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(figur): Die Flammen-Stufen des Feuermagiers folgen der Hitze, überhitzt brennt er voll und raucht; Spell-Spec nachgezogen
 - feat(ui): Anzeige „Hitze“ im Fire only zeigt die Hitze als Zahl, wird ab 80 rot und pulsiert rot mit „Überhitzt“
 - feat(modi)!: Fire only: Hitze ersetzt die Glut-Anzeige. Jeder Feuer-Treffer +1,5 Hitze, nach 1,5 s ohne Treffer −10/s; pro Hitze +0,4 % Schaden und +0,8 % Brand-Schaden; bei 100 überhitzt er und brennt selbst (3 % Leben/s), bis die Hitze unter 50 fällt; ein Frost-Zauber (über Waffen-Fokus) halbiert die Hitze; Spielversion v25
 - feat(karten): ?-Magier ohne Spell- und Runen-Karten; Rang-Karten wirken auf die Kategorie (Offensiv +Schaden, Defensiv +Dauer und Radius, Utility −Abklingzeit); Pool-Liste und Spell-Spec nachgezogen

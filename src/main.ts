@@ -33,6 +33,8 @@ import * as weaponMod from './weaponRolls';
 import * as metaMod from './meta';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
+import * as meterMod from './schoolMeter';
+import * as buffsMod from './buffs';
 import { menuYaw, enterMenu } from './ui/mainMenu';
 import { updateWucht } from './wucht';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
@@ -40,7 +42,7 @@ import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
-import { meterStage } from './schoolMeter';
+import { meterStage, meterOverheated } from './schoolMeter';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -79,7 +81,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), drinkSkin: player.drink?.skin, ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), smoke: meterOverheated(), drinkSkin: player.drink?.skin, ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
   updateMarks();
@@ -143,4 +145,4 @@ requestAnimationFrame(loop);
 
 // Für Tests
 (window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
-  m: { core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod } };
+  m: { core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };

@@ -136,7 +136,7 @@ function makeRunes() {
 }
 
 // Partikel pro Sekunde je Stufe der Kill-Anzeige, Feuer am Körper und Frost am Körper // PH
-const STAGE_FX = { fire: [0, 14, 32, 70], ice: [0, 8, 18, 40] };
+const STAGE_FX = { fire: [0, 14, 32, 70], ice: [0, 8, 18, 40], smoke: 35 };   // smoke: Rauch beim Überhitzen (anim.smoke)
 const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchteile über die Frames verteilt
 
 // Kill-Anzeige (Stufe 0 … 3, anim.stage): Arkan trägt Runen direkt am Körper, alle in einem InstancedMesh. Die ersten counts[Stufe] Anker sind sichtbar.
@@ -612,6 +612,10 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
       if (skin === 'fire' && stage > 0) {             // Körper brennt mehr: Flammen an zufälligen Gelenken, größere Punkte
         const n = rate(STAGE_FX.fire[stage] * s);
         for (let i = 0; i < n; i++) emit(body(), 1, V(0, 1 + Math.random(), 0), Math.random() < .55 ? 0xff7a1a : 0xffd04a, -.6, .5 + .15 * stage, .14);
+      }
+      if (skin === 'fire' && anim.smoke) {           // Überhitzt: Rauch steigt vom Körper
+        const n = rate(STAGE_FX.smoke * s);
+        for (let i = 0; i < n; i++) emit(body(), 1, V(0, 1.1 + Math.random() * .6, 0), Math.random() < .5 ? 0x3a3330 : 0x5a504a, -.2, 1.4, .25);
       }
       if (skin === 'ice' && stage > 0) {              // Reif und Eiskristalle rieseln vom Körper
         const n = rate(STAGE_FX.ice[stage] * s);

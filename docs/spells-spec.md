@@ -106,10 +106,11 @@ Ersetzt den Normal-Modus (ID bleibt `normal`, Rangliste läuft weiter, `SCORE_VE
 | Heiße Tasse | Gegner in 8 yd 50 % langsamer, solange er sitzt; danach Leben voll über 6 s |
 | Tee-Schale | Mana voll, 10 s Abklingzeiten −30 % |
 
-## Kill-Anzeige der Schul-Modi (v23)
+## Anzeige der Schul-Modi (v23, Feuer seit v25 Hitze)
 Nur Frost only, Fire only, Arcane only, unter dem Mana-Balken in Schulfarbe. Zahlen in `SCHOOL_METER` (`config.ts`), Logik in `schoolMeter.ts`.
-- Jeder Kill +2 %, Champion +10 %. 3 s ohne Kill: −5 % pro Sekunde.
-- Voll (100 %, pulsiert): Feuer +25 % Schaden, Frost +35 % Slow auf jeden Treffer (gesamt höchstens 80 %), Arkan −25 % Abklingzeiten.
+- Frost und Arkan: jeder Kill +2 %, Champion +10 %. 3 s ohne Kill: −5 % pro Sekunde. Voll (pulsiert): Frost +35 % Slow auf jeden Treffer (gesamt höchstens 80 %), Arkan −25 % Abklingzeiten.
+- Feuer, **Hitze** 0–100: jeder Feuer-Treffer auf einen Gegner +1,5 (Brand-Ticks nicht), 1,5 s ohne Treffer −10/s. Pro Hitze +0,4 % Schaden auf Treffer und +0,8 % auf Brand-Ticks (bei 100: +40 % und +80 %, der Restbrand der Detonation wächst mit). Bei 100 überhitzt: er brennt selbst mit 3 % Leben/s, bis die Hitze unter 50 fällt. Ein Frost-Zauber (nur über Waffen-Fokus im Pool) halbiert die Hitze. Ab 80 rot, überhitzt pulsiert die Anzeige rot.
+- Die Feuer-Stufen der Figur folgen der Hitze, überhitzt volle Flammen und Rauch.
 - Die Figur zeigt 4 Stufen (0–24, 25–49, 50–99 %, voll): Feuer mehr Flammen am Körper, Frost Reif und Eiskristalle, Arkan 1, 4, 9, 16 Runen am Körper und Glühen; Fußspuren größer und länger, bis zu 15 statt 10.
 
 ## Commits (je einer, nach jedem muss npm run dev laufen)
