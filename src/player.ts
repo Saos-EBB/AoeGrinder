@@ -33,6 +33,8 @@ import { hitstop } from './fx/impact';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
+import { resetBuffs, buffSpeedMul } from './buffs';
+import { updateRandomMage } from './spells/random';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
 export function resetGame() {
@@ -62,6 +64,7 @@ export function resetGame() {
   resetRealMen();
   resetDodge();
   resetMeter();
+  resetBuffs();
   resetKlinge();
   resetSiege();
   resetSplits();
@@ -153,7 +156,9 @@ function regenerate(dt) {
     if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
     if (state.now - player.lastCombat > 5000) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH
   }
-  if (player.drink) {                    // PH: 90 % Mana + 50 % HP über 18 s
+  if (player.drink?.custom) {            // Getränk des ?-Magiers: wirkt erst, wenn er sitzen bleibt (random.ts)
+    if (state.now >= player.drink.end) { const done = player.drink.onDone; stopDrink(); done(); }
+  } else if (player.drink) {             // PH: 90 % Mana + 50 % HP über 18 s
     player.mana = Math.min(maxMana(), player.mana + maxMana() * 0.9 * dt / SPELLS.drink.dur);
     player.hp = Math.min(maxHp(), player.hp + maxHp() * (player.drink.hp ?? 0.5) * dt / (player.drink.dur ?? SPELLS.drink.dur));   // Essen: eigene Werte
     const full = player.mana >= maxMana() && player.hp >= maxHp();
@@ -258,7 +263,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul;
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul();
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;
@@ -305,5 +310,6 @@ export function updatePlayer(dt) {
   updateIceBlock();
   updateWeaponAura({ burnMob, pullMob });
   updateMeter(dt);
+  updateRandomMage(dt);
   regenerate(dt);
 }

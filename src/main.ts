@@ -79,7 +79,7 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? 'sit' : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), drinkSkin: player.drink?.skin, ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
   updateMarks();

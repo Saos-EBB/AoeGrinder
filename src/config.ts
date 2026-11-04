@@ -88,6 +88,24 @@ export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1 });
 }
 
+// ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
+export const RANDOM_MAGE = {
+  kit: ['rOff', 'rDef', 'rUtil', 'rDrink'],
+  cats: {
+    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire'] },
+    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark'] },
+    rDrink: { name: 'Drink Something', cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
+  },
+  sitMs: 2000,
+  drinks: {
+    gold: { name: 'Goldbecher', short: 'Gold', skin: 'base', ms: 10000, speed: 0.3, crit: 0.15 },
+    schnaps: { name: 'Feuerschnaps', short: 'Schnaps', skin: 'fire', ms: 10000, dmg: 0.25, mana: true, burp: { range: 6, halfAngle: 0.7 } },
+    tasse: { name: 'Heiße Tasse', short: 'Tasse', skin: 'ice', ms: 6000, heal: true, slow: 0.5, slowYd: 8 },   // Slow, solange er sitzt; danach Leben voll über 6 s
+    tee: { name: 'Tee-Schale', short: 'Tee', skin: 'arcane', ms: 10000, cd: 0.3, mana: true },
+  },
+};
+
 // Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
 export const SCHOOL_METER = {
   perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
@@ -106,7 +124,7 @@ export const CARD_RARITIES = [
   { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
-export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink)
+export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3, dur: 0.10 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink), dur = Dauer und Radius (?-Magier Defensiv)
 export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spell, Rune, Support, Relikt
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };

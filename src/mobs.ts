@@ -24,6 +24,7 @@ import { overlay, combatText } from './ui/hud';
 import { damagePlayer, gainXp } from './player';
 import { damageNumber } from './ui/dmgNumbers';
 import { meterKill } from './schoolMeter';
+import { buffCrit } from './buffs';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
 const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
@@ -325,7 +326,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   }
 
   const frozen = mob.rootUntil > state.now;
-  const crit = forceCrit || !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
+  const crit = forceCrit || !noRoll && Math.random() < (modValue('baseCrit') ?? CFG.baseCrit) + mods.crit + buffCrit() + (frozen ? mods.shatter : 0);   // Fire only: höherer Grund-Crit
   const dmg = Math.round(amount * dmgMult() * (dark ? 1 : mobDmgTaken(mob.level)) * (crit ? 1 + CFG.critBonus : 1));
   mob.hp -= dmg;
   noteHit(crit);

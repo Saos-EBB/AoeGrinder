@@ -3,14 +3,15 @@
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
-import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS } from '../config';
+import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS, RANDOM_MAGE } from '../config';
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
-import { MODIFIERS, activeModIds, modValue } from '../modifiers';
+import { MODIFIERS, activeModIds, modValue, randomMode } from '../modifiers';
+import { buffDmgMul } from '../buffs';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
@@ -25,12 +26,13 @@ export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolEx
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 function startKit() {
-  const kit = (modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);
+  const kit = (randomMode() ? RANDOM_MAGE.kit : modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);
   return [...kit, ...Array(SPELL_SLOTS - kit.length).fill(null)];
 }
 
 export function resetSpells() {
   state.slots = startKit();
+  state.randomNext = {};
   state.spellStats = {};
   state.runes = {};
   state.supports = {};
@@ -107,7 +109,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
-      dmg *= meterDmgMul();                                                 // Kill-Anzeige Feuer voll
+      dmg *= meterDmgMul() * buffDmgMul();                                  // Kill-Anzeige Feuer voll, Getränke des ?-Magiers
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
@@ -125,7 +127,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       return landed;
     },
     radius: base => base * radiusMult(id) * radiusScale,
-    duration: base => base * (state.supports.potency ? 1.4 : 1) * mods.durMul,
+    duration: base => base * (state.supports.potency ? 1.4 : 1) * mods.durMul * (stat(id).dur ?? 1),   // stat.dur: Rang-Karte des ?-Magiers
   };
   return c;
 }
@@ -165,7 +167,7 @@ export function castSpell(id, point?) {
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
-  if (s.press) return s.press();                          // Real Men: eigene Kosten und Abklingzeit
+  if (s.press) return s.press(point);                     // Real Men, Eisblock, ?-Magier: eigene Kosten und Abklingzeit
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
@@ -187,9 +189,15 @@ export function castSpell(id, point?) {
   const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
   let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul;   // castMul: Waffen-Typ und Hersteller
   if (castTime && consumeCombo('instant')) castTime = 0;
-  if (!castTime) return release(id, point, opts);
+  if (!castTime) { noteCastStart(id); return release(id, point, opts); }
   player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp, opts };
+  noteCastStart(id);
 }
+
+// Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts). Liste an einer Funktion: Import-Kreis
+function castStartHooks(): any[] { return (castStartHooks as any).list ??= []; }
+export function onCastStart(fn) { castStartHooks().push(fn); }
+export function noteCastStart(id) { for (const fn of castStartHooks()) fn(id); }
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
 function release(id, point, opts: any = {}) {

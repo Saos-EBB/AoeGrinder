@@ -36,6 +36,8 @@ export const MODES = [
 ];
 
 export let modeId = 'normal';
+// ?-Magier: der Modus normal ohne Mods würfelt seine Spells (spells/random.ts)
+export const randomMode = () => modeId === 'normal';
 let customMods = [];
 
 export const activeModIds = () => MODES.find(m => m.id === modeId).mods ?? customMods;

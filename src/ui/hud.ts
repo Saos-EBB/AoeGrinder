@@ -18,7 +18,8 @@ import { ICONS } from './icons';
 import { UI } from './uiConfig';
 import './hudLayout';
 import { meterSchool, meterValue } from '../schoolMeter';
-import { SCHOOL_METER } from '../config';
+import { SCHOOL_METER, RANDOM_MAGE } from '../config';
+import { buffs } from '../buffs';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
@@ -67,10 +68,10 @@ export function renderActionbar() {
     el.className = `slot ${SPELLS[id].cls}`;
     el.title = SPELLS[id].name;
     if (ICONS[id]) { el.style.backgroundImage = `url(${ICONS[id]})`; el.classList.add('hasIcon'); }
-    el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>`;
+    el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>${SPELLS[id].preview ? '<span class="next"></span>' : ''}`;
     el.addEventListener('click', () => castSpell(id));
     bar.appendChild(el);
-    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText') };
+    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
   });
   labelSlots();
 }
@@ -117,11 +118,22 @@ export function updatePerf(t) {
   perfSince = t;
 }
 
+// ?-Magier: der nächste Wurf klein im Slot, als Icon oder Kurzname
+function showNext(sl, pid) {
+  if (sl.shown === pid) return;
+  sl.shown = pid;
+  const drink = RANDOM_MAGE.drinks[pid], icon = ICONS[pid];
+  sl.next.style.backgroundImage = icon ? `url(${icon})` : '';
+  sl.next.textContent = icon ? '' : drink?.short ?? SPELLS[pid]?.name ?? '';
+  sl.next.title = drink?.name ?? SPELLS[pid]?.name ?? '';
+}
+
 // Links die Effekte und Runen mit Stacks, rechts die Relikte. Nur neu bauen, wenn sich der Inhalt ändert.
 let chipKey = '', relicKey = '';
 function updateBuildChips() {
   const chips = [];
   if (player.poison) chips.push(['Gift', player.poison.stacks]);
+  for (const b of buffs()) chips.push([b.name, Math.ceil((b.until - state.now) / 1000)]);   // Getränke des ?-Magiers, Zahl = Sekunden
   for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
   for (const id of Object.keys(state.supports ?? {})) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
   for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
@@ -162,7 +174,7 @@ export function updateHud() {
   updateMeterBar();
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
-  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.label ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.label && !player.drink.custom ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
 
   const need = xpNeeded();
   const atMax = player.level >= LEVEL_MAX;
@@ -200,8 +212,9 @@ export function updateHud() {
     const cost = paysLife(id) ? 0 : costOf(id), maxCharges = chargesOf(id) ?? 0;
     sl.cost.textContent = cost > 0 ? cost : '';
     sl.charges.textContent = maxCharges > 1 ? (player.charges[id] ?? []).filter(t => t <= state.now).length || (player.charges[id] ? 0 : maxCharges) : '';
+    if (sl.next) showNext(sl, SPELLS[id].preview());
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
-    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || ((id === 'drink' || id === 'kEat') && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || ((id === 'drink' || id === 'kEat' || id === 'rDrink') && !!dr));
   }
 
   // Nameplates
