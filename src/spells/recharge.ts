@@ -1,0 +1,16 @@
+// Aufladen statt Trinken (Blitz only): 2 s stehen, Hand hoch, dann +60 Ladung. Bricht ab wie Trinken.
+
+import { state, player } from '../state';
+import { BATTERY } from '../config';
+import { combatText } from '../ui/hud';
+import { batteryCharge } from '../battery';
+
+export const recharge = {
+  name: 'Aufladen', cls: 'lightning', desc: '2 s stehen bleiben, dann +60 Ladung.', tags: [],
+  mana: 0, charge: 0, cd: 0, fixed: true,   // PH
+  canCast: () => player.grounded ? null : 'Du kannst das nicht im Sprung tun',
+  effect() {
+    player.drink = { start: state.now, end: state.now + BATTERY.recharge.ms, custom: true, kind: 'recharge', pose: 'charge', label: 'Aufladen',
+      onDone: () => { batteryCharge(BATTERY.recharge.amount); combatText(player.pos, `+${BATTERY.recharge.amount} Ladung`, 'heal', 2.6); } };
+  },
+};

@@ -106,6 +106,10 @@ export const RANDOM_MAGE = {
   },
 };
 
+// Blitz only (battery.ts): Batterie statt Mana in player.mana. Bei max überladen: der nächste Blitz-Zauber ×overMul und betäubt, danach 0. Alles PH
+// costDiv: Spells ohne eigenes charge kosten mana / costDiv Ladung. stunMs: Betäubung über applyRoot (Mob ohne Laufen und Schlag)
+export const BATTERY = { max: 100, start: 50, regenPerS: 8, perHitTarget: 3, overMul: 2, stunMs: 500, costDiv: 8, color: '#ffe14a', recharge: { ms: 2000, amount: 60 } };
+
 // Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
 export const SCHOOL_METER = {
   perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,

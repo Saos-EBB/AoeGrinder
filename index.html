@@ -56,6 +56,7 @@
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
   #hudMana #meter { position: absolute; top: calc(100% + 9px); left: 0; right: 0; height: 15px; }
   #hudMana #meter > span { line-height: 15px; font-size: 11px; }
+  #hudMana.over .bar { --meter: #ffe14a; animation: meterPulse .35s ease-in-out infinite alternate; }
   #meter.full { animation: meterPulse .7s ease-in-out infinite alternate; }
   @keyframes meterPulse { from { box-shadow: 0 0 2px var(--meter); } to { box-shadow: 0 0 12px var(--meter), 0 0 4px #fff; filter: brightness(1.35); } }
   #status { font-size: 12px; color: #9cc4ff; min-height: 16px; margin-top: 2px; text-align: center; text-shadow: 0 1px 2px #000; }

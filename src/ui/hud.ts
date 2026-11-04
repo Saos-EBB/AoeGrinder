@@ -20,6 +20,8 @@ import './hudLayout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
 import { buffs } from '../buffs';
+import { batteryMode } from '../battery';
+import { BATTERY } from '../config';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
@@ -150,7 +152,7 @@ function updateBuildChips() {
 }
 
 // Kill-Anzeige unter Mana, nur in den Schul-Modi
-let meterKey = '';
+let meterKey = '', manaBattery = false;
 function updateMeterBar() {
   const school = meterSchool(), el = $('meter');
   el.hidden = !school;
@@ -181,6 +183,9 @@ export function updateHud() {
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
   $('manaText').textContent = player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
   updateMeterBar();
+  const bat = batteryMode();               // Blitz only: Batterie gelb im Mana-Balken, überladen pulsiert er
+  if (bat !== manaBattery) { manaBattery = bat; $('manaFill').style.background = bat ? `linear-gradient(${BATTERY.color}, #b89a10)` : ''; }
+  $('hudMana').classList.toggle('over', bat && !!player.overcharged);
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
   $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.label && !player.drink.custom ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';

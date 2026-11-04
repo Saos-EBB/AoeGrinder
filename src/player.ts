@@ -34,6 +34,7 @@ import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable,
 import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
 import { resetBuffs, buffSpeedMul } from './buffs';
+import { resetBattery, updateBattery } from './battery';
 import { updateRandomMage } from './spells/random';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
@@ -66,6 +67,7 @@ export function resetGame() {
   resetMeter();
   resetBuffs();
   resetKlinge();
+  resetBattery();
   resetSiege();
   resetSplits();
   blizCursor.visible = false;
@@ -312,5 +314,6 @@ export function updatePlayer(dt) {
   const overheat = updateMeter(dt);                         // Hitze: überhitzt brennt er selbst
   if (overheat) damagePlayer(maxHp() * overheat, true, 'Überhitzt');
   updateRandomMage(dt);
+  updateBattery(dt);
   regenerate(dt);
 }

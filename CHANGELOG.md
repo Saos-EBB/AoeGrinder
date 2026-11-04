@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(modi): Blitz only nutzt eine Batterie statt Mana (gelber Balken, 0–100): +8/s und +3 pro getroffenem Gegner; voll ist sie überladen, der nächste Blitz-Zauber macht doppelten Schaden, betäubt alle Getroffenen 0,5 s und leert sie; Aufladen statt Trinken (2 s stehen, +60)
 - feat(modi): Neuer Modus Blitz only (Blitzmagier im Hauptmenü, ×1,4 Punkte, eigene Rangliste), startet mit Kettenblitz, Bogenblitz, Blink und Trinken
 - feat(spells): Kettenblitz und Bogenblitz sind zurück (Tag Blitz, Stand vor v23); alte Waffen mit diesem Fokus behalten Arkane Geschosse; Spielversion v26
 - feat(figur): Die Flammen-Stufen des Feuermagiers folgen der Hitze, überhitzt brennt er voll und raucht; Spell-Spec nachgezogen

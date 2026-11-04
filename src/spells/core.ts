@@ -7,11 +7,13 @@ import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS
 import { manaCost, spellCd } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
-import { damageMob } from '../mobs';
+import { damageMob, applyRoot } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';
 import { MODIFIERS, activeModIds, modValue, randomMode } from '../modifiers';
 import { buffDmgMul } from '../buffs';
+import { batteryHit, consumeOvercharge } from '../battery';
+import { BATTERY } from '../config';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
@@ -112,10 +114,12 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
       dmg *= buffDmgMul();                                                  // Getränke des ?-Magiers
+      if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
       if (landed && !m.dead && meterFrostFull()) applySlow(m, 0, slow?.ms ?? 2000);   // Kill-Anzeige Frost voll: jeder Treffer, applySlow legt den Bonus drauf
+      if (landed && hasTag(id, 'Blitz')) { batteryHit(); if (c.over && !m.dead) applyRoot(m, BATTERY.stunMs); }   // Batterie: Ladung pro Treffer, überladen betäubt
       if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
@@ -212,6 +216,7 @@ function release(id, point, opts: any = {}) {
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
   const c: any = makeCtx(id);
   c.cost = cost;
+  c.over = consumeOvercharge(s.tags);   // Blitz only: volle Batterie macht diesen Zauber stärker und leert sie
   c.forceCrit = !!opts.crit;
   s.effect(c, point);
   scheduleEchoes(id, point, c.castKey);
