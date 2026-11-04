@@ -135,10 +135,7 @@ function stopAll() {
 $('stop').addEventListener('click', stopAll);
 function stress() {
   stopAll();
-  const chainRune = state.runes.chain;
-  state.runes.chain = 'repeat';   // 8 Ziele reichen sonst nur für 7 Sprünge
-  SPELLS.chain.effect(makeCtx('chain'));
-  state.runes.chain = chainRune;
+  SPELLS.froststrike.effect(makeCtx('froststrike'));
   SPELLS.bliz.effect(makeCtx('bliz'), PACK_CENTER.clone());
 }
 $('stress').addEventListener('click', stress);

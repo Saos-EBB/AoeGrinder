@@ -94,8 +94,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
-      if (m.cagedUntil > state.now && (id === 'chain' || id === 'voidorb')) dmg *= 1.5;   // Knochengefängnis
-      if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune
+      if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt

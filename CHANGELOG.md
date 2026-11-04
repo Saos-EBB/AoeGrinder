@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-04
+
+- feat(spells)!: Kettenblitz, Bogenblitz und Hurrikan entfernt; Knochengefängnis verstärkt jetzt Leerenkugel und Arkane Geschosse; alte Waffen mit diesem Fokus wirken auf den Ersatz (Hurrikan → Blizzard), Spielversion v23
+
 ## 2026-11-03
 
 - fix(vfx): VFX-Labor startet wieder (Import-Kreis bei `onWarriorHit`, fehlende Platzhalter der Punkte-Anzeige)
