@@ -1,9 +1,10 @@
 import { dist2d } from '../util';
 import { state, player } from '../state';
 import { schedule, mobsInRadius, hasRune } from './core';
+import { mods } from '../config';
 import { boltFx } from './fx';
 
-const STEP_DELAY = 45;   // PH: ms je Sprung, damit man die Kette sieht
+const STEP_DELAY = 45, MORE = 20;   // MORE: Rune Überschlag   // PH: ms je Sprung, damit man die Kette sieht
 
 const nearestFirst = (list, pos) => list.sort((a, b) => dist2d(a.pos, pos) - dist2d(b.pos, pos));
 
@@ -33,18 +34,20 @@ export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = fa
 export const nearestMob = range => nearestFirst(mobsInRadius(player.pos, range, Infinity), player.pos)[0];
 
 export const chain = {
-  name: 'Kettenblitz', desc: 'Bis zu 50 Sprünge in 12 yd, jeder Sprung −2 % Schaden, 1,5 s Zauber.', ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
-  mana: 280, cd: 6000, castTime: 1500, dmg: 50, jumps: 50, jumpRange: 12, range: 30,   // PH
+  name: 'Kettenblitz', desc: 'Bis zu 50 Sprünge in 12 yd, jeder Sprung −2 % Schaden, 0,35 s Zauber.', ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
+  mana: 280, cd: 6000, castTime: 350, dmg: 25, jumps: 50,   // v29: 0,35 s statt 1,5 s, Schaden halbiert (Flächenschaden des Blitzmagiers)
+  jumpRange: 12, range: 30,   // PH
   runes: [
     { id: 'repeat', name: 'Wiederkehr', desc: 'Gleiches Ziel mehrfach.' },
     { id: 'kill', name: 'Entladung', desc: 'Kill = +5 Sprünge.' },
     { id: 'fork', name: 'Gabelung', desc: 'Gabelt bei jedem 10. Sprung.' },
+    { id: 'more', name: 'Überschlag', desc: '+20 Sprünge.' },
   ],
   canCast: () => nearestMob(chain.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {
     const first = nearestMob(chain.range);
     if (!first) return;
-    runChain(c, first, { jumps: chain.jumps, range: chain.jumpRange, dmg: chain.dmg, falloff: 0.98,
+    runChain(c, first, { jumps: chain.jumps + mods.chainJumps + (hasRune('chain', 'more') ? MORE : 0), range: chain.jumpRange, dmg: chain.dmg, falloff: 0.98,
       repeat: hasRune('chain', 'repeat'), killBonus: hasRune('chain', 'kill') ? 5 : 0, forkEvery: hasRune('chain', 'fork') ? 10 : 0 });
   },
 };

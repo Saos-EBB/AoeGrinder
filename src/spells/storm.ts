@@ -3,6 +3,7 @@ import { player } from '../state';
 import { mobsInRadius, addField, hasRune } from './core';
 import { boltFx, fieldDecal, areaParticles, BOLT } from './fx';
 import { galeTex } from '../fx/spellFx';
+import { mods } from '../config';
 
 const FOLLOW_SPEED = 4, BIG = 12;   // PH
 
@@ -13,6 +14,7 @@ export const storm = {
     { id: 'double', name: 'Doppelblitz', desc: '2 Blitze pro Takt.' },
     { id: 'follow', name: 'Wanderndes Gewitter', desc: 'Folgt dir.' },
     { id: 'big', name: 'Großes Gewitter', desc: 'Radius 12 yd.', radius: 12 },
+    { id: 'hail', name: 'Blitzhagel', desc: '3 Blitze pro Takt.' },
   ],
   effect(c, point) {
     const radius = c.radius(hasRune('storm', 'big') ? BIG : storm.radius);
@@ -25,7 +27,8 @@ export const storm = {
       },
       onTick(f) {
         const list = mobsInRadius(f.pos, f.radius);
-        for (let i = 0; i < (hasRune('storm', 'double') ? 2 : 1) && list.length; i++) {
+        const n = (hasRune('storm', 'hail') ? 3 : hasRune('storm', 'double') ? 2 : 1) + mods.stormBolts;
+        for (let i = 0; i < n && list.length; i++) {
           const m = pick(list);
           boltFx({ x: m.pos.x, y: m.pos.y + 14, z: m.pos.z }, m.pos, BOLT, 220);
           c.hit(m, storm.dmg);

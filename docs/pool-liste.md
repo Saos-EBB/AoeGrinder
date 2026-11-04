@@ -110,7 +110,7 @@ Entfernt in v23: Kettenblitz, Bogenblitz, Hurrikan, Arkanes Sperrfeuer. Kettenbl
 
 ## Runen
 
-Regel: erste Rune jedes Spells grün und frei, zweite blau und gesperrt, dritte lila und gesperrt.
+Regel: erste Rune jedes Spells grün und frei, zweite blau und gesperrt, dritte lila und gesperrt. Die 4. Runen der Blitz-Spells (v29) sind ebenfalls lila und gesperrt.
 
 | Spell | grün, frei | blau, gesperrt | lila, gesperrt |
 |---|---|---|---|
@@ -134,12 +134,12 @@ Regel: erste Rune jedes Spells grün und frei, zweite blau und gesperrt, dritte 
 | Arkane Geschosse | Splitter | Schnellfeuer | Arkane Ladung |
 | Arkanes Mal | Lähmendes Mal | Kettenmal | Großes Mal |
 | Arkane Woge | Breite Woge | Rücksog | Doppelwoge |
-| Kettenblitz | Wiederkehr | Entladung | Gabelung |
-| Bogenblitz | Weiter Bogen | Schock | Totenleiter |
-| Blitzschlag | Doppelschlag | Weiter Schlag | Lange Betäubung |
-| Kugelblitz | Großkugel | Träge Kugel | Zwillingskugel |
-| Entladung | Restladung | Weite Entladung | Schockwelle |
-| Gewitter | Doppelblitz | Wanderndes Gewitter | Großes Gewitter |
+| Kettenblitz | Wiederkehr | Entladung | Gabelung, Überschlag |
+| Bogenblitz | Weiter Bogen | Schock | Totenleiter, Funkenregen |
+| Blitzschlag | Doppelschlag | Weiter Schlag | Lange Betäubung, Dreifachschlag |
+| Kugelblitz | Großkugel | Träge Kugel | Zwillingskugel, Schnellzapper |
+| Entladung | Restladung | Weite Entladung | Schockwelle, Nachentladung |
+| Gewitter | Doppelblitz | Wanderndes Gewitter | Großes Gewitter, Blitzhagel |
 | Schlagfolge | Weiter Schwung | Blutdurst | Wutschlag |
 | Bodenbrecher | Tiefe Risse | Erdstoß | Zweiter Stoß |
 | Wirbelwind | Sturmschritt | Rasender Tanz | Mahlstrom |
@@ -159,4 +159,4 @@ Die Runen-Freischaltungen der Krieger gelten pro Slot, also für alle drei Waffe
 
 ## Talente
 
-Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung. Nur im Schul-Modus: Eisherz (Frost), Glutherz und Glutseele (Feuer). Nur Nahkampf: Kampfkunst, Knochenpanzer. In allen Modi: Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster nach dem Dodge).
+Bleiben alle frei: Improved Blizzard, Improved Frost Nova, Shatter, Arkane Macht, Arcane Mind, Arcane Meditation, Weiter Sturm, Arkane Effizienz, Frostrüstung. Nur im Schul-Modus: Eisherz (Frost), Glutherz und Glutseele (Feuer). Nur Blitz only: Leitfähigkeit, Donnerhall, Sturmfront, Kugelnetz, Sturmherz. Nur Nahkampf: Kampfkunst, Knochenpanzer. In allen Modi: Ausweichrolle (+1 Dodge-Ladung) und Kombo-Meister (Kombo-Fenster nach dem Dodge).

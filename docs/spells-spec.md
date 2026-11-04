@@ -126,16 +126,17 @@ Im ?-Magier: Blutpeitsche Offensiv, Blutwelle und Saugen Defensiv, Verkleben und
 Modus Blitz only (`blitz`, ×1,4), Skin `blitz`. Kettenblitz und Bogenblitz sind zurück (Stand vor v23). Alte Waffen mit Fokus Kettenblitz oder Bogenblitz behalten Arkane Geschosse; neue Waffen tragen `s.fv` und meinen den Spell wirklich. Der Waffen-Kopf Gabel hat jetzt einen Blitz-Fokus.
 - **Batterie** statt Mana (`battery.ts`, Zahlen in `BATTERY`): 0–100, +8/s, +3 pro getroffenem Gegner. Spells kosten `charge` oder Mana / 8. Voll = überladen: keine Regeneration, der nächste Blitz-Zauber macht ×2 Schaden und betäubt alle Getroffenen 0,5 s, danach ist sie leer.
 - **Betäubung** der Mobs läuft über `applyRoot` (kein Laufen, kein Schlag), wie beim Strichkrieger. Root-immune Mobs sind auch dagegen immun.
+- **v29:** Flächenschaden halbiert (Gewitter nicht, es trifft je Blitz nur ein Ziel). Dafür 4. Runen mit mehr Schlägen und Talente nur im Blitz only: Leitfähigkeit (+10 Sprünge Kettenblitz, +2 Bogenblitz), Donnerhall (Blitzschlag +1 Nachschlag), Sturmfront (Gewitter +1 Blitz), Kugelnetz (Kugelblitz zappt doppelt so oft), Sturmherz (+12 % Schaden).
 - **Aufladen** statt Trinken: 2 s stehen, rechte Hand hoch, Lichtbogen, danach +60. Bricht ab wie Trinken.
 
 | Spell | Im Spiel | Tags | Runen |
 |---|---|---|---|
-| Kettenblitz | bis zu 50 Sprünge in 12 yd, −2 % pro Sprung, 1,5 s Zauber, 35 Ladung | Blitz, Kette | Wiederkehr · Entladung · Gabelung |
-| Bogenblitz | springt 5× in 10 yd, 11 Ladung | Blitz, Kette | Weiter Bogen · Schock · Totenleiter |
-| Blitzschlag | Bodenziel, 120–140 in 3 yd, betäubt 0,5 s, CD 2 s, 20 Ladung | Blitz, Fläche, Kontrolle | Doppelschlag (2. Schlag 50 %) · Weiter Schlag (doppelter Radius) · Lange Betäubung (1,5 s) |
-| Kugelblitz | Kugel fliegt 20 yd mit 5 yd/s, alle 0,5 s 22 auf alles in 5 yd, CD 6 s, 25 Ladung | Blitz, Geschoss, Fläche | Großkugel (+40 % Radius) · Träge Kugel (halbes Tempo) · Zwillingskugel (2 × 70 %) |
-| Entladung | Nova 8 yd, Schaden = Ladung × 3, leert die Batterie, CD 4 s; ohne Batterie feste Ladung 50 für 200 Mana | Blitz, Nova | Restladung (behält 30 %) · Weite Entladung (12 yd) · Schockwelle (betäubt 1 s) |
-| Gewitter | Bodenziel, Feld 8 s, 8 yd, alle 0,5 s ein Blitz (60) auf einen zufälligen Gegner, CD 12 s, 35 Ladung | Blitz, Fläche | Doppelblitz · Wanderndes Gewitter · Großes Gewitter (12 yd) |
+| Kettenblitz | bis zu 50 Sprünge in 12 yd, 25 Schaden, −2 % pro Sprung, 0,35 s Zauber, 35 Ladung | Blitz, Kette | Wiederkehr · Entladung · Gabelung · Überschlag (+20 Sprünge) |
+| Bogenblitz | springt 5× in 10 yd, 15 Schaden, 11 Ladung | Blitz, Kette | Weiter Bogen · Schock · Totenleiter · Funkenregen (+4 Sprünge, 2 Stufen) |
+| Blitzschlag | Bodenziel, 60–70 in 3 yd, betäubt 0,5 s, CD 2 s, 20 Ladung | Blitz, Fläche, Kontrolle | Doppelschlag (2. Schlag 50 %) · Weiter Schlag (doppelter Radius) · Lange Betäubung (1,5 s) · Dreifachschlag (3 × 60 %) |
+| Kugelblitz | Kugel fliegt 20 yd mit 5 yd/s, alle 0,5 s 11 auf alles in 5 yd, CD 6 s, 25 Ladung | Blitz, Geschoss, Fläche | Großkugel (+40 % Radius) · Träge Kugel (halbes Tempo) · Zwillingskugel (2 × 70 %) · Schnellzapper (alle 0,25 s) |
+| Entladung | Nova 8 yd, Schaden = Ladung × 1,5, leert die Batterie, CD 4 s; ohne Batterie feste Ladung 50 für 200 Mana | Blitz, Nova | Restladung (behält 30 %) · Weite Entladung (12 yd) · Schockwelle (betäubt 1 s) · Nachentladung (2. Nova 50 %) |
+| Gewitter | Bodenziel, Feld 8 s, 8 yd, alle 0,5 s ein Blitz (60) auf einen zufälligen Gegner, CD 12 s, 35 Ladung | Blitz, Fläche | Doppelblitz · Wanderndes Gewitter · Großes Gewitter (12 yd) · Blitzhagel (3 pro Takt) |
 
 ## Anzeige der Schul-Modi (v23, Feuer seit v25 Hitze)
 Nur Frost only, Fire only, Arcane only, unter dem Mana-Balken in Schulfarbe. Zahlen in `SCHOOL_METER` (`config.ts`), Logik in `schoolMeter.ts`.

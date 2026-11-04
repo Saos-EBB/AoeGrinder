@@ -4,18 +4,19 @@ import { BATTERY } from '../config';
 import { applyRoot } from '../mobs';
 import { batteryMode } from '../battery';
 import { shakeCamera } from '../camera';
-import { mobsInRadius, hasRune } from './core';
+import { mobsInRadius, hasRune, schedule } from './core';
 import { boltFx, burstFx, BOLT } from './fx';
 
-const D = { perCharge: 3, manaLoad: 50, minCharge: 10, keep: 0.3, wide: 12, stun: 1000 };   // PH: Schaden pro Ladung, Ladung ohne Batterie, Rest-Rune behält 30 %
+const D = { perCharge: 1.5, after: { ms: 500, k: 0.5 }, manaLoad: 50, minCharge: 10, keep: 0.3, wide: 12, stun: 1000 };   // PH: Schaden pro Ladung, Ladung ohne Batterie, Rest-Rune behält 30 %
 
 export const discharge = {
-  name: 'Entladung', desc: 'Nova 8 yd, verbraucht die ganze Ladung: Schaden = Ladung × 3.', ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Nova'], cls: 'lightning',
+  name: 'Entladung', desc: 'Nova 8 yd, verbraucht die ganze Ladung: Schaden = Ladung × 1,5.', ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Nova'], cls: 'lightning',
   mana: 200, charge: 0, cd: 4000, radius: 8, showDmg: D.perCharge * BATTERY.max,   // PH
   runes: [
     { id: 'keep', name: 'Restladung', desc: 'Behält 30 % der Ladung.' },
     { id: 'wide', name: 'Weite Entladung', desc: 'Radius 12 yd.' },
     { id: 'shock', name: 'Schockwelle', desc: 'Betäubt 1 s.' },
+    { id: 'after', name: 'Nachentladung', desc: 'Zweite Nova nach 0,5 s mit 50 %.' },
   ],
   canCast: () => batteryMode() && player.mana < D.minCharge && !player.overcharged ? 'Zu wenig Ladung' : null,
   effect(c) {
@@ -23,11 +24,15 @@ export const discharge = {
     const load = !batteryMode() ? D.manaLoad : c.over ? BATTERY.max : player.mana;
     if (batteryMode()) player.mana = hasRune('discharge', 'keep') ? load * D.keep : 0;
     const r = c.radius(hasRune('discharge', 'wide') ? D.wide : discharge.radius);
-    for (const m of mobsInRadius(player.pos, r)) {
-      boltFx(player.pos, m.pos, BOLT, 160);
-      if (c.hit(m, load * D.perCharge) && !m.dead && hasRune('discharge', 'shock')) applyRoot(m, D.stun);
-    }
-    burstFx(player.pos, r, [BOLT, [2.2, 2.4, 2.8]], 0xbfd8ff);
+    const nova = k => {
+      for (const m of mobsInRadius(player.pos, r)) {
+        boltFx(player.pos, m.pos, BOLT, 160);
+        if (c.hit(m, load * D.perCharge * k) && !m.dead && hasRune('discharge', 'shock')) applyRoot(m, D.stun);
+      }
+      burstFx(player.pos, r, [BOLT, [2.2, 2.4, 2.8]], 0xbfd8ff);
+    };
+    nova(1);
+    if (hasRune('discharge', 'after')) schedule(D.after.ms, () => nova(D.after.k));
     shakeCamera(Math.min(0.5, load / 200));
   },
 };

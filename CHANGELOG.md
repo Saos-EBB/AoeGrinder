@@ -4,6 +4,8 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(balance): Kettenblitz zaubert in 0,35 s statt 1,5 s; Flächenschaden des Blitzmagiers halbiert (Kettenblitz, Bogenblitz, Blitzschlag, Kugelblitz, Entladung); dafür je eine 4. Rune mit mehr Schlägen (Überschlag, Funkenregen, Dreifachschlag, Schnellzapper, Blitzhagel, Nachentladung) und 5 Talente nur im Blitz only (Leitfähigkeit, Donnerhall, Sturmfront, Kugelnetz, Sturmherz); Spielversion v29
+- feat(ui): Info-Karten zu den Spells beim Hovern: Start-Kit unter dem Figurennamen im Hauptmenü, „Deine Spells“ im Pause-Menü, Slots der Aktionsleiste; zeigt Beschreibung, Kosten (Mana, Ladung, Leben, Wut), Abklingzeit, Zauberzeit, Reichweite, Schaden und die Runen (aktive mit ★)
 - feat(waffen)!: Waffen-Elemente nur noch aus Schulen im Spiel: Gift und Void raus, Blut neu (Treffer legt 1 Infekt-Stapel, tropfender Kopf); alte Waffen werden umgestellt (Gift → Blut, Void → Arkan); Spielversion v28
 - feat(figur): Blutmagier-Skin: dunkelrot, tropfende Hände, Herz pulsiert bei wenig Leben, beim Laden des Sprungs geduckt, in der Luft gestreckt, beim Zerfließen sackt er zusammen; Pool-Liste und Spell-Spec nachgezogen
 - feat(modi): Neuer Modus Blut only (Blutmagier, ×1,4): Zauber kosten Leben, −40 % Leben, +40 % Schaden, mehr Schaden bei wenig Leben; Infekt stapelt bis 5 (20 s) und heilt dich um den Schaden; Blutpeitsche, Blutsprung (halten lädt bis 18 yd), Saugen, Blutwelle, Verkleben, Zerfließen; Blutlachen bei Landung und beim Tod Infizierter; Blut-Spells auch im ?-Magier; Spielversion v27

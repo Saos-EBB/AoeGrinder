@@ -28,7 +28,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v28';
+export const SCORE_VERSION = 'v29';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -85,7 +85,7 @@ export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink', 'sl
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
 export function resetMods() {
-  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1 });
+  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, strikeExtra: 0, stormBolts: 0, ballZaps: 0 });   // chainJumps …: Talente des Blitzmagiers
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -195,6 +195,17 @@ export const CARDS = [
   { id: 'iceheart', name: 'Eisherz', only: ['Frost'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
   { id: 'emberheart', name: 'Glutherz', only: ['Feuer'], max: 5,
+    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
+  // Blitzmagier: mehr Sprünge und Schläge statt mehr Grundschaden (v29) // PH
+  { id: 'conduct', name: 'Leitfähigkeit', only: ['Blitz'], max: 3,
+    desc: (r, m) => `Kettenblitz +${Math.max(1, Math.round(10 * m))} Sprünge, Bogenblitz +${Math.max(1, Math.round(2 * m))} Sprünge.`, apply: (r, m) => { mods.chainJumps += Math.max(1, Math.round(10 * m)); mods.arcJumps += Math.max(1, Math.round(2 * m)); } },
+  { id: 'thunder', name: 'Donnerhall', only: ['Blitz'], needs: 'strike', max: 2,
+    desc: () => 'Blitzschlag schlägt 1 Mal mehr nach (50 %).', apply: () => { mods.strikeExtra += 1; } },
+  { id: 'front', name: 'Sturmfront', only: ['Blitz'], needs: 'storm', max: 2,
+    desc: () => 'Gewitter: +1 Blitz pro Takt.', apply: () => { mods.stormBolts += 1; } },
+  { id: 'net', name: 'Kugelnetz', only: ['Blitz'], needs: 'ball', max: 2,
+    desc: () => 'Kugelblitz zappt doppelt so oft.', apply: () => { mods.ballZaps += 1; } },
+  { id: 'stormheart', name: 'Sturmherz', only: ['Blitz'], max: 5,
     desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
   { id: 'embersoul', name: 'Glutseele', only: ['Feuer'], max: 3,
     desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
