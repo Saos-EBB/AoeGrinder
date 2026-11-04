@@ -73,7 +73,7 @@ export function manaCost(id) {
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {
-  return (rune(id)?.cdMul ?? 1) * baseCd(id) * mods.cdMul;   // cdMul: Waffe
+  return (rune(id)?.cdMul ?? 1) * baseCd(id) * mods.cdMul * (stat(id).cd ?? 1);   // cdMul: Waffe, stat.cd: Rang-Karte
 }
 function baseCd(id) {
   return id === 'nova' ? Math.max(1000, SPELLS.nova.cd - mods.novaCd) : SPELLS[id].cd;   // PH: Untergrenze

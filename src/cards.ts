@@ -2,7 +2,7 @@
 
 import { state, player } from './state';
 import { pick } from './util';
-import { dmgMult, manaCost } from './formulas';
+import { dmgMult, manaCost, spellCd } from './formulas';
 import { modFactor } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
 import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf } from './spells/core';
@@ -17,12 +17,14 @@ const RANK_TEXT = {
   mana: (name, m) => `${name}: −${pct(CARD_RANK.mana * m)} Mana.`,
   radius: (name, m) => `${name}: +${pct(CARD_RANK.radius * m)} Radius.`,
   tempo: (name, m) => `${name}: +${pct(CARD_RANK.tempo * m)} Tempo.`,
+  cd: (name, m) => `${name}: −${pct(CARD_RANK.cd * m)} Abklingzeit.`,
 };
 const RANK_APPLY = {
   dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
   mana: (s, m) => { s.mana = Math.max(0.1, s.mana - CARD_RANK.mana * m); },   // PH: Untergrenze
   radius: (s, m) => { s.radius += CARD_RANK.radius * m; },
   tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Klingenstrich: Dauer der Aktion
+  cd: (s, m) => { s.cd = Math.max(0.3, (s.cd ?? 1) - CARD_RANK.cd * m); },   // PH: Untergrenze
 };
 
 function rankCards() {
@@ -123,6 +125,7 @@ export function cardPreview(c, m) {
     const key = c.id.split('-').pop(), s = SPELLS[c.spell];
     if (key === 'dmg') return dmgLine(c.spell, CARD_RANK.dmg * m);
     if (key === 'mana') { const v = stat(c.spell).mana; return `${s.name} Mana ${manaCost(c.spell)} → ${Math.round(manaCost(c.spell) * Math.max(0.1, v - CARD_RANK.mana * m) / v)}`; }
+    if (key === 'cd') { const v = stat(c.spell).cd ?? 1, cd = spellCd(c.spell); return `${s.name} Abklingzeit ${num((cd / 1000).toFixed(1))} → ${num((cd * Math.max(0.3, v - CARD_RANK.cd * m) / v / 1000).toFixed(1))} s`; }
     if (key === 'radius' && s.radius) return `${s.name} Radius ${(s.radius * stat(c.spell).radius).toFixed(1)} → ${(s.radius * (stat(c.spell).radius + CARD_RANK.radius * m)).toFixed(1)} yd`;
     return '';
   }

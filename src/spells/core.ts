@@ -90,6 +90,10 @@ export function onArcaneHit(fn) { arcaneHooks().push(fn); }
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
+let tickEnd = 0;      // Ende der Fläche oder des Kanals, der gerade tickt
+// Brand: ein Feuer-Tick lässt den Mob brennen, solange die Quelle läuft, höchstens BURN_STICK ms nach dem letzten Tick (Brandmal-Detonation)
+const BURN_STICK = 3000;   // PH
+export const burnLeft = m => m.burn && m.burn.until > state.now ? m.burn.dps * (m.burn.until - state.now) / 1000 : 0;
 let castCounter = 0;
 export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
   const c: any = {
@@ -101,9 +105,11 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
+      if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
+      if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       return landed;
     },
@@ -240,6 +246,7 @@ function updateFields(dt) {
     f.onUpdate?.(f, dt);
     f.pos.y = groundAt(f.pos.x, f.pos.z, f.pos.y);   // wandernde Flächen bleiben am Boden
     inTick = true;
+    tickEnd = f.end;
     while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
     inTick = false;
     if (state.now >= f.end) {
@@ -267,6 +274,7 @@ export function updateChannel() {
   while (player.channel === ch && ch.nextTick <= state.now && ch.nextTick <= ch.end) {
     ch.nextTick += 1000;
     inTick = true;
+    tickEnd = ch.end;
     s.tick(ch);
     inTick = false;
   }

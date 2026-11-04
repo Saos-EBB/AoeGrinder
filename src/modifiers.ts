@@ -9,7 +9,7 @@ export const MODIFIERS = [
   // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noDrink, noCards, noLuck
   { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'klinge'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'blink', 'drink', 'iceblock'], onlyTag: 'Frost',
     hitSlow: { pct: 0.2, ms: 2000 } },   // PH: jeder Frost-Treffer, stärkster Slow gilt
-  { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge'], startKit: ['blast', 'flame', 'hellfire', null, 'blink', 'drink'], onlyTag: 'Feuer',
+  { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge'], startKit: ['blast', 'flame', 'hellfire', 'phoenix', 'blink', 'drink'], onlyTag: 'Feuer',
     dotMul: 1.5, baseCrit: 0.15, hp: 0.9 },   // PH: Dauerschaden mit Tag Feuer, Grund-Crit, Leben
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge'], startKit: ['ae', 'voidorb', 'arcmissiles', 'arcmark', 'blink', 'drink'], onlyTag: 'Arkan',
     castWhileMoving: true, blinkCharges: 2, hp: 0.85, manaCost: 1.15 },   // PH: Zaubern und Kanäle im Laufen, Leben, Manakosten

@@ -35,7 +35,7 @@ export const ROLLS = {
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark'];
+export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark', 'phoenix', 'detonate'];
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes)
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
 const focusId = id => FOCUS_REPLACE[id] ?? id;
