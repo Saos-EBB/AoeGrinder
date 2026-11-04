@@ -20,6 +20,8 @@ import { startHudEdit, hudEditing, stopHudEdit } from './hudLayout';
 import { toggleChar } from './charWindow';
 import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
+import { renderKit, currentKit } from './spellCard';
+import { startKit } from '../spells/core';
 
 const CHARS = [
   { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen' },
@@ -119,6 +121,7 @@ export function renderMenu() {
     }
   }
   $('menuTitle').textContent = CHARS[charIdx].name;
+  renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
   $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
   $('menuDust').textContent = `Knochenstaub: ${meta.dust}`;
@@ -208,6 +211,7 @@ $('deathMenuBtn').addEventListener('click', toMainMenu);
 export const pauseOpen = () => $('pauseModal').classList.contains('show');
 export function openPause() {
   if (state.paused || player.dead) return;
+  renderKit($('pauseKit'), currentKit());   // aktuelle Slots mit Runen und Rängen
   $('pauseModal').classList.add('show');
   syncPause();
 }

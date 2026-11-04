@@ -204,6 +204,9 @@
   #menuBoard td:nth-child(3) { text-align: right; }
   #menuBottom { position: absolute; left: 0; right: 0; bottom: 2vh; display: flex; flex-direction: column; align-items: center; gap: 8px; }
   #menuTitle { font-size: 30px; text-shadow: 0 2px 6px #000; }
+  .kitRow { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+  .kitSlot { width: 40px; height: 40px; border: 2px solid #6b5426; border-radius: 5px; background-size: cover; background-position: center; font: 600 8px/1.1 system-ui, sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; text-shadow: 0 1px 2px #000; cursor: help; }
+  .kitSlot:hover { border-color: #f2c94c; }
   #menuChars { display: flex; gap: 6px; }
   .charTab { width: 150px; padding: 8px 4px; font: 700 14px Cinzel, serif; color: #f4ecd8; background: #0d0b08ee; border: 2px solid #6b5426; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .charTab small { font: 600 11px system-ui, sans-serif; color: #c9b88a; }
@@ -328,6 +331,7 @@
   </div>
   <div id="menuBottom">
     <div class="title" id="menuTitle"></div>
+    <div id="menuKit" class="kitRow" title=""></div>
     <div id="menuChars"></div>
     <div id="menuActions">
       <button class="btn" id="startBtn">Run starten</button>
@@ -348,6 +352,8 @@
     <button class="smallBtn" id="pauseEdit">UI bearbeiten</button>
     <button class="smallBtn" id="pauseBinds">Keybinds</button>
     <button class="smallBtn" id="pauseGiveUp">Aufgeben</button>
+    <div class="title" style="font-size:14px;margin-top:8px">Deine Spells</div>
+    <div id="pauseKit" class="kitRow"></div>
   </div>
 </div>
 

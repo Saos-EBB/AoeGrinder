@@ -27,7 +27,7 @@ export function modRule(key): any { return activeMods().find(m => m[key])?.[key]
 export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
-function startKit() {
+export function startKit() {
   const kit = (randomMode() ? RANDOM_MAGE.kit : modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);
   return [...kit, ...Array(SPELL_SLOTS - kit.length).fill(null)];
 }

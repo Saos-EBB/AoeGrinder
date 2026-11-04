@@ -15,6 +15,7 @@ import { rune } from '../spells/core';
 import { SUPPORTS } from '../spells/supports';
 import { manaCost as costOf } from '../formulas';
 import { ICONS } from './icons';
+import { attachSpellCard } from './spellCard';
 import { UI } from './uiConfig';
 import './hudLayout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
@@ -72,6 +73,7 @@ export function renderActionbar() {
     if (ICONS[id]) { el.style.backgroundImage = `url(${ICONS[id]})`; el.classList.add('hasIcon'); }
     el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>${SPELLS[id].preview ? '<span class="next"></span>' : ''}`;
     el.addEventListener('click', () => castSpell(id));
+    attachSpellCard(el, id);
     bar.appendChild(el);
     slots[id] = { el, action: action.id, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
   });
