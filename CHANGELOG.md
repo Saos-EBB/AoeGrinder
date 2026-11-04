@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): Anzeige „Hitze“ im Fire only zeigt die Hitze als Zahl, wird ab 80 rot und pulsiert rot mit „Überhitzt“
 - feat(modi)!: Fire only: Hitze ersetzt die Glut-Anzeige. Jeder Feuer-Treffer +1,5 Hitze, nach 1,5 s ohne Treffer −10/s; pro Hitze +0,4 % Schaden und +0,8 % Brand-Schaden; bei 100 überhitzt er und brennt selbst (3 % Leben/s), bis die Hitze unter 50 fällt; ein Frost-Zauber (über Waffen-Fokus) halbiert die Hitze; Spielversion v25
 - feat(karten): ?-Magier ohne Spell- und Runen-Karten; Rang-Karten wirken auf die Kategorie (Offensiv +Schaden, Defensiv +Dauer und Radius, Utility −Abklingzeit); Pool-Liste und Spell-Spec nachgezogen
 - feat(modi): ?-Magier mit 4 Tasten: Offensiv (1 s), Defensiv (6 s), Utility (5 s) würfeln je einen Spell aller Schulen und wirken ihn mit seinen normalen Werten, der nächste Wurf steht klein im Slot; Drink Something (30 s) würfelt ein Getränk: 2 s sitzen mit dessen Requisite, dann Goldbecher (+30 % Tempo, +15 % Crit), Feuerschnaps (Mana voll, +25 % Schaden, Feuerrülpser), Heiße Tasse (Gegner 50 % langsamer beim Sitzen, Leben voll über 6 s) oder Tee-Schale (Mana voll, −30 % Abklingzeit), je 10 s; Buffs links oben

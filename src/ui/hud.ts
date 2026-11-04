@@ -17,7 +17,7 @@ import { manaCost as costOf } from '../formulas';
 import { ICONS } from './icons';
 import { UI } from './uiConfig';
 import './hudLayout';
-import { meterSchool, meterValue } from '../schoolMeter';
+import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
 import { buffs } from '../buffs';
 
@@ -155,7 +155,16 @@ function updateMeterBar() {
   const school = meterSchool(), el = $('meter');
   el.hidden = !school;
   if (!school) return;
-  const M = SCHOOL_METER[school], v = meterValue(), full = v >= 1;
+  const M: any = SCHOOL_METER[school], v = meterValue();
+  if (school === 'Feuer') {                 // Hitze: orange, ab hotFrom rot, überhitzt pulsiert rot
+    const heat = meterHeat(), over = meterOverheated(), color = over || heat >= M.hotFrom ? M.hot : M.color, key = `Feuer${color}`;
+    if (meterKey !== key) { meterKey = key; el.style.setProperty('--meter', color); $('meterFill').style.background = `linear-gradient(${color}, ${color}88)`; }
+    $('meterFill').style.transform = `scaleX(${v})`;
+    $('meterText').textContent = over ? `Überhitzt · ${Math.floor(heat)}` : `Hitze ${Math.floor(heat)}`;
+    el.classList.toggle('full', over);
+    return;
+  }
+  const full = v >= 1;
   if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
   $('meterFill').style.transform = `scaleX(${v})`;
   $('meterText').textContent = full ? M.full : `${M.name} ${Math.floor(v * 100)} %`;
