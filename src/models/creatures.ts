@@ -1,5 +1,5 @@
 // Baukasten für Mob-Rigs: Schnittstelle { root, update(dt, anim) }.
-// anim = { state: 'idle'|'run'|'dead', speed, frozen, slowed, attack, flash }
+// anim = { state: 'idle'|'run'|'dead', speed, frozen, slowed, infected, attack, flash }
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -11,8 +11,8 @@ const Box = (w, h, d) => memo(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, 
 const Cyl = (r1, r2, h) => memo(`c${r1},${r2},${h}`, () => new THREE.CylinderGeometry(r1, r2, h, 6));
 const Cone = (r, h) => memo(`n${r},${h}`, () => new THREE.ConeGeometry(r, h, 5));
 const Ball = r => memo(`s${r}`, () => new THREE.SphereGeometry(r, 8, 6));
-const SLOW = new THREE.Color(0x6f7fa0), DEAD = new THREE.Color(0x5a5048);
-const TINTS = [null, SLOW, DEAD], FLASH_STEPS = 4;
+const SLOW = new THREE.Color(0x6f7fa0), DEAD = new THREE.Color(0x5a5048), INFECT = new THREE.Color(0x7a1420);   // INFECT: Blut-Infekt
+const TINTS = [null, SLOW, DEAD, INFECT], FLASH_STEPS = 4;
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
 
 // Materialien sind geteilt, removeMob darf sie nicht freigeben
@@ -122,7 +122,7 @@ export function finish(root, tick, level, scale, ice = [1.5, 2.2, 1.5], iceY = 1
     root,
     update(dt, a) {
       iceMesh.visible = !!a.frozen;
-      const tint = a.state === 'dead' ? 2 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${!!a.champion}`;
+      const tint = a.state === 'dead' ? 2 : a.infected ? 3 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${!!a.champion}`;
       if (key !== shown) {
         shown = key;
         for (const m of lit) m.material = litMat(tint, flash, m.material.side, !!a.champion);

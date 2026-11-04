@@ -4,7 +4,7 @@ import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
 import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS, RANDOM_MAGE } from '../config';
-import { manaCost, spellCd } from '../formulas';
+import { manaCost, spellCd, maxHp } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../ui/hud';
 import { damageMob, applyRoot } from '../mobs';
@@ -84,7 +84,7 @@ export function startCd(id) {
 
 export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
 export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
-export const paysLife = id => supported('blood', id);
+export const paysLife = id => supported('blood', id) || !!modValue('lifeCost');   // Blutopfer oder Blutmagier
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
@@ -92,6 +92,9 @@ export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported(
 // Liste an einer Funktions-Deklaration: arcmark.ts kann im Import-Kreis vor dem Rest dieser Datei laufen
 function arcaneHooks(): any[] { return (arcaneHooks as any).list ??= []; }
 export function onArcaneHit(fn) { arcaneHooks().push(fn); }
+// Jeder Treffer eines Spells mit Tag Blut (Infekt, blood.ts)
+function bloodHooks(): any[] { return (bloodHooks as any).list ??= []; }
+export function onBloodHit(fn) { bloodHooks().push(fn); }
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
@@ -114,6 +117,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
       dmg *= buffDmgMul();                                                  // Getränke des ?-Magiers
+      if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // Blutmagier: weniger Leben, mehr Schaden
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
@@ -123,6 +127,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
+      if (landed && !m.dead && hasTag(id, 'Blut')) for (const fn of bloodHooks()) fn(m, id, dmg);
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
@@ -173,6 +178,7 @@ export function castSpell(id, point?) {
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
+  if (player.meltUntil > state.now) return showError('Du bist zerflossen');   // Blutmagier-Ult
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press(point);                     // Real Men, Eisblock, ?-Magier: eigene Kosten und Abklingzeit
   if (isGround(id) && !point) return startTargeting(id);

@@ -28,7 +28,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v26';
+export const SCORE_VERSION = 'v27';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -92,9 +92,9 @@ export function resetMods() {
 export const RANDOM_MAGE = {
   kit: ['rOff', 'rDef', 'rUtil', 'rDrink'],
   cats: {
-    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
-    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire'] },
-    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark'] },
+    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'bwhip'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'bwave', 'siphon'] },
+    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'glue', 'bjump'] },
     rDrink: { name: 'Drink Something', cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
   },
   sitMs: 2000,
@@ -109,6 +109,20 @@ export const RANDOM_MAGE = {
 // Blitz only (battery.ts): Batterie statt Mana in player.mana. Bei max überladen: der nächste Blitz-Zauber ×overMul und betäubt, danach 0. Alles PH
 // costDiv: Spells ohne eigenes charge kosten mana / costDiv Ladung. stunMs: Betäubung über applyRoot (Mob ohne Laufen und Schlag)
 export const BATTERY = { max: 100, start: 50, regenPerS: 8, perHitTarget: 3, overMul: 2, stunMs: 500, costDiv: 8, color: '#ffe14a', recharge: { ms: 2000, amount: 60 } };
+
+// Blutmagier (Blut only, spells/blood.ts). Alles PH
+// infect: Stapel laufen je 4 s und hängen sich hinten an (max 5 = 20 s); pro s Schaden 1 % der Mob-Leben × Stapel, du heilst um denselben Betrag
+export const BLOOD = {
+  infect: { maxStacks: 5, stackMs: 4000, tickMs: 1000, pctPerStack: 0.01 },
+  lowHpDmg: 0.6,                                                            // bei 0 Leben +60 % Schaden, linear
+  jump: { minMs: 200, maxMs: 1200, minYd: 6, maxYd: 18, randomYd: 12, flightMs: 500, height: 3, radius: 4, knock: 5, min: 60, max: 72, chargeMove: 0.4, autoMs: 1500 },
+  siphon: { radius: 6, everyMs: 500, dmg: 14, healPct: 0.01 },
+  wave: { length: 12, width: 6, push: 5, min: 50, max: 60 },
+  glue: { range: 15, rootMs: 2000 },
+  pool: { ms: 6000, radius: 3, slow: 0.2, dmg: 5, healPct: 0.01, max: 8 },
+  melt: { ms: 3000, radius: 15, rootMs: 2000, tickMs: 500 },
+  whip: { range: 6, halfAngle: 0.8, min: 40, max: 48 },
+};
 
 // Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
 export const SCHOOL_METER = {

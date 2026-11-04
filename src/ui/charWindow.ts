@@ -19,7 +19,7 @@ const TABS = { stats: 'Werte', build: 'Build', dmg: 'Schaden nach Quelle' };
 let tab = 'stats';
 const pct = v => `${Math.round(v * 100)} %`;
 const row = (a, b) => `<tr><td>${a}</td><td>${b}</td></tr>`;
-const SCHOOLS = { frost: 'Frost', fire: 'Feuer', arcane: 'Arkan', shadow: 'Dunkel', nature: 'Natur', lightning: 'Blitz', bone: 'Knochen' };
+const SCHOOLS = { frost: 'Frost', fire: 'Feuer', arcane: 'Arkan', shadow: 'Dunkel', nature: 'Natur', lightning: 'Blitz', blood: 'Blut', bone: 'Knochen' };
 
 function statsTab() {
   const rage = !!player.rageMax;

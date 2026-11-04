@@ -14,7 +14,7 @@ const BODY_RADIUS = 0.45, SWEEP_STEP = 0.25, SWEEP_MARGIN = 0.05;   // PH: Rand,
 
 // Läuft die Strecke ab und bleibt vor dem ersten Hindernis stehen. Über Stufen und Rampen geht es mit nach oben, die Höhe sinkt erst beim Landen.
 // Liegt das Ziel auf einer begehbaren Fläche, zählt deren Seite nicht als Wand: Die Figur landet oben. Massive Objekte stoppen immer.
-function blinkTo(endX, endZ) {
+export function blinkTo(endX, endZ) {
   const start = player.pos, limit = Math.min(1, CFG.playRadius / (Math.hypot(endX, endZ) || 1));
   endX *= limit; endZ *= limit;
   const len = Math.hypot(endX - start.x, endZ - start.z), steps = Math.max(1, Math.ceil(len / SWEEP_STEP));

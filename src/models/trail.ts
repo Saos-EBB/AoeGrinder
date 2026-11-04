@@ -15,7 +15,8 @@ export const SKIN_FX = {
   feuer: { trail: 'fire', dps: 5 },                     // PLATZHALTER „bissi dmg“: Schaden pro Sekunde pro Mob, Spuren stapeln nicht
   arkan: { speedMul: 1.1, float: true },
   zufall: {},
-  blitz: {},                                            // Blitzmagier: Funken am Modell, keine Spuren                                           // ?-Magier: keine Skin-Regeln                // schwebt, 10 % schneller, keine Spuren
+  blitz: {},
+  blut: {},                                             // Blutmagier: Tropfen am Modell                                            // Blitzmagier: Funken am Modell, keine Spuren                                           // ?-Magier: keine Skin-Regeln                // schwebt, 10 % schneller, keine Spuren
 };
 
 const TRAIL = { max: 10, life: 5, r: 0.45 };                             // r = Wirkradius fürs Spiel

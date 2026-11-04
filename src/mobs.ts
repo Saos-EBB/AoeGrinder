@@ -360,7 +360,12 @@ export function burnMob(mob, amount) {
   if (mob.hp <= 0) killMob(mob);
 }
 
+// Tod eines Mobs melden (Blutlache bei Infekt, blood.ts). Liste an einer Funktion: Import-Kreis
+function deathHooks(): any[] { return (deathHooks as any).list ??= []; }
+export function onMobDeath(fn) { deathHooks().push(fn); }
+
 function killMob(mob) {
+  for (const fn of deathHooks()) fn(mob);
   mob.dead = true;
   mob.deathAt = state.now;
   mob.hp = 0;

@@ -1,7 +1,7 @@
 import { state, player } from './state';
 import { clamp, dist2d } from './util';
 import { CFG, SPELLS, mods, PERF } from './config';
-import { blizRadius } from './formulas';
+import { blizRadius, maxHp } from './formulas';
 import { composer, tickHeat, renderer, camera } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
@@ -42,6 +42,7 @@ import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
+import { meltScale, leapCharge, leapAir } from './spells/blood';
 import { meterStage, meterOverheated } from './schoolMeter';
 
 function update(dt) {
@@ -74,14 +75,15 @@ function updateVisuals(dt) {
   mage.root.position.copy(player.pos);
   mage.root.rotation.y = player.facing + menuYaw();
   const rise = phoenixRise();                                      // Phönix: Figur wächst aus dem Boden hoch
-  mage.root.scale.set(1, 0.15 + 0.85 * rise, 1);
+  const melt = meltScale(), air = leapAir() ? 1.15 : 1;            // Blutmagier: zerfließt, im Sprung gestreckt
+  mage.root.scale.set(1 / Math.sqrt(air), Math.min(0.15 + 0.85 * rise, melt) * air, 1 / Math.sqrt(air));
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
-  const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
+  const squat = leapCharge() || Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
   updateMarks();
@@ -102,7 +104,7 @@ function updateVisuals(dt) {
     const attackT = (state.now - m.attackAt) / 400 * mobAttackSlow();   // Dev: Angriffe sichtbar langsamer
     m.model.update(mdt, {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
-      frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
+      frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now, infected: !m.dead && m.infect?.until > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
       flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
     });

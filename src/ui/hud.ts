@@ -18,7 +18,7 @@ import { ICONS } from './icons';
 import { UI } from './uiConfig';
 import './hudLayout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
-import { SCHOOL_METER, RANDOM_MAGE } from '../config';
+import { SCHOOL_METER, RANDOM_MAGE, BLOOD } from '../config';
 import { buffs } from '../buffs';
 import { batteryMode } from '../battery';
 import { BATTERY } from '../config';
@@ -244,5 +244,10 @@ export function updateHud() {
     m.plateHp.style.width = `${m.hp / m.maxHp * 100}%`;
     m.plateLv.textContent = m.level;
     m.plateLv.style.color = xpColor(m.level);
+    const inf = m.infect && m.infect.until > state.now ? Math.min(BLOOD.infect.maxStacks, Math.ceil((m.infect.until - state.now) / BLOOD.infect.stackMs)) : 0;   // Blut-Infekt: Stapel am Namensschild
+    if (inf || m.plateInf) {
+      if (!m.plateInf) { m.plateInf = document.createElement('b'); m.plateInf.style.cssText = 'color:#ff4a5a;margin-left:4px'; m.plate.firstElementChild.after(m.plateInf); }
+      m.plateInf.textContent = inf ? `${inf}` : '';
+    }
   }
 }

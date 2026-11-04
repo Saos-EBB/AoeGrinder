@@ -35,6 +35,7 @@ import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
 import { resetBuffs, buffSpeedMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
+import { resetBlood, updateBlood, bloodRooted, bloodMoveMul } from './spells/blood';
 import { updateRandomMage } from './spells/random';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
 
@@ -68,6 +69,7 @@ export function resetGame() {
   resetBuffs();
   resetKlinge();
   resetBattery();
+  resetBlood();
   resetSiege();
   resetSplits();
   blizCursor.visible = false;
@@ -156,7 +158,7 @@ function regenerate(dt) {
     let mana = spirit() / 4 + 12.5;
     if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
     if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
-    if (state.now - player.lastCombat > 5000) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH
+    if (state.now - player.lastCombat > 5000 && !modValue('lifeCost')) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH; Blutmagier heilt nur über Infekt, Saugen, Lachen
   }
   if (player.drink?.custom) {            // Getränk des ?-Magiers: wirkt erst, wenn er sitzen bleibt (random.ts)
     if (state.now >= player.drink.end) { const done = player.drink.onDone; stopDrink(); done(); }
@@ -246,7 +248,7 @@ export function updatePlayer(dt) {
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
   if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked();
+  const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked() || bloodRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
@@ -265,7 +267,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul();
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul() * bloodMoveMul();
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;
@@ -315,5 +317,6 @@ export function updatePlayer(dt) {
   if (overheat) damagePlayer(maxHp() * overheat, true, 'Überhitzt');
   updateRandomMage(dt);
   updateBattery(dt);
+  updateBlood();
   regenerate(dt);
 }

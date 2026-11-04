@@ -4,7 +4,7 @@ import { state, player } from './state';
 import { rand, clamp } from './util';
 import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX, LEVEL_MAX, LEVEL_PACE, LEVEL_KILLS } from './config';
 import { stat, rune, echoCost, radiusMult } from './spells/core';
-import { modFactor, timeLimit } from './modifiers';
+import { modFactor, timeLimit, modValue } from './modifiers';
 import { meterCdMul } from './schoolMeter';
 import { buffCdMul } from './buffs';
 import { batteryMode, batteryCost } from './battery';
@@ -72,7 +72,9 @@ export const mobDmgTaken = lvl => 1 - Math.min(LEVEL_MOB_DEF_MAX, LEVEL_MOB_DEF_
 export const mobHitDmg = lvl => Math.round(lvl * rand(0.9, 1.3));
 
 export function manaCost(id) {
-  const base = (batteryMode() ? batteryCost(SPELLS[id]) : SPELLS[id].mana) * stat(id).mana * (echoCost(id) ? 1.5 : 1) * modFactor('manaCost') * mods.manaCostMul;   // Arcane only: +15 %, Buch −10 %
+  const s = SPELLS[id];
+  if (modValue('lifeCost') && s.lifePct) return Math.round(maxHp() * s.lifePct * stat(id).mana);   // Blutmagier: Kosten als Anteil der Leben
+  const base = (batteryMode() ? batteryCost(s) : s.mana) * stat(id).mana * (echoCost(id) ? 1.5 : 1) * modFactor('manaCost') * mods.manaCostMul;   // Arcane only: +15 %, Buch −10 %
   return Math.round(id === 'ae' ? base * mods.aeCost : base);
 }
 export function spellCd(id) {

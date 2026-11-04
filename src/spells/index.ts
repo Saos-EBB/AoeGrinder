@@ -26,6 +26,7 @@ import { strike } from './strike';
 import { ball } from './ball';
 import { discharge } from './discharge';
 import { storm } from './storm';
+import { bwhip, bjump, siphon, bwave, glue, melt } from './blood';
 import { arc } from './arc';
 import { arcmark } from './arcmark';
 import { surge } from './surge';
@@ -35,7 +36,7 @@ import { phoenix } from './phoenix';
 import { detonate } from './detonate';
 import { ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage } from './relics';
 
-Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
+Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, bwhip, bjump, siphon, bwave, glue, melt, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
 // input.ts und gamepad.ts prüfen SPELLS[aktion]. Die neuen Tasten zählen dort als Zauber, ohne selbst einer zu sein.
 for (const action of SPELL_ACTIONS) if (!SPELLS[action]) Object.defineProperty(SPELLS, action, { value: { alias: true }, enumerable: false });
 resetSpells();
