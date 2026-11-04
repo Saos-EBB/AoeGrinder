@@ -14,7 +14,7 @@ Stand 2026-11-04 (v23), aus dem Code gelesen. **Vorschlag, Kevin entscheidet.** 
 
 ## Magische Kiste (120 Staub)
 
-Keine feste Waffen-Tabelle mehr: Die Kiste würfelt eine Magier-Waffe aus Schichten (Typ, Kopf mit Fokus-Spell, Schaft, Element, Hersteller, Seltenheit), Inventar höchstens 15. Ab orange kommt eins der alten Modelle als Unikat. Zahlen in `ROLLS` (`src/weaponRolls.ts`), Fokus-Spells in `FOCUS_SPELLS`. Waffen mit dem Fokus eines entfernten Spells bleiben gültig und wirken auf den Ersatz: Kettenblitz, Bogenblitz und Arkanes Sperrfeuer → Arkane Geschosse, Hurrikan → Blizzard.
+Keine feste Waffen-Tabelle mehr: Die Kiste würfelt eine Magier-Waffe aus Schichten (Typ, Kopf mit Fokus-Spell, Schaft, Element, Hersteller, Seltenheit), Inventar höchstens 15. Ab orange kommt eins der alten Modelle als Unikat. Zahlen in `ROLLS` (`src/weaponRolls.ts`), Fokus-Spells in `FOCUS_SPELLS`. Waffen mit dem Fokus eines entfernten Spells bleiben gültig und wirken auf den Ersatz: Kettenblitz, Bogenblitz und Arkanes Sperrfeuer → Arkane Geschosse, Hurrikan → Blizzard. Das bleibt für Waffen von vor v26 so; neue Waffen (`s.fv`) können Kettenblitz und Bogenblitz wirklich als Fokus haben. Kopf Gabel = Blitz.
 
 ## Spells
 
@@ -42,6 +42,12 @@ Alle frei. Trinken, Eisblock, die Krieger- und die Klingenstrich-Moves gehören 
 | Arkane Geschosse | Arkan | Arkan, Geschoss, Kanal |
 | Arkanes Mal | Arkan | Arkan, Fläche, Kontrolle |
 | Arkane Woge | Arkan | Arkan, Fläche |
+| Kettenblitz | Blitz | Blitz, Kette |
+| Bogenblitz | Blitz | Blitz, Kette |
+| Blitzschlag | Blitz | Blitz, Fläche, Kontrolle |
+| Kugelblitz | Blitz | Blitz, Geschoss, Fläche |
+| Entladung | Blitz | Blitz, Nova |
+| Gewitter | Blitz | Blitz, Fläche |
 
 ## ?-Magier (Modus `normal`, v24)
 
@@ -49,7 +55,7 @@ Keine Spell-Karten, keine Runen. 4 feste Tasten würfeln aus Kategorien (`RANDOM
 
 | Taste | Kategorie | Pool | CD |
 |---|---|---|---|
-| 1 | Offensiv | Arcane Explosion, Arkane Woge, Arkane Geschosse, Feuerball, Flammenstoß, Meteor, Brandmal-Detonation, Frostkugel, Eislanze, Blizzard | 1 s |
+| 1 | Offensiv | Arcane Explosion, Arkane Woge, Arkane Geschosse, Feuerball, Flammenstoß, Meteor, Brandmal-Detonation, Frostkugel, Eislanze, Blizzard, Blitzschlag, Kugelblitz, Entladung, Gewitter, Kettenblitz, Bogenblitz | 1 s |
 | 2 | Defensiv | Frost Nova, Eisblock, Druckwelle, Cone of Cold, Wirbel, Gletscherspalte, Höllenfeuer | 6 s |
 | 3 | Utility | Blink, Leerenkugel, Arkanes Mal | 5 s |
 | 4 | Drink Something | Goldbecher, Feuerschnaps, Heiße Tasse, Tee-Schale | 30 s |
@@ -61,12 +67,13 @@ Fest im Modus:
 | Modus | Moves |
 |---|---|
 | Frost only | Eisblock (Taste; im ?-Magier auch über Defensiv) |
+| Blitz only | Aufladen statt Trinken |
 | Strichkrieger, Riesenschwert | Schlagfolge, Bodenbrecher, Wirbelwind, Hinrichtung, Letzter Atem, Kampfschrei, Sturzsprung, Essen |
 | Strichkrieger, Holzfälleraxt | wie Riesenschwert, aber Hackfolge, Kahlschlag, Fällen statt Schlagfolge, Bodenbrecher, Hinrichtung |
 | Strichkrieger, Streitkolben | wie Riesenschwert, aber Donnerfolge, Donnerschlag, Kugelblitz statt Schlagfolge, Bodenbrecher, Hinrichtung |
 | Klingenstrich | Schnitt, Kreisschnitt, Blutwirbel, Aderlass, Schattenklone, Haltung, Strichschnitt, Essen |
 
-Entfernt in v23: Kettenblitz, Bogenblitz, Hurrikan, Arkanes Sperrfeuer.
+Entfernt in v23: Kettenblitz, Bogenblitz, Hurrikan, Arkanes Sperrfeuer. Kettenblitz und Bogenblitz sind seit v26 zurück.
 
 ## Relikte
 
@@ -118,6 +125,12 @@ Regel: erste Rune jedes Spells grün und frei, zweite blau und gesperrt, dritte 
 | Arkane Geschosse | Splitter | Schnellfeuer | Arkane Ladung |
 | Arkanes Mal | Lähmendes Mal | Kettenmal | Großes Mal |
 | Arkane Woge | Breite Woge | Rücksog | Doppelwoge |
+| Kettenblitz | Wiederkehr | Entladung | Gabelung |
+| Bogenblitz | Weiter Bogen | Schock | Totenleiter |
+| Blitzschlag | Doppelschlag | Weiter Schlag | Lange Betäubung |
+| Kugelblitz | Großkugel | Träge Kugel | Zwillingskugel |
+| Entladung | Restladung | Weite Entladung | Schockwelle |
+| Gewitter | Doppelblitz | Wanderndes Gewitter | Großes Gewitter |
 | Schlagfolge | Weiter Schwung | Blutdurst | Wutschlag |
 | Bodenbrecher | Tiefe Risse | Erdstoß | Zweiter Stoß |
 | Wirbelwind | Sturmschritt | Rasender Tanz | Mahlstrom |

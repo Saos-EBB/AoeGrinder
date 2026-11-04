@@ -19,7 +19,7 @@ const CAST_MS = 700;
 const CAST_HOLD = 0.55;       // Hier wartet die Pose, solange ein längerer Zauber läuft
 const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
 // Skin-IDs im Spiel → Skins des Viewers
-const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'rand' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
+const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'rand', blitz: 'bolt' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
 
 const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
 grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
@@ -54,6 +54,7 @@ const SKINS = {
   fire: { name: 'Feuer', ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
   ice: { name: 'Eis', ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
   arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) },
+  bolt: { name: 'Blitz', ink: col(0x1a2030), accent: col(0xd8b21a), orb: col(0xffe14a) },   // Blitzmagier: Funken an den Händen
   rand: { name: '?', ink: col(0x0b0b0e), accent: col(0x16161b), orb: col(0xe8e2ff) },   // ?-Magier: ganz schwarz, leuchtende Fragezeichen
 };
 const FLAME = { base: col(0xff5a12), tip: col(0xffd84a) };
@@ -362,7 +363,8 @@ const ANIM: any = {
   }
 };
 const FLOAT = { arcane: .42 };
-ANIM.rand = ANIM.base;   // ?-Magier: Basis-Bewegungen, beim Trinken die des gewürfelten Getränks (anim.drinkSkin)
+ANIM.rand = ANIM.base;
+ANIM.bolt = ANIM.base;   // Blitzmagier: Basis-Bewegungen, beim Aufladen Hand hoch (anim.charge)   // ?-Magier: Basis-Bewegungen, beim Trinken die des gewürfelten Getränks (anim.drinkSkin)
 // Schluck-Rhythmus: 0 = Ruhe, 1 = am Mund. Periode in s, Anteil am Mund
 function sip(t, per, frac = .35) { const k = (t % per) / per; return k < frac ? Math.sin(Math.PI * k / frac) ** .6 : 0; }
 const STAFF_DOWN = { sf: 1, sp: [-.62, .04, .05], b: [.05, .03, 1] };
@@ -489,6 +491,18 @@ export function buildStrichMagier(gameSkin = 'alle') {
     F.halo = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshBasicMaterial({ vertexColors: true }));
     head.add(F.halo);
   }
+  if (skin === 'bolt') {
+    for (const a of [F.armL, F.armR]) glow(a.hand, new THREE.IcosahedronGeometry(.055, 0), S.orb, [0, -.02, 0]);
+    // Zickzack auf der Brust und ein Blitz-Kamm auf dem Kopf
+    for (let i = 0; i < 4; i++) glow(chest, new THREE.BoxGeometry(.03, .1, .02), S.orb, [(i % 2 ? .03 : -.03), .48 - i * .08, .13], [0, 0, i % 2 ? .6 : -.6]);
+    for (let i = 0; i < 3; i++) glow(head, new THREE.ConeGeometry(.03, .16, 4), S.orb, [(i - 1) * .07, .36, 0], [0, 0, (1 - i) * .35]);
+    // Lichtbogen zwischen den Händen beim Aufladen, ein Linien-Mesh
+    const n = 14, geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    F.arc = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: new THREE.Color(2.4, 2.2, 0.8) }));
+    F.arc.frustumCulled = false; F.arc.visible = false;
+    F.root.add(F.arc);
+  }
   if (skin === 'arcane') {
     glow(head, new THREE.OctahedronGeometry(.035, 0), S.orb, [0, .2, .17], [0, 0, 0], [1, 1.5, .5]);
     for (const a of [F.armL, F.armR]) glow(a.hand, new THREE.IcosahedronGeometry(.05, 0), S.orb, [0, -.02, 0]);
@@ -519,7 +533,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
     F.props = Object.fromEntries(['base', 'fire', 'ice', 'arcane'].map(k => [k, makeProp(k)]));
     for (const p of Object.values<any>(F.props)) F.root.add(p);
     F.prop = F.props.base;
-  } else { F.prop = makeProp(skin); F.root.add(F.prop); }
+  } else { F.prop = makeProp(skin === 'bolt' ? 'base' : skin); F.root.add(F.prop); }   // Blitz trinkt nicht, die Requisite bleibt unsichtbar
 
   // Partikel in Weltkoordinaten
 const PN = 500, pGeo = new THREE.BufferGeometry();
@@ -596,6 +610,7 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
       else if (mode === 'air') p = airOf(A, F.t);
       else p = A.idle(F.t);
       if (anim.squat) p.y -= anim.squat * .15;
+      if (skin === 'bolt' && anim.charge && mode === 'idle') { p.hR = [-.16, 1.95, .12]; p.hL = [.24, 1.2, .38]; p.n = [-.25, 0, 0]; }   // Aufladen: rechte Hand hoch
       if (F.blendT > 0 && F.blendFrom) { F.blendT -= s; p = mix(F.blendFrom, p, 1 - clamp(F.blendT / .25, 0, 1)); }
       F.last = p;
 
@@ -622,6 +637,18 @@ const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexC
         for (let i = 0; i < n; i++) emit(body(), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18);
       }
       F.bodyRunes?.update(stage, F.t, mode === 'dead');
+      if (skin === 'bolt') {                          // Funken an den Händen, überladen auch vom Kopf, Lichtbogen beim Aufladen
+        const hands = [F.armL.hand, F.armR.hand];
+        const n = rate((anim.charge ? 40 : 6) * s);
+        for (let i = 0; i < n; i++) emit(pick(hands).getWorldPosition(V()), 1, V((Math.random() - .5) * 2, Math.random() * 2, (Math.random() - .5) * 2), Math.random() < .6 ? 0xffe14a : 0xffffff, 3, .25, .1);
+        if (anim.over) { const k = rate(30 * s); for (let i = 0; i < k; i++) emit(F.head.getWorldPosition(V()).add(V(0, .3, 0)), 1, V((Math.random() - .5) * 3, 1.5 + Math.random() * 2, (Math.random() - .5) * 3), 0xfff3a0, 2, .35, .15); }
+        F.arc.visible = !!anim.charge && mode !== 'dead';
+        if (F.arc.visible) {
+          const a = F.root.worldToLocal(F.armL.hand.getWorldPosition(V())), b = F.root.worldToLocal(F.armR.hand.getWorldPosition(V())), pos = F.arc.geometry.attributes.position, m = pos.count - 1;
+          for (let i = 0; i <= m; i++) { const t = i / m, j = i === 0 || i === m ? 0 : .07; pos.setXYZ(i, a.x + (b.x - a.x) * t + (Math.random() - .5) * j, a.y + (b.y - a.y) * t + (Math.random() - .5) * j, a.z + (b.z - a.z) * t + (Math.random() - .5) * j); }
+          pos.needsUpdate = true;
+        }
+      }
       if (F.halo) { F.halo.rotation.y += s * 1.2; F.halo.position.y = .04 * Math.sin(F.t * 2); F.halo.visible = mode !== 'dead'; }
       if (skin === 'arcane') { const g = Math.max(0, stage) / 3; F.mat.emissive.setRGB(.28 * g * g, .08 * g * g, .5 * g * g); }   // voll: Körper glüht
       if (skin === 'ice') {
