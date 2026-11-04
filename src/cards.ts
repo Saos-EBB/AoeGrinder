@@ -3,7 +3,7 @@
 import { state, player } from './state';
 import { pick } from './util';
 import { dmgMult, manaCost, spellCd } from './formulas';
-import { modFactor } from './modifiers';
+import { modFactor, randomMode } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
 import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf } from './spells/core';
 import { SUPPORTS } from './spells/supports';
@@ -19,6 +19,7 @@ const RANK_TEXT = {
   tempo: (name, m) => `${name}: +${pct(CARD_RANK.tempo * m)} Tempo.`,
   cd: (name, m) => `${name}: −${pct(CARD_RANK.cd * m)} Abklingzeit.`,
   range: (name, m) => `${name}: +${num(CARD_RANK.range * m)} yd Reichweite.`,
+  dur: (name, m) => `${name}: +${pct(CARD_RANK.dur * m)} Dauer und Radius.`,
 };
 const RANK_APPLY = {
   dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
@@ -27,6 +28,7 @@ const RANK_APPLY = {
   tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Klingenstrich: Dauer der Aktion
   cd: (s, m) => { s.cd = Math.max(0.3, (s.cd ?? 1) - CARD_RANK.cd * m); },   // PH: Untergrenze
   range: (s, m) => { s.range = (s.range ?? 0) + CARD_RANK.range * m; },   // yd obendrauf
+  dur: (s, m) => { s.dur = (s.dur ?? 1) + CARD_RANK.dur * m; s.radius += CARD_RANK.dur * m; },
 };
 
 function rankCards() {
@@ -36,13 +38,14 @@ function rankCards() {
     for (const key of SPELLS[id].ranks ?? []) list.push({
       kind: 'rang', id: `rang-${id}-${key}`, spell: id, name: SPELLS[id].name, src: 'Rang',
       desc: m => RANK_TEXT[key](SPELLS[id].name, m),
-      apply: m => RANK_APPLY[key](stat(id), m),
+      apply: m => { for (const t of SPELLS[id].rankTargets?.(key) ?? [id]) RANK_APPLY[key](stat(t), m); },   // ?-Magier: ganze Kategorie
     });
   }
   return list;
 }
 
 function newSpellCards() {
+  if (randomMode()) return [];   // ?-Magier: keine Spell-Karten und keine Runen
   return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].fixed && spellAllowed(id) && (!SPELLS[id].onlyMode || modRule('onlyTag') === SPELLS[id].onlyMode)).map(id => ({
     kind: 'spell', id: `spell-${id}`, learn: id, name: SPELLS[id].name, src: `Neuer Spell · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
@@ -51,6 +54,7 @@ function newSpellCards() {
 }
 
 function runeCards() {
+  if (randomMode()) return [];
   const list = [];
   for (const id of state.slots) {
     if (!id || !spellAllowed(id)) continue;

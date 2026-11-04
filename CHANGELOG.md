@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(karten): ?-Magier ohne Spell- und Runen-Karten; Rang-Karten wirken auf die Kategorie (Offensiv +Schaden, Defensiv +Dauer und Radius, Utility −Abklingzeit); Pool-Liste und Spell-Spec nachgezogen
 - feat(modi): ?-Magier mit 4 Tasten: Offensiv (1 s), Defensiv (6 s), Utility (5 s) würfeln je einen Spell aller Schulen und wirken ihn mit seinen normalen Werten, der nächste Wurf steht klein im Slot; Drink Something (30 s) würfelt ein Getränk: 2 s sitzen mit dessen Requisite, dann Goldbecher (+30 % Tempo, +15 % Crit), Feuerschnaps (Mana voll, +25 % Schaden, Feuerrülpser), Heiße Tasse (Gegner 50 % langsamer beim Sitzen, Leben voll über 6 s) oder Tee-Schale (Mana voll, −30 % Abklingzeit), je 10 s; Buffs links oben
 - feat(figur): Der Normal-Modus heißt jetzt ?-Magier, die Figur ist ein schwarzer Strichmagier voller leuchtender Fragezeichen mit 3 kreisenden „?“ um den Kopf; der Zuhälter-Look bleibt im Code, ist aber nicht mehr wählbar; Spielversion v24
 

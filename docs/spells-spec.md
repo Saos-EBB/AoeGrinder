@@ -92,6 +92,20 @@ Entfernt in v23: Kettenblitz, Bogenblitz, Hurrikan, Arkanes Sperrfeuer.
 | Feuernova | Feuerring breitet sich auf 40 yd aus | 30 s |
 | Knochengefängnis | Knochenring um ein Pack, 6 s gefangen, Leerenkugel + Arkane Geschosse +50 % darin | 35 s |
 
+## ?-Magier (v24)
+Ersetzt den Normal-Modus (ID bleibt `normal`, Rangliste läuft weiter, `SCORE_VERSION` trennt). Hardmode, Sprint, Classic und Eigene Mischung behalten das alte Start-Kit, zeigen aber dieselbe Figur. Zahlen in `RANDOM_MAGE`, Logik in `spells/random.ts`, Buffs in `buffs.ts`.
+- 4 Tasten (Slots 1–4): Offensiv, Defensiv, Utility, Drink Something. Pools und CDs siehe [Pool-Liste](pool-liste.md).
+- Der nächste Wurf steht fest und klein im Slot. Ein Druck wirkt ihn mit normalen Werten, Kosten, Zielen, Zauberzeit und Kanal; sobald er anfängt, startet der Kategorie-CD und der nächste Wurf kommt (`onCastStart`).
+- „Nur GCD“ bei Offensiv: einen GCD gibt es seit v22 nicht, deshalb 1 s Kategorie-CD.
+- Drink Something: 2 s sitzen mit Requisite und Sitz-Animation des Getränks, bricht ab wie Trinken, wirkt erst am Ende.
+
+| Getränk | Wirkung |
+|---|---|
+| Goldbecher | 10 s +30 % Tempo, +15 % Crit |
+| Feuerschnaps | Mana voll, 10 s +25 % Schaden, am Ende Feuerrülpser (Kegel 6 yd, Schaden wie ein Flammenstoß-Treffer) |
+| Heiße Tasse | Gegner in 8 yd 50 % langsamer, solange er sitzt; danach Leben voll über 6 s |
+| Tee-Schale | Mana voll, 10 s Abklingzeiten −30 % |
+
 ## Kill-Anzeige der Schul-Modi (v23)
 Nur Frost only, Fire only, Arcane only, unter dem Mana-Balken in Schulfarbe. Zahlen in `SCHOOL_METER` (`config.ts`), Logik in `schoolMeter.ts`.
 - Jeder Kill +2 %, Champion +10 %. 3 s ohne Kill: −5 % pro Sekunde.
