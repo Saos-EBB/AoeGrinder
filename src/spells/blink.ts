@@ -4,7 +4,7 @@ import { groundAt, resolve, walkTopAt } from '../collision';
 import { CFG } from '../config';
 import { blinkFx, novaFx, iceTex } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
-import { mobsInRadius, applySlow, addField, hasRune } from './core';
+import { mobsInRadius, applySlow, addField, hasRune, stat } from './core';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
 
 const COLD = { radius: 6, dur: 6000, slow: 0.3, min: 30, max: 36 };   // PH: Kalter Boden
@@ -51,7 +51,7 @@ function coldGround(c, pos) {
 }
 
 export const blink = {
-  name: 'Blink', desc: '20 yd vorwärts, löst Betäubung.', ranks: ['mana'], tags: ['Arkan', 'Bewegung'], cls: 'arcane',
+  name: 'Blink', desc: '20 yd vorwärts, löst Betäubung. Kein Schaden.', ranks: ['range', 'cd'], tags: ['Arkan', 'Bewegung'], cls: 'arcane',
   mana: 80, cd: 15000, dist: 20,   // Mana PH
   runes: [
     { id: 'target', name: 'Eisportal', desc: 'Teleport zum Bodenziel, Frostschaden + Kalter Boden an Start und Ziel.', ground: true, range: 30, radius: 6 },
@@ -61,7 +61,8 @@ export const blink = {
   effect(c, point) {
     const from = player.pos.clone();
     player.lastBlink = state.now;
-    const end = point ?? { x: from.x + Math.sin(player.facing) * blink.dist, z: from.z + Math.cos(player.facing) * blink.dist };
+    const dist = blink.dist + (stat('blink').range ?? 0);   // Rang-Karten Reichweite
+    const end = point ?? { x: from.x + Math.sin(player.facing) * dist, z: from.z + Math.cos(player.facing) * dist };
     blinkTo(end.x, end.z);
     player.grounded = true;
     player.vel.set(0, 0, 0);

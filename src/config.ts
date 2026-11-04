@@ -98,7 +98,7 @@ export const CARD_RARITIES = [
   { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
-export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit
+export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink)
 export const CARD_SPELL_DMG = 0.10;                                 // Neuer Spell, Rune, Support, Relikt
 export const CARD_LUCK = 5;
 export const CARD_COUNT = { base: 4, luckPerCard: 25, max: 8 };

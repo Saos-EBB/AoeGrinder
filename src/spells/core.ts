@@ -168,7 +168,7 @@ export function castSpell(id, point?) {
   const cost = manaCost(id);
   const life = paysLife(id), freeOk = comboReady('freeMana');   // Dodge-Kombo Normal: nächster Spell ohne Mana
   if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
-  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range)) return showError('Außer Reichweite');
+  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range) + (stat(id).range ?? 0)) return showError('Außer Reichweite');   // stat.range: Rang-Karte
   if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
 
   const fail = s.canCast?.();
