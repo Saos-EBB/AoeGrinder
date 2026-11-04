@@ -107,6 +107,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
+      if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune Schock
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
