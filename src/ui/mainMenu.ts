@@ -26,6 +26,7 @@ const CHARS = [
   { mod: 'frost', name: 'Eismagier', sub: 'Frost' },
   { mod: 'fire', name: 'Feuermagier', sub: 'Feuer' },
   { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan' },
+  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie' },
   { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert' },
   { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung' },
 ];

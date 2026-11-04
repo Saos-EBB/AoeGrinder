@@ -99,7 +99,7 @@ function wield() {
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('klinge') ? 'klinge' : 'zufall'; };   // Zuhälter-Look 'alle' bleibt im Code, Kevins Skin
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('blitz') ? 'blitz' : ids.includes('realmen') ? 'krieger' : ids.includes('klinge') ? 'klinge' : 'zufall'; };   // Zuhälter-Look 'alle' bleibt im Code, Kevins Skin
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {

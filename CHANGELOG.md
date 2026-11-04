@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(modi): Neuer Modus Blitz only (Blitzmagier im Hauptmenü, ×1,4 Punkte, eigene Rangliste), startet mit Kettenblitz, Bogenblitz, Blink und Trinken
 - feat(spells): Kettenblitz und Bogenblitz sind zurück (Tag Blitz, Stand vor v23); alte Waffen mit diesem Fokus behalten Arkane Geschosse; Spielversion v26
 - feat(figur): Die Flammen-Stufen des Feuermagiers folgen der Hitze, überhitzt brennt er voll und raucht; Spell-Spec nachgezogen
 - feat(ui): Anzeige „Hitze“ im Fire only zeigt die Hitze als Zahl, wird ab 80 rot und pulsiert rot mit „Überhitzt“

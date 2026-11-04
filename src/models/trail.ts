@@ -14,7 +14,8 @@ export const SKIN_FX = {
   frost: { trail: 'frost', slow: 0.3, slowMs: 1500 },  // wie Improved Blizzard Rang 1 (mechanics-spec): 30 % für 1,5 s, solange der Mob auf einer Spur steht
   feuer: { trail: 'fire', dps: 5 },                     // PLATZHALTER „bissi dmg“: Schaden pro Sekunde pro Mob, Spuren stapeln nicht
   arkan: { speedMul: 1.1, float: true },
-  zufall: {},                                           // ?-Magier: keine Skin-Regeln                // schwebt, 10 % schneller, keine Spuren
+  zufall: {},
+  blitz: {},                                            // Blitzmagier: Funken am Modell, keine Spuren                                           // ?-Magier: keine Skin-Regeln                // schwebt, 10 % schneller, keine Spuren
 };
 
 const TRAIL = { max: 10, life: 5, r: 0.45 };                             // r = Wirkradius fürs Spiel
