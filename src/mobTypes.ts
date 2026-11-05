@@ -29,6 +29,14 @@ export const MOB_TYPES: any = {
   abgesandter: { name: 'Zwielicht-Abgesandter', ability: 'lavaPool', hpMul: 0.9,
     build: humanoid({ skin: 0x5f4a6a, body: 0x35224f, trim: 0x1c1230, robe: true, hood: true, sleeve: 0x35224f, weapon: 'staff', glow: glowMat(2.4, 0.5, 2), eye: glowMat(2, 0.5, 2.2), scale: [0.95, 1.12, 0.95], lean: 0.05 }) },
 
+  // Winterquell (Werte PH)
+  yeti: { name: 'Zottelyeti', ability: null, hpMul: 1.1,
+    build: humanoid({ skin: 0xdfe8f2, body: 0xc9d6e6, trim: 0x8fa4c0, tusks: true, weapon: 'club', eye: glowMat(0.6, 1.6, 2.4), scale: [1.45, 1.3, 1.45], lean: 0.22 }) },
+  frostsaebler: { name: 'Frostsäbler', ability: 'pounce', speedMul: 1.1,
+    build: quadruped({ coat: 0xe6eef8, dark: 0x5a78a8, stripes: true, eye: glowMat(0.5, 1.8, 2.6), tailLen: 0.6, ears: 0.2, scale: [1.1, 1.05, 1.15] }) },
+  eulenbestie: { name: 'Eulenbestie', ability: 'stomp', hpMul: 1.4, speedMul: 0.9,
+    build: humanoid({ skin: 0x8a6a48, body: 0x6e5236, trim: 0xd8cfc0, eye: glowMat(2.4, 1.8, 0.3), scale: [1.3, 1.2, 1.3], lean: 0.3 }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },

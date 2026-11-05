@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(welt): Neue Zone Winterquell (Dev → Zone oder `?zone=winterquell`): Schneefeld im Toon-Look mit kaltblauer Schattenstufe, Tannen mit Schneekappen, Eisblöcke, verschneite Steine, Eisseen, fallender Schnee; Mobs Zottelyeti, Frostsäbler (ab Level 16) und Eulenbestie (ab Level 31); auf dem Eis rutschen Mobs und fliegen bei Knockback doppelt so weit
 - feat(modi)!: Wellen deutlich größer: 50 Gegner in Welle 1, dann je 50 mehr (100, 150, 200 … bis 500 in Welle 10); `SCORE_VERSION` v33, alte Wellen-Zeiten stehen getrennt
 - feat(ui): Inventar mit Filter (Seltenheit, Element, Typ) und Sortierung (Seltenheit, Neueste, Element, Typ), wird pro Browser gemerkt; Element-Punkt an jeder Waffe; Element-Effekte in Hover-Karte und Werteliste in der Farbe des Elements
 - feat(welt): Anime-Basis zum Ausprobieren mit `?toon=1`: Gelände und Props als Toon-Material mit 3 harten Lichtstufen (auch der Lichtkreis der Figur), dunkler Rand als Kontur im Shader, keine extra Draw Calls

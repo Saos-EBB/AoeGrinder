@@ -8,7 +8,8 @@ import { addCircle, addBox, addWalk } from './collision';
 import { TOON, toonMat } from './toon';
 
 // ?toon=1: Anime-Basis zum Ausprobieren (toon.ts)
-const lambert = (color, opts = {}) => TOON ? toonMat({ color, ...opts }) : new THREE.MeshLambertMaterial({ color, ...opts });
+// Toon kennt kein flatShading, die Option fällt dort weg
+const lambert = (color, opts: any = {}) => { const { flatShading, ...rest } = opts; return TOON ? toonMat({ color, ...rest }) : new THREE.MeshLambertMaterial({ color, ...opts }); };
 export { lambert };
 
 function baked(geo, x, y, z, rx, ry, rz) {

@@ -10,7 +10,9 @@ import { clearColliders, colliders, groundAt } from './collision';
 import { TOON, toonMat } from './toon';
 
 export let zone = ZONES.tirisfal;
-export let zoneId = 'tirisfal';
+const lambertGround = new THREE.MeshLambertMaterial({ vertexColors: true }), toonGround = toonMat({ vertexColors: true, rim: false });
+export let zoneId = new URLSearchParams(location.search).get('zone') ?? 'tirisfal';   // ?zone=winterquell zum Testen
+if (!ZONES[zoneId]) zoneId = 'tirisfal';
 let nextStorm = 0, stormEnd = 0;
 
 export function heightAt(x, z) {
@@ -25,7 +27,7 @@ export const terrain = (() => {
   const size = 340 * WORLD_K, segs = 150 * WORLD_K;
   const geo = new THREE.PlaneGeometry(size, size, segs, segs);
   geo.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geo, TOON ? toonMat({ vertexColors: true, rim: false }) : new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const mesh = new THREE.Mesh<THREE.PlaneGeometry, THREE.Material>(geo, lambertGround);
   scene.add(mesh);
   return mesh;
 })();
@@ -40,6 +42,7 @@ export function buildWorld(id) {
   zoneId = id;
   zone = ZONES[id];
   setEnv(zone.env);
+  terrain.material = TOON || zone.toon ? toonGround : lambertGround;   // Anime-Maps (toon.ts)
   state.stormK = 0;
   nextStorm = state.now + (zone.storm?.every ?? 0);
 
@@ -103,6 +106,7 @@ buildWorld(zoneId);
 
 // Sandsturm: alle paar Minuten Sicht zu, danach wieder klar
 export function updateZoneEvent(dt) {
+  zone.update?.(dt);
   const st = zone.storm;
   if (!st) return;
   if (state.now >= nextStorm) { nextStorm = state.now + st.every; stormEnd = state.now + st.dur; }

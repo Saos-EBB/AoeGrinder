@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { clamp, rand, lerpTo } from './util';
 import { WORLD_K } from './config';
 import { addBox, addRoute } from './collision';
+import { winterquell } from './winterquell';
 import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
 
 const near = (x, z, cx, cz, r) => Math.hypot(x - cx, z - cz) < r;
@@ -486,4 +487,5 @@ export const ZONES: any = {
   brd,
   stv,
   tanaris,
+  winterquell,
 };

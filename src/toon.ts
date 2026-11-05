@@ -22,25 +22,28 @@ const gradientMap = (() => {
   return t;
 })();
 
-type ToonOpts = THREE.MeshToonMaterialParameters & { rim?: boolean };
+// rimColor: Randfarbe (hell für Eis), shade: Farbe, mit der Halbton und Schatten eingefärbt werden (Winterquell: Kaltblau)
+type ToonOpts = THREE.MeshToonMaterialParameters & { rim?: boolean; rimColor?: number; shade?: number };
 
 const f = (v: number) => v.toFixed(3);
 const BANDS = `
   vec3 litK = outgoingLight / max(diffuseColor.rgb, vec3(0.02));
   float litL = max(dot(litK, vec3(0.3333)), 1e-4);
   float litQ = litL < ${f(T.bands.dark)} ? litL : litL < ${f(T.bands.mid)} ? ${f(T.bands.half)} : ${f(T.bands.full)};
-  outgoingLight *= litQ / litL;`;
+  outgoingLight *= litQ / litL;
+  if (litL < ${f(T.bands.mid)}) outgoingLight *= uShade;`;
 const RIM = `
   float rimK = 1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0);
   outgoingLight = mix(outgoingLight, uRim, step(${f(T.rimEdge)}, rimK) * ${f(T.rimAmt)});`;
 
 // rim: false für große flache Flächen (Boden), dort würde der Rand in der Ferne alles abdunkeln
-export function toonMat({ rim = true, ...opts }: ToonOpts = {}) {
+export function toonMat({ rim = true, rimColor = T.rimColor, shade = 0xffffff, ...opts }: ToonOpts = {}) {
   const m = new THREE.MeshToonMaterial({ gradientMap, ...opts });
   m.onBeforeCompile = sh => {
-    sh.uniforms.uRim = { value: new THREE.Color(T.rimColor) };
+    sh.uniforms.uRim = { value: new THREE.Color(rimColor) };
+    sh.uniforms.uShade = { value: new THREE.Color(shade) };
     sh.fragmentShader = sh.fragmentShader
-      .replace('void main() {', 'uniform vec3 uRim;\nvoid main() {')
+      .replace('void main() {', 'uniform vec3 uRim;\nuniform vec3 uShade;\nvoid main() {')
       .replace('#include <opaque_fragment>', `${BANDS}${rim ? RIM : ''}\n#include <opaque_fragment>`);
   };
   m.customProgramCacheKey = () => rim ? 'toonRim' : 'toon';

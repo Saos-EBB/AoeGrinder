@@ -2,7 +2,7 @@
 
 Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhöhlen, Mondsee.
 
-**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Ergebnis unten unter „Messung Schritt 1“.
+**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an). Messungen unten.
 
 ## Gemeinsame Basis (gilt für alle 4)
 - Toon: MeshToonMaterial mit 3-Stufen-gradientMap (DataTexture 3×1), keine Texturen, Farben über Vertex-Farben.
@@ -56,3 +56,8 @@ Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhö
 - Ohne und mit `?toon=1` je 60 FPS. Calls pro Frame schwanken von Lauf zu Lauf zwischen 42 und 90, je nach Blickrichtung beim Start, in beiden Varianten gleich.
 - Gezählt in einem Frame: Umgebung 18 Lambert-Meshes ohne Toon, mit Toon 17 Toon-Meshes + 1 Lambert (Wasser). Toon und Rand kosten also 0 extra Draw Calls.
 - Abweichung vom Konzept: Das Spiel läuft immer dunkel (Spotlicht mit Schatten an der Figur, `dunkel.ts`). Daran ist nichts geändert. Weil das Toon-Material von Three.js nur den Lichtwinkel stuft und der Spot weich abfällt, stuft `toon.ts` zusätzlich die Summe des Lichts in 3 Bänder; dadurch bekommt der Lichtkreis harte Kanten. Den Verlaufs-Himmel gibt es schon (`render.ts`), im Dunkel-Modus ist er schwarz.
+
+## Messung Winterquell (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Tannen, Eisblöcke, Steine, Seen) + 1 Points (Schnee) = 6 Calls, Himmel wie überall.
+- Eis: Knockback 1,5 yd an Land, 3 yd auf dem See. Ein Mob, der 1 s übers Eis läuft, rutscht ohne Befehl noch etwa 2 yd weiter (`WQ.ice.grip`).
+- Abweichungen: Dunkel-Modus bleibt, deshalb sieht man den rosa-blauen Himmel nicht und der Schnee ist nur im Umkreis der Figur sichtbar. Die Mobs sind umgefärbte vorhandene Rigs (humanoid, quadruped), keine eigenen Modelle. Die Zone ist nur über das Dev-Menü oder `?zone=winterquell` erreichbar, wie die anderen Zonen außer Tirisfal.
