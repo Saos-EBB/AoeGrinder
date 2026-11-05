@@ -18,7 +18,6 @@ import { ICONS } from './icons';
 import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
-import { uiSettings } from './uiSettings';
 import { healNumber } from './dmgNumbers';
 import './hud/hud.css';
 import './hud/layout';

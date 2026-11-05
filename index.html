@@ -154,7 +154,6 @@
   .shopItem { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 8px; margin-bottom: 4px; border: 2px solid; border-radius: 4px; background: #0008; cursor: pointer; width: 100%; color: #fff; font: 600 13px system-ui, sans-serif; }
   .shopItem:disabled { opacity: .45; cursor: not-allowed; }
   .shopItem.bought { opacity: .7; }
-  #menuDust { color: #efe0b8; font-weight: 700; margin-top: 8px; font-size: 13px; }
   .chip.locked { opacity: .55; }
   #charBody { text-align: left; max-height: 60vh; overflow: auto; font-size: 14px; }
   #charBody table { width: 100%; border-collapse: collapse; }
@@ -167,11 +166,7 @@
   #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
   #startModal.show { display: block; }
   .hudHide { display: none !important; }
-  #menuLeft { position: absolute; top: 2vh; left: 1.5vw; width: 25vw; max-height: 72vh; overflow: auto; padding: 12px 14px; }
-  #menuLeft h1 { margin: 0 0 6px; font-size: 30px; }
-  #menuRight { position: absolute; top: 2vh; right: 1.5vw; width: 21vw; padding: 12px 14px; }
   .menuHead { margin: 10px 0 5px; font-size: 14px; }
-  #menuInfo { font-size: 12px; color: #c9b88a; margin: 10px 0 0; }
   .chipRow { display: flex; flex-wrap: wrap; gap: 4px; }
   #menuWeapons { max-height: 26vh; overflow-y: auto; }   /* bis zu 15 Waffen, im Dev bis 50 */
   #menuWeapons .chip { padding: 2px 7px; font-size: 11px; }
@@ -183,21 +178,9 @@
   .chip { font: 600 12px system-ui, sans-serif; padding: 4px 8px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 12px; cursor: pointer; }
   .chip.selected { border-color: #ffe27a; color: #ffe27a; box-shadow: 0 0 6px #ffe27a88; }
   .chip:disabled { opacity: .35; cursor: not-allowed; }
-  #menuBoard { font-size: 13px; color: #d8cfb8; min-height: 40px; }
-  #menuBoard table { width: 100%; border-collapse: collapse; }
-  #menuBoard td:nth-child(2) { text-align: right; color: #f2c94c; font-weight: 700; }
-  #menuBoard td:nth-child(3) { text-align: right; }
-  #menuBottom { position: absolute; left: 0; right: 0; bottom: 2vh; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  #menuTitle { font-size: 30px; text-shadow: 0 2px 6px #000; }
   .kitRow { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
   .kitSlot { width: 40px; height: 40px; border: 2px solid #6b5426; border-radius: 5px; background-size: cover; background-position: center; font: 600 8px/1.1 system-ui, sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; text-shadow: 0 1px 2px #000; cursor: help; }
   .kitSlot:hover { border-color: #f2c94c; }
-  #menuChars { display: flex; gap: 6px; }
-  .charTab { width: 150px; padding: 8px 4px; font: 700 14px Cinzel, serif; color: #f4ecd8; background: #0d0b08ee; border: 2px solid #6b5426; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .charTab small { font: 600 11px system-ui, sans-serif; color: #c9b88a; }
-  .charTab.selected { border-color: #f2c94c; color: #f2c94c; box-shadow: 0 0 10px #f2c94c88; }
-  #menuActions { display: flex; gap: 8px; align-items: center; }
-  #menuActions .smallBtn { margin: 0; width: auto; padding: 8px 14px; }
   .navSel, #startModal button:focus-visible, .pauseBox button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
   .pauseBox .smallBtn { margin: 0; }
@@ -235,18 +218,11 @@
   body.mobile .cards { width: 100vw; max-height: 100vh; padding: 8px; }
   body.mobile #cardModal h1 { font-size: 22px; }
   body.mobile .card p { font-size: 14px; }
-  body.mobile #menuLeft { width: 38vw; max-height: 60vh; top: 1vh; left: 1vw; padding: 8px 10px; }
-  body.mobile #menuRight { width: 30vw; max-height: 60vh; overflow: auto; top: 1vh; right: 1vw; padding: 8px 10px; }
-  body.mobile #menuLeft h1, body.mobile #menuTitle { font-size: 22px; }
-  body.mobile #menuBottom { bottom: 1vh; }
-  body.mobile .charTab { width: 120px; padding: 10px 4px; }
   body.mobile #menuActions .smallBtn { padding: 12px 16px; }
   /* Handy hochkant ohne Querformat-Sperre: Seite um 90° gedreht (device.ts updateRotation) */
   html.rot body { position: fixed; top: 0; left: 100vw; width: 100vh; height: 100vw; transform-origin: 0 0; transform: rotate(90deg); }
   html.rot body.mobile .modal > .frame.panel { width: 100% !important; min-height: 100%; }
   html.rot body.mobile .cards { width: 100%; max-height: 100%; }
-  html.rot body.mobile #menuLeft { width: 38vh; max-height: 60vw; }
-  html.rot body.mobile #menuRight { width: 30vh; max-height: 60vw; }
   html.rot #hudHp, html.rot #hudMana { width: 20vh; }
   html.rot #hudCast { width: 40vh; }
 </style>
@@ -288,33 +264,38 @@
 <div id="overlay"></div>
 
 <div id="startModal" class="modal show">
-  <div id="menuLeft" class="frame">
-    <h1 class="title">Frost Grind</h1>
-    <div class="title menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
-    <div class="title menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
-    <div class="title menuHead">Karten</div><div id="menuCards" class="chipRow"></div>
-    <div id="menuWeaponBox"><div class="title menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuTop"><span class="menuGame title">Frost Grind</span><span class="menuPick">Wähle deine Figur</span><span id="menuDust"></span></div>
+  <div id="menuLeft" class="gPanel">
+    <div class="title" id="menuTitle"></div>
+    <div id="menuRole"></div>
+    <p id="menuDesc">—</p>
+    <div id="menuStats"></div>
+    <div class="menuHead">Start-Kit</div>
+    <div id="menuKit" class="kitRow" title=""></div>
     <p id="menuInfo"></p>
-    <div id="menuDust"></div>
   </div>
-  <div id="menuRight" class="frame">
-    <div class="title menuHead">Rangliste: Zeit bis Level 100</div>
+  <div id="menuRight" class="gPanel">
+    <div class="menuBoardHead"><span class="title">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time">Zeit</button> · <button type="button" data-b="score">Punkte</button></span></div>
     <div id="menuTimeBoard"></div>
-    <div class="title menuHead">Rangliste: Punkte</div>
     <div id="menuBoard"></div>
     <div id="menuBoardBtn"></div>
+    <div class="menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
+    <div class="menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
+    <div class="menuHead">Karten</div><div id="menuCards" class="chipRow"></div>
+  </div>
+  <div id="menuWeaponBox" class="gPanel" hidden><div class="menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuActions">
+    <button class="smallBtn" id="menuWeaponsBtn">Waffen</button>
+    <button class="smallBtn" id="menuShop">Shop</button>
+    <button class="smallBtn" id="menuSettings">Einstellungen</button>
+    <button class="smallBtn" id="menuBinds">Keybinds</button>
+    <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
   </div>
   <div id="menuBottom">
-    <div class="title" id="menuTitle"></div>
-    <div id="menuKit" class="kitRow" title=""></div>
+    <span class="menuKey">A / LB</span>
     <div id="menuChars"></div>
-    <div id="menuActions">
-      <button class="btn" id="startBtn">Run starten</button>
-      <button class="smallBtn" id="menuShop">Shop</button>
-      <button class="smallBtn" id="menuSettings">Einstellungen</button>
-      <button class="smallBtn" id="menuBinds">Keybinds</button>
-      <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
-    </div>
+    <span class="menuKey">D / RB</span>
+    <button class="btn" id="startBtn">Run starten</button>
   </div>
 </div>
 
