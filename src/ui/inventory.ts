@@ -6,6 +6,7 @@ import { meta } from '../meta';
 import { ROLLS, sortedInv, rarityOf, weaponName, equipped, equip, deleteWeapon, effectRows } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
+import { weaponThumb } from './weaponThumb';
 import { hideTip } from './tooltip';
 import { askConfirm } from './confirm';
 import { currentFigure } from './mainMenu';
@@ -53,8 +54,10 @@ export function closeInventory() {
   done?.();
 }
 
+// Bild aus dem echten Modell (weaponThumb), sonst das Strich-Symbol
 function slotHtml(w) {
-  return `<span class="invItem" style="--rc:${rarityOf(w).color}">${STAFF}</span>`;
+  const img = weaponThumb(w);
+  return img ? `<img class="invImg" src="${img}" alt="">` : `<span class="invItem" style="--rc:${rarityOf(w).color}">${STAFF}</span>`;
 }
 function render() {
   const eq = equipped();

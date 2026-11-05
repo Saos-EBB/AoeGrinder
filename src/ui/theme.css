@@ -335,3 +335,10 @@ body.mobile .endStat { width: auto; flex: 1; }
 #invClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
 .shopInvBtn { width: auto !important; margin-top: 14px !important; padding: 8px 18px !important; }
 body.mobile .invMain { grid-template-columns: 1fr; }
+
+/* Waffenbilder aus dem Modell (weaponThumb.ts) */
+.invImg { height: 100px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)); }
+.invSlot .invImg { height: 78px; }
+.invCell, .invSlot.weapon { overflow: hidden; }
+.resIcon img { height: 140px; width: auto; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--rc) 60%, transparent)); }
+.resIcon:has(img) { width: auto; }

@@ -12,6 +12,7 @@ import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
 import { openInventory } from './inventory';
+import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
@@ -80,7 +81,8 @@ function resultCol() {
   const w = lastPull, rar = rarityOf(w), rows = effectRows(w);
   col.style.setProperty('--rc', rar.color);
   if (lastIsNew) col.append(el('span', 'resNew', 'Neu'));
-  const icon = el('div', 'resIcon'); icon.innerHTML = STAFF_SVG;
+  const icon = el('div', 'resIcon'), img = weaponThumb(w);
+  icon.innerHTML = img ? `<img src="${img}" alt="">` : STAFF_SVG;
   name.textContent = weaponName(w);
   const type = rows.find(r => r.kind === 'type')?.text?.split(':')[0];
   col.append(icon, name, el('div', 'resSub', `${rar.name}${type ? ` · ${type}` : ''}`));

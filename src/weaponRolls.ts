@@ -103,12 +103,12 @@ export const rarityOf = w => CARD_RARITIES[w.r];
 
 export const equipped = () => meta.inv.find(w => w.id === meta.equipped) ?? null;
 // Modell der gewählten Waffe: neue aus dem Baukasten, Unikate und alte Waffen aus models/weapons
-export function buildEquipped() {
-  const w = equipped();
+export function buildWeaponOf(w) {
   if (!w) return buildWeapon(ROLLS.fallback);
   if (!isNew(w)) return buildWeapon(w.m);
   return w.s.unique ? buildWeapon(w.s.unique) : buildBaukastenWeapon(w.s);
 }
+export const buildEquipped = () => buildWeaponOf(equipped());
 export const inventoryFull = () => meta.inv.length >= ROLLS.invMax;
 // Inventar zum Anzeigen: höchste Seltenheit zuerst, darin die neueste zuerst
 export const sortedInv = () => [...meta.inv].sort((a, b) => b.r - a.r || b.id - a.id);
