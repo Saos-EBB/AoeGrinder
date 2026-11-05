@@ -1,15 +1,13 @@
 // Arkanes Mal: markiert Mobs, ein anderer Arkan-Treffer lässt das Mal platzen (Haken in core.ts, makeCtx).
-// Alle Male zusammen sind ein InstancedMesh, also ein Draw Call.
+// Die Anzeige über dem Mob (schwebendes Oktaeder) liegt in vfx/mobStatus.ts.
 
-import * as THREE from 'three';
 import { dist2d } from '../util';
 import { state } from '../state';
-import { scene, camera } from '../render';
 import { ringFx } from '../fx/spellFx';
 import { mobsInRadius, applySlow, hasRune, makeCtx, onArcaneHit } from './core';
 import { burstFx, SHADOW, VOID } from './fx';
 
-const MARK = { dur: 8000, popMul: 0.8, height: 2.9, size: 0.7, max: 256 };   // PH
+const MARK = { dur: 8000, popMul: 0.8 };   // PH; Anzeige über dem Mob: vfx/mobStatus.ts
 const LAME = { pct: 0.6, ms: 3000 }, CHAIN_RANGE = 5, BIG = 1.5;             // PH
 
 export const arcmark = {
@@ -38,32 +36,3 @@ onArcaneHit((m, id, dmg) => {
   const next = mobsInRadius(m.pos, CHAIN_RANGE).filter(o => o !== m && !(o.markUntil > state.now)).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos))[0];
   if (next) next.markUntil = state.now + MARK.dur;
 });
-
-// Runen-Symbol über jedem markierten Mob, zur Kamera gedreht
-function glyphTex() {
-  const cv = document.createElement('canvas'); cv.width = cv.height = 64;
-  const g = cv.getContext('2d');
-  g.strokeStyle = '#fff'; g.lineWidth = 4; g.lineCap = 'round';
-  g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.stroke();
-  g.beginPath(); g.moveTo(32, 12); g.lineTo(32, 52); g.moveTo(32, 22); g.lineTo(18, 36); g.moveTo(32, 30); g.lineTo(46, 42); g.moveTo(20, 50); g.lineTo(44, 50); g.stroke();
-  return new THREE.CanvasTexture(cv);
-}
-let marks: THREE.InstancedMesh = null;
-const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
-export function updateMarks() {
-  if (!marks) {
-    marks = new THREE.InstancedMesh(new THREE.PlaneGeometry(MARK.size, MARK.size), new THREE.MeshBasicMaterial({ map: glyphTex(), color: new THREE.Color(1.6, 0.6, 2.4), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }), MARK.max);
-    marks.frustumCulled = false;
-    scene.add(marks);
-  }
-  let n = 0;
-  for (const m of state.mobs) {
-    if (n >= MARK.max) break;
-    if (m.dead || m.hidden || !(m.markUntil > state.now)) continue;
-    const left = (m.markUntil - state.now) / 1000, k = 1 + 0.12 * Math.sin(state.now / 120) * (left < 2 ? 1 : 0.3);   // pulsiert stärker kurz vor dem Ende
-    marks.setMatrixAt(n++, _m.compose(_p.set(m.pos.x, m.pos.y + MARK.height, m.pos.z), camera.quaternion, _s.setScalar(k)));
-  }
-  marks.count = n;
-  marks.visible = n > 0;
-  marks.instanceMatrix.needsUpdate = true;
-}

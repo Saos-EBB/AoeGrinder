@@ -75,7 +75,7 @@ export const blink = {
     if (mods.boltLeap) batteryCharge(mods.boltLeap);   // Blitzsprung: Kosten zurück und dazu Ladung
     if (hasRune('blink', 'nova')) {
       const r = c.radius(NOVA.radius);
-      for (const m of mobsInRadius(from, r)) if (c.hit(m, rand(NOVA.min, NOVA.max)) && !m.dead) applyRoot(m, NOVA.root);
+      for (const m of mobsInRadius(from, r)) if (c.hit(m, rand(NOVA.min, NOVA.max)) && !m.dead) applyRoot(m, NOVA.root, 'ice');
       novaFx(from, r);
     }
   },

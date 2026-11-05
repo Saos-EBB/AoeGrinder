@@ -303,12 +303,15 @@ export function separateMobs() {
 }
 
 // Root mit Typ-Regeln: manche Mobs sind immun, manche halten nur kurz
-export function applyRoot(mob, dur) {
+// look: nur Optik (vfx/mobStatus.ts) – 'ice' Eisblock, 'glue' Schleim am Boden, sonst Betäubungs-Ring
+export function applyRoot(mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
   if (mob.type.rootImmune) { combatText(mob.pos, 'Immun', 'miss'); return; }
   mob.rootUntil = state.now + Math.min(dur, mob.type.rootMax ?? dur);
+  mob.rootLook = look;
   if (mob.web && mob.web.until > state.now && !mob.web.passing) for (const o of mob.web.links) {   // Klebefaden: Kontrolle zur Hälfte auf die Angeketteten
     if (o.dead || o.type.rootImmune) continue;
     o.rootUntil = Math.max(o.rootUntil, state.now + dur * 0.5);
+    o.rootLook = look;
   }
 }
 

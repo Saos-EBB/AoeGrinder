@@ -78,7 +78,7 @@ export const froststrike = {
     if (!first) return;
     if (!vfxOld()) froststrikeOpen(first.pos);
     runChain(c, first, { jumps: Infinity, range: froststrike.jumpRange, dmg: froststrike.dmg, boltColor: vfxOld() ? undefined : ICE,
-      onHit: m => { if (!vfxOld()) frostHit(m.pos); if (!m.dead) applyRoot(m, froststrike.root); } });
+      onHit: m => { if (!vfxOld()) frostHit(m.pos); if (!m.dead) applyRoot(m, froststrike.root, 'ice'); } });
   },
 };
 

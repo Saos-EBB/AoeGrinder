@@ -422,7 +422,7 @@ function hitQ(i) {
 function hitE() {
   const c = act.ctx;
   event('kE', c, K.e.dmg, o => mobsInRadius(o, c.radius(K.e.radius)), m => {
-    if (hasRune('kE', 'freeze')) applyRoot(m, K.runes.freezeMs); else applySlow(m, K.e.slow, K.e.slowMs);
+    if (hasRune('kE', 'freeze')) applyRoot(m, K.runes.freezeMs, 'ice'); else applySlow(m, K.e.slow, K.e.slowMs);
     if (hasRune('kE', 'pull')) pullMob(m, player.pos, K.runes.pullYd);
   });
 }

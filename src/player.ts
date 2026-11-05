@@ -248,7 +248,7 @@ export function startDodge() {
   });
   if (!ok || dodgeMode() !== 'frost') return;
   const N = DG.combo.miniNova;                             // Frost only: Mini-Nova am Startpunkt, ohne Mana und Abklingzeit
-  for (const m of mobsInRadius(from, N.radius)) applyRoot(m, N.rootMs);
+  for (const m of mobsInRadius(from, N.radius)) applyRoot(m, N.rootMs, 'ice');
   novaFx(from, N.radius);
 }
 // Fire only: Der Dodge legt Feuerspur wie die Schritte der Figur

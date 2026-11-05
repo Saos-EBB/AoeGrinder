@@ -130,7 +130,7 @@ const EFFECTS = {
         for (const m of mobsInRadius(f.pos, f.radius)) {
           if (seen.has(m)) continue;
           seen.add(m);
-          if (c.hit(m, LEG.snow.dmg * UNIT * k) && !m.dead) { startLeap(m, m.pos.clone(), LEG.snow.upMs, () => {}); applyRoot(m, LEG.snow.upMs); }
+          if (c.hit(m, LEG.snow.dmg * UNIT * k) && !m.dead) { startLeap(m, m.pos.clone(), LEG.snow.upMs, () => {}); applyRoot(m, LEG.snow.upMs, 'ice'); }
           k += LEG.snow.grow;
         }
       },

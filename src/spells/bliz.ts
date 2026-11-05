@@ -19,7 +19,7 @@ function tickAt(c, point, radius, last, k = 1) {
   for (const m of mobsInRadius(point, radius)) {
     if (!c.hit(m, bliz.tickDmg * k) || m.dead) continue;
     if (mods.blizSlow > 0) applySlow(m, mods.blizSlow, 1500);
-    if (last && hasRune('bliz', 'lastfreeze')) applyRoot(m, LAST_TICK_ROOT);
+    if (last && hasRune('bliz', 'lastfreeze')) applyRoot(m, LAST_TICK_ROOT, 'ice');
   }
   if (mods.stormEye && player.cds.frostorb > state.now) player.cds.frostorb -= STORM_EYE_MS * mods.stormEye;
 }

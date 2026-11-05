@@ -19,7 +19,7 @@ export const icebarrier = {
     combatText(player.pos, 'Eisbarriere', 'info', 2.6);
     player.onShieldBreak = () => {
       player.shield = 0;
-      for (const m of mobsInRadius(player.pos, B.nova)) applyRoot(m, B.freezeMs);
+      for (const m of mobsInRadius(player.pos, B.nova)) applyRoot(m, B.freezeMs, 'ice');
       novaFx(player.pos, B.nova);
     };
   },

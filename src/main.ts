@@ -44,12 +44,12 @@ import { updateEnergy } from './vfx/energy';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
-import { updateMarks } from './spells/arcmark';
+import { updateMobStatus } from './vfx/mobStatus';
+import { poisoned } from './plagueMarks';
 import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
-import { markStacks } from './plagueMarks';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
 
@@ -97,7 +97,6 @@ function updateVisuals(dt) {
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...klingeAnim(),
   });
   updateKlingeVisuals();
-  updateMarks();
   dodgeVisual(mage.root);
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
@@ -115,7 +114,8 @@ function updateVisuals(dt) {
     const attackT = (state.now - m.attackAt) / 400 * mobAttackSlow();   // Dev: Angriffe sichtbar langsamer
     m.model.update(mdt, {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
-      frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now, infected: !m.dead && markStacks(m) > 0,   // Seuchen-Mal
+      frozen: !m.dead && m.rootUntil > state.now, iced: !m.dead && m.rootUntil > state.now && m.rootLook === 'ice', slowed: m.slowUntil > state.now,
+      poisoned: !m.dead && poisoned(m), feared: !m.dead && m.state === 'flee',
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
       flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
     });
@@ -132,6 +132,7 @@ function updateVisuals(dt) {
   particles.update(state.paused ? 0 : dt);
   updateEffects();
   updateEnergy(state.paused ? 0 : dt / 1000);
+  updateMobStatus(state.paused ? 0 : dt / 1000);
   updateWucht();
 }
 

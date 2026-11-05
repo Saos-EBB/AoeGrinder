@@ -23,7 +23,7 @@ export const coc = {
   effect(c) {
     if (iceAge()) {
       const f = forward(), to = { x: player.pos.x + f.x * CAPSULE.len, y: player.pos.y, z: player.pos.z + f.z * CAPSULE.len };
-      for (const m of mobsOnLine(player.pos, to, CAPSULE.width)) if (c.hit(m, rand(coc.min, coc.max)) && !m.dead) applyRoot(m, CAPSULE.freezeMs);
+      for (const m of mobsOnLine(player.pos, to, CAPSULE.width)) if (c.hit(m, rand(coc.min, coc.max)) && !m.dead) applyRoot(m, CAPSULE.freezeMs, 'ice');
       boltFx({ x: player.pos.x, y: player.pos.y + 0.6, z: player.pos.z }, to, ICE_WHITE, 300);
       return;
     }
@@ -34,7 +34,7 @@ export const coc = {
       if (diff > angle / 2) continue;
       if (!c.hit(m, rand(coc.min, coc.max) * (round ? 0.5 : 1))) continue;
       if (m.dead) { if (hasRune('coc', 'reap')) player.cds.coc -= CD_PER_KILL; continue; }
-      if (hasRune('coc', 'freeze')) applyRoot(m, FREEZE);
+      if (hasRune('coc', 'freeze')) applyRoot(m, FREEZE, 'ice');
       else applySlow(m, coc.slow, coc.slowDur);
     }
     coneOfColdFx(range, angle);

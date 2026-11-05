@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(optik): Status-Anzeigen an Mobs im Energie-Look: Brand (3 Flammenzungen), Arkan-Mal (schwebendes Oktaeder statt Rune), Betäubt (kreisender Ring, beim Strichkrieger gold), Seuchen-Male (1–3 grüne Kugeln), Festgeklebt (Schleim-Fleck), Gift (grün mit Blasen), Fliehen (lila), Verlangsamt (blau); der Eisblock erscheint nur noch beim Einfrieren, nicht bei Betäubung oder Schleim
 - feat(optik): Strichmagier aus dem optimierten Viewer: Körper, Glühen, Eiszapfen und Trink-Requisite in einem Mesh; Feuer brennt mit der Hitze bis zur Flammen-Hülle, Eis wächst mit der Kälte Zapfen und eine Eisschicht, Arkan leuchtet mit 62 Runen und 4 Ladungs-Kugeln, Blitz knistert nach Batterie (Aufladen: Hand in den Himmel, Einschlag), Seuchenmagier mit Grün-Lila-Muster, Tropfen, Fliegen, Pfütze und Schleimfäden, ?-Magier schwarz mit Fragezeichen
 - feat(optik): Energie-Shader der Spell-Viewer als Modul `src/vfx/energy.ts` (eMat, 18 Paletten, geteilte Formen, Effekt-Pool, Bausteine boom/shot/blaze/ring/arc/streak/spark)
 - feat(zufall): ?-Magier würfelt jetzt auch Seuchen- und Blitz-Spells (Offensiv + Schlammwurf, Entziehen, Platzen, Statikfeld, Erdbeben; Defensiv + Schleimwelle, Schleimfalle, Zusammenziehen, Klebefaden; Utility + Schwarzes Loch, Giftwolke, Sturmhüter), Seuchen-Spells kosten hier Mana; Blink liegt auf der Bewegungs-Taste, die 4 Kategorien bleiben auf 1–4

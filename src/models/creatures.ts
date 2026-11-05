@@ -1,5 +1,5 @@
 // Baukasten für Mob-Rigs: Schnittstelle { root, update(dt, anim) }.
-// anim = { state: 'idle'|'run'|'dead', speed, frozen, slowed, infected, attack, flash }
+// anim = { state: 'idle'|'run'|'dead', speed, frozen, iced, slowed, poisoned, feared, attack, flash }
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -11,8 +11,9 @@ const Box = (w, h, d) => memo(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, 
 const Cyl = (r1, r2, h) => memo(`c${r1},${r2},${h}`, () => new THREE.CylinderGeometry(r1, r2, h, 6));
 const Cone = (r, h) => memo(`n${r},${h}`, () => new THREE.ConeGeometry(r, h, 5));
 const Ball = r => memo(`s${r}`, () => new THREE.SphereGeometry(r, 8, 6));
-const SLOW = new THREE.Color(0x6f7fa0), DEAD = new THREE.Color(0x5a5048), INFECT = new THREE.Color(0x4a7a1a);   // INFECT: Seuchen-Mal (v31)
-const TINTS = [null, SLOW, DEAD, INFECT], FLASH_STEPS = 4;
+const SLOW = new THREE.Color(0x5f86c8), DEAD = new THREE.Color(0x5a5048), POISON = new THREE.Color(0x4a8a1a), FEAR = new THREE.Color(0x6a3a7a);   // Spell-Viewer: verlangsamt blau, Gift grün, Fliehen lila
+const SLOW_GLOW = new THREE.Color(0, 0.03, 0.12);   // PH: blaues Leuchten beim Verlangsamen
+const TINTS = [null, SLOW, DEAD, POISON, FEAR], FLASH_STEPS = 4;
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
 
 // Materialien sind geteilt, removeMob darf sie nicht freigeben
@@ -28,6 +29,7 @@ function litMat(tint, flash, side, champ = false) {
     const m = new THREE.MeshLambertMaterial({ vertexColors: tint === 0, side });
     if (tint) m.color.copy(TINTS[tint]);
     m.emissive.setScalar(flash / FLASH_STEPS * 0.9);
+    if (tint === 1) m.emissive.add(SLOW_GLOW);
     if (champ) m.emissive.add(CHAMP_GLOW);
     return m;
   });
@@ -120,9 +122,10 @@ export function finish(root, tick, level, scale, ice = [1.5, 2.2, 1.5], iceY = 1
   let shown = '0,0';
   return {
     root,
+    height: (iceY + ice[1] / 2) * scale[1] * lv,   // Oberkante, für Status-Anzeigen über dem Kopf (vfx/mobStatus.ts)
     update(dt, a) {
-      iceMesh.visible = !!a.frozen;
-      const tint = a.state === 'dead' ? 2 : a.infected ? 3 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${!!a.champion}`;
+      iceMesh.visible = !!a.iced;
+      const tint = a.state === 'dead' ? 2 : a.feared ? 4 : a.poisoned ? 3 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${!!a.champion}`;
       if (key !== shown) {
         shown = key;
         for (const m of lit) m.material = litMat(tint, flash, m.material.side, !!a.champion);

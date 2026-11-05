@@ -21,12 +21,12 @@ export const nova = {
   effect(c) {
     const r = c.radius(nova.radius) * (iceAge() ? AGE.radius : 1), targets = mobsInRadius(player.pos, r);
     if (iceAge()) addField(c, { pos: player.pos, radius: r, dur: AGE.groundMs, tickMs: 250, visual: fieldDecal(iceTex, [0.35, 1, 2.1], 0.45), onTick: frozenGroundTick });
-    const burst = (m, dmg, root) => { if (dmg ? c.hit(m, dmg) && !m.dead : true) applyRoot(m, root); };
+    const burst = (m, dmg, root) => { if (dmg ? c.hit(m, dmg) && !m.dead : true) applyRoot(m, root, 'ice'); };
     if (hasRune('nova', 'deep')) {
       for (const m of targets) { enterCombat(m, true); burst(m, 0, nova.root * 2); }
     } else {
       const hits = targets.filter(m => c.hit(m, rand(nova.min, nova.max)));
-      for (const m of hits) if (!m.dead) applyRoot(m, nova.root);
+      for (const m of hits) if (!m.dead) applyRoot(m, nova.root, 'ice');
       if (hasRune('nova', 'repeat')) schedule(250, () => {   // nur eine Generation, sonst läuft es nie aus
         for (const from of hits) {
           ringFx(from.pos, r, FROST_WHITE, 400);

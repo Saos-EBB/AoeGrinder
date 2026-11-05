@@ -30,7 +30,7 @@ export const frostorb = {
           for (const m of mobsInRadius(f.pos, f.radius)) {
             if (seen.has(m)) continue;
             seen.add(m);
-            if (c.hit(m, frostorb.blast * BEAK.k) && !m.dead) applyRoot(m, BEAK.freezeMs);
+            if (c.hit(m, frostorb.blast * BEAK.k) && !m.dead) applyRoot(m, BEAK.freezeMs, 'ice');
           }
         },
       });

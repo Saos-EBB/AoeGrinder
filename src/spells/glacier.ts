@@ -17,7 +17,7 @@ export const glacier = {
   effect(c, point) {
     const wide = hasRune('glacier', 'wide'), r = c.radius(glacier.radius) * (wide ? WIDE : 1), delay = hasRune('glacier', 'fast') ? 0 : glacier.delay;
     const erupt = k => {
-      for (const m of mobsInRadius(point, r)) if (c.hit(m, rand(glacier.min, glacier.max) * k) && !m.dead && !wide) applyRoot(m, glacier.root);
+      for (const m of mobsInRadius(point, r)) if (c.hit(m, rand(glacier.min, glacier.max) * k) && !m.dead && !wide) applyRoot(m, glacier.root, 'ice');
       burstFx(point, r, [ICE, ICE_WHITE], 0x9fdcff);
     };
     if (delay) ringFx(point, r, FROST_WHITE, delay);

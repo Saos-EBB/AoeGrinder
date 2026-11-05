@@ -62,7 +62,7 @@ const rootMs = stacks => (P.contract.rootMs + 1000 * mods.toughSlime) * stacks;
 function contractAll(c, list, keep = false) {
   if (!list.length) return;
   const center = list.reduce((p, m) => p.add(m.pos), list[0].pos.clone().multiplyScalar(0)).multiplyScalar(1 / list.length);
-  for (const m of list) { const n = markStacks(m); boltFx(m.pos, center, GREEN, 220); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n)); if (!keep) clearMark(m); }
+  for (const m of list) { const n = markStacks(m); boltFx(m.pos, center, GREEN, 220); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n), 'glue'); if (!keep) clearMark(m); }
   burstFx(center, 3, [GREEN, SICK], 0x60c020);
 }
 const drainDmg = n => P.drain.dmg * UNIT * n;
@@ -106,7 +106,7 @@ export const slimetrap = spell({
   effect(c, point) {
     const seen = new Set();
     addField(c, { pos: point, radius: c.radius(P.trap.radius), dur: P.trap.ms, tickMs: 250, visual: fieldDecal(blightTex, GREEN, 0.5, 0.05),
-      onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) { if (seen.has(m)) continue; seen.add(m); applyRoot(m, P.trap.rootMs + 1000 * mods.toughSlime); mark(m); } },
+      onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) { if (seen.has(m)) continue; seen.add(m); applyRoot(m, P.trap.rootMs + 1000 * mods.toughSlime, 'glue'); mark(m); } },
     });
   },
 });
@@ -119,7 +119,7 @@ export const slimewave = spell({
     for (const m of mobsOnLine(a, b, c.radius(P.wave.width))) {
       if (!c.hit(m, P.wave.dmg * UNIT) || m.dead) continue;
       knockbackMob(m, player.pos, P.wave.push);
-      applyRoot(m, P.wave.rootMs + 1000 * mods.toughSlime);
+      applyRoot(m, P.wave.rootMs + 1000 * mods.toughSlime, 'glue');
       mark(m);
     }
     for (let i = 0; i < 100; i++) { const t = Math.random(), s = (Math.random() - 0.5) * P.wave.width; particles.spawn({ x: a.x + f.x * len * t + f.z * s, y: a.y + 0.3, z: a.z + f.z * len * t - f.x * s, vx: f.x * 8, vy: 1 + Math.random() * 2, vz: f.z * 8, grav: 6, drag: 1.5, life: 0.6, color: i % 3 ? GREEN : SICK, size: 0.4 }); }
@@ -214,7 +214,7 @@ export const melt = spell({
       onUpdate(f, dt) { f.radius = Math.max(0.5, R * (state.now - f.start) / M.ms); areaParticles(f.pos, f.radius, 40, dt, [GREEN, SICK], { up: 0.8, size: 0.3 }); },
       onTick(f) { for (const m of mobsInRadius(f.pos, f.radius)) mark(m); },
       onEnd(f) {
-        for (const m of mobsInRadius(f.pos, R)) { pullMob(m, f.pos, dist2d(m.pos, f.pos)); applyRoot(m, M.rootMs); }
+        for (const m of mobsInRadius(f.pos, R)) { pullMob(m, f.pos, dist2d(m.pos, f.pos)); applyRoot(m, M.rootMs, 'glue'); }
         spray(f.pos, 50);
         shakeCamera(0.5);
         combatText(player.pos, 'Zerfließen', 'heal', 2.8);
