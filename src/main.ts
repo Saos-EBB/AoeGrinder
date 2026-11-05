@@ -23,6 +23,7 @@ import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/menus';
 import './mobile';
 import './ui/saveCode';
+import './ui/devForge';
 // Für Tests: dieselben Modul-Instanzen wie im Spiel
 import * as coreMod from './spells/core';
 import * as configMod from './config';

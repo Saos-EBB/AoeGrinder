@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(dev): Waffen-Baukasten in den Einstellungen: Seltenheit, Legi-Modell (Unikat), Typ, Kopf, Fokus, Wert, Element, Hersteller, Anhänger und Zweitwert selbst wählen, Vorschau wie die Info-Karte, ins Inventar oder gleich anlegen (ohne Staub, ohne Limit)
 - feat(dev): Dev-Meta füllt das Inventar neu mit 50 Waffen (angelegte bleibt), wählbar Alle zufällig, Nur Epic (lila) oder Nur Legi (orange); Inventar im Shop und die Waffenwahl im Hauptmenü sind nach Seltenheit gruppiert (mit Anzahl), der Shop zeigt sie kompakt in zwei Spalten
 - docs: Handoff `docs/handoff-figuren.md` mit allen Figuren, ihren Attacken, Runen, Talenten, Rang-Karten, Supports, Relikten und Waffen-Elementen, aus dem Code gelesen
 - feat(balance): Sprünge verdoppelt: Kettenblitz 100, Bogenblitz 10, Karten und Runen geben doppelt so viele (Leitfähigkeit +20/+4, Überschlag +40, Funkenregen +8, Weiter Bogen +6, Entladung +10 pro Kill); neue orange Talent-Karte Gewitterkaskade: alle Sprünge ×2 (selten, einmal pro Run); Spielversion v30

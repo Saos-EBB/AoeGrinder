@@ -165,6 +165,10 @@
   #devZones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 4px; }
   #perf { position: fixed; top: 48px; right: 14px; z-index: 2; font: 600 11px/14px system-ui, sans-serif; color: #9cff9c; text-shadow: 0 1px 2px #000; pointer-events: none; font-variant-numeric: tabular-nums; }
   #devMeta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
+  #devForge { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
+  .forgeField { display: flex; flex-direction: column; gap: 2px; font: 600 11px system-ui, sans-serif; color: #efe0b8; text-align: left; }
+  .forgeField[hidden] { display: none; }
+  #forgePreview { grid-column: 1 / -1; font: 12px/1.45 system-ui, sans-serif; color: #efe0b8; text-align: left; border: 2px solid; border-radius: 6px; padding: 6px 8px; margin: 4px 0; }
   #devCards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 14px; }
   #bindList .group { grid-column: 1 / -1; margin-top: 8px; color: #f2c94c; font-family: Cinzel, serif; }
   .bindBtn { font: 600 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff;
@@ -389,6 +393,8 @@
       <button class="bindBtn" id="devInvFill">Inventar neu füllen (50)</button>
       <button class="bindBtn" id="devInvClear">Inventar leeren</button>
     </div>
+    <div class="title" style="text-align:left;margin-bottom:6px">Dev: Waffen-Baukasten</div>
+    <div id="devForge"></div>
     <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
       <summary class="title" style="cursor:pointer">Credits</summary>
       <p style="margin:6px 0 0">Spell-Icons von HiveWorkshop:<br>Flame Spells: MangakaDark<br>Hero Ability Icon Set 3, SnowBall - FireBall: Panda<br>FrostMissiles: Vinz</p>

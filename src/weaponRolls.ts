@@ -134,6 +134,13 @@ export function devFillInventory(tier = null) {
   while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
   saveMeta();
 }
+// Dev: Waffe aus dem Baukasten (ui/devForge.ts) ins Inventar, ohne Staub und Limit
+export function devAddWeapon(w, equipIt) {
+  const id = ++meta.nextWeapon;
+  meta.inv.push({ ...w, id });
+  if (equipIt) meta.equipped = id;
+  saveMeta();
+}
 export function devClearInventory() {
   meta.inv = [];
   meta.equipped = null;
