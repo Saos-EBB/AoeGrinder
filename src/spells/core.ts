@@ -197,6 +197,7 @@ export function castSpell(id, point?) {
   if (player.meltUntil > state.now) return showError('Du bist zerflossen');   // Seuchenmagier: Zerfließen
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press(point);                     // Real Men, Eisblock, ?-Magier: eigene Kosten und Abklingzeit
+  if (isGround(id) && !point && state.bossAim) point = state.bossAim.clone();   // Boss-Lock-on (boss.ts): Bodenzauber landen unter dem Boss
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
   if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');

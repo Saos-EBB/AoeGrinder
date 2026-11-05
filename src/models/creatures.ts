@@ -15,6 +15,7 @@ const SLOW = new THREE.Color(0x5f86c8), DEAD = new THREE.Color(0x5a5048), POISON
 const SLOW_GLOW = new THREE.Color(0, 0.03, 0.12);   // PH: blaues Leuchten beim Verlangsamen
 const TINTS = [null, SLOW, DEAD, POISON, FEAR], FLASH_STEPS = 4;
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
+const GLOW = { true: CHAMP_GLOW, boss: new THREE.Color(0.45, 0.06, 0.03), boss2: new THREE.Color(0.8, 0.16, 0.06) };   // PH: Boss rot, Phase 2 heller (boss.ts)
 
 // Materialien sind geteilt, removeMob darf sie nicht freigeben
 const shared = (key, make) => memo(`m${key}`, () => { const m = make(); m.dispose = () => {}; return m; });
@@ -23,14 +24,14 @@ export const glowMat = (r, g, b) => shared(`g${r},${g},${b}`, () => new THREE.Me
 const darkEye = shared('eye', () => new THREE.MeshBasicMaterial({ color: 0x0a0806 }));
 
 // Normal zeigt Vertex-Farben; Slow und Tod färben den ganzen Mob einheitlich. Der Treffer-Blitz läuft in FLASH_STEPS Stufen
-// champ: blau-weißes Leuchten der Champion-Packs (champions.ts)
+// champ: blau-weißes Leuchten der Champion-Packs (champions.ts), 'boss' und 'boss2' rot (boss.ts)
 function litMat(tint, flash, side, champ = false) {
   return shared(`l${tint},${flash},${side},${champ}`, () => {
     const m = new THREE.MeshLambertMaterial({ vertexColors: tint === 0, side });
     if (tint) m.color.copy(TINTS[tint]);
     m.emissive.setScalar(flash / FLASH_STEPS * 0.9);
     if (tint === 1) m.emissive.add(SLOW_GLOW);
-    if (champ) m.emissive.add(CHAMP_GLOW);
+    if (champ) m.emissive.add(GLOW[String(champ)]);
     return m;
   });
 }
@@ -125,10 +126,10 @@ export function finish(root, tick, level, scale, ice = [1.5, 2.2, 1.5], iceY = 1
     height: (iceY + ice[1] / 2) * scale[1] * lv,   // Oberkante, für Status-Anzeigen über dem Kopf (vfx/mobStatus.ts)
     update(dt, a) {
       iceMesh.visible = !!a.iced;
-      const tint = a.state === 'dead' ? 2 : a.feared ? 4 : a.poisoned ? 3 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${!!a.champion}`;
+      const tint = a.state === 'dead' ? 2 : a.feared ? 4 : a.poisoned ? 3 : a.slowed ? 1 : 0, flash = Math.ceil(a.flash * FLASH_STEPS), key = `${tint},${flash},${a.champion || false}`;
       if (key !== shown) {
         shown = key;
-        for (const m of lit) m.material = litMat(tint, flash, m.material.side, !!a.champion);
+        for (const m of lit) m.material = litMat(tint, flash, m.material.side, a.champion || false);
       }
       if (!a.frozen) tick(dt, a);
     },

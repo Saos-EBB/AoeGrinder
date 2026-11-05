@@ -112,7 +112,7 @@ function gameButtons() {
   for (const { id } of PAD_ACTIONS) {
     if (!pressed(padBinds[id]) || (cancelled && padBinds[id] === CANCEL_BTN)) continue;
     const spell = state.slots[SPELL_ACTIONS.indexOf(id)];
-    if (spell && isGround(spell)) startAim(id, spell);
+    if (spell && isGround(spell) && !state.bossAim) startAim(id, spell);   // Boss-Lock-on: castSpell zielt unter den Boss
     else if (SPELLS[id]) pressSpell(id);
     else PAD_EFFECTS[id]?.();
   }
