@@ -24,6 +24,7 @@ export const UI_DEFAULTS = {
   healNums: true,
   tooltipsExt: true,      // erweiterte Tooltips
   devPanel: { x: 12, y: 60, w: 440, h: 620, ghost: false, fold: false },   // Dev-Fenster in px
+  profiles: [null, null, null, null] as ({ at: string; data: Record<string, any> } | null)[],   // 4 eigene UI-Stände
 };
 export type UiSettings = typeof UI_DEFAULTS;
 
@@ -36,6 +37,23 @@ export function setUi<K extends keyof UiSettings>(key: K, value: UiSettings[K]) 
   uiSettings[key] = value;
   try { localStorage.setItem(STORE, JSON.stringify(uiSettings)); } catch { /* kein Storage */ }
   applyUi();
+}
+
+// Eigene UI-Stände: alles außer Dev-Fenster und den Plätzen selbst
+const NOT_IN_PROFILE = ['devPanel', 'profiles'];
+export function saveProfile(i: number) {
+  const data = Object.fromEntries(Object.entries(structuredClone(uiSettings)).filter(([k]) => !NOT_IN_PROFILE.includes(k)));
+  const list = [...uiSettings.profiles];
+  list[i] = { at: new Date().toISOString(), data };
+  setUi('profiles', list);
+}
+export function loadProfile(i: number) {
+  const p = uiSettings.profiles[i];
+  if (!p) return false;
+  Object.assign(uiSettings, { ...UI_DEFAULTS, ...structuredClone(p.data), devPanel: uiSettings.devPanel, profiles: uiSettings.profiles });
+  try { localStorage.setItem(STORE, JSON.stringify(uiSettings)); } catch { /* kein Storage */ }
+  applyUi();
+  return true;
 }
 
 // Klassen auf <body>; Module mit eigener Darstellung hören auf das Ereignis 'uisettings'

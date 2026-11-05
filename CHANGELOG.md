@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): 4 Plätze für eigene UI-Stände in Einstellungen → Interface: „Speichern“ sichert HUD-Preset, eigene HUD-Lagen, Zahlen-Stil, Größen, Schrift und Tooltips, „Laden“ stellt alles wieder her; Überschreiben fragt nach
 - feat(ui): Inventar und Shop zeigen Bilder der Waffen, gerendert aus dem echten 3D-Modell (einmal pro Waffe, danach gemerkt)
 - fix(karten): Strichkrieger und Klingenstrich: Bei voller Leiste blieb die Ersetzen-Ansicht einer neuen Fähigkeit leer und der Run hing fest; jetzt stehen die eigenen Moves zur Wahl (mit Tasten 1–5); Prozentwerte im Kartentext brechen nicht mehr mitten im Wert um
 - feat(ui): Kompakte Level-up-Karten (ab 4 Karten) zeigen jetzt direkt den Kartentext mit farbigen Stichwörtern, was sie ersetzen, den Wert vorher → nachher und die Seltenheit; kleineres Icon, Höhe nach Inhalt

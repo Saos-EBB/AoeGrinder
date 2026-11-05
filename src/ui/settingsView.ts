@@ -1,7 +1,8 @@
 // Einstellungen (Mockup Settings.dc.html, Look Glut): Tabs links, Inhalt rechts. Alles wirkt sofort und landet in frostgrind.ui.v1.
 
 import { $ } from '../util';
-import { uiSettings, setUi, HUD_PRESETS, NUM_STYLES, UiSettings } from './uiSettings';
+import { uiSettings, setUi, HUD_PRESETS, NUM_STYLES, UiSettings, saveProfile, loadProfile } from './uiSettings';
+import { askConfirm } from './confirm';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
 
@@ -65,31 +66,57 @@ function button(text, cls, onClick) {
   return b;
 }
 
-const ui = $('setInterface');
-const btnRow = document.createElement('div');
-btnRow.className = 'setBtns';
-btnRow.append(
-  button('UI bearbeiten (verschieben)', 'smallBtn', () => {
-    const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
-    $('settingsClose').click();
-    editHud(backdrop);
-  }),
-  button('Layout zurücksetzen', 'smallBtn', () => $('hudEditReset').click()),
-);
-ui.append(
-  h2('HUD'),
-  row('HUD-Layout', select('hudPreset', HUD_PRESETS)),
-  row('HUD-Größe', slider('hudScale', 70, 150)),
-  row('Combo- und Kill-Anzeige', check('showCombo')),
-  btnRow,
-  h2('Schadenszahlen'),
-  row('Zahlen-Stil', select('numStyle', NUM_STYLES)),
-  row('Größe', slider('numSize', 50, 200)),
-  row('Kleine Treffer zusammenfassen', check('numMerge')),
-  row('Heilzahlen', check('healNums')),
-  h2('Schrift und Tooltips'),
-  row('Schrift für Titel und Namen', segmented('font', [['standard', 'Standard'], ['fraktur', 'Fraktur']])),
-  row('Erweiterte Tooltips', check('tooltipsExt')),
-);
+// Interface-Tab; wird nach dem Laden eines eigenen UI-Stands neu gebaut, damit alle Regler den Stand zeigen
+const fmtAt = iso => { const d = new Date(iso); return `${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`; };
+function profileRows() {
+  const box = document.createElement('div');
+  box.className = 'setProfiles';
+  uiSettings.profiles.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'setProfile';
+    const info = Object.assign(document.createElement('span'), { textContent: p ? `Platz ${i + 1} · ${p.data.hudPreset} · ${p.data.numStyle} · ${fmtAt(p.at)}` : `Platz ${i + 1} · leer` });
+    const save = button('Speichern', 'smallBtn', async () => {
+      if (p && !await askConfirm('Platz überschreiben?', `Platz ${i + 1} enthält schon einen UI-Stand. Mit dem aktuellen überschreiben?`, 'Überschreiben')) return;
+      saveProfile(i); buildInterface();
+    });
+    const load = button('Laden', 'smallBtn', () => { if (loadProfile(i)) buildInterface(); });
+    (load as HTMLButtonElement).disabled = !p;
+    row.append(info, save, load);
+    box.append(row);
+  });
+  return box;
+}
+function buildInterface() {
+  const ui = $('setInterface');
+  ui.textContent = '';
+  const btnRow = document.createElement('div');
+  btnRow.className = 'setBtns';
+  btnRow.append(
+    button('UI bearbeiten (verschieben)', 'smallBtn', () => {
+      const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
+      $('settingsClose').click();
+      editHud(backdrop);
+    }),
+    button('Layout zurücksetzen', 'smallBtn', () => $('hudEditReset').click()),
+  );
+  ui.append(
+    h2('Eigene UI'),
+    profileRows(),
+    h2('HUD'),
+    row('HUD-Layout', select('hudPreset', HUD_PRESETS)),
+    row('HUD-Größe', slider('hudScale', 70, 150)),
+    row('Combo- und Kill-Anzeige', check('showCombo')),
+    btnRow,
+    h2('Schadenszahlen'),
+    row('Zahlen-Stil', select('numStyle', NUM_STYLES)),
+    row('Größe', slider('numSize', 50, 200)),
+    row('Kleine Treffer zusammenfassen', check('numMerge')),
+    row('Heilzahlen', check('healNums')),
+    h2('Schrift und Tooltips'),
+    row('Schrift für Titel und Namen', segmented('font', [['standard', 'Standard'], ['fraktur', 'Fraktur']])),
+    row('Erweiterte Tooltips', check('tooltipsExt')),
+  );
+}
+buildInterface();
 
 $('setBinds').addEventListener('click', openBinds);

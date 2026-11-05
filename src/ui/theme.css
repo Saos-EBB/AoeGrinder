@@ -342,3 +342,9 @@ body.mobile .invMain { grid-template-columns: 1fr; }
 .invCell, .invSlot.weapon { overflow: hidden; }
 .resIcon img { height: 140px; width: auto; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--rc) 60%, transparent)); }
 .resIcon:has(img) { width: auto; }
+
+/* Eigene UI-Stände in den Einstellungen */
+.setProfiles { display: flex; flex-direction: column; gap: 6px; }
+.setProfile { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; font-size: 15px; color: var(--glut-muted); }
+.setProfile .smallBtn { width: auto; margin: 0; padding: 6px 14px; }
+.setProfile .smallBtn:disabled { opacity: .4; cursor: not-allowed; }
