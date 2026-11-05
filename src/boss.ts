@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
-import { mobMaxHp, maxHp } from './formulas';
+import { mobMaxHp, maxHp, xpForKill } from './formulas';
 import { scene, camera } from './render';
 import { cam, setCamOverride } from './camera';
 import { pad } from './gamepad';
@@ -13,7 +13,11 @@ import { zone, terrainDecal, drape } from './world';
 import { groundAt, resolve } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { spawnMob, removeMob, enterCombat } from './mobs';
-import { mobMode } from './modifiers';
+import { mobMode, scoreMult } from './modifiers';
+import { C } from './champions';
+import { run } from './score';
+import { meta, saveMeta } from './meta';
+import { combatText, fmtTime } from './ui/hud';
 import { damagePlayer } from './player';
 import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
@@ -44,6 +48,9 @@ export const B = {
   tele: { color: [1, 0.1, 0.06], min: 0.15, max: 0.55 },   // PH: rote Bodenwarnung, Deckkraft steigt bis zum Treffer
   // Phase 2 ab at des Lebens: Brüllen (unverwundbar), Druckwelle stößt weg, alle Ausholzeiten × windupMul, Slam mit Ring, Geschoss-Fächer
   phase2: { at: 0.5, roarMs: 1000, push: 4, pushMs: 250, trauma: 0.8, windupMul: 0.8, ring: { max: 12, ms: 2000, band: 0.5, color: [2.6, 0.7, 0.2] } },   // PH
+  // Tod: Stopp stopMs, dann Zeitlupe slowMs mit slow (echte Zeit), riesiger Riss. Belohnung: Punkte wie points Champions, Knochenstaub dust
+  end: { stopMs: 150, stop: 0.05, slowMs: 800, slow: 0.3, decal: 16, trauma: 1, statsMs: 7000 },   // PH
+  points: 10, dust: 20,     // PH
   fan: { windupMs: 700, n: 5, spread: Math.PI / 3, speed: 8, range: 24, radius: 0.5, gapMs: 800, color: [3, 0.9, 0.3] },   // PH: langsame Geschosse, ein Fächer trifft höchstens einmal
 };
 
@@ -174,13 +181,14 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #bossBar .lag { position: absolute; inset: 0 auto 0 0; background: #e8c070; }
   #bossBar .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c8302a, #7a1410); }
   #bossBar .sub { font-size: 14px; margin-top: 4px; color: #d8c8a8; }
+  #bossBar.won .name { font-size: 40px; color: #ffd27a; letter-spacing: 4px; }
   body.menu #bossBar { display: none !important; }
 </style>`);
 const bar = document.createElement('div');
 bar.id = 'bossBar';
 bar.innerHTML = '<div class="name"></div><div class="bar"><div class="lag"></div><div class="fill"></div></div><div class="sub"></div>';
 document.body.appendChild(bar);
-const barName = bar.querySelector('.name') as HTMLElement, barFill = bar.querySelector('.fill') as HTMLElement,
+const barTrack = bar.querySelector('.bar') as HTMLElement, barName = bar.querySelector('.name') as HTMLElement, barFill = bar.querySelector('.fill') as HTMLElement,
   barLag = bar.querySelector('.lag') as HTMLElement, barSub = bar.querySelector('.sub') as HTMLElement;
 
 // ---------- Boss ----------
@@ -222,6 +230,7 @@ export function startBoss() {
   m.hidden = false; m.model.root.visible = true;
   m.hp = m.maxHp = Math.round(mobMaxHp(level) * B.hpMul);
   m.noKnock = true;
+  m.xpMul = C.xp;                                      // XP und Punkte wie ein Champion, dazu der Bonus in endBoss
   m.boss = true;
   m.bossTint = 'boss';
   m.plate.remove();                                    // Name und Leben stehen oben in der Boss-Leiste
@@ -238,6 +247,9 @@ export function startBoss() {
   barName.textContent = m.type.name;
   barSub.textContent = `Boss · Level ${level}`;
   barLag.style.width = barFill.style.width = '100%';
+  barTrack.style.display = 'block';
+  bar.classList.remove('won');
+  clearTimeout(statsTimer);
   bar.style.display = 'block';
   return true;
 }
@@ -564,9 +576,37 @@ function updateShots(dt) {
 }
 const clearShots = () => { for (const s of shots) { s.live = false; s.mesh.visible = false; } };
 
-function endBoss() {
-  cleanup();
+// Tod: Stopp, Zeitlupe, riesiger Riss, Einblendung. Belohnung über Punkte und Knochenstaub, kein eigenes Drop-System
+let endAt = -1e9, statsTimer = 0;
+export function bossTimeScale() {
+  const E = B.end, t = performance.now() - endAt;
+  return t < E.stopMs ? E.stop : t < E.stopMs + E.slowMs ? E.slow : 1;
 }
+function endBoss() {
+  const m = boss.mob, E = B.end, st = boss.stats;
+  const time = state.now - boss.startAt, perfect = (state.dodgeStats?.perfect ?? 0) - st.perfect0;
+  endAt = performance.now();
+  addTrauma(E.trauma);
+  decal(m.pos, 3, E.decal, E.decal);
+  debris(m.pos); debris(m.pos); debris(m.pos); debris(m.pos);
+  shockwave(m.pos, 18, 0.07, 900);
+  ringFx(m.pos, 14, [2.6, 0.6, 0.2], 900);
+  lightFlash(m.pos, 0xffb070, 800, 40, 600);
+  // Ein Champion-Kill zählte schon in killMob (xpMul), dazu die übrigen points − 1
+  run.killPoints += Math.round(xpForKill(m.level) * C.xp * (B.points - 1) * scoreMult());
+  meta.dust += B.dust;
+  saveMeta();
+  combatText(m.pos, `+${B.dust} Knochenstaub`, 'xp', 4);
+  cleanup();
+  barName.textContent = 'Boss besiegt';
+  bar.classList.add('won');
+  barTrack.style.display = 'none';
+  barSub.textContent = `Kampfzeit ${fmtTime(time)} · Treffer genommen ${st.hits} · Perfekte Dodges ${perfect} · +${B.dust} Knochenstaub`;
+  bar.style.display = 'block';
+  statsTimer = window.setTimeout(() => { bar.style.display = 'none'; }, E.statsMs);
+  lastResult = { time, hits: st.hits, perfect };
+}
+let lastResult = null;
 
 // Kampf beenden: Arena weg, Leiste weg. Der Spawn läuft danach von selbst weiter (updateRespawn füllt die Packs auf)
 function cleanup(instant = false) {
@@ -624,4 +664,4 @@ $('devPerf').insertAdjacentHTML('afterend', '<button class="bindBtn" id="devBoss
 $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(); });
 
 // Für Tests
-(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, phase2: () => { if (boss) { boss.mob.hp = Math.floor(boss.mob.maxHp * B.phase2.at); } }, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
+(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, phase2: () => { if (boss) { boss.mob.hp = Math.floor(boss.mob.maxHp * B.phase2.at); } }, get boss() { return boss; }, get result() { return lastResult; }, camera, get lock() { return lockOn; }, get camK() { return camK; } };

@@ -41,7 +41,7 @@ import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
 import { meterStage } from './schoolMeter';
-import { updateBoss, updateBossVisuals, bossBusy } from './boss';
+import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -127,7 +127,7 @@ function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();
-  const simDt = hitstopDt(dt);
+  const simDt = hitstopDt(dt) * bossTimeScale();   // Boss-Tod: Stopp und Zeitlupe
   if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);
