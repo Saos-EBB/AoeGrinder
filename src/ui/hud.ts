@@ -170,6 +170,7 @@ function updateMeterBar() {
   }
   const full = v >= 1;
   if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
+  if (school === 'Arkan') { $('meterFill').style.transform = `scaleX(${v})`; $('meterText').textContent = `${M.name} ${Math.round(v * M.max)} / ${M.max}`; el.classList.toggle('full', full); return; }
   $('meterFill').style.transform = `scaleX(${v})`;
   $('meterText').textContent = full ? M.full : `${M.name} ${Math.floor(v * 100)} %`;
   el.classList.toggle('full', full);

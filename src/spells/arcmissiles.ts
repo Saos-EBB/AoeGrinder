@@ -1,6 +1,11 @@
 import { dist2d } from '../util';
 import { state, player } from '../state';
-import { mobsInRadius, startChannel, hasRune } from './core';
+import { mobsInRadius, startChannel, hasRune, schedule } from './core';
+import { mods } from '../config';
+import { meterSchool } from '../schoolMeter';
+
+// Spellslinger (Arkan-Figur): jeder Treffer mit dieser Chance ein Splitter, der nach 1 s ins Ziel fliegt // PH
+const SLINGER = { chance: 0.2, delay: 1000, mul: 0.3 };
 import { nearestTarget } from './target';
 import { boltFx, burstFx, SHADOW, VOID } from './fx';
 
@@ -13,7 +18,9 @@ function fire(ch) {
   if (!m) return;
   ch.shots++;
   boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, m.pos, SHADOW, 140);
-  ch.c.hitProjectile(m, arcmissiles.dmg);
+  const landed = ch.c.hitProjectile(m, arcmissiles.dmg);
+  if (landed && meterSchool() === 'Arkan' && Math.random() < SLINGER.chance + mods.splinterSwarm)
+    schedule(SLINGER.delay, () => { if (m.dead) return; boltFx({ x: player.pos.x, y: player.pos.y + 1.5, z: player.pos.z }, m.pos, VOID, 120); ch.c.hit(m, arcmissiles.dmg * SLINGER.mul); });
   if (hasRune('arcmissiles', 'split')) {
     const next = mobsInRadius(m.pos, SPLIT.range, Infinity).filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos))[0];
     if (next) { boltFx(m.pos, next.pos, SHADOW, 120); ch.c.hit(next, arcmissiles.dmg * SPLIT.mul); }

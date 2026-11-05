@@ -6,22 +6,24 @@ import { SCHOOL_METER, mods } from './config';
 import { modValue } from './modifiers';
 
 const M = SCHOOL_METER, H = M.Feuer;
-const meter = { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0 };
+const meter = { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0, charges: 0, lastArc: -1e9 };
+const A = M.Arkan;
 
 // Schule des Modus oder null (?-Magier und Nahkämpfer haben keine Anzeige)
 export const meterSchool = (): 'Feuer' | 'Frost' | 'Arkan' | null => { const t = modValue('onlyTag'); return t === 'Feuer' || t === 'Frost' || t === 'Arkan' ? t : null; };
 const fire = () => meterSchool() === 'Feuer';
 // Füllung 0 … 1 für HUD und Modell
-export const meterValue = () => fire() ? meter.heat / H.max : meter.value;
+const arcane = () => meterSchool() === 'Arkan';
+export const meterValue = () => fire() ? meter.heat / H.max : arcane() ? meter.charges / A.max : meter.value;
 export const meterHeat = () => fire() ? meter.heat : 0;
 export const meterOverheated = () => fire() && meter.over;
 // Stufe fürs Modell (models/strichMagier.ts): 0–24 %, 25–49 %, 50–99 %, voll; -1 ohne Anzeige. Überhitzt zählt als voll
 export const meterStage = () => { if (!meterSchool()) return -1; const v = meterValue(); return v >= 1 || meterOverheated() ? 3 : v >= 0.5 ? 2 : v >= 0.25 ? 1 : 0; };
 const full = school => meter.value >= 1 && meterSchool() === school;
 
-export function resetMeter() { Object.assign(meter, { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0 }); }
+export function resetMeter() { Object.assign(meter, { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0, charges: 0, lastArc: -1e9 }); }
 export function meterKill(champion) {
-  if (!meterSchool() || fire()) return;
+  if (!meterSchool() || fire() || arcane()) return;
   meter.value = Math.min(1, meter.value + (champion ? M.perChampion : M.perKill));
   meter.lastKill = state.now;
 }
@@ -33,9 +35,21 @@ export function meterHeatHit() {
   if (meter.heat >= H.max && !meter.over) { meter.over = true; meter.nextSelf = state.now + H.selfTickMs; }
 }
 // Ein Zauber fängt an: Frost kühlt (kommt im Fire-Modus nur über einen Waffen-Fokus in den Pool)
-export function meterCast(tags) { if (fire() && tags?.includes('Frost')) meter.heat /= 2; }
+export function meterCast(tags, id?) {
+  if (fire() && tags?.includes('Frost')) meter.heat /= 2;
+  if (!arcane() || !tags?.includes('Arkan')) return;
+  meter.lastArc = state.now;                                  // jeder Arkan-Zauber hält die Ladungen
+  if (A.gain.includes(id)) addArcCharge();
+}
+// Arkane Ladungen (v31)
+export const arcCharges = () => arcane() ? meter.charges : 0;
+export function addArcCharge() { if (arcane()) { meter.charges = Math.min(A.max, meter.charges + 1); meter.lastArc = state.now; } }
+export function takeArcCharges() { const n = arcCharges(); meter.charges = 0; return n; }
+export const arcDmgMul = () => 1 + A.dmg * arcCharges();
+export const arcCostMul = () => 1 + A.cost * arcCharges();
 // Pro Frame; gibt den Anteil der max. Leben zurück, den das Überhitzen gerade kostet (sonst 0)
 export function updateMeter(dt) {
+  if (arcane()) { if (state.now - meter.lastArc > A.idleMs) meter.charges = 0; return 0; }
   if (!fire()) { if (state.now - meter.lastKill > M.idleMs) meter.value = Math.max(0, meter.value - M.decayPerS * (meterSchool() === 'Frost' ? Math.max(0, 1 - mods.permafrost) : 1) * dt / 1000); return 0; }   // Permafrost
   if (state.now - meter.lastHeat > H.coolDelayMs) meter.heat = Math.max(0, meter.heat - H.coolPerS * dt / 1000);
   if (meter.over && meter.heat < H.overheatUntil) meter.over = false;
@@ -46,6 +60,7 @@ export function updateMeter(dt) {
 // Dev und Tests: Anzeige setzen (0 … 1)
 export function setMeter(v) {
   if (fire()) { meter.heat = v * H.max; meter.lastHeat = state.now; if (meter.heat >= H.max) { meter.over = true; meter.nextSelf = state.now + H.selfTickMs; } return; }
+  if (arcane()) { meter.charges = Math.round(v * A.max); meter.lastArc = state.now; return; }
   meter.value = v; meter.lastKill = state.now;
 }
 
@@ -54,7 +69,7 @@ export function setMeter(v) {
 export const meterDmgMul = (tick = false) => fire() ? (1 + (tick ? H.burnPerHeat : H.dmgPerHeat) * meter.heat) * (meter.over ? 1 + H.overDmg + mods.emberCore : 1) : 1;
 // Feuer-Figur: Anteil der max. Leben, den jeder Kill heilt (mobs.ts)
 export const meterKillHeal = () => fire() ? H.killHeal : 0;
-export const meterCdMul = () => full('Arkan') ? 1 - M.Arkan.cd : 1;
+export const meterCdMul = () => 1;   // Fokus voll gab −25 % Abklingzeit; seit v31 Ladungen statt Fokus
 export const meterFrostFull = () => full('Frost');
 // Frost: jeder Slow wird stärker, gesamt höchstens slowMax
 export const meterSlow = pct => full('Frost') ? Math.max(pct, Math.min(M.Frost.slowMax, pct + M.Frost.slow)) : pct;

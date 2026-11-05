@@ -41,9 +41,11 @@ import { frostbolt } from './frostbolt';
 import { needle } from './needle';
 import { icebarrier } from './icebarrier';
 import { iceage } from './iceage';
+import { barrage, beam, arcorb, arcstrike } from './arcane2';
+import { archon, timewarp, archBeam, archNova, archPort } from './arcRelics';
 import { ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage } from './relics';
 
-Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, gasoline, firetrail, firestorm, frostbolt, needle, icebarrier, iceage, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, bwhip, bjump, siphon, bwave, glue, melt, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
+Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, gasoline, firetrail, firestorm, frostbolt, needle, icebarrier, iceage, barrage, beam, arcorb, arcstrike, archon, timewarp, archBeam, archNova, archPort, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, bwhip, bjump, siphon, bwave, glue, melt, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
 // input.ts und gamepad.ts prüfen SPELLS[aktion]. Die neuen Tasten zählen dort als Zauber, ohne selbst einer zu sein.
 for (const action of SPELL_ACTIONS) if (!SPELLS[action]) Object.defineProperty(SPELLS, action, { value: { alias: true }, enumerable: false });
 resetSpells();

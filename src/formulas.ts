@@ -5,7 +5,7 @@ import { rand, clamp } from './util';
 import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX, LEVEL_MAX, LEVEL_PACE, LEVEL_KILLS } from './config';
 import { stat, rune, echoCost, radiusMult } from './spells/core';
 import { modFactor, timeLimit, modValue } from './modifiers';
-import { meterCdMul } from './schoolMeter';
+import { meterCdMul, arcCostMul } from './schoolMeter';
 import { buffCdMul } from './buffs';
 import { batteryMode, batteryCost } from './battery';
 
@@ -75,7 +75,8 @@ export function manaCost(id) {
   const s = SPELLS[id];
   if (modValue('lifeCost') && s.lifePct) return Math.round(maxHp() * s.lifePct * stat(id).mana);   // Blutmagier: Kosten als Anteil der Leben
   const base = (batteryMode() ? batteryCost(s) : s.mana) * stat(id).mana * (echoCost(id) ? 1.5 : 1) * modFactor('manaCost') * mods.manaCostMul;   // Arcane only: +15 %, Buch −10 %
-  return Math.round(id === 'ae' ? base * mods.aeCost : base);
+  const arc = s.tags?.includes('Arkan') ? arcCostMul() : 1;   // Arkane Ladungen: +25 % Kosten pro Ladung
+  return Math.round((id === 'ae' ? base * mods.aeCost : base) * arc);
 }
 export function spellCd(id) {
   return (rune(id)?.cdMul ?? 1) * baseCd(id) * mods.cdMul * (stat(id).cd ?? 1) * meterCdMul() * buffCdMul();   // cdMul: Waffe, stat.cd: Rang-Karte, Kill-Anzeige Arkan voll, Tee-Schale

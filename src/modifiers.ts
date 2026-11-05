@@ -14,7 +14,8 @@ export const MODIFIERS = [
   { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['fireball', 'flame', 'blast', 'hellfire', 'gasoline', 'drink', 'blink', null], onlyTag: 'Feuer',
     pool: ['fireball', 'flame', 'blast', 'hellfire', 'meteor', 'detonate', 'firetrail', 'firestorm', 'gasoline'], relics: ['phoenix'],
     dotMul: 1.5, baseCrit: 0.15, hp: 0.9 },   // PH: Dauerschaden mit Tag Feuer, Grund-Crit, Leben
-  { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['ae', 'voidorb', 'arcmissiles', 'arcmark', null, 'drink', 'blink', null], onlyTag: 'Arkan',
+  { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'surge', 'drink', 'blink', null], onlyTag: 'Arkan',
+    pool: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'arcmark', 'beam', 'arcorb', 'surge', 'arcstrike'], relics: ['archon', 'timewarp'],
     castWhileMoving: true, blinkCharges: 2, hp: 0.85, manaCost: 1.15 },   // PH: Zaubern und Kanäle im Laufen, Leben, Manakosten
   { id: 'blitz', name: 'Nur Blitz', desc: 'nur Blitz-Spells und -Karten, Batterie statt Mana, Aufladen statt Trinken, Blink bleibt', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge', 'blood'], startKit: ['chain', 'arc', 'strike', 'ball', null, 'recharge', 'blink', null], onlyTag: 'Blitz', noDrink: true,
     battery: true },   // PH: Batterie in battery.ts, Zahlen in BATTERY (config.ts)

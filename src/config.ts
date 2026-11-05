@@ -93,7 +93,8 @@ export const mods: any = {};
 export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
     fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
-    iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0 });   // Frost-Talente (v31)
+    iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
+    splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0 });   // Arkan-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -140,7 +141,8 @@ export const SCHOOL_METER = {
     dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500,
     overDmg: 0.25, killHeal: 0.005 },   // v31: überhitzt +25 % Schaden, jeder Kill heilt 0,5 % Leben (Feuer-Figur)
   Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
-  Arkan: { name: 'Fokus', color: '#c573ff', full: 'Fokus voll: −25 % Abklingzeit', cd: 0.25 },
+  // Arkan (v31): Arkane Ladungen statt Fokus. Pro Ladung +15 % Schaden und +25 % Kosten auf Arkan-Spells, verfallen nach idleMs ohne Arkan-Zauber
+  Arkan: { name: 'Ladungen', color: '#c573ff', full: 'Ladungen voll', max: 4, dmg: 0.15, cost: 0.25, idleMs: 10000, gain: ['ae', 'arcmissiles', 'arcstrike'] },
 };
 
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
@@ -216,6 +218,13 @@ export const CARDS = [
     desc: () => 'Solange die Frostkugel fliegt, ist Blizzard sofort, ohne Kanal, und läuft 8 s von selbst.', apply: () => { mods.frostEye = 1; } },
   { id: 'shardhail', name: 'Splitterhagel', only: ['Frost'], max: 5,
     desc: (r, m) => `+${Math.max(1, Math.round(m))} maximale Eissplitter (höchstens 50).`, apply: (r, m) => { mods.shardMax += Math.max(1, Math.round(m)); } },
+  // Arkan (v31)
+  { id: 'splinterswarm', name: 'Splitterschwarm', only: ['Arkan'], needs: 'arcmissiles', max: 3,
+    desc: (r, m) => `+${Math.round(10 * m)} % Splitter-Chance bei Arkanen Geschossen.`, apply: (r, m) => { mods.splinterSwarm += 0.10 * m; } },
+  { id: 'blinkbomb', name: 'Blinkbombe', only: ['Arkan'], max: 1,
+    desc: () => 'Jeder Blink löst am Ziel eine Arcane Explosion aus.', apply: () => { mods.blinkBomb = 1; } },
+  { id: 'doublejump', name: 'Doppelsprung', only: ['Arkan'], max: 1,
+    desc: () => '+1 Blink-Ladung.', apply: () => { mods.blinkExtra += 1; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

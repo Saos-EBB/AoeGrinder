@@ -11,7 +11,7 @@ const PULL_PER_S = 4, MAX_SLOW = 0.4, FOLLOW_SPEED = 3, IMPLODE = 25, TWIN_OFFSE
 
 function spawnOrb(c, pos, radius, k) {
   if (!vfxOld()) voidOpen(pos, radius);
-  addField(c, { pos, radius, dur: voidorb.dur, visual: visuals(fieldDecal(voidTex, VOID, vfxOld() ? 0.8 : 0.5, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
+  addField(c, { pos, radius, dur: voidorb.dur, void: true, tickMs: 1e9, visual: visuals(fieldDecal(voidTex, VOID, vfxOld() ? 0.8 : 0.5, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
     onUpdate(f, dt) {
       if (hasRune('voidorb', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);
@@ -24,9 +24,7 @@ function spawnOrb(c, pos, radius, k) {
       if (vfxOld()) areaParticles(f.pos, f.radius, 40 * k, dt, [SHADOW, VOID], { up: 1, size: 0.35, swirl: 6 });
       else voidSpiral(f.pos, f.radius, k, dt, [SHADOW, VOID, [1.4, 0.4, 2.2]]);
     },
-    onTick(f) {
-      for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, voidorb.pulse * k);
-    },
+    // v31: kein Schaden mehr, nur Sog und Slow. Die Rune Implosion macht weiter Schaden
     onEnd(f) {
       if (!hasRune('voidorb', 'implode')) return;
       const caught = mobsInRadius(f.pos, f.radius);
@@ -37,7 +35,7 @@ function spawnOrb(c, pos, radius, k) {
 }
 
 export const voidorb = {
-  name: 'Leerenkugel', desc: 'Dunkle Kugel aufs Bodenziel 6 s, zieht alle in 15 yd zur Mitte, Arkanschaden, bis 40 % Slow nahe der Mitte.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Leere', 'Fläche'], cls: 'arcane',
+  name: 'Leerenkugel', desc: 'Dunkle Kugel aufs Bodenziel 6 s, zieht alle in 15 yd zur Mitte, bis 40 % Slow nahe der Mitte. Kein Schaden.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Leere', 'Fläche'], cls: 'arcane',
   mana: 350, cd: 30000, dur: 6000, pulse: 18, range: 30, radius: 15, ground: true,   // PH
   runes: [
     { id: 'follow', name: 'Leerenbegleiter', desc: 'Folgt dir.' },

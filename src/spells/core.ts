@@ -17,7 +17,7 @@ import { BATTERY } from '../config';
 import { dodgeRecovery, comboReady, consumeCombo } from '../dodge';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
-import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
+import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast, arcDmgMul } from '../schoolMeter';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -70,7 +70,8 @@ export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
 const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
-export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = state.bonusCharges?.[id] ?? 0; return bonus ? (n ?? 1) + bonus : n; };   // bonus: Buch
+export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = (state.bonusCharges?.[id] ?? 0) + (id === 'blink' ? mods.blinkExtra : 0);   // blinkExtra: Doppelsprung
+  return bonus ? (n ?? 1) + bonus : n; };   // bonus: Buch
 export function cdEnd(id) {
   const n = chargesOf(id);
   if (!n) return player.cds[id] || 0;
@@ -128,6 +129,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
+      if (hasTag(id, 'Arkan')) dmg *= arcDmgMul();                          // Arkane Ladungen
       dmg *= buffDmgMul();                                                  // Getränke des ?-Magiers
       if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // Blutmagier: weniger Leben, mehr Schaden
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
@@ -224,7 +226,7 @@ export function castSpell(id, point?) {
 // Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts). Liste an einer Funktion: Import-Kreis
 function castStartHooks(): any[] { return (castStartHooks as any).list ??= []; }
 export function onCastStart(fn) { castStartHooks().push(fn); }
-export function noteCastStart(id) { meterCast(SPELLS[id].tags); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
+export function noteCastStart(id) { meterCast(SPELLS[id].tags, id); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
 function release(id, point, opts: any = {}) {

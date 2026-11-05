@@ -6,6 +6,7 @@ import { mods, SLOT } from './config';
 import { modValue } from './modifiers';
 import { onAnyHit, mobsInRadius, applySlow } from './spells/core';
 import { renderActionbar } from './ui/hud';
+import { updateArcRelics, endArchon } from './spells/arcRelics';
 
 const figure = () => modValue('onlyTag');
 
@@ -30,10 +31,12 @@ export function frozenGroundTick(f) {
 
 export function resetFigures() {
   state.shards = 0;
+  state.archon = null; state.warp = null;
   player.iceGroundUntil = 0;
 }
 
 export function updateFigures() {
+  updateArcRelics();
   if (figure() === 'Frost') {
     player.resNote = `Eissplitter ${state.shards ?? 0}/${shardMax()}`;
     if (mods.iceAge && state.slots[SLOT.move] !== 'iceage') { state.slots[SLOT.move] = 'iceage'; renderActionbar(); }   // Eiszeit liegt auf der Bewegungs-Taste
