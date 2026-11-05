@@ -62,7 +62,8 @@ export function poisonCloudField() {
   });
 }
 // Klebefaden: Fäden zwischen den Angeketteten, solange die Kette hält; pulsieren
-export function webLook(pairs: [any, any][], ms: number) {
+export function webLook(all: [any, any][], ms: number) {
+  const pairs = all.slice(0, 24);   // PH: höchstens so viele Fäden
   fx(ms / 1000, (k, _dt, e) => {
     if (!e.ms.length) for (const _ of pairs) em(e, 'cyl', PAL.slime, { sc: 6, core: .6, local: true, flow: [0, 1, 0] });
     const T = EU.uTime.value;

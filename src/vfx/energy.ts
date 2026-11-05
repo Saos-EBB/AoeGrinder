@@ -143,14 +143,14 @@ function geoOf(name: GeoName) {
 export const arcName = (th: number): GeoName => `arc${Math.round(th * 100)}`;
 
 // ───────────────────────── Pool
-const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 24, gring: 40, gdisk: 32 };   // PH: Meshes pro Form, sonst 16
+const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 48, gring: 40, gdisk: 32 };   // PH: Meshes pro Form, sonst 16
 type Fx = { a: number; dur: number; up?: (k: number, dt: number, e: Fx) => void; end?: () => void; ms: THREE.Mesh[]; dead?: boolean; [k: string]: any };
 type Pool = { all: THREE.Mesh[]; free: THREE.Mesh[] };
 const pools = new Map<string, Pool>();
 const FX: Fx[] = [];
 let serial = 0;
 
-function acquire(name: GeoName, side: THREE.Side, alpha: boolean) {
+function acquire(name: GeoName, side: THREE.Side, alpha: boolean, owner?: Fx) {
   const key = `${name}|${side}|${alpha ? 1 : 0}`;
   let p = pools.get(key);
   if (!p) pools.set(key, p = { all: [], free: [] });
@@ -164,9 +164,11 @@ function acquire(name: GeoName, side: THREE.Side, alpha: boolean) {
   }
   if (!m) {   // Pool voll: den ältesten Effekt in diesem Pool beenden
     let old: THREE.Mesh = null;
-    for (const x of p.all) if (!old || x.userData.n < old.userData.n) old = x;
+    for (const x of p.all) if (x.userData.owner !== owner && (!old || x.userData.n < old.userData.n)) old = x;
+    if (!old) return null;
     release(old.userData.owner);
     m = p.free.pop();
+    if (!m) return null;
   }
   m.position.set(0, 0, 0); m.quaternion.identity(); m.scale.set(1, 1, 1); m.visible = true; m.renderOrder = 0; m.userData.laid = null;
   m.userData.n = ++serial;
@@ -193,9 +195,12 @@ export function fx(dur: number, up?: Fx['up'], end?: Fx['end']): Fx {
   return e;
 }
 export const after = (s: number, fn: () => void) => fx(s, null, fn);
+// Ist der Pool ganz von einem Effekt belegt: unsichtbares Ersatz-Mesh, damit der Effekt weiterläuft
+let spare: THREE.Mesh = null;
+const dummy = () => { if (!spare) { const mat = eMat(PAL.fire); mat.visible = false; spare = new THREE.Mesh(G.sph, mat); } return spare.clone(); };   // Material unsichtbar, auch wenn der Effekt visible setzt
 // Energie-Mesh aus dem Pool an einen Effekt hängen
 export function em(e: Fx, name: GeoName, pal: Pal, o: EOpts = {}) {
-  const m = acquire(name, o.side ?? THREE.FrontSide, o.alpha !== undefined);
+  const m = acquire(name, o.side ?? THREE.FrontSide, o.alpha !== undefined, e) ?? dummy();
   const mat = m.material as THREE.MeshBasicMaterial;
   setE(mat, pal, o);
   if (o.alpha !== undefined) mat.opacity = o.alpha;
@@ -216,9 +221,9 @@ export function updateEnergy(dt: number) {
     if (!e) continue;
     e.a += dt;
     const k = Math.min(1, e.a / e.dur);
-    if (e.up) e.up(k, dt, e);
+    try { if (e.up) e.up(k, dt, e); } catch (err) { console.error('Effekt', err); release(e); continue; }   // ein kaputter Effekt darf die Spielschleife nie anhalten
     if (e.dead) continue;
-    if (e.a >= e.dur) { release(e); e.end?.(); }
+    if (e.a >= e.dur) { release(e); try { e.end?.(); } catch (err) { console.error('Effekt-Ende', err); } }
   }
 }
 // Dauerfläche für addField (spells/core.ts): visual = { update(pos, radius), remove() }. make(e) baut beim ersten Bild, step(e, fade, dt) läuft jedes Bild.
