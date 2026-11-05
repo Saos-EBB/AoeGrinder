@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-05
+
+- feat(boss): Boss-Prototyp (nur mit #boss in der URL oder Dev-Knopf „Boss jetzt“): Beim Erreichen von Level 15, 30, 45 … verschwinden die Mobs, der Spawn pausiert, eine Arena mit 20 yd Radius hält Spieler und Boss fest; Boss ist das nächste freigeschaltete Mob-Modell der Zone, ×2,5 groß, rot leuchtend, 40-faches Mob-Leben, Boss-Leiste oben, Einlauf 1,5 s mit Lande-Slam
+
 ## 2026-11-04
 
 - docs: Pool-Liste auf Code-Stand (neue und entfernte Spells, Krieger- und Klingenstrich-Moves, Eisblock, Magische Kiste statt Waffen-Tabelle, Dodge-Talente), Spell-Spec mit den neuen Spells und der Kill-Anzeige

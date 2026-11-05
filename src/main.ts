@@ -41,6 +41,7 @@ import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
 import { meterStage } from './schoolMeter';
+import { updateBoss, updateBossVisuals, bossBusy } from './boss';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -52,13 +53,14 @@ function update(dt) {
   updateRealMen(dt);
   updateKlinge(dt);
   updateZoneEvent(dt);
+  updateBoss(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {
     if (m.dead && state.now - m.deathAt > 4000) { removeMob(m); return false; }
     return true;
   });
-  updateRespawn();
+  if (!bossBusy()) updateRespawn();   // Boss-Kampf: kein Nachschub
   updateSiege(dt);
   updateCardQueue();
 }
@@ -87,6 +89,7 @@ function updateVisuals(dt) {
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
+  updateBossVisuals();
   frameNo++;
   for (const m of state.mobs) {
     // Hinter dem Nebel: weder zeichnen noch animieren. Im Halbdunkel jeden 2. Frame mit doppeltem dt.
@@ -102,7 +105,7 @@ function updateVisuals(dt) {
       state: m.dead ? 'dead' : m.moving ? 'run' : 'idle', speed: m.speed || CFG.mobSpeed,
       frozen: !m.dead && m.rootUntil > state.now, slowed: m.slowUntil > state.now,
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
-      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
+      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: m.bossTint ?? !!m.champion,
     });
     if (m.dead) sinkCorpse(m);
   }
