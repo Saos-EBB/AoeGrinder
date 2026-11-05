@@ -7,14 +7,14 @@ import { PLAGUE as P, UNIT, mods } from '../config';
 import { maxHp } from '../formulas';
 import { burnMob, knockbackMob, pullMob, applyRoot, onMobDeath, startLeap } from '../mobs';
 import { particles } from '../fx/particles';
-import { blightTex, voidTex } from '../fx/spellFx';
 import { shakeCamera } from '../camera';
 import { showError, combatText } from '../ui/hud';
 import { modValue } from '../modifiers';
 import { forward, mobsOnLine } from '../melee';
 import { mobsInRadius, addField, makeCtx, cdEnd, startCd, noteCastStart, stopChannel, stopDrink, onAnyHit } from './core';
 import { nearestTarget } from './target';
-import { boltFx, burstFx, fieldDecal, areaParticles } from './fx';
+import { zapLook } from '../vfx/boltLook';
+import { sludgeLook, slimeTrapField, slimeWaveLook, blackHoleField, holeImpact, poisonCloudField, webLook, contractLook, drainLook, burstLook, meltField, pestilenceLook } from '../vfx/plagueLook';
 import { mark, markStacks, clearMark, poison, poisoned } from '../plagueMarks';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
@@ -27,7 +27,7 @@ onMobDeath(m => {
   if (!poisoned(m) || !mods.contagion) return;
   const left = m.poison.dps * (m.poison.until - state.now) / 1000;
   const next = mobsInRadius(m.pos, 8, Infinity).filter(o => o !== m && !poisoned(o)).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, mods.contagion);
-  for (const o of next) { boltFx(m.pos, o.pos, GREEN, 200); poison(o, left); }
+  for (const o of next) { zapLook(m.pos, o.pos, 'slime'); poison(o, left); }
 });
 // Klebefaden: Schaden geht zu share auf die Angeketteten über (burnMob löst keine Treffer-Haken aus, also keine Schleife)
 onAnyHit((m, id, dmg) => {
@@ -62,14 +62,14 @@ const rootMs = stacks => (P.contract.rootMs + 1000 * mods.toughSlime) * stacks;
 function contractAll(c, list, keep = false) {
   if (!list.length) return;
   const center = list.reduce((p, m) => p.add(m.pos), list[0].pos.clone().multiplyScalar(0)).multiplyScalar(1 / list.length);
-  for (const m of list) { const n = markStacks(m); boltFx(m.pos, center, GREEN, 220); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n), 'glue'); if (!keep) clearMark(m); }
-  burstFx(center, 3, [GREEN, SICK], 0x60c020);
+  contractLook(list.map(m => m.pos.clone()), center);
+  for (const m of list) { const n = markStacks(m); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n), 'glue'); if (!keep) clearMark(m); }
 }
 const drainDmg = n => P.drain.dmg * UNIT * n;
 function drainAll(c, list, keep = false) {
+  drainLook(list.map(m => m.pos.clone()), list.map(m => markStacks(m)));
   for (const m of list) {
     const n = markStacks(m);
-    boltFx(m.pos, player.pos, GREEN, 180);
     if (c.hit(m, drainDmg(n))) heal(maxHp() * (P.drain.heal + mods.leech));
     if (!keep) clearMark(m);
   }
@@ -78,7 +78,7 @@ function burstAll(c, list, keep = false) {
   for (const m of list) {
     const n = markStacks(m);
     poison(m, drainDmg(n) * c.scaleOut());   // Gift in Höhe des Entziehen-Schadens, verteilt auf 12 s
-    spray(m.pos, 10);
+    burstLook(m.pos, n, list.indexOf(m) * .07);
     if (!keep) clearMark(m);
   }
 }
@@ -94,9 +94,8 @@ export const sludge = spell({
   effect(c) {
     const t = nearestTarget(P.sludge.range);
     if (!t) return;
-    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, GREEN, 200);
+    sludgeLook(t.pos, c.radius(P.sludge.radius));
     for (const m of mobsInRadius(t.pos, c.radius(P.sludge.radius))) if (c.hit(m, P.sludge.dmg * UNIT) && !m.dead) mark(m);
-    spray(t.pos, 16);
   },
 });
 
@@ -105,7 +104,7 @@ export const slimetrap = spell({
   lifePct: 0.02, mana: 80, cd: 8000, range: P.trap.range, radius: P.trap.radius, ground: true,
   effect(c, point) {
     const seen = new Set();
-    addField(c, { pos: point, radius: c.radius(P.trap.radius), dur: P.trap.ms, tickMs: 250, visual: fieldDecal(blightTex, GREEN, 0.5, 0.05),
+    addField(c, { pos: point, radius: c.radius(P.trap.radius), dur: P.trap.ms, tickMs: 250, visual: slimeTrapField(),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) { if (seen.has(m)) continue; seen.add(m); applyRoot(m, P.trap.rootMs + 1000 * mods.toughSlime, 'glue'); mark(m); } },
     });
   },
@@ -122,7 +121,7 @@ export const slimewave = spell({
       applyRoot(m, P.wave.rootMs + 1000 * mods.toughSlime, 'glue');
       mark(m);
     }
-    for (let i = 0; i < 100; i++) { const t = Math.random(), s = (Math.random() - 0.5) * P.wave.width; particles.spawn({ x: a.x + f.x * len * t + f.z * s, y: a.y + 0.3, z: a.z + f.z * len * t - f.x * s, vx: f.x * 8, vy: 1 + Math.random() * 2, vz: f.z * 8, grav: 6, drag: 1.5, life: 0.6, color: i % 3 ? GREEN : SICK, size: 0.4 }); }
+    slimeWaveLook(a, len, c.radius(P.wave.width));
   },
 });
 
@@ -131,10 +130,9 @@ export const blackhole = spell({
   lifePct: 0.05, mana: 200, cd: 20000, range: P.hole.range, radius: P.hole.radius, ground: true, showDmg: P.hole.dmg * UNIT,
   effect(c, point) {
     const caught = new Set<any>();
-    addField(c, { pos: point, radius: c.radius(P.hole.radius), dur: P.hole.ms, visual: fieldDecal(voidTex, DARK, 0.7, 2),
+    addField(c, { pos: point, radius: c.radius(P.hole.radius), dur: P.hole.ms, visual: blackHoleField(),
       onUpdate(f, dt) {
         for (const m of mobsInRadius(f.pos, f.radius)) { caught.add(m); pullMob(m, f.pos, P.hole.pull * dt / 1000); }
-        areaParticles(f.pos, f.radius, 40, dt, [DARK, GREEN], { up: 0.5, size: 0.3, swirl: 10 });
       },
       onEnd(f) {
         const list = [...caught].filter(m => !m.dead);
@@ -145,7 +143,7 @@ export const blackhole = spell({
           if (landed) return;
           landed = true;
           for (const m of mobsInRadius(to, c.radius(P.hole.impact))) c.hit(m, P.hole.dmg * UNIT * (1 + mods.wreckingBall));
-          burstFx(to, P.hole.impact, [GREEN, DARK], 0x60c020);
+          holeImpact(to, c.radius(P.hole.impact));
           shakeCamera(0.35);
         };
         for (const m of list) startLeap(m, to.clone().setX(to.x + (Math.random() - 0.5) * 2), P.hole.flightMs, impact);
@@ -159,9 +157,8 @@ export const poisoncloud = spell({
   name: 'Giftwolke', desc: 'Fläche 6 yd für 6 s, 0,3 Einheiten pro Sekunde, markiert jede Sekunde.', tags: ['Fläche'],
   lifePct: 0.03, mana: 120, cd: 10000, range: P.cloud.range, radius: P.cloud.radius, ground: true, showDmg: P.cloud.dps * UNIT,
   effect(c, point) {
-    addField(c, { pos: point, radius: c.radius(P.cloud.radius), dur: P.cloud.ms, visual: fieldDecal(blightTex, SICK, 0.55, 0.3),
+    addField(c, { pos: point, radius: c.radius(P.cloud.radius), dur: P.cloud.ms, visual: poisonCloudField(),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) if (c.hit(m, P.cloud.dps * UNIT) && !m.dead) mark(m); },
-      onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 40, dt, [GREEN, SICK], { up: 1.2, size: 0.5 }),
     });
   },
 });
@@ -174,9 +171,9 @@ export const web = spell({
     for (const m of list) {
       const links = list.filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, P.web.links);
       m.web = { links, until: state.now + P.web.ms };
-      for (const o of links) boltFx(m.pos, o.pos, [1.4, 1.4, 1.2], 600);
     }
-    burstFx(point, P.web.radius, [[1.2, 1.2, 1], GREEN], 0xd0e0c0);
+    const pairs = list.flatMap(m => m.web.links.filter(o => list.indexOf(o) > list.indexOf(m) || !o.web?.links.includes(m)).map(o => [m, o] as [any, any]));
+    webLook(pairs, P.web.ms);
   },
 });
 
@@ -210,8 +207,8 @@ export const melt = spell({
     player.meltUntil = liquid.end;
     player.invulnUntil = Math.max(player.invulnUntil ?? 0, liquid.end);
     stopChannel(true); stopDrink();
-    addField(c, { pos, radius: 0.5, dur: M.ms, tickMs: M.tickMs, visual: fieldDecal(blightTex, GREEN, 0.55, 0.4),
-      onUpdate(f, dt) { f.radius = Math.max(0.5, R * (state.now - f.start) / M.ms); areaParticles(f.pos, f.radius, 40, dt, [GREEN, SICK], { up: 0.8, size: 0.3 }); },
+    addField(c, { pos, radius: 0.5, dur: M.ms, tickMs: M.tickMs, visual: meltField(),
+      onUpdate(f) { f.radius = Math.max(0.5, R * (state.now - f.start) / M.ms); },
       onTick(f) { for (const m of mobsInRadius(f.pos, f.radius)) mark(m); },
       onEnd(f) {
         for (const m of mobsInRadius(f.pos, R)) { pullMob(m, f.pos, dist2d(m.pos, f.pos)); applyRoot(m, M.rootMs, 'glue'); }
@@ -237,6 +234,7 @@ export const pestilence = {
     burstAll(c, list, true);
     drainAll(c, list, true);
     contractAll(c, list, true);
+    pestilenceLook(P.pestilence.radius);
     combatText(player.pos, 'Pestilenz', 'info', 3);
   },
 };
