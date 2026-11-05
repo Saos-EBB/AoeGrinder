@@ -20,7 +20,7 @@ import { hurtNumber } from './ui/dmgNumbers';
 import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
-import { resetSiege } from './siege';
+import { resetWaves } from './waves';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
@@ -76,7 +76,7 @@ export function resetGame() {
   resetKlinge();
   resetBattery();
   resetPlague();
-  resetSiege();
+  resetWaves();
   resetSplits();
   state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)
   blizCursor.visible = false;

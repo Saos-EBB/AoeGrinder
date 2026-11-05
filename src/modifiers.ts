@@ -59,7 +59,7 @@ export const activeModIds = () => MODES.find(m => m.id === modeId).mods ?? custo
 const active = () => MODIFIERS.filter(m => activeModIds().includes(m.id));
 
 export function setMode(id) { modeId = id; }
-// Unabhängig vom Modus: 'packs' wie gehabt, 'siege' siehe siege.ts
+// Unabhängig vom Modus: 'packs' wie gehabt, 'waves' siehe waves.ts
 export let mobMode = 'packs';
 export function setMobMode(id) { mobMode = id; }
 export let cardPaceId = 'staffel';         // Kartentakt: CARD_PACES in config.ts

@@ -16,7 +16,7 @@ import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
 import { updateKlinge, klingeAnim, updateKlingeVisuals } from './klinge';
-import { updateSiege } from './siege';
+import { updateWaves } from './waves';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
@@ -79,7 +79,7 @@ function update(dt) {
     return true;
   });
   if (!bossBusy()) updateRespawn();   // Boss-Kampf: kein Nachschub
-  updateSiege(dt);
+  updateWaves(dt);
   updateCardQueue();
 }
 

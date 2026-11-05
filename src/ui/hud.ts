@@ -273,6 +273,8 @@ export function updateHud() {
   put($('iKills'), String(player.kills));
   put($('iCombat'), String(state.mobs.filter(m => !m.dead).length));
   put($('hZone'), zone.name);
+  $('hWaveBox').hidden = !run.wave;
+  put($('hWave'), String(run.wave ?? 0));
   put($('hMulti'), run.bestMulti > 1 ? `×${run.bestMulti}` : '–');
   updateHudExtras();
   updateBuildChips();

@@ -98,7 +98,7 @@ export function showRunResult() {
 }
 
 // ---------- Ranglisten-Ansicht ----------
-const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'siege5', name: 'Belagerung 5' }, { id: 'siege10', name: 'Belagerung 10' }, { id: 'siege15', name: 'Belagerung 15' }, { id: 'siege0', name: 'Belagerung endlos' }, { id: 'all', name: 'Alle' }];
+const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'waves', name: 'Wellen' }, { id: 'all', name: 'Alle' }];
 const TOP = 10;
 let tab = 'normal', versionFilter = '', openDate = null;
 
@@ -143,7 +143,7 @@ function renderBoard() {
   if (!versions.includes(versionFilter)) versionFilter = '';
   sel.value = versionFilter;
 
-  const rows = byScore(all.filter(r => (tab === 'all' || (tab.startsWith('siege') ? r.mobMode === 'siege' && `siege${r.siegeGoal ?? 0}` === tab : r.mode === tab && r.mobMode !== 'siege')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
+  const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'waves' ? r.mobMode === 'waves' : r.mode === tab && (r.mobMode ?? 'packs') === 'packs')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
   const list = $('boardList');
   list.innerHTML = '';
   if (!rows.length) { list.innerHTML = '<div id="boardEmpty">Noch keine Runs in dieser Auswahl.</div>'; $('boardDetailBox').innerHTML = ''; return; }

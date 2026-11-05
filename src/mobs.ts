@@ -44,7 +44,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
-  if (mobMode === 'siege') return;
+  if (mobMode === 'waves') return;
   while (liveMobs().length < mobTarget()) spawnPack();
   respawn.pending = 0;
   respawn.packs = livePackCount();
@@ -76,7 +76,7 @@ function replaceStalePack() {
 }
 
 export function updateRespawn() {
-  if (mobMode === 'siege') return;
+  if (mobMode === 'waves') return;
   dropFarPack();
   replaceStalePack();
   const packs = livePackCount();

@@ -3,7 +3,7 @@
 
 import { state, player } from './state';
 import { SPELLS } from './config';
-import { activeModIds, mobMode, siegeGoal, scoreMult } from './modifiers';
+import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 
 export const META = {
@@ -13,7 +13,6 @@ export const META = {
   price: { 'grün': 40, blau: 70, lila: 120, orange: 200, perBuy: 1.15 },
   charMods: ['frost', 'fire', 'arcane', 'blitz', 'plague', 'realmen', 'klinge'],    // Figuren, zählen nicht als Mod
   shop: {
-    siegeTier: { 5: 1, 10: 2, 15: 3 }, endlessTier: 5, endlessMinMs: 20 * 60000,
     packsTier: 3, packsOneModTier: 5,
     offer: { 1: 4, 2: 5, 3: 6, 4: 7, 5: 8 }, offerPerExtraTier: 2,
     // Höchste Seltenheit pro Stufe; capped: davon höchstens so viele im Angebot
@@ -71,10 +70,6 @@ export const modCount = () => activeModIds().filter(id => !META.charMods.include
 // 0 = kein Shop. Tod vor dem Abschluss öffnet keinen, der Staub bleibt.
 export function shopTier(completed) {
   const n = modCount(), s = META.shop;
-  if (mobMode === 'siege') {
-    if (!siegeGoal) return state.now >= s.endlessMinMs ? s.endlessTier + n : 0;
-    return completed ? s.siegeTier[siegeGoal] + n : 0;
-  }
   if (!completed) return 0;
   return n === 0 ? s.packsTier : s.packsOneModTier + n - 1;
 }

@@ -55,6 +55,7 @@ body[data-hud-theme=ornate] {
 body[data-hud-theme=ornate] #iTime { font-family: var(--h-title); }
 #hSplit { font-size: calc(16 * var(--hu)); font-weight: 800; color: var(--h-muted); }
 #hudRun { display: flex; gap: calc(10 * var(--hu)); font-size: calc(14 * var(--hu)); font-weight: 600; color: var(--h-muted); white-space: nowrap; }
+#hudRun span[hidden] { display: none; }
 #hudRun span + span::before { content: '·'; margin-right: calc(10 * var(--hu)); }
 #hudRun b { color: var(--h-txt); }
 #scorePts { color: var(--h-gold); }
@@ -225,7 +226,8 @@ body[data-hud-theme=ornate] #hudTracker #siegeHud { font-family: var(--h-title);
 .hudEl[data-hud=timer] { z-index: 3; }
 .hudEl[data-hud=runinfo][data-variant=bar] #hudRun { width: 100vw; height: calc(46 * var(--hu)); box-sizing: border-box; align-items: center; padding: 0 calc(20 * var(--hu));
   background: var(--h-panel-bg); font-size: calc(22 * var(--hu)); font-weight: 800; color: var(--h-txt); }
-.hudEl[data-hud=runinfo][data-variant=bar] #hudRun span + span::before { content: none; }
+.hudEl[data-hud=runinfo][data-variant=bar] #hudRun span[hidden] { display: none; }
+#hudRun span + span::before { content: none; }
 .hudEl[data-hud=runinfo][data-variant=bar] #hudRun span:nth-child(2) { order: 3; margin-left: auto; }
 .hudEl[data-hud=runinfo][data-variant=bar] #hudRun span:nth-child(3) { order: 2; font-size: calc(14 * var(--hu)); color: var(--h-muted); }
 #hudRun span { display: inline-flex; gap: .25em; }
