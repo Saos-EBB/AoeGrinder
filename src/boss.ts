@@ -167,7 +167,7 @@ const BOSS_ABILITY = {
   onUpdate: () => true,
   onDamaged: (m, amount) => {
     const b = boss?.bodies.find(x => x.mob === m);
-    if (!b || boss.step !== 'fight' || b.state !== 'active' || b.invuln) return 0;
+    if (!b || boss.step !== 'fight' || b.state !== 'active' || b.invuln || b.submerged) return 0;
     let a = amount * (b.gapUntil > fight.time ? BK.punish : 1);   // Lücke: Bestrafen lohnt sich
     for (const fn of boss.hooks.dmgTaken) a = fn(b, a);
     return a;
@@ -239,8 +239,11 @@ export function startBoss(id?: string) {
   const specs = def.bodies ?? [{ m: def.model, off: [0, -4] }];
   const total = mobMaxHp(level) * B.hpMul * (def.hpMul ?? 1);
   boss = { def, center, step: 'intro', t0: state.now, until: state.now + B.intro.ms, startAt: state.now, phase: 1, arena: B.arena, time: 0, scale: 1, windMul: 1, dmgMul: 1,
-    bodies: [], hooks: { tick: [], onPlayerHit: [], onDodged: [], dmgTaken: [], onBodyDeath: [], onEnd: [], bar: [] }, stats: { hits: 0, perfect0: state.dodgeStats?.perfect ?? 0 }, totalHp: total };
+    bodies: [], hooks: { tick: [], onPlayerHit: [], onDodged: [], dmgTaken: [], onBodyDeath: [], onEnd: [], bar: [], cleanup: [] }, stats: { hits: 0, perfect0: state.dodgeStats?.perfect ?? 0 }, totalHp: total };
   boss.hp = bossHp;
+  boss.awaken = b => awaken(b);
+  boss.spawnAdd = (pos, tint = 'boss2') => { const m: any = spawnMob(zoneTypeId(), pos.clone(), level, ++state.packCounter); m.bossTint = tint; enterCombat(m, false); return m; };
+  boss.attack = (b, k, p) => runAttack(b, { k, p });
   boss.setArena = r => { boss.arena = r; layRing(arena, center, r - 0.25, r + 0.25); };
   setFight(boss);
   for (const s of specs) {
@@ -282,21 +285,21 @@ const active = () => boss.bodies.filter(b => b.state === 'active' && b.mob && !b
 // Lock-on und Kamera: der nächste aktive Körper
 function focus() {
   let best = null, bd = Infinity;
-  for (const b of boss.bodies) if (b.mob && !b.mob.dead) { const d = dist2d(b.mob.pos, player.pos) + (b.state === 'active' ? 0 : 100); if (d < bd) { bd = d; best = b; } }
+  for (const b of boss.bodies) if (b.mob && !b.mob.dead) { const d = dist2d(b.mob.pos, player.pos) + (b.state === 'active' && !b.submerged ? 0 : 100); if (d < bd) { bd = d; best = b; } }
   return best ?? boss.bodies[0];
 }
 export const bossHp = () => { let hp = 0, max = 0; for (const b of boss.bodies) { max += b.hp; hp += b.mob ? Math.max(0, b.mob.dead ? 0 : b.mob.hp) : b.hp; } return { hp, max }; };
 
 // Spieler und Bosse bleiben in der Arena, der Spieler steckt nie im Boss
 function keepInside() {
-  const c = boss.center, p = player.pos, max = boss.arena - 0.5;
+  const c = boss.center, p = player.pos, max = (boss.wall ?? boss.arena) - 0.5;   // wall: feste Wand, wenn der Ring schrumpft (arenaSchrumpft)
   const d = dist2d(p, c);
   if (d > max) { p.x = c.x + (p.x - c.x) / d * max; p.z = c.z + (p.z - c.z) / d * max; p.y = groundAt(p.x, p.z, p.y); }
   for (const b of boss.bodies) {
     if (!b.mob || b.mob.dead) continue;
     const m = b.mob, bd = dist2d(m.pos, c), bmax = boss.arena - B.body;
     if (bd > bmax) { m.pos.x = c.x + (m.pos.x - c.x) / bd * bmax; m.pos.z = c.z + (m.pos.z - c.z) / bd * bmax; }
-    if (b.falling || b.state !== 'active') continue;
+    if (b.falling || b.state !== 'active' || b.submerged) continue;
     const pd = dist2d(p, m.pos), r = B.body * (b.grow ?? 1);
     if (pd < r && pd > 0.001) { p.x = m.pos.x + (p.x - m.pos.x) / pd * r; p.z = m.pos.z + (p.z - m.pos.z) / pd * r; }
   }
@@ -355,14 +358,19 @@ export function updateBoss(dt) {
 
 // Ein aktiver Körper: laufen, dann einen Angriff wählen; der Angriff läuft als async-Funktion, bis er fertig ist
 function think(b, dt) {
-  if (b.busy) return;
+  if (b.busy || b.submerged) return;
   if (fight.time < b.walkUntil) { walkTo(b, player.pos, dt); return; }
   const a = chooseAttack(b);
   if (!a) { b.walkUntil = fight.time + 1; return; }
+  runAttack(b, a);
+}
+// Angriff starten: läuft als async-Funktion in einem eigenen Lauf, danach kurz laufen. Gibt das Promise zurück (Regeln warten darauf)
+function runAttack(b, a) {
+  if (b.run) b.run.alive = false;
   b.busy = true;
   b.mob.moving = false;
   const run = b.run = newRun();
-  (ATT[a.k](run, b, { ...a.p }) as Promise<any>).then(() => {
+  return (ATT[a.k](run, b, { ...a.p }) as Promise<any>).then(() => {
     if (!run.alive) return;
     b.busy = false;
     b.walkUntil = fight.time + rand(B.pauseMs[0], B.pauseMs[1]) / 1000;

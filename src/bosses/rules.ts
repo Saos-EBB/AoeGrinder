@@ -9,7 +9,11 @@ import { rollWeapon, rollTier, inventoryFull } from '../weaponRolls';
 import { CARD_RARITIES } from '../config';
 import { boom, PAL } from '../vfx/energy';
 import { addTrauma } from '../wucht';
-import { textAt, impactFx, V, gy } from './core';
+import { fx, em, killFx } from '../vfx/energy';
+import { CFG } from '../config';
+import { maxHp } from '../formulas';
+import { textAt, impactFx, bigImpact, burnPlayer, V, gy, dist2, rnd, TAU, onGround, newRun, tw, face, moveBody, ease, palOf } from './core';
+import { ATT } from './attacks';
 
 // Summe der Boss-Leben (boss.ts hängt sie an f.hp)
 const hpFrac = f => { const { hp, max } = f.hp(); return hp / Math.max(1, max); };
@@ -64,7 +68,135 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       textAt(pos, `Waffe: ${CARD_RARITIES[w.r].name}`, 'heal', 4);
     });
   },
+
+  // ---------- Mittel ----------
+  // Wachstum: alle 30 s Größe, Schaden und Radien +10 %
+  wachstum(f, p) {
+    let next = p.every ?? 30;
+    f.hooks.tick.push(() => {
+      if (f.time < next) return;
+      next += p.every ?? 30;
+      for (const b of f.bodies) if (b.mob && !b.mob.dead) { b.grow *= 1.1; b.mob.model.root.scale.multiplyScalar(1.1); b.mob.model.height *= 1.1; impactFx(b.mob.pos, 6, 0xb0c0d0, .4); textAt(b.mob.pos, `Wachstum: ×${b.grow.toFixed(2).replace('.', ',')}`, 'info', 3); }
+    });
+    f.hooks.bar.push(() => `Wachstum in ${Math.max(0, Math.ceil(next - f.time))} s`);
+  },
+  // Arena schrumpft 20 → 8 yd über 90 s, ab 50 % HP doppelt so schnell. Die Wand bleibt bei 20 yd, außerhalb des Rings Schaden pro Sekunde
+  arenaSchrumpft(f, p) {
+    const from = f.arena, to = p.to ?? 8, dur = p.dur ?? 90;
+    let r = from, tick = 0;
+    f.wall = from;
+    f.hooks.tick.push(dt => {
+      const k = hpFrac(f) <= .5 ? 2 : 1;
+      r = Math.max(to, r - (from - to) / dur * k * dt);
+      if (Math.abs(r - f.arena) > .1 || r === to && f.arena !== to) { f.setArena(r); f.wall = from; }   // Ring nur alle 0,1 yd neu legen
+      tick -= dt;
+      if (dist2(player.pos, f.center) > r && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .08, 'Arena'); }
+    });
+    f.hooks.bar.push(() => `Arena ${Math.round(r)} yd`);
+  },
+  // Abtauchen (Ragnaros bei 50 %): 30 s unangreifbar, 4–6 Söhne der Flamme aus Mobs der Zone, dann Rückkehr mit Ring
+  abtauchen(f, p) {
+    let done = false, until = 0, adds = [], b = null;
+    f.hooks.tick.push(() => {
+      if (!done && f.phase === 2 && f.step === 'fight') {
+        done = true; b = mainBody(f);
+        if (b.run) b.run.alive = false;
+        b.busy = false; b.submerged = true; until = f.time + (p.ms ?? 30);
+        const y0 = b.mob.pos.y, depth = b.mob.model.height * 1.1;
+        b.rise = k => { b.mob.pos.y = y0 - depth * k; };
+        tw(null, 1, k => b.rise(ease(k)));                 // versinkt in der Lava
+        textAt(b.mob.pos, 'Taucht ab', 'info', 3); impactFx(b.mob.pos, 6, 0xff7a2a, .6);
+        const n = 4 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < n; i++) { const a = i / n * TAU + .4, pos = onGround(player.pos).add(V(Math.cos(a) * 6, 0, Math.sin(a) * 6)); adds.push(f.spawnAdd(pos)); impactFx(pos, 2, 0xff8a3a, .2); }
+        textAt(player.pos, 'Söhne der Flamme', 'hurt', 3.5);
+      }
+      if (!b?.submerged) return;
+      const left = until - f.time;
+      if (left <= 0 || adds.every(m => m.dead)) {
+        b.submerged = false; tw(null, .6, k => b.rise(1 - ease(k)));
+        bigImpact(b.mob.pos, 10, 0xff7a2a); textAt(b.mob.pos, 'Kehrt zurück', 'info', 3);
+        f.attack(b, 'ring', { r: 10, color: 0xff7a2a });
+      }
+    });
+    f.hooks.bar.push(() => b?.submerged ? `abgetaucht · ${Math.ceil(until - f.time)} s` : '');
+  },
+  // Zufalls-Atem (Chromaggus): beim Start 2 von 5 Atem würfeln, nur diese nutzt er (dazu der Biss)
+  zufallsAtem(f) {
+    const ALL = [
+      { n: 'Zeitraffer', color: 0xd8c050, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 5000); textAt(player.pos, 'Zeitraffer: langsamer', 'hurt'); } },
+      { n: 'Ätzende Säure', color: 0x7aff3a, hit: () => dot(f, .03, 4, 'Säure') },
+      { n: 'Fleisch entzünden', color: 0xff3a1a, hit: () => { f.dmgMul = (f.dmgMul ?? 1) * 1.3; textAt(player.pos, 'nimmt +30 % Schaden', 'hurt'); setTimeout(() => { if (f.dmgMul) f.dmgMul /= 1.3; }, 8000); } },
+      { n: 'Verbrennen', color: 0xff9a2a, hit: () => dot(f, .04, 3, 'Verbrennen') },
+      { n: 'Frostbrand', color: 0x6ac8ff, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 3000); dot(f, .02, 3, 'Frostbrand'); } },
+    ];
+    const pool = [...ALL], pick = [];
+    while (pick.length < 2) pick.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    const bite = f.def.attacks.find(a => a.k === 'kette');
+    const atts = [bite, ...pick.map(x => ({ n: x.n, k: 'atem', p: { color: x.color, label: x.n, len: 15, ang: 50, onHit: x.hit } }))];
+    for (const b of f.bodies) b.attacks = atts;
+    textAt(f.bodies[0].home, `Atem: ${pick[0].n} + ${pick[1].n}`, 'info', 4);
+    f.hooks.bar.push(() => `${pick[0].n} · ${pick[1].n}`);
+  },
+  // Polarität (Thaddius): alle 8 s würfelt der Spieler eine Ladung, der Boss hat eine feste. Gleich: +30 % Schaden auf den Boss. Verschieden und nah: Schaden pro Sekunde
+  polaritaet(f, p) {
+    const bossPlus = Math.random() < .5;
+    let plus = Math.random() < .5, next = p.every ?? 8, tick = 0;
+    const e = fx(1e9), sB = em(e, 'sph', bossPlus ? PAL.wut : PAL.blitz, { sc: 6, core: 1, flow: [0, 2, 0] }), sP = em(e, 'sph', plus ? PAL.wut : PAL.blitz, { sc: 6, core: 1, flow: [0, 2, 0] });
+    const paint = () => { (sP.material as any).userData.u.uC.value = plus ? PAL.wut : PAL.blitz; };
+    f.hooks.tick.push(dt => {
+      const b = mainBody(f);
+      sB.position.set(b.mob.pos.x, b.mob.pos.y + b.mob.model.height + .9, b.mob.pos.z); sB.scale.setScalar(.5);
+      sP.position.set(player.pos.x, player.pos.y + 3, player.pos.z); sP.scale.setScalar(.35);
+      if (f.time >= next) { next += p.every ?? 8; plus = Math.random() < .5; paint(); textAt(player.pos, plus === bossPlus ? 'Gleiche Ladung: +30 % Schaden' : 'Falsche Ladung: Abstand halten!', plus === bossPlus ? 'heal' : 'hurt', 3); }
+      tick -= dt;
+      if (plus !== bossPlus && dist2(player.pos, b.mob.pos) < (p.r ?? 8) && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .05, 'Polarität'); }
+    });
+    f.hooks.dmgTaken.push((b, a) => plus === bossPlus ? a * 1.3 : a);
+    f.hooks.bar.push(() => `Ladung ${plus ? '+' : '−'} / Boss ${bossPlus ? '+' : '−'}`);
+    f.hooks.cleanup.push(() => killFx(e));
+  },
+  // Bekämpfen sich (Abgrundwächter): der Rotäugige (letzter Körper) greift alle 15 s auch einen anderen Wächter an
+  bekaempfenSich(f, p) {
+    let next = p.every ?? 15;
+    f.hooks.tick.push(() => {
+      const red = f.bodies[f.bodies.length - 1];
+      if (f.time < next || !red.mob || red.mob.dead || red.busy || red.state !== 'active') return;
+      const others = f.bodies.filter(b => b !== red && b.mob && !b.mob.dead);
+      if (!others.length) return;
+      next = f.time + (p.every ?? 15);
+      const t = others[Math.floor(Math.random() * others.length)], run = red.run = newRun(), p0 = red.mob.pos.clone();
+      red.busy = true;
+      textAt(red.mob.pos, 'rotes Auge', 'hurt', 3);
+      face(red, t.mob.pos);
+      const end = t.mob.pos.clone().add(p0.clone().sub(t.mob.pos).setY(0).normalize().multiplyScalar(2.2));
+      tw(run, .4, k => moveBody(red, p0.clone().lerp(end, ease(k)))).then(() => {
+        t.mob.hp = Math.max(1, t.mob.hp - t.mob.maxHp * (p.dmg ?? .08)); t.mob.hitAt = state.now;
+        impactFx(t.mob.pos, 3, 0xff6a3a, .4); textAt(t.mob.pos, 'Wächter gegen Wächter', 'info', 3);
+        red.busy = false; red.walkUntil = f.time + .6;
+      });
+    });
+  },
+  // Ablösung (Wachritter): höchstens max wach; fällt einer, erwacht der nächste. every: alle every s ein Körper mehr (Könige, Schritt 5)
+  spawnUeberZeit(f, p) {
+    const wake = () => {
+      const next = f.bodies.find(b => b.state === 'sleep' || b.state === 'hidden');
+      if (!next) return;
+      next.state = 'active';
+      f.awaken(next);                                     // steht auf (sleep) oder wird gerufen (hidden)
+    };
+    f.hooks.onBodyDeath.push(() => { if (!p.every) wake(); });
+    if (p.every) { let next = p.every; f.hooks.tick.push(() => { if (f.time < next) return; next += p.every; const act = f.bodies.filter(b => b.state === 'active' && b.mob && !b.mob.dead).length; if (act < (p.max ?? 4)) wake(); }); }
+    f.hooks.bar.push(() => { const a = f.bodies.filter(b => b.state === 'active' && b.mob && !b.mob.dead).length, rest = f.bodies.filter(b => b.state === 'sleep' || b.state === 'hidden').length; return `${a} wach · ${rest} warten`; });
+  },
 };
+
+// Dauerschaden am Spieler: frac max. Leben pro Sekunde über s Sekunden, ignoriert Dodge
+function dot(f, frac, s, name) {
+  let t = 0, n = 0;
+  const fn = dt => { t += dt; if (t < 1) return; t -= 1; burnPlayer(frac, name); if (++n >= s) f.hooks.tick.splice(f.hooks.tick.indexOf(fn), 1); };
+  f.hooks.tick.push(fn);   // in Boss-Zeit: Pause und Zeitstopp halten ihn an
+  textAt(player.pos, name, 'hurt', 2.6);
+}
 
 // Regeln, die erst in einem späteren Schritt kommen, tun nichts
 export function ruleOf(k) { return RULE[k] ?? (() => {}); }
