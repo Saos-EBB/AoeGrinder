@@ -1,8 +1,8 @@
 import { pick } from '../util';
 import { player } from '../state';
 import { mobsInRadius, addField, hasRune } from './core';
-import { boltFx, fieldDecal, areaParticles, BOLT } from './fx';
-import { galeTex } from '../fx/spellFx';
+import { stormField, stormHit } from '../vfx/boltLook';
+import { groundAt } from '../collision';
 import { mods } from '../config';
 
 const FOLLOW_SPEED = 4, BIG = 12;   // PH
@@ -18,9 +18,8 @@ export const storm = {
   ],
   effect(c, point) {
     const radius = c.radius(hasRune('storm', 'big') ? BIG : storm.radius);
-    addField(c, { pos: point, radius, dur: storm.dur, tickMs: storm.tickMs, visual: fieldDecal(galeTex, BOLT, 0.25, 1.2),
+    addField(c, { pos: point, radius, dur: storm.dur, tickMs: storm.tickMs, visual: stormField(),
       onUpdate(f, dt) {
-        areaParticles(f.pos, f.radius, 30, dt, [BOLT, [2.2, 2.4, 2.8]], { up: 6, size: 0.25, life: 0.5 });
         if (!hasRune('storm', 'follow')) return;
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);
         if (d > 0.1) { const step = Math.min(d, FOLLOW_SPEED * dt / 1000); f.pos.x += dx / d * step; f.pos.z += dz / d * step; }
@@ -30,7 +29,7 @@ export const storm = {
         const n = (hasRune('storm', 'hail') ? 3 : hasRune('storm', 'double') ? 2 : 1) + mods.stormBolts;
         for (let i = 0; i < n && list.length; i++) {
           const m = pick(list);
-          boltFx({ x: m.pos.x, y: m.pos.y + 14, z: m.pos.z }, m.pos, BOLT, 220);
+          stormHit(m.pos, groundAt(f.pos.x, f.pos.z, f.pos.y + 1) + 9.5);
           c.hit(m, storm.dmg);
         }
       },

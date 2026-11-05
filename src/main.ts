@@ -41,6 +41,7 @@ import * as menuMod from './ui/mainMenu';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
 import { updateEnergy, figureLook } from './vfx/energy';
+import { updateBolts } from './vfx/boltLook';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
@@ -132,6 +133,7 @@ function updateVisuals(dt) {
   particles.update(state.paused ? 0 : dt);
   updateEffects();
   updateEnergy(state.paused ? 0 : dt / 1000);
+  updateBolts(state.paused ? 0 : dt / 1000);
   updateMobStatus(state.paused ? 0 : dt / 1000);
   updateWucht();
 }

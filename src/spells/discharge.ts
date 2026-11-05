@@ -5,7 +5,8 @@ import { applyRoot } from '../mobs';
 import { batteryMode, batteryMax } from '../battery';
 import { shakeCamera } from '../camera';
 import { mobsInRadius, hasRune, schedule } from './core';
-import { boltFx, burstFx, BOLT } from './fx';
+import { boltFx, BOLT } from './fx';
+import { dischargeLook } from '../vfx/boltLook';
 
 const D = { overMul: 1.5, perCharge: 1.5, after: { ms: 500, k: 0.5 }, manaLoad: 50, minCharge: 10, keep: 0.3, wide: 12, stun: 1000 };   // PH: Schaden pro Ladung, Ladung ohne Batterie, Rest-Rune behält 30 %
 
@@ -30,7 +31,7 @@ export const discharge = {
         boltFx(player.pos, m.pos, BOLT, 160);
         if (c.hit(m, load * D.perCharge * k * over) && !m.dead && hasRune('discharge', 'shock')) applyRoot(m, D.stun);
       }
-      burstFx(player.pos, r, [BOLT, [2.2, 2.4, 2.8]], 0xbfd8ff);
+      dischargeLook(r);
     };
     nova(1);
     if (hasRune('discharge', 'after')) schedule(D.after.ms, () => nova(D.after.k));

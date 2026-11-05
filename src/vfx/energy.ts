@@ -237,7 +237,9 @@ export function field(make: (e: Fx) => void, step: (e: Fx, fade: number, dt: num
   };
 }
 // Run-Ende: alles weg
-export function clearEnergy() { for (const e of FX.slice()) release(e); figureLook.meter = null; }
+const clearHooks: (() => void)[] = [];
+export const onClearEnergy = (fn: () => void) => clearHooks.push(fn);   // weitere Effekt-Listen (Blitze) leeren mit
+export function clearEnergy() { for (const e of FX.slice()) release(e); figureLook.meter = null; for (const fn of clearHooks) fn(); }
 export const energyCount = () => FX.length;
 
 // ───────────────────────── Funken über das Partikelsystem des Spiels (HDR-Farben für Bloom)

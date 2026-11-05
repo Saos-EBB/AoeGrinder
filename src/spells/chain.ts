@@ -4,7 +4,7 @@ import { schedule, mobsInRadius, hasRune } from './core';
 import { mods, UNIT } from '../config';
 import { modValue } from '../modifiers';
 import { applyRoot } from '../mobs';
-import { burstFx, BOLT } from './fx';
+import { tempestLook } from '../vfx/boltLook';
 
 // Tempest (Blitz-Figur, passiv): nach 6 Kettenblitzen wird der nächste ein Spaltschlag 8 yd vor dir, 5 Einheiten, betäubt 1 s. Sturmhüter: ×2 und sofort // PH
 const TEMPEST = { every: 6, radius: 8, angle: Math.PI, dmg: 5, stunMs: 1000 }, KEEPER_MUL = 2, KILL_DMG = 0.005;
@@ -64,7 +64,7 @@ export const chain = {
         const a = Math.atan2(m.pos.x - player.pos.x, m.pos.z - player.pos.z) - player.facing;
         if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) <= TEMPEST.angle / 2 && c.hit(m, TEMPEST.dmg * UNIT * k) && !m.dead) applyRoot(m, TEMPEST.stunMs);
       }
-      return burstFx(player.pos, r, [BOLT, [2.2, 2.4, 2.8]], 0xbfd8ff);
+      return tempestLook(r, TEMPEST.angle);
     }
     runChain(c, first, { jumps: (chain.jumps + mods.chainJumps + (hasRune('chain', 'more') ? MORE : 0)) * mods.jumpMul, range: chain.jumpRange, dmg: chain.dmg * k, killDmg: KILL_DMG,
       repeat: hasRune('chain', 'repeat'), killBonus: hasRune('chain', 'kill') ? KILL : 0, forkEvery: hasRune('chain', 'fork') ? 10 : 0 });

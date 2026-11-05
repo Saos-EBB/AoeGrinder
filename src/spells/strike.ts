@@ -3,7 +3,7 @@ import { applyRoot } from '../mobs';
 import { shakeCamera } from '../camera';
 import { mobsInRadius, hasRune, schedule } from './core';
 import { mods } from '../config';
-import { boltFx, burstFx, BOLT } from './fx';
+import { strikeLook } from '../vfx/boltLook';
 
 const DOUBLE = { delay: 400, k: 0.5 }, WIDE = 2, LONG_STUN = 1500, TRIPLE = { n: 3, k: 0.6, gap: 250 };   // PH
 
@@ -20,9 +20,8 @@ export const strike = {
   effect(c, point) {
     const r = c.radius(strike.radius) * (hasRune('strike', 'wide') ? WIDE : 1), stun = hasRune('strike', 'long') ? LONG_STUN : strike.stun;
     const hit = k => {
-      boltFx({ x: point.x, y: point.y + 14, z: point.z }, point, BOLT, 240);
       for (const m of mobsInRadius(point, r)) if (c.hit(m, rand(strike.min, strike.max) * k) && !m.dead) applyRoot(m, stun);
-      burstFx(point, r, [BOLT, [2.2, 2.4, 2.8]], 0xbfd8ff);
+      strikeLook(point, r);
       shakeCamera(0.15);
     };
     if (hasRune('strike', 'triple')) for (let i = 0; i < TRIPLE.n; i++) schedule(i * TRIPLE.gap, () => hit(TRIPLE.k));

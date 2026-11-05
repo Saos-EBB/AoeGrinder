@@ -1,6 +1,7 @@
 import { player } from '../state';
 import { mobsInRadius, addField, hasRune } from './core';
-import { boltFx, orbVisual, BOLT } from './fx';
+import { boltFx, BOLT } from './fx';
+import { ballField } from '../vfx/boltLook';
 import { mods } from '../config';
 import { state } from '../state';
 
@@ -12,7 +13,7 @@ function launch(c, angle, k) {
   const speed = ball.speed * (hasRune('ball', 'slow') ? SLOW : 1), dir = { x: Math.sin(angle), z: Math.cos(angle) };
   const radius = c.radius(ball.radius) * (hasRune('ball', 'big') ? BIG : 1);
   const pos = player.pos.clone();
-  addField(c, { pos, radius, dur: ball.dist / speed * 1000, tickMs: ball.tickMs / (hasRune('ball', 'fast') ? 2 : 1) / (1 + mods.ballZaps), visual: orbVisual(0x9fc8ff, 2.2 * k),
+  addField(c, { pos, radius, dur: ball.dist / speed * 1000, tickMs: ball.tickMs / (hasRune('ball', 'fast') ? 2 : 1) / (1 + mods.ballZaps), visual: ballField(k),
     onUpdate(f, dt) { f.pos.x += dir.x * speed * dt / 1000; f.pos.z += dir.z * speed * dt / 1000; },
     onTick(f) { for (const m of mobsInRadius(f.pos, f.radius)) { boltFx({ x: f.pos.x, y: f.pos.y + 0.4, z: f.pos.z }, m.pos, BOLT, 120); c.hit(m, ball.zap * k); } },
   });
@@ -23,7 +24,7 @@ function orbit(c) {
   const mine = state.fields.filter(f => f.orbit).sort((a, b) => a.start - b.start);
   while (mine.length >= ORBIT.max) mine.shift().end = state.now;
   const phase = Math.random() * Math.PI * 2;
-  addField(c, { pos: player.pos, radius: c.radius(ball.radius), dur: ORBIT.ms, tickMs: ball.tickMs / (1 + mods.ballZaps), visual: orbVisual(0x9fc8ff, 2.2), orbit: true,
+  addField(c, { pos: player.pos, radius: c.radius(ball.radius), dur: ORBIT.ms, tickMs: ball.tickMs / (1 + mods.ballZaps), visual: ballField(), orbit: true,
     onUpdate(f) { const a = phase + (state.now - f.start) / 1000 * ORBIT.turn; f.pos.set(player.pos.x + Math.cos(a) * ORBIT.yd, player.pos.y, player.pos.z + Math.sin(a) * ORBIT.yd); },
     onTick(f) { for (const m of mobsInRadius(f.pos, f.radius)) { boltFx({ x: f.pos.x, y: f.pos.y + 0.4, z: f.pos.z }, m.pos, BOLT, 120); c.hit(m, ball.zap); } },
   });

@@ -9,6 +9,7 @@ import { particles, glowSprite } from '../fx/particles';
 import { flashFx, ringFx, addEffect, fxClock } from '../fx/spellFx';
 import { fxMaterial, GLSL, FX_VERTEX, vfxOld } from '../fx/shaders';
 import { bolt } from '../fx/bolts';
+import { zapLook } from '../vfx/boltLook';
 import { playSound } from '../fx/sound';
 import { impact, lightFlash } from '../fx/impact';
 import { waveFx, shellFx, flareFx, sparksFx, groundDisc } from '../fx/prims';
@@ -95,6 +96,7 @@ export function burstFx(pos, radius, colors, flash) {
 
 // Gezackter Blitz zwischen zwei Punkten
 export function boltFx(from, to, color = BOLT_WHITE, dur = 180) {
+  if (!vfxOld() && (color === BOLT_WHITE || color === BOLT)) { zapLook(from, to); playSound('zap'); return; }   // Blitz-Look aus dem Spell-Viewer (vfx/boltLook.ts)
   if (!vfxOld()) {
     const end = { x: to.x, y: to.y + 1.2, z: to.z };
     bolt({ x: from.x, y: from.y + 1.2, z: from.z }, end, color === BOLT_WHITE ? BOLT : color, { life: dur + 90 });
