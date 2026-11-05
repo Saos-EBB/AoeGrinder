@@ -29,14 +29,15 @@ export const ACTIONS = [
   { group: 'Fenster' },
   { id: 'charWin', label: 'Charakterfenster', code: 'KeyX', key: 'X' },
   { group: 'Zauber' },
-  { id: 'nova',  label: 'Frost Nova',       code: 'Digit1', key: '1', spell: true },
-  { id: 'ae',    label: 'Arcane Explosion', code: 'Digit2', key: '2', spell: true },
-  { id: 'bliz',  label: 'Blizzard',         code: 'Digit3', key: '3', spell: true },
-  { id: 'coc',   label: 'Cone of Cold',     code: 'Digit4', key: '4', spell: true },
-  { id: 'blink', label: 'Blink',            code: 'Digit5', key: '5', spell: true },
-  { id: 'drink', label: 'Trinken',          code: 'Digit6', key: '6', spell: true },
-  { id: 'slot7', label: 'Slot 7', code: 'Digit7', key: '7', spell: true },
-  { id: 'slot8', label: 'Slot 8', code: 'Digit8', key: '8', spell: true },
+  // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
+  { id: 'nova',  label: 'Attacke 1',        code: 'Digit1', key: '1', spell: true },
+  { id: 'ae',    label: 'Attacke 2',        code: 'Digit2', key: '2', spell: true },
+  { id: 'bliz',  label: 'Attacke 3',        code: 'Digit3', key: '3', spell: true },
+  { id: 'coc',   label: 'Attacke 4',        code: 'Digit4', key: '4', spell: true },
+  { id: 'slot7', label: 'Attacke 5',        code: 'KeyF',   key: 'F', spell: true },
+  { id: 'drink', label: 'Trinken / Essen',  code: 'Digit6', key: '6', spell: true },
+  { id: 'blink', label: 'Bewegung',         code: 'Digit5', key: '5', spell: true },
+  { id: 'slot8', label: 'Relikt',           code: 'Digit8', key: '8', spell: true },
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();

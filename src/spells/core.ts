@@ -25,6 +25,8 @@ export function modRule(key): any { return activeMods().find(m => m[key])?.[key]
 // Nur Frost, Nur Feuer und Nur Arkan lassen nur ihre Schule zu
 // Fokus-Waffe: ein Spell außerhalb der Schule kommt für den Run in den Pool
 export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
+// Pool der Figur (modifiers.ts pool): nur daraus kommen „Neuer Spell“-Karten. Ohne Pool gilt die Schule wie bisher
+export const figurePool = (): string[] | undefined => modRule('pool');
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 export function startKit() {
@@ -39,6 +41,7 @@ export function resetSpells() {
   state.runes = {};
   state.supports = {};
   state.relicTaken = false;
+  state.figRelicTaken = false;   // Relikt der Figur, eins pro Run (cards.ts)
   player.luck = 0;
   player.charges = {};
   player.spellCounts = {};

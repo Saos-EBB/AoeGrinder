@@ -28,7 +28,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v30';
+export const SCORE_VERSION = 'v31';
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;
@@ -78,9 +78,15 @@ export const SPELLS: any = {};
 export const DARK_HEAL = 0.2;
 export const SPELL_AOE_HEIGHT = 3;   // PH: yd Höhenunterschied zur Wirkfläche, ab dem Flächen-Spells nicht mehr treffen
 export const SPELL_SLOTS = 8;
-export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink'];
-// Die Tasten-Aktionen heißen seit v1 wie das Start-Kit. Sie stehen für den Slot, nicht für den Spell.
-export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink', 'slot7', 'slot8'];
+// Raster seit v31: Slots 0–4 Attacken, 5 Trinken/Essen/Aufladen, 6 Bewegung, 7 Relikt der Figur
+export const SLOT = { attacks: 5, drink: 5, move: 6, relic: 7 };
+export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', null, 'drink', 'blink', null];
+// Die Tasten-Aktionen heißen seit v1 wie das alte Start-Kit. Sie stehen für den Slot, nicht für den Spell: slot7 ist die 5. Attacke, blink die Bewegung, slot8 das Relikt.
+export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'slot7', 'drink', 'blink', 'slot8'];
+// Einheit für den Schaden neuer Spells: Arcane Explosion auf Level 1 (34–38). Alle neuen Spells rechnen in Vielfachen davon // PH
+export const UNIT = 36;
+// Relikt der Figur (modifiers.ts relics): Seltenheit blau, nur eins pro Run, ab diesem Level im Angebot // PH
+export const FIG_RELIC = { tier: 3, level: 10 };
 
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
@@ -162,6 +168,14 @@ export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 // Die bisherigen Upgrades laufen als Art "Talent" weiter. m = Multiplikator der Seltenheit.
 // tags: Schule, im Schul-Modus zählt nur die eigene. only: nur in diesen Modi (onlyTag), sonst nie. needs: nur mit diesem Spell im Slot.
 export const CARDS = [
+  // Grundwerte für alle Figuren (v31): ersetzen Arkane Macht, Eisherz, Glutherz, Sturmherz, Kampfkunst, Frostrüstung, Knochenpanzer, Arcane Mind, Glutseele
+  // notOnly: nicht in diesen Modi (onlyTag). Weisheit nur für Magier mit Mana
+  { id: 'might', name: 'Macht', always: true, max: 5,
+    desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
+  { id: 'tough', name: 'Zähigkeit', always: true, max: 3,
+    desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
+  { id: 'wisdom', name: 'Weisheit', always: true, notOnly: ['Krieger', 'Klinge', 'Blitz', 'Seuche'], max: 3,
+    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
   { id: 'ibliz', name: 'Improved Blizzard', tags: ['Frost'], needs: 'bliz', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
     desc: (r, m) => `Blizzard verlangsamt Gegner um ${Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100)} % für 1,5 s.`,
     apply: (r, m) => { mods.blizSlow = Math.max(mods.blizSlow, Math.min(0.9, [0.3, 0.5][r] * m)); } },
@@ -170,32 +184,13 @@ export const CARDS = [
     apply: (r, m) => { mods.novaCd += 2000 * m; } },
   { id: 'shatter', name: 'Shatter', tags: ['Frost'], max: 3,
     desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
-  { id: 'power', name: 'Arkane Macht', tags: ['Arkan'], max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'amind', name: 'Arcane Mind', tags: ['Arkan'], max: 3,
-    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
-  { id: 'amed', name: 'Arcane Meditation', tags: ['Arkan'], max: 3,
-    desc: (r, m) => `+${Math.round(5 * m)} % Mana-Regeneration während der 5-Sekunden-Regel.`, apply: (r, m) => { mods.castRegen += 0.05 * m; } },
   { id: 'storm', name: 'Weiter Sturm', tags: ['Frost'], needs: 'bliz', max: 2,
     desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
-  { id: 'aecost', name: 'Arkane Effizienz', tags: ['Arkan'], needs: 'ae', max: 2,
-    desc: (r, m) => `Arcane Explosion kostet ${Math.round(15 * m)} % weniger Mana.`, apply: (r, m) => { mods.aeCost = Math.max(0.1, mods.aeCost - 0.15 * m); } },
-  { id: 'armor', name: 'Frostrüstung', tags: ['Frost'], max: 3,
-    desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
   { id: 'comboWindow', name: 'Kombo-Meister', always: true, tags: ['Bewegung'], max: 2,
     desc: (r, m) => `Kombo-Fenster nach dem Dodge +${Math.round(50 * m)} %.`, apply: (r, m) => { mods.comboWindow += 0.5 * m; } },   // PH
-  { id: 'martial', name: 'Kampfkunst', only: ['Krieger', 'Klinge'], max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'bonearmor', name: 'Knochenpanzer', only: ['Krieger', 'Klinge'], max: 3,
-    desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
-  // Gegenstücke zu Arkane Macht und Arcane Mind, damit die Schul-Modi dieselben Grundwerte steigern können
-  { id: 'iceheart', name: 'Eisherz', only: ['Frost'], max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'emberheart', name: 'Glutherz', only: ['Feuer'], max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
   // Blitzmagier: mehr Sprünge und Schläge statt mehr Grundschaden (v29) // PH
   { id: 'conduct', name: 'Leitfähigkeit', only: ['Blitz'], max: 3,
     desc: (r, m) => `Kettenblitz +${Math.max(1, Math.round(20 * m))} Sprünge, Bogenblitz +${Math.max(1, Math.round(4 * m))} Sprünge.`, apply: (r, m) => { mods.chainJumps += Math.max(1, Math.round(20 * m)); mods.arcJumps += Math.max(1, Math.round(4 * m)); } },   // v30 verdoppelt
@@ -208,8 +203,4 @@ export const CARDS = [
     desc: () => 'Gewitter: +1 Blitz pro Takt.', apply: () => { mods.stormBolts += 1; } },
   { id: 'net', name: 'Kugelnetz', only: ['Blitz'], needs: 'ball', max: 2,
     desc: () => 'Kugelblitz zappt doppelt so oft.', apply: () => { mods.ballZaps += 1; } },
-  { id: 'stormheart', name: 'Sturmherz', only: ['Blitz'], max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Zauberschaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'embersoul', name: 'Glutseele', only: ['Feuer'], max: 3,
-    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
 ];

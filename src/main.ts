@@ -37,6 +37,8 @@ import * as supportsMod from './spells/supports';
 import * as meterMod from './schoolMeter';
 import * as buffsMod from './buffs';
 import { menuYaw, enterMenu } from './ui/mainMenu';
+import * as menuMod from './ui/mainMenu';
+import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
@@ -148,4 +150,4 @@ requestAnimationFrame(loop);
 
 // Für Tests
 (window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
-  m: { core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };
+  m: { menu: menuMod, cardsUi: cardsUiMod, core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };

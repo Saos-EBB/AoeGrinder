@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(builds)!: Grundsystem v31: festes Raster mit 5 Attacken (Magier 1–4 und F, Nahkampf Q, E, R, Maus 4, 2), Trinken/Essen/Aufladen, Bewegung auf der alten Blink-Taste und Relikt-Taste; Figuren können einen Pool von 9 Fähigkeiten und ein eigenes blaues Relikt bekommen (eins pro Run, ab Level 10, eigene Taste); neue Spells ersetzen nur Attacken-Slots; Karten Macht (+12 % Schaden), Zähigkeit (+15 % Leben), Weisheit (+10 % Mana, nur Magier) ersetzen Arkane Macht, Eisherz, Glutherz, Sturmherz, Kampfkunst, Frostrüstung, Knochenpanzer, Arcane Mind und Glutseele, Arkane Effizienz und Arcane Meditation sind raus; Holzfälleraxt und Streitkolben sind raus; Einheit `UNIT` für neue Spells; Spielversion v31
 - feat(dev): Waffen-Baukasten in den Einstellungen: Seltenheit, Legi-Modell (Unikat), Typ, Kopf, Fokus, Wert, Element, Hersteller, Anhänger und Zweitwert selbst wählen, Vorschau wie die Info-Karte, ins Inventar oder gleich anlegen (ohne Staub, ohne Limit)
 - feat(dev): Dev-Meta füllt das Inventar neu mit 50 Waffen (angelegte bleibt), wählbar Alle zufällig, Nur Epic (lila) oder Nur Legi (orange); Inventar im Shop und die Waffenwahl im Hauptmenü sind nach Seltenheit gruppiert (mit Anzahl), der Shop zeigt sie kompakt in zwei Spalten
 - docs: Handoff `docs/handoff-figuren.md` mit allen Figuren, ihren Attacken, Runen, Talenten, Rang-Karten, Supports, Relikten und Waffen-Elementen, aus dem Code gelesen

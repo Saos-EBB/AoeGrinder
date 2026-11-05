@@ -14,7 +14,7 @@ import { buildEquipped } from '../weaponRolls';
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
 const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
-const WAR_WEAPONS = ['sword', 'axe', 'mace'];
+const WAR_WEAPONS = ['sword'];   // Axt und Kolben sind raus (v31)
 let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
 const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warWeapon }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)

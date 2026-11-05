@@ -4,8 +4,8 @@ import { state, player } from './state';
 import { pick } from './util';
 import { dmgMult, manaCost, spellCd } from './formulas';
 import { modFactor, randomMode } from './modifiers';
-import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL } from './config';
-import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf } from './spells/core';
+import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL, FIG_RELIC, SLOT } from './config';
+import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf, figurePool } from './spells/core';
 import { SUPPORTS } from './spells/supports';
 import { isUnlocked } from './meta';
 
@@ -46,7 +46,9 @@ function rankCards() {
 
 function newSpellCards() {
   if (randomMode()) return [];   // ?-Magier: keine Spell-Karten und keine Runen
-  return Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].fixed && spellAllowed(id) && (!SPELLS[id].onlyMode || modRule('onlyTag') === SPELLS[id].onlyMode)).map(id => ({
+  const pool = figurePool();      // Figuren: nur aus ihrem Pool von 9
+  const ids = pool ? pool.filter(id => SPELLS[id] && !hasSpell(id)) : Object.keys(SPELLS).filter(id => !hasSpell(id) && !SPELLS[id].relic && !SPELLS[id].figRelic && !SPELLS[id].fixed && spellAllowed(id) && (!SPELLS[id].onlyMode || modRule('onlyTag') === SPELLS[id].onlyMode));
+  return ids.map(id => ({
     kind: 'spell', id: `spell-${id}`, learn: id, name: SPELLS[id].name, src: `Neuer Spell · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { stat(id).dmg += CARD_SPELL_DMG * m; },
@@ -87,15 +89,25 @@ function supportCards() {
 // Nur lila oder orange, max. 1 pro Run, ab Level 30
 function relicCards(forced = false) {
   if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
-  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && spellAllowed(id) && (forced || isUnlocked(`relic:${id}`) || state.poolExtra?.includes(id))).map(id => ({
+  return Object.keys(SPELLS).filter(id => SPELLS[id].relic && !SPELLS[id].figRelic && spellAllowed(id) && (forced || isUnlocked(`relic:${id}`) || state.poolExtra?.includes(id))).map(id => ({
     kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: `Relikt · ${SPELLS[id].tags.join(', ')}`,
     desc: m => `${SPELLS[id].desc} CD ${SPELLS[id].cd / 1000} s. +${pct(CARD_SPELL_DMG * m)} Schaden.`,
     apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },
   }));
 }
 
+// Relikt der Figur: immer blau, eins pro Run, liegt auf der Relikt-Taste und belegt keinen Attacken-Slot
+function figRelicCards(forced = false) {
+  if (!forced && (state.figRelicTaken || player.level < FIG_RELIC.level)) return [];
+  return (modRule('relics') ?? []).filter(id => SPELLS[id] && !hasSpell(id)).map(id => ({
+    kind: 'relic', id: `relic-${id}`, learn: id, learnSlot: SLOT.relic, fixedTier: FIG_RELIC.tier, name: SPELLS[id].name, src: 'Relikt der Figur',
+    desc: m => `${SPELLS[id].desc}${SPELLS[id].cd ? ` CD ${SPELLS[id].cd / 1000} s.` : ''}`,
+    apply: () => { state.figRelicTaken = true; },
+  }));
+}
+
 function talentCards() {
-  const allowed = c => c.always || (c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []));
+  const allowed = c => (c.notOnly?.includes(modRule('onlyTag')) ? false : c.always) || (c.only ? c.only.includes(modRule('onlyTag')) : tagsAllowed(c.tags ?? []));
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs)) && (c.offerChance == null || Math.random() < c.offerChance)).map(c => {   // offerChance: seltene Karten
     const rank = state.cardRanks[c.id] || 0;
     return {
@@ -155,7 +167,7 @@ export function cardReplaces(c) {
 
 export const cardStage = c => c.kind === 'talent' ? state.cardRanks[c.id] || 0 : state.cardPicks[c.id] || 0;
 
-const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: relicCards, talent: talentCards, luck: luckCards };
+const POOLS = { rang: rankCards, spell: newSpellCards, rune: runeCards, support: supportCards, relic: () => [...relicCards(), ...figRelicCards()], talent: talentCards, luck: luckCards };
 
 // Classic pur: ein Rang auf jeden Wert jedes Spells im Slot
 export function rankAllSpells() {
@@ -193,7 +205,7 @@ export function rollOffer() {
     if (!kind) break;
     const card = pick(pools[kind]);
     pools[kind] = pools[kind].filter(c => c !== card);
-    offer.push({ ...card, tier: rollRarity(card.minTier) });
+    offer.push({ ...card, tier: card.fixedTier ?? rollRarity(card.minTier) });
   }
   if (!offer.some(concernsOwnedSpell)) {         // Mindestens eine Karte betrifft einen eigenen Spell
     const card = pick(rankCards());
@@ -204,6 +216,6 @@ export function rollOffer() {
 
 // Dev: Angebot aus einer Art in fester Seltenheit. Relikte auch unter Level 30, aber nie unter lila.
 export function forcedOffer(kind, tier) {
-  const pool = kind === 'relic' ? relicCards(true) : POOLS[kind]();
-  return pool.sort(() => Math.random() - 0.5).slice(0, cardCount()).map(c => ({ ...c, tier: Math.max(tier, c.minTier ?? 0) }));
+  const pool = kind === 'relic' ? [...figRelicCards(true), ...relicCards(true)] : POOLS[kind]();
+  return pool.sort(() => Math.random() - 0.5).slice(0, cardCount()).map(c => ({ ...c, tier: c.fixedTier ?? Math.max(tier, c.minTier ?? 0) }));
 }

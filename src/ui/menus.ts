@@ -1,6 +1,6 @@
 import { state, player } from '../state';
 import { $ } from '../util';
-import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL } from '../config';
+import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
 import { COLORS } from './colors';
 import { maxHp, maxMana } from '../formulas';
@@ -56,7 +56,8 @@ function pickCard(card) {
   state.cardPicks[card.id] = (state.cardPicks[card.id] || 0) + 1;
   card.apply(CARD_RARITIES[card.tier].mult);
   if (!card.learn) return finishCard();
-  const free = state.slots.indexOf(null);
+  if (card.learnSlot != null) { learnSpell(card.learn, card.learnSlot); return finishCard(); }   // Relikt der Figur: eigene Taste
+  const free = state.slots.slice(0, SLOT.attacks).indexOf(null);   // nur die 5 Attacken-Slots
   if (free >= 0) { learnSpell(card.learn, free); return finishCard(); }
   chooseReplacement(card.learn);
 }
@@ -66,7 +67,7 @@ function chooseReplacement(id) {
   $('cardHint').textContent = `${SPELLS[id].name} ersetzt welchen Spell?`;
   $('cards').innerHTML = '';
   state.slots.forEach((old, slot) => {
-    if (SPELLS[old].fixed) return;
+    if (slot >= SLOT.attacks || !old || SPELLS[old].fixed) return;
     const el = document.createElement('div');
     el.className = 'card frame';
     el.innerHTML = `<h3 class="title">${SPELLS[old].name}</h3><div class="src">Slot ${slot + 1}</div><p>${SPELLS[old].desc}</p>`;
