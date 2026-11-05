@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v33 von `main` (2026-11-05, Merge `optik`, `maps-anime`, `inventar-filter`, `wellen-mobs`): Spell-Icons aus dem Spell-Viewer überall, Inventar mit Filter und Sortierung (Element-Effekte in Elementfarbe), Wellen mit 50, 100, 150 … Gegnern (`SCORE_VERSION` v33), Anime-Basis zum Ausprobieren mit `?toon=1`. Davor v32 + UI Glut.
+Stand Vercel: v33 + vier Anime-Maps von `main` (2026-11-05, Merge `winterquell`, `mondsee`, `kristallhoehlen`, `kathedrale`): Winterquell (Eis), Mondsee (Mondphasen), Kristallhöhlen (Kristalle spiegeln Geschosse), Kathedrale der Hölle (Etagen nach Kills), erreichbar über Dev → Zone oder `?zone=<id>`. Davor v33 (Icons, Inventar-Filter, Wellen 50 + 50, `?toon=1`).
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` ist gelöscht (alte Magier, Krieger, Samurai, Ninja); Spuren und `SKIN_FX` liegen in `models/trail.ts`.
 
@@ -45,6 +45,7 @@ Stand Vercel: v33 von `main` (2026-11-05, Merge `optik`, `maps-anime`, `inventar
 - `npm run build` erzeugt eine einzelne `dist/index.html` fürs Artifact.
 
 ## Stand
+- v33 + Anime-Maps (auf `main`, auf Vercel) – Zonen Winterquell, Mondsee, Kristallhöhlen, Kathedrale der Hölle im Toon-Look (`toon.ts`), je mit eigener Mechanik; Konzept und Messungen in `docs/map-konzepte-anime.md`. Bestehende Zonen unverändert, `SCORE_VERSION` bleibt v33. Getestet per Skript, nicht von Hand gespielt.
 - v33 (auf `main`, auf Vercel) – Spell-Icons (SVG aus dem Spell-Viewer, `ui/spellIcons.ts`), Inventar-Filter, Wellen 50 + 50 pro Welle, Toon-Basis hinter `?toon=1`. `SCORE_VERSION` v33 wegen der Wellen. Getestet per Skript, nicht von Hand gespielt.
 - v32 (auf `main`, auf Vercel) – Optik aus Strichmagier- und Spell-Viewern: Magier-Modelle mit Stufen-Effekten nach der Anzeige, Energie-Shader für alle Fähigkeiten aller Figuren (`src/vfx/`), Status-Anzeigen an Mobs. Keine Spiellogik geändert, `SCORE_VERSION` bleibt. Getestet per Skript und Standbild, nicht von Hand gespielt.
 - v31 (auf `main`, auf Vercel) – Builds-Umbau aller Figuren: 5 Attacken, Bewegung, Relikt, Pools von 9, Grundkarten Macht/Zähigkeit/Weisheit, Feuer, Frost (Eissplitter, Eiszeit), Arkan (Ladungen, Archon, Zeitkrümmung), Blitz (Tempest, Sturmelementar), Seuchenmagier statt Blutmagier, Strichkrieger (neue Schlagfolge, Berserker), Klingenstrich (Haltungs-Leiste auf F), legendäre Waffen mit Combo, ?-Magier mit Seuchen- und Blitz-Spells. Alle neuen Zahlen `// PH`, Optik der neuen Fähigkeiten folgt. Getestet per Skript, nicht von Hand gespielt.
