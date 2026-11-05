@@ -27,6 +27,7 @@ import { shockwave, lightFlash, hitstop } from './fx/impact';
 import { addTrauma, decal, debris } from './wucht';
 import { BOSSES, TIERS, TIER_OF_LEVEL, bossById } from './bosses/roster';
 import { buildBossModel } from './bosses/models';
+import { buildEvil } from './bosses/evil';
 import { ATT, RANGE } from './bosses/attacks';
 import { ruleOf } from './bosses/rules';
 import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo as yawOf, BK } from './bosses/core';
@@ -212,11 +213,8 @@ function spawnBody(def, spec, home, hp, level) {
   enterCombat(m, false);
   return m;
 }
-// Modell: Viewer-Bauer, verdorbene Figuren (Schritt 4) vorerst als dunkler Zweibeiner
-function buildModel(spec) {
-  if (spec.t === 'evil') return buildBossModel({ t: 'biped', p: { skin: spec.p.color, armor: spec.p.color, accent: 0x5a0a0e, eye: spec.p.glow, glow: spec.p.glow, weapon: spec.p.weapon, weapon2: spec.p.weapon2, weaponGlow: spec.p.weaponGlow, float: spec.p.float, head: 'hood', scale: 1.5 } });
-  return buildBossModel(spec);
-}
+// Modell: Viewer-Bauer, verdorbene Figuren als echtes Spielermodell (bosses/evil.ts)
+const buildModel = spec => spec.t === 'evil' ? buildEvil(spec) : buildBossModel(spec);
 
 // ---------- Auswahl ----------
 const seen = new Set<string>();
@@ -370,6 +368,7 @@ function runAttack(b, a) {
   b.busy = true;
   b.mob.moving = false;
   const run = b.run = newRun();
+  b.mob.model.ctl.atk = a.k;
   return (ATT[a.k](run, b, { ...a.p }) as Promise<any>).then(() => {
     if (!run.alive) return;
     b.busy = false;

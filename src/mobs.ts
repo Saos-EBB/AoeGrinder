@@ -132,6 +132,7 @@ function spawnChampionPack(x, z, affixes) {
 // Modelle sind pro Mob verschmolzen, Geometrie und Material müssen mit weg
 export function removeMob(m) {
   scene.remove(m.model.root);
+  m.model.onRemove?.();                     // verdorbene Figuren: Effekte in Weltkoordinaten (bosses/evil.ts)
   m.plate.remove();
   m.model.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose?.(); if (o.isSkinnedMesh) o.skeleton.dispose(); });
 }
