@@ -4,6 +4,7 @@ import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
 import { COLORS } from './colors';
+import { markWords } from './keywords';
 import { ICONS } from './icons';
 import { attachTip } from './tooltip';
 import './cards.css';
@@ -20,13 +21,6 @@ import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 
 const KIND_LOOK = { rang: { name: 'RANG', icon: '▲' }, spell: { name: 'NEUER SPELL', icon: '✦' }, rune: { name: 'RUNE', icon: '✧' }, support: { name: 'SUPPORT', icon: '◆' }, relic: { name: 'RELIKT', icon: '♛' }, talent: { name: 'TALENT', icon: '★' }, luck: { name: 'GLÜCK', icon: '♣' } };
-// Stichwörter und Prozentwerte im Kartentext
-function markWords(text) {
-  let out = text.replace(/[+−-]?\d+(?:,\d+)? %/g, m => `<span class="pct">${m}</span>`);
-  for (const [word, color] of Object.entries(COLORS.keyword)) out = out.replace(new RegExp(`\\b${word}\\b`, 'g'), `<b style="color:${color}">${word}</b>`);
-  return out;
-}
-
 // Level-Up-Karten: bis 3 Karten groß (Mockup K2), 4–10 kompakt in 2 Reihen à 5 (L2). Tasten 1–0 wählen, X öffnet das Charakterfenster.
 // Rahmen = Seltenheit, Kopfleiste = Typ, Relikt mit Goldrahmen und gewölbter Oberkante, Upgrade grün mit „Rang x → y“.
 const CARD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];

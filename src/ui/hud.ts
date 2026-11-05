@@ -98,7 +98,7 @@ export function renderActionbar() {
       el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(pos)); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); hideSpellCards(); });
       el.addEventListener('dragend', () => el.classList.remove('dragging'));
       el.addEventListener('contextmenu', e => { e.preventDefault(); openModeMenu(el, pos, id); });
-      attachSpellCard(el, id);
+      attachSpellCard(el, id, `${SPELLS[id].relic ? 'Relikt' : 'Spell'} (Taste ${binds[actionId]?.key ?? '—'})`);
       slots[id] = { el, action: actionId, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
     }
     // Jeder Platz nimmt Spells an: tauscht mit dem gezogenen Platz
