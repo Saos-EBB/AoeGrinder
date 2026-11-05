@@ -49,7 +49,9 @@ export function makeCtx(group, obstacles, heightAt) {
     },
     add(mesh) { group.add(mesh); return mesh; },
     // list: [{ x, z, y?, s?, ry?, tilt?, color? }]; y ist die Höhe über dem Boden
+    // Gibt die InstancedMeshes zurück (Kathedrale färbt sie pro Etage über setColorAt um)
     place(pre, list) {
+      const out: THREE.InstancedMesh[] = [];
       for (const { mat, geo } of pre) {
         const inst = new THREE.InstancedMesh(geo, mat, list.length);
         list.forEach((p, i) => {
@@ -62,7 +64,9 @@ export function makeCtx(group, obstacles, heightAt) {
         });
         inst.frustumCulled = false;
         group.add(inst);
+        out.push(inst);
       }
+      return out;
     },
   };
 }

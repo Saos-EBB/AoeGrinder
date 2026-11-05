@@ -49,6 +49,12 @@ export const MOB_TYPES: any = {
   hoehlenfledermaus: { name: 'Höhlenfledermaus', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.1,
     build: bat({ fur: 0x3a2a52, wing: 0x2a1a40 }) },
 
+  // Kathedrale der Hölle (Werte PH), dazu das Klapperskelett aus Tirisfal
+  gefallener: { name: 'Gefallener', ability: 'leapBite', hpMul: 0.75, speedMul: 1.15,
+    build: humanoid({ skin: 0xb8402a, body: 0x5a1a14, trim: 0x2a0a08, tusks: true, weapon: 'sword', eye: glowMat(3, 1.4, 0.2), scale: [0.8, 0.78, 0.8], lean: 0.32 }) },
+  daemon: { name: 'Höllendämon', ability: 'heatAura', hpMul: 1.6, dmgMul: 1.2, speedMul: 0.9,
+    build: humanoid({ skin: 0x5a1410, body: 0x2a0a0a, trim: 0xff5a1a, helm: 0x1a0606, tusks: true, weapon: 'axe', eye: glowMat(3.4, 1.2, 0.2), glow: glowMat(2.6, 0.8, 0.2), scale: [1.45, 1.4, 1.45], lean: 0.15 }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },

@@ -47,15 +47,10 @@ export function buildWorld(id) {
   state.stormK = 0;
   nextStorm = state.now + (zone.storm?.every ?? 0);
 
-  const geo = terrain.geometry, pos = geo.attributes.position, colors = [], c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i), h = heightAt(x, z);
-    pos.setY(i, h);
-    zone.ground(c, x, z, h);
-    colors.push(c.r, c.g, c.b);
-  }
+  const geo = terrain.geometry, pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
   pos.needsUpdate = true;
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  recolorGround();
   geo.computeVertexNormals();
 
   props.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); o.dispose?.(); });
@@ -64,6 +59,13 @@ export function buildWorld(id) {
   clearColliders(heightAt);
   zone.props(makeCtx(props, obstacles, heightAt));
   if (colliderView) showColliders(true);
+}
+
+// Bodenfarben aus zone.ground neu setzen, ohne die Welt neu zu bauen (Kathedrale: neue Etage)
+export function recolorGround() {
+  const geo = terrain.geometry, pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) { zone.ground(c, pos.getX(i), pos.getZ(i), pos.getY(i)); colors.set([c.r, c.g, c.b], i * 3); }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 }
 
 // Dev: Collider als Drahtgitter. Massives rot, begehbare Flächen grün.
