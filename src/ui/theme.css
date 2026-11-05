@@ -348,3 +348,12 @@ body.mobile .invMain { grid-template-columns: 1fr; }
 .setProfile { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; font-size: 15px; color: var(--glut-muted); }
 .setProfile .smallBtn { width: auto; margin: 0; padding: 6px 14px; }
 .setProfile .smallBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Zahlen-Schrift: Kacheln mit Vorschau */
+.setH3 { margin: 4px 0 0; font: 600 15px var(--font-body); color: var(--glut-text); }
+.setFonts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.setFont { min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 8px; background: #0a0202; border: 1px solid var(--glut-line); cursor: pointer; color: var(--glut-text); }
+.setFont:hover { border-color: var(--glut-border); }
+.setFont.on { border-color: var(--glut-top); background: rgba(255, 61, 31, .12); }
+.setFontSample { max-width: 100%; overflow: hidden; font: 900 22px 'Barlow Condensed', sans-serif; color: #fff; -webkit-text-stroke: 4px #05080c; paint-order: stroke fill; white-space: nowrap; line-height: 1.1; }
+.setFont small { font: 500 12px var(--font-body); color: var(--glut-muted); }

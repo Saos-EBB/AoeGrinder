@@ -9,3 +9,8 @@ Von HiveWorkshop, laut Kevin selbstgemachte CC0-Packs der Autoren. In `src/asset
 | Hero Ability Icon Set 3 | Panda | https://www.hiveworkshop.com/threads/hero-ability-icon-set-3.375812/ |
 | SnowBall - FireBall | Panda | https://www.hiveworkshop.com/threads/snowball-fireball.375813/ |
 | FrostMissiles | Vinz | https://www.hiveworkshop.com/threads/frostmissiles.309857/ |
+
+## Zahlen-Schriften (CC0)
+Auswählbar in Einstellungen → Interface → Zahlen-Schrift. Alle CC0, Nennung freiwillig. Auf die nötigen Zeichen zugeschnitten, Liste und Lizenzen in `src/assets/fonts/num/`.
+- ggbot (github.com/ggbotnet/fonts-cc0): Digit Tech 7, MatrixType Display, Jupiteroid, Home Video, Rainbow 2000, Operation Napalm, Public Pixel, Drybrush, Stampcraft, Crayon Libre, Skyte, Zerove
+- Kenney (kenney.nl, opengameart.org/content/kenney-fonts): Kenney Future, Kenney Blocks, Kenney High

@@ -20,6 +20,7 @@ export const UI_DEFAULTS = {
   showCombo: true,        // Combo- und Kill-Anzeige
   numStyle: 'N01',
   numSize: 100,           // % (50–200)
+  numFont: '',            // eigene Zahlen-Schrift (ui/numFonts.ts), leer = Schrift des Zahlen-Stils
   numMerge: true,         // kleine Treffer zusammenfassen
   healNums: true,
   tooltipsExt: true,      // erweiterte Tooltips

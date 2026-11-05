@@ -3,6 +3,7 @@
 import { $ } from '../util';
 import { uiSettings, setUi, HUD_PRESETS, NUM_STYLES, UiSettings, saveProfile, loadProfile } from './uiSettings';
 import { askConfirm } from './confirm';
+import { NUM_FONTS, numFontFamily } from './numFonts';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
 
@@ -60,6 +61,21 @@ function segmented(key: keyof UiSettings, options: [string, string][]) {
   return box;
 }
 const h2 = text => Object.assign(document.createElement('h2'), { textContent: text });
+const h3 = text => Object.assign(document.createElement('h3'), { className: 'setH3', textContent: text });
+// Kacheln mit Vorschau: jede Schrift zeigt Beispielzahlen in sich selbst
+function fontGrid() {
+  const box = document.createElement('div');
+  box.className = 'setFonts';
+  for (const [id, name] of [['', 'Wie Zahlen-Stil'], ...NUM_FONTS.map(([i, n]) => [i, n])]) {
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'setFont' + (uiSettings.numFont === id ? ' on' : '') });
+    const sample = Object.assign(document.createElement('span'), { className: 'setFontSample', textContent: '1284 +86' });
+    if (id) sample.style.fontFamily = `'${numFontFamily(id)}', sans-serif`;
+    b.append(sample, Object.assign(document.createElement('small'), { textContent: name }));
+    b.addEventListener('click', () => { setUi('numFont', id as any); for (const x of box.children) x.classList.toggle('on', x === b); });
+    box.append(b);
+  }
+  return box;
+}
 function button(text, cls, onClick) {
   const b = Object.assign(document.createElement('button'), { type: 'button', className: cls, textContent: text });
   b.addEventListener('click', onClick);
@@ -109,6 +125,8 @@ function buildInterface() {
     btnRow,
     h2('Schadenszahlen'),
     row('Zahlen-Stil', select('numStyle', NUM_STYLES)),
+    h3('Zahlen-Schrift'),
+    fontGrid(),
     row('Größe', slider('numSize', 50, 200)),
     row('Kleine Treffer zusammenfassen', check('numMerge')),
     row('Heilzahlen', check('healNums')),
