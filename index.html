@@ -383,10 +383,39 @@
 </div>
 
 <div id="settingsModal" class="modal">
-  <div class="frame panel" style="max-height:92vh;overflow-y:auto">
-    <h1 class="title" style="font-size:26px">Einstellungen</h1>
-    <div id="settingsVol"></div>
-    <button class="bindBtn" id="setAutoCam" style="width:100%;margin-top:8px"></button>
+  <div class="frame panel" id="settingsBox">
+    <div class="setHead"><h1 class="title">Einstellungen</h1><span>Esc schließt · Spiel pausiert</span></div>
+    <div class="setMain">
+      <nav id="setTabs" aria-label="Einstellungen">
+        <button data-tab="grafik">Grafik</button>
+        <button data-tab="audio">Audio</button>
+        <button data-tab="steuerung">Steuerung &amp; Tasten</button>
+        <button data-tab="interface">Interface</button>
+        <button data-tab="gameplay">Gameplay</button>
+      </nav>
+      <div class="setBody">
+        <section data-tab="grafik" id="setGrafik"><h2>Bild</h2></section>
+        <section data-tab="audio"><h2>Lautstärke</h2><div id="settingsVol"></div></section>
+        <section data-tab="steuerung" id="setSteuerung"><h2>Kamera</h2>
+          <button class="bindBtn" id="setAutoCam"></button>
+          <h2>Tasten</h2><button class="bindBtn" id="setBinds">Tastenbelegung öffnen</button>
+        </section>
+        <section data-tab="interface" id="setInterface"></section>
+        <section data-tab="gameplay"><h2>Gameplay</h2><p class="setNote">Noch keine Einstellungen.</p>
+    <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
+      <summary class="title" style="cursor:pointer">Credits</summary>
+      <p style="margin:6px 0 0">Spell-Icons von HiveWorkshop:<br>Flame Spells: MangakaDark<br>Hero Ability Icon Set 3, SnowBall - FireBall: Panda<br>FrostMissiles: Vinz</p>
+    </details>
+        </section>
+      </div>
+    </div>
+    <div class="setFoot"><button class="btn" id="settingsClose">Schließen</button></div>
+  </div>
+</div>
+
+<!-- Dev-Panel (F10). Phase 3 macht daraus ein schwebendes Fenster -->
+<div id="devPanel" class="frame" hidden>
+  <div class="title devHead">Dev <span>F10</span></div>
     <div class="title" style="text-align:left;margin:10px 0 6px">Dev: Zone wechseln</div>
     <div id="devZones"></div>
     <div class="title" style="text-align:left;margin-bottom:6px">Dev: Karten</div>
@@ -409,12 +438,6 @@
     </div>
     <div class="title" style="text-align:left;margin-bottom:6px">Dev: Waffen-Baukasten</div>
     <div id="devForge"></div>
-    <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
-      <summary class="title" style="cursor:pointer">Credits</summary>
-      <p style="margin:6px 0 0">Spell-Icons von HiveWorkshop:<br>Flame Spells: MangakaDark<br>Hero Ability Icon Set 3, SnowBall - FireBall: Panda<br>FrostMissiles: Vinz</p>
-    </details>
-    <button class="smallBtn" id="settingsClose" style="width:auto;padding:6px 14px">Schließen</button>
-  </div>
 </div>
 
 <div id="cardModal" class="modal">

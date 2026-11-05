@@ -49,3 +49,47 @@ body.font-fraktur {
 .modal .smallBtn { font-family: var(--font-body); font-weight: 500; letter-spacing: .06em; background: transparent; color: var(--glut-btn2-text);
   border: 1px solid var(--glut-top); border-radius: 0; }
 .modal .smallBtn:hover { background: rgba(255, 61, 31, 0.15); }
+
+/* Einstellungen (Settings.dc.html: 1100×720, Tabs 210 px) */
+#settingsModal #settingsBox { width: min(1100px, 96vw); max-width: none; height: min(720px, 94vh); padding: 0; display: flex; flex-direction: column; text-align: left; }
+.setHead { height: 64px; flex: none; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glut-line); }
+.setHead h1 { font-size: 28px !important; letter-spacing: .06em; }
+.setHead span { font-size: 13px; color: var(--glut-muted); }
+.setMain { flex: 1; display: flex; min-height: 0; }
+#setTabs { width: 210px; flex: none; padding: 18px 12px; border-right: 1px solid var(--glut-line); display: flex; flex-direction: column; gap: 4px; }
+#setTabs button { height: 44px; text-align: left; padding: 0 14px; border: 0; border-left: 2px solid transparent; background: transparent; color: var(--glut-muted);
+  font: 500 16px var(--font-body); letter-spacing: .04em; cursor: pointer; }
+#setTabs button:hover { color: var(--glut-text); }
+#setTabs button.active { background: rgba(255, 61, 31, .14); border-left-color: var(--glut-top); color: #fff; font-weight: 600; }
+.setBody { flex: 1; padding: 24px 36px; overflow-y: auto; }
+.setBody section { display: flex; flex-direction: column; gap: 14px; }
+.setBody section[hidden] { display: none; }
+.setBody h2 { margin: 12px 0 0; font: 800 18px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-accent); }
+.setBody h2:first-child { margin-top: 0; }
+.setRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; font: 400 16px var(--font-body); color: var(--glut-text); }
+.setRow input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--glut-btn); }
+.setSlider { display: flex; align-items: center; gap: 12px; }
+.setSlider input { width: 220px; accent-color: var(--glut-btn); }
+.setSlider span { width: 52px; font: 600 14px var(--font-num); color: var(--glut-muted); }
+.setSelect { min-width: 240px; height: 36px; padding: 0 10px; background: #0a0202; color: var(--glut-text); border: 1px solid var(--glut-border); font: 500 15px var(--font-body); }
+.setSeg { display: flex; gap: 4px; padding: 4px; background: #1a0605; }
+.setSeg button { height: 36px; padding: 0 14px; border: 0; background: transparent; color: var(--glut-muted); font: 500 14px var(--font-body); cursor: pointer; }
+.setSeg button[aria-pressed=true] { background: var(--glut-btn); color: #fff; }
+.setBtns { display: flex; gap: 10px; }
+.setBtns .smallBtn { width: auto; margin: 0; height: 44px; padding: 0 18px; font-size: 15px; }
+.setBody .bindBtn { padding: 10px; font: 500 15px var(--font-body); background: transparent; border: 1px solid var(--glut-border); color: var(--glut-text); border-radius: 0; }
+.setNote { color: var(--glut-muted); margin: 0; }
+#settingsVol { font-family: var(--font-body); }
+.setFoot { height: 64px; flex: none; padding: 0 28px; display: flex; align-items: center; justify-content: flex-end; border-top: 1px solid var(--glut-line); }
+.setFoot .btn { font-size: 15px; padding: 10px 22px; }
+body.mobile #setTabs { width: 150px; }
+
+/* Combo- und Kill-Anzeige aus */
+body.noCombo #hudRow span:has(#scoreCombo, #hMulti, #iKills) { display: none; }
+
+/* Dev-Panel (F10), vorläufig fest oben links; Phase 3 macht es verschiebbar */
+#devPanel { position: fixed; left: 12px; top: 60px; z-index: 10; width: 440px; max-height: 86vh; overflow-y: auto; padding: 12px 16px;
+  background: var(--glut-panel); border: 1px solid var(--glut-border); border-top: 2px solid var(--glut-top); border-radius: 0; }
+#devPanel[hidden] { display: none; }
+.devHead { display: flex; justify-content: space-between; font-size: 18px; margin-bottom: 6px; }
+.devHead span { font: 500 12px var(--font-body); color: var(--glut-muted); text-shadow: none; }

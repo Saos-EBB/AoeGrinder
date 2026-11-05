@@ -3,6 +3,7 @@
 import { $ } from '../util';
 import { UI } from './uiConfig';
 import { device } from '../device';
+import { uiSettings } from './uiSettings';
 
 const ANCHORS = { tl: [0, 0], tc: [0.5, 0], tr: [1, 0], cl: [0, 0.5], c: [0.5, 0.5], cr: [1, 0.5], bl: [0, 1], bc: [0.5, 1], br: [1, 1] };
 const NAMES = { hudHeader: 'Kopfleiste', hudHp: 'Leben', hudMana: 'Mana', hudCast: 'Castbar', actionbar: 'Zauberleiste', hudEffects: 'Effekte und Runen', hudRelics: 'Relikte', hudMap: 'Minimap' };
@@ -45,7 +46,7 @@ function applyLayout() {
   for (const id in layout) {
     const e = layout[id], [fx, fy] = ANCHORS[e.anchor], el = $(id);
     Object.assign(el.style, { position: 'fixed', right: 'auto', bottom: 'auto', margin: '0',
-      left: `${fx * 100 + e.x}%`, top: `${fy * 100 + e.y}%`, transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${e.scale ?? 1})`,
+      left: `${fx * 100 + e.x}%`, top: `${fy * 100 + e.y}%`, transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${(e.scale ?? 1) * uiSettings.hudScale / 100})`,
       transformOrigin: `${fx * 100}% ${fy * 100}%` });
     el.dataset.hudName = NAMES[id];
   }
@@ -174,3 +175,4 @@ $('hudEditReset').addEventListener('click', () => {
 });
 $('hudEditDone').addEventListener('click', stopHudEdit);
 applyLayout();
+addEventListener('uisettings', applyLayout);

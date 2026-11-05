@@ -191,13 +191,12 @@ $('setAutoCam').addEventListener('click', () => { setAutoCam(!autoCamOn()); show
 // Bildschirmwackeln: an, aus, stark
 const shakeBtn = document.createElement('button');
 shakeBtn.className = 'bindBtn';
-shakeBtn.style.cssText = 'width:100%;margin-top:8px';
 const showShake = () => { shakeBtn.textContent = `Bildschirmwackeln: ${shakeModeNow()}`; };
 shakeBtn.addEventListener('click', () => { setShakeMode(SHAKE_MODES[(SHAKE_MODES.indexOf(shakeModeNow()) + 1) % SHAKE_MODES.length]); showShake(); });
-$('setAutoCam').after(shakeBtn);
+$('setGrafik').append(shakeBtn);
 showShake();
 showAutoCam();
-function editHud(backdrop) {
+export function editHud(backdrop) {
   $(backdrop).classList.add('hudHide');
   document.body.classList.remove('menu');
   startHudEdit(() => {

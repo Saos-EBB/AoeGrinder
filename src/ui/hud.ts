@@ -18,6 +18,7 @@ import { ICONS } from './icons';
 import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
+import { uiSettings } from './uiSettings';
 import './hudLayout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
@@ -38,6 +39,7 @@ export function screenPos(pos, height) {
 
 export function combatText(pos, text, cls, height = 2) {
   if (cls === 'crit') onCrit();
+  if (cls === 'heal' && !uiSettings.healNums && /^\+\d+$/.test(text)) return;   // nur Heilzahlen, Texte wie „Phönix!“ bleiben
   const p = screenPos(pos, height);
   if (!p) return;
   const el = document.createElement('div');

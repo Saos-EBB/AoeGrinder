@@ -7,18 +7,19 @@ import { onCrit } from '../fx/impact';
 import { overlay, screenPos } from './hud';
 import { COLORS } from './colors';
 import { UI } from './uiConfig';
+import { uiSettings } from './uiSettings';
 
 const live = [];
 const merging = new WeakMap();
 
 const sizeOf = dmg => {
   const k = clamp(Math.log(Math.max(1, dmg) / UI.dmg.refLow) / Math.log(UI.dmg.refHigh / UI.dmg.refLow), 0, 1);
-  return UI.dmg.minPx + (UI.dmg.maxPx - UI.dmg.minPx) * k;
+  return (UI.dmg.minPx + (UI.dmg.maxPx - UI.dmg.minPx) * k) * uiSettings.numSize / 100;
 };
 
 export function damageNumber(mob, dmg, crit, source) {
   if (crit) onCrit();
-  const open = !crit && merging.get(mob);
+  const open = !crit && uiSettings.numMerge && merging.get(mob);
   if (open && state.now - open.at < UI.dmg.mergeMs) {
     open.total += dmg;
     open.el.textContent = open.total;

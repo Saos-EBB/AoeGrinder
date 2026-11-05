@@ -204,8 +204,14 @@ $('restartBtn').addEventListener('click', () => {
   syncPause();
 });
 $('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
-$('menuSettings').addEventListener('click', renderDevZones);
-$('pauseSettings').addEventListener('click', renderDevZones);
+// Dev-Panel auf F10 (vorher in den Einstellungen)
+addEventListener('keydown', e => {
+  if (e.code !== 'F10' || state.rebinding) return;
+  e.preventDefault();
+  const p = $('devPanel');
+  p.hidden = !p.hidden;
+  if (!p.hidden) renderDevZones();
+});
 $('bindsClose').addEventListener('click', closeBinds);
 // Abbrechen hat den Fokus, damit Enter oder Leertaste nichts löscht
 $('bindsReset').addEventListener('click', () => { state.rebinding = null; state.padRebinding = null; renderBinds(); $('resetModal').classList.add('show'); $('resetNo').focus(); });
