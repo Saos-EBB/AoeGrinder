@@ -29,7 +29,7 @@ const CHARS = [
   { mod: 'fire', name: 'Feuermagier', sub: 'Feuer' },
   { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan' },
   { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie' },
-  { mod: 'blood', name: 'Blutmagier', sub: 'Infekt, Leben als Kosten' },
+  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten' },
   { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert' },
   { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung' },
 ];

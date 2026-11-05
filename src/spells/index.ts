@@ -26,7 +26,7 @@ import { strike } from './strike';
 import { ball } from './ball';
 import { discharge } from './discharge';
 import { storm } from './storm';
-import { bwhip, bjump, siphon, bwave, glue, melt } from './blood';
+import { sludge, slimetrap, slimewave, blackhole, poisoncloud, web, contract, drain, burst, melt, pestilence } from './plague';
 import { arc } from './arc';
 import { arcmark } from './arcmark';
 import { surge } from './surge';
@@ -46,7 +46,7 @@ import { archon, timewarp, archBeam, archNova, archPort } from './arcRelics';
 import { quake, keeper, staticfield, stormelem } from './lightning2';
 import { ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage } from './relics';
 
-Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, gasoline, firetrail, firestorm, frostbolt, needle, icebarrier, iceage, barrage, beam, arcorb, arcstrike, archon, timewarp, archBeam, archNova, archPort, quake, keeper, staticfield, stormelem, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, bwhip, bjump, siphon, bwave, glue, melt, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
+Object.assign(SPELLS, randomSpells, { iceblock, phoenix, detonate, gasoline, firetrail, firestorm, frostbolt, needle, icebarrier, iceage, barrage, beam, arcorb, arcstrike, archon, timewarp, archBeam, archNova, archPort, quake, keeper, staticfield, stormelem, nova, ae, bliz, coc, blink, drink, flame, blast, hellfire, frostorb, voidorb, whirl, icelance, glacier, fireball, meteor, arcmissiles, arcmark, chain, arc, recharge, strike, ball, discharge, storm, sludge, slimetrap, slimewave, blackhole, poisoncloud, web, contract, drain, burst, melt, pestilence, surge, ragnaros, desecrate, frostbreath, froststrike, firenova, bonecage });
 // input.ts und gamepad.ts prüfen SPELLS[aktion]. Die neuen Tasten zählen dort als Zauber, ohne selbst einer zu sein.
 for (const action of SPELL_ACTIONS) if (!SPELLS[action]) Object.defineProperty(SPELLS, action, { value: { alias: true }, enumerable: false });
 resetSpells();

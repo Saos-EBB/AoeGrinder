@@ -89,7 +89,7 @@ export function startCd(id) {
 
 export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
 export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
-export const paysLife = id => supported('blood', id) || !!modValue('lifeCost');   // Blutopfer oder Blutmagier
+export const paysLife = id => supported('blood', id) || !!modValue('lifeCost');   // Blutopfer oder Seuchenmagier
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
@@ -97,9 +97,6 @@ export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported(
 // Liste an einer Funktions-Deklaration: arcmark.ts kann im Import-Kreis vor dem Rest dieser Datei laufen
 function arcaneHooks(): any[] { return (arcaneHooks as any).list ??= []; }
 export function onArcaneHit(fn) { arcaneHooks().push(fn); }
-// Jeder Treffer eines Spells mit Tag Blut (Infekt, blood.ts)
-function bloodHooks(): any[] { return (bloodHooks as any).list ??= []; }
-export function onBloodHit(fn) { bloodHooks().push(fn); }
 // Feuer-Treffer (auch Brand-Ticks) melden sich hier: Benzin zündet (gasoline.ts). Liste an einer Funktion: Import-Kreis
 function fireHooks(): any[] { return (fireHooks as any).list ??= []; }
 export function onFireHit(fn) { fireHooks().push(fn); }
@@ -131,7 +128,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
       if (hasTag(id, 'Arkan')) dmg *= arcDmgMul();                          // Arkane Ladungen
       dmg *= buffDmgMul();                                                  // Getränke des ?-Magiers
-      if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // Blutmagier: weniger Leben, mehr Schaden
+      if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // weniger Leben, mehr Schaden (kein Modus nutzt es seit v31)
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
@@ -141,7 +138,6 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
-      if (landed && !m.dead && hasTag(id, 'Blut')) for (const fn of bloodHooks()) fn(m, id, dmg);
       if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of fireHooks()) fn(m, id, dmg);
       if (landed) for (const fn of anyHooks()) fn(m, id, dmg, frozen);
       return landed;
@@ -194,7 +190,7 @@ export function castSpell(id, point?) {
   const s = SPELLS[id];
   if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
   if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
-  if (player.meltUntil > state.now) return showError('Du bist zerflossen');   // Blutmagier-Ult
+  if (player.meltUntil > state.now) return showError('Du bist zerflossen');   // Seuchenmagier: Zerfließen
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press(point);                     // Real Men, Eisblock, ?-Magier: eigene Kosten und Abklingzeit
   if (isGround(id) && !point) return startTargeting(id);

@@ -11,7 +11,7 @@ const Box = (w, h, d) => memo(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, 
 const Cyl = (r1, r2, h) => memo(`c${r1},${r2},${h}`, () => new THREE.CylinderGeometry(r1, r2, h, 6));
 const Cone = (r, h) => memo(`n${r},${h}`, () => new THREE.ConeGeometry(r, h, 5));
 const Ball = r => memo(`s${r}`, () => new THREE.SphereGeometry(r, 8, 6));
-const SLOW = new THREE.Color(0x6f7fa0), DEAD = new THREE.Color(0x5a5048), INFECT = new THREE.Color(0x7a1420);   // INFECT: Blut-Infekt
+const SLOW = new THREE.Color(0x6f7fa0), DEAD = new THREE.Color(0x5a5048), INFECT = new THREE.Color(0x4a7a1a);   // INFECT: Seuchen-Mal (v31)
 const TINTS = [null, SLOW, DEAD, INFECT], FLASH_STEPS = 4;
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
 

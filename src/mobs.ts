@@ -305,6 +305,10 @@ export function separateMobs() {
 export function applyRoot(mob, dur) {
   if (mob.type.rootImmune) { combatText(mob.pos, 'Immun', 'miss'); return; }
   mob.rootUntil = state.now + Math.min(dur, mob.type.rootMax ?? dur);
+  if (mob.web && mob.web.until > state.now && !mob.web.passing) for (const o of mob.web.links) {   // Klebefaden: Kontrolle zur Hälfte auf die Angeketteten
+    if (o.dead || o.type.rootImmune) continue;
+    o.rootUntil = Math.max(o.rootUntil, state.now + dur * 0.5);
+  }
 }
 
 // Gibt true zurück, wenn der Zauber getroffen hat

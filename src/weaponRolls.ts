@@ -15,7 +15,7 @@ import { WEAPONS } from './models/weapons/defs';
 import { buildWeapon } from './models/weapons/index';
 import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBaukastenWeapon } from './models/weapons/baukasten';
 import { pick, dist2d } from './util';
-import { infect } from './infect';
+import { mark } from './plagueMarks';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
@@ -218,7 +218,7 @@ function weaponHit(m, dmg, crit, api, el, chance, M) {
     const next = state.mobs.filter(o => !o.dead && o !== m && dist2d(o.pos, m.pos) <= E.chainYd).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, E.chainN);
     for (const o of next) { boltFx(m.pos, o.pos, [2.4, 2.2, 0.8]); api.burnMob(o, Math.max(1, Math.round(dmg * E.chainMul))); }
   }
-  if (el === 'blut' && !m.dead) infect(m, E.infectStacks);   // Infekt des Blutmagiers, tickt in jedem Modus (blood.ts)
+  if (el === 'blut' && !m.dead) mark(m, E.infectStacks);   // seit v31 ein Seuchen-Mal statt Infekt (plagueMarks.ts)
   if (el === 'dunkel' && !m.dead) {
     const extra = Math.max(1, Math.round(dmg * E.darkMul));
     api.burnMob(m, extra);                                       // fester Schaden ohne Wurf und Rüstung wie Dunkel

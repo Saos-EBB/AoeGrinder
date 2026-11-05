@@ -36,7 +36,7 @@ export const ELEMENTS = {
   feuer: { name: 'Feuer', color: 0xff7a22, adj: 'Glühend', fx: 'Brand: 30 % des Treffers über 3 s' },
   arkan: { name: 'Arkan', color: 0xd070ff, adj: 'Runisch', fx: '2 % Mana zurück' },
   blitz: { name: 'Blitz', color: 0xffe866, adj: 'Knisternd', fx: 'Kettenblitz: 40 % auf 3 Mobs in 6 yd' },
-  blut: { name: 'Blut', color: 0xe0202e, adj: 'Blutig', fx: 'Infekt: +1 Stapel (1 % Leben/s je Stapel, heilt dich)' },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
+  blut: { name: 'Blut', color: 0xe0202e, adj: 'Blutig', fx: 'Seuchen-Mal: +1 Stapel' },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
   dunkel: { name: 'Dunkel', color: 0xff2440, adj: 'Finster', fx: 'True Damage, heilt 20 %' },
 };
 export const MAKERS = {

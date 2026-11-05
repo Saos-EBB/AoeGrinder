@@ -95,16 +95,17 @@ export function resetMods() {
     fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
     iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
     splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0,   // Arkan-Talente (v31)
-    condenser: 0, boltLeap: 0 });   // Blitz-Talente (v31)
+    condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
+    toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0 });   // Seuchen-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
 export const RANDOM_MAGE = {
   kit: ['rOff', 'rDef', 'rUtil', 'rDrink'],
   cats: {
-    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'bwhip'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
-    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'bwave', 'siphon'] },
-    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'glue', 'bjump'] },
+    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire'] },
+    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark'] },
     rDrink: { name: 'Drink Something', cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
   },
   sitMs: 2000,
@@ -120,18 +121,20 @@ export const RANDOM_MAGE = {
 // costDiv: Spells ohne eigenes charge kosten mana / costDiv Ladung. stunMs: Betäubung über applyRoot (Mob ohne Laufen und Schlag)
 export const BATTERY = { max: 100, start: 50, regenPerS: 8, perHitTarget: 3, overMul: 2, stunMs: 500, costDiv: 8, color: '#ffe14a', recharge: { ms: 2000, amount: 60 } };
 
-// Blutmagier (Blut only, spells/blood.ts). Alles PH
-// infect: Stapel laufen je 4 s und hängen sich hinten an (max 5 = 20 s); pro s Schaden 1 % der Mob-Leben × Stapel, du heilst um denselben Betrag
-export const BLOOD = {
-  infect: { maxStacks: 5, stackMs: 4000, tickMs: 1000, pctPerStack: 0.01 },
-  lowHpDmg: 0.6,                                                            // bei 0 Leben +60 % Schaden, linear
-  jump: { minMs: 200, maxMs: 1200, minYd: 6, maxYd: 18, randomYd: 12, flightMs: 500, height: 3, radius: 4, knock: 5, min: 60, max: 72, chargeMove: 0.4, autoMs: 1500 },
-  siphon: { radius: 6, everyMs: 500, dmg: 14, healPct: 0.01 },
-  wave: { length: 12, width: 6, push: 5, min: 50, max: 60 },
-  glue: { range: 15, rootMs: 2000 },
-  pool: { ms: 6000, radius: 3, slow: 0.2, dmg: 5, healPct: 0.01, max: 8 },
+// Seuchenmagier (Seuche only, spells/plague.ts, v31). Alles PH. Schaden in Einheiten (UNIT), Kosten in Anteil der max. Leben (lifePct an den Spells)
+export const PLAGUE = {
+  mark: { max: 3, ms: 10000 },
+  sludge: { dmg: 1, range: 30, radius: 2 },
+  trap: { radius: 4, ms: 8000, rootMs: 2000, range: 30 },
+  wave: { length: 12, width: 6, push: 5, dmg: 1.5, rootMs: 1000 },
+  hole: { radius: 8, ms: 1500, pull: 14, fling: 20, impact: 4, dmg: 3, flightMs: 500, range: 30 },
+  cloud: { radius: 6, ms: 6000, dps: 0.3, range: 30 },
+  web: { radius: 8, links: 2, ms: 6000, share: 0.5, range: 30 },
+  contract: { radius: 15, rootMs: 4000 },
+  drain: { radius: 15, dmg: 2, heal: 0.005 },
+  burst: { radius: 15, ms: 12000 },
+  pestilence: { radius: 40, cd: 90000 },
   melt: { ms: 3000, radius: 15, rootMs: 2000, tickMs: 500 },
-  whip: { range: 6, halfAngle: 0.8, min: 40, max: 48 },
 };
 
 // Kill-Anzeige der Schul-Modi (schoolMeter.ts): Kills füllen 0 … 1, ohne Kill sinkt sie. Voll: Bonus der Schule. Alles PH
@@ -231,6 +234,15 @@ export const CARDS = [
     desc: () => 'Batterie bis 130, Überladung erst bei 130.', apply: () => { mods.condenser = 30; } },
   { id: 'boltleap', name: 'Blitzsprung', only: ['Blitz'], max: 1,
     desc: () => 'Blink gibt +15 Ladung, statt 10 zu kosten.', apply: () => { mods.boltLeap = 25; } },   // 10 Kosten zurück + 15
+  // Seuche (v31)
+  { id: 'toughslime', name: 'Zäher Schleim', only: ['Seuche'], max: 3,
+    desc: () => 'Festkleben und Zusammenziehen halten 1 s länger.', apply: () => { mods.toughSlime += 1; } },
+  { id: 'leech', name: 'Blutegel', only: ['Seuche'], max: 3,
+    desc: (r, m) => `Entziehen heilt +${String(Math.round(25 * m) / 100).replace('.', ',')} % pro Treffer.`, apply: (r, m) => { mods.leech += 0.0025 * m; } },
+  { id: 'contagion', name: 'Ansteckung', only: ['Seuche'], max: 3,
+    desc: () => 'Stirbt ein vergifteter Mob, springt das Gift auf 1 Mob mehr über.', apply: () => { mods.contagion += 1; } },
+  { id: 'wreckingball', name: 'Abrissbirne', only: ['Seuche'], needs: 'blackhole', max: 3,
+    desc: (r, m) => `Schwarzes Loch: +${Math.round(25 * m)} % Aufprallschaden.`, apply: (r, m) => { mods.wreckingBall += 0.25 * m; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
