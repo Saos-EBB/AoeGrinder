@@ -161,6 +161,10 @@ const OLD_ANCHOR: Record<string, Anchor> = { tl: 'tl', tc: 't', tr: 'tr', cl: 'l
   } catch { /* kein Storage */ }
 })();
 
-// Die heutigen HUD-Teile; Phase 5 teilt die Kopfleiste in eigene Elemente
-for (const [oldId, id] of Object.entries(OLD_IDS)) registerHudElement(id, $(oldId));
+// Alle HUD-Elemente: id → Markup in index.html
+const DOM_IDS: Record<HudElementId, string> = {
+  timer: 'hudTimer', runinfo: 'hudRun', xp: 'hudXp', hp: 'hudHp', mana: 'hudMana', cast: 'hudCast', hotbar: 'actionbar', killmeter: 'hudKill',
+  combo: 'hudCombo', buffs: 'hudEffects', relics: 'hudRelics', minimap: 'hudMap', compass: 'hudCompass', splits: 'hudSplits', tracker: 'hudTracker', unitframe: 'hudUnit',
+};
+for (const [id, dom] of Object.entries(DOM_IDS)) registerHudElement(id as HudElementId, $(dom));
 applyLayout();

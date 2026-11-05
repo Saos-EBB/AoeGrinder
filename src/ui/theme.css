@@ -85,7 +85,7 @@ body.font-fraktur {
 body.mobile #setTabs { width: 150px; }
 
 /* Combo- und Kill-Anzeige aus */
-body.noCombo #hudRow span:has(#scoreCombo, #hMulti, #iKills) { display: none; }
+body.noCombo .hudEl[data-hud=combo] { display: none !important; }
 
 /* Dev-Panel (F10, Dev.dc.html): schwebend, Titelleiste zieht, Ecke unten rechts ändert die Größe */
 #devPanel { position: fixed; z-index: 10; display: flex; flex-direction: column; min-width: 300px; padding: 0;

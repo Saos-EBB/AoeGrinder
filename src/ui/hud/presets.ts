@@ -4,15 +4,20 @@
 import type { HudPreset, HudElementId, Placement } from './layout';
 
 export const PRESETS: HudPreset[] = [
-  { id: 'H01', name: 'Klar', theme: 'clean', elements: {
-    runinfo: { anchor: 't', x: 0, y: 0, scale: 1 },
-    hp: { anchor: 'c', x: -10, y: 24, scale: 1 },
-    mana: { anchor: 'c', x: 10, y: 24, scale: 1 },
-    cast: { anchor: 'c', x: 0, y: 28, scale: 1 },
-    hotbar: { anchor: 'b', x: 0, y: -1, scale: 1 },
-    buffs: { anchor: 'tl', x: 1, y: 8, scale: 1 },
-    relics: { anchor: 'r', x: -1, y: -10, scale: 1 },
-    minimap: { anchor: 'tr', x: -1, y: 6, scale: 1 },
+  { id: 'H01', name: 'Klar', theme: 'clean', elements: {   // vorläufig, Lagen aus gen.py folgen in Phase 6
+    timer: { anchor: 't', x: 0, y: 1, scale: 1 },
+    runinfo: { anchor: 't', x: 0, y: 6, scale: 1 },
+    xp: { anchor: 'b', x: 0, y: -0.5, scale: 1 },
+    hp: { anchor: 'c', x: -9.5, y: 13, scale: 1, variant: 'bars-side' },
+    mana: { anchor: 'c', x: 9.5, y: 13, scale: 1, variant: 'bars-side' },
+    cast: { anchor: 'c', x: 0, y: 17, scale: 1 },
+    hotbar: { anchor: 'b', x: 0, y: -2, scale: 1, variant: 'row' },
+    killmeter: { anchor: 'b', x: 0, y: -12, scale: 1 },
+    combo: { anchor: 'r', x: -2, y: -8, scale: 1 },
+    buffs: { anchor: 'tl', x: 1, y: 14, scale: 1 },
+    relics: { anchor: 'r', x: -2, y: 10, scale: 1 },
+    minimap: { anchor: 'tr', x: -1, y: 2, scale: 1, variant: 'circle+name' },
+    tracker: { anchor: 'tl', x: 1, y: 2, scale: 1 },
   } },
 ];
 

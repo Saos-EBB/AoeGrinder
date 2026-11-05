@@ -15,42 +15,18 @@
   .title { font-family: Cinzel, serif; color: #f2c94c; letter-spacing: .5px; }
 
   /* HUD: Position kommt aus ui/hud/layout.ts (Wrapper .hudEl) */
-  #hudHeader { width: 100vw; border-width: 0 0 2px; border-radius: 0; padding: 4px 0 0; }
-  #hudRow { display: flex; justify-content: center; gap: 26px; font-size: 13px; padding-bottom: 4px; }
-  #hudRow span { display: flex; flex-direction: column; align-items: center; min-width: 44px; position: relative; }
-  #hudRow i { font-style: normal; font-size: 10px; color: #c9b88a; text-transform: uppercase; letter-spacing: .5px; }
-  #hudRow b { font-variant-numeric: tabular-nums; color: #fff; white-space: nowrap; }
-  #scorePts { color: #f2c94c !important; }
-  #scoreBar { position: absolute; bottom: -3px; left: 0; right: 0; height: 2px; visibility: hidden; }
-  #scoreBar div { height: 100%; background: #ffb347; transform-origin: left; }
   .bar { position: relative; height: 18px; background: #000a; border: 1px solid #000; margin-top: 4px; overflow: hidden; }
   .bar > .fill { position: absolute; inset: 0; transform-origin: left; }
   .bar > span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px #000; line-height: 18px; }
-  #hpFill { background: linear-gradient(#3fcf3f, #1c8a1c); }
   #hpCut { position: absolute; top: 0; bottom: 0; right: 0; width: 0; background: repeating-linear-gradient(-45deg, #5a5a5e 0 6px, #46464a 6px 12px); }
   body.zeitstopp canvas { filter: grayscale(.85) contrast(1.15) brightness(.9); }
-  #manaFill { background: linear-gradient(#4a7dff, #1f3fbf); }
-  #hudHp, #hudMana { width: 20vw; }
-  #hudCast { width: 40vw; }
-  #hudHp .bar, #hudMana .bar { margin: 0; height: 22px; border-radius: 3px; }
-  #hudHp .bar > span, #hudMana .bar > span { line-height: 22px; font-size: 13px; }
   body.hudEdit #castbar { display: block !important; }
-  #hudEffects { display: flex; flex-wrap: wrap; gap: 3px; max-width: 26vw; font-size: 11px; }
-  .fxChip { padding: 1px 6px; background: #000a; border: 1px solid #6b5426; border-radius: 3px; white-space: nowrap; }
-  .fxChip b { color: #ffe27a; margin-left: 3px; }
-  #hudRelics { display: flex; flex-direction: column; gap: 6px; }
-  #hudMap { line-height: 0; border-radius: 50%; box-shadow: 0 2px 10px #000a; }
-  #hudMap canvas { display: block; }
-  .relicBox { width: 88px; padding: 8px 4px; text-align: center; font: 700 12px Cinzel, serif; color: #f2c94c; background: linear-gradient(#2a2010ee, #120d06ee);
-    border: 3px solid #f2c94c; border-radius: 8px; box-shadow: 0 0 10px #f2c94c88; }
   #hudEditBar button { white-space: nowrap; }
   #hudEditBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
   #hudEditBar[hidden] { display: none; }
   #hudMana { position: relative; }
   #fsr { position: absolute; top: 100%; left: 0; right: 0; height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
-  #hudMana #meter { position: absolute; top: calc(100% + 9px); left: 0; right: 0; height: 15px; }
-  #hudMana #meter > span { line-height: 15px; font-size: 11px; }
   #hudMana.over .bar { --meter: #ffe14a; animation: meterPulse .35s ease-in-out infinite alternate; }
   #meter.full { animation: meterPulse .7s ease-in-out infinite alternate; }
   @keyframes meterPulse { from { box-shadow: 0 0 2px var(--meter); } to { box-shadow: 0 0 12px var(--meter), 0 0 4px #fff; filter: brightness(1.35); } }
@@ -61,14 +37,8 @@
   .smallBtn:hover { background: #5a4220; }
 
   /* Castbar */
-  #castbar { position: relative; height: 20px;
-    background: #000c; border: 2px solid #b8913f; border-radius: 3px; display: none; overflow: hidden; }
-  #castFill { position: absolute; inset: 0; background: linear-gradient(#ffd34d, #c9921a); transform-origin: left; }
-  #castbar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 700;
-    line-height: 16px; text-shadow: 0 1px 2px #000; }
 
   /* Actionbar */
-  #actionbar { display: flex; gap: 6px; padding: 6px; }
   .slot { position: relative; width: var(--slot); height: var(--slot); background-size: cover; border: 2px solid #6b5426; border-radius: 4px;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
     font-size: 11px; font-weight: 700; text-align: center; text-shadow: 0 1px 2px #000; cursor: pointer; }
@@ -107,8 +77,6 @@
   .util   { background: radial-gradient(circle at 50% 35%, #fff2c2, #9a7a3a 70%, #4a3816); }
 
   /* XP */
-  #xpbar { position: relative; height: 5px; background: #000c; }
-  #xpFill { position: absolute; inset: 0; background: linear-gradient(#a35ad6, #5b2a8a); transform-origin: left; }
 
   /* Fehlermeldung (wie Classic-UI-Errorframe) */
   #err { position: fixed; top: 18%; left: 0; right: 0; text-align: center; color: #ff3b3b; font-size: 18px;
@@ -118,7 +86,7 @@
 
   /* Nameplates + Kampftext */
   #overlay { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-  #hudHeader, #hudHp, #hudMana, #hudCast, #hudEffects, #hudRelics, #hudMap, #actionbar, #err { z-index: 2; }
+  #err { z-index: 2; }
   .modal { z-index: 3; }
   .plate { position: absolute; width: 74px; margin-left: -37px; font-size: 11px; text-align: center;
     text-shadow: 0 1px 2px #000; font-weight: 600; }
@@ -195,7 +163,7 @@
   #charBody .dmgBar td { padding: 0 6px 5px; }
   #charBody .dmgBar div { height: 4px; }
   /* Hauptmenü */
-  body.menu #hudHeader, body.menu #hudHp, body.menu #hudMana, body.menu #hudCast, body.menu #actionbar, body.menu #hudEffects, body.menu #hudRelics, body.menu #hudMap, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
+  body.menu .hudEl, body.menu #hudDeco, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
   #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
   #startModal.show { display: block; }
   .hudHide { display: none !important; }
@@ -253,7 +221,6 @@
   .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
   #tMenu { position: absolute; top: 8px; right: 10px; width: 48px; height: 48px; font-size: 28px; line-height: 44px; text-align: center; z-index: 1;
     background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
-  body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics, body.mobile #hudMap { pointer-events: none; }
   body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
   body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
@@ -276,7 +243,6 @@
   body.mobile #menuActions .smallBtn { padding: 12px 16px; }
   /* Handy hochkant ohne Querformat-Sperre: Seite um 90° gedreht (device.ts updateRotation) */
   html.rot body { position: fixed; top: 0; left: 100vw; width: 100vh; height: 100vw; transform-origin: 0 0; transform: rotate(90deg); }
-  html.rot #hudHeader { width: 100%; }
   html.rot body.mobile .modal > .frame.panel { width: 100% !important; min-height: 100%; }
   html.rot body.mobile .cards { width: 100%; max-height: 100%; }
   html.rot body.mobile #menuLeft { width: 38vh; max-height: 60vw; }
@@ -287,28 +253,22 @@
 </head>
 <body>
 
-<div id="hudHeader" class="frame">
-  <div id="hudRow">
-    <span><i>Zone</i><b id="hZone"></b></span>
-    <span><i>Level</i><b id="lvl">1</b></span>
-    <span><i>Zeit</i><b id="iTime">0:00</b></span>
-    <span id="hSplitBox"><i>Split</i><b id="hSplit">–</b></span>
-    <span><i>Punkte</i><b id="scorePts">0</b></span>
-    <span><i>Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div></span>
-    <span><i>Multi</i><b id="hMulti">–</b></span>
-    <span><i>Mobs</i><b id="iCombat">0</b></span>
-    <span><i>Kills</i><b id="iKills">0</b></span>
-    <span><i>Glück</i><b id="luck">0</b></span>
-    <span><i>XP</i><b id="xpText"></b></span>
-  </div>
-  <div id="xpbar"><div id="xpFill"></div></div>
-</div>
-
-<div id="hudHp"><div class="bar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"></span></div></div>
+<!-- HUD-Elemente, Lage und Variante aus ui/hud/layout.ts, Inhalt aus ui/hud.ts und ui/hud/elements.ts -->
+<div id="hudTimer" class="hPanel"><b id="iTime">0:00</b><span id="hSplit">–</span></div>
+<div id="hudRun" class="hPanel"><span>LVL <b id="lvl">1</b></span><span><b id="scorePts">0</b> Pkt</span><span>Glück <b id="luck">0</b></span></div>
+<div id="hudXp"><div id="xpbar" class="hBar"><div class="fill" id="xpFill"></div><span id="xpText"></span></div></div>
+<div id="hudCombo"><i class="cLabel">Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div>
+  <span class="cMulti">Multi-Kill <b id="hMulti">–</b></span><span class="cKills"><b id="iKills">0</b> Kills</span></div>
+<div id="hudKill"><div id="meter" class="hBar" hidden><div class="fill" id="meterFill"></div><span id="meterText"></span></div></div>
+<div id="hudTracker"><b class="trTitle"></b><span class="trMobs">Mobs in der Nähe <b id="iCombat">0</b></span></div>
+<div id="hudSplits" class="hPanel"></div>
+<div id="hudCompass"></div>
+<div id="hudUnit" class="hPanel"><div class="ufPortrait"></div><div class="ufMain"><div class="ufHead"><b class="ufName"></b><b class="ufLvl"></b></div>
+  <div class="hBar ufHp"><div class="fill"></div><span></span></div><div class="hBar ufMana"><div class="fill"></div><span></span></div></div></div>
+<div id="hudHp"><div class="bar hBar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"><b class="cur"></b><span class="max"></span></span></div></div>
 <div id="hudMana">
-  <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
+  <div class="bar hBar"><div class="fill" id="manaFill"></div><span id="manaText"><b class="cur"></b><span class="max"></span></span></div>
   <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>
-  <div id="meter" class="bar" hidden><div class="fill" id="meterFill"></div><span id="meterText"></span></div>
 </div>
 <div id="hudCast">
   <div id="castbar"><div id="castFill"></div><span id="castText"></span></div>
@@ -316,8 +276,8 @@
 </div>
 <div id="hudEffects"></div>
 <div id="hudRelics"></div>
-<div id="hudMap"></div>
-<div id="actionbar" class="frame"></div>
+<div id="hudMap"><span id="hZone" class="mapLabel"></span></div>
+<div id="actionbar"></div>
 <div id="hudEditBar" class="frame" hidden>
   <span class="hint">Ziehen = verschieben (Shift = frei) · Mausrad = Größe · H = ein/aus · Rechtsklick = Element zurück</span>
   <button class="smallBtn" id="hudEditReset">Preset zurücksetzen</button>

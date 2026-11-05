@@ -157,7 +157,8 @@ document.body.appendChild(flash);
 
 // Anzeige: kleine Punkte unter der Lebensleiste, einer pro Ladung
 const dots = document.createElement('div');
-Object.assign(dots.style, { display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '3px', height: '8px' });
+dots.id = 'dodgeDots';   // Lage in ui/hud/hud.css
+Object.assign(dots.style, { display: 'flex', gap: '4px', justifyContent: 'center', height: '8px' });
 $('hudHp').appendChild(dots);
 let shownKey = '';
 const bar = document.getElementById('actionbar');

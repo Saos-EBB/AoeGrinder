@@ -19,7 +19,9 @@ import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
+import './hud/hud.css';
 import './hud/layout';
+import { updateHudExtras } from './hud/elements';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
 import { markStacks } from '../plagueMarks';
@@ -58,6 +60,11 @@ export function showError(msg) {
   void el.offsetWidth;               // Animation neu starten
   el.classList.add('show');
 }
+
+// HUD-DOM nur bei Änderung anfassen: Text und Füllstand (--v, 0..1) merken
+export function put(el: HTMLElement, text: string) { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } }
+export function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } }
+const $q = (sel: string) => document.querySelector(sel) as HTMLElement;
 
 export const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
@@ -223,15 +230,15 @@ function updateMeterBar() {
   if (school === 'Feuer') {                 // Hitze: orange, ab hotFrom rot, überhitzt pulsiert rot
     const heat = meterHeat(), over = meterOverheated(), color = over || heat >= M.hotFrom ? M.hot : M.color, key = `Feuer${color}`;
     if (meterKey !== key) { meterKey = key; el.style.setProperty('--meter', color); $('meterFill').style.background = `linear-gradient(${color}, ${color}88)`; }
-    $('meterFill').style.transform = `scaleX(${v})`;
+    fillTo($('meterFill'), v);
     $('meterText').textContent = over ? `Überhitzt · ${Math.floor(heat)}` : `Hitze ${Math.floor(heat)}`;
     el.classList.toggle('full', over);
     return;
   }
   const full = v >= 1;
   if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
-  if (school === 'Arkan') { $('meterFill').style.transform = `scaleX(${v})`; $('meterText').textContent = `${M.name} ${Math.round(v * M.max)} / ${M.max}`; el.classList.toggle('full', full); return; }
-  $('meterFill').style.transform = `scaleX(${v})`;
+  if (school === 'Arkan') { fillTo($('meterFill'), v); $('meterText').textContent = `${M.name} ${Math.round(v * M.max)} / ${M.max}`; el.classList.toggle('full', full); return; }
+  fillTo($('meterFill'), v);
   $('meterText').textContent = full ? M.full : `${M.name} ${Math.floor(v * 100)} %`;
   el.classList.toggle('full', full);
 }
@@ -239,14 +246,16 @@ function updateMeterBar() {
 export function updateHud() {
   saveRunBuild();
   const hpMax = maxHp(), manaMax = maxMana();
-  $('lvl').textContent = player.level;
-  $('luck').textContent = String(player.luck).replace('.', ',');
+  put($('lvl'), String(player.level));
+  put($('luck'), String(player.luck).replace('.', ','));
   const cut = player.hpCut ?? 0;   // Zerstörung: Leben-Balken bezieht sich aufs volle Leben, der verlorene Teil ist grau
-  $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax * (1 - cut), 0, 1)})`;
+  fillTo($('hpFill'), clamp(player.hp / hpMax * (1 - cut), 0, 1));
   $('hpCut').style.width = `${cut * 100}%`;
-  $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
-  $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
-  $('manaText').textContent = player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel
+  put($q('#hpText .cur'), String(Math.ceil(Math.max(0, player.hp))));
+  put($q('#hpText .max'), ` / ${hpMax}`);
+  fillTo($('manaFill'), clamp(player.mana / manaMax, 0, 1));
+  put($q('#manaText .cur'), player.resLabel ?? String(Math.floor(player.mana)));   // resLabel: Haltung des Klingenstrichs
+  put($q('#manaText .max'), player.resLabel ? '' : ` / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`);   // resNote: z. B. Blutrausch-Stapel
   updateMeterBar();
   const bat = batteryMode();               // Blitz only: Batterie gelb im Mana-Balken, überladen pulsiert er
   if (bat !== manaBattery) { manaBattery = bat; $('manaFill').style.background = bat ? `linear-gradient(${BATTERY.color}, #b89a10)` : ''; }
@@ -257,14 +266,15 @@ export function updateHud() {
 
   const need = xpNeeded();
   const atMax = player.level >= LEVEL_MAX;
-  $('xpFill').style.transform = `scaleX(${atMax ? 1 : player.xp / need})`;
-  $('xpText').textContent = atMax ? 'Max' : `${player.xp} / ${need}`;
+  fillTo($('xpFill'), atMax ? 1 : player.xp / need);
+  put($('xpText'), atMax ? 'Max' : `${player.xp} / ${need}`);
 
-  $('iTime').textContent = fmtTime(state.now);
-  $('iKills').textContent = player.kills;
-  $('iCombat').textContent = String(state.mobs.filter(m => !m.dead).length);
-  $('hZone').textContent = zone.name;
-  $('hMulti').textContent = run.bestMulti > 1 ? `×${run.bestMulti}` : '–';
+  put($('iTime'), fmtTime(state.now));
+  put($('iKills'), String(player.kills));
+  put($('iCombat'), String(state.mobs.filter(m => !m.dead).length));
+  put($('hZone'), zone.name);
+  put($('hMulti'), run.bestMulti > 1 ? `×${run.bestMulti}` : '–');
+  updateHudExtras();
   updateBuildChips();
 
   // Castbar (Channel läuft von rechts nach links wie in WoW)
