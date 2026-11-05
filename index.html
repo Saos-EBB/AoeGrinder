@@ -110,23 +110,6 @@
   .modal { position: fixed; inset: 0; background: #000a; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
   .modal.show { display: flex; }
   .modal h1 { margin: 0; font-size: 34px; }
-  .cards { display: flex; justify-content: center; gap: 2vw; width: 80vw; max-height: 80vh; overflow: auto; padding: 14px 6px; }
-  .card { flex: 1 1 0; min-width: 0; max-width: 34vw; padding: 0 0 16px; cursor: pointer; transition: transform .1s, box-shadow .1s; border-width: 4px; display: flex; flex-direction: column; }
-  .card:hover, .card.selected { transform: translateY(-6px); box-shadow: 0 0 18px var(--rarity); }
-  .card .kindBar { padding: 5px 10px; font: 700 12px system-ui, sans-serif; letter-spacing: .5px; color: #111; display: flex; gap: 6px; align-items: center; }
-  .card .kindBar span { font-size: 15px; }
-  .card h3 { margin: 12px 14px 4px; font-size: clamp(18px, 1.8vw, 26px); text-shadow: 0 0 10px currentColor; }
-  .card .src { font-size: 12px; color: #c9b88a; margin: 0 14px 10px; }
-  .card p { margin: 0 14px; font-size: clamp(14px, 1.2vw, 18px); color: #eee; flex: 1; }
-  .card p .pct { text-decoration: underline dotted; }
-  .card .preview { margin: 10px 14px 0; font-size: 13px; color: #ffe27a; min-height: 18px; visibility: hidden; font-variant-numeric: tabular-nums; }
-  .card:hover .preview, .card.selected .preview { visibility: visible; }
-  .card .replaces { margin: 10px 14px 0; padding: 4px 8px; font-size: 13px; color: #ffd0c8; background: #5a1a14cc; border-left: 3px solid #ff5a4a; border-radius: 3px; }
-  .card .replaces b { color: #fff; }
-  .card .rank { margin: 10px 14px 0; font-size: 12px; }
-  .card .stage { margin: 8px 14px 0; font-weight: 700; color: #5dff7a; font-size: 13px; }
-  .card.improves { box-shadow: 0 0 14px #5dff7a88; }
-  .card.relicCard { border-color: #f2c94c !important; border-radius: 50% 50% 10px 10px / 12% 12% 10px 10px; box-shadow: 0 0 22px #f2c94caa; padding-top: 16px; }
   .btn { font-family: Cinzel, serif; font-size: 18px; padding: 10px 28px; background: #6b1a1a; color: #f2c94c;
     border: 2px solid #b8913f; border-radius: 4px; cursor: pointer; }
   .btn:hover { background: #8a2222; }
@@ -372,8 +355,8 @@
 </div>
 
 <div id="cardModal" class="modal">
-  <h1 class="title">Level <span id="cardLvl"></span>!</h1>
-  <div id="cardHint" class="title"></div>
+  <h1 class="title">Stufe <span id="cardLvl"></span></h1>
+  <div id="cardHint"></div>
   <div class="cards" id="cards"></div>
 </div>
 

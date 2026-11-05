@@ -113,6 +113,9 @@ Stand Vercel: v32 + Hotbar von `main` (2026-11-05): Hotbar mit Drag & Drop und A
 - Basis im 90er-Look (Viewer `1793671029-70f4`), Bewegungen noch neutral. Der Goldknauf des Viewers fehlt, weil die gewählte Waffe den Stab ersetzt. Lotussitz wirkt eher kniend als gekreuzt.
 - Zaubern läuft im Spiel höchstens 700 ms (`CAST_MS`), der Viewer zeigt 1,0–2,2 s, sonst hinkt die Figur hinterher. Der Stab des Viewers ist raus, die 15 Waffen hängen am Stabgelenk. „Ta-da“ und Lachanfall laufen nur im Idle. `RUN_REF` entfällt, die Spuren kommen weiter über `stepWatcher`; Abstände ungeprüft. Sitzen und Tod sind neu, im Viewer gab es sie nicht.
 
+**UI (Branch `ui-glut`):**
+- Später fürs Handy: Level-up-Karten als Liste + Detail (Mockup L3 in `docs/uiInfo/fg-ui-mockups.zip`, nicht gebaut).
+
 **Technik:**
 - Belagerung bei etwa 200–300 Mobs an der Grenze des Spielbaren, mit Zaubern ungemessen. Ansätze: Mob-Instancing, Nameplates.
 - Ungetestet: echtes Pad (auch Menüs und Shop), 12 der 18 Real-Men-Runen, Ansturm in echten Packs (ein Test stoppte nach 0,6 yd), Clipping der Waffen am neuen Modell, Spuren am Hang, Arkan rückwärts, Klicks im VFX-Labor, echter Run bis Level 100.

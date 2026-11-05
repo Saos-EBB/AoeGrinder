@@ -4,6 +4,9 @@ import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
 import { COLORS } from './colors';
+import { ICONS } from './icons';
+import { attachTip } from './tooltip';
+import './cards.css';
 import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
@@ -24,34 +27,69 @@ function markWords(text) {
   return out;
 }
 
-// Level-Up-Karten
+// Level-Up-Karten: bis 3 Karten groß (Mockup K2), 4–10 kompakt in 2 Reihen à 5 (L2). Tasten 1–0 wählen, X öffnet das Charakterfenster.
+// Rahmen = Seltenheit, Kopfleiste = Typ, Relikt mit Goldrahmen und gewölbter Oberkante, Upgrade grün mit „Rang x → y“.
+const CARD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+const RELIC_GOLD = '#e3c27a';
+let offerShown = [];
+const cardSpell = c => c.spell ?? c.learn;
+function cardIcon(c, kind) {
+  const icon = ICONS[cardSpell(c)];
+  return icon ? `<div class="lvIcon" style="background-image:url(${icon})"></div>` : `<div class="lvIcon glyph">${kind.icon}</div>`;
+}
 export function showCards(offer?) {
   offer ??= rollOffer();
+  offerShown = offer;
   state.paused = true;
+  const big = offer.length <= 3;
   $('cardLvl').textContent = String(player.level);
-  $('cardHint').textContent = '';
+  $('cardHint').textContent = `Wähle eine Karte · ${big ? CARD_KEYS.slice(0, offer.length).join(' / ') : `1–${CARD_KEYS[offer.length - 1]}`} · X = Charakter`;
   $('cards').innerHTML = '';
-  for (const c of offer) {
-    const r = CARD_RARITIES[c.tier];
+  $('cards').className = `cards ${big ? 'k2' : 'l2'}`;
+  offer.forEach((c, i) => {
+    const r = CARD_RARITIES[c.tier], relic = c.kind === 'relic';
     const el = document.createElement('div'), stage = cardStage(c), rep = cardReplaces(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
-    const spell = SPELLS[c.spell ?? c.learn], school = COLORS.school[spell?.school ?? spell?.cls];
-    el.className = `card frame${c.kind === 'relic' ? ' relicCard' : ''}${stage ? ' improves' : ''}`;
-    el.style.borderColor = r.color;
-    el.style.setProperty('--rarity', r.color);
-    el.innerHTML = `<div class="kindBar" style="background:${COLORS.cardKind[c.kind] ?? COLORS.dim}"><span>${kind.icon}</span>${kind.name}</div>
-      <h3 class="title" style="color:${school ?? r.color}">${c.name}</h3>
-      <div class="src">${c.src}</div>
-      <p>${markWords(c.desc(r.mult))}</p>
-      ${rep ? `<div class="replaces">⇄ ${rep.label}: <b>${rep.name}</b></div>` : ''}
-      <div class="preview">${cardPreview(c, r.mult)}</div>
-      ${stage ? `<div class="stage">Stufe ${stage} → ${stage + 1}</div>` : ''}
-      <div class="rank" style="color:${r.color}">${r.name} ×${String(r.mult).replace('.', ',')}</div>`;
+    const spell = SPELLS[cardSpell(c)], school = COLORS.school[spell?.school ?? spell?.cls];
+    const col = relic ? RELIC_GOLD : r.color;
+    el.className = `card lvCard${relic ? ' relicCard' : ''}${stage ? ' improves' : ''}`;
+    el.style.setProperty('--rc', col);
+    el.dataset.key = CARD_KEYS[i];
+    const up = stage ? `<div class="lvUp">Rang ${stage} → ${stage + 1}</div>` : '';
+    el.innerHTML = big
+      ? `<div class="lvKind">${kind.name}</div>${cardIcon(c, kind)}
+        <h3 class="lvName" style="color:${school ?? col}">${c.name}</h3>${up}
+        <div class="lvSrc">${c.src}</div>
+        <p class="lvText">${markWords(c.desc(r.mult))}</p>
+        ${rep ? `<div class="lvRep">⇄ ${rep.label}: <b>${rep.name}</b></div>` : ''}
+        <div class="preview">${cardPreview(c, r.mult)}</div>
+        <div class="lvRar">${relic ? 'Relikt' : r.name} ×${String(r.mult).replace('.', ',')}</div><span class="lvKey">${CARD_KEYS[i]}</span>`
+      : `<div class="lvKind">${kind.name}</div>${cardIcon(c, kind)}
+        <h3 class="lvName" style="color:${school ?? col}">${c.name}</h3>
+        <div class="lvSub">${stage ? `Rang ${stage} → ${stage + 1}` : c.kind === 'spell' ? 'neu' : `${r.name} ×${String(r.mult).replace('.', ',')}`}</div>
+        <span class="lvKey">${CARD_KEYS[i]}</span>`;
     el.addEventListener('click', () => pickCard(c));
+    cardTip(el, c, r, kind, stage, rep, school ?? col);
     $('cards').appendChild(el);
-  }
+  });
   $('cardModal').classList.add('show');
   ding();
 }
+// Hover-Karte: voller Text und echte Werte vorher → nachher (Phase 11 übernimmt das Aussehen)
+function cardTip(el, c, r, kind, stage, rep, color) {
+  const prev = cardPreview(c, r.mult);
+  attachTip(el, () => ({ title: c.name, color, sub: `${kind.name} · ${c.relic || c.kind === 'relic' ? 'Relikt' : r.name}`, border: el.style.getPropertyValue('--rc'),
+    short: markWords(c.desc(r.mult)),
+    rows: [stage ? `<span class="tGood">Rang ${stage} → ${stage + 1}</span>` : '', prev ? `<span class="tGood">${prev}</span>` : '', rep ? `<span class="tRune">⇄ ${rep.label}: ${rep.name}</span>` : ''].filter(Boolean) }));
+}
+// Tasten 1–0 wählen eine Karte
+addEventListener('keydown', e => {
+  if (!$('cardModal').classList.contains('show') || $('charModal').classList.contains('show') || state.rebinding) return;
+  const i = CARD_KEYS.indexOf(e.key);
+  const el = $('cards').querySelectorAll<HTMLElement>('.card')[i];
+  if (i < 0 || !el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  el.click();
+}, true);
 
 function pickCard(card) {
   state.cardPicks[card.id] = (state.cardPicks[card.id] || 0) + 1;
@@ -67,11 +105,13 @@ function pickCard(card) {
 function chooseReplacement(id) {
   $('cardHint').textContent = `${SPELLS[id].name} ersetzt welchen Spell?`;
   $('cards').innerHTML = '';
+  $('cards').className = 'cards k2';
   state.slots.forEach((old, slot) => {
     if (slot >= SLOT.attacks || !old || SPELLS[old].fixed) return;
     const el = document.createElement('div');
-    el.className = 'card frame';
-    el.innerHTML = `<h3 class="title">${SPELLS[old].name}</h3><div class="src">Slot ${slot + 1}</div><p>${SPELLS[old].desc}</p>`;
+    el.className = 'card lvCard';
+    el.style.setProperty('--rc', '#ff3d1f');
+    el.innerHTML = `<div class="lvKind">Ersetzen</div>${ICONS[old] ? `<div class="lvIcon" style="background-image:url(${ICONS[old]})"></div>` : ''}<h3 class="lvName">${SPELLS[old].name}</h3><div class="lvSrc">Slot ${slot + 1}</div><p class="lvText">${SPELLS[old].desc}</p>`;
     el.addEventListener('click', () => { learnSpell(id, slot); finishCard(); });
     $('cards').appendChild(el);
   });

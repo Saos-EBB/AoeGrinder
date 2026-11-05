@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): Level-up-Karten neu im Glut-Look: bis 3 Karten groß (Rahmen = Seltenheit, Kopfleiste = Typ, Icon, Name in Schulfarbe, Stichwörter farbig, Relikt mit Goldrahmen und gewölbter Oberkante, Upgrade grün mit „Rang x → y“), 4–10 Karten kompakt in 2 Reihen à 5; Tasten 1–0 wählen; Hover zeigt den vollen Text und den echten Wert vorher → nachher; X öffnet das Charakterfenster auch während der Kartenwahl
 - feat(ui): Ladebildschirm vor jedem Run: „BETRETE“ und Zonenname groß, Glut-Linie als Fortschritt, Bestzeit der Kombination, ein Tipp zu echten Mechaniken, aktive Mods; die Spielzeit läuft dabei nicht
 - feat(ui): Hauptmenü als Charakterwahl im Glut-Look: Figur groß in der Mitte und dreht sich langsam, links Name in Schulfarbe, Rolle, Start-Kit, rechts Rangliste mit Umschalter Zeit/Punkte für Figur + Mods, darunter Mods, Mobs und Kartentakt, unten runde Figurenleiste (A/D, LB/RB) und „Run starten“; Waffenwahl über den Knopf „Waffen“
 - feat(ui): 7 Zahlen-Stile in den Einstellungen, unabhängig vom HUD: Schulfarbe + Kontur (Standard), Diablo weiß/gelb/orange mit Mega-Crit ab 10× Grundschaden, Pop-Sticker, WoW klassisch, Pixel, Neon, Doom Rot-Kasten; jeweils für Treffer, Crit, zusammengefasste Treffer (×N), Ticks, Heilung und neu Schaden an dir (Zahl über der Figur)
