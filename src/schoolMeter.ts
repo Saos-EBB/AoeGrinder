@@ -36,7 +36,7 @@ export function meterHeatHit() {
 export function meterCast(tags) { if (fire() && tags?.includes('Frost')) meter.heat /= 2; }
 // Pro Frame; gibt den Anteil der max. Leben zurück, den das Überhitzen gerade kostet (sonst 0)
 export function updateMeter(dt) {
-  if (!fire()) { if (state.now - meter.lastKill > M.idleMs) meter.value = Math.max(0, meter.value - M.decayPerS * dt / 1000); return 0; }
+  if (!fire()) { if (state.now - meter.lastKill > M.idleMs) meter.value = Math.max(0, meter.value - M.decayPerS * (meterSchool() === 'Frost' ? Math.max(0, 1 - mods.permafrost) : 1) * dt / 1000); return 0; }   // Permafrost
   if (state.now - meter.lastHeat > H.coolDelayMs) meter.heat = Math.max(0, meter.heat - H.coolPerS * dt / 1000);
   if (meter.over && meter.heat < H.overheatUntil) meter.over = false;
   if (!meter.over || state.now < meter.nextSelf) return 0;

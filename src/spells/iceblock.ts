@@ -34,7 +34,7 @@ export function updateIceBlock() {
 }
 
 export const iceblock = {
-  name: 'Eisblock', desc: '6 s unverwundbar, keine Aktion, kein Laufen. Erneut drücken beendet ihn.', ranks: [], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
+  name: 'Eisblock', figRelic: true, desc: '6 s unverwundbar, keine Aktion, kein Laufen. Erneut drücken beendet ihn.', ranks: [], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
   mana: 0, cd: ICEBLOCK.cd,
   press() {
     if (block) return endIceBlock();

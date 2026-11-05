@@ -102,6 +102,9 @@ export function onBloodHit(fn) { bloodHooks().push(fn); }
 // Feuer-Treffer (auch Brand-Ticks) melden sich hier: Benzin zündet (gasoline.ts). Liste an einer Funktion: Import-Kreis
 function fireHooks(): any[] { return (fireHooks as any).list ??= []; }
 export function onFireHit(fn) { fireHooks().push(fn); }
+// Jeder Treffer, der landet: fn(mob, spellId, Schaden, war eingefroren). figures.ts zählt damit Eissplitter
+function anyHooks(): any[] { return (anyHooks as any).list ??= []; }
+export function onAnyHit(fn) { anyHooks().push(fn); }
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
@@ -120,6 +123,8 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune Schock
+      const frozen = m.rootUntil > state.now;
+      if (frozen) dmg *= 1 + (mods.coldBurn ?? 0);                         // Kältebrand
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
@@ -136,6 +141,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       if (landed && !m.dead && hasTag(id, 'Blut')) for (const fn of bloodHooks()) fn(m, id, dmg);
       if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of fireHooks()) fn(m, id, dmg);
+      if (landed) for (const fn of anyHooks()) fn(m, id, dmg, frozen);
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten

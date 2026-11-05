@@ -92,7 +92,8 @@ export const FIG_RELIC = { tier: 3, level: 10 };
 export const mods: any = {};
 export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
-    fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0 });   // Feuer-Talente (v31)
+    fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
+    iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0 });   // Frost-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -201,6 +202,20 @@ export const CARDS = [
     desc: () => 'Meteor-Abklingzeit −2 s pro 25 Hitze (mindestens 5 s).', apply: () => { mods.starfall += 1; } },
   { id: 'wildfire', name: 'Lauffeuer', only: ['Feuer'], needs: 'firestorm', max: 5,
     desc: () => 'Feuersbrunst springt auf 2 Mobs mehr.', apply: () => { mods.wildfire += 2; } },
+  // Frost (v31). Eiszeit ist immer orange und einmal pro Run, sie legt sich auf die Bewegungs-Taste (figures.ts)
+  { id: 'iceage', name: 'Eiszeit', only: ['Frost'], max: 1, minTier: 5,
+    desc: () => 'Liegt passiv auf der Bewegungs-Taste statt Blink und baut die Frost-Spells um: Ice Age, Ice Time Capsule, Partisan, Pheasant Beak, Ice Saber, Eisfeld. Auf gefrorenem Boden +20 % Tempo, Gegner −40 %.',
+    apply: () => { mods.iceAge = 1; } },
+  { id: 'permafrost', name: 'Permafrost', only: ['Frost'], max: 2,
+    desc: (r, m) => `Kälte sinkt ${Math.round(25 * m)} % langsamer.`, apply: (r, m) => { mods.permafrost += 0.25 * m; } },
+  { id: 'coldburn', name: 'Kältebrand', only: ['Frost'], max: 3,
+    desc: (r, m) => `Eingefrorene nehmen +${Math.round(10 * m)} % Schaden.`, apply: (r, m) => { mods.coldBurn += 0.10 * m; } },
+  { id: 'stormeye', name: 'Sturmauge', only: ['Frost'], needs: 'bliz', max: 3,
+    desc: () => 'Jeder Blizzard-Tick senkt die Frostkugel-Abklingzeit um 0,3 s.', apply: () => { mods.stormEye += 1; } },
+  { id: 'frosteye', name: 'Frostauge', only: ['Frost'], needs: 'frostorb', max: 1,
+    desc: () => 'Solange die Frostkugel fliegt, ist Blizzard sofort, ohne Kanal, und läuft 8 s von selbst.', apply: () => { mods.frostEye = 1; } },
+  { id: 'shardhail', name: 'Splitterhagel', only: ['Frost'], max: 5,
+    desc: (r, m) => `+${Math.max(1, Math.round(m))} maximale Eissplitter (höchstens 50).`, apply: (r, m) => { mods.shardMax += Math.max(1, Math.round(m)); } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

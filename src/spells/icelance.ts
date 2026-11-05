@@ -1,13 +1,17 @@
 import { rand } from '../util';
 import { state, player } from '../state';
-import { mobsOnLine, forward } from '../melee';
+import { mobsOnLine } from '../melee';
 import { applySlow, hasRune } from './core';
+import { iceAge } from '../figures';
+
+const PARTISAN = { n: 5, spread: 40 * Math.PI / 180, k: 0.6 };   // PH: Eiszeit
 import { boltFx, ICE_WHITE } from './fx';
 
 const CHILL = { slow: 0.4, ms: 3000 }, SWIFT_DMG = 0.75, WIDE = 2, FROZEN_MUL = 2;   // PH
 
 export const icelance = {
-  name: 'Eislanze', desc: 'Durchbohrt alles auf 20 yd vor dir, Eingefrorene nehmen doppelten Schaden.', ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
+  get name() { return iceAge() ? 'Partisan' : 'Eislanze'; },
+  get desc() { return iceAge() ? '5 Speere im Fächer 40°, je 60 %.' : 'Durchbohrt alles auf 20 yd vor dir, Eingefrorene nehmen doppelten Schaden.'; }, ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
   mana: 70, cd: 4000, min: 44, max: 52, length: 20, width: 2,   // PH
   runes: [
     { id: 'wide', name: 'Breite Lanze', desc: 'Doppelte Breite.' },
@@ -15,12 +19,15 @@ export const icelance = {
     { id: 'swift', name: 'Schnelle Lanze', desc: 'Halbe CD, −25 % Schaden.', cdMul: 0.5 },
   ],
   effect(c) {
-    const f = forward(), from = player.pos, to = { x: from.x + f.x * icelance.length, y: from.y, z: from.z + f.z * icelance.length };
-    const k = hasRune('icelance', 'swift') ? SWIFT_DMG : 1;
-    for (const m of mobsOnLine(from, to, icelance.width * (hasRune('icelance', 'wide') ? WIDE : 1))) {
-      const landed = c.hitProjectile(m, rand(icelance.min, icelance.max) * k * (m.rootUntil > state.now ? FROZEN_MUL : 1));
-      if (landed && !m.dead && hasRune('icelance', 'chill')) applySlow(m, CHILL.slow, CHILL.ms);
+    const from = player.pos, k = hasRune('icelance', 'swift') ? SWIFT_DMG : 1;
+    const dirs = iceAge() ? Array.from({ length: PARTISAN.n }, (_, i) => player.facing + (i / (PARTISAN.n - 1) - 0.5) * PARTISAN.spread) : [player.facing];
+    for (const yaw of dirs) {
+      const to = { x: from.x + Math.sin(yaw) * icelance.length, y: from.y, z: from.z + Math.cos(yaw) * icelance.length };
+      for (const m of mobsOnLine(from, to, icelance.width * (hasRune('icelance', 'wide') ? WIDE : 1))) {
+        const landed = c.hitProjectile(m, rand(icelance.min, icelance.max) * k * (iceAge() ? PARTISAN.k : 1) * (m.rootUntil > state.now ? FROZEN_MUL : 1));
+        if (landed && !m.dead && hasRune('icelance', 'chill')) applySlow(m, CHILL.slow, CHILL.ms);
+      }
+      boltFx({ x: from.x, y: from.y + 1.2, z: from.z }, to, ICE_WHITE, 200);
     }
-    boltFx({ x: from.x, y: from.y + 1.2, z: from.z }, to, ICE_WHITE, 200);
   },
 };

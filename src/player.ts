@@ -33,6 +33,7 @@ import { hitstop } from './fx/impact';
 import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
+import { resetFigures } from './figures';
 import { resetBuffs, buffSpeedMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
 import { resetBlood, updateBlood, bloodRooted, bloodMoveMul } from './spells/blood';
@@ -66,6 +67,8 @@ export function resetGame() {
   resetRealMen();
   resetDodge();
   resetMeter();
+  resetFigures();
+  player.shield = 0;
   resetBuffs();
   resetKlinge();
   resetBattery();
@@ -119,6 +122,12 @@ export function damagePlayer(amount, dot = false, source = '') {
   if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
   if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
+  if (player.shield > 0 && player.shieldUntil > state.now) {   // Eisbarriere (spells/icebarrier.ts)
+    const a = Math.min(player.shield, amount);
+    player.shield -= a; amount -= a;
+    if (player.shield <= 0) player.onShieldBreak?.();
+    if (amount <= 0) { combatText(player.pos, 'Absorbiert', 'miss', 2.6); return; }
+  }
   player.hp -= amount;
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
@@ -267,7 +276,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul() * bloodMoveMul() * (player.speedBuff ?? 1);   // speedBuff: Feuerspur
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul() * bloodMoveMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
     const slowed = player.slowUntil > state.now ? speed * (1 - CFG.curseSlow) : speed;
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

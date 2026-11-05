@@ -45,6 +45,7 @@ import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
+import { updateFigures } from './figures';
 import { meltScale, leapCharge, leapAir } from './spells/blood';
 import { meterStage, meterOverheated } from './schoolMeter';
 
@@ -58,6 +59,7 @@ function update(dt) {
   updateRealMen(dt);
   updateKlinge(dt);
   updateZoneEvent(dt);
+  updateFigures();
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {

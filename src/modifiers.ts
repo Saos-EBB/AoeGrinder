@@ -8,7 +8,8 @@ export const MODIFIERS = [
   { id: 'big', name: 'Große Packs', desc: 'doppelte Packgröße', scoreMult: 1, excludes: [], packSize: 2 },
   { id: 'time', name: 'Zeitlimit', desc: 'Run endet nach 10 Minuten', scoreMult: 1, excludes: [], timeLimit: 600000 },
   // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noDrink, noCards, noLuck
-  { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['nova', 'whirl', 'bliz', 'coc', 'iceblock', 'drink', 'blink', null], onlyTag: 'Frost',
+  { id: 'frost', name: 'Nur Frost', desc: 'nur Frost-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['nova', 'coc', 'icelance', 'whirl', 'bliz', 'drink', 'blink', null], onlyTag: 'Frost',
+    pool: ['nova', 'whirl', 'coc', 'bliz', 'frostorb', 'icelance', 'frostbolt', 'needle', 'icebarrier'], relics: ['iceblock'],
     hitSlow: { pct: 0.2, ms: 2000 } },   // PH: jeder Frost-Treffer, stärkster Slow gilt
   { id: 'fire', name: 'Nur Feuer', desc: 'nur Feuer-Spells und -Karten, Blink und Trinken bleiben', scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['fireball', 'flame', 'blast', 'hellfire', 'gasoline', 'drink', 'blink', null], onlyTag: 'Feuer',
     pool: ['fireball', 'flame', 'blast', 'hellfire', 'meteor', 'detonate', 'firetrail', 'firestorm', 'gasoline'], relics: ['phoenix'],
