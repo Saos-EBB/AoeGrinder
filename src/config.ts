@@ -101,13 +101,13 @@ export function resetMods() {
     deepWounds: 0, flicker: 0, shadowPact: 0 });   // Klingen-Talente (v31)
 }
 
-// ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
+// ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Seuchen-Spells kosten hier Mana statt Leben (ihr mana-Wert). Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
 export const RANDOM_MAGE = {
-  kit: ['rOff', 'rDef', 'rUtil', 'rDrink'],
+  kit: ['rOff', 'rDef', 'rUtil', 'rDrink', null, null, 'blink', null],   // v31: Blink auf der Bewegungs-Taste, die 4 Kategorien bleiben auf 1–4
   cats: {
-    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
-    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire'] },
-    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark'] },
+    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'sludge', 'drain', 'burst', 'staticfield', 'quake'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'slimewave', 'slimetrap', 'contract', 'web'] },
+    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'blackhole', 'poisoncloud', 'keeper'] },
     rDrink: { name: 'Drink Something', cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
   },
   sitMs: 2000,
