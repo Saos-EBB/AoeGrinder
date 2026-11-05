@@ -14,7 +14,7 @@ import { resetGame, completeRun } from './player';
 import { renderMenu } from './ui/mainMenu';
 
 // Gegner pro Welle = base + perWave × (Welle − 1); kommen mit perSecond pro Sekunde, höchstens maxPerFrame pro Frame
-export const WAVES = { base: 20, perWave: 8, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
+export const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
 
 const CHOICES = [
   { name: 'Packs', mode: 'packs', title: 'Packs stehen auf der Karte. Bei Level 25, 50 und 75 ein Boss, bei 100 der finale Boss, danach geschafft' },

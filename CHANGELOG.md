@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(modi)!: Wellen deutlich größer: 50 Gegner in Welle 1, dann je 50 mehr (100, 150, 200 … bis 500 in Welle 10); `SCORE_VERSION` v33, alte Wellen-Zeiten stehen getrennt
 - feat(ui): Inventar mit Filter (Seltenheit, Element, Typ) und Sortierung (Seltenheit, Neueste, Element, Typ), wird pro Browser gemerkt; Element-Punkt an jeder Waffe; Element-Effekte in Hover-Karte und Werteliste in der Farbe des Elements
 - feat(welt): Anime-Basis zum Ausprobieren mit `?toon=1`: Gelände und Props als Toon-Material mit 3 harten Lichtstufen (auch der Lichtkreis der Figur), dunkler Rand als Kontur im Shader, keine extra Draw Calls
 - feat(ui): Spell-Icons aus dem Spell-Viewer (84 SVGs im Glut-Stil) überall: Zauberleiste, Hauptmenü-Kit, Level-up- und Ersetzen-Karten, Charakterfenster, Hover-Karten (Icon neben dem Namen), Relikt-Anzeige, ?-Magier-Kategorien und nächster Wurf im Slot, Handy-Tasten; ohne passendes Icon steht der erste Buchstabe in der Schulfarbe
