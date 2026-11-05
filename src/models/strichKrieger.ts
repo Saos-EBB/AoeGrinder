@@ -12,7 +12,7 @@ export const STRICH_TIMING = {
   q: [520, 480, 500, 820], e: 950, leap: { ms: 1300, move: { from: 0.22, to: 0.66 } }, exec: 1400, cry: 1000, last: 1500,   // PH
   // Pro Waffe: Dauer der Schläge, von E und Maus 4. pose: welche Schwert-Pose ein Schlag nutzt (Axt: der Spalthieb ist der Sprung-Smash ohne Sprung)
   weapons: {
-    sword: { q: [520, 480, 500, 820], pose: [0, 1, 2, 3], e: 950, exec: 1400 },
+    sword: { q: [520, 480, 500, 820], pose: [0, 1, 2, 3], e: 950, exec: 1400, spin: 420 },   // spin: letzter Schlag der Schlagfolge (v31), Pose des Querschlags
     axe: { q: [560, 520, 750], pose: [0, 1, 3], e: 700, exec: 1400 },
     mace: { q: [450, 450, 450, 450], pose: [0, 1, 2, 0], e: 950, exec: 1100 },   // Tempo +30 % gibt das Spiel über anim.rate
   },
@@ -450,6 +450,7 @@ function defQ(step, hitI = step) {
         [.72, () => { flare = 1.5; ring(root.position, 0xd8121c, 12, .8, .12); emit(root.position.clone().setY(gy() + .3), 60, 6, 0xe0141c, 2, 1.4); hitRoot('last'); }]] };
   }
   const makeAction = ability => {
+    if (ability === 'qs') { const d = defQ(1, 9); d.dur = W.spin ?? 420; return d; }   // Spin: Treffer-Index 9
     if (ability?.[0] === 'q') {
       const i = +ability[1], d = defQ(W.pose[i] ?? i, i);
       d.dur = W.q[i] ?? d.dur;

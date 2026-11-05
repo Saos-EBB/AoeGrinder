@@ -18,7 +18,7 @@ export const DG = {
   yd: 4, ms: 250, iframeMs: 200, recoveryMs: 100,     // Weg, Dauer, unverwundbar ab Start, danach kein Cast
   charges: 2, rechargeMs: 3000,
   tilt: 0.45, squash: 0.18, shake: 0.12, dust: 10,     // Optik: Kippen in Richtung, Stauchen über scale, Staub am Start
-  perfect: { hitstopMs: 80, flashMs: 220 },
+  perfect: { hitstopMs: 80, flashMs: 220, buffMs: 3000, dmg: 0.3, rate: 0.3, maxStacks: 3 },   // v31: 3 s +30 % Schaden und Angriffstempo, bis 3×
   devMobSlow: 0.3,                                     // Dev-Schalter: Mob-Angriffe so viel langsamer, zum Testen der i-Frames            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
   // Kombo pro Modus im Fenster nach dem Dodge-Ende (ms); ein perfekter Dodge verdoppelt es
   combo: { normal: 1500, feuer: 2000, arkan: 1500, krieger: 1000, klinge: 1000, perfectMul: 2,
@@ -55,7 +55,13 @@ function startCombo(perfect) {
   combo = { kind: KIND[mode], until: state.now + ms * (perfect ? DG.combo.perfectMul : 1) * (mods.comboWindow ?? 1) };   // Karte Kombo-Meister
 }
 
+// Stapel des Perfekt-Buffs (v31): Schaden in core.ts, Tempo in realMen.ts, klinge.ts und beim Zaubern
+export const pdStacks = () => state.pdBuff && state.pdBuff.until > state.now ? state.pdBuff.stacks : 0;
+export const pdDmgMul = () => 1 + DG.perfect.dmg * pdStacks();
+export const pdRateMul = () => 1 + DG.perfect.rate * pdStacks();
+
 export function resetDodge() {
+  state.pdBuff = null;
   dodge = null; lastEnd = -1e9; combo = null;
   charges = Array(DG.charges).fill(0);
   state.dodgeStats = { n: 0, perfect: 0 };
@@ -114,6 +120,8 @@ export function perfectDodge() {
   flash.style.transition = 'none'; flash.style.opacity = '1';
   requestAnimationFrame(() => { flash.style.transition = `opacity ${DG.perfect.flashMs}ms ease-out`; flash.style.opacity = '0'; });
   combatText(player.pos, 'Perfekt', 'info', 2.8);
+  const P = DG.perfect;
+  state.pdBuff = { stacks: Math.min(P.maxStacks, pdStacks() + 1), until: state.now + P.buffMs };
 }
 
 // Aus updatePlayer: setzt die Position zwischen festem Start- und Zielpunkt, schnell raus, weich rein. true = normale Steuerung aussetzen

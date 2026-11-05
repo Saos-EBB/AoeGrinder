@@ -96,7 +96,8 @@ export function resetMods() {
     iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
     splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0,   // Arkan-Talente (v31)
     condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
-    toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0 });   // Seuchen-Talente (v31)
+    toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0,   // Seuchen-Talente (v31)
+    annihilator: 0, bladeMaster: 0 });   // Krieger-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -243,6 +244,13 @@ export const CARDS = [
     desc: () => 'Stirbt ein vergifteter Mob, springt das Gift auf 1 Mob mehr über.', apply: () => { mods.contagion += 1; } },
   { id: 'wreckingball', name: 'Abrissbirne', only: ['Seuche'], needs: 'blackhole', max: 3,
     desc: (r, m) => `Schwarzes Loch: +${Math.round(25 * m)} % Aufprallschaden.`, apply: (r, m) => { mods.wreckingBall += 0.25 * m; } },
+  // Strichkrieger (v31)
+  { id: 'annihilator', name: 'Vernichter', only: ['Krieger'], needs: 'wExec', max: 3,
+    desc: () => 'Hinrichtung +30 % gegen Betäubte.', apply: () => { mods.annihilator += 1; } },
+  { id: 'blademaster', name: 'Klingenmeister', only: ['Krieger'], needs: 'wQ', max: 3,
+    desc: () => 'Schlagfolge +10 % schneller.', apply: () => { mods.bladeMaster += 1; } },
+  { id: 'abyss', name: 'Tanz am Abgrund', only: ['Krieger'], max: 3,
+    desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

@@ -25,7 +25,8 @@ export const MODIFIERS = [
     startKit: ['sludge', 'slimewave', 'contract', 'drain', 'burst', null, 'melt', null], onlyTag: 'Seuche', noDrink: true, lifeCost: true,
     pool: ['sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst'], relics: ['pestilence'] },
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
-  { id: 'realmen', name: 'Real Men', desc: 'Strichkrieger mit Riesenschwert: Wut statt Mana, mehr Wut und weniger Leben machen mehr Schaden', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge', 'blitz', 'plague'], startKit: ['wQ', 'wE', 'wR', 'wExec', 'wCry', 'wEat', 'wLeap', 'wLast'], onlyTag: 'Krieger' },
+  { id: 'realmen', name: 'Real Men', desc: 'Strichkrieger mit Riesenschwert: Wut statt Mana, mehr Wut und weniger Leben machen mehr Schaden', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge', 'blitz', 'plague'], startKit: ['wQ', 'wR', 'wCharge', 'wShout', 'wCry', 'wEat', 'wLeap', null], onlyTag: 'Krieger',
+    pool: ['wQ', 'wE', 'wR', 'wExec', 'wCry', 'wLast', 'wCharge', 'wClap', 'wShout'], relics: ['wBerserk'] },
   // Nahkämpfer aus klinge.ts: keine Ressource, nur Abklingzeiten
   { id: 'klinge', name: 'Klingenstrich', desc: 'Strichmännchen mit 2 Katanas, Einhand oder Zweihand, nur Abklingzeiten', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'blitz', 'plague'], startKit: ['kQ', 'kE', 'kR', 'kAder', 'kSwap', 'kEat', 'kDash', 'kClones'], onlyTag: 'Klinge' },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
