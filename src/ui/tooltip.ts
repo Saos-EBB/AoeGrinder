@@ -7,6 +7,7 @@ import { uiSettings } from './uiSettings';
 export type TipData = {
   label?: string;                 // über der Karte, z. B. „SPELL (Taste 4)“
   title: string; color: string;   // Name in Schul- oder Seltenheitsfarbe
+  icon?: string;                  // Bild-URL links vom Namen (Spell-Icon)
   right?: string; sub?: string;   // rechts neben dem Namen (Rang), Zeile darunter (Schule · Typ)
   border?: string; relic?: boolean;
   stats?: [string, string][];     // Wertepaare, zwei pro Zeile
@@ -31,7 +32,7 @@ const pair = (l: string, r: string, cls = '') => `<div class="tRow ${cls}"><span
 function card(d: TipData, ext: boolean, label?: string) {
   const out = [`<div class="tCard${d.relic ? ' relic' : ''}" style="--tc:${d.border ?? d.color}">`];
   if (label ?? d.label) out.push(`<span class="tLabel">${label ?? d.label}</span>`);
-  out.push(`<div class="tHead"><span class="tName" style="color:${d.color}">${d.title}</span>${d.right ? `<span class="tRight">${d.right}</span>` : ''}</div>`);
+  out.push(`<div class="tHead">${d.icon ? `<img class="tIcon" src="${d.icon}" alt="">` : ''}<span class="tName" style="color:${d.color}">${d.title}</span>${d.right ? `<span class="tRight">${d.right}</span>` : ''}</div>`);
   if (d.sub) out.push(`<div class="tSub">${d.sub}</div>`);
   const stats = ext ? d.stats ?? [] : (d.stats ?? []).slice(0, 2);
   if (stats.length || d.big) out.push('<i class="tSep"></i>');

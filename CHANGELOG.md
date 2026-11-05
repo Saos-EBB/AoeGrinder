@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): Spell-Icons aus dem Spell-Viewer (84 SVGs im Glut-Stil) überall: Zauberleiste, Hauptmenü-Kit, Level-up- und Ersetzen-Karten, Charakterfenster, Hover-Karten (Icon neben dem Namen), Relikt-Anzeige, ?-Magier-Kategorien und nächster Wurf im Slot, Handy-Tasten; ohne passendes Icon steht der erste Buchstabe in der Schulfarbe
 - feat(ui): 15 Zahlen-Schriften (alle CC0: ggbot und Kenney) in Einstellungen → Interface → Zahlen-Schrift, jede Kachel zeigt Beispielzahlen in ihrer Schrift; Farben und Kontur bleiben beim gewählten Zahlen-Stil
 - feat(ui): Hauptmenü zeigt die Ladungsstufen der Figur: alle 1,6 s die nächste Stufe bis voll (Magier über ihre Anzeige, Strichkrieger Wut bis Berserker, Klingenstrich bis Haltung 3), dann von vorn
 - feat(boss)!: Bosse sind immer aktiv (kein #boss mehr nötig): in Packs bei Level 25, 50 und 75 ein Boss, bei 100 der finale Boss; Boss-Jagd entfällt
