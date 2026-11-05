@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- fix(ui): Figur im Hauptmenü dreht sich nicht mehr von selbst (Ziehen dreht sie weiter)
 - feat(ui): Inventar im Glut-Look (Hauptmenü „Waffen“ bei Magiern, Shop „Inventar öffnen“): links Figur mit Waffen-Slot und gesperrten Slots Ring, Amulett, Relikt, Werte der ausgerüsteten Waffe darunter; Mitte Truhe 5×3 mit Seltenheitsrahmen; Hover zeigt die Waffen-Karte mit Vergleich; Rechtsklick rüstet aus, Klick zerlegt mit Rückfrage, Rechtsklick auf die Waffe links legt sie ab
 - feat(ui): Charakterfenster (X) im Glut-Look mit Tabs Werte / Build / Schaden; auf breiten Bildschirmen alle drei Spalten nebeneinander, auf schmalen nur der aktive Tab; Build als Kacheln (Spells mit Rang und Rune, Talente, Supports), Relikt und Waffe, Hover zeigt die Hover-Karten; Schaden mit Balken und DPS-Schnitt
 - feat(ui): Run-Ende neu im Glut-Look: „Level 100 erreicht“ bzw. „Gefallen auf Level x“, Zeit groß mit Abstand zur Bestzeit und Platz, 5 Werte (Kills, Punkte, höchste Combo, Multi-Kill, Tode), Schaden nach Quelle als Balken, Knochenstaub-Rechnung mit Zeilen und Gesamt; Knöpfe Zum Shop (nur wenn erlaubt), Nochmal, Hauptmenü

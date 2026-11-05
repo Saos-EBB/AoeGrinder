@@ -159,14 +159,8 @@ export function renderMenu() {
 let camSaved = null;
 export const menuOpen = () => $('startModal').classList.contains('show');
 // Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
-let menuTurn = 0, turning = null, spinAt = performance.now();
-const SPIN_PER_MS = 0.00025;   // langsames Drehen, solange niemand zieht // PH
-export const menuYaw = () => {
-  const t = performance.now();
-  if (turning === null && menuOpen()) menuTurn += (t - spinAt) * SPIN_PER_MS;
-  spinAt = t;
-  return menuOpen() ? Math.PI + menuTurn : 0;
-};
+let menuTurn = 0, turning = null;
+export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
 $('menuBoardTabs').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
