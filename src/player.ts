@@ -183,6 +183,9 @@ function regenerate(dt) {
   }
 }
 
+// boss.ts: true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod
+let runEndHook = () => false;
+export const setRunEndHook = fn => { runEndHook = fn; };
 export function gainXp(xp) {
   const fromLevel = player.level;
   player.xp += xp;
@@ -196,7 +199,7 @@ export function gainXp(xp) {
   if (player.level >= LEVEL_MAX) player.xp = 0;
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
-  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return completeRun('Level 100');
+  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun('Level 100');   // #boss: erst der finale Boss (boss.ts)
   if (player.level > fromLevel) levelUpFx();
   updateCardQueue();
 }

@@ -15,7 +15,7 @@ const SLOW = new THREE.Color(0x5f86c8), DEAD = new THREE.Color(0x5a5048), POISON
 const SLOW_GLOW = new THREE.Color(0, 0.03, 0.12);   // PH: blaues Leuchten beim Verlangsamen
 const TINTS = [null, SLOW, DEAD, POISON, FEAR], FLASH_STEPS = 4;
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
-const GLOW = { true: CHAMP_GLOW, boss: new THREE.Color(0.45, 0.06, 0.03), boss2: new THREE.Color(0.8, 0.16, 0.06) };   // PH: Boss rot, Phase 2 heller (boss.ts)
+const GLOW = { true: CHAMP_GLOW, boss: new THREE.Color(0.45, 0.06, 0.03), boss2: new THREE.Color(0.8, 0.16, 0.06), gap: new THREE.Color(0.75, 0.75, 0.75), evil: new THREE.Color(0.3, 0.02, 0.02) };   // PH: Boss rot, Phase 2 heller, Lücke weiß (boss.ts)
 
 // Materialien sind geteilt, removeMob darf sie nicht freigeben
 const shared = (key, make) => memo(`m${key}`, () => { const m = make(); m.dispose = () => {}; return m; });

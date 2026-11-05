@@ -51,7 +51,7 @@ const factor = tier => CARD_RARITIES[tier].mult;
 const pct = v => `${v < 0 ? '−' : '+'}${String(Math.round(Math.abs(v) * 1000) / 10).replace('.', ',')} %`;
 const isNew = w => w.v === 2;
 
-function rollTier() {
+export function rollTier() {
   let r = Math.random() * ROLLS.weights.reduce((a, b) => a + b, 0);
   for (let t = 0; t < ROLLS.weights.length; t++) { r -= ROLLS.weights[t]; if (r < 0) return t; }
   return 0;
