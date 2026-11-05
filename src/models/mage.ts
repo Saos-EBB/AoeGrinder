@@ -59,7 +59,7 @@ function dispose(m) {
     m.fx.group.traverse(o => { if (o.isMesh) { o.material.map?.dispose(); o.material.dispose(); o.geometry.dispose(); } });
     m.root.traverse(o => { if (o.userData.keep) o.material.map?.dispose(); });
   }
-  if (m.scarf) { scene.remove(m.scarf); m.scarf.geometry.dispose(); m.scarf.material.dispose(); }   // Klingenstrich: Band in Weltkoordinaten
+  if (m.scarf) { scene.remove(m.scarf); m.scarf.traverse(o => { if (o.isMesh || o.isPoints) { o.geometry.dispose(); o.material.dispose(); } }); }   // Band (Klingenstrich) oder Effekt-Gruppe (Strichmagier) in Weltkoordinaten
   scene.remove(m.root);
   m.root.traverse(o => {
     if (o.isSkinnedMesh) o.skeleton.dispose();
@@ -133,6 +133,8 @@ export const mage = {
   get weapon() { return weapon; },
   setSkin,
   refreshWeapon() { wield(); },   // Wahl im Hauptmenü
+  // Anzeige 0 … 1 für die Stufen-Effekte der Strichmagier (Hitze, Kälte, Ladungen, Batterie)
+  setMeter(v) { cur.setMeter?.(v); },
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
   // Der erste Frame kann ein negatives dt haben (rAF-Zeit liegt vor performance.now), das Modell verträgt das nicht.
   update(dt, anim) {

@@ -50,7 +50,8 @@ import { updateFigures } from './figures';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { markStacks } from './plagueMarks';
-import { meterStage, meterOverheated } from './schoolMeter';
+import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
+import { batteryMode, batteryMax } from './battery';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -89,6 +90,7 @@ function updateVisuals(dt) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
+  mage.setMeter(batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0);
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
