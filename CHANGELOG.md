@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): Hauptmenü zeigt die Ladungsstufen der Figur: alle 1,6 s die nächste Stufe bis voll (Magier über ihre Anzeige, Strichkrieger Wut bis Berserker, Klingenstrich bis Haltung 3), dann von vorn
 - feat(boss)!: Bosse sind immer aktiv (kein #boss mehr nötig): in Packs bei Level 25, 50 und 75 ein Boss, bei 100 der finale Boss; Boss-Jagd entfällt
 - feat(modi)!: Belagerung wird zu Wellen: jede Welle hat eine feste Zahl Gegner (20, +8 pro Welle) vom Kartenrand, sind alle tot, kommt ein Boss, danach die nächste Welle, nach Welle 10 geschafft; Mob-Modi sind nur noch Packs und Wellen; Welle in Kopfzeile und Tracker; Rangliste mit Tab „Wellen“; Spielversion v32
 - feat(ui): 4 Plätze für eigene UI-Stände in Einstellungen → Interface: „Speichern“ sichert HUD-Preset, eigene HUD-Lagen, Zahlen-Stil, Größen, Schrift und Tooltips, „Laden“ stellt alles wieder her; Überschreiben fragt nach

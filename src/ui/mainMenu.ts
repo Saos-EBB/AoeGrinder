@@ -161,6 +161,13 @@ export const menuOpen = () => $('startModal').classList.contains('show');
 // Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
 let menuTurn = 0, turning = null;
 export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
+// Im Menü läuft die Figur ihre Ladungsstufen durch (Magier: Anzeige 0 … voll, Krieger: Wut, Klinge: Haltung 3 bei voll)
+const SHOWCASE = { stepMs: 1600, values: [0, 0.3, 0.6, 1] };   // PH
+export function menuShowcase() {
+  if (!menuOpen()) return null;
+  const i = Math.floor(performance.now() / SHOWCASE.stepMs) % SHOWCASE.values.length;
+  return { meter: SHOWCASE.values[i], stage: i };
+}
 $('menuBoardTabs').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
