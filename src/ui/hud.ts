@@ -19,6 +19,7 @@ import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
+import { healNumber } from './dmgNumbers';
 import './hud/hud.css';
 import './hud/layout';
 import { updateHudExtras } from './hud/elements';
@@ -41,7 +42,7 @@ export function screenPos(pos, height) {
 
 export function combatText(pos, text, cls, height = 2) {
   if (cls === 'crit') onCrit();
-  if (cls === 'heal' && !uiSettings.healNums && /^\+\d+$/.test(text)) return;   // nur Heilzahlen, Texte wie „Phönix!“ bleiben
+  if (cls === 'heal' && /^\+\d+$/.test(text)) return healNumber(pos, +text.slice(1), height);   // Heilzahl im Zahlen-Stil, Texte wie „Phönix!“ bleiben
   const p = screenPos(pos, height);
   if (!p) return;
   const el = document.createElement('div');

@@ -1,0 +1,59 @@
+/* Zahlen-Stile (Mockups N…, gen.py nd()), unabhängig vom HUD. Klasse n-Nxx am Element, Art k-hit/crit/mega/merged/tick/heal/hurt.
+   --sc = Schulfarbe (nur N01). Konturen in em, damit sie mit der Größe der Zahl wachsen (Mockup: st(6) bei 34 px ≈ .18em). */
+.ct.num[class*=' n-'] { font-weight: 900; text-shadow: none; -webkit-text-stroke: 0; paint-order: stroke fill; line-height: 1; }
+.ct.num .mx { font-size: .6em; }
+
+/* N01 Schulfarbe + Kontur (Standard) */
+.ct.n-N01 { font-family: 'Barlow Condensed', sans-serif; color: var(--sc, #7dd3fc); -webkit-text-stroke: .18em #05080c !important; }
+.ct.n-N01.k-crit, .ct.n-N01.k-mega { color: color-mix(in srgb, var(--sc, #7dd3fc) 25%, #fff); -webkit-text-stroke: .15em #05080c !important;
+  text-shadow: 0 0 .3em color-mix(in srgb, var(--sc, #7dd3fc) 85%, transparent) !important; rotate: -5deg; }
+.ct.n-N01 .mx { color: #c9d2dd; }
+.ct.n-N01.k-tick { font-weight: 800; opacity: .85; }
+.ct.n-N01.k-heal { color: #4ade80; }
+.ct.n-N01.k-hurt { color: #f87171; }
+
+/* N02 Diablo weiß / gelb / orange */
+.ct.n-N02 { font-family: 'Barlow Condensed', sans-serif; color: #fff; -webkit-text-stroke: .15em #000 !important; }
+.ct.n-N02.k-crit { color: #ffd23f; -webkit-text-stroke: .13em #2a1300 !important; }
+.ct.n-N02.k-mega { color: #ff7a1a; -webkit-text-stroke: .13em #000 !important; text-shadow: 0 0 .32em rgba(255, 122, 26, .7) !important; }
+.ct.n-N02.k-tick { color: #bdb3a3; font-weight: 800; }
+.ct.n-N02.k-heal { color: #6ee7a0; }
+.ct.n-N02.k-hurt { color: #ff4d4d; }
+.ct.n-N02 .mx { color: #bdb3a3; }
+
+/* N03 Pop-Sticker */
+.ct.n-N03 { font-family: 'Anton', sans-serif; font-weight: 400; color: #fff; text-shadow: 3px 3px 0 #38d6ff, 5px 5px 0 #000 !important; }
+.ct.n-N03.k-crit, .ct.n-N03.k-mega { color: #0b0b0f; background: #38d6ff; padding: .13em .26em .09em; box-shadow: 5px 5px 0 #000; text-shadow: none !important; rotate: -6deg; }
+.ct.n-N03 .mx { color: #38d6ff; }
+.ct.n-N03.k-tick { color: #38d6ff; text-shadow: none !important; }
+.ct.n-N03.k-heal { text-shadow: 3px 3px 0 #22c55e, 5px 5px 0 #000 !important; }
+.ct.n-N03.k-hurt { background: #ff3b5c; padding: .2em .4em .13em; box-shadow: 5px 5px 0 #000; text-shadow: none !important; rotate: 4deg; }
+
+/* N04 WoW klassisch */
+.ct.n-N04 { font-family: 'Barlow', sans-serif; font-weight: 700; color: #fff6d0; -webkit-text-stroke: .13em #000 !important; }
+.ct.n-N04.k-crit, .ct.n-N04.k-mega { color: #fff; -webkit-text-stroke: .11em #000 !important; }
+.ct.n-N04.k-tick { color: #e8d9a0; -webkit-text-stroke: .14em #000 !important; }
+.ct.n-N04.k-heal { color: #3be04a; }
+.ct.n-N04.k-hurt { color: #ff3030; }
+
+/* N07 Pixel */
+.ct.n-N07 { font-family: 'Press Start 2P', monospace; font-weight: 400; color: #fff; text-shadow: 3px 3px 0 #000 !important; font-size-adjust: .4; }
+.ct.n-N07.k-crit, .ct.n-N07.k-mega { color: #ffe14d; text-shadow: 3px 3px 0 #b03a00, 6px 6px 0 #000 !important; }
+.ct.n-N07.k-tick { color: #8fb4ff; text-shadow: 2px 2px 0 #000 !important; }
+.ct.n-N07.k-heal { color: #5dff7a; }
+.ct.n-N07.k-hurt { color: #ff4d6d; }
+
+/* N08 Neon */
+.ct.n-N08 { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: #7ffcf0; text-shadow: 0 0 10px #2ee6d6 !important; }
+.ct.n-N08.k-crit, .ct.n-N08.k-mega { color: #ff5ce1; text-shadow: 0 0 14px #ff5ce1 !important; }
+.ct.n-N08.k-tick { color: #5fb8b0; font-weight: 600; text-shadow: none !important; }
+.ct.n-N08.k-heal { color: #9dff8a; text-shadow: 0 0 10px #9dff8a !important; }
+.ct.n-N08.k-hurt { color: #ff6b6b; text-shadow: 0 0 10px #ff6b6b !important; }
+
+/* N10 Doom Rot-Kasten */
+.ct.n-N10 { font-family: 'Anton', sans-serif; font-weight: 400; color: #f2e9e4; -webkit-text-stroke: .09em #000 !important; }
+.ct.n-N10.k-crit, .ct.n-N10.k-mega { color: #fff; background: #c4120c; padding: .04em .2em; -webkit-text-stroke: 0 !important; }
+.ct.n-N10 .mx { color: #ff5a3c; }
+.ct.n-N10.k-tick { color: #ff8a6a; -webkit-text-stroke: 0 !important; }
+.ct.n-N10.k-heal { color: #7cf29a; }
+.ct.n-N10.k-hurt { color: #ff2a1a; -webkit-text-stroke: 0 !important; text-shadow: 0 0 12px #ff2a1a !important; }

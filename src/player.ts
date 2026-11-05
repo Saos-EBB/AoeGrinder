@@ -16,6 +16,7 @@ import { clearAbilities } from './abilities';
 import { resetScore } from './score';
 import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
+import { hurtNumber } from './ui/dmgNumbers';
 import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
@@ -134,6 +135,7 @@ export function damagePlayer(amount, dot = false, source = '') {
     if (amount <= 0) { combatText(player.pos, 'Absorbiert', 'miss', 2.6); return; }
   }
   player.hp -= amount;
+  hurtNumber(player.pos, amount);   // Anzeige im Zahlen-Stil (ui/dmgNumbers.ts)
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
   player.lastHitBy = source || (dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava');
