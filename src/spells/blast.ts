@@ -1,12 +1,8 @@
 import { rand, dist2d } from '../util';
 import { player } from '../state';
-import { particles } from '../fx/particles';
-import { groundAt } from '../collision';
-import { vfxOld } from '../fx/shaders';
-import { blastNew } from '../fx/fireFx';
+import { blastLook, fireRingField } from '../vfx/fireLook';
 import { knockbackMob, pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
-import { burstFx, FIRE, EMBER } from './fx';
 
 const RING = { dur: 5000, width: 1.5, dmg: 14 };   // PH
 
@@ -26,17 +22,11 @@ export const blast = {
       if (hasRune('blast', 'suck')) pullMob(m, center, blast.knock);
       else if (!hasRune('blast', 'quick')) knockbackMob(m, center, blast.knock);
     }
-    if (vfxOld()) burstFx(center, r, [FIRE, EMBER], 0xffa050); else blastNew(center, r, hasRune('blast', 'suck'));
+    blastLook(center, r, hasRune('blast', 'suck'));
     if (!hasRune('blast', 'ring')) return;
-    addField(c, { pos: center, radius: r, dur: RING.dur,
+    addField(c, { pos: center, radius: r, dur: RING.dur, visual: fireRingField(),
       onTick: f => {
         for (const m of mobsInRadius(f.pos, f.radius + RING.width)) if (dist2d(m.pos, f.pos) >= f.radius - RING.width) c.hit(m, RING.dmg);
-      },
-      onUpdate: f => {
-        for (let i = 0; i < 6; i++) {
-          const a = rand(0, Math.PI * 2), x = f.pos.x + Math.cos(a) * f.radius, z = f.pos.z + Math.sin(a) * f.radius;
-          particles.spawn({ x, y: groundAt(x, z, f.pos.y) + 0.2, z, vy: rand(2, 5), life: rand(0.4, 0.8), color: i % 2 ? FIRE : EMBER, size: rand(0.25, 0.5) });
-        }
       },
     });
   },

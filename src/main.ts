@@ -40,7 +40,7 @@ import { menuYaw, enterMenu } from './ui/mainMenu';
 import * as menuMod from './ui/mainMenu';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
-import { updateEnergy } from './vfx/energy';
+import { updateEnergy, figureLook } from './vfx/energy';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
@@ -90,7 +90,7 @@ function updateVisuals(dt) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
-  mage.setMeter(batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0);
+  mage.setMeter(figureLook.meter ?? (batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0));
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,

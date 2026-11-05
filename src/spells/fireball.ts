@@ -3,7 +3,7 @@ import { player } from '../state';
 import { mods } from '../config';
 import { mobsInRadius, hasRune } from './core';
 import { nearestTarget } from './target';
-import { burstFx, boltFx, FIRE, EMBER } from './fx';
+import { fireballLook } from '../vfx/fireLook';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
@@ -26,10 +26,9 @@ export const fireball = {
     const others = mobsInRadius(player.pos, fireball.range, Infinity).filter(m => m !== target).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos));
     shots.forEach((mul, i) => {
       const t = i === 0 ? target : others[i - 1] ?? target, at = t.pos.clone();
-      boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, at, FIRE, 160);
       c.hitProjectile(t, rand(fireball.min, fireball.max) * k * mul);
       for (const m of mobsInRadius(at, r)) if (m !== t) c.hit(m, rand(fireball.min, fireball.max) * k * mul * SPLASH_MUL);
-      burstFx(at, r, [FIRE, EMBER], 0xff9a40);
+      fireballLook(at, r, mul < 1 ? .7 : 1);
     });
     // Dauerfeuer: jeder 3. oder 4. Feuerball gibt sein Mana zurück
     const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;

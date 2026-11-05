@@ -2,17 +2,15 @@
 
 import { state, player } from '../state';
 import { UNIT } from '../config';
-import { burnTex } from '../fx/spellFx';
 import { mobsInRadius, addField } from './core';
-import { fieldDecal, areaParticles, FIRE, EMBER } from './fx';
+import { trailField } from '../vfx/fireLook';
 
 // PH: 10 s, Spur hält 10 s, 0,8 Einheiten pro Sekunde, alle 0,5 s ein Stück 1,6 yd, Tempo +5 % → +15 %
 const T = { ms: 10000, segMs: 10000, dps: 0.8, dropMs: 500, segRadius: 1.6, manaPerS: 15, speed: [0.05, 0.15] };
 
 function segment(c, pos) {
-  addField(c, { pos, radius: T.segRadius, dur: T.segMs, visual: fieldDecal(burnTex, EMBER, 0.35, 0.05),
+  addField(c, { pos, radius: T.segRadius, dur: T.segMs, visual: trailField(),
     onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, T.dps * UNIT); },
-    onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 8, dt, [FIRE, EMBER], { up: 3, size: 0.3 }),
   });
 }
 

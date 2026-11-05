@@ -2,11 +2,10 @@ import { rand } from '../util';
 import { state, player } from '../state';
 import { mods } from '../config';
 import { meterHeat } from '../schoolMeter';
-import { burnTex, ringFx } from '../fx/spellFx';
 import { shakeCamera } from '../camera';
 import { knockbackMob } from '../mobs';
 import { mobsInRadius, addField, hasRune, schedule } from './core';
-import { burstFx, fieldDecal, areaParticles, FIRE, EMBER } from './fx';
+import { meteorLook, fireField } from '../vfx/fireLook';
 
 const SWARM = { n: 3, offset: 7, k: 0.5, gap: 300 }, STARS = { n: 6, offset: 8, k: 0.4, gap: 200 }, LONG_BURN = 2, KNOCK = 8;   // PH
 const STARFALL = { perHeat: 25, ms: 2000, min: 5000 };   // PH: Sternenfall
@@ -23,14 +22,12 @@ export const meteor = {
   effect(c, point) {
     const strike = (pos, k, delay) => {
       const r = c.radius(meteor.radius) * k;
-      ringFx(pos, r, EMBER, delay);
+      meteorLook(pos, r, delay / 1000);
       schedule(delay, () => {
         for (const m of mobsInRadius(pos, r)) if (c.hit(m, rand(meteor.min, meteor.max) * k) && !m.dead && hasRune('meteor', 'impact')) knockbackMob(m, pos, KNOCK);
-        burstFx(pos, r, [FIRE, EMBER], 0xff7a30);
         shakeCamera(0.3);
-        addField(c, { pos, radius: r, dur: meteor.burnDur * (hasRune('meteor', 'crater') ? LONG_BURN : 1), visual: fieldDecal(burnTex, EMBER, 0.3, 0.05),
+        addField(c, { pos, radius: r, dur: meteor.burnDur * (hasRune('meteor', 'crater') ? LONG_BURN : 1), visual: fireField({ h: 1.1 }),
           onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, meteor.burn * k); },
-          onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 40 * k, dt, [FIRE, EMBER], { up: 4, size: 0.4 }),
         });
       });
     };

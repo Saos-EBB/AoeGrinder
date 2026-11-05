@@ -2,10 +2,9 @@
 
 import { player } from '../state';
 import { maxHp } from '../formulas';
-import { burnTex } from '../fx/spellFx';
 import { combatText } from '../ui/hud';
 import { mobsInRadius, addField, hasRune, burnLeft } from './core';
-import { burstFx, fieldDecal, areaParticles, FIRE, EMBER } from './fx';
+import { detonateLook, fireField } from '../vfx/fireLook';
 
 const BOOM = { mul: 1.5, radius: 3, big: 5 }, CHAIN = { dmg: 10, dur: 4000 }, HEAL = 0.01;   // PH
 
@@ -26,12 +25,11 @@ export const detonate = {
     for (const m of burning) m.burn = null;
     for (const b of blasts) {
       for (const m of mobsInRadius(b.pos, r)) c.hit(m, b.dmg);
-      burstFx(b.pos, r, [FIRE, EMBER], 0xff7a30);
-      if (hasRune('detonate', 'chain')) addField(c, { pos: b.pos, radius: r, dur: CHAIN.dur, visual: fieldDecal(burnTex, EMBER, 0.3, 0.05),
+      if (hasRune('detonate', 'chain')) addField(c, { pos: b.pos, radius: r, dur: CHAIN.dur, visual: fireField({ h: .8 }),
         onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, CHAIN.dmg); },
-        onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 20, dt, [FIRE, EMBER], { up: 4, size: 0.35 }),
       });
     }
+    detonateLook(blasts.map(b => b.pos), r);
     if (hasRune('detonate', 'glow') && blasts.length) {
       const heal = Math.round(maxHp() * HEAL * blasts.length);
       player.hp = Math.min(maxHp(), player.hp + heal);

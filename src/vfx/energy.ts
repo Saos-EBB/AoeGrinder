@@ -129,7 +129,7 @@ function geoOf(name: GeoName) {
 export const arcName = (th: number): GeoName => `arc${Math.round(th * 100)}`;
 
 // ───────────────────────── Pool
-const POOL_N: Record<string, number> = { cone: 64, sph: 48, ring: 24 };   // PH: Meshes pro Form, sonst 16
+const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 24 };   // PH: Meshes pro Form, sonst 16
 type Fx = { a: number; dur: number; up?: (k: number, dt: number, e: Fx) => void; end?: () => void; ms: THREE.Mesh[]; dead?: boolean; [k: string]: any };
 type Pool = { all: THREE.Mesh[]; free: THREE.Mesh[] };
 const pools = new Map<string, Pool>();
@@ -207,8 +207,23 @@ export function updateEnergy(dt: number) {
     if (e.a >= e.dur) { release(e); e.end?.(); }
   }
 }
+// Dauerfläche für addField (spells/core.ts): visual = { update(pos, radius), remove() }. make(e) baut beim ersten Bild, step(e, fade, dt) läuft jedes Bild.
+// fade blendet 0,25 s ein und nach remove() 0,4 s aus.
+export function field(make: (e: Fx) => void, step: (e: Fx, fade: number, dt: number) => void) {
+  const e = fx(1e9, (_k, dt, e) => {
+    if (!e.pos) return;
+    if (!e.built) { e.built = true; make(e); }
+    const fade = e.out !== undefined ? clamp(1 - (e.a - e.out) / .4, 0, 1) : clamp(e.a / .25, 0, 1);
+    step(e, fade, dt);
+  });
+  return {
+    e,
+    update(pos: THREE.Vector3, r: number) { e.pos = pos; e.r = r; },
+    remove() { if (e.out === undefined) { e.out = e.a; e.dur = e.a + .4; } },
+  };
+}
 // Run-Ende: alles weg
-export function clearEnergy() { for (const e of FX.slice()) release(e); }
+export function clearEnergy() { for (const e of FX.slice()) release(e); figureLook.meter = null; }
 export const energyCount = () => FX.length;
 
 // ───────────────────────── Funken über das Partikelsystem des Spiels (HDR-Farben für Bloom)
@@ -294,3 +309,6 @@ export function spark(p: THREE.Vector3, r: number, pal = PAL.blitz) {
     const m = e.ms[0]; m.position.copy(p); m.scale.setScalar(r * (.4 + .6 * k)); m.rotation.y = Math.random() * 9; uK(m, 1 - k);
   });
 }
+
+// Figur: Anzeige zeitweise übersteuern (Höllenfeuer = Hitze 100, Archon = 4 Ladungen). main.ts liest sie vor der Spielanzeige
+export const figureLook = { meter: null as number | null };

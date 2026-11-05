@@ -5,7 +5,7 @@ import { dist2d } from '../util';
 import { state } from '../state';
 import { mobsInRadius, addField, burnLeft } from './core';
 import { nearestTarget } from './target';
-import { boltFx, FIRE, EMBER, areaParticles } from './fx';
+import { firestormLance, firestormJump } from '../vfx/fireLook';
 
 // PH: 1,5 Einheiten aufs Ziel, je 3 Nachbarn in 5 yd, höchstens 30 Sprünge; Brand der Sprünge 6 s mit 0,5 Einheiten pro Sekunde (Wert nicht vorgegeben)
 const S = { dmg: 1.5, range: 30, per: 3, radius: 5, maxJumps: 30, burnMs: 6000, burnDps: 0.5 };
@@ -15,7 +15,7 @@ export function igniteMob(c, m, dps = S.burnDps * UNIT, ms = S.burnMs) {
   m.burn = { dps, until: state.now + ms };
   addField(c, { pos: m.pos, radius: 0.1, dur: ms,
     onTick: () => { if (!m.dead) c.hit(m, dps); },
-    onUpdate: (f, dt) => { f.pos.copy(m.pos); if (!m.dead) areaParticles(m.pos, 0.6, 12, dt, [FIRE, EMBER], { up: 3, size: 0.3 }); else f.end = state.now; },
+    onUpdate: f => { f.pos.copy(m.pos); if (m.dead) f.end = state.now; },   // Brand am Mob zeigt vfx/mobStatus.ts
   });
 }
 
@@ -27,6 +27,7 @@ export const firestorm = {
     const target = nearestTarget(S.range);
     if (!target) return;
     const burning = burnLeft(target) > 0;
+    firestormLance(target.pos);
     c.hit(target, S.dmg * UNIT);
     if (!burning) return;
     const per = S.per + mods.wildfire, seen = new Set([target]), queue = [target];
@@ -37,7 +38,7 @@ export const firestorm = {
       for (const m of next) {
         if (jumps >= S.maxJumps) break;
         seen.add(m); jumps++;
-        boltFx(from.pos, m.pos, FIRE, 220);
+        firestormJump(from.pos, m.pos, .15 + Math.floor((jumps - 1) / per) * .25);
         igniteMob(c, m);
         queue.push(m);
       }
