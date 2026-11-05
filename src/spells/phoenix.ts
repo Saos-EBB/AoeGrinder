@@ -17,7 +17,7 @@ import { burstFx, fieldDecal, areaParticles, FIRE, EMBER } from './fx';
 const P = { dmgMul: 2.5, radiusMul: 1.5, knock: 16, knockMs: 800, hitstopMs: 320, shake: 1, hp: 0.5, ashHp: 1, invulnMs: 1500, riseMs: 900, rebornMs: 8000, rebornDmg: 0.5 };
 
 export const phoenix = {
-  name: 'Phönix', desc: 'Passiv: Stirbst du, explodierst du stattdessen mit 2,5-fachem Meteor-Schaden und stehst mit 50 % Leben wieder auf. CD 90 s.', ranks: ['dmg', 'radius', 'cd'], tags: ['Feuer', 'Nova'], cls: 'fire',
+  name: 'Phönix', figRelic: true, desc: 'Passiv: Stirbst du, explodierst du stattdessen mit 2,5-fachem Meteor-Schaden und stehst mit 50 % Leben wieder auf. CD 90 s.', ranks: ['dmg', 'radius', 'cd'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 0, cd: 90000, min: meteor.min * P.dmgMul, max: meteor.max * P.dmgMul, radius: meteor.radius * P.radiusMul,   // PH
   runes: [
     { id: 'ash', name: 'Asche', desc: 'Aufstehen mit 100 % Leben.' },

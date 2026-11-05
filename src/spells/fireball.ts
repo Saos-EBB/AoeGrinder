@@ -1,18 +1,18 @@
-import { rand } from '../util';
+import { rand, dist2d } from '../util';
 import { player } from '../state';
-import { mobsInRadius, hasRune, addField } from './core';
+import { mods } from '../config';
+import { mobsInRadius, hasRune } from './core';
 import { nearestTarget } from './target';
-import { burstFx, boltFx, fieldDecal, areaParticles, FIRE, EMBER } from './fx';
-import { burnTex } from '../fx/spellFx';
+import { burstFx, boltFx, FIRE, EMBER } from './fx';
 
-const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, BURN = { dmg: 16, ms: 4000 };   // PH
+const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
 export const fireball = {
   name: 'Feuerball', desc: '0,35 s Zauber aufs nächste Ziel, explodiert mit 50 % Schaden drumherum.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Geschoss'], cls: 'fire',
   mana: 110, cd: 0, castTime: 350, min: 85, max: 100, radius: 4, range: 30,   // PH
   runes: [
     { id: 'big', name: 'Große Explosion', desc: '+75 % Radius.' },
-    { id: 'burn', name: 'Entzünden', desc: 'Hinterlässt 4 s Brandfläche.' },
+    { id: 'split', name: 'Splitterball', desc: '+2 Projektile im Fächer, je 70 %.' },
     { id: 'swift', name: 'Schnellwurf', desc: 'Sofort, −40 % Schaden.' },
   ],
   instantCast: () => hasRune('fireball', 'swift'),
@@ -21,14 +21,18 @@ export const fireball = {
     const target = nearestTarget(fireball.range);
     if (!target) return;
     const k = hasRune('fireball', 'swift') ? SWIFT_DMG : 1, r = c.radius(fireball.radius) * (hasRune('fireball', 'big') ? BIG : 1);
-    const at = target.pos.clone();
-    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, at, FIRE, 160);
-    c.hitProjectile(target, rand(fireball.min, fireball.max) * k);
-    for (const m of mobsInRadius(at, r)) if (m !== target) c.hit(m, rand(fireball.min, fireball.max) * k * SPLASH_MUL);
-    burstFx(at, r, [FIRE, EMBER], 0xff9a40);
-    if (hasRune('fireball', 'burn')) addField(c, { pos: at, radius: r, dur: BURN.ms, visual: fieldDecal(burnTex, EMBER, 0.3, 0.05),
-      onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, BURN.dmg); },
-      onUpdate: (f, dt) => areaParticles(f.pos, f.radius, 30, dt, [FIRE, EMBER], { up: 4, size: 0.35 }),
+    // Projektile: das Hauptziel, Wahnsinn +1 pro Rang mit vollem Schaden, Splitterball +2 mit 70 %. Weitere gehen auf die nächsten Ziele, gibt es zu wenige, wieder aufs Hauptziel
+    const shots = [1, ...Array(mods.fbExtra).fill(1), ...(hasRune('fireball', 'split') ? Array(SPLIT.n).fill(SPLIT.k) : [])];
+    const others = mobsInRadius(player.pos, fireball.range, Infinity).filter(m => m !== target).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos));
+    shots.forEach((mul, i) => {
+      const t = i === 0 ? target : others[i - 1] ?? target, at = t.pos.clone();
+      boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, at, FIRE, 160);
+      c.hitProjectile(t, rand(fireball.min, fireball.max) * k * mul);
+      for (const m of mobsInRadius(at, r)) if (m !== t) c.hit(m, rand(fireball.min, fireball.max) * k * mul * SPLASH_MUL);
+      burstFx(at, r, [FIRE, EMBER], 0xff9a40);
     });
+    // Dauerfeuer: jeder 3. oder 4. Feuerball gibt sein Mana zurück
+    const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;
+    if (mods.fbFreeEvery && n % mods.fbFreeEvery === 0) player.mana += c.cost ?? 0;
   },
 };

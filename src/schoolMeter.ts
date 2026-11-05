@@ -2,7 +2,7 @@
 // Zahlen in SCHOOL_METER (config.ts). Ohne Import aus spells/: core.ts und formulas.ts lesen die Boni von hier.
 
 import { state } from './state';
-import { SCHOOL_METER } from './config';
+import { SCHOOL_METER, mods } from './config';
 import { modValue } from './modifiers';
 
 const M = SCHOOL_METER, H = M.Feuer;
@@ -50,7 +50,10 @@ export function setMeter(v) {
 }
 
 // Feuer: Treffer +0,4 % pro Hitze, Brand-Ticks +0,8 % pro Hitze (tick = Dauerschaden)
-export const meterDmgMul = (tick = false) => fire() ? 1 + (tick ? H.burnPerHeat : H.dmgPerHeat) * meter.heat : 1;
+// Überhitzt (v31): +25 % obendrauf, Glutkern mehr; der Selbstschaden bleibt
+export const meterDmgMul = (tick = false) => fire() ? (1 + (tick ? H.burnPerHeat : H.dmgPerHeat) * meter.heat) * (meter.over ? 1 + H.overDmg + mods.emberCore : 1) : 1;
+// Feuer-Figur: Anteil der max. Leben, den jeder Kill heilt (mobs.ts)
+export const meterKillHeal = () => fire() ? H.killHeal : 0;
 export const meterCdMul = () => full('Arkan') ? 1 - M.Arkan.cd : 1;
 export const meterFrostFull = () => full('Frost');
 // Frost: jeder Slow wird stärker, gesamt höchstens slowMax

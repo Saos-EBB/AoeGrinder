@@ -91,7 +91,8 @@ export const FIG_RELIC = { tier: 3, level: 10 };
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
 export function resetMods() {
-  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0 });   // chainJumps …: Talente des Blitzmagiers
+  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
+    fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0 });   // Feuer-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -135,7 +136,8 @@ export const SCHOOL_METER = {
   perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
   // Feuer: Hitze statt Kills. Treffer heizen, Hitze macht Schaden und Brand stärker, ab max brennt er selbst bis unter overheatUntil
   Feuer: { name: 'Hitze', color: '#ff7a1a', hot: '#ff2a12', hotFrom: 80, full: 'Überhitzt', max: 100, perHit: 1.5, coolDelayMs: 1500, coolPerS: 10,
-    dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500 },
+    dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500,
+    overDmg: 0.25, killHeal: 0.005 },   // v31: überhitzt +25 % Schaden, jeder Kill heilt 0,5 % Leben (Feuer-Figur)
   Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
   Arkan: { name: 'Fokus', color: '#c573ff', full: 'Fokus voll: −25 % Abklingzeit', cd: 0.25 },
 };
@@ -186,6 +188,19 @@ export const CARDS = [
     desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
   { id: 'storm', name: 'Weiter Sturm', tags: ['Frost'], needs: 'bliz', max: 2,
     desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
+  // Feuer (v31). Ränge zählen ganz, nur Prozente wachsen mit der Seltenheit
+  { id: 'madness', name: 'Wahnsinn', only: ['Feuer'], needs: 'fireball', max: 3,
+    desc: () => 'Feuerball +1 Projektil.', apply: () => { mods.fbExtra += 1; } },
+  { id: 'rapidfire', name: 'Dauerfeuer', only: ['Feuer'], needs: 'fireball', max: 2,
+    desc: r => `Jeder ${r ? 3 : 4}. Feuerball kostet nichts.`, apply: r => { mods.fbFreeEvery = r ? 3 : 4; } },
+  { id: 'embercore', name: 'Glutkern', only: ['Feuer'], max: 3,
+    desc: (r, m) => `Überhitzt +${Math.round(15 * m)} % Schaden.`, apply: (r, m) => { mods.emberCore += 0.15 * m; } },
+  { id: 'soulfire', name: 'Seelenfeuer', only: ['Feuer'], needs: 'hellfire', max: 2,
+    desc: (r, m) => `Kills im Höllenfeuer heilen +${String(Math.round(5 * m) / 10).replace('.', ',')} % Leben.`, apply: (r, m) => { mods.soulFire += 0.005 * m; } },
+  { id: 'starfall', name: 'Sternenfall', only: ['Feuer'], needs: 'meteor', max: 3,
+    desc: () => 'Meteor-Abklingzeit −2 s pro 25 Hitze (mindestens 5 s).', apply: () => { mods.starfall += 1; } },
+  { id: 'wildfire', name: 'Lauffeuer', only: ['Feuer'], needs: 'firestorm', max: 5,
+    desc: () => 'Feuersbrunst springt auf 2 Mobs mehr.', apply: () => { mods.wildfire += 2; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

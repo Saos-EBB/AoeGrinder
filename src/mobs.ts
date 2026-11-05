@@ -23,7 +23,7 @@ import { rumble } from './gamepad';
 import { overlay, combatText } from './ui/hud';
 import { damagePlayer, gainXp } from './player';
 import { damageNumber } from './ui/dmgNumbers';
-import { meterKill } from './schoolMeter';
+import { meterKill, meterKillHeal } from './schoolMeter';
 import { buffCrit } from './buffs';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
@@ -373,6 +373,7 @@ function killMob(mob) {
   mob.plate.style.display = 'none';
   player.kills++;
   meterKill(!!mob.champion);
+  if (meterKillHeal()) player.hp = Math.min(maxHp(), player.hp + maxHp() * meterKillHeal());   // Feuer: jeder Kill heilt
   const xpMul = mob.xpMul ?? 1;                         // Champions: XP und Punkte ×3
   reportKill(mob, mob.type.noXp ? 0 : xpForKill(mob.level) * xpMul);
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;

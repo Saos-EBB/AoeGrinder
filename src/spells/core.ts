@@ -42,6 +42,7 @@ export function resetSpells() {
   state.supports = {};
   state.relicTaken = false;
   state.figRelicTaken = false;   // Relikt der Figur, eins pro Run (cards.ts)
+  player.speedBuff = 1;          // Lauftempo aus Spells (Feuerspur)
   player.luck = 0;
   player.charges = {};
   player.spellCounts = {};
@@ -98,6 +99,9 @@ export function onArcaneHit(fn) { arcaneHooks().push(fn); }
 // Jeder Treffer eines Spells mit Tag Blut (Infekt, blood.ts)
 function bloodHooks(): any[] { return (bloodHooks as any).list ??= []; }
 export function onBloodHit(fn) { bloodHooks().push(fn); }
+// Feuer-Treffer (auch Brand-Ticks) melden sich hier: Benzin zündet (gasoline.ts). Liste an einer Funktion: Import-Kreis
+function fireHooks(): any[] { return (fireHooks as any).list ??= []; }
+export function onFireHit(fn) { fireHooks().push(fn); }
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
@@ -131,6 +135,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
       if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       if (landed && !m.dead && hasTag(id, 'Blut')) for (const fn of bloodHooks()) fn(m, id, dmg);
+      if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of fireHooks()) fn(m, id, dmg);
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
