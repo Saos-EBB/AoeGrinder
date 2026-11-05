@@ -29,7 +29,7 @@ export const B = {
   every: 15,                // PH: Boss beim Erreichen jedes 15. Levels (vor der Mob-Freischaltung bei 16, 31, 46 …)
   arena: 20,                // PH: Radius der Arena um den Spieler
   scale: 2.5,               // PH: Mob-Modell so viel größer
-  hpMul: 40,                // PH: × normales Mob-Leben des Levels
+  hpMul: 15,                // PH: × normales Mob-Leben des Levels. Start war 40: Bot mit Start-Kit ohne Karten brauchte 245 s, 15 ≈ 90 s
   body: 2,                  // PH: Körperradius, der Spieler wird hinausgeschoben
   speed: 5,                 // PH: Laufen zwischen den Angriffen
   intro: { ms: 1500, fallMs: 600, height: 14, dist: 10, trauma: 0.9, decal: 9, hitstopMs: 90 },   // PH: fällt vor dem Spieler herab
@@ -528,19 +528,20 @@ function updatePush(dt) {
   player.pos.y = groundAt(player.pos.x, player.pos.z, player.pos.y);
 }
 
-// Ring des Sprung-Slams: dehnt sich von 0 auf max aus. Trifft einmal, wenn seine Front den Spieler überholt; wer schon vom Slam getroffen wurde, bleibt verschont
+// Ring des Sprung-Slams: dehnt sich von 0 auf max aus. Trifft einmal, wenn der Spieler von außen nach innen wechselt; wer schon vom Slam getroffen wurde, bleibt verschont
 function slamLanded(at) {
   if (boss.phase !== 2) return;
-  boss.wave = { c: at.clone(), t0: state.now, r: 0, hit: !!boss.att.slamHit };
+  boss.wave = { c: at.clone(), t0: state.now, r: 0, outside: true, hit: !!boss.att.slamHit };
 }
 function updateWave() {
   const w = boss.wave, R = B.phase2.ring;
   if (!w) return;
   const t = (state.now - w.t0) / R.ms;
   if (t >= 1) { boss.wave = null; wave.visible = false; return; }
-  const r = R.max * t, d = dist2d(player.pos, w.c);
-  if (!w.hit && w.r < d && r >= d) { w.hit = true; hurt(); }
+  const r = R.max * t, d = dist2d(player.pos, w.c), outside = d > r;
+  if (!w.hit && w.outside && !outside) { w.hit = true; hurt(); }   // Front hat den Spieler überholt, auch wenn er ihr entgegenläuft
   w.r = r;
+  w.outside = outside;
   layRing(wave, w.c, Math.max(0, r - R.band), r + R.band);
   wave.material.opacity = 1 - t * t;
 }
@@ -664,4 +665,4 @@ $('devPerf').insertAdjacentHTML('afterend', '<button class="bindBtn" id="devBoss
 $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(); });
 
 // Für Tests
-(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, phase2: () => { if (boss) { boss.mob.hp = Math.floor(boss.mob.maxHp * B.phase2.at); } }, get boss() { return boss; }, get result() { return lastResult; }, camera, get lock() { return lockOn; }, get camK() { return camK; } };
+(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, phase2: () => { if (boss) { boss.mob.hp = Math.floor(boss.mob.maxHp * B.phase2.at); } }, get boss() { return boss; }, get result() { return lastResult; }, camera, shotsLive: () => shots.filter(o => o.live).map(o => o.mesh.position), get lock() { return lockOn; }, get camK() { return camK; } };

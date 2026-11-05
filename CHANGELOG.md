@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- fix(boss): Der Ring trifft auch, wer ihm entgegenläuft (vorher kam man ohne Dodge hindurch); Boss-Leben 15 statt 40 × Mob-Leben, weil ein Kampf mit Start-Kit 245 s dauerte
 - feat(boss): Boss-Tod mit 150 ms Stopp, 0,8 s Zeitlupe, riesigem Riss und „Boss besiegt“ samt Kampfzeit, genommenen Treffern und Perfekten Dodges; Belohnung Punkte wie 10 Champions und +20 Knochenstaub; Kamera und Mob-Spawn kehren zurück
 - feat(boss): Phase 2 ab 50 % Leben: 1 s Brüllen (unverwundbar), Druckwelle stößt 4 yd weg, Leuchten heller, alle Ausholzeiten ×0,8; der Sprung-Slam schickt einen Ring von 0 auf 12 yd in 2 s los (durchdodgen oder weglaufen); neuer Geschoss-Fächer mit 5 langsamen Geschossen im 60°-Fächer
 - feat(boss): Drei Angriffe mit Ausholen, Treffer und Lücke: Schlag-Kette (3 Schläge im 90°-Kegel, Ausholen 0,8/0,5/1,0 s), Sprung-Slam (roter Kreis 6 yd 1 s vor der Landung, Hitstop, Riss, Trümmer), Ansturm (15-yd-Linie 0,7 s vorher, taumelt danach); Wahl nach Abstand, nie zweimal derselbe; jeder Treffer 25 % Leben, Dodge und Perfekter Dodge greifen; in der Lücke leuchtet er weiß auf und nimmt +25 % Schaden
