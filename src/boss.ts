@@ -5,15 +5,16 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
-import { mobMaxHp } from './formulas';
+import { mobMaxHp, maxHp } from './formulas';
 import { scene, camera } from './render';
 import { cam, setCamOverride } from './camera';
 import { pad } from './gamepad';
-import { zone } from './world';
+import { zone, terrainDecal, drape } from './world';
 import { groundAt, resolve } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { spawnMob, removeMob, enterCombat } from './mobs';
 import { mobMode } from './modifiers';
+import { damagePlayer } from './player';
 import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
 import { shockwave, lightFlash, hitstop } from './fx/impact';
@@ -25,13 +26,22 @@ export const B = {
   arena: 20,                // PH: Radius der Arena um den Spieler
   scale: 2.5,               // PH: Mob-Modell so viel größer
   hpMul: 40,                // PH: × normales Mob-Leben des Levels
-  body: 1.8,                // PH: Körperradius, der Spieler wird hinausgeschoben
+  body: 2,                  // PH: Körperradius, der Spieler wird hinausgeschoben
   speed: 5,                 // PH: Laufen zwischen den Angriffen
   intro: { ms: 1500, fallMs: 600, height: 14, dist: 10, trauma: 0.9, decal: 9, hitstopMs: 90 },   // PH: fällt vor dem Spieler herab
   ringColor: [2.6, 0.5, 0.25],   // PH: leuchtender Bodenring der Arena (> 1 → Bloom)
   // PH: Boss-Sicht hinter dem Spieler. look: Blickhöhe über dem Spieler, toward: Anteil des Wegs zum Boss, auf den die Kamera schaut
   cam: { blendMs: 600, dist: 6, pitch: 0.15, fov: 70, height: 1.8, look: 1.6, toward: 0.45, ahead: 3, yawRate: 8 },
   lockPadBtn: 11,           // Gamepad R3 (Standard-Mapping)
+  // Angriffe: Ausholen (lesbar) → Treffer → Lücke. Schaden pro Treffer als Anteil am max. Leben, in der Lücke nimmt der Boss mehr Schaden
+  hit: 0.25,                // PH
+  punish: 1.25,             // PH
+  pauseMs: [400, 800],      // PH: zwischen zwei Angriffen läuft er auf den Spieler zu
+  near: 3, far: 9,          // PH: Abstand ab Körperkante. Nah → Schlag-Kette, mittel → Ansturm, weit → Sprung-Slam
+  combo: { windups: [800, 500, 1000], reach: 4, cone: Math.PI / 2, gapMs: 1200, lunge: 1.2, strikeMs: 180, track: 0.7, turn: 6, trauma: 0.3 },   // PH: reach ab Körperkante, track: dreht sich bis zu diesem Anteil des Ausholens mit
+  slam: { crouchMs: 400, airMs: 1000, radius: 6, height: 7, gapMs: 1500, trauma: 1, hitstopMs: 100, decal: 8 },   // PH: Kreis erscheint beim Absprung, airMs vor der Landung
+  charge: { windupMs: 700, len: 15, width: 3, speed: 32, gapMs: 1000, track: 0.5, trauma: 0.5 },                 // PH: Linie width breit, dreht bis track mit
+  tele: { color: [1, 0.1, 0.06], min: 0.15, max: 0.55 },   // PH: rote Bodenwarnung, Deckkraft steigt bis zum Treffer
 };
 
 const autoOn = () => location.hash.includes('boss');
@@ -121,6 +131,36 @@ function layRing(mesh, c, rIn, rOut) {
 }
 const arena = ringMesh(B.ringColor);
 
+// ---------- Bodenwarnungen: Kreis, Kegel und Linie, je ein Mesh, rot ----------
+const teleMat = () => new THREE.MeshBasicMaterial({ color: new THREE.Color(...B.tele.color), transparent: true, depthWrite: false, side: THREE.DoubleSide });
+const teleCircle = terrainDecal(new THREE.RingGeometry(0, 1, 48, 6), teleMat());
+// Gitter in lokalen Koordinaten (x quer, z nach vorn), wird gedreht und auf den Boden gelegt
+function gridMesh(nu, nv, fn) {
+  const base = [], idx = [];
+  for (let v = 0; v <= nv; v++) for (let u = 0; u <= nu; u++) base.push(...fn(u / nu, v / nv));
+  for (let v = 0; v < nv; v++) for (let u = 0; u < nu; u++) { const a = v * (nu + 1) + u, b = a + nu + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(base.length / 2 * 3), 3));
+  geo.setIndex(idx);
+  const mesh = new THREE.Mesh(geo, teleMat());
+  mesh.userData.base = base;
+  return mesh;
+}
+const teleCone = gridMesh(16, 4, (u, v) => { const a = (u - 0.5) * B.combo.cone; return [Math.sin(a) * v, Math.cos(a) * v]; });
+const teleLine = gridMesh(1, 16, (u, v) => [u - 0.5, v]);
+function layGrid(mesh, c, sx, sz, yaw) {
+  const base = mesh.userData.base, arr = mesh.geometry.attributes.position.array, co = Math.cos(yaw), si = Math.sin(yaw);
+  for (let i = 0, j = 0; i < base.length; i += 2, j += 3) {
+    const lx = base[i] * sx, lz = base[i + 1] * sz, x = c.x + lx * co + lz * si, z = c.z - lx * si + lz * co;
+    arr[j] = x; arr[j + 1] = groundAt(x, z, c.y) + 0.14; arr[j + 2] = z;
+  }
+  mesh.geometry.attributes.position.needsUpdate = true;
+}
+const TELES = [teleCircle, teleCone, teleLine];
+for (const t of TELES) { t.visible = false; t.frustumCulled = false; t.renderOrder = 2; scene.add(t); }
+const teleAlpha = (t, k) => { t.visible = true; t.material.opacity = B.tele.min + (B.tele.max - B.tele.min) * k; };
+const hideTeles = () => { for (const t of TELES) t.visible = false; };
+
 // ---------- Boss-Leiste oben ----------
 document.head.insertAdjacentHTML('beforeend', `<style>
   #bossBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); width: min(56vw, 760px); z-index: 2; pointer-events: none; text-align: center; display: none;
@@ -143,7 +183,7 @@ const barName = bar.querySelector('.name') as HTMLElement, barFill = bar.querySe
 // Fähigkeit des Boss-Mobs: updateMob überlässt ihr die Steuerung, Schaden läuft über onDamaged
 const BOSS_ABILITY = {
   onUpdate: () => true,
-  onDamaged: (m, amount) => (!boss || boss.step === 'intro' ? 0 : amount),
+  onDamaged: (m, amount) => (!boss || boss.step === 'intro' ? 0 : boss.step === 'gap' ? amount * B.punish : amount),   // Lücke: Bestrafen lohnt sich
 };
 
 // Mob-Modell der Zone: der Mob, der als nächster freigeschaltet wird (Level 15 → zweiter Mob der Zone)
@@ -189,7 +229,8 @@ export function startBoss() {
   enterCombat(m, false);
   lockOn = true;
   camStart();
-  boss = { mob: m, center, step: 'intro', t0: state.now, until: state.now + I.ms, landed: false, startAt: state.now, yaw: Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z) };
+  boss = { mob: m, center, step: 'intro', t0: state.now, until: state.now + I.ms, landed: false, startAt: state.now, yaw: Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z),
+    phase: 1, last: null, att: null, stats: { hits: 0, perfect0: state.dodgeStats?.perfect ?? 0 } };
   barName.textContent = m.type.name;
   barSub.textContent = `Boss · Level ${level}`;
   barLag.style.width = barFill.style.width = '100%';
@@ -260,11 +301,171 @@ export function updateBoss(dt) {
       m.falling = false;
       if (t >= 1) land();
     }
-    if (state.now >= boss.until) boss.step = 'walk';
+    if (state.now >= boss.until) walk();
     return;
   }
-  if (boss.step === 'walk') walkTo(player.pos, dt);
+  STEPS[boss.step]?.(dt);
 }
+
+// ---------- Ablauf ----------
+const next = (step, ms) => { boss.step = step; boss.t0 = state.now; boss.until = state.now + ms; };
+const prog = () => clamp((state.now - boss.t0) / Math.max(1, boss.until - boss.t0), 0, 1);
+const done = () => state.now >= boss.until;
+const windup = ms => ms;
+const toPlayer = () => dist2d(boss.mob.pos, player.pos);
+function turnTo(target, rate, dt) {
+  const want = yawTo(boss.mob.pos, target), d = wrap(want - boss.yaw), max = rate * dt / 1000;
+  boss.yaw += Math.max(-max, Math.min(max, d));
+}
+
+// Treffer am Spieler: i-Frames und Perfekter Dodge greifen in damagePlayer. true, wenn Leben abging
+function hurt() {
+  if (player.dead) return false;
+  const hp = player.hp;
+  boss.mob.attackAt = state.now;                       // Todesursache und Angriffs-Animation
+  damagePlayer(Math.round(maxHp() * B.hit));
+  if (player.hp < hp) { boss.stats.hits++; return true; }
+  return false;
+}
+
+// Lücke nach jedem Angriff: weißes Aufleuchten, B.punish mehr Schaden
+function gap(ms) {
+  hideTeles();
+  next('gap', ms);
+  boss.mob.hitAt = state.now;
+}
+function walk() {
+  boss.att = null;
+  next('walk', rand(B.pauseMs[0], B.pauseMs[1]));
+}
+
+// Auswahl nach Abstand, nie derselbe zweimal hintereinander
+function chooseAttack() {
+  const d = toPlayer() - B.body;
+  const order = d < B.near ? ['combo', 'charge', 'slam'] : d < B.far ? ['charge', 'slam', 'combo'] : ['slam', 'charge', 'combo'];
+  const id = order.find(a => a !== boss.last);
+  boss.last = id;
+  ATTACKS[id]();
+}
+
+// 1. Schlag-Kette: 3 Schläge im Kegel, der dritte holt länger aus
+function comboWind() {
+  next('comboWind', windup(B.combo.windups[boss.att.i]));
+}
+// 2. Sprung-Slam auf die Spielerposition beim Absprung
+// 3. Ansturm: Linie, rennt durch, taumelt am Ende
+const ATTACKS = {
+  combo() { boss.att = { id: 'combo', i: 0 }; comboWind(); },
+  slam() { boss.att = { id: 'slam' }; next('slamCrouch', windup(B.slam.crouchMs)); },
+  charge() { boss.att = { id: 'charge' }; next('chargeWind', windup(B.charge.windupMs)); },
+};
+
+const STEPS = {
+  walk(dt) {
+    walkTo(player.pos, dt);
+    if (done()) chooseAttack();
+  },
+  comboWind(dt) {
+    const K = B.combo, m = boss.mob;
+    if (prog() < K.track) turnTo(player.pos, K.turn, dt);
+    layGrid(teleCone, m.pos, B.body + K.reach, B.body + K.reach, boss.yaw);
+    teleAlpha(teleCone, prog());
+    if (!done()) return;
+    teleCone.visible = false;
+    const d = toPlayer(), off = Math.abs(wrap(yawTo(m.pos, player.pos) - boss.yaw));
+    if (d <= B.body + K.reach && off <= K.cone / 2) hurt();
+    else m.attackAt = state.now;
+    const tip = { x: m.pos.x + Math.sin(boss.yaw) * (B.body + 1), y: m.pos.y, z: m.pos.z + Math.cos(boss.yaw) * (B.body + 1) };
+    addTrauma(K.trauma);
+    decal(tip, 3, 3);
+    debris(tip);
+    next('comboStrike', K.strikeMs);
+  },
+  comboStrike(dt) {
+    const K = B.combo, m = boss.mob;
+    if (toPlayer() > B.body + 0.6) {                    // Ausfallschritt nach vorn, nicht in den Spieler hinein
+      const step = K.lunge * dt / K.strikeMs;
+      m.pos.x += Math.sin(boss.yaw) * step; m.pos.z += Math.cos(boss.yaw) * step;
+      resolve(m.pos, 0.7);
+      m.pos.y = groundAt(m.pos.x, m.pos.z, m.pos.y);
+    }
+    if (!done()) return;
+    if (++boss.att.i < K.windups.length) comboWind();
+    else gap(K.gapMs);
+  },
+  slamCrouch(dt) {
+    const S = B.slam, m = boss.mob;
+    turnTo(player.pos, 10, dt);
+    if (!done()) return;
+    const c = boss.center, t = player.pos.clone(), d = dist2d(t, c), max = B.arena - B.body;
+    if (d > max) { t.x = c.x + (t.x - c.x) / d * max; t.z = c.z + (t.z - c.z) / d * max; }
+    t.y = groundAt(t.x, t.z, player.pos.y);
+    boss.att.from = m.pos.clone();
+    boss.att.to = t;
+    drape(teleCircle, t, S.radius);
+    teleAlpha(teleCircle, 0);
+    next('slamAir', windup(S.airMs));
+  },
+  slamAir() {
+    const S = B.slam, m = boss.mob, a = boss.att, t = prog();
+    m.pos.x = a.from.x + (a.to.x - a.from.x) * t;
+    m.pos.z = a.from.z + (a.to.z - a.from.z) * t;
+    m.pos.y = a.from.y + (a.to.y - a.from.y) * t + Math.sin(t * Math.PI) * S.height;
+    m.falling = false;
+    teleAlpha(teleCircle, t);
+    if (!done()) return;
+    m.pos.y = a.to.y;
+    teleCircle.visible = false;
+    if (dist2d(player.pos, a.to) <= S.radius) hurt();
+    else m.attackAt = state.now;
+    hitstop(S.hitstopMs);
+    addTrauma(S.trauma);
+    decal(a.to, 3, S.decal);
+    debris(a.to); debris(a.to); debris(a.to);
+    shockwave(a.to, S.radius * 1.5, 0.05, 500);
+    ringFx(a.to, S.radius, [2.4, 0.5, 0.25], 400);
+    lightFlash(a.to, 0xff6a3a, 400, 25, 250);
+    slamLanded(a.to);
+    gap(S.gapMs);
+  },
+  chargeWind() {
+    const K = B.charge, m = boss.mob;
+    if (prog() < K.track) boss.yaw = yawTo(m.pos, player.pos);
+    layGrid(teleLine, m.pos, K.width, K.len, boss.yaw);
+    teleAlpha(teleLine, prog());
+    if (!done()) return;
+    teleLine.visible = false;
+    // Ziel am Ende der Linie, an der Arenagrenze gekürzt
+    const c = boss.center, max = B.arena - B.body;
+    let len = K.len;
+    for (; len > 0; len -= 0.5) if (Math.hypot(m.pos.x + Math.sin(boss.yaw) * len - c.x, m.pos.z + Math.cos(boss.yaw) * len - c.z) <= max) break;
+    boss.att.from = m.pos.clone();
+    boss.att.len = Math.max(0, len);
+    boss.att.hit = false;
+    addTrauma(0.15);
+    next('chargeRun', boss.att.len / K.speed * 1000);
+  },
+  chargeRun() {
+    const K = B.charge, m = boss.mob, a = boss.att, s = a.len * prog();
+    m.pos.x = a.from.x + Math.sin(boss.yaw) * s;
+    m.pos.z = a.from.z + Math.cos(boss.yaw) * s;
+    m.pos.y = groundAt(m.pos.x, m.pos.z, m.pos.y);
+    m.moving = true; m.speed = K.speed;
+    // Getroffen, wer im Korridor bis zur aktuellen Spitze steht
+    const px = player.pos.x - a.from.x, pz = player.pos.z - a.from.z;
+    const along = px * Math.sin(boss.yaw) + pz * Math.cos(boss.yaw), side = Math.abs(px * Math.cos(boss.yaw) - pz * Math.sin(boss.yaw));
+    if (!a.hit && along > -B.body && along < s + B.body && side < K.width / 2 + 0.45) { a.hit = true; hurt(); }
+    if (Math.random() < 0.6) debris(m.pos);
+    if (!done()) return;
+    addTrauma(K.trauma);
+    decal(m.pos, 3, 3);
+    gap(K.gapMs);
+  },
+  gap() { if (done()) walk(); },
+};
+
+// Phase 2 hängt hier den Ring an
+function slamLanded(at) { /* Phase 2 */ }
 
 function endBoss() {
   cleanup();
@@ -273,6 +474,7 @@ function endBoss() {
 // Kampf beenden: Arena weg, Leiste weg. Der Spawn läuft danach von selbst weiter (updateRespawn füllt die Packs auf)
 function cleanup(instant = false) {
   boss = null;
+  hideTeles();
   state.bossLock = false;
   state.bossAim = null;
   camEnd(instant);
@@ -290,11 +492,30 @@ export function updateBossVisuals(dt) {
   const m = boss.mob;
   if (!state.mobs.includes(m)) return cleanup(true);
   if (pad.down[B.lockPadBtn] && !pad.prev[B.lockPadBtn]) toggleLock();
-  m.model.root.rotation.y = boss.yaw;
+  pose(m);
   const pct = `${Math.max(0, m.hp / m.maxHp * 100)}%`;
   if (barFill.style.width !== pct) barFill.style.width = pct;
   const lag = parseFloat(barLag.style.width) || 100, want = Math.max(0, m.hp / m.maxHp * 100);   // gelber Rest folgt langsam
   barLag.style.width = `${lag > want ? Math.max(want, lag - 0.6) : want}%`;
+}
+
+// Pose ohne neue Animation: Stauchen, Kippen, Taumeln über root.scale und root.rotation
+function pose(m) {
+  const r = m.model.root, t = prog(), step = boss.step;
+  let sx = 1, sy = 1, pitch = 0, roll = 0;
+  if (step === 'comboWind' || step === 'chargeWind' || step === 'slamCrouch') {
+    const e = t * t * (3 - 2 * t);
+    sy = 1 - 0.2 * e; sx = 1 + 0.1 * e;
+    pitch = step === 'comboWind' ? -0.35 * e : step === 'chargeWind' ? 0.25 * e : 0.15 * e;   // Schlag: aufbäumen, Ansturm: Kopf runter
+    if (step === 'chargeWind') roll = Math.sin(state.now * 0.06) * 0.04 * e;                      // scharrt
+  } else if (step === 'comboStrike') { const k = 1 - t; pitch = 0.4 * k; sy = 1 + 0.12 * k; sx = 1 - 0.05 * k; }
+  else if (step === 'slamAir') { pitch = -0.5 * (1 - t) + 0.45 * t; sy = 1.15; sx = 0.92; }
+  else if (step === 'chargeRun') { pitch = 0.3; sy = 0.92; sx = 1.06; }
+  else if (step === 'gap') { const k = 1 - t; pitch = 0.18 * k; sy = 1 - 0.1 * k; roll = Math.sin(t * 14) * 0.12 * k; }   // taumelt
+  r.rotation.y = boss.yaw;
+  r.rotation.x = pitch;
+  r.rotation.z = roll;
+  r.scale.set(m.baseScale.x * sx, m.baseScale.y * sy, m.baseScale.z * sx);
 }
 
 // Dev: Boss jetzt
@@ -302,4 +523,4 @@ $('devPerf').insertAdjacentHTML('afterend', '<button class="bindBtn" id="devBoss
 $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(); });
 
 // Für Tests
-(window as any).__boss = { B, start: () => startBoss(), toggleLock, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
+(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
