@@ -331,6 +331,17 @@ body.mobile .endStat { width: auto; flex: 1; }
 .invItem { width: 22px; height: 70px; color: var(--rc); display: block; }
 .invItem svg { width: 100%; height: 100%; }
 .invSlot .invItem { width: 18px; height: 60px; }
+.invFilter { display: grid; gap: 6px; margin: 0 0 12px; }
+.invFRow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.invFRow > span { width: 78px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--glut-muted); }
+.invChip { --ec: var(--glut-muted); min-width: 26px; height: 26px; padding: 0 7px; border: 1px solid var(--glut-line); background: #0d0907; color: var(--glut-text, #f4ecd8); font: 600 13px var(--font-body); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.invChip[style*="--ec"]::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--ec); box-shadow: 0 0 6px var(--ec); }
+.invChip[data-g="r"][style*="--ec"] { padding: 0 8px; }
+.invChip:hover { border-color: var(--glut-muted); }
+.invChip.on { border-color: var(--ec, #ff9a2e); background: #2a1606; }
+.invChip.invReset { margin-left: auto; color: var(--glut-muted); }
+.invCell { position: relative; }
+.invEl { position: absolute; top: 6px; right: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--ec); box-shadow: 0 0 8px var(--ec), 0 0 0 2px #0d0907; pointer-events: none; }
 .invHint { margin: 12px 0 0; font-size: 13px; color: var(--glut-muted); }
 #invClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
 .shopInvBtn { width: auto !important; margin-top: 14px !important; padding: 8px 18px !important; }

@@ -1,9 +1,11 @@
 // Inventar (Mockup InvDiablo.dc.html, Look Glut): links Figur mit Slots (Waffe aktiv, Ring/Amulett/Relikt gesperrt), Werte darunter;
-// Mitte Truhe 5×3 mit Seltenheitsrahmen. Hover = Waffen-Karte mit Vergleich. Rechtsklick = ausrüsten, Linksklick = zerlegen mit Rückfrage.
+// Mitte Truhe 5×3 mit Seltenheitsrahmen, darüber Filter (Seltenheit, Element, Typ) und Sortierung; Punkt rechts oben = Element. Hover = Waffen-Karte mit Vergleich. Rechtsklick = ausrüsten, Linksklick = zerlegen mit Rückfrage.
 
 import { $ } from '../util';
 import { meta } from '../meta';
-import { ROLLS, sortedInv, rarityOf, weaponName, equipped, equip, deleteWeapon, effectRows } from '../weaponRolls';
+import { ROLLS, sortedInv, rarityOf, weaponName, equipped, equip, deleteWeapon, effectRows, elementOf, typeOf } from '../weaponRolls';
+import { CARD_RARITIES } from '../config';
+import { ELEMENTS, TYPES, elementColor } from '../models/weapons/baukasten';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { weaponThumb } from './weaponThumb';
@@ -17,6 +19,27 @@ const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const FIGURE = '<svg viewBox="0 0 60 96" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="30" cy="14" r="10"/><path d="M30 24v34M30 34l-16 12M30 34l16 10M30 58l-10 30M30 58l10 30"/></svg>';
 const GRID = 15;   // 5×3 wie ROLLS.invMax; im Dev-Inventar wachsen weitere Reihen dazu
 
+// Filter und Sortierung, pro Browser gemerkt. -1 / 'all' = alle
+const FILTER_KEY = 'frostgrind.invFilter.v1';
+const filter = (() => { const d = { r: -1, el: 'all', type: 'all', sort: 'rar' }; try { return { ...d, ...JSON.parse(localStorage.getItem(FILTER_KEY) ?? '{}') }; } catch { return d; } })();
+const saveFilter = () => { try { localStorage.setItem(FILTER_KEY, JSON.stringify(filter)); } catch { /* privat: nur ohne Merken */ } };
+const EL_IDS = Object.keys(ELEMENTS), TYPE_IDS = [...Object.keys(TYPES), 'alt'];
+const typeName = t => TYPES[t]?.name ?? 'Alte Waffe';
+const SORTS: Record<string, [string, (a, b) => number]> = {
+  rar: ['Seltenheit', (a, b) => b.r - a.r || b.id - a.id],
+  neu: ['Neueste', (a, b) => b.id - a.id],
+  el: ['Element', (a, b) => EL_IDS.indexOf(elementOf(a)) - EL_IDS.indexOf(elementOf(b)) || b.r - a.r || b.id - a.id],
+  typ: ['Typ', (a, b) => TYPE_IDS.indexOf(typeOf(a)) - TYPE_IDS.indexOf(typeOf(b)) || b.r - a.r || b.id - a.id],
+};
+const shownInv = () => sortedInv().filter(w => (filter.r < 0 || w.r === filter.r) && (filter.el === 'all' || elementOf(w) === filter.el) && (filter.type === 'all' || typeOf(w) === filter.type)).sort(SORTS[filter.sort]?.[1] ?? SORTS.rar[1]);
+const chip = (group: string, value: string | number, label: string, color = '', title = label) => `<button class="invChip" data-g="${group}" data-v="${value}" title="${title}"${color ? ` style="--ec:${color}"` : ''}>${label}</button>`;
+const FILTER_HTML = `<div class="invFilter">
+  <div class="invFRow"><span>Seltenheit</span>${chip('r', -1, 'Alle')}${CARD_RARITIES.map((r, i) => chip('r', i, '', r.color, r.name)).join('')}</div>
+  <div class="invFRow"><span>Element</span>${chip('el', 'all', 'Alle')}${EL_IDS.map(e => chip('el', e, e === 'none' ? 'keins' : ELEMENTS[e].name, e === 'none' ? '' : elementColor(e))).join('')}</div>
+  <div class="invFRow"><span>Typ</span>${chip('type', 'all', 'Alle')}${TYPE_IDS.map(t => chip('type', t, typeName(t))).join('')}</div>
+  <div class="invFRow"><span>Sortieren</span>${Object.entries(SORTS).map(([k, [n]]) => chip('sort', k, n)).join('')}<button class="invChip invReset" id="invReset">Filter zurücksetzen</button></div>
+</div>`;
+
 document.body.insertAdjacentHTML('beforeend', `<div id="invModal" class="modal">
   <div class="frame panel" id="invBox">
     <div class="invHead"><h1 class="title">Inventar</h1><span id="invInfo"></span></div>
@@ -29,6 +52,7 @@ document.body.insertAdjacentHTML('beforeend', `<div id="invModal" class="modal">
         <div class="invStats" id="invStats"></div>
       </div>
       <div class="gPanel invChest">
+        ${FILTER_HTML}
         <div class="invGrid5" id="invGrid"></div>
         <p class="invHint">Rechtsklick = ausrüsten · Klick = zerlegen (mit Rückfrage) · Rechtsklick auf die Waffe links = ablegen</p>
       </div>
@@ -56,8 +80,9 @@ export function closeInventory() {
 
 // Bild aus dem echten Modell (weaponThumb), sonst das Strich-Symbol
 function slotHtml(w) {
-  const img = weaponThumb(w);
-  return img ? `<img class="invImg" src="${img}" alt="">` : `<span class="invItem" style="--rc:${rarityOf(w).color}">${STAFF}</span>`;
+  const img = weaponThumb(w), el = elementOf(w);
+  const dot = el === 'none' ? '' : `<i class="invEl" style="--ec:${elementColor(el)}" title="${ELEMENTS[el].name}"></i>`;
+  return (img ? `<img class="invImg" src="${img}" alt="">` : `<span class="invItem" style="--rc:${rarityOf(w).color}">${STAFF}</span>`) + dot;
 }
 function render() {
   const eq = equipped();
@@ -75,11 +100,13 @@ function render() {
     : '<div class="invStat">Keine Waffe ausgerüstet (Pilgerast ohne Effekt)</div>';
   if (eq) {
     $('invStats').querySelector('.invWName').textContent = weaponName(eq);
-    $('invStats').querySelectorAll('.invStat').forEach((el, i) => { el.textContent = stats[i].text; });
+    $('invStats').querySelectorAll<HTMLElement>('.invStat').forEach((el, i) => { el.textContent = stats[i].text; if (stats[i].kind === 'element') el.style.color = stats[i].color; });
   }
+  document.querySelectorAll<HTMLElement>('#invModal .invChip[data-g]').forEach(b => b.classList.toggle('on', String(filter[b.dataset.g]) === b.dataset.v));
   const grid = $('invGrid');
   grid.textContent = '';
-  const list = sortedInv();
+  const list = shownInv();
+  if (list.length !== meta.inv.length) $('invInfo').innerHTML += ` · zeigt ${list.length}`;
   for (let i = 0; i < Math.max(GRID, Math.ceil(list.length / 5) * 5); i++) {
     const w = list[i], cell = document.createElement('div');
     cell.className = 'invCell' + (w && w === eq ? ' equipped' : '');
@@ -101,6 +128,12 @@ function render() {
 }
 
 $('invClose').addEventListener('click', closeInventory);
+document.querySelectorAll<HTMLElement>('#invModal .invChip[data-g]').forEach(b => b.addEventListener('click', () => {
+  const g = b.dataset.g;
+  filter[g] = g === 'r' ? +b.dataset.v : b.dataset.v;
+  saveFilter(); render();
+}));
+$('invReset').addEventListener('click', () => { Object.assign(filter, { r: -1, el: 'all', type: 'all' }); saveFilter(); render(); });
 addEventListener('keydown', e => {
   if (!invOpen() || e.code !== 'Escape' || document.getElementById('askTitle')?.closest('.modal')?.classList.contains('show')) return;
   e.preventDefault(); e.stopImmediatePropagation();
