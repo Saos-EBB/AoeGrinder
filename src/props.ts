@@ -5,8 +5,10 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rand } from './util';
 import { addCircle, addBox, addWalk } from './collision';
+import { TOON, toonMat } from './toon';
 
-const lambert = (color, opts = {}) => new THREE.MeshLambertMaterial({ color, ...opts });
+// ?toon=1: Anime-Basis zum Ausprobieren (toon.ts)
+const lambert = (color, opts = {}) => TOON ? toonMat({ color, ...opts }) : new THREE.MeshLambertMaterial({ color, ...opts });
 export { lambert };
 
 function baked(geo, x, y, z, rx, ry, rz) {

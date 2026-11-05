@@ -7,6 +7,7 @@ import { particles } from './fx/particles';
 import { ZONES } from './zones';
 import { makeCtx } from './props';
 import { clearColliders, colliders, groundAt } from './collision';
+import { TOON, toonMat } from './toon';
 
 export let zone = ZONES.tirisfal;
 export let zoneId = 'tirisfal';
@@ -24,7 +25,7 @@ export const terrain = (() => {
   const size = 340 * WORLD_K, segs = 150 * WORLD_K;
   const geo = new THREE.PlaneGeometry(size, size, segs, segs);
   geo.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const mesh = new THREE.Mesh(geo, TOON ? toonMat({ vertexColors: true, rim: false }) : new THREE.MeshLambertMaterial({ vertexColors: true }));
   scene.add(mesh);
   return mesh;
 })();
