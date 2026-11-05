@@ -14,6 +14,7 @@ import { aeNew, blinkNew } from './arcaneFx';
 import { novaNew, coneNew, blizStartNew, blizMoveNew, blizStopNew, blizUpdateNew } from './frostFx';
 import { updateImpact } from './impact';
 import { novaLook, coneLook, blizLook, blizMoveLook, blizStopLook } from '../vfx/frostLook';
+import { aeLook, blinkLook } from '../vfx/arcaneLook';
 
 export { fxClock };
 
@@ -245,7 +246,7 @@ export function novaFx(pos, radius) {
 }
 
 export function arcaneExplosionFx(pos, radius) {
-  if (!vfxOld()) return aeNew(pos, radius, runeTex);
+  if (!vfxOld()) return aeLook(pos, radius);
   const c = new THREE.Vector3(pos.x, pos.y + 1, pos.z);
   groundDecalFx(runeTex, pos, radius, [1.8, 0.7, 2.4], 700, { additive: true, spin: 1.2, grow: 0.25 });
   flashFx(c, 0xd890ff, 6, 250);
@@ -280,7 +281,7 @@ export function coneOfColdFx(range, angle) {
 }
 
 export function blinkFx(from, to) {
-  if (!vfxOld()) return blinkNew(from, to);
+  if (!vfxOld()) return blinkLook(from, to);
   for (const p of [from, to]) {
     const c = new THREE.Vector3(p.x, p.y + 1.2, p.z);
     flashFx(c, 0xd890ff, 5, 300);

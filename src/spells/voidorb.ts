@@ -1,17 +1,14 @@
 import { clamp, dist2d } from '../util';
 import { player } from '../state';
 import { pullMob } from '../mobs';
-import { voidTex } from '../fx/spellFx';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
-import { vfxOld } from '../fx/shaders';
-import { voidSpiral, voidOpen } from '../fx/arcaneFx';
-import { fieldDecal, orbVisual, visuals, areaParticles, burstFx, SHADOW, VOID } from './fx';
+import { voidOrbField } from '../vfx/arcaneLook';
+import { boom, PAL } from '../vfx/energy';
 
 const PULL_PER_S = 4, MAX_SLOW = 0.4, FOLLOW_SPEED = 3, IMPLODE = 25, TWIN_OFFSET = 6;   // PH
 
 function spawnOrb(c, pos, radius, k) {
-  if (!vfxOld()) voidOpen(pos, radius);
-  addField(c, { pos, radius, dur: voidorb.dur, void: true, tickMs: 1e9, visual: visuals(fieldDecal(voidTex, VOID, vfxOld() ? 0.8 : 0.5, 1.2), orbVisual(0x7a2fd0, 3.5 * k + 1, true)),
+  addField(c, { pos, radius, dur: voidorb.dur, void: true, tickMs: 1e9, visual: voidOrbField(k),
     onUpdate(f, dt) {
       if (hasRune('voidorb', 'follow')) {
         const dx = player.pos.x - f.pos.x, dz = player.pos.z - f.pos.z, d = Math.hypot(dx, dz);
@@ -21,15 +18,13 @@ function spawnOrb(c, pos, radius, k) {
         pullMob(m, f.pos, PULL_PER_S * dt / 1000);
         applySlow(m, MAX_SLOW * clamp(1 - dist2d(m.pos, f.pos) / f.radius, 0, 1), 200);
       }
-      if (vfxOld()) areaParticles(f.pos, f.radius, 40 * k, dt, [SHADOW, VOID], { up: 1, size: 0.35, swirl: 6 });
-      else voidSpiral(f.pos, f.radius, k, dt, [SHADOW, VOID, [1.4, 0.4, 2.2]]);
     },
     // v31: kein Schaden mehr, nur Sog und Slow. Die Rune Implosion macht weiter Schaden
     onEnd(f) {
       if (!hasRune('voidorb', 'implode')) return;
       const caught = mobsInRadius(f.pos, f.radius);
       for (const m of caught) c.hit(m, IMPLODE * caught.length * k);
-      burstFx(f.pos, f.radius / 2, [SHADOW, VOID], 0x7a2fd0);
+      boom(f.pos.clone().setY(f.pos.y + 1.6), f.radius / 2, PAL.void, .6, { ground: f.pos.y, n: 40 });
     },
   });
 }

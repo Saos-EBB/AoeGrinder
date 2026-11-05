@@ -6,10 +6,10 @@ import { maxHp } from '../formulas';
 import { arcCharges } from '../schoolMeter';
 import { mobsOnLine, forward } from '../melee';
 import { showError, combatText, renderActionbar } from '../ui/hud';
-import { blinkFx, ringFx, arcaneExplosionFx } from '../fx/spellFx';
+import { blinkFx, arcaneExplosionFx } from '../fx/spellFx';
+import { archonLook, beamLook, warpLook, warpBack } from '../vfx/arcaneLook';
 import { mobsInRadius, cdEnd, startCd, startChannel, noteCastStart, onAnyHit } from './core';
 import { blinkTo } from './blink';
-import { boltFx, SHADOW } from './fx';
 
 // Alle Werte PH. Archon: 10 s, CD 60 s, Kills verlängern (erster +1 s, jeder weitere 10 % weniger, mindestens 0,1 s)
 const ARCHON = { ms: 10000, cd: 60000, kill: 1000, killDecay: 0.9, killMin: 100, beam: { len: 25, width: 2, dps: 3, ms: 3000 }, nova: { radius: 10, dmg: 4, cd: 2000 }, port: { yd: 15, cd: 3000 } };
@@ -21,6 +21,7 @@ function startArchon() {
   state.archon = { until: state.now + ARCHON.ms, kills: 0, saved: state.slots.slice(0, 3) };
   state.slots.splice(0, 3, 'archBeam', 'archNova', 'archPort');
   renderActionbar();
+  archonLook(archonActive);
   combatText(player.pos, 'Archon!', 'info', 3);
 }
 export function endArchon() {
@@ -59,7 +60,7 @@ export const archBeam = archonSpell('Archon-Strahl', 'Kanal: Strahl 25 yd nach v
   tick(ch) {
     const f = forward(), to = { x: player.pos.x + f.x * ARCHON.beam.len, y: player.pos.y, z: player.pos.z + f.z * ARCHON.beam.len };
     for (const m of mobsOnLine(player.pos, to, ARCHON.beam.width)) ch.c.hit(m, ARCHON.beam.dps * UNIT);
-    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, to, SHADOW, 900);
+    beamLook(player.pos, to as any, .9, 1.4);
   },
 });
 export const archNova = archonSpell('Archon-Explosion', 'Nova 10 yd, 4 Einheiten.', ARCHON.nova.cd, c => {
@@ -82,7 +83,7 @@ export const timewarp = {
     startCd('timewarp');
     noteCastStart('timewarp');
     state.warp = { pos: player.pos.clone(), hp: player.hp, at: state.now + WARP.ms };
-    ringFx(player.pos, 2.5, SHADOW, WARP.ms);
+    warpLook(player.pos, WARP.ms);
   },
 };
 
@@ -94,7 +95,7 @@ export function updateArcRelics() {
     const from = player.pos.clone();
     player.pos.copy(w.pos);
     player.hp = Math.min(maxHp(), w.hp);
-    blinkFx(from, player.pos);
+    warpBack(from, player.pos);
     state.warp = null;
   }
 }

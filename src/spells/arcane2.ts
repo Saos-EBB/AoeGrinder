@@ -9,8 +9,9 @@ import { mouse, pickGround } from '../input';
 import { takeArcCharges, addArcCharge } from '../schoolMeter';
 import { mobsInRadius, addField } from './core';
 import { nearestTarget } from './target';
-import { boltFx, burstFx, orbVisual, areaParticles, SHADOW, VOID } from './fx';
-import { arcaneExplosionFx, coneOfColdFx } from '../fx/spellFx';
+import { barrageLook, beamLook, beamBoom, arcOrbField } from '../vfx/arcaneLook';
+import { coneLook } from '../vfx/frostLook';
+import { PAL } from '../vfx/energy';
 
 // Alle Werte PH, Schaden in Einheiten (UNIT)
 const BARRAGE = { dmg: 2, perCharge: 0.5, range: 30 };
@@ -26,9 +27,8 @@ export const barrage = {
     const t = nearestTarget(BARRAGE.range);
     if (!t) return;
     const n = takeArcCharges();                    // vor dem Treffer, sonst zählt der allgemeine Ladungs-Bonus mit
-    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, SHADOW, 200);
+    barrageLook(t.pos, n);
     c.hitProjectile(t, BARRAGE.dmg * UNIT * (1 + BARRAGE.perCharge * n));
-    burstFx(t.pos, 1.5 + n * 0.5, [SHADOW, VOID], 0xb070ff);
   },
 };
 
@@ -48,7 +48,7 @@ export const beam = {
   effect(c) {
     const f = aimDir(), from = player.pos, to = { x: from.x + f.x * BEAM.len, y: from.y, z: from.z + f.z * BEAM.len };
     for (const m of mobsOnLine(from, to, BEAM.width)) c.hit(m, BEAM.dmg * UNIT);
-    boltFx({ x: from.x, y: from.y + 1.2, z: from.z }, to, SHADOW, 300);
+    beamLook(from, to as any);
     // Leerenkugel auf der Linie: explodiert
     const lx = to.x - from.x, lz = to.z - from.z, len2 = lx * lx + lz * lz;
     for (const orb of state.fields.filter(o => o.void)) {
@@ -56,8 +56,7 @@ export const beam = {
       if (Math.hypot(orb.pos.x - from.x - lx * t, orb.pos.z - from.z - lz * t) > BEAM.hitOrb) continue;
       const r = c.radius(BEAM.boom.radius);
       for (const m of mobsInRadius(orb.pos, r)) c.hit(m, BEAM.boom.dmg * UNIT * (m.markUntil > state.now ? BEAM.boom.marked : 1));
-      burstFx(orb.pos, r, [SHADOW, VOID], 0x9a4aff);
-      arcaneExplosionFx(orb.pos, r);
+      beamBoom(orb.pos, r);
     }
   },
 };
@@ -68,10 +67,9 @@ export const arcorb = {
   effect(c) {
     const dir = new THREE.Vector3(Math.sin(player.facing), 0, Math.cos(player.facing)), seen = new Set();
     let charged = false;
-    addField(c, { pos: player.pos, radius: ORB.width / 2, dur: ORB.len / ORB.speed * 1000, tickMs: 1e9, visual: orbVisual(0xb070ff, 2.6),
+    addField(c, { pos: player.pos, radius: ORB.width / 2, dur: ORB.len / ORB.speed * 1000, tickMs: 1e9, visual: arcOrbField(),
       onUpdate(f, dt) {
         f.pos.addScaledVector(dir, ORB.speed * dt / 1000);
-        areaParticles(f.pos, 1, 50, dt, [SHADOW, VOID], { up: 1.5, size: 0.3, swirl: 6 });
         for (const m of mobsInRadius(f.pos, f.radius)) {
           if (seen.has(m)) continue;
           seen.add(m);
@@ -92,6 +90,6 @@ export const arcstrike = {
       if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) > STRIKE.angle / 2) continue;
       if (c.hit(m, STRIKE.dmg * UNIT) && !m.dead) applyRoot(m, STRIKE.stunMs);
     }
-    coneOfColdFx(r, STRIKE.angle);
+    coneLook(r, STRIKE.angle, PAL.arcane, .5);
   },
 };

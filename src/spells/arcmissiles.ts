@@ -7,7 +7,8 @@ import { meterSchool } from '../schoolMeter';
 // Spellslinger (Arkan-Figur): jeder Treffer mit dieser Chance ein Splitter, der nach 1 s ins Ziel fliegt // PH
 const SLINGER = { chance: 0.2, delay: 1000, mul: 0.3 };
 import { nearestTarget } from './target';
-import { boltFx, burstFx, SHADOW, VOID } from './fx';
+import { missileLook, missileBoom } from '../vfx/arcaneLook';
+import { PAL } from '../vfx/energy';
 
 const SPLIT = { range: 5, mul: 0.5 }, FAST_MS = 2000, CHARGE_RADIUS = 4;   // PH
 
@@ -17,18 +18,18 @@ function fire(ch) {
   const m = ch.target;
   if (!m) return;
   ch.shots++;
-  boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, m.pos, SHADOW, 140);
+  missileLook(m.pos);
   const landed = ch.c.hitProjectile(m, arcmissiles.dmg);
   if (landed && meterSchool() === 'Arkan' && Math.random() < SLINGER.chance + mods.splinterSwarm)
-    schedule(SLINGER.delay, () => { if (m.dead) return; boltFx({ x: player.pos.x, y: player.pos.y + 1.5, z: player.pos.z }, m.pos, VOID, 120); ch.c.hit(m, arcmissiles.dmg * SLINGER.mul); });
+    schedule(SLINGER.delay, () => { if (m.dead) return; missileLook(m.pos, PAL.void, .09); ch.c.hit(m, arcmissiles.dmg * SLINGER.mul); });
   if (hasRune('arcmissiles', 'split')) {
     const next = mobsInRadius(m.pos, SPLIT.range, Infinity).filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos))[0];
-    if (next) { boltFx(m.pos, next.pos, SHADOW, 120); ch.c.hit(next, arcmissiles.dmg * SPLIT.mul); }
+    if (next) { missileLook(next.pos, PAL.arcane, .09); ch.c.hit(next, arcmissiles.dmg * SPLIT.mul); }
   }
   if (ch.shots === arcmissiles.missiles && hasRune('arcmissiles', 'charge')) {
     const r = ch.c.radius(CHARGE_RADIUS);
     for (const o of mobsInRadius(m.pos, r)) ch.c.hit(o, arcmissiles.dmg);
-    burstFx(m.pos, r, [SHADOW, VOID], 0xb070ff);
+    missileBoom(m.pos, r);
   }
 }
 

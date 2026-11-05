@@ -967,6 +967,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
   const _o = new THREE.Object3D(), _om = new THREE.Matrix4();
   return {
     root: F.root,
+    body: F.body,                                 // Körper-Mesh: Hüllen der Effekte (Archon) binden an sein Skelett
     anchors: { crystal: F.crystal, handL: F.armL.hand, handR: F.armR.hand },
     trail,
     scarf: world,                                 // liegt in Weltkoordinaten, models/mage.ts legt es in die Szene
