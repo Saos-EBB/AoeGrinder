@@ -40,6 +40,7 @@ const fmtMult = v => `×${String(v).replace('.', ',')}`;
 const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
 
 let charIdx = 0, picked = [];
+export const currentFigure = () => CHARS[charIdx];   // Name und Untertitel der gewählten Figur (HUD, Spielerrahmen)
 
 // Figur und Mods ergeben den Modus: passt ein fester Modus, gilt der, sonst die eigene Mischung. Darauf baut die Rangliste auf.
 function applySelection() {

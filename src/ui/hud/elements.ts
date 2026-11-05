@@ -6,7 +6,8 @@ import { $ } from '../../util';
 import { maxHp, maxMana } from '../../formulas';
 import { cam } from '../../camera';
 import { META } from '../../meta';
-import { MODES, modeId } from '../../modifiers';
+import { modeId } from '../../modifiers';
+import { currentFigure } from '../mainMenu';
 import { run } from '../../score';
 import { bestSplits } from '../../leaderboard';
 import { hudWrapper, placementOf } from './layout';
@@ -14,7 +15,7 @@ import { hudWrapper, placementOf } from './layout';
 const put = (el: Element, text: string) => { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } };
 const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } };
 const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
-const figureName = () => MODES.find(m => m.id === modeId)?.name ?? '';
+const figureName = () => currentFigure()?.name ?? '';
 
 // ---------- Seitenteil der MOBA-Leiste (Variante panel): Portrait und Level ----------
 const side = document.createElement('div');
@@ -26,6 +27,11 @@ let ready = false;
 function init() {
   ready = true;
   hudWrapper('hotbar').prepend(side);
+  const deco = document.createElement('div');   // Eckornamente des gotischen Themes (gen.py flourish)
+  deco.id = 'hudDeco';
+  deco.innerHTML = [[0, 0, 0], [1, 0, 90], [1, 1, 180], [0, 1, 270]].map(([x, y, rot]) =>
+    `<svg viewBox="0 0 140 140" fill="none" stroke="#e3c27a" stroke-width="2" style="left:calc(${x * 100}% - 70 * var(--hu));top:calc(${y * 100}% - 70 * var(--hu));transform:rotate(${rot}deg)"><path d="M70 70 L70 130 M70 70 L130 70"/><path d="M70 90 C90 90 90 70 110 70" opacity="0.7"/><path d="M90 70 C90 90 70 90 70 110" opacity="0.7"/><circle cx="70" cy="70" r="6" fill="#e3c27a"/></svg>`).join('');
+  document.body.append(deco);
   const title = $('hudTracker').querySelector('.trTitle'), siege = document.getElementById('siegeHud');
   if (siege) title.replaceWith(siege);
 }

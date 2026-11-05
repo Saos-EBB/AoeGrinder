@@ -68,14 +68,16 @@ body[data-hud-theme=ornate] #iTime { font-family: var(--h-title); }
 
 /* ---------- Leben und Mana ---------- */
 #hudHp, #hudMana { width: auto; position: relative; }
-#hudHp .hBar, #hudMana .hBar { width: calc(230 * var(--hu)); height: calc(18 * var(--hu)); }
-#hudHp .hBar > span, #hudMana .hBar > span { font-size: calc(13 * var(--hu)); line-height: calc(16 * var(--hu)); }
+#hudHp .hBar, #hudMana .hBar { width: calc(147 * var(--hu)); height: calc(16 * var(--hu)); }
+#hudHp .hBar > span, #hudMana .hBar > span { font-size: calc(12 * var(--hu)); line-height: calc(14 * var(--hu)); }
 #hpFill { background: linear-gradient(var(--h-hp), color-mix(in srgb, var(--h-hp) 60%, #000)); }
 #manaFill { background: linear-gradient(var(--h-mana), color-mix(in srgb, var(--h-mana) 60%, #000)); }
 #hpText .max, #manaText .max { font-weight: 600; }
 /* untereinander: Leben breit, Mana schmaler */
-.hudEl[data-variant=bars-stacked] .hBar { width: calc(300 * var(--hu)) !important; }
-.hudEl[data-hud=mana][data-variant=bars-stacked] .hBar { height: calc(13 * var(--hu)) !important; }
+.hudEl[data-variant=bars-stacked] .hBar { width: calc(280 * var(--hu)) !important; height: calc(10 * var(--hu)) !important; }
+.hudEl[data-variant=bars-stacked] .hBar > span { display: none; }
+.hudEl[data-variant=bars-stacked] #fsr { display: none; }
+.hudEl[data-hud=mana][data-variant=bars-stacked] .hBar { height: calc(7.5 * var(--hu)) !important; }
 .hudEl[data-hud=mana][data-variant=bars-stacked] .hBar > span { font-size: calc(10 * var(--hu)); line-height: calc(11 * var(--hu)); }
 /* Kugeln (H18): füllen von unten */
 .hudEl[data-variant=orbs] .hBar { width: calc(132 * var(--hu)) !important; height: calc(132 * var(--hu)) !important; border-radius: 50%;
@@ -92,7 +94,9 @@ body[data-hud-theme=ornate] #iTime { font-family: var(--h-title); }
 .hudEl[data-variant=bignum] .hBar > span .max { font-size: calc(16 * var(--hu)); color: var(--h-muted); }
 .hudEl[data-hud=mana][data-variant=bignum] .hBar > span { left: auto; right: 0; text-align: right; }
 /* Im MOBA-Panel: breit und flach */
-.hudEl[data-variant=panel] .hBar { width: calc(330 * var(--hu)) !important; height: calc(14 * var(--hu)) !important; }
+.hudEl[data-variant=panel] .hBar { width: calc(456 * var(--hu)) !important; height: calc(16 * var(--hu)) !important; }
+.hudEl[data-hud=mana][data-variant=panel] .hBar { height: calc(12 * var(--hu)) !important; }
+.hudEl[data-variant=panel] #fsr, .hudEl[data-variant=panel] #dodgeDots { display: none; }
 .hudEl[data-variant=panel] .hBar > span { font-size: calc(11 * var(--hu)); line-height: calc(12 * var(--hu)); }
 #fsr { height: 3px; }
 #dodgeDots { position: absolute; left: 0; right: 0; top: calc(100% + 3px); }
@@ -105,9 +109,9 @@ body[data-hud-theme=ornate] #iTime { font-family: var(--h-title); }
 #status { font-size: calc(12 * var(--hu)); color: var(--h-accent); }
 
 /* ---------- Kill-Anzeige der Schule ---------- */
-#meter { width: calc(230 * var(--hu)); height: calc(10 * var(--hu)); margin: 0; }
+#meter { width: calc(420 * var(--hu)); height: calc(12 * var(--hu)); margin: 0; }
 #meterFill { background: var(--h-accent); }
-#meter > span { font-size: calc(10 * var(--hu)); line-height: calc(8 * var(--hu)); }
+#meter > span { font-size: calc(10 * var(--hu)); line-height: calc(10 * var(--hu)); }
 .hudEl[data-variant=vertical] #meter { width: calc(12 * var(--hu)); height: calc(150 * var(--hu)); }
 .hudEl[data-variant=vertical] #meterFill { transform-origin: bottom; transform: scaleY(var(--v, 0)); }
 .hudEl[data-variant=vertical] #meter > span { display: none; }
@@ -203,10 +207,10 @@ body[data-hud-theme=ornate] #hudTracker #siegeHud { font-family: var(--h-title);
 #actionbar .slot.active { border-color: var(--h-gold); box-shadow: 0 0 10px var(--h-gold); }
 .hbSide { display: none; }
 /* MOBA: Panel mit Portrait und Level links, Platz für Leben/Mana darüber */
-.hudEl[data-hud=hotbar][data-variant=panel] { padding: calc(52 * var(--hu)) calc(14 * var(--hu)) calc(10 * var(--hu)); gap: calc(12 * var(--hu));
+.hudEl[data-hud=hotbar][data-variant=panel] { padding: calc(8 * var(--hu)) calc(14 * var(--hu)) calc(46 * var(--hu)); gap: calc(14 * var(--hu));
   background: var(--h-panel-bg); border: var(--h-panel-bd); border-top: var(--h-panel-bt); border-radius: var(--h-panel-r); box-shadow: var(--h-panel-sh); }
-.hudEl[data-variant=panel] .hbSide { display: flex; flex-direction: column; align-items: center; margin-top: calc(-44 * var(--hu)); }
-.hbPortrait { width: calc(76 * var(--hu)); height: calc(76 * var(--hu)); border-radius: 50%; border: 3px solid var(--h-gold); background: #111; box-sizing: border-box;
+.hudEl[data-variant=panel] .hbSide { display: flex; flex-direction: column; align-items: center; margin-bottom: calc(-38 * var(--hu)); }
+.hbPortrait { width: calc(88 * var(--hu)); height: calc(88 * var(--hu)); border-radius: 10px; border: 2px solid #4b7894; background: #13202b; box-sizing: border-box;
   display: grid; place-items: center; font: 900 calc(34 * var(--hu)) var(--h-title); color: var(--h-gold); }
 .hbLvl { margin-top: calc(-12 * var(--hu)); padding: 0 calc(6 * var(--hu)); background: #000; border: 1px solid var(--h-gold); font-size: calc(14 * var(--hu)); }
 /* WoW: Leiste im Rahmen, Erfahrung liegt als eigenes Element darunter */
@@ -215,3 +219,57 @@ body[data-hud-theme=ornate] #hudTracker #siegeHud { font-family: var(--h-title);
 .hudEl[data-hud=hotbar][data-variant=small] { --slot: calc(40 * var(--hu)); }
 /* Balken liegen über Panels (MOBA-Leiste, WoW-Rahmen) */
 .hudEl[data-hud=hp], .hudEl[data-hud=mana], .hudEl[data-hud=cast], .hudEl[data-hud=xp], .hudEl[data-hud=killmeter] { z-index: 3; }
+
+/* ---------- Varianten der Presets (Phase 6) ---------- */
+/* H01: schlanke Kopfleiste über die ganze Breite, Zeit liegt mittig darüber */
+.hudEl[data-hud=timer] { z-index: 3; }
+.hudEl[data-hud=runinfo][data-variant=bar] #hudRun { width: 100vw; height: calc(46 * var(--hu)); box-sizing: border-box; align-items: center; padding: 0 calc(20 * var(--hu));
+  background: var(--h-panel-bg); font-size: calc(22 * var(--hu)); font-weight: 800; color: var(--h-txt); }
+.hudEl[data-hud=runinfo][data-variant=bar] #hudRun span + span::before { content: none; }
+.hudEl[data-hud=runinfo][data-variant=bar] #hudRun span:nth-child(2) { order: 3; margin-left: auto; }
+.hudEl[data-hud=runinfo][data-variant=bar] #hudRun span:nth-child(3) { order: 2; font-size: calc(14 * var(--hu)); color: var(--h-muted); }
+#hudRun span { display: inline-flex; gap: .25em; }
+/* Erfahrung über die ganze Breite (H01) oder dicker unter der Leiste (H07) */
+.hudEl[data-variant=full] #xpbar { width: 100vw; border-radius: 0; border-left: 0; border-right: 0; }
+.hudEl[data-variant=thick] #xpbar { height: calc(8 * var(--hu)); }
+/* H08: Infozeile unter der Karte */
+.hudEl[data-hud=runinfo][data-variant=info] #hudRun { font-size: calc(15 * var(--hu)); font-weight: 700; }
+/* H13: Zeit groß in Anton */
+.hudEl[data-variant=big] #iTime { font-family: 'Anton', sans-serif; font-weight: 400; }
+/* H18: Zeit auf einem Banner */
+.hudEl[data-variant=banner] #hudTimer { width: calc(340 * var(--hu)); height: calc(56 * var(--hu)); justify-content: center; align-items: center; box-sizing: border-box;
+  background: var(--h-panel-bg); border: var(--h-panel-bd); box-shadow: var(--h-panel-sh); }
+.hudEl[data-variant=banner] #iTime { font: 700 calc(28 * var(--hu)) 'Cinzel', serif; }
+.hudEl[data-variant=banner] #hSplit { font-family: 'Cinzel', serif; font-size: calc(18 * var(--hu)); }
+/* H07: Zonenname über der Karte */
+.hudEl[data-variant$='+nametop'] .mapLabel { display: block; top: auto; bottom: calc(100% + 6 * var(--hu)); color: var(--h-gold); font-size: calc(17 * var(--hu)); font-weight: 800; }
+/* Combo mittig, wenn oben mittig verankert (H18) */
+.hudEl[data-hud=combo][data-anchor=t] #hudCombo { align-items: center; }
+/* H08: Spielerrahmen kompakt ohne Portrait */
+.hudEl[data-variant=compact] #hudUnit { width: calc(220 * var(--hu)); height: calc(64 * var(--hu)); padding: calc(6 * var(--hu)) calc(8 * var(--hu)); }
+.hudEl[data-variant=compact] .ufPortrait { display: none; }
+.hudEl[data-variant=compact] .ufHead { font-size: calc(15 * var(--hu)); }
+.hudEl[data-variant=compact] .ufName { color: var(--h-accent); }
+.hudEl[data-variant=compact] .ufHp { height: calc(16 * var(--hu)); }
+.hudEl[data-variant=compact] .ufMana { height: calc(10 * var(--hu)); }
+.hudEl[data-variant=compact] .ufMana span { display: none; }
+/* H13: große Zahl mit Beschriftung LEBEN / MANA vor dem dünnen Balken */
+.hudEl[data-variant=bignum] .hBar { margin-left: calc(102 * var(--hu)); }
+.hudEl[data-hud=mana][data-variant=bignum] .hBar { margin-left: 0; margin-right: calc(102 * var(--hu)); }
+.hudEl[data-variant=bignum] .hBar > span { left: calc(-102 * var(--hu)); }
+.hudEl[data-hud=mana][data-variant=bignum] .hBar > span { left: auto; right: calc(-102 * var(--hu)); }
+.hudEl[data-variant=bignum] .hBar::before { position: absolute; top: 50%; transform: translateY(-50%); font: 700 calc(14 * var(--hu)) var(--h-font); color: var(--h-accent); letter-spacing: .08em; }
+.hudEl[data-hud=hp][data-variant=bignum] .hBar::before { content: 'LEBEN'; left: calc(-100 * var(--hu)); }
+.hudEl[data-hud=mana][data-variant=bignum] .hBar::before { content: 'MANA'; right: calc(-100 * var(--hu)); }
+.hudEl[data-variant=bignum] #dodgeDots, .hudEl[data-variant=bignum] #fsr { display: none; }
+/* H18: Panel mit Ornamenten, Platz für Kill-Leiste oben und Erfahrung unten */
+.hudEl[data-hud=hotbar][data-variant=ornate] { padding: calc(34 * var(--hu)) calc(140 * var(--hu)) calc(26 * var(--hu));
+  background: var(--h-panel-bg); border: var(--h-panel-bd); box-shadow: var(--h-panel-sh); }
+.hudEl[data-hud=hotbar][data-variant=ornate]::before, .hudEl[data-hud=hotbar][data-variant=ornate]::after { content: ''; position: absolute; top: calc(-6 * var(--hu));
+  width: calc(12 * var(--hu)); height: calc(12 * var(--hu)); transform: rotate(45deg); background: var(--h-gold); border: 1px solid #000; }
+.hudEl[data-hud=hotbar][data-variant=ornate]::before { left: calc(-6 * var(--hu)); }
+.hudEl[data-hud=hotbar][data-variant=ornate]::after { right: calc(-6 * var(--hu)); }
+/* H18: Bildschirm-Eckornamente */
+#hudDeco { display: none; position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+body[data-hud-theme=ornate] #hudDeco { display: block; }
+#hudDeco svg { position: absolute; width: calc(140 * var(--hu)); height: calc(140 * var(--hu)); }
