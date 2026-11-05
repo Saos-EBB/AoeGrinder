@@ -1,6 +1,7 @@
 // ?-Magier (Modus normal): 4 Tasten, jede würfelt aus ihrer Kategorie. Der Wurf steht vorher fest (Vorschau im Slot),
 // wird mit seinen normalen Werten, Kosten und Zielen gewirkt, danach kommt der nächste. Zahlen in RANDOM_MAGE (config.ts).
 
+import { drinkLook } from '../vfx/arcaneLook';
 import { pick, rand } from '../util';
 import { state, player } from '../state';
 import { SPELLS, RANDOM_MAGE } from '../config';
@@ -64,6 +65,7 @@ const drinkSpell = {
     reroll('rDrink');
     player.channel = null; player.casting = null; player.targeting = false;
     player.drink = { start: state.now, end: state.now + R.sitMs, custom: true, kind, skin: D.skin, label: D.name, onDone: () => finishDrink(kind) };
+    drinkLook(kind, R.sitMs);
   },
 };
 

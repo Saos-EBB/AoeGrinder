@@ -133,3 +133,14 @@ export function blinkLook(from: THREE.Vector3, to: THREE.Vector3) {
   boom(chestOf(from), 1.1, PAL.arcane, .35, { ground: gy(from), n: 15 });
   after(.05, () => boom(chestOf(to), 1.1, PAL.arcane, .35, { ground: gy(to), n: 15 }));
 }
+// ?-Magier, Drink Something: farbiger Ring und Säule je Getränk, solange er sitzt (Goldbecher und Feuerschnaps Feuer, Heiße Tasse Frost, Tee-Schale Arkan)
+const DRINK_PAL = { gold: PAL.fire, schnaps: PAL.fire, tasse: PAL.ice, tee: PAL.arcane };
+export function drinkLook(kind: string, ms: number) {
+  const pal = DRINK_PAL[kind] ?? PAL.arcane;
+  fx(ms / 1000, (k, _dt, e) => {
+    if (!e.ms.length) { em(e, 'gring', pal, { sc: 3, core: 0, flow: [0, 0, 0] }); em(e, 'cyl', pal, { sc: 3, core: -.4, tip: 1.2, flow: [0, 2, 0], side: THREE.DoubleSide }); }
+    const o = onGround(player.pos), T = EU.uTime.value;
+    lay(e.ms[0], o, 1.4 + .12 * Math.sin(T * 6)); e.ms[1].position.copy(o); e.ms[1].scale.set(1.1, 2.6 * env(k, .2, .3), 1.1);
+    for (const m of e.ms) uK(m, env(k, .2, .2) * .8);
+  });
+}
