@@ -1,6 +1,7 @@
 // Handy und Tablet: Erkennung, Vollbild quer, Touch-Steuerung mit 2 Sticks und 4 Tasten pro Seite.
 // Die Touch-Eingabe läuft über das virtuelle Pad (gamepad.ts), damit Zielen, Halten und Runen wie am Controller funktionieren.
 
+import { spellAtAction } from './hotbar';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { ICONS } from './ui/icons';
@@ -110,7 +111,7 @@ export function updateTouch() {
   if (layer.hidden === show) { layer.hidden = !show; if (!show) releaseAll(); }
   if (!show) return;
   btns.forEach(b => {
-    const spell = state.slots[SPELL_ACTIONS.indexOf(b.action)] ?? null;
+    const spell = spellAtAction(b.action);
     if (spell === b.spell) return;
     b.spell = spell;
     b.el.className = `tbtn ${spell ? SPELLS[spell].cls : 'empty'}`;

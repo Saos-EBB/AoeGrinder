@@ -49,6 +49,8 @@ function fill(id) {
   card.style.borderColor = color;
 }
 
+// Drag & Drop auf der Hotbar: Karte ausblenden
+export function hideSpellCards() { card.style.display = 'none'; }
 export function attachSpellCard(el, id) {
   el.removeAttribute('title');
   el.addEventListener('mouseenter', e => { if (!SPELLS[id]) return; fill(id); card.style.display = 'block'; place(e); });

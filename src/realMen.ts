@@ -1,6 +1,7 @@
 // Real Men: Strichkrieger mit Riesenschwert und Wut statt Mana. Die Moves liegen als Spells in den Slots, damit Leiste, Tasten, Pad und Karten mitlaufen.
 // Wut steht in player.mana, player.rageMax meldet den Modus an maxMana und die Regeneration. Modell und Treffer-Momente: models/strichKrieger.ts.
 
+import { actionOfSpell } from './hotbar';
 import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
@@ -95,7 +96,7 @@ const isWarrior = () => mage.skin === 'krieger';
 
 // Taste oder Pad-Knopf des Slots, in dem die Attacke liegt
 export function held(id) {
-  const action = SPELL_ACTIONS[state.slots.indexOf(id)];
+  const action = actionOfSpell(id);   // Platz auf der Leiste (hotbar.ts)
   return !!action && (act(action) || !!pad.down[padBinds[action]]);
 }
 

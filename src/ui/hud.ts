@@ -6,7 +6,7 @@ import { CFG, SPELLS, CARDS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
 import { ACTIONS, binds } from '../input';
-import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild, chargesOf } from '../spells/core';
+import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild, chargesOf, isGround } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 import { onCrit } from '../fx/impact';
 import { zone } from '../world';
@@ -15,7 +15,8 @@ import { rune } from '../spells/core';
 import { SUPPORTS } from '../spells/supports';
 import { manaCost as costOf } from '../formulas';
 import { ICONS } from './icons';
-import { attachSpellCard } from './spellCard';
+import { attachSpellCard, hideSpellCards } from './spellCard';
+import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
 import './hudLayout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
@@ -58,32 +59,86 @@ export function showError(msg) {
 
 export const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
-// Actionbar: wächst mit den belegten Slots
-let slots: any = {};
+// Hotbar: feste Plätze, die Tasten gehören den Plätzen (hotbar.ts). Spells lassen sich per Drag & Drop umsetzen,
+// Rechtsklick wählt den Auslöse-Modus des Platzes (Sofort, Bei Loslassen, Klicken). Leere Plätze bleiben als Rahmen stehen.
+let slots: any = {}, empties: any[] = [];
+const MODE_TAG = { instant: '', release: '⇡', click: '◎' };   // kleines Zeichen unten in der Mitte; Sofort ohne Zeichen
 export function renderActionbar() {
   const bar = $('actionbar');
   bar.innerHTML = '';
   slots = {};
-  state.slots.forEach((id, i) => {
-    const action = ACTIONS.find(a => a.id === SPELL_ACTIONS[i]);
-    action.label = id ? `Slot ${i + 1}: ${SPELLS[id].name}` : `Slot ${i + 1}: leer`;
-    if (!id) return;
+  empties = [];
+  SPELL_ACTIONS.forEach((actionId, pos) => {
+    const id = state.slots[slotAt(pos)] ?? null;
+    const action = ACTIONS.find(a => a.id === actionId);
+    action.label = id ? `Leiste ${pos + 1}: ${SPELLS[id].name}` : `Leiste ${pos + 1}: leer`;
     const el = document.createElement('div');
-    el.className = `slot ${SPELLS[id].cls}`;
-    el.title = SPELLS[id].name;
-    if (ICONS[id]) { el.style.backgroundImage = `url(${ICONS[id]})`; el.classList.add('hasIcon'); }
-    el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>${SPELLS[id].preview ? '<span class="next"></span>' : ''}`;
-    el.addEventListener('click', () => castSpell(id));
-    attachSpellCard(el, id);
+    el.dataset.pos = String(pos);
+    if (!id) {
+      el.className = 'slot empty';
+      el.innerHTML = '<span class="key"></span>';
+      empties.push({ el, action: actionId, key: el.querySelector('.key') });
+    } else {
+      el.className = `slot ${SPELLS[id].cls}`;
+      el.title = SPELLS[id].name;
+      el.draggable = true;
+      if (ICONS[id]) { el.style.backgroundImage = `url(${ICONS[id]})`; el.classList.add('hasIcon'); }
+      const tag = MODE_TAG[modeAt(pos, isGround(id) && !SPELLS[id].press)];
+      el.innerHTML = `<span class="key"></span><span class="name">${SPELLS[id].name}</span><span class="cost"></span><span class="charges"></span><div class="cd"></div><div class="cdText"></div>${SPELLS[id].preview ? '<span class="next"></span>' : ''}${tag ? `<span class="mode">${tag}</span>` : ''}`;
+      el.addEventListener('click', () => castSpell(id));
+      el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(pos)); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); hideSpellCards(); });
+      el.addEventListener('dragend', () => el.classList.remove('dragging'));
+      el.addEventListener('contextmenu', e => { e.preventDefault(); openModeMenu(el, pos, id); });
+      attachSpellCard(el, id);
+      slots[id] = { el, action: actionId, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
+    }
+    // Jeder Platz nimmt Spells an: tauscht mit dem gezogenen Platz
+    el.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.classList.add('dropOver'); });
+    el.addEventListener('dragleave', () => el.classList.remove('dropOver'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      const from = +e.dataTransfer.getData('text/plain');
+      if (Number.isInteger(from)) { swapPos(from, pos); renderActionbar(); }
+    });
     bar.appendChild(el);
-    slots[id] = { el, action: action.id, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
   });
   labelSlots();
 }
 function labelSlots() {
   const onPad = state.lastInput === 'pad';
-  for (const id in slots) slots[id].key.textContent = onPad ? padLabel(padBinds[slots[id].action] ?? -1) : binds[slots[id].action].key;
+  const label = action => onPad ? padLabel(padBinds[action] ?? -1) : binds[action]?.key ?? '';
+  for (const id in slots) slots[id].key.textContent = label(slots[id].action);
+  for (const e of empties) e.key.textContent = label(e.action);
 }
+// Auswahl des Auslöse-Modus am Platz
+let modeMenu: HTMLDivElement = null;
+function openModeMenu(el, pos, id) {
+  modeMenu?.remove();
+  const ground = isGround(id) && !SPELLS[id].press, cur = modeAt(pos, ground);
+  const menu = modeMenu = document.createElement('div');
+  menu.className = 'modeMenu';
+  menu.innerHTML = `<div class="mmHead">${SPELLS[id].name}</div>` + (Object.keys(MODE_NAMES) as CastMode[]).map(m =>
+    `<button data-m="${m}" class="${m === cur ? 'on' : ''}">${MODE_NAMES[m]}<small>${MODE_HINT[m](ground)}</small></button>`).join('');
+  document.body.appendChild(menu);
+  const r = el.getBoundingClientRect();
+  menu.style.left = `${Math.max(4, Math.min(innerWidth - menu.offsetWidth - 4, r.left + r.width / 2 - menu.offsetWidth / 2))}px`;
+  menu.style.top = `${Math.max(4, r.top - menu.offsetHeight - 8)}px`;
+  menu.addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest('button');
+    if (!b) return;
+    setModeAt(pos, b.dataset.m as CastMode);
+    closeModeMenu();
+    renderActionbar();
+  });
+  setTimeout(() => addEventListener('pointerdown', outside, true));
+}
+const MODE_HINT = {
+  instant: g => g ? 'beim Drücken, unter der Maus' : 'beim Drücken',
+  release: g => g ? 'Zielkreis halten, beim Loslassen' : 'beim Loslassen',
+  click: g => g ? 'Zielkreis, dann Klick' : 'beim Drücken',
+};
+function outside(e) { if (modeMenu && !modeMenu.contains(e.target)) closeModeMenu(); }
+function closeModeMenu() { modeMenu?.remove(); modeMenu = null; removeEventListener('pointerdown', outside, true); }
 
 export function refreshKeyLabels() {
   const onPad = state.lastInput === 'pad';
