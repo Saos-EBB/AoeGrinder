@@ -80,6 +80,7 @@ function loadSplitBests() {
 }
 export const bestSplits = (): Record<number, number> => loadSplitBests()[splitKey()] ?? {};
 function saveSplitBest(lvl, ms) {
+  if (state.devUsed) return;   // Dev-Läufe (Level setzen usw.) schreiben keine Bestzeiten
   const all = loadSplitBests(), mine = all[splitKey()] ?? (all[splitKey()] = {});
   if (typeof mine[lvl] === 'number' && mine[lvl] <= ms) return;
   mine[lvl] = ms;

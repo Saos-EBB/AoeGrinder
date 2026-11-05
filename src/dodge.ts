@@ -174,7 +174,7 @@ export function updateDodgeHud() {
 // Dev: Mob-Angriffe sichtbar verlangsamen (Einstellungen)
 const devBtn = document.createElement('button');
 devBtn.className = 'bindBtn';
-devBtn.style.cssText = 'width:100%;margin-bottom:14px';
+devBtn.id = 'devMobAtk';
 const showDev = () => { devBtn.textContent = `Dev: Mob-Angriffe ×${String(DG.devMobSlow).replace('.', ',')}: ${state.devMobSlow ? 'an' : 'aus'}`; };
 devBtn.addEventListener('click', () => { state.devMobSlow = !state.devMobSlow; showDev(); });
 $('devPerf').after(devBtn);

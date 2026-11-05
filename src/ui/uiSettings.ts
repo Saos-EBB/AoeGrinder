@@ -22,6 +22,7 @@ export const UI_DEFAULTS = {
   numMerge: true,         // kleine Treffer zusammenfassen
   healNums: true,
   tooltipsExt: true,      // erweiterte Tooltips
+  devPanel: { x: 12, y: 60, w: 440, h: 620, ghost: false, fold: false },   // Dev-Fenster in px
 };
 export type UiSettings = typeof UI_DEFAULTS;
 

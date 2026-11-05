@@ -172,10 +172,12 @@ export function togglePerf() {
 export function updatePerf(t) {
   const calls = renderer.info.render.calls;
   renderer.info.reset();
-  if (!perfOn) return;
+  const devFps = $('devPanel').hidden ? null : $('devFps');
+  if (!perfOn && !devFps) return;
   perfFrames++;
   if (t - perfSince < 500) return;
-  $('perf').textContent = `${Math.round(perfFrames * 1000 / (t - perfSince))} FPS · ${calls} Calls · ${state.mobs.length} Mobs · Dodges ${state.dodgeStats?.n ?? 0}, perfekt ${state.dodgeStats?.perfect ?? 0}`;
+  if (devFps) devFps.textContent = `FPS ${Math.round(perfFrames * 1000 / (t - perfSince))} · Calls ${calls} · Mobs ${state.mobs.length}`;
+  if (perfOn) $('perf').textContent = `${Math.round(perfFrames * 1000 / (t - perfSince))} FPS · ${calls} Calls · ${state.mobs.length} Mobs · Dodges ${state.dodgeStats?.n ?? 0}, perfekt ${state.dodgeStats?.perfect ?? 0}`;
   perfFrames = 0;
   perfSince = t;
 }

@@ -77,6 +77,7 @@ export function resetGame() {
   resetPlague();
   resetSiege();
   resetSplits();
+  state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)
   blizCursor.visible = false;
   stopChannel();
   fillPacks();

@@ -87,9 +87,30 @@ body.mobile #setTabs { width: 150px; }
 /* Combo- und Kill-Anzeige aus */
 body.noCombo #hudRow span:has(#scoreCombo, #hMulti, #iKills) { display: none; }
 
-/* Dev-Panel (F10), vorläufig fest oben links; Phase 3 macht es verschiebbar */
-#devPanel { position: fixed; left: 12px; top: 60px; z-index: 10; width: 440px; max-height: 86vh; overflow-y: auto; padding: 12px 16px;
-  background: var(--glut-panel); border: 1px solid var(--glut-border); border-top: 2px solid var(--glut-top); border-radius: 0; }
+/* Dev-Panel (F10, Dev.dc.html): schwebend, Titelleiste zieht, Ecke unten rechts ändert die Größe */
+#devPanel { position: fixed; z-index: 10; display: flex; flex-direction: column; min-width: 300px; padding: 0;
+  background: var(--glut-panel); border: 1px solid var(--glut-border); border-top: 2px solid var(--glut-top); border-radius: 0;
+  box-shadow: 0 10px 30px #000a; font-family: var(--font-body); color: var(--glut-text); text-align: left; }
 #devPanel[hidden] { display: none; }
-.devHead { display: flex; justify-content: space-between; font-size: 18px; margin-bottom: 6px; }
-.devHead span { font: 500 12px var(--font-body); color: var(--glut-muted); text-shadow: none; }
+#devPanel.ghost { background: rgba(14, 4, 3, .45); }   /* PH */
+#devPanel.ghost .devBody { opacity: .75; }
+#devPanel.folded .devBody, #devPanel.folded .devResize { display: none; }
+.devTitle { flex: none; height: 38px; padding: 0 6px 0 10px; display: flex; align-items: center; gap: 8px; cursor: move; user-select: none;
+  border-bottom: 1px solid var(--glut-line); background: rgba(255, 61, 31, .08); touch-action: none; }
+.devTitle b { font: 800 16px var(--font-num); letter-spacing: .14em; }
+.devGrip { color: var(--glut-muted); }
+.devSub { flex: 1; font-size: 12px; color: var(--glut-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.devBtns { display: flex; gap: 2px; }
+.devBtns button { width: 28px; height: 28px; display: grid; place-items: center; border: 0; background: transparent; color: var(--glut-muted); cursor: pointer; }
+.devBtns button:hover { color: #fff; background: rgba(255, 61, 31, .2); }
+.devBody { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px 12px; }
+.devBody section { margin-bottom: 10px; }
+.devBody h2 { margin: 6px 0 6px; font: 800 14px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-accent); }
+.devBody h3 { margin: 6px 0 4px; font: 500 12px var(--font-body); color: var(--glut-muted); letter-spacing: .04em; }
+.devBody .bindBtn { width: 100%; margin: 0 0 4px; background: transparent; border: 1px solid var(--glut-border); border-radius: 0; color: var(--glut-text); }
+.devBody select.bindBtn { background: #0a0202; }
+.devBody #devCards, .devBody #devMeta, .devBody #devForge, .devBody #devZones { margin-bottom: 4px; }
+.devBody #devLevels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+#devFps { flex: none; padding: 6px 12px; border-top: 1px solid var(--glut-line); font: 600 12px var(--font-num); color: #9cff9c; font-variant-numeric: tabular-nums; }
+.devResize { position: absolute; right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--glut-top) 50% 58%, transparent 58% 70%, var(--glut-top) 70% 78%, transparent 78%); }

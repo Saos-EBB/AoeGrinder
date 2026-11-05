@@ -41,6 +41,7 @@ import * as buffsMod from './buffs';
 import { menuYaw, enterMenu } from './ui/mainMenu';
 import * as menuMod from './ui/mainMenu';
 import './ui/settingsView';
+import './ui/devPanel';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
 import { updateEnergy, figureLook } from './vfx/energy';
