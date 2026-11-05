@@ -4,8 +4,7 @@ import { novaFx, ringFx, FROST_WHITE } from '../fx/spellFx';
 import { applyRoot, enterCombat } from '../mobs';
 import { mobsInRadius, hasRune, schedule, addField } from './core';
 import { iceAge, frozenGroundTick } from '../figures';
-import { iceTex } from '../fx/spellFx';
-import { fieldDecal } from './fx';
+import { iceGroundField } from '../vfx/frostLook';
 
 const AGE = { radius: 1.5, groundMs: 6000 };   // PH: Eiszeit
 
@@ -20,7 +19,7 @@ export const nova = {
   ],
   effect(c) {
     const r = c.radius(nova.radius) * (iceAge() ? AGE.radius : 1), targets = mobsInRadius(player.pos, r);
-    if (iceAge()) addField(c, { pos: player.pos, radius: r, dur: AGE.groundMs, tickMs: 250, visual: fieldDecal(iceTex, [0.35, 1, 2.1], 0.45), onTick: frozenGroundTick });
+    if (iceAge()) addField(c, { pos: player.pos, radius: r, dur: AGE.groundMs, tickMs: 250, visual: iceGroundField(), onTick: frozenGroundTick });
     const burst = (m, dmg, root) => { if (dmg ? c.hit(m, dmg) && !m.dead : true) applyRoot(m, root, 'ice'); };
     if (hasRune('nova', 'deep')) {
       for (const m of targets) { enterCombat(m, true); burst(m, 0, nova.root * 2); }

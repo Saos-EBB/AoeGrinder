@@ -13,6 +13,7 @@ import { fxClock, fxUniforms, vfxOld } from './shaders';
 import { aeNew, blinkNew } from './arcaneFx';
 import { novaNew, coneNew, blizStartNew, blizMoveNew, blizStopNew, blizUpdateNew } from './frostFx';
 import { updateImpact } from './impact';
+import { novaLook, coneLook, blizLook, blizMoveLook, blizStopLook } from '../vfx/frostLook';
 
 export { fxClock };
 
@@ -212,7 +213,7 @@ function groundDecalFx(tex, center, radius, color, dur, { additive = false, spin
 
 const spikeGeo = new THREE.ConeGeometry(0.22, 1.5, 5);
 export function novaFx(pos, radius) {
-  if (!vfxOld()) return novaNew(pos, radius);
+  if (!vfxOld()) { shakeCamera(0.12); return novaLook(pos, radius); }
   groundDecalFx(iceTex, pos, radius, [1, 1, 1], 4000, { grow: 0.04, peak: 0.85 });
   shakeCamera(0.12);
   ringFx(pos, radius, FROST_WHITE, 450);
@@ -263,7 +264,7 @@ export function arcaneExplosionFx(pos, radius) {
 }
 
 export function coneOfColdFx(range, angle) {
-  if (!vfxOld()) return coneNew(range, angle);
+  if (!vfxOld()) return coneLook(range, angle);
   const hand = new THREE.Vector3();
   mage.anchors.handL.getWorldPosition(hand);
   for (let i = 0; i < 150; i++) {
@@ -419,7 +420,7 @@ export function updateBlizFx(dt) {
   }
 }
 export function blizStart(point, radius) {
-  if (!vfxOld()) return blizStartNew(point, radius);
+  if (!vfxOld()) return blizLook(point, radius);
   blizFx.g.position.copy(point);
   drape(blizFx.disc, point, radius);
   for (const sh of blizFx.shards) resetShard(sh, true);
@@ -427,12 +428,12 @@ export function blizStart(point, radius) {
   blizFx.cloud.scale.setScalar(radius / 8 * 0.2);
 }
 export function blizMove(point, radius) {
-  if (!vfxOld()) return blizMoveNew(point, radius);
+  if (!vfxOld()) return blizMoveLook(point, radius);
   blizFx.g.position.copy(point);
   drape(blizFx.disc, point, radius);
 }
 export function blizStop() {
-  blizStopNew();
+  blizStopLook();
   blizFx.g.visible = blizFx.disc.visible = false;
 }
 function resetShard(sh, randomHeight) {

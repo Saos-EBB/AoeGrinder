@@ -5,7 +5,7 @@ import { applySlow, hasRune } from './core';
 import { iceAge } from '../figures';
 
 const PARTISAN = { n: 5, spread: 40 * Math.PI / 180, k: 0.6 };   // PH: Eiszeit
-import { boltFx, ICE_WHITE } from './fx';
+import { lanceLook } from '../vfx/frostLook';
 
 const CHILL = { slow: 0.4, ms: 3000 }, SWIFT_DMG = 0.75, WIDE = 2, FROZEN_MUL = 2;   // PH
 
@@ -27,7 +27,7 @@ export const icelance = {
         const landed = c.hitProjectile(m, rand(icelance.min, icelance.max) * k * (iceAge() ? PARTISAN.k : 1) * (m.rootUntil > state.now ? FROZEN_MUL : 1));
         if (landed && !m.dead && hasRune('icelance', 'chill')) applySlow(m, CHILL.slow, CHILL.ms);
       }
-      boltFx({ x: from.x, y: from.y + 1.2, z: from.z }, to, ICE_WHITE, 200);
+      lanceLook(to as any);   // Eiszeit (Partisan): ein Speer pro Richtung
     }
   },
 };

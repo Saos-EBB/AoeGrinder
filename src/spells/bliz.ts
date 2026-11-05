@@ -1,7 +1,6 @@
 import { state, player } from '../state';
 import { iceAge, frozenGroundTick } from '../figures';
-import { iceTex } from '../fx/spellFx';
-import { fieldDecal } from './fx';
+import { iceGroundField } from '../vfx/frostLook';
 import { mods } from '../config';
 import { blizRadius } from '../formulas';
 import { blizStart, blizMove, blizStop } from '../fx/spellFx';
@@ -38,7 +37,7 @@ export const bliz = {
     const eye = mods.frostEye && state.fields.some(f => f.orb);
     if (iceAge() || eye) {
       const radius = iceAge() ? c.radius(FIELD.radius) : blizRadius();
-      addField(c, { pos: point, radius, dur: iceAge() ? FIELD.ms : EYE_MS, tickMs: 1000, visual: fieldDecal(iceTex, [0.35, 1, 2.1], iceAge() ? 0.5 : 0.25),
+      addField(c, { pos: point, radius, dur: iceAge() ? FIELD.ms : EYE_MS, tickMs: 1000, visual: iceGroundField(),   // Eiszeit-Eisfeld und Frostauge: gefrorener Boden
         onTick: f => { tickAt(c, f.pos, f.radius, false); if (iceAge()) frozenGroundTick(f); },
         onUpdate: f => { if (iceAge()) frozenGroundTick(f); },
       });

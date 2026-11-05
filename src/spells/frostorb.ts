@@ -6,7 +6,7 @@ import { applyRoot } from '../mobs';
 import { iceAge } from '../figures';
 
 const BEAK = { range: 25, speed: 18, width: 4, k: 1.5, freezeMs: 2000 };   // PH: Eiszeit, Schaden 1,5 × Explosion der Kugel
-import { orbVisual, areaParticles, boltFx, burstFx, ICE, ICE_WHITE } from './fx';
+import { frostOrbField, frostSplinter, frostBoom, beakField } from '../vfx/frostLook';
 
 const SPEED = 8, RANGE = 20, HOLD = 4000, SPLINTER_SLOW = 0.3;   // PH
 
@@ -23,10 +23,9 @@ export const frostorb = {
     const dir = new THREE.Vector3(Math.sin(player.facing), 0, Math.cos(player.facing));
     if (iceAge()) {
       const seen = new Set();
-      return addField(c, { pos: player.pos, radius: BEAK.width / 2, dur: BEAK.range / BEAK.speed * 1000, tickMs: 1e9, visual: orbVisual(0xbfefff, 2.4), orb: true,
+      return addField(c, { pos: player.pos, radius: BEAK.width / 2, dur: BEAK.range / BEAK.speed * 1000, tickMs: 1e9, visual: beakField(), orb: true,
         onUpdate(f, dt) {
           f.pos.addScaledVector(dir, BEAK.speed * dt / 1000);
-          areaParticles(f.pos, 1, 80, dt, [ICE, ICE_WHITE], { up: 2, size: 0.35 });
           for (const m of mobsInRadius(f.pos, f.radius)) {
             if (seen.has(m)) continue;
             seen.add(m);
@@ -38,26 +37,25 @@ export const frostorb = {
     const flyTime = RANGE / SPEED * 1000;
     const dur = hasRune('frostorb', 'return') ? flyTime * 2 : hasRune('frostorb', 'hold') ? flyTime + HOLD : flyTime;
     let flown = 0;
-    addField(c, { pos: player.pos, radius: c.radius(frostorb.splinterRadius), dur, tickMs: 500, visual: orbVisual(0x9fdcff, 3.2), orb: true,
+    addField(c, { pos: player.pos, radius: c.radius(frostorb.splinterRadius), dur, tickMs: 500, visual: frostOrbField(), orb: true,
       onUpdate(f, dt) {
         const step = SPEED * dt / 1000, back = hasRune('frostorb', 'return') && flown >= RANGE;
         if (flown < RANGE || back) f.pos.addScaledVector(dir, back ? -step : step);
         flown += step;
-        areaParticles(f.pos, 1, 60, dt, [ICE, ICE_WHITE], { up: 3, size: 0.3, swirl: hasRune('frostorb', 'hold') && flown >= RANGE ? 12 : 3 });
       },
       onTick(f) {
         const around = mobsInRadius(f.pos, f.radius);
         for (let i = 0; i < frostorb.splinters && around.length; i++) {
           const m = pick(around);
           around.splice(around.indexOf(m), 1);
-          boltFx({ x: f.pos.x, y: f.pos.y + 0.4, z: f.pos.z }, m.pos, ICE_WHITE, 120);
+          frostSplinter(f.pos, m.pos);
           if (c.hitProjectile(m, frostorb.splinter * rand(0.9, 1.1)) && !m.dead && hasRune('frostorb', 'chill')) applySlow(m, SPLINTER_SLOW, 2000);
         }
       },
       onEnd(f) {
         const r = c.radius(frostorb.blastRadius);
         for (const m of mobsInRadius(f.pos, r)) c.hit(m, frostorb.blast);
-        burstFx(f.pos, r, [ICE, ICE_WHITE], 0x9fdcff);
+        frostBoom(f.pos, r);
       },
     });
   },

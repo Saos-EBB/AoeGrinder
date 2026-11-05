@@ -2,7 +2,8 @@
 
 import { state, player } from '../state';
 import { maxHp } from '../formulas';
-import { novaFx, ringFx, FROST_WHITE } from '../fx/spellFx';
+import { novaFx } from '../fx/spellFx';
+import { barrierLook } from '../vfx/frostLook';
 import { applyRoot } from '../mobs';
 import { combatText } from '../ui/hud';
 import { mobsInRadius } from './core';
@@ -15,7 +16,7 @@ export const icebarrier = {
   effect() {
     player.shield = Math.round(maxHp() * B.pct);
     player.shieldUntil = state.now + B.ms;
-    ringFx(player.pos, 2, FROST_WHITE, 400);
+    barrierLook();
     combatText(player.pos, 'Eisbarriere', 'info', 2.6);
     player.onShieldBreak = () => {
       player.shield = 0;

@@ -5,7 +5,7 @@ import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, hasRune } from './core';
 import { iceAge } from '../figures';
 import { mobsOnLine, forward } from '../melee';
-import { boltFx, ICE_WHITE } from './fx';
+import { capsuleLook } from '../vfx/frostLook';
 
 const CAPSULE = { len: 15, width: 3, freezeMs: 3000 };   // PH: Eiszeit
 
@@ -24,7 +24,7 @@ export const coc = {
     if (iceAge()) {
       const f = forward(), to = { x: player.pos.x + f.x * CAPSULE.len, y: player.pos.y, z: player.pos.z + f.z * CAPSULE.len };
       for (const m of mobsOnLine(player.pos, to, CAPSULE.width)) if (c.hit(m, rand(coc.min, coc.max)) && !m.dead) applyRoot(m, CAPSULE.freezeMs, 'ice');
-      boltFx({ x: player.pos.x, y: player.pos.y + 0.6, z: player.pos.z }, to, ICE_WHITE, 300);
+      capsuleLook(player.pos, to as any, CAPSULE.width);   // Eiszeit: Eiszacken laufen die Linie entlang
       return;
     }
     const range = c.radius(coc.range), round = hasRune('coc', 'round'), angle = round ? Math.PI * 2 : coc.angle;

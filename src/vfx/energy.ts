@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { scene } from '../render';
 import { particles } from '../fx/particles';
+import { groundAt } from '../collision';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const TAU = Math.PI * 2;
@@ -100,6 +101,16 @@ function setE(m: THREE.MeshBasicMaterial, pal: Pal, o: EOpts) {
   u.uLocal.value = o.local ? 1 : 0; u.uSeed.value = Math.random() * 50; u.uC.value = pal;
 }
 export const uK = (m: THREE.Mesh, v: number) => { (m.material as any).userData.u.uK.value = v; };
+// Boden-Form (gdisk, gring) um c mit Radius r aufs Gelände legen; nur neu, wenn sich Ort oder Radius ändern
+export function lay(m: THREE.Mesh, c: THREE.Vector3, r: number, lift = .06) {
+  const L = m.userData.laid;
+  if (L && Math.abs(L[0] - c.x) + Math.abs(L[1] - c.z) + Math.abs(L[2] - r) < .01) return;
+  m.userData.laid = [c.x, c.z, r];
+  const base = m.geometry.userData.base, pos = m.geometry.attributes.position, arr = pos.array as Float32Array, y0 = c.y ?? 0;
+  m.position.set(c.x, 0, c.z); m.scale.set(1, 1, 1);
+  for (let i = 0; i < base.length; i += 3) { const x = base[i] * r, z = base[i + 2] * r; arr[i] = x; arr[i + 2] = z; arr[i + 1] = groundAt(c.x + x, c.z + z, y0 + 1) + lift; }
+  pos.needsUpdate = true;
+}
 
 // ───────────────────────── Geteilte Formen (einmal angelegt)
 export const G = {
@@ -116,11 +127,14 @@ export const G = {
   oct: new THREE.OctahedronGeometry(1, 0),
   streak: new THREE.BoxGeometry(1, 1, 1, 1, 1, 12),   // Linie: Länge entlang z
 };
-export type GeoName = keyof typeof G | `arc${number}`;
+// Boden-Formen: eigene Geometrie pro Mesh, lay() legt sie ans Gelände (wie world.ts drape)
+const GROUND = { gdisk: () => new THREE.RingGeometry(0, 1, 40, 8), gring: () => new THREE.RingGeometry(.82, 1, 64, 1) };
+export type GeoName = keyof typeof G | keyof typeof GROUND | `arc${number}`;
 // Sicheln: Ringsegment mit Öffnung th (Radius 1, innen .62), XY-Ebene, offen Richtung +y. Pro Öffnung einmal gebaut.
 const arcGeos = new Map<number, THREE.BufferGeometry>();
 function geoOf(name: GeoName) {
   if (name in G) return G[name];
+  if (name in GROUND) { const g = GROUND[name]().rotateX(-Math.PI / 2); g.userData.base = g.attributes.position.array.slice(); return g; }
   const th = +name.slice(3) / 100;
   let g = arcGeos.get(th);
   if (!g) { g = new THREE.RingGeometry(.62, 1, 48, 3, Math.PI / 2 - th / 2, th); arcGeos.set(th, g); }
@@ -129,7 +143,7 @@ function geoOf(name: GeoName) {
 export const arcName = (th: number): GeoName => `arc${Math.round(th * 100)}`;
 
 // ───────────────────────── Pool
-const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 24 };   // PH: Meshes pro Form, sonst 16
+const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 24, gring: 40, gdisk: 32 };   // PH: Meshes pro Form, sonst 16
 type Fx = { a: number; dur: number; up?: (k: number, dt: number, e: Fx) => void; end?: () => void; ms: THREE.Mesh[]; dead?: boolean; [k: string]: any };
 type Pool = { all: THREE.Mesh[]; free: THREE.Mesh[] };
 const pools = new Map<string, Pool>();
@@ -154,7 +168,7 @@ function acquire(name: GeoName, side: THREE.Side, alpha: boolean) {
     release(old.userData.owner);
     m = p.free.pop();
   }
-  m.position.set(0, 0, 0); m.quaternion.identity(); m.scale.set(1, 1, 1); m.visible = true; m.renderOrder = 0;
+  m.position.set(0, 0, 0); m.quaternion.identity(); m.scale.set(1, 1, 1); m.visible = true; m.renderOrder = 0; m.userData.laid = null;
   m.userData.n = ++serial;
   return m;
 }
@@ -239,16 +253,16 @@ export function sparks(p: THREE.Vector3, n: number, pal: Pal, { v = [0, 2.5, 0],
 // ───────────────────────── Bausteine wie im Viewer
 // Explosion: Kugel wächst und löst sich auf, Bodenring läuft aus, Funken. ground: Höhe des Bodens unter pos
 export function boom(pos: THREE.Vector3, r: number, pal: Pal, dur = .7, o: { n?: number; ground?: number } = {}) {
-  const gy = o.ground ?? pos.y;
+  const gp = new THREE.Vector3(pos.x, o.ground ?? pos.y, pos.z);
   return fx(dur, (k, _dt, e) => {
     if (!e.ms.length) {
       em(e, 'sph', pal, { sc: 2.2 / Math.sqrt(r), core: .9, puff: .05, flow: [0, 2.5, 0] }).position.copy(pos);
-      em(e, 'ring', pal, { sc: 2.5 / Math.max(1, r * .4), core: 0, flow: [0, 0, 0] }).position.set(pos.x, gy + .04, pos.z);
+      em(e, 'gring', pal, { sc: 2.5 / Math.max(1, r * .4), core: 0, flow: [0, 0, 0] });
       sparks(pos, o.n ?? 30, pal, { spread: r * .6 });
     }
     const [s, rg] = e.ms;
     s.scale.setScalar(r * (.25 + .75 * outC(Math.min(1, k * 2.2)))); uK(s, 1 - k * k);
-    rg.scale.setScalar(r * (.4 + 1.2 * outC(k))); uK(rg, 1 - k);
+    lay(rg, gp, r * (.4 + 1.2 * outC(k))); uK(rg, 1 - k);
   });
 }
 // Geschoss von a nach b: Kopf + Schweif-Kegel, optional Bogen (arc) und Ausschlag (curve). hit am Ziel
@@ -283,8 +297,8 @@ export function blazeUp(e: Fx, k: number, from = 0) {
 // Bodenring läuft von r0 auf r aus
 export function ring(pos: THREE.Vector3, r: number, pal: Pal, dur = .5, o: { r0?: number; sc?: number } = {}) {
   return fx(dur, (k, _dt, e) => {
-    if (!e.ms.length) em(e, 'ring', pal, { sc: o.sc ?? 2.5 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0], side: THREE.DoubleSide }).position.set(pos.x, pos.y + .05, pos.z);
-    e.ms[0].scale.setScalar((o.r0 ?? .2) + (r - (o.r0 ?? .2)) * outC(k)); uK(e.ms[0], 1 - k);
+    if (!e.ms.length) em(e, 'gring', pal, { sc: o.sc ?? 2.5 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0], side: THREE.DoubleSide });
+    lay(e.ms[0], pos, (o.r0 ?? .2) + (r - (o.r0 ?? .2)) * outC(k)); uK(e.ms[0], 1 - k);
   });
 }
 // Sichel: Ringsegment um den Mittelpunkt c (Welt), Ebene über die Drehung q (Ebene XY, offen nach +y), wächst leicht und löst sich auf

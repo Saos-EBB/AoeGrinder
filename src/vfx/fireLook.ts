@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { groundAt } from '../collision';
 import { mage } from '../models/mage';
-import { fx, em, uK, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, type Pal } from './energy';
+import { fx, em, uK, lay, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, type Pal } from './energy';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const gy = (p: THREE.Vector3) => groundAt(p.x, p.z, p.y + 1);
@@ -21,7 +21,7 @@ export function fireField(o: { tongues?: number; disk?: boolean; h?: number; pal
   const pal = { cur: o.pal ?? PAL.fire };
   const f = field(e => {
     const r = e.r, n = o.tongues ?? Math.round(Math.min(22, 5 + r * 1.4));
-    if (o.disk !== false) em(e, 'disk', pal.cur, { sc: 1.5 / Math.max(1, r * .25), core: 0, edge: 1.3, flow: [.6, 0, .4] });
+    if (o.disk !== false) em(e, 'gdisk', pal.cur, { sc: 1.5 / Math.max(1, r * .25), core: 0, edge: 1.3, flow: [.6, 0, .4] });
     for (let i = 0; i < n; i++) { const m = em(e, 'cone', pal.cur, { sc: 4, core: .35, tip: 1.1, puff: .05, flow: [0, 3.2, 0] }); const a = Math.random() * TAU, d = Math.sqrt(Math.random()); m.userData.o = [Math.cos(a) * d, Math.sin(a) * d]; m.userData.h = (o.h ?? 1.2) * rnd(.6, 1.2); m.userData.w = rnd(.22, .4); m.userData.ph = Math.random() * 9; }
   }, (e, fade) => {
     const T = EU.uTime.value, c = e.pos, r = e.r;
@@ -31,7 +31,7 @@ export function fireField(o: { tongues?: number; disk?: boolean; h?: number; pal
         const x = c.x + m.userData.o[0] * r * .9, z = c.z + m.userData.o[1] * r * .9;
         m.position.set(x, groundAt(x, z, c.y + 1), z);
         m.scale.set(m.userData.w, m.userData.h * fade * (1 + .25 * Math.sin(T * 9 + m.userData.ph)), m.userData.w);
-      } else { m.position.set(c.x, gy(c) + .04, c.z); m.scale.setScalar(r); uK(m, .85 * fade); }
+      } else { lay(m, c, r); uK(m, .85 * fade); }
       i++;
     }
   });
@@ -59,10 +59,10 @@ export function flameStrikeLook(point: THREE.Vector3, r: number) {
 export function blastLook(center: THREE.Vector3, r: number, suck = false) {
   const o = onGround(center);
   fx(.8, (k, _dt, e) => {
-    if (!e.ms.length) { em(e, 'ring', PAL.fire, { sc: 2 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0] }).position.set(o.x, o.y + .05, o.z); em(e, 'hemi', PAL.fire, { sc: 2.5 / Math.max(1, r * .3), core: -.6, flow: [0, 3, 0], side: THREE.DoubleSide }).position.copy(o); }
+    if (!e.ms.length) { em(e, 'gring', PAL.fire, { sc: 2 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0] }); em(e, 'hemi', PAL.fire, { sc: 2.5 / Math.max(1, r * .3), core: -.6, flow: [0, 3, 0], side: THREE.DoubleSide }).position.copy(o); }
     const u = suck ? 1 - outC(k) : outC(k), rr = .4 + r * u;
-    e.ms[0].scale.setScalar(rr); uK(e.ms[0], 1 - k * .8);
-    e.ms[1].scale.set(rr * .9, r * .3 * (1 - k * .6), rr * .9); uK(e.ms[1], 1 - k);
+    lay(e.ms[0], o, rr); uK(e.ms[0], 1 - k * .8);
+    e.ms[1].scale.set(rr * .9, r * .18 * (1 - k * .6), rr * .9); uK(e.ms[1], .7 * (1 - k));   // flacher und fransiger als im Viewer: die Spielkamera schaut von oben drauf
   });
 }
 // Feuerring der Druckwelle (Rune): Zungen auf dem Kreis
@@ -76,11 +76,11 @@ export function fireRingField() {
 export function hellfireLook() {
   figureLook.meter = 1;
   const f = field(e => {
-    em(e, 'disk', PAL.fire, { sc: 1.6 / Math.max(1, e.r * .25), core: 0, edge: 1.3, flow: [.6, 0, .4] });
+    em(e, 'gdisk', PAL.fire, { sc: 1.6 / Math.max(1, e.r * .25), core: 0, edge: 1.3, flow: [.6, 0, .4] });
     for (let i = 0; i < 18; i++) { const m = em(e, 'cone', PAL.fire, { sc: 4, core: .35, tip: 1.1, puff: .05, flow: [0, 3.2, 0] }); m.userData = { h: rnd(1.6, 2.6), w: rnd(.35, .55), ph: i, a: i / 18 * TAU }; }
   }, (e, fade, dt) => {
     const T = EU.uTime.value, c = e.pos, r = e.r;
-    e.ms[0].position.set(c.x, gy(c) + .04, c.z); e.ms[0].scale.setScalar(r); uK(e.ms[0], .9 * fade);
+    lay(e.ms[0], c, r); uK(e.ms[0], .9 * fade);
     for (const m of e.ms.slice(1)) { m.userData.a += dt * .8; const x = c.x + Math.cos(m.userData.a) * r * .85, z = c.z + Math.sin(m.userData.a) * r * .85; m.position.set(x, groundAt(x, z, c.y + 1), z); m.scale.set(m.userData.w, m.userData.h * fade * (1 + .25 * Math.sin(T * 9 + m.userData.ph)), m.userData.w); }
   });
   return { update: f.update, remove() { f.remove(); figureLook.meter = null; } };
@@ -89,8 +89,8 @@ export function hellfireLook() {
 export function meteorLook(point: THREE.Vector3, r: number, delay: number) {
   const p = onGround(point), fall = Math.min(.45, delay * .4);
   fx(delay, (k, _dt, e) => {
-    if (!e.ms.length) em(e, 'ring', PAL.fire, { sc: 3 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0] }).position.set(p.x, p.y + .05, p.z);
-    e.ms[0].scale.setScalar(r * (1 - .15 * Math.sin(k * 30) * (1 - k))); uK(e.ms[0], .5 + .5 * k);
+    if (!e.ms.length) em(e, 'gring', PAL.fire, { sc: 3 / Math.max(1, r * .3), core: 0, flow: [0, 0, 0] });
+    lay(e.ms[0], p, r * (1 - .15 * Math.sin(k * 30) * (1 - k))); uK(e.ms[0], .5 + .5 * k);
   });
   const from = p.clone().add(V(-r * .6, 18, -r * .45));
   after(delay - fall, () => shot(from, p.clone().setY(p.y + .3), 0, PAL.fire, { r: Math.max(.6, r * .14), tail: 5, dur: fall, hit: q => boom(q, r * 1.05, PAL.fire, .9, { ground: p.y, n: 60 }) }));
