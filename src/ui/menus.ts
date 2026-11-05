@@ -59,8 +59,11 @@ export function showCards(offer?) {
         <div class="lvRar">${relic ? 'Relikt' : r.name} ×${String(r.mult).replace('.', ',')}</div><span class="lvKey">${CARD_KEYS[i]}</span>`
       : `<div class="lvKind">${kind.name}</div>${cardIcon(c, kind)}
         <h3 class="lvName" style="color:${school ?? col}">${c.name}</h3>
-        <div class="lvSub">${stage ? `Rang ${stage} → ${stage + 1}` : c.kind === 'spell' ? 'neu' : `${r.name} ×${String(r.mult).replace('.', ',')}`}</div>
-        <span class="lvKey">${CARD_KEYS[i]}</span>`;
+        <div class="lvSub">${stage ? `Rang ${stage} → ${stage + 1}` : c.kind === 'spell' ? 'neu' : c.src}</div>
+        <p class="lvText">${markWords(c.desc(r.mult))}</p>
+        ${rep ? `<div class="lvRep">⇄ ${rep.label}: <b>${rep.name}</b></div>` : ''}
+        ${cardPreview(c, r.mult) ? `<div class="lvPrev">${cardPreview(c, r.mult)}</div>` : ''}
+        <div class="lvFoot"><span class="lvRarS">${relic ? 'Relikt' : r.name} ×${String(r.mult).replace('.', ',')}</span><span class="lvKey">${CARD_KEYS[i]}</span></div>`;
     el.addEventListener('click', () => pickCard(c));
     cardTip(el, c, r, kind, stage, rep, school ?? col);
     $('cards').appendChild(el);
