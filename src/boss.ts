@@ -216,16 +216,21 @@ function spawnBody(def, spec, home, hp, level) {
 // Modell: Viewer-Bauer, verdorbene Figuren als echtes Spielermodell (bosses/evil.ts)
 const buildModel = spec => spec.t === 'evil' ? buildEvil(spec) : buildBossModel(spec);
 
-// Modell eines Körpers tauschen (Godricks Drachenarm, Stilwechsel): die neuen Teile ziehen in die alte Wurzel, mob.pos bleibt dasselbe Objekt
+// Modell eines Körpers tauschen (Godricks Drachenarm, Stilwechsel): neue Wurzel an die alte Stelle, mob.pos zeigt danach auf die neue Wurzel
+// (die Spielermodelle der verdorbenen Figuren rechnen mit ihrer eigenen Wurzel als Position)
 function swapModel(b, spec) {
-  const old = b.mob.model, nm: any = buildModel(spec);
+  const m = b.mob, old = m.model, nm: any = buildModel(spec);
+  scene.remove(old.root);
   old.onRemove?.();
-  for (const o of [...old.root.children]) { old.root.remove(o); o.traverse((x: any) => { x.geometry?.dispose(); x.material?.dispose?.(); if (x.isSkinnedMesh) x.skeleton.dispose(); }); }
-  for (const o of [...nm.root.children]) old.root.add(o);
-  old.root.scale.copy(nm.root.scale).multiplyScalar(b.grow ?? 1);
-  nm.root = old.root;
-  nm.ctl = old.ctl;
-  b.mob.model = nm;
+  old.root.traverse((x: any) => { x.geometry?.dispose(); x.material?.dispose?.(); if (x.isSkinnedMesh) x.skeleton.dispose(); });
+  nm.root.position.copy(old.root.position);
+  nm.root.rotation.order = 'YXZ';
+  nm.root.rotation.y = old.root.rotation.y;
+  nm.root.scale.multiplyScalar(b.grow ?? 1);
+  Object.assign(nm.ctl, old.ctl);              // Pose liegt im Modell (Closure), nur die Werte übernehmen
+  scene.add(nm.root);
+  m.model = nm;
+  m.pos = nm.root.position;
   b.spec = spec;
 }
 // Spiegelbild (Atziri): gleiches Modell und dieselbe Pose wie der Körper, nimmt keinen Schaden und zerplatzt beim ersten Treffer
@@ -234,7 +239,6 @@ function spawnCopy(b, pos) {
   const m = spawnBody(boss.def, b.spec, pos, 1, player.level);
   m.ability = COPY_ABILITY;
   m.xpMul = 0;
-  m.model.ctl = b.mob.model.ctl;
   m.model.root.scale.copy(b.mob.model.root.scale);
   return m;
 }

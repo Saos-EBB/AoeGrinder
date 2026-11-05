@@ -27,6 +27,8 @@
   .bar > .fill { position: absolute; inset: 0; transform-origin: left; }
   .bar > span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px #000; line-height: 18px; }
   #hpFill { background: linear-gradient(#3fcf3f, #1c8a1c); }
+  #hpCut { position: absolute; top: 0; bottom: 0; right: 0; width: 0; background: repeating-linear-gradient(-45deg, #5a5a5e 0 6px, #46464a 6px 12px); }
+  body.zeitstopp canvas { filter: grayscale(.85) contrast(1.15) brightness(.9); }
   #manaFill { background: linear-gradient(#4a7dff, #1f3fbf); }
   #hudHp, #hudMana { width: 20vw; }
   #hudCast { width: 40vw; }
@@ -309,7 +311,7 @@
   <div id="xpbar"><div id="xpFill"></div></div>
 </div>
 
-<div id="hudHp"><div class="bar"><div class="fill" id="hpFill"></div><span id="hpText"></span></div></div>
+<div id="hudHp"><div class="bar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"></span></div></div>
 <div id="hudMana">
   <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
   <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>

@@ -15,6 +15,7 @@ import { maxHp } from '../formulas';
 import { textAt, impactFx, bigImpact, burnPlayer, V, gy, dist2, rnd, TAU, onGround, newRun, tw, face, moveBody, ease, palOf } from './core';
 import { ATT } from './attacks';
 import { removeMob } from '../mobs';
+import { STYLES, BOSSES } from './roster';
 
 // Summe der Boss-Leben (boss.ts hängt sie an f.hp)
 const hpFrac = f => { const { hp, max } = f.hp(); return hp / Math.max(1, max); };
@@ -246,7 +247,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
     const clear = (puffIt = true) => { for (const m of copies) { if (puffIt) impactFx(m.pos, 2, 0xff8a40, .25); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = []; };
     f.hooks.tick.push(() => {
       const b = mainBody(f);
-      for (const m of copies) { m.model.root.rotation.y = Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z); m.model.root.rotation.x = b.mob.model.root.rotation.x; }
+      for (const m of copies) { m.model.root.rotation.y = Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z); Object.assign(m.model.ctl, b.mob.model.ctl); }   // gleiche Pose wie das Original
       const popped = copies.filter(m => m.popped || m.dead);
       if (popped.length) { for (const m of popped) { impactFx(m.pos, 2.5, 0xff8a40, .3); textAt(m.pos, 'Spiegelbild', 'info', 2); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = copies.filter(m => !m.popped && !m.dead); }
       if (f.time < next || b.busy || f.step !== 'fight') return;
@@ -278,6 +279,73 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
     });
     f.hooks.dmgTaken.push((b, a) => f.time < until ? a * (p.mul ?? 3) : a);
     f.hooks.bar.push(() => f.time < until ? `KONTER ×${p.mul ?? 3}` : 'Perfekter Dodge = Konter');
+  },
+
+  // ---------- Final ----------
+  // Heilt bei Treffer (Malenia): jeder Treffer am Spieler heilt den Körper um 4 % seines Lebens
+  heiltBeiTreffer(f, p) {
+    f.hooks.onPlayerHit.push(b => {
+      const m = (b ?? mainBody(f)).mob;
+      if (!m || m.dead) return;
+      const add = m.maxHp * (p.pct ?? .04);
+      m.hp = Math.min(m.maxHp, m.hp + add);
+      textAt(m.pos, `+${Math.round((p.pct ?? .04) * 100)} % geheilt`, 'heal', 2.4);
+    });
+    f.hooks.bar.push(() => 'Heilt bei Treffer');
+  },
+  // Zerstörung (Maliketh): jeder Treffer senkt das maximale Leben um 10 %, höchstens bis 30 %. Grauer Teil im Leben-Balken, nach dem Kampf zurück
+  maxHpSenken(f, p) {
+    const step = p.step ?? .1, floor = p.min ?? .3;
+    f.hooks.onPlayerHit.push(() => {
+      if (player.dead) return;
+      player.hpCut = Math.min(1 - floor, (player.hpCut ?? 0) + step);
+      player.hp = Math.min(player.hp, maxHp());
+      textAt(player.pos, `max. Leben −${Math.round(step * 100)} %`, 'hurt', 2.4);
+    });
+    f.hooks.bar.push(() => player.hpCut ? `max. Leben ${Math.round((1 - player.hpCut) * 100)} %` : 'Zerstörung');
+    f.hooks.cleanup.push(() => { player.hpCut = 0; });
+  },
+  // Zeitstopp (Shaper): alle 25 s friert alles 1,3 s (Spieler, Geschosse, Boss-Zeit, Bild grau), danach sofort der Slam-Rhythmus
+  zeitstopp(f, p) {
+    let next = p.first ?? 14, until = 0;
+    f.hooks.tick.push(() => {
+      const b = mainBody(f);
+      if (until) {
+        if (state.now < until) return;
+        until = 0; f.scale = 1; document.body.classList.remove('zeitstopp');
+        const rh = f.def.attacks.find(a => a.k === 'rhythmus');
+        if (rh && b.mob && !b.mob.dead) f.attack(b, 'rhythmus', { ...rh.p });
+        return;
+      }
+      if (f.time < next || b.busy || f.step !== 'fight') return;
+      next = f.time + (p.every ?? 25);
+      const ms = (p.s ?? 1.3) * 1000;
+      until = state.now + ms;
+      f.scale = 0;
+      player.stunUntil = Math.max(player.stunUntil, until);
+      document.body.classList.add('zeitstopp');
+      addTrauma(.5); textAt(player.pos, 'ZEITSTOPP', 'hurt', 3);
+    });
+    f.hooks.bar.push(() => until ? 'ZEITSTOPP' : `Zeitstopp in ${Math.max(0, Math.ceil(next - f.time))} s`);
+    f.hooks.cleanup.push(() => { f.scale = 1; document.body.classList.remove('zeitstopp'); });
+  },
+  // Stilwechsel (Seele der Asche): bei 75/50/25 % Leben wird er zur nächsten Figur aus STYLES, mit deren Modell und Angriffen
+  stilwechsel(f, p) {
+    let i = 0, style = STYLES[0].name;
+    const at = p.at ?? [.75, .5, .25];
+    f.hooks.tick.push(() => {
+      if (i >= at.length || hpFrac(f) > at[i] || f.step !== 'fight') return;
+      i++;
+      const st = STYLES[i % STYLES.length], b = mainBody(f), src = BOSSES.find(x => x.model === st.model);
+      if (b.run) b.run.alive = false;
+      b.busy = false; b.walkUntil = f.time + .8;
+      f.swapModel(b, st.model);
+      b.attacks = src?.evil ? src.attacks : [...f.def.attacks, { n: st.name, ...st.atk }];
+      style = st.name;
+      bigImpact(b.mob.pos, 7, 0xff8a30); addTrauma(.5);
+      textAt(b.mob.pos, st.name, 'hurt', 4);
+    });
+    f.hooks.bar.push(() => style);
   },
 };
 
