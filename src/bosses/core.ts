@@ -132,7 +132,7 @@ export function hurt(mul = 1, from?, body?) {
   if (player.dead || !fight) return false;
   const hp = player.hp;
   if (body) body.mob.attackAt = state.now;
-  const dmg = maxHp() * BK.hit * mul * (fight.dmgMul ?? 1) * (body?.grow ?? 1);
+  const dmg = maxHp() * BK.hit * mul * (fight.dmgMul ?? 1) * (body?.grow ?? 1) * (body?.dmgMul ?? 1);
   fight.lastHitTry = state.now;
   damagePlayer(Math.round(dmg), false, fight.def.name);
   if (player.hp < hp) { fight.stats.hits++; for (const fn of fight.hooks.onPlayerHit) fn(body); return true; }

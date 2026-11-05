@@ -216,6 +216,29 @@ function spawnBody(def, spec, home, hp, level) {
 // Modell: Viewer-Bauer, verdorbene Figuren als echtes Spielermodell (bosses/evil.ts)
 const buildModel = spec => spec.t === 'evil' ? buildEvil(spec) : buildBossModel(spec);
 
+// Modell eines Körpers tauschen (Godricks Drachenarm, Stilwechsel): die neuen Teile ziehen in die alte Wurzel, mob.pos bleibt dasselbe Objekt
+function swapModel(b, spec) {
+  const old = b.mob.model, nm: any = buildModel(spec);
+  old.onRemove?.();
+  for (const o of [...old.root.children]) { old.root.remove(o); o.traverse((x: any) => { x.geometry?.dispose(); x.material?.dispose?.(); if (x.isSkinnedMesh) x.skeleton.dispose(); }); }
+  for (const o of [...nm.root.children]) old.root.add(o);
+  old.root.scale.copy(nm.root.scale).multiplyScalar(b.grow ?? 1);
+  nm.root = old.root;
+  nm.ctl = old.ctl;
+  b.mob.model = nm;
+  b.spec = spec;
+}
+// Spiegelbild (Atziri): gleiches Modell und dieselbe Pose wie der Körper, nimmt keinen Schaden und zerplatzt beim ersten Treffer
+const COPY_ABILITY = { onUpdate: () => true, onDamaged: m => { m.popped = true; return 0; } };
+function spawnCopy(b, pos) {
+  const m = spawnBody(boss.def, b.spec, pos, 1, player.level);
+  m.ability = COPY_ABILITY;
+  m.xpMul = 0;
+  m.model.ctl = b.mob.model.ctl;
+  m.model.root.scale.copy(b.mob.model.root.scale);
+  return m;
+}
+
 // ---------- Auswahl ----------
 const seen = new Set<string>();
 // Boss für dieses Level: aus der Stufe würfeln, kein Boss doppelt im Run
@@ -242,6 +265,8 @@ export function startBoss(id?: string) {
   boss.awaken = b => awaken(b);
   boss.spawnAdd = (pos, tint = 'boss2') => { const m: any = spawnMob(zoneTypeId(), pos.clone(), level, ++state.packCounter); m.bossTint = tint; enterCombat(m, false); return m; };
   boss.attack = (b, k, p) => runAttack(b, { k, p });
+  boss.swapModel = (b, spec) => swapModel(b, spec);
+  boss.spawnCopy = (b, pos) => spawnCopy(b, pos);
   boss.setArena = r => { boss.arena = r; layRing(arena, center, r - 0.25, r + 0.25); };
   setFight(boss);
   for (const s of specs) {
@@ -515,7 +540,7 @@ setRunEndHook(() => { if (!autoOn() || mobMode !== 'packs') return false; finalP
 // Für Tests
 (window as any).__boss = {
   B, BOSSES, start: (id?) => startBoss(id), toggleLock,
-  force: (k, bi = 0) => { const b = boss?.bodies[bi]; const a = boss?.def.attacks.find(x => x.k === k || x.n === k); if (!b || !a) return false; if (b.run) b.run.alive = false; b.busy = true; const run = b.run = newRun(); ATT[a.k](run, b, { ...a.p }).then(() => { if (run.alive) { b.busy = false; b.walkUntil = fight.time + .5; } }); return true; },
+  force: (k, bi = 0) => { const b = boss?.bodies[bi]; const a = (b?.attacks ?? boss?.def.attacks ?? []).find(x => x.k === k || x.n === k); if (!b || !a) return false; if (b.run) b.run.alive = false; b.busy = true; const run = b.run = newRun(); ATT[a.k](run, b, { ...a.p }).then(() => { if (run.alive) { b.busy = false; b.walkUntil = fight.time + .5; } }); return true; },
   phase2: () => { if (boss) for (const b of boss.bodies) if (b.mob) b.mob.hp = Math.floor(b.mob.maxHp * B.phase2.at * .99); },
   hit: (bi = 0, amount = 1e9) => { const m = boss?.bodies[bi]?.mob; return m ? damageMob(m, amount, 'test', 0, true) : false; },
   get boss() { return boss; }, get result() { return lastResult; }, camera, get lock() { return lockOn; }, get camK() { return camK; }, seen,

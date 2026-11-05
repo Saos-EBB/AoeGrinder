@@ -14,6 +14,7 @@ import { CFG } from '../config';
 import { maxHp } from '../formulas';
 import { textAt, impactFx, bigImpact, burnPlayer, V, gy, dist2, rnd, TAU, onGround, newRun, tw, face, moveBody, ease, palOf } from './core';
 import { ATT } from './attacks';
+import { removeMob } from '../mobs';
 
 // Summe der Boss-Leben (boss.ts hängt sie an f.hp)
 const hpFrac = f => { const { hp, max } = f.hp(); return hp / Math.max(1, max); };
@@ -184,9 +185,99 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       next.state = 'active';
       f.awaken(next);                                     // steht auf (sleep) oder wird gerufen (hidden)
     };
-    f.hooks.onBodyDeath.push(() => { if (!p.every) wake(); });
+    f.hooks.onBodyDeath.push(() => { if (!p.every || !f.bodies.some(b => b.state === 'active' && b.mob && !b.mob.dead)) wake(); });   // Könige: keiner mehr wach → der nächste sofort
     if (p.every) { let next = p.every; f.hooks.tick.push(() => { if (f.time < next) return; next += p.every; const act = f.bodies.filter(b => b.state === 'active' && b.mob && !b.mob.dead).length; if (act < (p.max ?? 4)) wake(); }); }
     f.hooks.bar.push(() => { const a = f.bodies.filter(b => b.state === 'active' && b.mob && !b.mob.dead).length, rest = f.bodies.filter(b => b.state === 'sleep' || b.state === 'hidden').length; return `${a} wach · ${rest} warten`; });
+  },
+
+  // ---------- Spät ----------
+  // Erbt die Kraft (Ornstein & Smough): stirbt einer, wird der andere größer, schneller, stärker und nutzt alle Angriffe
+  erbtKraft(f, p) {
+    f.hooks.onBodyDeath.push(dead => {
+      const s = f.bodies.find(b => b !== dead && b.mob && !b.mob.dead);
+      if (!s || s.inherited) return;
+      s.inherited = true;
+      const k = p.mul ?? 1.3;
+      s.dmgMul = (s.dmgMul ?? 1) * k; s.speedMul = (s.speedMul ?? 1) * k; s.windMul = (s.windMul ?? 1) / k;
+      s.grow *= 1.15; s.mob.model.root.scale.multiplyScalar(1.15); s.mob.model.height *= 1.15;
+      s.attacks = f.def.attacks.map(a => ({ ...a, b: undefined }));
+      s.mob.bossTint = 'boss2';
+      bigImpact(s.mob.pos, 8, 0xffe070); textAt(s.mob.pos, `erbt die Kraft: +${Math.round((k - 1) * 100)} %`, 'hurt', 4);
+    });
+    f.hooks.bar.push(() => f.bodies.some(b => b.inherited) ? 'Kraft geerbt' : '');
+  },
+  // Neue Waffe in Phase 2 (Godrick): Drachenarm am Modell, dazu der Feueratem
+  neuePhaseWaffe(f, p) {
+    let done = false;
+    f.hooks.tick.push(() => {
+      if (done || f.phase !== 2) return;
+      done = true;
+      const b = mainBody(f);
+      f.swapModel(b, { ...b.spec, p: { ...b.spec.p, dragonArm: true } });
+      b.attacks = [...f.def.attacks, { n: 'Feueratem', k: 'atem', p: { color: 0xff6a1a, len: p.len ?? 14, ang: 45, label: 'Feueratem', onHit: () => dot(f, .03, 3, 'Verbrennen') } }];
+      bigImpact(b.mob.pos, 6, 0xff6a1a); textAt(b.mob.pos, 'Drachenarm', 'hurt', 4);
+    });
+    f.hooks.bar.push(() => done ? 'Drachenarm' : '');
+  },
+  // Entweihen wächst (Lichkönig): eigene Pfütze; jeder Schaden-Tick am Spieler vergrößert sie ×1,4
+  pfuetzeWaechst(f, p) {
+    const live = [];                                       // Pfützen dieses Kampfs (attacks.ts pfuetze legt sie in p.track)
+    const def = { n: 'Entweihen', k: 'pfuetze', p: { r: 3, color: 0x3a2a5a, label: 'Entweihen', dur: p.dur ?? 25, grow: p.grow ?? 1.4, maxR: p.maxR ?? 14, track: live } };
+    for (const b of f.bodies) b.attacks = [...f.def.attacks, def];
+    f.hooks.bar.push(() => { const r = Math.max(0, ...live.filter(h => !h.gone).map(h => h.r)); return r ? `Entweihen ${r.toFixed(1).replace('.', ',')} yd` : ''; });
+  },
+  // Wahnsinn (Yogg-Saron): Sanity 100, sinkt pro Sekunde und pro Treffer. Bei 0: 5 s links und rechts vertauscht, dann zurück auf 50
+  wahnsinn(f, p) {
+    let san = 100;
+    f.hooks.tick.push(dt => {
+      san = Math.max(0, san - (p.perS ?? 1) * dt);
+      if (san > 0) return;
+      state.mirrorUntil = state.now + (p.ms ?? 5000);
+      san = p.reset ?? 50;
+      addTrauma(.6); textAt(player.pos, 'WAHNSINN: Steuerung gespiegelt', 'hurt', 4);
+    });
+    f.hooks.onPlayerHit.push(() => { san = Math.max(0, san - (p.perHit ?? 10)); });
+    f.hooks.bar.push(() => state.mirrorUntil > state.now ? 'WAHNSINN' : `Sanity ${Math.ceil(san)}`);
+    f.hooks.cleanup.push(() => { state.mirrorUntil = 0; });
+  },
+  // Spiegelbilder (Atziri): alle 30 s 4 Kopien, die echte springt an einen der 5 Plätze. Kopien zerplatzen beim ersten Treffer, machen keinen Schaden
+  spiegelbilder(f, p) {
+    let next = p.first ?? 6, copies = [];
+    const clear = (puffIt = true) => { for (const m of copies) { if (puffIt) impactFx(m.pos, 2, 0xff8a40, .25); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = []; };
+    f.hooks.tick.push(() => {
+      const b = mainBody(f);
+      for (const m of copies) { m.model.root.rotation.y = Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z); m.model.root.rotation.x = b.mob.model.root.rotation.x; }
+      const popped = copies.filter(m => m.popped || m.dead);
+      if (popped.length) { for (const m of popped) { impactFx(m.pos, 2.5, 0xff8a40, .3); textAt(m.pos, 'Spiegelbild', 'info', 2); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = copies.filter(m => !m.popped && !m.dead); }
+      if (f.time < next || b.busy || f.step !== 'fight') return;
+      next = f.time + (p.every ?? 30);
+      clear(false);
+      const n = (p.copies ?? 4) + 1, spots = [], a0 = rnd(0, TAU), r = p.r ?? 7;
+      for (let i = 0; i < n; i++) { const a = a0 + i / n * TAU, q = player.pos.clone().add(V(Math.cos(a) * r, 0, Math.sin(a) * r)); const c = f.center, d = dist2(q, c), max = f.arena - 2.5; if (d > max) { q.x = c.x + (q.x - c.x) / d * max; q.z = c.z + (q.z - c.z) / d * max; } spots.push(onGround(q)); }
+      const real = Math.floor(Math.random() * n);
+      impactFx(b.mob.pos, 3, 0xff8a40, .4);
+      moveBody(b, spots[real]);
+      for (let i = 0; i < n; i++) { if (i === real) continue; const m = f.spawnCopy(b, spots[i]); m.bossTint = b.mob.bossTint; copies.push(m); impactFx(spots[i], 3, 0xff8a40, .4); }
+      textAt(player.pos, 'Spiegelbilder: nur eine ist echt', 'info', 3.5);
+    });
+    f.hooks.bar.push(() => copies.length ? `${copies.length} Spiegelbilder` : `Spiegelbilder in ${Math.max(0, Math.ceil(next - f.time))} s`);
+    f.hooks.cleanup.push(() => clear(false));
+  },
+  // Konter (Gwyn): perfekter Dodge öffnet 2 s, in denen er dreifachen Schaden nimmt
+  konter(f, p) {
+    let seen = state.dodgeStats?.perfect ?? 0, until = -1;
+    f.hooks.tick.push(() => {
+      const n = state.dodgeStats?.perfect ?? 0;
+      if (n > seen) {
+        seen = n; until = f.time + (p.s ?? 2);
+        const b = mainBody(f);
+        b.mob.bossTint = 'gap'; b.mob.hitAt = state.now;
+        textAt(b.mob.pos, 'KONTER!', 'heal', 3);
+      }
+      if (until > 0 && f.time >= until) { until = -1; for (const b of f.bodies) if (b.mob && b.mob.bossTint === 'gap' && b.gapUntil <= f.time) b.mob.bossTint = f.phase === 2 ? 'boss2' : 'boss'; }
+    });
+    f.hooks.dmgTaken.push((b, a) => f.time < until ? a * (p.mul ?? 3) : a);
+    f.hooks.bar.push(() => f.time < until ? `KONTER ×${p.mul ?? 3}` : 'Perfekter Dodge = Konter');
   },
 };
 

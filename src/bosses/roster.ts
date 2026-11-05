@@ -94,7 +94,7 @@ export const BOSSES: any[] = [
  {id:'koenige',nr:59,name:'Die Vier Könige',from:'Dark Souls',tier:'spaet',desc:'Alle 50 s kommt ein König dazu. Wer zu langsam ist, kämpft gegen vier.',
   bodies:[0,1,2,3].map(i=>({m:{t:'biped',p:{skin:0x18141f,armor:0x221c2c,accent:0x3a2a54,eye:0xb890ff,glow:0x9a70ff,bulk:.85,head:'crown',weapon:'sword',weaponGlow:0x9a70ff,scale:2.0}},off:[(i-1.5)*4.5,-5-(i%2)*1.5],state:i===0?'active':'hidden'})),
   attacks:[{n:'Schwerthiebe',k:'kette',p:{hits:[.8,.6],r:5,ang:90,color:0x9a70ff},i:'2 Hiebe'},{n:'Dunkle Geschosse',k:'faecher',p:{n:6,spread:70,color:0x9a70ff},i:'6 Geschosse'},{n:'Abgrund-Explosion',k:'explosion',p:{r:8,warn:1.0,color:0x7a50d0},i:'8 yd'}],
-  rules:[{n:'Neuer König',k:'spawnUeberZeit',p:{label:'ein König mehr'},i:'alle 50 s'}]},
+  rules:[{n:'Neuer König',k:'spawnUeberZeit',p:{every:50,max:4,label:'ein König mehr'},i:'alle 50 s'}]},
  {id:'godrick',nr:76,name:'Godrick der Verpflanzte',from:'Elden Ring',tier:'spaet',desc:'Axt und Sturm. In Phase 2 näht er sich einen Drachenkopf an den Arm.',
   model:{t:'biped',p:{skin:0x9a8a6a,armor:0xb08a3a,accent:0x8a6a2a,eye:0xffd070,cape:0x6a6040,bulk:1.5,head:'crown',weapon:'axe',scale:2.0}},
   attacks:[{n:'Axthiebe',k:'kette',p:{hits:[.9,.6,1.1],r:5,ang:100},i:'3 Hiebe · letzter verzögert'},{n:'Sturmstampfer',k:'slam',p:{r:7,warn:1.0,fx:0xd0d8e0},i:'7 yd'},{n:'Sturmwelle',k:'ring',p:{r:10,color:0xd0d8e0},i:'Ring 10 yd'}],

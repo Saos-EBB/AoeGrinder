@@ -28,7 +28,7 @@ function puddle(pos, r, color, dur, label?) {
       if (dist2(player.pos, h.pos) < h.r && tick <= 0) { tick = 1; burnPlayer(BK.dot, label); h.onTouch?.(); }
       return t < dur && !!fight;
     },
-    remove: () => killFx(e),
+    remove: () => { h.gone = true; killFx(e); },
   });
   return h;
 }
@@ -130,6 +130,8 @@ export const ATT = {
     await Promise.all(spots.map((t, i) => lob(run, chest(b), t, color, .6 + i * .12)));
     let hit = false;
     const out = spots.map(t => { const h = puddle(t, r, color, p.dur ?? 6, p.label); if (!hit && dist2(t, player.pos) < r) { hit = true; hurt(1, t, b); } return h; });
+    p.track?.push(...out);
+    if (p.grow) for (const h of out) h.onTouch = () => { h.r = Math.min(p.maxR ?? 14, h.r * p.grow); textAt(h.pos, `${p.label ?? 'Pfütze'} wächst`, 'hurt', 2); };   // pfuetzeWaechst
     textAt(b.mob.pos, p.label ?? 'Pfütze');
     await gap(run, b, p.gap ?? .8);
     return out;
