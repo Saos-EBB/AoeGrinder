@@ -54,6 +54,14 @@ export const B = {
 };
 
 const autoOn = () => location.hash.includes('boss');
+// Mob-Modus Boss-Jagd (siege.ts, nur mit #boss): Packs wie sonst, bei diesen Kills ein zufälliger Boss dieser Stufe; nach dem letzten ist der Run geschafft
+export const HUNT = [{ kills: 50, tier: 'frueh' }, { kills: 100, tier: 'mittel' }, { kills: 150, tier: 'spaet' }];   // PH
+let huntNext = 0;
+const HUNT_NAME = { frueh: 'leichter', mittel: 'mittlerer', spaet: 'starker' };
+function huntHud() {
+  const h = HUNT[huntNext], el = $('siegeHud'), t = boss ? `Boss-Jagd · Boss ${huntNext} / ${HUNT.length}` : h ? `Boss-Jagd · ${player.kills} / ${h.kills} Kills · dann ein ${HUNT_NAME[h.tier]} Boss` : 'Boss-Jagd · letzter Boss';
+  if (el.textContent !== t) el.textContent = t;
+}
 
 // Laufender Kampf oder null
 let boss: any = null;
@@ -246,15 +254,15 @@ function spawnCopy(b, pos) {
 // ---------- Auswahl ----------
 const seen = new Set<string>();
 // Boss für dieses Level: aus der Stufe würfeln, kein Boss doppelt im Run
-function pickBoss(level) {
-  const all = BOSSES.filter(b => b.tier === TIER_OF_LEVEL(level)), fresh = all.filter(b => !seen.has(b.id)), list = fresh.length ? fresh : all;
+function pickBoss(tier) {
+  const all = BOSSES.filter(b => b.tier === tier), fresh = all.filter(b => !seen.has(b.id)), list = fresh.length ? fresh : all;
   return list[Math.floor(Math.random() * list.length)];
 }
 
 // Kampf starten. id: fester Boss (Dev), sonst nach Level gewürfelt
-export function startBoss(id?: string) {
+export function startBoss(id?: string, tier?: string) {
   if (boss || player.dead || mobMode === 'siege') return false;
-  const def = id ? bossById(id) : pickBoss(player.level);
+  const def = id ? bossById(id) : pickBoss(tier ?? TIER_OF_LEVEL(player.level));
   if (!def) return false;
   seen.add(def.id);
   for (const m of state.mobs) { if (!m.dead) puff(m.pos); removeMob(m); }
@@ -349,7 +357,9 @@ function land(b) {
 let finalPending = false;
 export function updateBoss(dt) {
   if (!boss) {
-    if (player.level < lastLevel) seen.clear();          // neuer Run
+    if (player.level < lastLevel || player.kills < (HUNT[huntNext - 1]?.kills ?? 0)) { seen.clear(); huntNext = 0; }   // neuer Run
+    if (mobMode === 'hunt') huntHud();
+    if (mobMode === 'hunt' && autoOn()) { const h = HUNT[huntNext]; if (h && player.kills >= h.kills && startBoss(undefined, h.tier)) huntNext++; lastLevel = player.level; return; }
     const crossed = Math.floor(Math.min(player.level, 99) / B.every) > Math.floor(Math.min(lastLevel, 99) / B.every);
     lastLevel = player.level;
     if (finalPending) { finalPending = false; if (!startBoss()) completeRun('Level 100'); return; }
@@ -357,6 +367,7 @@ export function updateBoss(dt) {
     return;
   }
   lastLevel = player.level;
+  if (mobMode === 'hunt') huntHud();
   const s = dt / 1000;
   boss.time += s * boss.scale;
   for (const b of boss.bodies) if (b.mob?.dead && !b.deadSeen) { b.deadSeen = true; b.state = 'dead'; if (b.run) b.run.alive = false; for (const fn of boss.hooks.onBodyDeath) fn(b); }
@@ -488,6 +499,7 @@ function endBoss() {
   statsTimer = window.setTimeout(() => { bar.style.display = 'none'; }, E.statsMs);
   lastResult = { id: def.id, time, hits: st.hits, perfect };
   if (final && player.level >= 100) window.setTimeout(() => completeRun('Level 100'), E.stopMs + E.slowMs + 600);   // Finale: danach Ergebnis
+  if (mobMode === 'hunt' && huntNext >= HUNT.length) window.setTimeout(() => completeRun('Boss-Jagd'), E.stopMs + E.slowMs + 600);   // Boss-Jagd: der starke Boss war der letzte
 }
 let lastResult = null;
 

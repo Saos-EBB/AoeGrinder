@@ -27,7 +27,7 @@ export const byScore = list => [...list].sort((a, b) => b.score - a.score);
 export function recordRun() {
   const b = scoreBreakdown();
   const entry = {
-    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'siege' ? ` · Belagerung ${siegeGoal ? `${siegeGoal} min` : 'endlos'}` : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(),
+    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'siege' ? ` · Belagerung ${siegeGoal ? `${siegeGoal} min` : 'endlos'}` : mobMode === 'hunt' ? ' · Boss-Jagd' : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(),
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
     zone: zone.name, cause: player.lastHitBy ?? 'Unbekannt', version: SCORE_VERSION, note: '', build: '',
   };
