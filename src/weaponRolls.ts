@@ -13,7 +13,7 @@ import { maxHp, maxMana, dmgMult } from './formulas';
 import { ringFx } from './fx/spellFx';
 import { WEAPONS } from './models/weapons/defs';
 import { buildWeapon } from './models/weapons/index';
-import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBaukastenWeapon } from './models/weapons/baukasten';
+import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBaukastenWeapon, elementColor } from './models/weapons/baukasten';
 import { pick, dist2d } from './util';
 import { mark } from './plagueMarks';
 import { rollLegend, LEGENDS, LEG } from './legends';
@@ -89,7 +89,7 @@ export function effectRows(w) {
     rows.type.text = `${TYPES[s.type].name}: ${TYPE_TEXT[s.type]}`;
     if (w.r >= 1) rows.focus.text = focus(s.focus);
     rows.value.text = value(VALUE_KEY[s.value]);
-    if (s.element !== 'none') Object.assign(rows.element, { text: `${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`, color: `#${el.color.toString(16).padStart(6, '0')}` });
+    if (s.element !== 'none') Object.assign(rows.element, { text: `${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`, color: elementColor(s.element) });
     rows.maker.text = `${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`;
     if (s.extra !== 'none') rows.extra.text = `${EXTRAS[s.extra]}: ${value(VALUE_KEY[s.value2], 0.5)}`;
     if (s.unique) rows.unique.text = s.legend ? `${LEGENDS[s.legend].name}: ${LEGENDS[s.legend].desc} Combo ${LEG.combo.labels.join(' → ')}` : oldModelName(s.unique);
@@ -100,6 +100,9 @@ export const effectLines = w => effectRows(w).filter(r => r.text).map(r => `${r.
 export const effectText = w => effectLines(w).join(' · ');
 export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : w.s.legend ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
 export const rarityOf = w => CARD_RARITIES[w.r];
+// Für Filter und Sortierung im Inventar: alte Waffen haben kein Element und keinen Baukasten-Typ
+export const elementOf = w => isNew(w) ? w.s.element : 'none';
+export const typeOf = w => isNew(w) ? w.s.type : 'alt';
 
 export const equipped = () => meta.inv.find(w => w.id === meta.equipped) ?? null;
 // Modell der gewählten Waffe: neue aus dem Baukasten, Unikate und alte Waffen aus models/weapons

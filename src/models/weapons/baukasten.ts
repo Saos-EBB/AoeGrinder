@@ -39,6 +39,7 @@ export const ELEMENTS = {
   blut: { name: 'Blut', color: 0xe0202e, adj: 'Blutig', fx: 'Seuchen-Mal: +1 Stapel' },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
   dunkel: { name: 'Dunkel', color: 0xff2440, adj: 'Finster', fx: 'True Damage, heilt 20 %' },
 };
+export const elementColor = el => `#${ELEMENTS[el].color.toString(16).padStart(6, '0')}`;   // CSS-Farbe für UI
 export const MAKERS = {
   grab: { name: 'Grabkammer & Söhne', gen: 'der Grabkammer', trait: 'Schaden +10 %, Zauberzeit +10 %', main: 'bone', accent: 'rust', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
   stern: { name: 'Sternwarte Ost', gen: 'der Sternwarte', trait: 'Crit +5 %, Crits geben 1 % Mana', main: 'brass', accent: 'brass', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },

@@ -31,14 +31,14 @@ export function weaponStats(w) {
 }
 
 // Hover-Karte einer Waffe (Mockup T1): Name in Seltenheitsfarbe, großer Hauptwert, ▲/▼ gegenüber der ausgerüsteten Waffe,
-// Affixe blau, Legendär-Effekt orange, Combo-Zeile, „Zerlegen +x Staub“. Vergleich: diese Waffe links, ausgerüstete rechts.
+// Affixe blau (Element in seiner Farbe), Legendär-Effekt orange, Combo-Zeile, „Zerlegen +x Staub“. Vergleich: diese Waffe links, ausgerüstete rechts.
 const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:,\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 function weaponTip(w): TipData {
   const rar = rarityOf(w), rows = effectRows(w), byKind = Object.fromEntries(rows.map(r => [r.kind, r]));
   const main = pctOf(byKind.value?.text?.replace(/^[^:]*: /, '') ?? byKind.value?.text);
   const lines: string[] = [];
   if (byKind.type?.text) lines.push(`<span style="color:${COLORS.dim}">${byKind.type.text}</span>`);
-  for (const k of ['focus', 'element', 'maker', 'extra']) if (byKind[k]?.text) lines.push(`<span class="tAffix">◆ ${byKind[k].text}</span>`);
+  for (const k of ['focus', 'element', 'maker', 'extra']) if (byKind[k]?.text) lines.push(`<span class="tAffix"${k === 'element' ? ` style="color:${byKind[k].color}"` : ''}>◆ ${byKind[k].text}</span>`);   // Element in seiner Farbe
   const uniq = byKind.unique?.text;
   if (uniq) {
     const [effect, combo] = uniq.split(' Combo ');
