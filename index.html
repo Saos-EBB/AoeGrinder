@@ -361,12 +361,16 @@
 </div>
 
 <div id="deathModal" class="modal">
-  <div class="frame panel">
-    <h1 class="title">Du bist gestorben</h1>
-    <p id="deathStats"></p>
-    <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
-    <button class="btn" id="restartBtn">Neuer Run</button>
-    <button class="smallBtn" id="deathMenuBtn" style="width:auto;padding:6px 14px">Hauptmenü</button>
+  <div class="frame panel" id="endBox">
+    <h1 class="title" id="endTitle"></h1>
+    <div id="endSub"></div>
+    <p id="deathStats" hidden></p>
+    <div id="runResult"></div>
+    <div class="endBtns">
+      <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
+      <button class="smallBtn" id="restartBtn">Nochmal</button>
+      <button class="smallBtn" id="deathMenuBtn">Hauptmenü</button>
+    </div>
   </div>
 </div>
 

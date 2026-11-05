@@ -16,16 +16,14 @@ import { pick } from '../util';
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
 
+// Staub vergeben, Shop vorbereiten. Gibt die Staub-Rechnung zurück, das Run-Ende zeigt sie (leaderboardView.ts)
 export function afterRun(completed) {
-  const { dust, tier } = awardDust(completed);
+  const award = awardDust(completed), { tier } = award;
   tierNow = tier;
   offer = tier ? rollShop(tier) : [];
   if (tier) keepOffer(offer);
-  $('deathStatsDust')?.remove();
-  $('runRank').insertAdjacentHTML('afterend', `<div id="deathStatsDust" style="color:#efe0b8;font-weight:700;margin-top:6px">Knochenstaub +${dust}, jetzt ${meta.dust}${tier ? ` · Shop-Stufe ${tier}` : ''}</div>`);
   $('deathShopBtn').hidden = !tier;
-  $('restartBtn').hidden = !!tier;
-  $('deathMenuBtn').hidden = !!tier;
+  return award;
 }
 
 // Shop (Mockup S2, Look Glut): links Kiste, Mitte Ergebnis des letzten Zugs, rechts Verschmelzen, darunter Freischaltungen und Inventar.
@@ -208,8 +206,6 @@ $('shopClose').addEventListener('click', () => {
     return;
   }
   $('deathShopBtn').hidden = true;
-  $('restartBtn').hidden = false;
-  $('deathMenuBtn').hidden = false;
   toMainMenu();
 });
 

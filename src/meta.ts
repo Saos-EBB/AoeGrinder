@@ -81,11 +81,12 @@ export function shopTier(completed) {
 export function awardDust(completed) {
   const tier = shopTier(completed);
   const bonus = tier ? Math.round(META.dust.doneBonusAtTier3 * tier / 3) : 0;
-  const dust = Math.round(player.level * META.dust.perLevel * scoreMult()) + bonus;
+  const base = Math.round(player.level * META.dust.perLevel * scoreMult());
+  const dust = base + bonus;
   meta.dust += dust;
   meta.bestTier = Math.max(meta.bestTier, tier);
   saveMeta();
-  return { dust, tier };
+  return { dust, tier, base, bonus };   // base/bonus: Zeilen der Staub-Rechnung im Run-Ende
 }
 // Shop im Hauptmenü: letztes Angebot bleibt stehen, damit neu Öffnen nichts neu würfelt. Ohne Abschluss gilt Stufe 1.
 export const menuTier = () => Math.max(1, meta.bestTier);

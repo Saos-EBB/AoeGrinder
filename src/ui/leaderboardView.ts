@@ -1,6 +1,11 @@
 // Modus-Auswahl, Run-Ergebnis und Ranglisten-Ansicht. Hängt sich selbst ein, damit menus.ts und index.html unberührt bleiben.
 
 import { afterRun } from './shop';
+import { currentFigure } from './mainMenu';
+import { run } from '../score';
+import { SPELLS } from '../config';
+import { COLORS } from './colors';
+import { META, meta } from '../meta';
 import { MODES, MODIFIERS } from '../modifiers';
 import { setLevel } from '../player';
 import { stopChannel, clearSpellEffects } from '../spells/core';
@@ -51,26 +56,45 @@ function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation());
 
 const fmt = n => Math.round(n).toLocaleString('de-DE');
 
-$('deathStats').insertAdjacentHTML('afterend', `<div id="runResult"></div>`);
 
 // Beim Tod: speichern und Aufschlüsselung zeigen
+// Run-Ende (Mockup E2, Look Glut): Titel, Zeit groß mit Abstand zur Bestzeit und Rang, 5 Werte, Schaden nach Quelle, Staub-Rechnung
+const fmtT = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function showRunResult() {
   const { entry, rank } = recordRun(), b = entry.breakdown;
-  const box = $('runResult');
-  box.innerHTML = `<div id="runRecord"></div><table>
-    <tr><td>Kills (${fmt(entry.kills)}), Modus ${fmtMult(entry.mult)}</td><td>${fmt(b.kills)}</td></tr>
-    <tr><td>Größter Pull (${fmt(entry.bestPull)} Mobs)</td><td>+${fmt(b.pull)}</td></tr>
-    <tr><td>Überlebenszeit</td><td>+${fmt(b.time)}</td></tr>
-    <tr class="sum"><td>Punkte</td><td>${fmt(b.total)}</td></tr></table>
-    <div id="runRank"></div>
+  const same = loadRuns().filter(r => r.mode === entry.mode && (r.mobMode ?? 'packs') === entry.mobMode && (r.siegeGoal ?? 0) === entry.siegeGoal);
+  const best = same.filter(r => r !== entry && r.date !== entry.date && typeof r.timeTo100 === 'number').reduce((m, r) => Math.min(m, r.timeTo100), Infinity);
+  $('endTitle').textContent = player.won && player.level >= 100 ? 'Level 100 erreicht' : player.won ? 'Geschafft' : player.lastHitBy === 'Zeitlimit' ? `Zeit abgelaufen auf Level ${player.level}` : `Gefallen auf Level ${player.level}`;
+  const fig = currentFigure()?.name;
+  $('endSub').textContent = [fig, entry.zone, entry.modeName !== fig ? entry.modeName : ''].filter(Boolean).join(' · ');
+  const t100 = entry.timeTo100;
+  const diff = typeof t100 === 'number' && Number.isFinite(best) ? t100 - best : null;
+  const stat = (v, l) => `<div class="endStat"><b>${v}</b><span>${l}</span></div>`;
+  const dmg = Object.entries<any>(run.dmgBySource ?? {}).sort((x, y) => y[1] - x[1]), total = dmg.reduce((s, [, v]) => s + v, 0);
+  const top = dmg.slice(0, 6);
+  const award = afterRun(!!player.won);
+  $('runResult').innerHTML = `
+    <div class="endTime">${fmtT(entry.time)}</div>
+    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${diff <= 0 ? '−' : '+'}${fmtT(Math.abs(diff))} Bestzeit</span> · ` : typeof t100 === 'number' ? '<span style="color:#6ee7a0">Erste Zeit bis Level 100</span> · ' : ''}Platz ${rank} von ${same.length}${rank === 1 && entry.score > 0 ? ' · <b>Neuer Rekord!</b>' : ''}</div>
+    <div class="endStats">${stat(fmt(entry.kills), 'Kills')}${stat(fmt(b.total), 'Punkte')}${stat(fmt(entry.bestCombo), 'Höchste Combo')}${stat(`×${entry.bestMulti}`, 'Multi-Kill')}${stat(player.won ? 0 : 1, 'Tode')}</div>
+    <div class="endPoints">Kills ${fmt(b.kills)} (Modus ${fmtMult(entry.mult)}) · Größter Pull ${fmt(entry.bestPull)} Mobs +${fmt(b.pull)} · Überlebenszeit +${fmt(b.time)} · Ursache: ${esc(entry.cause)}</div>
+    <div class="endCols">
+      <div class="gPanel endDmg"><div class="title">Schaden nach Quelle</div>${top.length ? top.map(([id, v]) => {
+        const s = SPELLS[id], c = s?.relic ? '#e3c27a' : COLORS.school[s?.school ?? s?.cls] ?? '#c4aea6', p = Math.round(v / total * 100);
+        return `<div class="endBar"><span>${esc(s?.name ?? 'Umgebung')}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${p} %</b></div>`;
+      }).join('') : '<p>—</p>'}</div>
+      <div class="gPanel endDust"><div class="title">Knochenstaub</div>
+        <div class="endRow"><span>Level ${entry.level} × ${META.dust.perLevel} × Modus ${fmtMult(entry.mult)}</span><b>${award.base}</b></div>
+        <div class="endRow"><span>Abschluss-Bonus${award.tier ? ` · Shop-Stufe ${award.tier}` : ''}</span><b>+${award.bonus}</b></div>
+        <i class="tSep"></i>
+        <div class="endRow sum"><span>Gesamt · jetzt ${meta.dust}</span><b>+${award.dust}</b></div>
+      </div>
+    </div>
     <input id="runNote" maxlength="120" placeholder="Notiz zum Run (optional)">`;
-  $('runRecord').textContent = rank === 1 && entry.score > 0 ? 'Neuer Rekord!' : '';
-  $('runRank').textContent = `Platz ${rank} in ${entry.modeName} · Ursache: ${entry.cause} · Längste Combo ${entry.bestCombo} · Bester Multi-Kill ×${entry.bestMulti}${typeof entry.timeTo100 === 'number' ? ` · Level 100 in ${fmtTime(entry.timeTo100)}` : ''}${entry.mobMode === 'siege' ? ` · Höchstens ${fmt(entry.peakMobs)} Mobs gleichzeitig bei ${entry.peakFps} FPS` : ''}`;
   const note = $('runNote') as HTMLInputElement;
   ownKeys(note);
   note.addEventListener('change', () => setNote(entry.date, note.value));
-  document.querySelector('#deathModal h1').textContent = player.won ? 'Geschafft!' : player.lastHitBy === 'Zeitlimit' ? 'Zeit abgelaufen' : 'Du bist gestorben';
-  afterRun(!!player.won);
 }
 
 // ---------- Ranglisten-Ansicht ----------

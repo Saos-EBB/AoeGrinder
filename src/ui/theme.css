@@ -240,3 +240,31 @@ body.mobile #menuActions { top: 6vh; }
 #shopModal #shopList h4 { font: 800 13px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-accent); margin: 10px 0 4px; }
 #shopModal .shopItem { background: rgba(0, 0, 0, .4); border-width: 1px; border-radius: 0; font-family: var(--font-body); color: var(--glut-text); }
 body.mobile #shopCols { grid-template-columns: 1fr; }
+
+/* ---------- Run-Ende (E2.dc.html) ---------- */
+#deathModal #endBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; }
+#endTitle { font-size: 46px !important; }
+#endSub { margin-top: 6px; font-size: 16px; color: var(--glut-muted); }
+.endTime { margin-top: 10px; font: 700 78px var(--font-num); line-height: 1; }
+.endRank { margin-top: 8px; font: 700 20px var(--font-body); }
+.endStats { display: flex; justify-content: center; gap: 0; margin: 24px 0 6px; }
+.endStat { width: 200px; display: flex; flex-direction: column; }
+.endStat b { font: 700 34px var(--font-num); }
+.endStat span { font-size: 14px; color: var(--glut-muted); }
+.endPoints { font-size: 13px; color: var(--glut-muted); margin-bottom: 18px; }
+.endCols { display: grid; grid-template-columns: 560fr 440fr; gap: 40px; text-align: left; }
+.endCols .gPanel { padding: 14px 20px 18px; }
+.endCols .title { font-size: 17px; margin-bottom: 12px; }
+.endBar { display: grid; grid-template-columns: 120px 1fr 50px; align-items: center; gap: 10px; height: 34px; font-size: 15px; }
+.endBar i { height: 14px; display: block; }
+.endBar b { text-align: right; color: var(--glut-muted); }
+.endRow { display: flex; justify-content: space-between; font-size: 16px; color: var(--glut-muted); height: 30px; align-items: center; }
+.endRow b { color: var(--glut-text); }
+.endRow.sum span { color: var(--glut-text); font-size: 18px; }
+.endRow.sum b { font: 800 32px var(--font-num); color: var(--glut-accent); }
+#runNote { margin-top: 16px; width: 60%; padding: 6px 10px; background: #0a0202; border: 1px solid var(--glut-border); color: var(--glut-text); font-family: var(--font-body); }
+.endBtns { display: flex; justify-content: center; gap: 16px; margin-top: 18px; }
+.endBtns button { width: 210px !important; height: 52px; margin: 0 !important; padding: 0 !important; font-size: 17px; display: block !important; }
+.endBtns [hidden] { display: none; }
+body.mobile .endCols { grid-template-columns: 1fr; }
+body.mobile .endStat { width: auto; flex: 1; }
