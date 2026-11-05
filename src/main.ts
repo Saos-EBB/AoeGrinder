@@ -53,6 +53,7 @@ import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
+import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
 
 function update(dt) {
   updatePadCamera(dt);
@@ -66,13 +67,14 @@ function update(dt) {
   updateZoneEvent(dt);
   updateFigures();
   updateLegends();
+  updateBoss(dt);
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {
     if (m.dead && state.now - m.deathAt > 4000) { removeMob(m); return false; }
     return true;
   });
-  updateRespawn();
+  if (!bossBusy()) updateRespawn();   // Boss-Kampf: kein Nachschub
   updateSiege(dt);
   updateCardQueue();
 }
@@ -102,6 +104,7 @@ function updateVisuals(dt) {
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
+  updateBossVisuals(dt);
   frameNo++;
   for (const m of state.mobs) {
     // Hinter dem Nebel: weder zeichnen noch animieren. Im Halbdunkel jeden 2. Frame mit doppeltem dt.
@@ -118,7 +121,7 @@ function updateVisuals(dt) {
       frozen: !m.dead && m.rootUntil > state.now, iced: !m.dead && m.rootUntil > state.now && m.rootLook === 'ice', slowed: m.slowUntil > state.now,
       poisoned: !m.dead && poisoned(m), feared: !m.dead && m.state === 'flee',
       attack: attackT >= 0 && attackT < 1 ? attackT : 0,
-      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: !!m.champion,
+      flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1), champion: m.bossTint ?? !!m.champion,
     });
     if (m.dead) sinkCorpse(m);
   }
@@ -143,7 +146,7 @@ function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();
-  const simDt = hitstopDt(dt);
+  const simDt = hitstopDt(dt) * bossTimeScale();   // Boss-Tod: Stopp und Zeitlupe
   if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);

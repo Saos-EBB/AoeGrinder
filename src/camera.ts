@@ -39,6 +39,10 @@ export function updateAutoCam(dt, dragging) {
   cam.offset = now + wrap(target - now) * (1 - Math.exp(-AUTO_CAM_RATE * dt / 1000));
 }
 
+// Fremde Kamera (boss.ts): bekommt die fertige normale Position und das Ziel, setzt Position und Blick selbst
+let override = null;
+export function setCamOverride(fn) { override = fn; }
+
 let lastShake = performance.now();
 export function updateCamera() {
   const yaw = player.facing + cam.offset;
@@ -56,7 +60,7 @@ export function updateCamera() {
   if (nearest < 1) camera.position.lerpVectors(target, camera.position, Math.max(0.15, nearest - 0.05));
   const minY = heightAt(camera.position.x, camera.position.z) + 0.5;   // nicht unter den Boden
   if (camera.position.y < minY) camera.position.y = minY;
-  camera.lookAt(target);
+  if (override) override(camera, target); else camera.lookAt(target);
   const sh = shakeOffset(performance.now() - lastShake);
   lastShake = performance.now();
   camera.position.x += sh.x;

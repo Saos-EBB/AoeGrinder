@@ -132,12 +132,14 @@ function spawnChampionPack(x, z, affixes) {
 // Modelle sind pro Mob verschmolzen, Geometrie und Material müssen mit weg
 export function removeMob(m) {
   scene.remove(m.model.root);
+  m.model.onRemove?.();                     // verdorbene Figuren: Effekte in Weltkoordinaten (bosses/evil.ts)
   m.plate.remove();
   m.model.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose?.(); if (o.isSkinnedMesh) o.skeleton.dispose(); });
 }
 
-export function spawnMob(typeId, pos, level, packId) {
-  const type = MOB_TYPES[typeId];
+// typeOverride: eigener Typ mit build (Boss-Körper, bosses/models.ts)
+export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
+  const type = typeOverride ?? MOB_TYPES[typeId];
   pos.y = groundAt(pos.x, pos.z, pos.y);
   resolve(pos, 0.7);
   pos.y = groundAt(pos.x, pos.z, pos.y);

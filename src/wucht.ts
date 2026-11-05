@@ -125,12 +125,12 @@ function makeDecals() {
   scene.add(mesh);
   return { mesh, tile, alpha };
 }
-// Spur am Boden. Pro Frame höchstens perFrame, damit ein AoE-Treffer auf 30 Mobs nicht den ganzen Pool belegt
-export function decal(pos, school, size) {
+// Spur am Boden. Pro Frame höchstens perFrame, damit ein AoE-Treffer auf 30 Mobs nicht den ganzen Pool belegt. max: größer als maxSize (Boss-Tod, boss.ts)
+export function decal(pos, school, size, max = W.decal.maxSize) {
   if (decalFrame !== state.now) { decalFrame = state.now; decalsThisFrame = 0; }
   if (++decalsThisFrame > W.decal.perFrame) return;
   decals ??= makeDecals();
-  const i = nextDecal++ % W.decal.max, D = W.decal, d = Math.min(D.maxSize, Math.max(D.minSize, size));
+  const i = nextDecal++ % W.decal.max, D = W.decal, d = Math.min(max, Math.max(D.minSize, size));
   _p.set(pos.x, groundAt(pos.x, pos.z, pos.y) + D.lift, pos.z);
   _q.setFromAxisAngle(_up, Math.random() * Math.PI * 2);
   decals.mesh.setMatrixAt(i, _m.compose(_p, _q, _s.set(d, 1, d)));

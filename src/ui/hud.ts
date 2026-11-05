@@ -237,7 +237,9 @@ export function updateHud() {
   const hpMax = maxHp(), manaMax = maxMana();
   $('lvl').textContent = player.level;
   $('luck').textContent = String(player.luck).replace('.', ',');
-  $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax, 0, 1)})`;
+  const cut = player.hpCut ?? 0;   // Zerstörung: Leben-Balken bezieht sich aufs volle Leben, der verlorene Teil ist grau
+  $('hpFill').style.transform = `scaleX(${clamp(player.hp / hpMax * (1 - cut), 0, 1)})`;
+  $('hpCut').style.width = `${cut * 100}%`;
   $('hpText').textContent = `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`;
   $('manaFill').style.transform = `scaleX(${clamp(player.mana / manaMax, 0, 1)})`;
   $('manaText').textContent = player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`;   // resNote: z. B. Blutrausch-Stapel

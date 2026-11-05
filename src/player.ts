@@ -183,6 +183,9 @@ function regenerate(dt) {
   }
 }
 
+// boss.ts: true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod
+let runEndHook = () => false;
+export const setRunEndHook = fn => { runEndHook = fn; };
 export function gainXp(xp) {
   const fromLevel = player.level;
   player.xp += xp;
@@ -196,7 +199,7 @@ export function gainXp(xp) {
   if (player.level >= LEVEL_MAX) player.xp = 0;
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
-  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return completeRun('Level 100');
+  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun('Level 100');   // #boss: erst der finale Boss (boss.ts)
   if (player.level > fromLevel) levelUpFx();
   updateCardQueue();
 }
@@ -258,18 +261,20 @@ const dodgeTrail = d => mage.trail?.add(player.pos.x, player.pos.y, player.pos.z
 // kein Lenken in der Luft, Rückwärts langsamer.
 export function updatePlayer(dt) {
   const s = dt / 1000;
-  const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
-  if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
+  const mirror = state.mirrorUntil > state.now ? -1 : 1;   // Wahnsinn (Yogg-Saron, bosses/rules.ts): links und rechts vertauscht
+  const turn = ((act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0)) * mirror;
+  const locked = !!state.bossLock;                 // Boss-Lock-on (boss.ts): Blick hält boss.ts, A/D laufen seitwärts
+  if (!mouseBtn.right && !locked) player.facing += turn * CFG.turnSpeed * s;
 
   const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked() || plagueRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
-  let strafe = (act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0);
-  if (mouseBtn.right) strafe -= turn;
+  let strafe = ((act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0)) * mirror;
+  if (mouseBtn.right || locked) strafe -= turn;
   strafe = clamp(strafe, -1, 1);
   fwd += pad.move.y;
-  strafe += pad.move.x;
+  strafe += pad.move.x * mirror;
   if (stunned) fwd = strafe = 0;
 
   const dodging = dodgeMove(player.pos, player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Position selbst

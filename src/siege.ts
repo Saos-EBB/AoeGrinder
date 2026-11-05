@@ -15,7 +15,7 @@ import { renderMenu } from './ui/mainMenu';
 // Mobs pro Sekunde = base + perLevel × (Level − 1) + perMinute × Minuten. // PH
 const SIEGE = { base: 1, perLevel: 0.15, perMinute: 0.75, edgeR: 90 * WORLD_K, maxPerFrame: 3 };
 
-const CHOICES = [{ name: 'Packs', mode: 'packs', goal: 0 }, { name: 'Belagerung 5 min', mode: 'siege', goal: 5 }, { name: 'Belagerung 10 min', mode: 'siege', goal: 10 }, { name: 'Belagerung 15 min', mode: 'siege', goal: 15 }, { name: 'Belagerung endlos', mode: 'siege', goal: 0 }];
+const CHOICES = [{ name: 'Packs', mode: 'packs', goal: 0 }, ...(location.hash.includes('boss') ? [{ name: 'Boss-Jagd', mode: 'hunt', goal: 0 }] : []), { name: 'Belagerung 5 min', mode: 'siege', goal: 5 }, { name: 'Belagerung 10 min', mode: 'siege', goal: 10 }, { name: 'Belagerung 15 min', mode: 'siege', goal: 15 }, { name: 'Belagerung endlos', mode: 'siege', goal: 0 }];
 let due = 0, fps = 60, lastFrame = performance.now();
 
 const siegeRate = () => SIEGE.base + SIEGE.perLevel * (player.level - 1) + SIEGE.perMinute * state.now / 60000;
@@ -32,7 +32,7 @@ function spawnFromEdge() {
 
 export function updateSiege(dt) {
   const hud = $('siegeHud');
-  hud.hidden = mobMode !== 'siege';
+  hud.hidden = mobMode !== 'siege' && mobMode !== 'hunt';   // Boss-Jagd: Text schreibt boss.ts
   if (mobMode !== 'siege' || player.dead) return;
   if (siegeGoal && state.now >= siegeGoal * 60000) return completeRun(`Ziel ${siegeGoal} min`);
   due += siegeRate() * dt / 1000;
@@ -59,7 +59,7 @@ function renderMobPick() {
     b.className = 'chip' + (c.mode === mobMode && c.goal === siegeGoal ? ' selected' : '');
     b.textContent = c.name;
     b.dataset.nav = c.name;
-    b.title = c.mode === 'siege' ? 'Mobs kommen vom Kartenrand, immer mehr pro Level und Minute. Ziel überleben, danach der Shop' : 'Packs stehen auf der Karte. Abschluss bei Level 100';
+    b.title = c.mode === 'hunt' ? 'Packs wie sonst. Bei 50 Kills ein leichter, bei 100 ein mittlerer, bei 150 ein starker Boss (zufällig). Der letzte beendet den Run' : c.mode === 'siege' ? 'Mobs kommen vom Kartenrand, immer mehr pro Level und Minute. Ziel überleben, danach der Shop' : 'Packs stehen auf der Karte. Abschluss bei Level 100';
     b.addEventListener('click', () => { setMobMode(c.mode); setSiegeGoal(c.goal); resetGame(); renderMobPick(); renderMenu(); });
     box.appendChild(b);
   }
