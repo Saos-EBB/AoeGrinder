@@ -2,7 +2,7 @@
 
 Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhöhlen, Mondsee.
 
-**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an). Messungen unten.
+**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an), Mondsee in `src/mondsee.ts`. Messungen unten.
 
 ## Gemeinsame Basis (gilt für alle 4)
 - Toon: MeshToonMaterial mit 3-Stufen-gradientMap (DataTexture 3×1), keine Texturen, Farben über Vertex-Farben.
@@ -61,3 +61,8 @@ Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhö
 - 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Tannen, Eisblöcke, Steine, Seen) + 1 Points (Schnee) = 6 Calls, Himmel wie überall.
 - Eis: Knockback 1,5 yd an Land, 3 yd auf dem See. Ein Mob, der 1 s übers Eis läuft, rutscht ohne Befehl noch etwa 2 yd weiter (`WQ.ice.grip`).
 - Abweichungen: Dunkel-Modus bleibt, deshalb sieht man den rosa-blauen Himmel nicht und der Schnee ist nur im Umkreis der Figur sichtbar. Die Mobs sind umgefärbte vorhandene Rigs (humanoid, quadruped), keine eigenen Modelle. Die Zone ist nur über das Dev-Menü oder `?zone=winterquell` erreichbar, wie die anderen Zonen außer Tirisfal.
+
+## Messung Mondsee (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Bäume, Stege, Tore, Laternen) + Laternen-Kerne + Wasser + Mond + Geisterlichter = 9 Calls.
+- Phasen ab Run-Start: zunehmend, Vollmond (Packs ×2, im Test 88 → 162 Mobs), abnehmend, Neumond (Champion-Chance 60 % statt 20 %, ab Champion-Level 6), je 3 Minuten (`MS.phaseMs`). Nebel pro Phase über `state.fogExtra` in `dunkel.ts`.
+- Abweichungen: Der Mond steht 150 yd vor der Kamera statt am Himmel, weil die Randberge (`heightAt` ab etwa 180 yd) alles Fernere verdecken. Der Run beginnt mit zunehmendem Mond statt Neumond, damit man den Mond sieht. Der Nebel bleibt der exponentielle des Dunkel-Modus (Konzept: linear).

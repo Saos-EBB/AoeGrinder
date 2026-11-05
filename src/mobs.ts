@@ -40,7 +40,7 @@ const levelPackSize = () => clamp(3 + Math.floor((player.level - 20) / 2) + zone
 const liveMobs = () => state.mobs.filter(m => !m.dead);
 const livePackCount = () => new Set(liveMobs().map(m => m.packId)).size;
 // Nie unter dem Startwert; ab dem Level, wo die Packs wachsen, skaliert die Dichte wie bisher mit Packanzahl × Packgröße
-const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * PACK_SIZE_MUL * modFactor('packSize');
+const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * PACK_SIZE_MUL * modFactor('packSize') * (state.packMul ?? 1);   // packMul: Vollmond am Mondsee
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {

@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(welt): Neue Zone Mondsee (Dev → Zone oder `?zone=mondsee`): Nacht mit riesigem Anime-Mond, schwarzer See mit Mond-Spiegelstreifen, Holzstege, rote Tore, Steinlaternen mit Glühkern, tote Bäume, Glühwürmchen und Geisterlichter; Mobs Ertrunkener und Seegeist (ab Level 16). Alle 3 Minuten wechselt die Mondphase: Vollmond doppelt so viele Gegner, Neumond 60 % Champion-Packs und dichterer Nebel, jeweils mit Einblendung
 - feat(welt): Neue Zone Winterquell (Dev → Zone oder `?zone=winterquell`): Schneefeld im Toon-Look mit kaltblauer Schattenstufe, Tannen mit Schneekappen, Eisblöcke, verschneite Steine, Eisseen, fallender Schnee; Mobs Zottelyeti, Frostsäbler (ab Level 16) und Eulenbestie (ab Level 31); auf dem Eis rutschen Mobs und fliegen bei Knockback doppelt so weit
 - feat(modi)!: Wellen deutlich größer: 50 Gegner in Welle 1, dann je 50 mehr (100, 150, 200 … bis 500 in Welle 10); `SCORE_VERSION` v33, alte Wellen-Zeiten stehen getrennt
 - feat(ui): Inventar mit Filter (Seltenheit, Element, Typ) und Sortierung (Seltenheit, Neueste, Element, Typ), wird pro Browser gemerkt; Element-Punkt an jeder Waffe; Element-Effekte in Hover-Karte und Werteliste in der Farbe des Elements

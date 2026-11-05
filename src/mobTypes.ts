@@ -37,6 +37,12 @@ export const MOB_TYPES: any = {
   eulenbestie: { name: 'Eulenbestie', ability: 'stomp', hpMul: 1.4, speedMul: 0.9,
     build: humanoid({ skin: 0x8a6a48, body: 0x6e5236, trim: 0xd8cfc0, eye: glowMat(2.4, 1.8, 0.3), scale: [1.3, 1.2, 1.3], lean: 0.3 }) },
 
+  // Mondsee (Werte PH)
+  ertrunkener: { name: 'Ertrunkener', ability: null, speedMul: 0.9, hpMul: 1.1,
+    build: humanoid({ skin: 0x5f7a72, body: 0x2c3a40, trim: 0x1a2428, eye: glowMat(0.4, 1.8, 1.6), lean: 0.28 }) },
+  geist: { name: 'Seegeist', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.15,
+    build: humanoid({ skin: 0xb8c8f0, body: 0x8a9ad8, trim: 0x5a6ab0, robe: true, hood: true, sleeve: 0x8a9ad8, eye: glowMat(1.2, 1.8, 3), glow: glowMat(0.8, 1.2, 2.6), scale: [0.95, 1.1, 0.95] }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },

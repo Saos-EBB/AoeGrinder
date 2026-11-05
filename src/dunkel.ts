@@ -30,7 +30,7 @@ const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;   // Bewegu
 const fog = new THREE.FogExp2(D.fogColor, D.fogDensity);
 
 function darken() {
-  fog.density = D.fogDensity + D.fogStorm * state.stormK;
+  fog.density = D.fogDensity + D.fogStorm * state.stormK + (state.fogExtra ?? 0);   // fogExtra: Mondphase
   hemi.intensity = zone.env.hemi * D.hemiMul;       // absolut: blendFog ruft das im Sandsturm jeden Frame
   sun.intensity = zone.env.sunPower * D.sunMul;
   skyUniforms.top.value.set(D.skyTop); skyUniforms.mid.value.set(D.skyMid); skyUniforms.horizon.value.set(D.fogColor);
@@ -96,4 +96,5 @@ export function updateDunkel(dt) {
   castShadows(mage.root);
   for (const m of state.mobs) castShadows(m.model.root, Math.hypot(m.pos.x - p.x, m.pos.z - p.z) < PERF.mobShadowYd);
   if (D.flicker) updateFlicker(dt);
+  fog.density = D.fogDensity + D.fogStorm * state.stormK + (state.fogExtra ?? 0);
 }

@@ -39,6 +39,7 @@ scene.add(props);
 
 // Baut Himmel, Gelände und Dekoration der Zone neu auf
 export function buildWorld(id) {
+  zone.leave?.();   // Zonen mit eigenem Zustand (Mondsee: Phase) räumen auf
   zoneId = id;
   zone = ZONES[id];
   setEnv(zone.env);
