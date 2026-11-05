@@ -2,7 +2,7 @@
 
 **Spiel-Artifact:** „Frost Grind – Prototyp“ · https://claude.ai/artifact/68vgdsC4svaWovgDnPum84 · slug `2998fbb5-dd3d-4566-a5fc-dab03102f1e9`
 **Live-Version für Kevin:** https://saosgonegametry02.vercel.app/ (Vercel-Team `saosgone`, Projekt `saosgonegametry02`). Deploy: `dist/index.html` in einen leeren Ordner kopieren, dort `vercel link` und `vercel deploy --prod`; ein Push deployt nicht.
-Stand Vercel: v32 von `main` (2026-11-05): Optik aus den Viewern (Magier-Modelle mit Stufen-Effekten, Energie-Look aller Fähigkeiten, Mob-Status), davor v31 Builds-Umbau. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
+Stand Vercel: v32 + Hotbar von `main` (2026-11-05): Hotbar mit Drag & Drop und Auslöse-Modus, Optik aus den Viewern (Magier-Modelle mit Stufen-Effekten, Energie-Look aller Fähigkeiten, Mob-Status), davor v31 Builds-Umbau. Stand Artifact: v15 (`1793625667-fc85`, 2026-11-02), `SCORE_VERSION` dort noch v14. Das Repo ist die Quelle, das Artifact wird nicht direkt editiert.
 **Mechanik-Quelle:** `docs/mechanics-spec.md` (VMaNGOS + Wowhead, jede Regel mit Beleg).
 **Modell-Quelle:** Viewer „Frost Grind – Strichmagier“ (https://claude.ai/artifact/5gmtckZXNhJgC3peZ8xArU), „Frost Grind – Strichkrieger“ (https://claude.ai/artifact/CWAKpz96NVdZ2sQQWd8yXR), „Frost Grind – Klingenstrich“. Im Spiel: `models/strichMagier.ts`, `strichKrieger.ts`, `klingeModel.ts`. `heroModels.ts` ist gelöscht (alte Magier, Krieger, Samurai, Ninja); Spuren und `SKIN_FX` liegen in `models/trail.ts`.
 
