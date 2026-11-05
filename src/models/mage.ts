@@ -14,9 +14,13 @@ import { buildEquipped } from '../weaponRolls';
 // Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
 const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
-const WAR_WEAPONS = ['sword'];   // Axt und Kolben sind raus (v31)
+const WAR_WEAPONS = ['sword', 'leeroy', 'freshmeat'];   // Axt und Kolben sind raus (v31), dazu die Legenden mit dem Riesenschwert als Basis (legends.ts)
+const warBase = w => (w === 'leeroy' || w === 'freshmeat' ? 'sword' : w);
+// Klingenstrich: Standard oder Thunderfury (legends.ts), gleiches Modell
+const KLINGE_WEAPON_STORE = 'frostgrind.klingeWeapon';
+let klingeWeapon = (() => { try { const w = localStorage.getItem(KLINGE_WEAPON_STORE); return w === 'thunderfury' ? w : 'standard'; } catch { return 'standard'; } })();
 let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
-const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warWeapon }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
+const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon) }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 const NO_FX = {};
@@ -79,7 +83,7 @@ function setSkin(id) {
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers()) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
-    const hw = id === 'krieger' && warWeapon !== 'sword' ? null : HERO_WEAPON[id];   // Axt und Kolben baut das Modell selbst
+    const hw = id === 'krieger' && warBase(warWeapon) !== 'sword' ? null : HERO_WEAPON[id];
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
@@ -119,6 +123,8 @@ export const mage = {
   get skin() { return skin; },
   get hero() { return cur; },
   get warWeapon() { return warWeapon; },
+  get klingeWeapon() { return klingeWeapon; },
+  setKlingeWeapon(id) { klingeWeapon = id; try { localStorage.setItem(KLINGE_WEAPON_STORE, id); } catch { /* egal */ } },
   setWarWeapon(id) {
     warWeapon = id;
     try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }

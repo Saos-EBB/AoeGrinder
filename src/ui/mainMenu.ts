@@ -10,6 +10,7 @@ import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
+import { KLINGE_WEAPON_NAMES } from '../klinge';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -105,9 +106,11 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger';
+  $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger' && mage.skin !== 'klinge';
   if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Strichkrieger: feste Waffe vor dem Run
     weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
+  if (mage.skin === 'klinge') for (const [id, name] of Object.entries(KLINGE_WEAPON_NAMES))   // Klingenstrich: Standard oder Thunderfury
+    weapons.appendChild(button('chip' + (id === mage.klingeWeapon ? ' selected' : ''), name, () => { mage.setKlingeWeapon(id); renderMenu(); }));
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };

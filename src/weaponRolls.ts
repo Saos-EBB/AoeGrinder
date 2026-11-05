@@ -16,6 +16,7 @@ import { buildWeapon } from './models/weapons/index';
 import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBaukastenWeapon } from './models/weapons/baukasten';
 import { pick, dist2d } from './util';
 import { mark } from './plagueMarks';
+import { rollLegend, LEGENDS, LEG } from './legends';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
@@ -67,6 +68,7 @@ export function rollWeapon(tier = null) {
     extra: r >= 4 ? pick(Object.keys(EXTRAS)) : 'none', value2: pick(Object.keys(VALUE_KEY)), fv: 1,   // fv: Fokus nach v26, wird nicht ersetzt
   };
   if (r === 5) s.unique = pick(WEAPONS.filter(w => !ROLLS.notForMages.includes(w.id))).id;   // Unikat: eins der alten Modelle
+  if (r === 5) { const l = rollLegend(s.element); if (l) s.legend = l; }                          // 3 % der orangen: Legende mit Combo (legends.ts)
   return { id: ++meta.nextWeapon, v: 2, r, s };
 }
 
@@ -90,13 +92,13 @@ export function effectRows(w) {
     if (s.element !== 'none') Object.assign(rows.element, { text: `${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`, color: `#${el.color.toString(16).padStart(6, '0')}` });
     rows.maker.text = `${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`;
     if (s.extra !== 'none') rows.extra.text = `${EXTRAS[s.extra]}: ${value(VALUE_KEY[s.value2], 0.5)}`;
-    if (s.unique) rows.unique.text = oldModelName(s.unique);
+    if (s.unique) rows.unique.text = s.legend ? `${LEGENDS[s.legend].name}: ${LEGENDS[s.legend].desc} Combo ${LEG.combo.labels.join(' → ')}` : oldModelName(s.unique);
   }
   return WEAPON_ROWS.map(([kind]) => rows[kind]);
 }
 export const effectLines = w => effectRows(w).filter(r => r.text).map(r => `${r.label}: ${r.text}`);
 export const effectText = w => effectLines(w).join(' · ');
-export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
+export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : w.s.legend ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
 export const rarityOf = w => CARD_RARITIES[w.r];
 
 export const equipped = () => meta.inv.find(w => w.id === meta.equipped) ?? null;

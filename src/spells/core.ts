@@ -16,6 +16,7 @@ import { batteryHit, consumeOvercharge } from '../battery';
 import { BATTERY } from '../config';
 import { dodgeRecovery, comboReady, consumeCombo, pdDmgMul, pdRateMul } from '../dodge';
 import { berserkMul } from '../realMen';
+import { legendDmgMul, legendCastMul } from '../legends';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast, arcDmgMul } from '../schoolMeter';
@@ -128,7 +129,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
       if (hasTag(id, 'Arkan')) dmg *= arcDmgMul();                          // Arkane Ladungen
-      dmg *= buffDmgMul() * pdDmgMul() * berserkMul();                      // Getränke des ?-Magiers, Perfekter Dodge, Berserker
+      dmg *= buffDmgMul() * pdDmgMul() * berserkMul() * legendDmgMul();     // Getränke des ?-Magiers, Perfekter Dodge, Berserker, Leeroy Jenkins
       if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // weniger Leben, mehr Schaden (kein Modus nutzt es seit v31)
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
       const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
@@ -213,7 +214,7 @@ export function castSpell(id, point?) {
   blizCursor.visible = false;
   // Dodge-Kombos: Normal kein Mana, Arcane only sofort, Fire only Feuerball crittet
   const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
-  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul / pdRateMul();   // Perfekter Dodge: schneller zaubern   // castMul: Waffen-Typ und Hersteller
+  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul / pdRateMul() / legendCastMul();   // Perfekter Dodge, Legende Arkanbeschuss: schneller zaubern   // castMul: Waffen-Typ und Hersteller
   if (castTime && consumeCombo('instant')) castTime = 0;
   if (!castTime) { noteCastStart(id); return release(id, point, opts); }
   player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp, opts };

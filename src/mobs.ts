@@ -347,7 +347,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   run.dmgBySource[source] = (run.dmgBySource[source] || 0) + dmg;
   hitSparkFx(mob.pos, source);
 
-  if (frozen && source !== 'nova' && Math.random() < CFG.novaBreakChance) mob.rootUntil = 0;
+  if (frozen && source !== 'nova' && !(mob.sheepUntil > state.now) && Math.random() < CFG.novaBreakChance) mob.rootUntil = 0;   // Mass Sheep bricht nicht
 
   if (mob.hp <= 0) { killMob(mob); return true; }
   if (!mob.fleeRolled && mob.hp < mob.maxHp * CFG.fleeHpPct) {

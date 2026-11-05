@@ -70,6 +70,8 @@ const KLINGE = {
   echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },                                       // Supports Echo und Großes Echo wie in core.ts
 };
 const K = KLINGE;
+// Waffenwahl vor dem Run (ui/mainMenu.ts): Standard oder die Legende Thunderfury (legends.ts), gleiches Kit
+export const KLINGE_WEAPON_NAMES = { standard: 'Katanas', thunderfury: 'Thunderfury' };
 
 // Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3
 const move = (name, desc, tags, cd, press, extra = {}) => ({ name, desc, ranks: [], tags: ['Klinge', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana: 0, press, ...extra });

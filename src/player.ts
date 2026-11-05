@@ -34,6 +34,7 @@ import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable,
 import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
 import { resetFigures } from './figures';
+import { resetLegends, eggRevive } from './legends';
 import { resetBuffs, buffSpeedMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
@@ -68,6 +69,7 @@ export function resetGame() {
   resetDodge();
   resetMeter();
   resetFigures();
+  resetLegends();
   player.shield = 0;
   resetBuffs();
   resetKlinge();
@@ -144,7 +146,7 @@ export function damagePlayer(amount, dot = false, source = '') {
     if (player.drink && !player.drink.keepOnHit) stopDrink();
     pushbackChannel();
   }
-  if (player.hp <= 0 && !phoenixRevive()) die();
+  if (player.hp <= 0 && !phoenixRevive() && !eggRevive()) die();   // Phönix zuerst, dann Murky-Ei (legends.ts)
 }
 
 // Channel-Pushback: 1000, 800, 600, 400, 200, 200 ... ms (Spell::DelayedChannel)

@@ -43,6 +43,9 @@ const REALMEN = {
   // Waffe vor dem Run (models/mage.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert
   weapons: {
     sword: { name: 'Riesenschwert', dmgMul: 1, rate: 1, ragePerHit: 6 },
+    // Legenden (legends.ts): gleiches Kit wie das Riesenschwert, dazu die Combo Q → E → 1
+    leeroy: { name: 'Leeroy Jenkins', dmgMul: 1, rate: 1, ragePerHit: 6 },
+    freshmeat: { name: 'Fresh Meat', dmgMul: 1, rate: 1, ragePerHit: 6 },
   },
   eat: { ms: 18000 },
   echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },
@@ -84,7 +87,7 @@ Object.assign(SPELLS, {
 export const WAR_WEAPON_NAMES = Object.fromEntries(Object.entries(R.weapons).map(([id, w]) => [id, w.name]));
 const weaponId = () => R.weapons[mage.warWeapon] ? mage.warWeapon : 'sword';
 const WP = (): any => R.weapons[weaponId()];
-const WT = () => TIMING.weapons[weaponId()];
+const WT = () => TIMING.weapons[weaponId()] ?? TIMING.weapons.sword;
 const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`] || 1 : 0;
 
 const isWarrior = () => mage.skin === 'krieger';

@@ -46,6 +46,7 @@ import { updateMinimap } from './ui/minimap';
 import { updateMarks } from './spells/arcmark';
 import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
+import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { markStacks } from './plagueMarks';
 import { meterStage, meterOverheated } from './schoolMeter';
@@ -61,6 +62,7 @@ function update(dt) {
   updateKlinge(dt);
   updateZoneEvent(dt);
   updateFigures();
+  updateLegends();
 
   // Leichen nach 4 s entfernen, Packs nachspawnen
   state.mobs = state.mobs.filter(m => {

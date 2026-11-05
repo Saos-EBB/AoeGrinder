@@ -8,6 +8,7 @@ import { ROLLS, FOCUS_SPELLS, devAddWeapon, weaponName, rarityOf } from '../weap
 import { weaponStats } from './weaponCard';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
+import { LEGENDS } from '../legends';
 
 const VALUES = Object.values(SHAFTS).flatMap((s: any) => s.values);
 const UNIQUES = WEAPONS.filter(w => !ROLLS.notForMages.includes(w.id) && w.id !== ROLLS.fallback);
@@ -16,7 +17,7 @@ const opts = (list: [string, string][]) => list.map(([v, t]) => `<option value="
 const box = $('devForge');
 const field = (id, label) => `<label class="forgeField"><span>${label}</span><select class="bindBtn" id="${id}"></select></label>`;
 box.innerHTML = [
-  field('forgeRarity', 'Seltenheit'), field('forgeUnique', 'Legi-Modell'),
+  field('forgeRarity', 'Seltenheit'), field('forgeUnique', 'Legi-Modell'), field('forgeLegend', 'Legende'),
   field('forgeType', 'Typ'), field('forgeHead', 'Kopf'),
   field('forgeFocus', 'Fokus'), field('forgeValue', 'Wert'),
   field('forgeElement', 'Element'), field('forgeMaker', 'Hersteller'),
@@ -28,6 +29,7 @@ const sel = id => $(id) as HTMLSelectElement;
 sel('forgeRarity').innerHTML = opts(CARD_RARITIES.map((r, i) => [String(i), r.name]));
 sel('forgeRarity').value = '5';
 sel('forgeUnique').innerHTML = opts(UNIQUES.map(w => [w.id, w.name]));
+sel('forgeLegend').innerHTML = opts([['', 'keine'], ...Object.entries(LEGENDS).filter(([, l]: any) => l.kind === 'mage').map(([k, l]: any) => [k, `${l.name}${l.element ? ` (${l.element})` : ''}`] as [string, string])]);
 sel('forgeType').innerHTML = opts(Object.entries(TYPES).map(([k, t]: any) => [k, t.name]));
 sel('forgeValue').innerHTML = sel('forgeValue2').innerHTML = opts(VALUES.map(v => [v, v]));
 sel('forgeElement').innerHTML = opts(Object.entries(ELEMENTS).map(([k, e]: any) => [k, e.name]));
@@ -45,7 +47,7 @@ function build() {
   const school = HEADS[sel('forgeHead').value][1];
   refill('forgeFocus', FOCUS_SPELLS.filter(id => SPELLS[id]?.tags.includes(school)).map(id => [id, SPELLS[id].name]));
   const r = Number(sel('forgeRarity').value);
-  sel('forgeUnique').parentElement.hidden = r !== 5;
+  sel('forgeUnique').parentElement.hidden = sel('forgeLegend').parentElement.hidden = r !== 5;
   sel('forgeExtra').disabled = sel('forgeValue2').disabled = r < 4;       // Anhänger erst ab lila
   const value = sel('forgeValue').value;
   const s: any = {
@@ -54,6 +56,7 @@ function build() {
     extra: r >= 4 ? sel('forgeExtra').value : 'none', value2: sel('forgeValue2').value, fv: 1,
   };
   if (r === 5) s.unique = sel('forgeUnique').value;
+  if (r === 5 && sel('forgeLegend').value) s.legend = sel('forgeLegend').value;
   return { v: 2, r, s };
 }
 function preview() {
