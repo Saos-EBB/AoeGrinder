@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(modi)!: Wellen deutlich größer: 50 Gegner in Welle 1, dann je 50 mehr (100, 150, 200 … bis 500 in Welle 10); `SCORE_VERSION` v33, alte Wellen-Zeiten stehen getrennt
 - feat(ui): 15 Zahlen-Schriften (alle CC0: ggbot und Kenney) in Einstellungen → Interface → Zahlen-Schrift, jede Kachel zeigt Beispielzahlen in ihrer Schrift; Farben und Kontur bleiben beim gewählten Zahlen-Stil
 - feat(ui): Hauptmenü zeigt die Ladungsstufen der Figur: alle 1,6 s die nächste Stufe bis voll (Magier über ihre Anzeige, Strichkrieger Wut bis Berserker, Klingenstrich bis Haltung 3), dann von vorn
 - feat(boss)!: Bosse sind immer aktiv (kein #boss mehr nötig): in Packs bei Level 25, 50 und 75 ein Boss, bei 100 der finale Boss; Boss-Jagd entfällt
