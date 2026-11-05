@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(ui): Glut-Look für alle Fenster und Menüs (schwarz-roter Hintergrund, Panels mit roter Oberkante, roter Hauptknopf, Titel in Cinzel, Text in Oswald); neue Schriften geladen; Schrift-Einstellung Standard/Fraktur (UnifrakturCook für Titel und Namen) in `frostgrind.ui.v1`, Schalter folgt in den Einstellungen
 - feat(ui): Bestzeit pro Split (Level 15/30/45/60/75/90/100) je Figur + Mods + Mob-Modus wird gespeichert (`frostgrind.splits.v1`), auch aus Runs ohne Level 100; Grundlage für das Splits-Panel
 - feat(boss): Mob-Modus Boss-Jagd (nur #boss, Auswahl im Hauptmenü neben Packs und Belagerung): Packs wie sonst, bei 50 Kills ein zufälliger leichter Boss, bei 100 ein mittlerer, bei 150 ein starker (kein Boss doppelt); Anzeige oben zeigt Kills bis zum nächsten Boss; der starke Boss beendet den Run als geschafft (Bestenliste „· Boss-Jagd“)
 - feat(boss): Finale Bosse mit Regeln (nur #boss): Malenia heilt sich um 4 % bei jedem Treffer an dir, Maliketh senkt mit jedem Treffer dein maximales Leben um 10 % bis auf 30 % (grau gestreifter Teil im Leben-Balken, nach dem Kampf zurück), Shaper hält alle 25 s die Zeit 1,3 s an (Bild grau, du und alle Geschosse stehen, danach sofort der Slam-Rhythmus), Seele der Asche wechselt bei 75/50/25 % Leben zu Strichkrieger, Klingenstrich und Feuermagier (Modell und Angriffe der verdorbenen Figur)

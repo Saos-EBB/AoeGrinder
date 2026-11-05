@@ -20,6 +20,8 @@ import { updateSiege } from './siege';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
+import './ui/theme.css';
+import './ui/uiSettings';
 import './ui/menus';
 import './mobile';
 import './ui/saveCode';

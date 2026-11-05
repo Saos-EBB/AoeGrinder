@@ -1,0 +1,51 @@
+/* Glut: Look aller Menüs und Fenster (Mockups K2/S2/E2/C2, Farben aus gen2.py F['glut']).
+   Das HUD bekommt eigene Themes (Phase 5), hier nur die festen Fenster. */
+:root {
+  --glut-bg: radial-gradient(ellipse at 50% 60%, #33070a 0%, #120203 50%, #050101 100%);
+  --glut-panel: rgba(14, 4, 3, 0.88);
+  --glut-border: #5a1e18;
+  --glut-top: #ff3d1f;
+  --glut-text: #f2e9e4;
+  --glut-muted: #c4aea6;
+  --glut-accent: #ff5a3c;
+  --glut-line: #3a1410;
+  --glut-title: #f6eee9;
+  --glut-title-glow: 0 0 24px rgba(255, 61, 31, 0.55);
+  --glut-card: #0e0302;
+  --glut-btn: #c4120c;
+  --glut-btn-text: #fff;
+  --glut-btn2-text: #ffb3a3;
+
+  --rar-grau: #9d9d9d;
+  --rar-weiss: #e8e8e8;
+  --rar-gruen: #2ecc40;
+  --rar-blau: #3a8cff;
+  --rar-lila: #b05cff;
+  --rar-orange: #ff8a1a;
+  --rar-relikt: #e3c27a;
+
+  --font-title: 'Cinzel', serif;          /* Titel und Namen, Fraktur über body.font-fraktur */
+  --font-title-weight: 900;
+  --font-body: 'Oswald', sans-serif;      /* Fließtext, bleibt immer */
+  --font-num: 'Barlow Condensed', 'Barlow', sans-serif;   /* Zahlen und HUD */
+}
+body.font-fraktur {
+  --font-title: 'UnifrakturCook', serif;
+  --font-title-weight: 700;
+}
+
+/* Fenster und Menüs */
+.modal { background: var(--glut-bg); }
+.modal > .frame, .modal .frame.panel {
+  background: var(--glut-panel); border: 1px solid var(--glut-border); border-top: 2px solid var(--glut-top);
+  border-radius: 0; box-shadow: 0 10px 40px #000c; color: var(--glut-text); font-family: var(--font-body);
+}
+.modal .panel p { color: var(--glut-muted); }
+.title { font-family: var(--font-title); font-weight: var(--font-title-weight); color: var(--glut-title); text-shadow: var(--glut-title-glow); }
+
+.btn { font-family: var(--font-title); font-weight: var(--font-title-weight); background: var(--glut-btn); color: var(--glut-btn-text);
+  border: 0; border-radius: 0; letter-spacing: .08em; }
+.btn:hover { background: #e01810; }   /* PH */
+.modal .smallBtn { font-family: var(--font-body); font-weight: 500; letter-spacing: .06em; background: transparent; color: var(--glut-btn2-text);
+  border: 1px solid var(--glut-top); border-radius: 0; }
+.modal .smallBtn:hover { background: rgba(255, 61, 31, 0.15); }
