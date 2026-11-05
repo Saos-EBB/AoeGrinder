@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { eMat, PAL, fx as efx, em, uK as setK, arc as eArc, ring as eRing, lay } from '../vfx/energy';
 
 // Dauern in ms. Die Spielregeln stehen in REALMEN (realMen.ts)
 export const STRICH_TIMING = {
@@ -128,14 +129,9 @@ const bodyGeo = mergeGeometries(parts.map(p => {
 const body = new THREE.SkinnedMesh(bodyGeo, VMAT);
 body.frustumCulled = false; root.add(body); body.bind(new THREE.Skeleton(bones));
 // Wut-Aura: zweite Hülle aus derselben Geometrie, entlang der Normalen aufgeblasen, Rückseiten, 1 Draw Call
-const auraU = { uThick: { value: 0 }, uTime: { value: 0 } };
-const auraMat = new THREE.MeshBasicMaterial({ color: 0xe0141c, transparent: true, opacity: 0, side: THREE.BackSide, depthWrite: false });
-auraMat.onBeforeCompile = sh => {
-  Object.assign(sh.uniforms, auraU);
-  sh.vertexShader = 'uniform float uThick; uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>',
-    'vec3 transformed = position + normal * uThick * (0.75 + 0.25 * sin(uTime * 14.0 + position.y * 18.0 + position.x * 9.0));');
-};
-const aura = new THREE.SkinnedMesh(bodyGeo, auraMat);
+// Spell-Viewer: dieselbe Hülle mit dem Energie-Shader (Palette Wut), wächst mit der Wut
+const AURA_E = eMat(PAL.wut, { sc: 4, core: .2, inf: .04, puff: .02, flow: [0, 2.5, 0], k: 0 });
+const aura = new THREE.SkinnedMesh(bodyGeo, AURA_E);
 aura.frustumCulled = false; root.add(aura); aura.bind(body.skeleton, body.bindMatrix); aura.renderOrder = -1;
 function swordGeo() {
   // ca. 1,2× Körperhöhe gesamt: Klinge 1,9 m, 0,36 m breit, 7 cm dick, kurzer Griff
@@ -277,16 +273,17 @@ const tipPos = () => root.localToWorld(sword.position.clone().addScaledVector(V(
 const fxList = [];
 const fxMat = (color, op) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false });
 function holder() { const h = new THREE.Object3D(); h.position.copy(root.position); h.position.y = gy(); h.rotation.y = root.rotation.y; fxGroup.add(h); return h; }
+// Sichel im Wurzel-Raum (Spell-Viewer: Energie-Look, Wut bei viel Wut, sonst Staub)
+const _hq = new THREE.Quaternion(), _he = new THREE.Euler();
 function arc(center, euler, r, th, life = .3, red = true) {
-  const h = holder();
-  const add = (r0, r1, c, op) => { const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 40, 1, Math.PI / 2 - th / 2, th), fxMat(c, op)); m.position.fromArray(center); m.rotation.fromArray(euler); h.add(m); return m; };
-  const a = add(r * .72, r, FX_LIGHT, .9), b = red ? add(r * .8, r * .95, 0xd8121c, .9) : null;
-  fxList.push({ obj: h, t: 0, life, upd: k => { h.scale.setScalar(1 + .2 * k); a.material.opacity = .9 * (1 - k); if (b) b.material.opacity = .9 * (1 - k); } });
+  const yq = _hq.setFromAxisAngle(V(0, 1, 0), root.rotation.y).clone();
+  const c = V(center[0], center[1], center[2]).applyQuaternion(yq).add(V(root.position.x, gy(), root.position.z));
+  const q = yq.multiply(new THREE.Quaternion().setFromEuler(_he.set(euler[0], euler[1], euler[2])));
+  eArc(c, q, r, th, red && rage > 30 ? PAL.wut : PAL.staub, life * 1.3);
 }
-function ring(pos, color, r, life, w = .15) {
-  const m = new THREE.Mesh(new THREE.RingGeometry(1 - w, 1, 48), fxMat(color, .85));
-  m.rotation.x = -Math.PI / 2; m.position.set(pos.x, gy() + .05, pos.z); fxGroup.add(m);
-  fxList.push({ obj: m, t: 0, life, upd: k => { m.scale.setScalar(.2 + r * outC(k)); m.material.opacity = .85 * (1 - k); } });
+// Bodenring: helle Ringe Staub, rote Wut, eigene Palette (Donner, Furcht) über pal
+function ring(pos, color, r, life, w = .15, pal = null) {
+  eRing(V(pos.x, gy(), pos.z), r, pal ?? (color === 0xd8121c || color === 0xe0141c ? PAL.wut : PAL.staub), life * 1.2);
 }
 // Bodenriss: gezackte schwarze Linie, die sich ausbreitet
 function crack(from, dir, len, life = 1.6) {
@@ -355,11 +352,13 @@ const windG = new THREE.Group(); fxGroup.add(windG); windG.visible = false;
 const windArcs = [];
 for (let i = 0; i < 3; i++) {
   const r = 1.9 + i * .35;
-  const m = new THREE.Mesh(new THREE.RingGeometry(r - .08, r, 48, 1, 0, 1.8), fxMat(i % 2 ? 0xd8121c : FX_LIGHT, .6));
+  const m = new THREE.Mesh(new THREE.RingGeometry(r - .3, r, 48, 2, 0, 1.8), eMat(i % 2 ? PAL.wut : PAL.staub, { sc: 2.5, core: 0, local: true, flow: [0, 0, 0], side: THREE.DoubleSide }));
   m.rotation.x = -Math.PI / 2; m.position.y = 1.0 + i * .2; m.userData.off = i * 2.1; windG.add(m); windArcs.push(m);
 }
 function impact(p, r, nCr = 6) {
   ring(p, FX_LIGHT, r, .45, .12); ring(p, 0xd8121c, r * .7, .35, .2);
+  const o = V(p.x, gy(), p.z), pal = rage > 30 ? PAL.wut : PAL.staub;   // Einschlag-Kuppel
+  efx(.45, (k, _d, e) => { if (!e.ms.length) em(e, 'hemi', pal, { sc: 2.2, core: -.3, flow: [0, 2.5, 0], side: THREE.DoubleSide }).position.copy(o); e.ms[0].scale.set(r * .35 * outC(k), r * .25 * (1 - k * .5), r * .35 * outC(k)); setK(e.ms[0], 1 - k); });
   cracksStar(p, nCr, r * .6);
   emit(V(p.x, gy() + .1, p.z), 30, 4, 0x8f877a, 14, .9);
   if (rage > 30) emit(V(p.x, gy() + .1, p.z), Math.round(rage / 5), 5, 0xe0141c, 10, .8);
@@ -412,7 +411,7 @@ function defQ(step, hitI = step) {
       tick(u, s) {
         spinAng += s * TAU * 2.5;
         windG.position.copy(root.position);
-        windArcs.forEach((m, i) => { m.rotation.z = -(spinAng + m.userData.off); m.material.opacity = .5 + .2 * Math.sin(performance.now() / 50 + i); });
+        windArcs.forEach((m, i) => { m.rotation.z = -(spinAng + m.userData.off); m.material.userData.u.uK.value = .75 + .15 * Math.sin(performance.now() / 50 + i); });
         if (Math.random() < .5) emit(tipPos().setY(gy() + .1), 1, 2, 0x8f877a, 8, .5);
       }, end() { spinAng = 0; windG.visible = false; } };
   }
@@ -549,9 +548,9 @@ function defQ(step, hitI = step) {
     rage = anim.rage ?? 0;
     flare = Math.max(0, flare - s * 1.2);
     const r = rage / 100, I = clamp(r * r * .9 + flare * .6, 0, 1.4);
-    auraU.uTime.value = T; auraU.uThick.value = .03 + .09 * I;
-    aura.visible = auraRing.visible = (r > .05 || flare > 0) && loco !== 'dead';
-    auraMat.opacity = clamp(.1 + .55 * I, 0, .8);
+    const IB = anim.berserk ? 1.4 : I;   // Berserker: Hülle voll
+    AURA_E.userData.u.uInf.value = .025 + .07 * IB; AURA_E.userData.u.uK.value = clamp(IB * .45, 0, .62);
+    aura.visible = auraRing.visible = (r > .05 || flare > 0 || !!anim.berserk) && loco !== 'dead';
     auraRing.material.opacity = .45 * I; auraRing.position.set(root.position.x, gy() + .01, root.position.z); auraRing.scale.setScalar(1 + .6 * I + .05 * Math.sin(T * 10));
     if (aura.visible && Math.random() < I * s * 40) emit(root.position.clone().add(V((Math.random() - .5) * .9, .3 + Math.random() * 1.6, (Math.random() - .5) * .9)), 1, .4, 0xe0141c, -2.5, .8);
 
@@ -580,7 +579,7 @@ function defQ(step, hitI = step) {
   const model: any = {
     root, update, scarf: cloth, onHit: null, weapon,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
-    fx: { group: fxGroup, crackAt, ring, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
+    fx: { group: fxGroup, crackAt, ring, ghost, gy, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
     get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count + (maceGlow ? maceGlow.geometry.attributes.position.count : 0)) / 3 + (SN - 1) * 2); },
     get bloom() { return bloom; },
     // Waffe aus models/weapons statt des eigenen Schwerts: Griff in der rechten Hand, Länge für Treffer und linke Hand aus der Waffe

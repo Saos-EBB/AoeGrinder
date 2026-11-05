@@ -1,6 +1,7 @@
 // Real Men: Strichkrieger mit Riesenschwert und Wut statt Mana. Die Moves liegen als Spells in den Slots, damit Leiste, Tasten, Pad und Karten mitlaufen.
 // Wut steht in player.mana, player.rageMax meldet den Modus an maxMana und die Regeneration. Modell und Treffer-Momente: models/strichKrieger.ts.
 
+import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { mage, onWarriorHit } from './models/mage';
@@ -292,6 +293,7 @@ function pressCharge() {
   startCd('wCharge');
   player.lastCombat = state.now;
   charge = { from: player.pos.clone(), target, start: state.now, ctx: makeCtx('wCharge') };
+  chargeLook(R.charge.ms);
 }
 function updateCharge() {
   const C = R.charge, t = Math.min(1, (state.now - charge.start) / C.ms), to = charge.target.pos;
@@ -303,6 +305,7 @@ function updateCharge() {
   const m = charge.target, c = charge.ctx;
   charge = null;
   strike(c, () => C.dmg * UNIT, () => (m.dead ? [] : [m]), o => { if (!o.dead) applyRoot(o, C.stunMs); });
+  chargeHit(m.pos);
   gainRage(C.rage);
   shakeCamera(0.3);
 }
@@ -315,7 +318,7 @@ function pressClap() {
   player.lastCombat = state.now;
   const C = R.clap, c = makeCtx('wClap'), r = c.radius(C.radius);
   strike(c, () => C.dmg * UNIT, () => mobsInRadius(player.pos, r), m => { if (!m.dead) applySlow(m, C.slow, C.slowMs); }, 0);
-  mage.hero.fx.ring(player.pos, 0x9fc8ff, r, 0.45, 0.12);
+  clapLook(r);
   shakeCamera(0.35);
 }
 function pressShout() {
@@ -326,13 +329,14 @@ function pressShout() {
     if (m.dead || m.boss) continue;
     m.state = 'flee'; m.fleeTarget = null; m.fleeUntil = state.now + R.shout.fleeMs;
   }
-  mage.hero.fx.ring(player.pos, 0xe0d0a0, r, 0.5, 0.1);
+  shoutLook(r);
   shakeCamera(0.25);
 }
 function pressBerserk() {
   if (cdEnd('wBerserk') > state.now) return showError('Fähigkeit ist noch nicht bereit');
   startCd('wBerserk');
   player.berserkUntil = state.now + R.berserk.ms;
+  berserkLook(berserkOn);
   player.slowUntil = 0;
   mage.hero.fx.ring(player.pos, 0xd8121c, 4, 0.6, 0.15);
 }
@@ -393,7 +397,7 @@ export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Beweg
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest

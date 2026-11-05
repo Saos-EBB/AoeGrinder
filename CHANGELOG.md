@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(optik): Strichkrieger im Energie-Look: Wut-Aura als Hülle auf der Figur, wächst mit der Wut; Hiebe, Ringe, Einschlag-Kuppel und Wirbel-Sicheln in Wut und Staub; Ansturm mit Schweif und Nachbildern, goldener Treffer; Donnerknall mit goldenen Ringen und Kuppel; Einschüchterungsruf mit dunkler Welle und Kegel aus dem Mund; Berserker mit voller Hülle und 14 kreisenden Flammenzungen für die ganze Dauer
 - feat(optik): ?-Magier: Drink Something zeigt einen farbigen Ring und eine Säule je Getränk (Goldbecher und Feuerschnaps Feuer, Heiße Tasse Frost, Tee-Schale Arkan); Würfel-Spells nutzen die Looks ihrer Schulen
 - feat(optik): Seuche-Fähigkeiten im Energie-Look: Schlammwurf im Bogen mit Platscher, Schleimfalle mit schnappenden Zungen, Schleimwelle, Schwarzes Loch mit grünem Ring und Aufprall, Giftwolke aus aufgeblähten Kugeln, Klebefäden zwischen den Angeketteten, Zusammenziehen mit Fäden zur Mitte, Entziehen mit Lebens-Kugeln und grüner Säule, Platzen als Gift-Explosion nach Stapeln, Zerfließen als wachsende Lache, Pestilenz als hohle Gift-Kugel
 - feat(optik): Blitz-Fähigkeiten im Energie-Look: Zickzack-Blitze mit Glow und Kern (alle in einem Draw Call) und Treffer-Funken für Kettenblitz, Bogenblitz und Kugelblitz, Tempest als Spaltschlag-Ring, Blitzschlag aus dem Himmel mit Bildschirm-Blitz, Entladung mit 14 Blitzen, Gewitterwolke, pulsierendes Erdbeben mit Ringen und Steinen, Sturmhüter-Ringe, Statikfeld-Kuppel, Sturmelementar als schwebender Begleiter
