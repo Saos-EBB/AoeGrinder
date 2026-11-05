@@ -3,13 +3,15 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { SPELLS } from './config';
+import { SPELLS, SPELL_ACTIONS } from './config';
 import { renderer, camera } from './render';
 import { groundAt } from './collision';
 import { blizCursor } from './fx/spellFx';
 import { cam } from './camera';
 import { closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
+import { isGround } from './spells/core';
+import { spellAtAction, modeAt } from './hotbar';
 import { refreshKeyLabels } from './ui/hud';
 import { charOpen, toggleChar } from './ui/charWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
@@ -116,12 +118,36 @@ addEventListener('keydown', e => {
   if (id) e.preventDefault();
   held.add(e.code);
   if (e.repeat || !id) return;
-  runAction(id);
+  runAction(id, e.code);
 });
-addEventListener('keyup', e => held.delete(e.code));
+addEventListener('keyup', e => { held.delete(e.code); spellUp(e.code); });
 
-function runAction(id) {
-  if (SPELLS[id]) pressSpell(id);
+// Auslöse-Modus des Platzes (hotbar.ts): sofort, bei Loslassen oder klicken. code: Taste, deren Loslassen „Bei Loslassen“ auslöst
+const releaseOf = new Map<string, string>();
+const groundSpell = id => isGround(id) && !SPELLS[id].press;   // eigene Steuerung (Nahkampf, Eisblock) kennt keine Zielfläche
+function spellDown(action, code) {
+  const id = spellAtAction(action);
+  if (!id || state.paused || player.dead) return;
+  const ground = groundSpell(id), mode = modeAt(SPELL_ACTIONS.indexOf(action), ground);
+  if (mode === 'release') { releaseOf.set(code, action); if (ground && player.targeting !== id) pressSpell(action); return; }   // Bodenziel: Zielkreis, solange gehalten
+  if (mode === 'instant' && ground && !state.bossAim) { pickGround(); player.targeting = false; blizCursor.visible = false; cast(action, mouse.ground.clone()); return; }   // Bodenziel unter der Maus
+  pressSpell(action);
+}
+function spellUp(code) {
+  const action = releaseOf.get(code);
+  if (!action) return;
+  releaseOf.delete(code);
+  const id = spellAtAction(action);
+  if (!id || state.paused || player.dead) return;
+  if (!groundSpell(id) || state.bossAim) return pressSpell(action);
+  if (player.targeting !== id) return;                 // Zielen abgebrochen (Esc, Rechtsklick)
+  pickGround();
+  cast(action, mouse.ground.clone());
+}
+
+function runAction(id, code = '') {
+  if (SPELL_ACTIONS.includes(id)) spellDown(id, code);
+  else if (SPELLS[id]) pressSpell(id);
   if (id === 'charWin') toggleChar();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
@@ -146,12 +172,13 @@ addEventListener('mousedown', e => {
   if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }
   held.add(code);
   const id = actionForCode(code);
-  if (id) runAction(id);
+  if (id) runAction(id, code);
 });
 addEventListener('mouseup', e => {
   if (!MOUSE_KEYS[e.button]) return;
   e.preventDefault();
   held.delete(`Mouse${e.button}`);
+  spellUp(`Mouse${e.button}`);
 });
 addEventListener('auxclick', e => { if (MOUSE_KEYS[e.button]) e.preventDefault(); });
 addEventListener('blur', () => { held.clear(); mouseBtn.left = mouseBtn.right = false; });

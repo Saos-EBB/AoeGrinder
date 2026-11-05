@@ -1,5 +1,6 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
+import { spellAtAction } from './hotbar';
 import { startDodge } from './player';
 import { charOpen, charTab, toggleChar } from './ui/charWindow';
 import { openPause, closePause, cycleChar } from './ui/mainMenu';
@@ -111,7 +112,7 @@ function gameButtons() {
   }
   for (const { id } of PAD_ACTIONS) {
     if (!pressed(padBinds[id]) || (cancelled && padBinds[id] === CANCEL_BTN)) continue;
-    const spell = state.slots[SPELL_ACTIONS.indexOf(id)];
+    const spell = spellAtAction(id);
     if (spell && isGround(spell)) startAim(id, spell);
     else if (SPELLS[id]) pressSpell(id);
     else PAD_EFFECTS[id]?.();

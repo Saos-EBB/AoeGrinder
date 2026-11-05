@@ -89,6 +89,18 @@
     font-size: 20px; color: #fff; }
   .slot.nomana::after { content: ""; position: absolute; inset: 0; background: #1030ff77; }
   .slot.active { border-color: #ffe27a; box-shadow: 0 0 10px #ffe27a; }
+  /* Hotbar: leere Plätze, Drag & Drop, Auslöse-Modus (hotbar.ts, ui/hud.ts) */
+  .slot.empty { background: #0008; border-style: dashed; border-color: #6b542688; }
+  .slot[draggable="true"] { cursor: grab; }
+  .slot.dragging { opacity: .4; }
+  .slot.dropOver { border-color: #ffe27a; box-shadow: 0 0 10px #ffe27a; }
+  .slot .mode { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 1; color: #ffe27a; z-index: 1; text-shadow: 0 0 3px #000, 0 1px 2px #000; }
+  .modeMenu { position: fixed; z-index: 40; min-width: 190px; padding: 6px; background: linear-gradient(#1b1712f2, #0d0b08f2); border: 2px solid #6b5426; border-radius: 6px; box-shadow: 0 4px 14px #000a; font: 13px/1.3 system-ui, sans-serif; color: #efe0b8; }
+  .modeMenu .mmHead { font: 700 13px Cinzel, serif; color: #ffe27a; padding: 2px 4px 6px; }
+  .modeMenu button { display: block; width: 100%; text-align: left; padding: 6px 8px; margin-top: 3px; background: #2a2218; color: #efe0b8; border: 1px solid #6b542666; border-radius: 4px; cursor: pointer; font: inherit; }
+  .modeMenu button:hover { background: #3a2e1e; }
+  .modeMenu button.on { border-color: #ffe27a; color: #ffe27a; }
+  .modeMenu button small { display: block; font-size: 11px; color: #b8a888; }
   .frost  { background: radial-gradient(circle at 50% 35%, #bfe8ff, #2a6fb0 70%, #123a66); }
   .arcane { background: radial-gradient(circle at 50% 35%, #f0c8ff, #8a3fc9 70%, #3d1466); }
   .fire   { background: radial-gradient(circle at 50% 35%, #ffe0a0, #d0561a 70%, #5a1a08); }

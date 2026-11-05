@@ -1,5 +1,6 @@
 // Spell-Kern: Slots, Tags, cast, Channel. Die Spells selbst liegen je in einer Datei, Registrierung in index.ts.
 
+import { spellAtAction } from '../hotbar';
 import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
 import { dist2d } from '../util';
@@ -185,7 +186,7 @@ function startTargeting(id) {
 // Einstieg aus input.ts und gamepad.ts: bekommt die Aktion, sucht den Slot
 export function cast(action, point?) {
   if (point && typeof player.targeting === 'string') return castSpell(player.targeting, point);
-  const id = state.slots[SPELL_ACTIONS.indexOf(action)];
+  const id = spellAtAction(action);   // Taste → Platz auf der Leiste → Slot (hotbar.ts)
   if (id) castSpell(id, point);
 }
 
