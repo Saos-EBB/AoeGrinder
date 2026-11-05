@@ -42,6 +42,9 @@ export const B = {
   slam: { crouchMs: 400, airMs: 1000, radius: 6, height: 7, gapMs: 1500, trauma: 1, hitstopMs: 100, decal: 8 },   // PH: Kreis erscheint beim Absprung, airMs vor der Landung
   charge: { windupMs: 700, len: 15, width: 3, speed: 32, gapMs: 1000, track: 0.5, trauma: 0.5 },                 // PH: Linie width breit, dreht bis track mit
   tele: { color: [1, 0.1, 0.06], min: 0.15, max: 0.55 },   // PH: rote Bodenwarnung, Deckkraft steigt bis zum Treffer
+  // Phase 2 ab at des Lebens: Brüllen (unverwundbar), Druckwelle stößt weg, alle Ausholzeiten × windupMul, Slam mit Ring, Geschoss-Fächer
+  phase2: { at: 0.5, roarMs: 1000, push: 4, pushMs: 250, trauma: 0.8, windupMul: 0.8, ring: { max: 12, ms: 2000, band: 0.5, color: [2.6, 0.7, 0.2] } },   // PH
+  fan: { windupMs: 700, n: 5, spread: Math.PI / 3, speed: 8, range: 24, radius: 0.5, gapMs: 800, color: [3, 0.9, 0.3] },   // PH: langsame Geschosse, ein Fächer trifft höchstens einmal
 };
 
 const autoOn = () => location.hash.includes('boss');
@@ -130,6 +133,7 @@ function layRing(mesh, c, rIn, rOut) {
   mesh.visible = true;
 }
 const arena = ringMesh(B.ringColor);
+const wave = ringMesh(B.phase2.ring.color);   // Phase 2: Ring des Sprung-Slams
 
 // ---------- Bodenwarnungen: Kreis, Kegel und Linie, je ein Mesh, rot ----------
 const teleMat = () => new THREE.MeshBasicMaterial({ color: new THREE.Color(...B.tele.color), transparent: true, depthWrite: false, side: THREE.DoubleSide });
@@ -183,7 +187,7 @@ const barName = bar.querySelector('.name') as HTMLElement, barFill = bar.querySe
 // Fähigkeit des Boss-Mobs: updateMob überlässt ihr die Steuerung, Schaden läuft über onDamaged
 const BOSS_ABILITY = {
   onUpdate: () => true,
-  onDamaged: (m, amount) => (!boss || boss.step === 'intro' ? 0 : boss.step === 'gap' ? amount * B.punish : amount),   // Lücke: Bestrafen lohnt sich
+  onDamaged: (m, amount) => (!boss || boss.step === 'intro' || boss.step === 'roar' ? 0 : boss.step === 'gap' ? amount * B.punish : amount),   // Lücke: Bestrafen lohnt sich
 };
 
 // Mob-Modell der Zone: der Mob, der als nächster freigeschaltet wird (Level 15 → zweiter Mob der Zone)
@@ -294,6 +298,10 @@ export function updateBoss(dt) {
   if (player.dead) return;
   keepInside();
   if (locked) { player.facing = yawTo(player.pos, m.pos); cam.offset = 0; }   // W läuft auf den Boss zu
+  updatePush(dt);
+  updateWave();
+  updateShots(dt);
+  if (boss.phase === 1 && boss.step !== 'intro' && m.hp <= m.maxHp * B.phase2.at) roar();
   if (boss.step === 'intro') {
     const I = B.intro, t = clamp((state.now - boss.t0) / I.fallMs, 0, 1);
     if (!boss.landed) {
@@ -311,7 +319,7 @@ export function updateBoss(dt) {
 const next = (step, ms) => { boss.step = step; boss.t0 = state.now; boss.until = state.now + ms; };
 const prog = () => clamp((state.now - boss.t0) / Math.max(1, boss.until - boss.t0), 0, 1);
 const done = () => state.now >= boss.until;
-const windup = ms => ms;
+const windup = ms => ms * (boss.phase === 2 ? B.phase2.windupMul : 1);
 const toPlayer = () => dist2d(boss.mob.pos, player.pos);
 function turnTo(target, rate, dt) {
   const want = yawTo(boss.mob.pos, target), d = wrap(want - boss.yaw), max = rate * dt / 1000;
@@ -343,6 +351,7 @@ function walk() {
 function chooseAttack() {
   const d = toPlayer() - B.body;
   const order = d < B.near ? ['combo', 'charge', 'slam'] : d < B.far ? ['charge', 'slam', 'combo'] : ['slam', 'charge', 'combo'];
+  if (boss.phase === 2 && d >= B.near) order.splice(Math.random() < 0.5 ? 0 : 1, 0, 'fan');   // Phase 2: Fächer mittel und weit
   const id = order.find(a => a !== boss.last);
   boss.last = id;
   ATTACKS[id]();
@@ -358,6 +367,7 @@ const ATTACKS = {
   combo() { boss.att = { id: 'combo', i: 0 }; comboWind(); },
   slam() { boss.att = { id: 'slam' }; next('slamCrouch', windup(B.slam.crouchMs)); },
   charge() { boss.att = { id: 'charge' }; next('chargeWind', windup(B.charge.windupMs)); },
+  fan() { boss.att = { id: 'fan' }; next('fanWind', B.fan.windupMs); },   // 4. Phase 2: Geschoss-Fächer, Ausholen fest 0,7 s
 };
 
 const STEPS = {
@@ -416,8 +426,8 @@ const STEPS = {
     if (!done()) return;
     m.pos.y = a.to.y;
     teleCircle.visible = false;
-    if (dist2d(player.pos, a.to) <= S.radius) hurt();
-    else m.attackAt = state.now;
+    a.slamHit = dist2d(player.pos, a.to) <= S.radius && hurt();
+    if (!a.slamHit) m.attackAt = state.now;
     hitstop(S.hitstopMs);
     addTrauma(S.trauma);
     decal(a.to, 3, S.decal);
@@ -461,11 +471,98 @@ const STEPS = {
     decal(m.pos, 3, 3);
     gap(K.gapMs);
   },
+  fanWind(dt) {
+    turnTo(player.pos, 8, dt);
+    if (!done()) return;
+    const F = B.fan, m = boss.mob, volley = { hit: false };
+    for (let i = 0; i < F.n; i++) {
+      const a = boss.yaw + (i / (F.n - 1) - 0.5) * F.spread;
+      fire(m.pos.x + Math.sin(boss.yaw) * B.body, m.pos.y + 1.2, m.pos.z + Math.cos(boss.yaw) * B.body, a, volley);
+    }
+    m.attackAt = state.now;
+    lightFlash(m.pos, 0xff8a3a, 300, 20, 200);
+    addTrauma(0.25);
+    gap(F.gapMs);
+  },
+  roar() { if (done()) walk(); },
   gap() { if (done()) walk(); },
 };
 
-// Phase 2 hängt hier den Ring an
-function slamLanded(at) { /* Phase 2 */ }
+// ---------- Phase 2 ----------
+// Brüllen: bricht den Angriff ab, Druckwelle schiebt den Spieler weg, Leuchten wird heller
+function roar() {
+  const P = B.phase2, m = boss.mob;
+  boss.phase = 2;
+  boss.att = null;
+  hideTeles();
+  m.pos.y = groundAt(m.pos.x, m.pos.z, m.pos.y);       // falls er gerade in der Luft war
+  m.bossTint = 'boss2';
+  next('roar', P.roarMs);
+  const dx = player.pos.x - m.pos.x, dz = player.pos.z - m.pos.z, d = Math.hypot(dx, dz) || 1;
+  boss.push = { dx: dx / d, dz: dz / d, left: P.push };
+  addTrauma(P.trauma);
+  shockwave(m.pos, 14, 0.06, 700);
+  ringFx(m.pos, 10, [2.6, 0.6, 0.2], 600);
+  lightFlash(m.pos, 0xff5a2a, 600, 35, 400);
+  m.attackAt = state.now;
+}
+function updatePush(dt) {
+  const p = boss.push;
+  if (!p || p.left <= 0) return;
+  const step = Math.min(p.left, B.phase2.push * dt / B.phase2.pushMs);
+  p.left -= step;
+  player.pos.x += p.dx * step; player.pos.z += p.dz * step;
+  resolve(player.pos, 0.45);
+  player.pos.y = groundAt(player.pos.x, player.pos.z, player.pos.y);
+}
+
+// Ring des Sprung-Slams: dehnt sich von 0 auf max aus. Trifft einmal, wenn seine Front den Spieler überholt; wer schon vom Slam getroffen wurde, bleibt verschont
+function slamLanded(at) {
+  if (boss.phase !== 2) return;
+  boss.wave = { c: at.clone(), t0: state.now, r: 0, hit: !!boss.att.slamHit };
+}
+function updateWave() {
+  const w = boss.wave, R = B.phase2.ring;
+  if (!w) return;
+  const t = (state.now - w.t0) / R.ms;
+  if (t >= 1) { boss.wave = null; wave.visible = false; return; }
+  const r = R.max * t, d = dist2d(player.pos, w.c);
+  if (!w.hit && w.r < d && r >= d) { w.hit = true; hurt(); }
+  w.r = r;
+  layRing(wave, w.c, Math.max(0, r - R.band), r + R.band);
+  wave.material.opacity = 1 - t * t;
+}
+
+// Geschosse: kleiner Pool, langsam, jedes fliegt range weit
+const shotGeo = new THREE.SphereGeometry(1, 10, 8), shotMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(...B.fan.color) });
+const shots = Array.from({ length: 10 }, () => {
+  const mesh = new THREE.Mesh(shotGeo, shotMat);
+  mesh.visible = false;
+  mesh.scale.setScalar(B.fan.radius);
+  scene.add(mesh);
+  return { mesh, live: false, dx: 0, dz: 0, flown: 0, volley: null };
+});
+function fire(x, y, z, yaw, volley) {
+  const s = shots.find(o => !o.live);
+  if (!s) return;
+  Object.assign(s, { live: true, dx: Math.sin(yaw), dz: Math.cos(yaw), flown: 0, volley });
+  s.mesh.position.set(x, y, z);
+  s.mesh.visible = true;
+}
+function updateShots(dt) {
+  const F = B.fan;
+  for (const s of shots) {
+    if (!s.live) continue;
+    const step = F.speed * dt / 1000, p = s.mesh.position;
+    p.x += s.dx * step; p.z += s.dz * step; s.flown += step;
+    p.y = Math.max(p.y, groundAt(p.x, p.z, p.y) + 0.6);
+    if (Math.random() < 0.5) particles.spawn({ x: p.x, y: p.y, z: p.z, vx: 0, vy: 0.3, vz: 0, life: 0.35, color: F.color, size: 0.5, grow: -0.5 });
+    const hitNow = dist2d(p, player.pos) < F.radius + 0.45 && Math.abs(p.y - (player.pos.y + 1)) < 1.6;
+    if (hitNow && !s.volley.hit) { s.volley.hit = true; hurt(); }
+    if (hitNow || s.flown >= F.range) { s.live = false; s.mesh.visible = false; }
+  }
+}
+const clearShots = () => { for (const s of shots) { s.live = false; s.mesh.visible = false; } };
 
 function endBoss() {
   cleanup();
@@ -475,6 +572,8 @@ function endBoss() {
 function cleanup(instant = false) {
   boss = null;
   hideTeles();
+  clearShots();
+  wave.visible = false;
   state.bossLock = false;
   state.bossAim = null;
   camEnd(instant);
@@ -511,6 +610,8 @@ function pose(m) {
   } else if (step === 'comboStrike') { const k = 1 - t; pitch = 0.4 * k; sy = 1 + 0.12 * k; sx = 1 - 0.05 * k; }
   else if (step === 'slamAir') { pitch = -0.5 * (1 - t) + 0.45 * t; sy = 1.15; sx = 0.92; }
   else if (step === 'chargeRun') { pitch = 0.3; sy = 0.92; sx = 1.06; }
+  else if (step === 'roar') { const k = Math.sin(t * Math.PI); pitch = -0.6 * k; sy = 1 + 0.12 * k; sx = 1 + 0.06 * k; }
+  else if (step === 'fanWind') { const e = t * t; pitch = -0.3 * e; sy = 1 - 0.12 * e; sx = 1 + 0.08 * e; }
   else if (step === 'gap') { const k = 1 - t; pitch = 0.18 * k; sy = 1 - 0.1 * k; roll = Math.sin(t * 14) * 0.12 * k; }   // taumelt
   r.rotation.y = boss.yaw;
   r.rotation.x = pitch;
@@ -523,4 +624,4 @@ $('devPerf').insertAdjacentHTML('afterend', '<button class="bindBtn" id="devBoss
 $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(); });
 
 // Für Tests
-(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
+(window as any).__boss = { B, start: () => startBoss(), toggleLock, force: id => { if (boss) { boss.last = null; ATTACKS[id](); } }, phase2: () => { if (boss) { boss.mob.hp = Math.floor(boss.mob.maxHp * B.phase2.at); } }, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
