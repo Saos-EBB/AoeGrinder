@@ -157,7 +157,8 @@ document.body.appendChild(flash);
 
 // Anzeige: kleine Punkte unter der Lebensleiste, einer pro Ladung
 const dots = document.createElement('div');
-Object.assign(dots.style, { display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '3px', height: '8px' });
+dots.id = 'dodgeDots';   // Lage in ui/hud/hud.css
+Object.assign(dots.style, { display: 'flex', gap: '4px', justifyContent: 'center', height: '8px' });
 $('hudHp').appendChild(dots);
 let shownKey = '';
 const bar = document.getElementById('actionbar');
@@ -174,7 +175,7 @@ export function updateDodgeHud() {
 // Dev: Mob-Angriffe sichtbar verlangsamen (Einstellungen)
 const devBtn = document.createElement('button');
 devBtn.className = 'bindBtn';
-devBtn.style.cssText = 'width:100%;margin-bottom:14px';
+devBtn.id = 'devMobAtk';
 const showDev = () => { devBtn.textContent = `Dev: Mob-Angriffe ×${String(DG.devMobSlow).replace('.', ',')}: ${state.devMobSlow ? 'an' : 'aus'}`; };
 devBtn.addEventListener('click', () => { state.devMobSlow = !state.devMobSlow; showDev(); });
 $('devPerf').after(devBtn);

@@ -17,29 +17,35 @@ import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
-import { startHudEdit, hudEditing, stopHudEdit } from './hudLayout';
+import { startHudEdit, hudEditing, stopHudEdit } from './hud/layout';
 import { toggleChar } from './charWindow';
 import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
+import { showLoad } from './loadScreen';
+import { openInventory } from './inventory';
 
+// color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). Beschreibung und Werte gibt es im Code nicht, das Menü zeigt dort „—“
 const CHARS = [
-  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen' },
-  { mod: 'frost', name: 'Eismagier', sub: 'Frost' },
-  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer' },
-  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan' },
-  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie' },
-  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten' },
-  { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert' },
-  { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung' },
+  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen', color: '#f2e9e4' },
+  { mod: 'frost', name: 'Eismagier', sub: 'Frost', color: '#7dd3fc' },
+  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer', color: '#fb923c' },
+  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan', color: '#c4b5fd' },
+  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie', color: '#fde047' },
+  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten', color: '#a3e635' },
+  { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert', color: '#f87171' },
+  { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung', color: '#e5e7eb' },
 ];
+const STAT_NAMES = ['Schaden', 'Kontrolle', 'Überleben'];   // Mockup; Werte fehlen im Code
+let boardMode: 'time' | 'score' = 'time';
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
 const fmtMult = v => `×${String(v).replace('.', ',')}`;
 const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
 
 let charIdx = 0, picked = [];
+export const currentFigure = () => CHARS[charIdx];   // Name und Untertitel der gewählten Figur (HUD, Spielerrahmen)
 
 // Figur und Mods ergeben den Modus: passt ein fester Modus, gilt der, sonst die eigene Mischung. Darauf baut die Rangliste auf.
 function applySelection() {
@@ -77,8 +83,11 @@ function renderBoardPanel() {
     });
     box.appendChild(table);
   };
-  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [Math.round(r.score).toLocaleString('de-DE'), `Lv ${r.level}`], 'Noch keine Runs mit dieser Kombination.');
-  fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [fmtTime(r.timeTo100), `${r.kills} Kills`], mobMode === 'packs' ? 'Noch kein Run bis Level 100.' : 'Nur bei Packs.');
+  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [`Lv ${r.level}`, Math.round(r.score).toLocaleString('de-DE')], 'Noch keine Runs mit dieser Kombination.');
+  fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [`${r.kills} Kills`, fmtTime(r.timeTo100)], mobMode === 'packs' ? 'Noch kein Run bis Level 100.' : 'Nur bei Packs.');
+  $('menuBoard').hidden = boardMode !== 'score';
+  $('menuTimeBoard').hidden = boardMode !== 'time';
+  for (const b of $('menuBoardTabs').querySelectorAll<HTMLElement>('button')) b.classList.toggle('on', b.dataset.b === boardMode);
 }
 
 export function renderMenu() {
@@ -86,8 +95,10 @@ export function renderMenu() {
   const chars = $('menuChars');
   chars.innerHTML = '';
   CHARS.forEach((c, i) => {
-    const b = button('charTab' + (i === charIdx ? ' selected' : ''), c.name, () => { charIdx = i; applySelection(); });
-    b.insertAdjacentHTML('beforeend', `<small>${c.sub}</small>`);
+    const b = button('charTab' + (i === charIdx ? ' selected' : ''), '', () => { charIdx = i; applySelection(); }, c.name);
+    b.dataset.nav = c.name;
+    b.style.setProperty('--fc', c.color);
+    b.innerHTML = `<b>${c.name.charAt(0)}</b><small>${c.name}</small>`;
     chars.appendChild(b);
   });
   const ids = activeModIds(), mods = $('menuMods');
@@ -106,7 +117,9 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  $('menuWeaponBox').hidden = !mage.weapon && mage.skin !== 'krieger' && mage.skin !== 'klinge';
+  const hasWeapons = !!mage.weapon || mage.skin === 'krieger' || mage.skin === 'klinge';
+  $('menuWeaponsBtn').hidden = !hasWeapons;
+  if (!hasWeapons) $('menuWeaponBox').hidden = true;
   if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Strichkrieger: feste Waffe vor dem Run
     weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
   if (mage.skin === 'klinge') for (const [id, name] of Object.entries(KLINGE_WEAPON_NAMES))   // Klingenstrich: Standard oder Thunderfury
@@ -129,11 +142,15 @@ export function renderMenu() {
       weapons.appendChild(b);
     }
   }
-  $('menuTitle').textContent = CHARS[charIdx].name;
+  const fig = CHARS[charIdx];
+  $('menuTitle').textContent = fig.name;
+  $('menuTitle').style.color = fig.color;
+  $('menuRole').textContent = fig.sub;
+  $('menuStats').innerHTML = STAT_NAMES.map(n => `<div class="menuStat"><span>${n}</span><b>—</b></div>`).join('');
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
   $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
-  $('menuDust').textContent = `Knochenstaub: ${meta.dust}`;
+  $('menuDust').textContent = `Knochenstaub ${meta.dust}`;
   renderBoardPanel();
   if (nav) document.querySelector(`#startModal [data-nav="${CSS.escape(nav)}"]`)?.classList.add('navSel');
 }
@@ -144,6 +161,22 @@ export const menuOpen = () => $('startModal').classList.contains('show');
 // Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
 let menuTurn = 0, turning = null;
 export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
+// Im Menü läuft die Figur ihre Ladungsstufen durch (Magier: Anzeige 0 … voll, Krieger: Wut, Klinge: Haltung 3 bei voll)
+const SHOWCASE = { stepMs: 1600, values: [0, 0.3, 0.6, 1] };   // PH
+export function menuShowcase() {
+  if (!menuOpen()) return null;
+  const i = Math.floor(performance.now() / SHOWCASE.stepMs) % SHOWCASE.values.length;
+  return { meter: SHOWCASE.values[i], stage: i };
+}
+$('menuBoardTabs').addEventListener('click', e => {
+  const b = (e.target as HTMLElement).closest('button');
+  if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
+});
+// Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger und Klingenstrich: feste Waffenwahl als Liste
+$('menuWeaponsBtn').addEventListener('click', () => {
+  if (mage.weapon) openInventory(renderMenu);
+  else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
+});
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
 addEventListener('pointermove', e => {
   if (turning === null) return;
@@ -177,8 +210,8 @@ function startRun() {
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
   applyRunWeapon(!!mage.weapon);
   renderActionbar();
+  showLoad(() => { syncPause(); ding(); });
   syncPause();
-  ding();
 }
 $('startBtn').addEventListener('click', startRun);
 const openSettings = () => { $('settingsModal').classList.add('show'); };
@@ -191,13 +224,12 @@ $('setAutoCam').addEventListener('click', () => { setAutoCam(!autoCamOn()); show
 // Bildschirmwackeln: an, aus, stark
 const shakeBtn = document.createElement('button');
 shakeBtn.className = 'bindBtn';
-shakeBtn.style.cssText = 'width:100%;margin-top:8px';
 const showShake = () => { shakeBtn.textContent = `Bildschirmwackeln: ${shakeModeNow()}`; };
 shakeBtn.addEventListener('click', () => { setShakeMode(SHAKE_MODES[(SHAKE_MODES.indexOf(shakeModeNow()) + 1) % SHAKE_MODES.length]); showShake(); });
-$('setAutoCam').after(shakeBtn);
+$('setGrafik').append(shakeBtn);
 showShake();
 showAutoCam();
-function editHud(backdrop) {
+export function editHud(backdrop) {
   $(backdrop).classList.add('hudHide');
   document.body.classList.remove('menu');
   startHudEdit(() => {

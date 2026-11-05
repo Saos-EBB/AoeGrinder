@@ -4,6 +4,7 @@ import { state, player } from '../state';
 import { timeLimit } from '../modifiers';
 import { die } from '../player';
 import { run, tickScore } from '../score';
+import { put } from './hud';
 import { SCORE_COMBO_WINDOW, SCORE_MULTI_BANNER, LEVEL_NEW_MOB_BANNER } from '../config';
 
 document.head.insertAdjacentHTML('beforeend', `<style>
@@ -23,9 +24,10 @@ function frame() {
       die();
     }
   }
-  pts.textContent = run.killPoints.toLocaleString('de-DE');
+  put(pts, run.killPoints.toLocaleString('de-DE'));
   const left = 1 - (state.now - run.lastKill) / SCORE_COMBO_WINDOW, live = run.combo > 0 && left > 0;
-  combo.textContent = live ? String(run.combo) : '–';
+  put(combo, live ? String(run.combo) : '0');
+  combo.classList.toggle('idle', !live);
   bar.style.visibility = live ? 'visible' : 'hidden';
   (bar.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, left)})`;
   const showMulti = run.lastMulti >= SCORE_MULTI_BANNER && state.now - run.multiAt < 1500;   // PH: Anzeigedauer

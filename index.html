@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Frost Grind – Prototyp</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cinzel+Decorative:wght@700;900&family=Oswald:wght@500;600;700&family=UnifrakturCook:wght@700&family=Barlow:wght@500;600;700;800;900&family=Barlow+Condensed:wght@500;600;700;800;900&family=Anton&family=Rajdhani:wght@500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #8fb4d4;
@@ -14,50 +14,19 @@
     border-radius: 6px; box-shadow: 0 2px 8px #0008; }
   .title { font-family: Cinzel, serif; color: #f2c94c; letter-spacing: .5px; }
 
-  /* HUD: Position kommt aus ui/hudLayout.ts */
-  #hudHeader { width: 100vw; border-width: 0 0 2px; border-radius: 0; padding: 4px 0 0; }
-  #hudRow { display: flex; justify-content: center; gap: 26px; font-size: 13px; padding-bottom: 4px; }
-  #hudRow span { display: flex; flex-direction: column; align-items: center; min-width: 44px; position: relative; }
-  #hudRow i { font-style: normal; font-size: 10px; color: #c9b88a; text-transform: uppercase; letter-spacing: .5px; }
-  #hudRow b { font-variant-numeric: tabular-nums; color: #fff; white-space: nowrap; }
-  #scorePts { color: #f2c94c !important; }
-  #scoreBar { position: absolute; bottom: -3px; left: 0; right: 0; height: 2px; visibility: hidden; }
-  #scoreBar div { height: 100%; background: #ffb347; transform-origin: left; }
+  /* HUD: Position kommt aus ui/hud/layout.ts (Wrapper .hudEl) */
   .bar { position: relative; height: 18px; background: #000a; border: 1px solid #000; margin-top: 4px; overflow: hidden; }
   .bar > .fill { position: absolute; inset: 0; transform-origin: left; }
   .bar > span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px #000; line-height: 18px; }
-  #hpFill { background: linear-gradient(#3fcf3f, #1c8a1c); }
   #hpCut { position: absolute; top: 0; bottom: 0; right: 0; width: 0; background: repeating-linear-gradient(-45deg, #5a5a5e 0 6px, #46464a 6px 12px); }
   body.zeitstopp canvas { filter: grayscale(.85) contrast(1.15) brightness(.9); }
-  #manaFill { background: linear-gradient(#4a7dff, #1f3fbf); }
-  #hudHp, #hudMana { width: 20vw; }
-  #hudCast { width: 40vw; }
-  #hudHp .bar, #hudMana .bar { margin: 0; height: 22px; border-radius: 3px; }
-  #hudHp .bar > span, #hudMana .bar > span { line-height: 22px; font-size: 13px; }
   body.hudEdit #castbar { display: block !important; }
-  .hudDockTarget { outline-color: #5dff7a !important; outline-style: solid !important; }
-  #hudEffects { display: flex; flex-wrap: wrap; gap: 3px; max-width: 26vw; font-size: 11px; }
-  .fxChip { padding: 1px 6px; background: #000a; border: 1px solid #6b5426; border-radius: 3px; white-space: nowrap; }
-  .fxChip b { color: #ffe27a; margin-left: 3px; }
-  #hudRelics { display: flex; flex-direction: column; gap: 6px; }
-  #hudMap { line-height: 0; border-radius: 50%; box-shadow: 0 2px 10px #000a; }
-  #hudMap canvas { display: block; }
-  .relicBox { width: 88px; padding: 8px 4px; text-align: center; font: 700 12px Cinzel, serif; color: #f2c94c; background: linear-gradient(#2a2010ee, #120d06ee);
-    border: 3px solid #f2c94c; border-radius: 8px; box-shadow: 0 0 10px #f2c94c88; }
-  body.hudEdit #hudHeader, body.hudEdit #hudHp, body.hudEdit #hudMana, body.hudEdit #hudCast, body.hudEdit #actionbar, body.hudEdit #hudEffects, body.hudEdit #hudRelics, body.hudEdit #hudMap {
-    outline: 2px dashed #ffe27a; outline-offset: 1px; cursor: move; min-width: 90px; min-height: 26px; }
-  body.hudEdit #hudHeader::after, body.hudEdit #hudHp::after, body.hudEdit #hudMana::after, body.hudEdit #hudCast::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after, body.hudEdit #hudMap::after {
-    content: attr(data-hud-name); position: absolute; top: 100%; left: 0; font: 700 11px system-ui; color: #ffe27a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
   #hudEditBar button { white-space: nowrap; }
-  #hudEditBar { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
-  #hudEditBar[hidden], #hudGrid[hidden] { display: none; }
-  #hudGrid { position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background-image: linear-gradient(#ffffff2e 1px, transparent 1px), linear-gradient(90deg, #ffffff2e 1px, transparent 1px); }
+  #hudEditBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
+  #hudEditBar[hidden] { display: none; }
   #hudMana { position: relative; }
   #fsr { position: absolute; top: 100%; left: 0; right: 0; height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
-  #hudMana #meter { position: absolute; top: calc(100% + 9px); left: 0; right: 0; height: 15px; }
-  #hudMana #meter > span { line-height: 15px; font-size: 11px; }
   #hudMana.over .bar { --meter: #ffe14a; animation: meterPulse .35s ease-in-out infinite alternate; }
   #meter.full { animation: meterPulse .7s ease-in-out infinite alternate; }
   @keyframes meterPulse { from { box-shadow: 0 0 2px var(--meter); } to { box-shadow: 0 0 12px var(--meter), 0 0 4px #fff; filter: brightness(1.35); } }
@@ -68,14 +37,8 @@
   .smallBtn:hover { background: #5a4220; }
 
   /* Castbar */
-  #castbar { position: relative; height: 20px;
-    background: #000c; border: 2px solid #b8913f; border-radius: 3px; display: none; overflow: hidden; }
-  #castFill { position: absolute; inset: 0; background: linear-gradient(#ffd34d, #c9921a); transform-origin: left; }
-  #castbar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 700;
-    line-height: 16px; text-shadow: 0 1px 2px #000; }
 
   /* Actionbar */
-  #actionbar { display: flex; gap: 6px; padding: 6px; }
   .slot { position: relative; width: var(--slot); height: var(--slot); background-size: cover; border: 2px solid #6b5426; border-radius: 4px;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
     font-size: 11px; font-weight: 700; text-align: center; text-shadow: 0 1px 2px #000; cursor: pointer; }
@@ -114,8 +77,6 @@
   .util   { background: radial-gradient(circle at 50% 35%, #fff2c2, #9a7a3a 70%, #4a3816); }
 
   /* XP */
-  #xpbar { position: relative; height: 5px; background: #000c; }
-  #xpFill { position: absolute; inset: 0; background: linear-gradient(#a35ad6, #5b2a8a); transform-origin: left; }
 
   /* Fehlermeldung (wie Classic-UI-Errorframe) */
   #err { position: fixed; top: 18%; left: 0; right: 0; text-align: center; color: #ff3b3b; font-size: 18px;
@@ -125,7 +86,7 @@
 
   /* Nameplates + Kampftext */
   #overlay { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-  #hudHeader, #hudHp, #hudMana, #hudCast, #hudEffects, #hudRelics, #hudMap, #actionbar, #err { z-index: 2; }
+  #err { z-index: 2; }
   .modal { z-index: 3; }
   .plate { position: absolute; width: 74px; margin-left: -37px; font-size: 11px; text-align: center;
     text-shadow: 0 1px 2px #000; font-weight: 600; }
@@ -149,23 +110,6 @@
   .modal { position: fixed; inset: 0; background: #000a; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
   .modal.show { display: flex; }
   .modal h1 { margin: 0; font-size: 34px; }
-  .cards { display: flex; justify-content: center; gap: 2vw; width: 80vw; max-height: 80vh; overflow: auto; padding: 14px 6px; }
-  .card { flex: 1 1 0; min-width: 0; max-width: 34vw; padding: 0 0 16px; cursor: pointer; transition: transform .1s, box-shadow .1s; border-width: 4px; display: flex; flex-direction: column; }
-  .card:hover, .card.selected { transform: translateY(-6px); box-shadow: 0 0 18px var(--rarity); }
-  .card .kindBar { padding: 5px 10px; font: 700 12px system-ui, sans-serif; letter-spacing: .5px; color: #111; display: flex; gap: 6px; align-items: center; }
-  .card .kindBar span { font-size: 15px; }
-  .card h3 { margin: 12px 14px 4px; font-size: clamp(18px, 1.8vw, 26px); text-shadow: 0 0 10px currentColor; }
-  .card .src { font-size: 12px; color: #c9b88a; margin: 0 14px 10px; }
-  .card p { margin: 0 14px; font-size: clamp(14px, 1.2vw, 18px); color: #eee; flex: 1; }
-  .card p .pct { text-decoration: underline dotted; }
-  .card .preview { margin: 10px 14px 0; font-size: 13px; color: #ffe27a; min-height: 18px; visibility: hidden; font-variant-numeric: tabular-nums; }
-  .card:hover .preview, .card.selected .preview { visibility: visible; }
-  .card .replaces { margin: 10px 14px 0; padding: 4px 8px; font-size: 13px; color: #ffd0c8; background: #5a1a14cc; border-left: 3px solid #ff5a4a; border-radius: 3px; }
-  .card .replaces b { color: #fff; }
-  .card .rank { margin: 10px 14px 0; font-size: 12px; }
-  .card .stage { margin: 8px 14px 0; font-weight: 700; color: #5dff7a; font-size: 13px; }
-  .card.improves { box-shadow: 0 0 14px #5dff7a88; }
-  .card.relicCard { border-color: #f2c94c !important; border-radius: 50% 50% 10px 10px / 12% 12% 10px 10px; box-shadow: 0 0 22px #f2c94caa; padding-top: 16px; }
   .btn { font-family: Cinzel, serif; font-size: 18px; padding: 10px 28px; background: #6b1a1a; color: #f2c94c;
     border: 2px solid #b8913f; border-radius: 4px; cursor: pointer; }
   .btn:hover { background: #8a2222; }
@@ -193,24 +137,13 @@
   .shopItem { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 8px; margin-bottom: 4px; border: 2px solid; border-radius: 4px; background: #0008; cursor: pointer; width: 100%; color: #fff; font: 600 13px system-ui, sans-serif; }
   .shopItem:disabled { opacity: .45; cursor: not-allowed; }
   .shopItem.bought { opacity: .7; }
-  #menuDust { color: #efe0b8; font-weight: 700; margin-top: 8px; font-size: 13px; }
   .chip.locked { opacity: .55; }
-  #charBody { text-align: left; max-height: 60vh; overflow: auto; font-size: 14px; }
-  #charBody table { width: 100%; border-collapse: collapse; }
-  #charBody td { padding: 3px 6px; }
-  #charBody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
-  #charBody .dmgBar td { padding: 0 6px 5px; }
-  #charBody .dmgBar div { height: 4px; }
   /* Hauptmenü */
-  body.menu #hudHeader, body.menu #hudHp, body.menu #hudMana, body.menu #hudCast, body.menu #actionbar, body.menu #hudEffects, body.menu #hudRelics, body.menu #hudMap, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
+  body.menu .hudEl, body.menu #hudDeco, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
   #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
   #startModal.show { display: block; }
   .hudHide { display: none !important; }
-  #menuLeft { position: absolute; top: 2vh; left: 1.5vw; width: 25vw; max-height: 72vh; overflow: auto; padding: 12px 14px; }
-  #menuLeft h1 { margin: 0 0 6px; font-size: 30px; }
-  #menuRight { position: absolute; top: 2vh; right: 1.5vw; width: 21vw; padding: 12px 14px; }
   .menuHead { margin: 10px 0 5px; font-size: 14px; }
-  #menuInfo { font-size: 12px; color: #c9b88a; margin: 10px 0 0; }
   .chipRow { display: flex; flex-wrap: wrap; gap: 4px; }
   #menuWeapons { max-height: 26vh; overflow-y: auto; }   /* bis zu 15 Waffen, im Dev bis 50 */
   #menuWeapons .chip { padding: 2px 7px; font-size: 11px; }
@@ -222,21 +155,9 @@
   .chip { font: 600 12px system-ui, sans-serif; padding: 4px 8px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 12px; cursor: pointer; }
   .chip.selected { border-color: #ffe27a; color: #ffe27a; box-shadow: 0 0 6px #ffe27a88; }
   .chip:disabled { opacity: .35; cursor: not-allowed; }
-  #menuBoard { font-size: 13px; color: #d8cfb8; min-height: 40px; }
-  #menuBoard table { width: 100%; border-collapse: collapse; }
-  #menuBoard td:nth-child(2) { text-align: right; color: #f2c94c; font-weight: 700; }
-  #menuBoard td:nth-child(3) { text-align: right; }
-  #menuBottom { position: absolute; left: 0; right: 0; bottom: 2vh; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  #menuTitle { font-size: 30px; text-shadow: 0 2px 6px #000; }
   .kitRow { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
   .kitSlot { width: 40px; height: 40px; border: 2px solid #6b5426; border-radius: 5px; background-size: cover; background-position: center; font: 600 8px/1.1 system-ui, sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; text-shadow: 0 1px 2px #000; cursor: help; }
   .kitSlot:hover { border-color: #f2c94c; }
-  #menuChars { display: flex; gap: 6px; }
-  .charTab { width: 150px; padding: 8px 4px; font: 700 14px Cinzel, serif; color: #f4ecd8; background: #0d0b08ee; border: 2px solid #6b5426; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .charTab small { font: 600 11px system-ui, sans-serif; color: #c9b88a; }
-  .charTab.selected { border-color: #f2c94c; color: #f2c94c; box-shadow: 0 0 10px #f2c94c88; }
-  #menuActions { display: flex; gap: 8px; align-items: center; }
-  #menuActions .smallBtn { margin: 0; width: auto; padding: 8px 14px; }
   .navSel, #startModal button:focus-visible, .pauseBox button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
   .pauseBox .smallBtn { margin: 0; }
@@ -260,7 +181,6 @@
   .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
   #tMenu { position: absolute; top: 8px; right: 10px; width: 48px; height: 48px; font-size: 28px; line-height: 44px; text-align: center; z-index: 1;
     background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
-  body.mobile #hudHeader, body.mobile #hudHp, body.mobile #hudMana, body.mobile #hudCast, body.mobile #actionbar, body.mobile #hudEffects, body.mobile #hudRelics, body.mobile #hudMap { pointer-events: none; }
   body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
   body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
@@ -270,52 +190,38 @@
   body.mobile .chip { font-size: 15px; padding: 8px 12px; }
   body.mobile .invGrid { grid-template-columns: 1fr; }
   body.mobile .shopItem { font-size: 16px; padding: 12px; }
-  body.mobile #shopList, body.mobile #charBody { max-height: none; font-size: 16px; }
+  body.mobile #shopList { max-height: none; font-size: 16px; }
   body.mobile #cardModal { justify-content: center; }
   body.mobile .cards { width: 100vw; max-height: 100vh; padding: 8px; }
   body.mobile #cardModal h1 { font-size: 22px; }
   body.mobile .card p { font-size: 14px; }
-  body.mobile #menuLeft { width: 38vw; max-height: 60vh; top: 1vh; left: 1vw; padding: 8px 10px; }
-  body.mobile #menuRight { width: 30vw; max-height: 60vh; overflow: auto; top: 1vh; right: 1vw; padding: 8px 10px; }
-  body.mobile #menuLeft h1, body.mobile #menuTitle { font-size: 22px; }
-  body.mobile #menuBottom { bottom: 1vh; }
-  body.mobile .charTab { width: 120px; padding: 10px 4px; }
   body.mobile #menuActions .smallBtn { padding: 12px 16px; }
   /* Handy hochkant ohne Querformat-Sperre: Seite um 90° gedreht (device.ts updateRotation) */
   html.rot body { position: fixed; top: 0; left: 100vw; width: 100vh; height: 100vw; transform-origin: 0 0; transform: rotate(90deg); }
-  html.rot #hudHeader { width: 100%; }
   html.rot body.mobile .modal > .frame.panel { width: 100% !important; min-height: 100%; }
   html.rot body.mobile .cards { width: 100%; max-height: 100%; }
-  html.rot body.mobile #menuLeft { width: 38vh; max-height: 60vw; }
-  html.rot body.mobile #menuRight { width: 30vh; max-height: 60vw; }
   html.rot #hudHp, html.rot #hudMana { width: 20vh; }
   html.rot #hudCast { width: 40vh; }
 </style>
 </head>
 <body>
 
-<div id="hudHeader" class="frame">
-  <div id="hudRow">
-    <span><i>Zone</i><b id="hZone"></b></span>
-    <span><i>Level</i><b id="lvl">1</b></span>
-    <span><i>Zeit</i><b id="iTime">0:00</b></span>
-    <span id="hSplitBox"><i>Split</i><b id="hSplit">–</b></span>
-    <span><i>Punkte</i><b id="scorePts">0</b></span>
-    <span><i>Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div></span>
-    <span><i>Multi</i><b id="hMulti">–</b></span>
-    <span><i>Mobs</i><b id="iCombat">0</b></span>
-    <span><i>Kills</i><b id="iKills">0</b></span>
-    <span><i>Glück</i><b id="luck">0</b></span>
-    <span><i>XP</i><b id="xpText"></b></span>
-  </div>
-  <div id="xpbar"><div id="xpFill"></div></div>
-</div>
-
-<div id="hudHp"><div class="bar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"></span></div></div>
+<!-- HUD-Elemente, Lage und Variante aus ui/hud/layout.ts, Inhalt aus ui/hud.ts und ui/hud/elements.ts -->
+<div id="hudTimer" class="hPanel"><b id="iTime">0:00</b><span id="hSplit">–</span></div>
+<div id="hudRun" class="hPanel"><span>LVL <b id="lvl">1</b></span><span><b id="scorePts">0</b> Pkt</span><span>Glück <b id="luck">0</b></span><span id="hWaveBox" hidden>Welle <b id="hWave">0</b></span></div>
+<div id="hudXp"><div id="xpbar" class="hBar"><div class="fill" id="xpFill"></div><span id="xpText"></span></div></div>
+<div id="hudCombo"><i class="cLabel">Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div>
+  <span class="cMulti">Multi-Kill <b id="hMulti">–</b></span><span class="cKills"><b id="iKills">0</b> Kills</span></div>
+<div id="hudKill"><div id="meter" class="hBar" hidden><div class="fill" id="meterFill"></div><span id="meterText"></span></div></div>
+<div id="hudTracker"><b class="trTitle"></b><span class="trMobs">Mobs in der Nähe <b id="iCombat">0</b></span></div>
+<div id="hudSplits" class="hPanel"></div>
+<div id="hudCompass"></div>
+<div id="hudUnit" class="hPanel"><div class="ufPortrait"></div><div class="ufMain"><div class="ufHead"><b class="ufName"></b><b class="ufLvl"></b></div>
+  <div class="hBar ufHp"><div class="fill"></div><span></span></div><div class="hBar ufMana"><div class="fill"></div><span></span></div></div></div>
+<div id="hudHp"><div class="bar hBar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"><b class="cur"></b><span class="max"></span></span></div></div>
 <div id="hudMana">
-  <div class="bar"><div class="fill" id="manaFill"></div><span id="manaText"></span></div>
+  <div class="bar hBar"><div class="fill" id="manaFill"></div><span id="manaText"><b class="cur"></b><span class="max"></span></span></div>
   <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>
-  <div id="meter" class="bar" hidden><div class="fill" id="meterFill"></div><span id="meterText"></span></div>
 </div>
 <div id="hudCast">
   <div id="castbar"><div id="castFill"></div><span id="castText"></span></div>
@@ -323,48 +229,50 @@
 </div>
 <div id="hudEffects"></div>
 <div id="hudRelics"></div>
-<div id="hudMap"></div>
-<div id="actionbar" class="frame"></div>
-<div id="hudGrid" hidden></div>
+<div id="hudMap"><span id="hZone" class="mapLabel"></span></div>
+<div id="actionbar"></div>
 <div id="hudEditBar" class="frame" hidden>
-  <span class="title">Ziehen verschiebt, nah heran rastet ein, Shift + Ziehen trennt, Mausrad ändert die Größe</span>
-  <button class="bindBtn" id="hudEditGrid"></button>
-  <button class="bindBtn" id="hudEditStep"></button>
-  <button class="bindBtn" id="hudEditReset">Zurücksetzen</button>
-  <button class="bindBtn" id="hudEditDone">Fertig</button>
+  <span class="hint">Ziehen = verschieben (Shift = frei) · Mausrad = Größe · H = ein/aus · Rechtsklick = Element zurück</span>
+  <button class="smallBtn" id="hudEditReset">Preset zurücksetzen</button>
+  <button class="btn" id="hudEditDone">Fertig</button>
 </div>
 <div id="err"></div>
 <div id="perf" hidden></div>
 <div id="overlay"></div>
 
 <div id="startModal" class="modal show">
-  <div id="menuLeft" class="frame">
-    <h1 class="title">Frost Grind</h1>
-    <div class="title menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
-    <div class="title menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
-    <div class="title menuHead">Karten</div><div id="menuCards" class="chipRow"></div>
-    <div id="menuWeaponBox"><div class="title menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuTop"><span class="menuGame title">Frost Grind</span><span class="menuPick">Wähle deine Figur</span><span id="menuDust"></span></div>
+  <div id="menuLeft" class="gPanel">
+    <div class="title" id="menuTitle"></div>
+    <div id="menuRole"></div>
+    <p id="menuDesc">—</p>
+    <div id="menuStats"></div>
+    <div class="menuHead">Start-Kit</div>
+    <div id="menuKit" class="kitRow" title=""></div>
     <p id="menuInfo"></p>
-    <div id="menuDust"></div>
   </div>
-  <div id="menuRight" class="frame">
-    <div class="title menuHead">Rangliste: Zeit bis Level 100</div>
+  <div id="menuRight" class="gPanel">
+    <div class="menuBoardHead"><span class="title">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time">Zeit</button> · <button type="button" data-b="score">Punkte</button></span></div>
     <div id="menuTimeBoard"></div>
-    <div class="title menuHead">Rangliste: Punkte</div>
     <div id="menuBoard"></div>
     <div id="menuBoardBtn"></div>
+    <div class="menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
+    <div class="menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
+    <div class="menuHead">Karten</div><div id="menuCards" class="chipRow"></div>
+  </div>
+  <div id="menuWeaponBox" class="gPanel" hidden><div class="menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuActions">
+    <button class="smallBtn" id="menuWeaponsBtn">Waffen</button>
+    <button class="smallBtn" id="menuShop">Shop</button>
+    <button class="smallBtn" id="menuSettings">Einstellungen</button>
+    <button class="smallBtn" id="menuBinds">Keybinds</button>
+    <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
   </div>
   <div id="menuBottom">
-    <div class="title" id="menuTitle"></div>
-    <div id="menuKit" class="kitRow" title=""></div>
+    <span class="menuKey">A / LB</span>
     <div id="menuChars"></div>
-    <div id="menuActions">
-      <button class="btn" id="startBtn">Run starten</button>
-      <button class="smallBtn" id="menuShop">Shop</button>
-      <button class="smallBtn" id="menuSettings">Einstellungen</button>
-      <button class="smallBtn" id="menuBinds">Keybinds</button>
-      <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
-    </div>
+    <span class="menuKey">D / RB</span>
+    <button class="btn" id="startBtn">Run starten</button>
   </div>
 </div>
 
@@ -383,10 +291,39 @@
 </div>
 
 <div id="settingsModal" class="modal">
-  <div class="frame panel" style="max-height:92vh;overflow-y:auto">
-    <h1 class="title" style="font-size:26px">Einstellungen</h1>
-    <div id="settingsVol"></div>
-    <button class="bindBtn" id="setAutoCam" style="width:100%;margin-top:8px"></button>
+  <div class="frame panel" id="settingsBox">
+    <div class="setHead"><h1 class="title">Einstellungen</h1><span>Esc schließt · Spiel pausiert</span></div>
+    <div class="setMain">
+      <nav id="setTabs" aria-label="Einstellungen">
+        <button data-tab="grafik">Grafik</button>
+        <button data-tab="audio">Audio</button>
+        <button data-tab="steuerung">Steuerung &amp; Tasten</button>
+        <button data-tab="interface">Interface</button>
+        <button data-tab="gameplay">Gameplay</button>
+      </nav>
+      <div class="setBody">
+        <section data-tab="grafik" id="setGrafik"><h2>Bild</h2></section>
+        <section data-tab="audio"><h2>Lautstärke</h2><div id="settingsVol"></div></section>
+        <section data-tab="steuerung" id="setSteuerung"><h2>Kamera</h2>
+          <button class="bindBtn" id="setAutoCam"></button>
+          <h2>Tasten</h2><button class="bindBtn" id="setBinds">Tastenbelegung öffnen</button>
+        </section>
+        <section data-tab="interface" id="setInterface"></section>
+        <section data-tab="gameplay"><h2>Gameplay</h2><p class="setNote">Noch keine Einstellungen.</p>
+    <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
+      <summary class="title" style="cursor:pointer">Credits</summary>
+      <p style="margin:6px 0 0">Spell-Icons von HiveWorkshop:<br>Flame Spells: MangakaDark<br>Hero Ability Icon Set 3, SnowBall - FireBall: Panda<br>FrostMissiles: Vinz</p>
+    </details>
+        </section>
+      </div>
+    </div>
+    <div class="setFoot"><button class="btn" id="settingsClose">Schließen</button></div>
+  </div>
+</div>
+
+<!-- Dev-Panel (F10). Phase 3 macht daraus ein schwebendes Fenster -->
+<div id="devPanel" class="frame" hidden>
+  <div class="title devHead">Dev <span>F10</span></div>
     <div class="title" style="text-align:left;margin:10px 0 6px">Dev: Zone wechseln</div>
     <div id="devZones"></div>
     <div class="title" style="text-align:left;margin-bottom:6px">Dev: Karten</div>
@@ -409,27 +346,25 @@
     </div>
     <div class="title" style="text-align:left;margin-bottom:6px">Dev: Waffen-Baukasten</div>
     <div id="devForge"></div>
-    <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
-      <summary class="title" style="cursor:pointer">Credits</summary>
-      <p style="margin:6px 0 0">Spell-Icons von HiveWorkshop:<br>Flame Spells: MangakaDark<br>Hero Ability Icon Set 3, SnowBall - FireBall: Panda<br>FrostMissiles: Vinz</p>
-    </details>
-    <button class="smallBtn" id="settingsClose" style="width:auto;padding:6px 14px">Schließen</button>
-  </div>
 </div>
 
 <div id="cardModal" class="modal">
-  <h1 class="title">Level <span id="cardLvl"></span>!</h1>
-  <div id="cardHint" class="title"></div>
+  <h1 class="title">Stufe <span id="cardLvl"></span></h1>
+  <div id="cardHint"></div>
   <div class="cards" id="cards"></div>
 </div>
 
 <div id="deathModal" class="modal">
-  <div class="frame panel">
-    <h1 class="title">Du bist gestorben</h1>
-    <p id="deathStats"></p>
-    <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
-    <button class="btn" id="restartBtn">Neuer Run</button>
-    <button class="smallBtn" id="deathMenuBtn" style="width:auto;padding:6px 14px">Hauptmenü</button>
+  <div class="frame panel" id="endBox">
+    <h1 class="title" id="endTitle"></h1>
+    <div id="endSub"></div>
+    <p id="deathStats" hidden></p>
+    <div id="runResult"></div>
+    <div class="endBtns">
+      <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
+      <button class="smallBtn" id="restartBtn">Nochmal</button>
+      <button class="smallBtn" id="deathMenuBtn">Hauptmenü</button>
+    </div>
   </div>
 </div>
 
@@ -447,20 +382,20 @@
 </div>
 
 <div id="shopModal" class="modal" style="z-index:4">
-  <div class="frame panel" style="width:min(820px,94vw);max-width:none">
-    <h1 class="title" style="font-size:26px">Shop</h1>
-    <p id="shopInfo"></p>
+  <div class="frame panel" id="shopBox">
+    <div class="shopHead"><h1 class="title">Magische Kiste</h1><span id="shopInfo"></span></div>
+    <div id="shopCols"></div>
     <div id="shopList"></div>
     <button class="btn" id="shopClose">Weiter zum Hauptmenü</button>
   </div>
 </div>
 
 <div id="charModal" class="modal" style="z-index:4">
-  <div class="frame panel" style="width:min(640px,92vw)">
-    <h1 class="title" style="font-size:26px">Charakter</h1>
-    <div id="charTabs" class="row2" style="margin:10px 0"></div>
+  <div class="frame panel" id="charBox">
+    <div class="charHead"><h1 class="title">Charakter</h1><span>X schließt · pausiert</span></div>
+    <div id="charTabs"></div>
     <div id="charBody"></div>
-    <button class="smallBtn" id="charClose" style="width:auto;padding:6px 14px">Schließen (X)</button>
+    <button class="smallBtn" id="charClose">Schließen (X)</button>
   </div>
 </div>
 

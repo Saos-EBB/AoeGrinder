@@ -1,22 +1,22 @@
-// Minimap: runde Karte um den Spieler, oben ist die Blickrichtung der Kamera. Lage und Größe über hudLayout.ts (Element hudMap).
-// Zeigt Mobs im Umkreis (rot, im Kampf heller, Champions blau), den Kartenrand und den Spieler als Pfeil. Alles PH.
+// Minimap: Karte um den Spieler, oben ist die Blickrichtung der Kamera. Lage, Größe und Form (Variante circle/square) über hud/layout.ts.
+// Zeigt Mobs im Umkreis (rot, im Kampf heller, Champions orange, Boss lila), den Kartenrand und den Spieler als Pfeil. Rahmen und Grund aus dem HUD-Theme (CSS). Alles PH.
 
 import { state, player } from '../state';
 import { $ } from '../util';
 import { CFG } from '../config';
 import { cam } from '../camera';
-import { COLORS } from './colors';
+import { placementOf } from './hud/layout';
 
 const MINIMAP = {
   px: 150,               // Kantenlänge in CSS-Pixeln, die Größe im Spiel kommt aus dem HUD-Layout (Mausrad)
   yd: 55,                // Radius der Karte in yd
-  everyMs: 50,           // Neu zeichnen höchstens alle 50 ms
-  mob: '#c8322a', fight: '#ff6a4a', champ: '#6fb8ff', edge: '#efe0b8', player: '#f2c94c',
+  everyMs: 100,          // Neu zeichnen 10× pro Sekunde
+  mob: '#c8322a', fight: '#ff6a4a', champ: '#f59e0b', boss: '#a78bfa', edge: '#efe0b8', player: '#ffffff',
 };
 
 const box = $('hudMap');
 const canvas = document.createElement('canvas');
-box.appendChild(canvas);
+box.prepend(canvas);
 const ctx = canvas.getContext('2d');
 let size = 0, last = -1e9;
 
@@ -37,10 +37,10 @@ export function updateMinimap() {
   // Welt → Karte: oben = Blickrichtung (sin, cos), rechts = Kamera-rechts (−cos, sin)
   const toMap = (x, z) => { const dx = x - px, dz = z - pz; return [r + (-dx * cos + dz * sin) * k, r - (dx * sin + dz * cos) * k]; };
 
+  const round = !placementOf('minimap')?.variant?.startsWith('square');
   c.clearRect(0, 0, size, size);
   c.save();
-  c.beginPath(); c.arc(r, r, r - 1, 0, Math.PI * 2); c.clip();
-  c.fillStyle = '#0b0906e6'; c.fillRect(0, 0, size, size);
+  if (round) { c.beginPath(); c.arc(r, r, r - 1, 0, Math.PI * 2); c.clip(); }
   // Ringe alle 20 yd
   c.strokeStyle = '#efe0b81a'; c.lineWidth = 1;
   for (let yd = 20; yd < MINIMAP.yd; yd += 20) { c.beginPath(); c.arc(r, r, yd * k, 0, Math.PI * 2); c.stroke(); }
@@ -53,19 +53,16 @@ export function updateMinimap() {
   const dot = size / MINIMAP.px;
   for (const pass of [0, 1]) for (const m of state.mobs) {
     if (m.dead || m.hidden) continue;
-    const top = !!m.champion || m.state === 'combat';
+    const top = !!m.champion || !!m.boss || m.state === 'combat';
     if (top !== !!pass) continue;
     const [x, y] = toMap(m.pos.x, m.pos.z);
-    if (Math.hypot(x - r, y - r) > r) continue;
-    c.fillStyle = m.champion ? MINIMAP.champ : m.state === 'combat' ? MINIMAP.fight : MINIMAP.mob;
-    c.beginPath(); c.arc(x, y, (m.champion ? 3.2 : 2.3) * dot, 0, Math.PI * 2); c.fill();
+    if (round ? Math.hypot(x - r, y - r) > r : x < 0 || y < 0 || x > size || y > size) continue;
+    c.fillStyle = m.boss ? MINIMAP.boss : m.champion ? MINIMAP.champ : m.state === 'combat' ? MINIMAP.fight : MINIMAP.mob;
+    c.beginPath(); c.arc(x, y, (m.boss ? 4.5 : m.champion ? 3.2 : 2.3) * dot, 0, Math.PI * 2); c.fill();
   }
   // Spieler: Pfeil in Laufrichtung, relativ zur Kamera
   c.translate(r, r); c.rotate(cam.offset);
   c.fillStyle = MINIMAP.player; c.strokeStyle = '#000'; c.lineWidth = dot;
   c.beginPath(); c.moveTo(0, -7 * dot); c.lineTo(5 * dot, 6 * dot); c.lineTo(0, 3 * dot); c.lineTo(-5 * dot, 6 * dot); c.closePath(); c.fill(); c.stroke();
   c.restore();
-  // Rahmen
-  c.strokeStyle = COLORS.goldFrame; c.lineWidth = 3 * dot;
-  c.beginPath(); c.arc(r, r, r - 1.5 * dot, 0, Math.PI * 2); c.stroke();
 }

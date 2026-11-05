@@ -16,10 +16,12 @@ import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
 import { updateKlinge, klingeAnim, updateKlingeVisuals } from './klinge';
-import { updateSiege } from './siege';
+import { updateWaves } from './waves';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
+import './ui/theme.css';
+import './ui/uiSettings';
 import './ui/menus';
 import './mobile';
 import './ui/saveCode';
@@ -36,8 +38,10 @@ import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import * as meterMod from './schoolMeter';
 import * as buffsMod from './buffs';
-import { menuYaw, enterMenu } from './ui/mainMenu';
+import { menuYaw, enterMenu, menuShowcase } from './ui/mainMenu';
 import * as menuMod from './ui/mainMenu';
+import './ui/settingsView';
+import './ui/devPanel';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
 import { updateEnergy, figureLook } from './vfx/energy';
@@ -75,7 +79,7 @@ function update(dt) {
     return true;
   });
   if (!bossBusy()) updateRespawn();   // Boss-Kampf: kein Nachschub
-  updateSiege(dt);
+  updateWaves(dt);
   updateCardQueue();
 }
 
@@ -93,11 +97,12 @@ function updateVisuals(dt) {
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
-  mage.setMeter(figureLook.meter ?? (batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0));
+  const show = menuShowcase();   // Hauptmenü: Ladungsstufen durchlaufen
+  mage.setMeter(show ? show.meter : figureLook.meter ?? (batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0));
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...klingeAnim(),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: show ? show.stage : meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...klingeAnim(), ...(show ? { rage: show.meter * (player.rageMax > 1 ? player.rageMax : 100), berserk: show.stage === 3, h3: show.stage === 3 } : {}),
   });
   updateKlingeVisuals();
   dodgeVisual(mage.root);

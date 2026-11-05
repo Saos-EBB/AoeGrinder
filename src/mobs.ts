@@ -44,7 +44,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
-  if (mobMode === 'siege') return;
+  if (mobMode === 'waves') return;
   while (liveMobs().length < mobTarget()) spawnPack();
   respawn.pending = 0;
   respawn.packs = livePackCount();
@@ -76,7 +76,7 @@ function replaceStalePack() {
 }
 
 export function updateRespawn() {
-  if (mobMode === 'siege') return;
+  if (mobMode === 'waves') return;
   dropFarPack();
   replaceStalePack();
   const packs = livePackCount();
@@ -348,7 +348,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   if (dark) player.hp = Math.min(maxHp(), player.hp + dmg * DARK_HEAL);
   mob.hitAt = state.now;
   if (crit) { shakeCamera(0.18); rumble(0.3, 0.6, 120); }   // PH: Rumble-Werte
-  damageNumber(mob, dmg, crit, source);
+  damageNumber(mob, dmg, crit, source, noRoll);   // noRoll: DoT-Ticks und Umgebung, als kleine Tick-Zahl
   run.dmgBySource[source] = (run.dmgBySource[source] || 0) + dmg;
   hitSparkFx(mob.pos, source);
 

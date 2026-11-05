@@ -27,7 +27,7 @@ export const byScore = list => [...list].sort((a, b) => b.score - a.score);
 export function recordRun() {
   const b = scoreBreakdown();
   const entry = {
-    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'siege' ? ` · Belagerung ${siegeGoal ? `${siegeGoal} min` : 'endlos'}` : mobMode === 'hunt' ? ' · Boss-Jagd' : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(),
+    date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'waves' ? ` · Wellen` : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(), wave: run.wave ?? 0,
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
     zone: zone.name, cause: player.lastHitBy ?? 'Unbekannt', version: SCORE_VERSION, note: '', build: '',
   };
@@ -72,10 +72,26 @@ export const byTime = list => list.filter(r => typeof r.timeTo100 === 'number').
 
 // Splits gegen den schnellsten Run derselben Kombination, grün heißt schneller
 const fmtDiff = ms => { const t = Math.abs(ms) / 1000; return `${ms < 0 ? '−' : '+'}${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`; };
+// Bestwert pro Split, auch aus Runs, die Level 100 nicht erreicht haben. Schlüssel wie comboRuns: Figur + Mods + Mob-Modus
+const SPLIT_STORE = 'frostgrind.splits.v1';
+const splitKey = () => `${[...activeModIds()].sort().join(',')}|${mobMode}|${siegeGoal ?? 0}`;
+function loadSplitBests() {
+  try { const all = JSON.parse(localStorage.getItem(SPLIT_STORE) || '{}'); return all && typeof all === 'object' ? all : {}; } catch { return {}; }
+}
+export const bestSplits = (): Record<number, number> => loadSplitBests()[splitKey()] ?? {};
+function saveSplitBest(lvl, ms) {
+  if (state.devUsed) return;   // Dev-Läufe (Level setzen usw.) schreiben keine Bestzeiten
+  const all = loadSplitBests(), mine = all[splitKey()] ?? (all[splitKey()] = {});
+  if (typeof mine[lvl] === 'number' && mine[lvl] <= ms) return;
+  mine[lvl] = ms;
+  try { localStorage.setItem(SPLIT_STORE, JSON.stringify(all)); } catch { /* kein Storage */ }
+}
+
 export function noteSplits(fromLevel) {
   for (const lvl of META.splits) {
     if (fromLevel >= lvl || player.level < lvl) continue;
     run.splits[lvl] = state.now;
+    saveSplitBest(lvl, state.now);
     const best = byTime(comboRuns())[0]?.splits?.[lvl];
     const el = $('hSplit');
     el.textContent = typeof best === 'number' ? `L${lvl} ${fmtDiff(state.now - best)}` : `L${lvl}`;

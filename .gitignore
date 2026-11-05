@@ -3,3 +3,4 @@ dist/
 dist-vfx/
 .claude/
 node_modules
+docs/uiInfo/*.zip

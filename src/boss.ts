@@ -1,8 +1,9 @@
-// Boss-Kämpfe: Bei Level 15/30 (früh), 45/60 (mittel), 75/90 (spät) und 100 (final) kommt ein Boss aus dem Roster (bosses/roster.ts) in eine Arena.
-// Nur aktiv mit #boss in der URL oder über das Dev-Menü. Ohne beides läuft das Spiel wie vorher.
+// Boss-Kämpfe: In Packs bei Level 25 (früh), 50 (mittel), 75 (spät) und 100 (final), in Wellen nach jeder Welle (waves.ts).
+// Der Boss kommt aus dem Roster (bosses/roster.ts) in eine Arena, Stufe nach Level. Immer aktiv.
 // Hier: Auswahl, Arena, Kamera und Lock-on, Boss-Leiste, Körper und ihre Steuerung, Phase 2, Ende. Angriffe in bosses/attacks.ts, Regeln in bosses/rules.ts.
 
 import * as THREE from 'three';
+import { connectBoss } from './waves';
 import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
@@ -34,7 +35,7 @@ import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, text
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
 export const B = {
-  every: 15,                // PH: Boss bei Level 15, 30, … 90; dazu der finale bei 100
+  every: 25,                // PH: Boss bei Level 25, 50, 75 (Packs); dazu der finale bei 100
   arena: 20,                // PH: Radius der Arena um den Spieler
   hpMul: 15,                // PH: × Mob-Leben des Levels (Handoff: Start 40; der Prototyp hat 15 gemessen: 40 dauerten 245 s mit Start-Kit)
   body: 2,                  // PH: Körperradius, der Spieler wird hinausgeschoben
@@ -53,18 +54,9 @@ export const B = {
   points: 10, dust: 20,     // PH
 };
 
-const autoOn = () => location.hash.includes('boss');
-// Mob-Modus Boss-Jagd (siege.ts, nur mit #boss): Packs wie sonst, bei diesen Kills ein zufälliger Boss dieser Stufe; nach dem letzten ist der Run geschafft
-export const HUNT = [{ kills: 50, tier: 'frueh' }, { kills: 100, tier: 'mittel' }, { kills: 150, tier: 'spaet' }];   // PH
-let huntNext = 0;
-const HUNT_NAME = { frueh: 'leichter', mittel: 'mittlerer', spaet: 'starker' };
-function huntHud() {
-  const h = HUNT[huntNext], el = $('siegeHud'), t = boss ? `Boss-Jagd · Boss ${huntNext} / ${HUNT.length}` : h ? `Boss-Jagd · ${player.kills} / ${h.kills} Kills · dann ein ${HUNT_NAME[h.tier]} Boss` : 'Boss-Jagd · letzter Boss';
-  if (el.textContent !== t) el.textContent = t;
-}
-
 // Laufender Kampf oder null
 let boss: any = null;
+export const bossActive = () => !!boss;
 let lastLevel = 1;
 let lockOn = true;
 const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
@@ -261,7 +253,7 @@ function pickBoss(tier) {
 
 // Kampf starten. id: fester Boss (Dev), sonst nach Level gewürfelt
 export function startBoss(id?: string, tier?: string) {
-  if (boss || player.dead || mobMode === 'siege') return false;
+  if (boss || player.dead) return false;
   const def = id ? bossById(id) : pickBoss(tier ?? TIER_OF_LEVEL(player.level));
   if (!def) return false;
   seen.add(def.id);
@@ -357,17 +349,14 @@ function land(b) {
 let finalPending = false;
 export function updateBoss(dt) {
   if (!boss) {
-    if (player.level < lastLevel || player.kills < (HUNT[huntNext - 1]?.kills ?? 0)) { seen.clear(); huntNext = 0; }   // neuer Run
-    if (mobMode === 'hunt') huntHud();
-    if (mobMode === 'hunt' && autoOn()) { const h = HUNT[huntNext]; if (h && player.kills >= h.kills && startBoss(undefined, h.tier)) huntNext++; lastLevel = player.level; return; }
+    if (player.level < lastLevel) seen.clear();   // neuer Run
     const crossed = Math.floor(Math.min(player.level, 99) / B.every) > Math.floor(Math.min(lastLevel, 99) / B.every);
     lastLevel = player.level;
     if (finalPending) { finalPending = false; if (!startBoss()) completeRun('Level 100'); return; }
-    if (crossed && autoOn() && mobMode === 'packs') startBoss();
+    if (crossed && mobMode === 'packs') startBoss();   // Packs: Boss alle B.every Level, Wellen starten ihn selbst (waves.ts)
     return;
   }
   lastLevel = player.level;
-  if (mobMode === 'hunt') huntHud();
   const s = dt / 1000;
   boss.time += s * boss.scale;
   for (const b of boss.bodies) if (b.mob?.dead && !b.deadSeen) { b.deadSeen = true; b.state = 'dead'; if (b.run) b.run.alive = false; for (const fn of boss.hooks.onBodyDeath) fn(b); }
@@ -499,7 +488,6 @@ function endBoss() {
   statsTimer = window.setTimeout(() => { bar.style.display = 'none'; }, E.statsMs);
   lastResult = { id: def.id, time, hits: st.hits, perfect };
   if (final && player.level >= 100) window.setTimeout(() => completeRun('Level 100'), E.stopMs + E.slowMs + 600);   // Finale: danach Ergebnis
-  if (mobMode === 'hunt' && huntNext >= HUNT.length) window.setTimeout(() => completeRun('Boss-Jagd'), E.stopMs + E.slowMs + 600);   // Boss-Jagd: der starke Boss war der letzte
 }
 let lastResult = null;
 
@@ -550,8 +538,10 @@ export function updateBossVisuals(dt) {
   $('devPerf').insertAdjacentHTML('afterend', `<div style="display:flex;gap:6px;margin-bottom:14px"><select id="devBossPick" class="bindBtn" style="flex:1">${opts}</select><button class="bindBtn" id="devBoss">Starten</button></div>`);
   $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(($('devBossPick') as HTMLSelectElement).value); });
 }
-// Level 100 im #boss-Modus: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
-setRunEndHook(() => { if (!autoOn() || mobMode !== 'packs') return false; finalPending = true; return true; });
+// Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
+setRunEndHook(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
+// Wellen: nach jeder Welle ein Boss, die Welle wartet auf sein Ende
+connectBoss({ start: () => startBoss(), active: bossActive });
 
 // Für Tests
 (window as any).__boss = {

@@ -14,54 +14,67 @@ import { moveMul } from '../realMen';
 import { klingeMoveMul } from '../klinge';
 import { syncPause } from './menus';
 import { COLORS } from './colors';
+import { ICONS } from './icons';
+import { attachSpellCard } from './spellCard';
+import { attachWeaponCard } from './weaponCard';
+import { equipped, rarityOf, weaponName } from '../weaponRolls';
 
-const TABS = { stats: 'Werte', build: 'Build', dmg: 'Schaden nach Quelle' };
+const TABS = { stats: 'Werte', build: 'Build', dmg: 'Schaden' };
 let tab = 'stats';
 const pct = v => `${Math.round(v * 100)} %`;
-const row = (a, b) => `<tr><td>${a}</td><td>${b}</td></tr>`;
 const SCHOOLS = { frost: 'Frost', fire: 'Feuer', arcane: 'Arkan', shadow: 'Dunkel', nature: 'Natur', lightning: 'Blitz', blood: 'Blut', bone: 'Knochen' };
 
+// Mockup C2: drei Spalten Werte / Build / Schaden. Breite Fenster zeigen alle drei, schmale nur den aktiven Tab (CSS).
+const kv = (a, b) => `<div class="cRow"><span>${a}</span><b>${b}</b></div>`;
 function statsTab() {
   const rage = !!player.rageMax;
   const owned = state.slots.filter(Boolean);
   const schools: any[] = [...new Set(owned.map(id => SPELLS[id].school ?? SPELLS[id].cls))].filter(s => s !== 'util');
-  return `<table>
-    ${row('Leben', `${Math.ceil(player.hp)} / ${maxHp()}`)}
-    ${player.resLabel ? row('Haltung', player.resLabel) : row(rage ? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
-    ${rage ? '' : row('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
-    ${row('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
-    ${row('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
-    ${row('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}
+  return `<div class="title">Werte</div>
+    ${kv('Leben', `${Math.ceil(player.hp)} / ${maxHp()}`)}
+    ${player.resLabel ? kv('Haltung', player.resLabel) : kv(rage ? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
+    ${rage ? '' : kv('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
+    ${kv('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
+    ${kv('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
+    ${kv('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}
     ${schools.map(s => {
       const best = Math.max(...owned.filter(id => (SPELLS[id].school ?? SPELLS[id].cls) === s).map(id => spellValue(id)));
-      return row(`<span style="color:${COLORS.school[s]}">${SCHOOLS[s] ?? 'Krieger'}</span>`, best ? `bis ${best} pro Treffer` : '–');
+      return kv(`<span style="color:${COLORS.school[s]}">${SCHOOLS[s] ?? 'Krieger'}</span>`, best ? `bis ${best} pro Treffer` : '—');
     }).join('')}
-  </table>`;
+    ${player.luck ? kv('Glück', player.luck) : ''}`;
 }
 
+// Build: Spells mit Rang und Rune, Talente, Supports, Relikt, Waffe. Seltenheit der gewählten Karten speichert das Spiel nicht: Rahmen = Schule bzw. Typ
+const rankOf = id => Object.entries<any>(state.cardPicks ?? {}).reduce((n, [cid, k]) => cid.startsWith(`${id}-`) ? n + k : n, 0);
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const roman = n => ROMAN[n] ?? String(n);
 function buildTab() {
-  const lines = [];
-  for (const id of state.slots) {
-    if (!id) continue;
-    const s = stat(id), r = rune(id);
-    const c = COLORS.school[SPELLS[id].school ?? SPELLS[id].cls];
-    lines.push(row(`<span style="color:${c}">${SPELLS[id].relic ? '♛ ' : ''}${SPELLS[id].name}</span>${r ? ` · ${r.name}` : ''}`, `Schaden ${pct(s.dmg)}, Mana ${pct(s.mana)}, Radius ${pct(s.radius)}`));
-  }
-  for (const id of Object.keys(state.supports ?? {})) lines.push(row(SUPPORTS.find(x => x.id === id)?.name ?? id, 'Support'));
-  for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) lines.push(row(CARDS.find(c => c.id === id)?.name ?? id, `Stufe ${n}`));
-  if (player.luck) lines.push(row('Glück', player.luck));
-  return `<table>${lines.join('')}</table>`;
+  const picks = Object.values<any>(state.cardPicks ?? {}).reduce((a, b) => a + b, 0);
+  const tile = (attrs, color, icon, name, sub) => `<div class="cTile" ${attrs} style="--tc:${color}">${icon ? `<i style="background-image:url(${icon})"></i>` : '<i class="none"></i>'}<b>${name}</b><span>${sub}</span></div>`;
+  const spells = state.slots.filter(id => id && !SPELLS[id].relic).map(id => {
+    const r = rune(id), rank = rankOf(id);
+    return tile(`data-spell="${id}"`, COLORS.school[SPELLS[id].school ?? SPELLS[id].cls] ?? COLORS.text, ICONS[id], SPELLS[id].name, `${rank ? `Rang ${roman(rank + 1)}` : 'Rang I'}${r ? ` · ${r.name}` : ''}`);
+  });
+  const talents = Object.entries<any>(state.cardRanks ?? {}).filter(([, n]) => n).map(([id, n]) => tile('', COLORS.cardKind.talent, null, CARDS.find(c => c.id === id)?.name ?? id, `Stufe ${roman(n)}`));
+  const supports = Object.keys(state.supports ?? {}).map(id => tile('', COLORS.cardKind.support, null, SUPPORTS.find(x => x.id === id)?.name ?? id, 'Support'));
+  const relics = state.slots.filter(id => id && SPELLS[id].relic);
+  const w = equipped();
+  return `<div class="title">Build · ${picks} Karten</div>
+    <div class="cTiles">${[...spells, ...talents, ...supports].join('')}</div>
+    <div class="cSub">Relikt</div>${relics.length ? relics.map(id => `<div class="cRelic" data-spell="${id}">♛ ${SPELLS[id].name}</div>`).join('') : '<div class="cNone">—</div>'}
+    <div class="cSub">Waffe</div>${w ? `<div class="cWeapon" data-weapon style="color:${rarityOf(w).color}">${weaponName(w)}</div>` : '<div class="cNone">—</div>'}`;
 }
 
 function dmgTab() {
   const list = Object.entries<any>(run.dmgBySource ?? {}).sort((a, b) => b[1] - a[1]);
   const total = list.reduce((sum, [, v]) => sum + v, 0);
-  if (!total) return '<p>Noch kein Schaden in diesem Run.</p>';
-  return `<table>${list.map(([id, v]) => {
-    const def = SPELLS[id], color = COLORS.school[def?.school ?? def?.cls] ?? '#fff', share = v / total;
-    return `<tr><td style="color:${color}">${def?.name ?? 'Umgebung'}</td><td>${v.toLocaleString('de-DE')}</td><td>${pct(share)}</td></tr>
-      <tr class="dmgBar"><td colspan="3"><div style="width:${share * 100}%;background:${color}"></div></td></tr>`;
-  }).join('')}</table>`;
+  if (!total) return '<div class="title">Schaden (Run)</div><p class="cNone">Noch kein Schaden in diesem Run.</p>';
+  const top = list[0][1];
+  return `<div class="title">Schaden (Run)</div>${list.slice(0, 8).map(([id, v]) => {
+    const def = SPELLS[id], color = def?.relic ? '#e3c27a' : COLORS.school[def?.school ?? def?.cls] ?? '#fff';
+    return `<div class="cDmg"><div class="cRow"><span${def ? ` data-spell="${id}"` : ''}>${def?.name ?? 'Umgebung'}</span><b>${pct(v / total)}</b></div><i style="width:${v / top * 100}%;background:${color}"></i></div>`;
+  }).join('')}
+    <div class="cRow cDps"><span>DPS (Schnitt)</span><b>${state.now > 1000 ? Math.round(total / (state.now / 1000)).toLocaleString('de-DE') : '—'}</b></div>`;
 }
 
 function render() {
@@ -69,14 +82,17 @@ function render() {
   bar.innerHTML = '';
   for (const [id, name] of Object.entries(TABS)) {
     const b = document.createElement('button');
-    b.className = 'bindBtn' + (id === tab ? ' selected' : '');
+    b.className = 'cTab' + (id === tab ? ' on' : '');
     b.textContent = name;
     b.addEventListener('click', () => { tab = id; render(); });
     bar.appendChild(b);
   }
-  $('charBody').innerHTML = tab === 'stats' ? statsTab() : tab === 'build' ? buildTab() : dmgTab();
+  const body = $('charBody');
+  body.innerHTML = ['stats', 'build', 'dmg'].map(id => `<div class="gPanel charCol${id === tab ? ' on' : ''}" data-col="${id}">${id === 'stats' ? statsTab() : id === 'build' ? buildTab() : dmgTab()}</div>`).join('');
+  for (const el of body.querySelectorAll<HTMLElement>('[data-spell]')) attachSpellCard(el, el.dataset.spell);
+  const wEl = body.querySelector<HTMLElement>('[data-weapon]');
+  if (wEl && equipped()) attachWeaponCard(wEl, equipped());
 }
-
 export const charOpen = () => $('charModal').classList.contains('show');
 export function toggleChar() {
   if ($('startModal').classList.contains('show')) return;
