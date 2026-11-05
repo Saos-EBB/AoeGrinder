@@ -140,6 +140,7 @@ body[data-hud-theme=ornate] #hudCombo .cMulti { font-family: var(--h-title); col
 .hudEl[data-variant=vertical] #hudRelics { flex-direction: column; }
 .relicBox { min-width: calc(40 * var(--hu)); height: calc(40 * var(--hu)); padding: 0 calc(6 * var(--hu)); display: flex; align-items: center; justify-content: center; box-sizing: border-box;
   font: 700 calc(11 * var(--hu)) var(--h-font); color: var(--h-gold); background: #1a1608; border: 2px solid var(--h-gold); border-radius: 6px; box-shadow: 0 0 10px color-mix(in srgb, var(--h-gold) 45%, transparent); }
+.relicBox.hasIcon { width: calc(40 * var(--hu)); padding: 0; background: #1a1608 center / cover no-repeat; }
 body[data-hud-theme=ornate] .relicBox, body[data-hud-theme=wa] .relicBox, body[data-hud-theme=doom] .relicBox { border-radius: 0; }
 
 /* ---------- Minimap ---------- */

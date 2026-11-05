@@ -216,7 +216,7 @@ function updateBuildChips() {
   const relics = state.slots.filter(id => id && SPELLS[id].relic), rk = relics.join();
   if (rk !== relicKey) {
     relicKey = rk;
-    $('hudRelics').innerHTML = relics.map(id => `<div class="relicBox">${SPELLS[id].name}</div>`).join('');
+    $('hudRelics').innerHTML = relics.map(id => `<div class="relicBox hasIcon" title="${SPELLS[id].name}" style="background-image:url(${ICONS[id]})"></div>`).join('');
   }
 }
 

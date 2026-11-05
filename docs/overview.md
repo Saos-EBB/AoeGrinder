@@ -39,7 +39,7 @@ npm run build        # eine dist/index.html fürs Artifact
 - Das Spiel läuft immer dunkel. Mobs hinter dem Nebel werden nicht gezeichnet, Schatten gibt es nur im Lichtkreis (`PERF.mob*`) → [dunkel.ts](../src/dunkel.ts), [config.ts](../src/config.ts)
 - Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
-- Spell-Icons sind Fremd-Packs, Autoren und Quellen stehen in den Credits → [credits](credits.md)
+- Spell-Icons kommen als SVG aus dem Spell-Viewer, `ui/spellIcons.ts` wird erzeugt und nicht von Hand geändert; Zuordnung über den Anzeigenamen → [icons.ts](../src/ui/icons.ts)
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)

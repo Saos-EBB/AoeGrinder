@@ -54,6 +54,8 @@ body.mobile .cards { max-width: 100vw; max-height: 86vh; }
 .tCard.relic { border-width: 2px; }
 .tLabel { position: absolute; left: 10px; top: -22px; font: 600 13px var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-muted); white-space: nowrap; }
 .tHead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.tIcon { width: 40px; height: 40px; flex: none; align-self: center; border-radius: 6px; }
+.tHead .tName { flex: 1; }
 .tName { font: var(--font-title-weight) 26px var(--font-title); line-height: 1.1; text-shadow: 0 0 14px color-mix(in srgb, currentColor 40%, transparent); }
 .tRight, .tSub { font-size: 14px; color: var(--glut-muted); }
 .tSep { display: block; height: 1px; background: var(--glut-line); margin: 2px 0; }

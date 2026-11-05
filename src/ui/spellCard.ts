@@ -54,7 +54,7 @@ export function spellTip(id: string, label?: string): TipData | null {
   }
   const rank = rankOf(id), base = BASE_HIT(s);
   return {
-    label: label ?? (relic ? 'Relikt' : 'Spell'), title: s.name, color, relic, border: color,
+    label: label ?? (relic ? 'Relikt' : 'Spell'), title: s.name, icon: ICONS[id], color, relic, border: color,
     right: relic ? 'Relikt' : rank ? `Rang ${rank + 1}` : '',
     sub: [SCHOOL_NAME[school] ?? school, ...(s.tags ?? [])].filter(Boolean).join(' · '),
     stats, short: markWords(s.desc ?? ''), rows,
