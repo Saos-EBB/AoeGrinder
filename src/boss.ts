@@ -9,6 +9,7 @@ import { mobMaxHp, maxHp, xpForKill } from './formulas';
 import { scene, camera } from './render';
 import { cam, setCamOverride } from './camera';
 import { pad } from './gamepad';
+import { mouse, mouseBtn } from './input';
 import { zone, terrainDecal, drape } from './world';
 import { groundAt, resolve } from './collision';
 import { MOB_TYPES } from './mobTypes';
@@ -35,7 +36,7 @@ export const B = {
   intro: { ms: 1500, fallMs: 600, height: 14, dist: 10, trauma: 0.9, decal: 9, hitstopMs: 90 },   // PH: fällt vor dem Spieler herab
   ringColor: [2.6, 0.5, 0.25],   // PH: leuchtender Bodenring der Arena (> 1 → Bloom)
   // PH: Boss-Sicht hinter dem Spieler. look: Blickhöhe über dem Spieler, toward: Anteil des Wegs zum Boss, auf den die Kamera schaut
-  cam: { blendMs: 600, dist: 6, pitch: 0.15, fov: 70, height: 1.8, look: 1.6, toward: 0.45, ahead: 3, yawRate: 8 },
+  cam: { blendMs: 600, dist: 6, pitch: 0.15, fov: 70, height: 1.8, look: 1.6, toward: 0.45, ahead: 3, yawRate: 8, freeRate: 30, pitchMin: -0.1, pitchMax: 0.9, padBreak: 0.5 },   // freeRate: ohne Lock folgt die Kamera Maus und Stick fast sofort; padBreak: so weit gedrückter rechter Stick löst den Lock
   lockPadBtn: 11,           // Gamepad R3 (Standard-Mapping)
   // Angriffe: Ausholen (lesbar) → Treffer → Lücke. Schaden pro Treffer als Anteil am max. Leben, in der Lücke nimmt der Boss mehr Schaden
   hit: 0.25,                // PH
@@ -69,8 +70,10 @@ let camK = 0, camIn = false, camYaw = 0, baseFov = 55, saved = null;
 const camBoss = new THREE.Vector3(), _pos = new THREE.Vector3(), _look = new THREE.Vector3();
 function bossCam(c, target) {
   const C = B.cam, p = player.pos, k = camK * camK * (3 - 2 * camK);
-  const h = Math.cos(C.pitch) * C.dist;
-  _pos.set(p.x - Math.sin(camYaw) * h, p.y + C.height + Math.sin(C.pitch) * C.dist, p.z - Math.cos(camYaw) * h);
+  // Ohne Lock neigt die Maus die Kamera wie sonst, ausgehend von der Boss-Neigung
+  const pitch = lockOn || !saved ? C.pitch : clamp(C.pitch + cam.pitch - saved.pitch, C.pitchMin, C.pitchMax);
+  const h = Math.cos(pitch) * C.dist;
+  _pos.set(p.x - Math.sin(camYaw) * h, p.y + C.height + Math.sin(pitch) * C.dist, p.z - Math.cos(camYaw) * h);
   _pos.y = Math.max(_pos.y, groundAt(_pos.x, _pos.z, _pos.y) + 0.5);
   if (lockOn && boss) _look.set(p.x + (camBoss.x - p.x) * C.toward, p.y + C.look, p.z + (camBoss.z - p.z) * C.toward);   // Punkt zwischen beiden, der Boss steht dadurch oben im Bild
   else _look.set(p.x + Math.sin(camYaw) * C.ahead, p.y + C.look, p.z + Math.cos(camYaw) * C.ahead);
@@ -97,14 +100,15 @@ function updateCam(dt) {
   if (camK === 0) return camEnd();
   if (boss) camBoss.copy(boss.mob.pos);
   const want = lockOn && boss ? yawTo(player.pos, camBoss) : player.facing + cam.offset;
-  camYaw += wrap(want - camYaw) * (1 - Math.exp(-B.cam.yawRate * dt / 1000));
+  camYaw += wrap(want - camYaw) * (1 - Math.exp(-(lockOn && boss ? B.cam.yawRate : B.cam.freeRate) * dt / 1000));
 }
 
 // Lock-on lösen und wieder anlegen: Tab, Gamepad R3
 function toggleLock() {
   if (!boss || state.paused) return;
   lockOn = !lockOn;
-  if (!lockOn) { cam.offset = 0; }
+  if (!lockOn) cam.offset = 0;
+  else if (saved) cam.pitch = saved.pitch;   // Neigung beim Anlegen zurück auf die Boss-Sicht
 }
 addEventListener('keydown', e => {
   if (e.code !== 'Tab' || !boss) return;
@@ -632,6 +636,9 @@ export function updateBossVisuals(dt) {
   const m = boss.mob;
   if (!state.mobs.includes(m)) return cleanup(true);
   if (pad.down[B.lockPadBtn] && !pad.prev[B.lockPadBtn]) toggleLock();
+  // Maus ziehen (links Kamera, rechts Drehen) oder rechter Stick: Lock lösen, damit die gewohnte Steuerung greift. Tab oder R3 legt wieder an
+  const steering = (mouseBtn.left || mouseBtn.right) && mouse.dragged || Math.hypot(pad.look.x, pad.look.y) > B.cam.padBreak;
+  if (lockOn && steering && !state.paused) toggleLock();
   pose(m);
   const pct = `${Math.max(0, m.hp / m.maxHp * 100)}%`;
   if (barFill.style.width !== pct) barFill.style.width = pct;

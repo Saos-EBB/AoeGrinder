@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- fix(boss): Maus und Stick steuern im Bosskampf wieder: Ziehen mit linker oder rechter Maustaste (oder rechter Stick) löst den Lock-on, danach gelten Kamera drehen, Figur drehen, beide Tasten laufen und Neigung wie gewohnt; Tab oder R3 legt wieder an
 - fix(boss): Der Ring trifft auch, wer ihm entgegenläuft (vorher kam man ohne Dodge hindurch); Boss-Leben 15 statt 40 × Mob-Leben, weil ein Kampf mit Start-Kit 245 s dauerte
 - feat(boss): Boss-Tod mit 150 ms Stopp, 0,8 s Zeitlupe, riesigem Riss und „Boss besiegt“ samt Kampfzeit, genommenen Treffern und Perfekten Dodges; Belohnung Punkte wie 10 Champions und +20 Knochenstaub; Kamera und Mob-Spawn kehren zurück
 - feat(boss): Phase 2 ab 50 % Leben: 1 s Brüllen (unverwundbar), Druckwelle stößt 4 yd weg, Leuchten heller, alle Ausholzeiten ×0,8; der Sprung-Slam schickt einen Ring von 0 auf 12 yd in 2 s los (durchdodgen oder weglaufen); neuer Geschoss-Fächer mit 5 langsamen Geschossen im 60°-Fächer
