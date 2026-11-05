@@ -7,7 +7,7 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, sortedInv } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard, weaponStats } from './weaponCard';
 import { askConfirm } from './confirm';
@@ -70,8 +70,16 @@ function chestBox() {
     card.style.borderColor = rarityOf(lastPull).color;
   }
   box.append(h, b, card);
-  // Inventar: löschen gibt Staub zurück
-  for (const w of meta.inv) {
+  // Inventar: löschen gibt Staub zurück. Nach Seltenheit gruppiert, je Gruppe ein Raster mit zwei Spalten; Details zeigt die Info-Karte beim Hovern
+  let grid = null, group = null;
+  for (const w of sortedInv()) {
+    if (rarityOf(w) !== group) {
+      group = rarityOf(w);
+      const g = Object.assign(document.createElement('div'), { className: 'invGroup', textContent: `${group.name} · ${meta.inv.filter(x => x.r === w.r).length}` });
+      g.style.color = group.color;
+      grid = Object.assign(document.createElement('div'), { className: 'invGrid' });
+      box.append(g, grid);
+    }
     const row = document.createElement('button');
     row.className = 'shopItem';
     row.style.borderColor = rarityOf(w).color;
@@ -79,7 +87,8 @@ function chestBox() {
     n.textContent = weaponName(w);
     n.style.color = rarityOf(w).color;
     attachWeaponCard(row, w);
-    t.textContent = `Löschen +${ROLLS.refund[w.r]}`;
+    t.textContent = `✕ +${ROLLS.refund[w.r]}`;
+    t.title = 'Löschen';
     row.append(n, t);
     row.dataset.nav = `inv-${w.id}`;
     row.addEventListener('click', async () => {
@@ -88,7 +97,7 @@ function chestBox() {
       mage.refreshWeapon();
       renderShop();
     });
-    box.appendChild(row);
+    grid.appendChild(row);
   }
   return box;
 }
@@ -156,6 +165,10 @@ $('devDust').addEventListener('click', () => { devSetDust(meta.dust + 500); refr
 $('devUnlock').addEventListener('click', () => { devUnlockAll(); refresh(); });
 $('devMetaReset').addEventListener('click', () => { devReset(); refresh(); });
 const refreshInv = () => { refresh(); if ($('shopModal').classList.contains('show')) renderShop(); };
-$('devInvFill').addEventListener('click', () => { devFillInventory(); refreshInv(); });
+$('devInvFill').addEventListener('click', () => {
+  const v = ($('devInvTier') as HTMLSelectElement).value;
+  devFillInventory(v === '' ? null : Number(v));
+  refreshInv();
+});
 $('devInvClear').addEventListener('click', () => { devClearInventory(); refreshInv(); });
 $('devComplete').addEventListener('click', () => { $('settingsClose').click(); $('pauseModal').classList.remove('show'); if (!player.dead) completeRun('Dev'); });

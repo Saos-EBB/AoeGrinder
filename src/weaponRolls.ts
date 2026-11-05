@@ -19,7 +19,7 @@ import { infect } from './infect';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
-  price: 120, invMax: 15,
+  price: 120, invMax: 15, devInvMax: 50,          // devInvMax: Dev-Füllen geht über das normale Limit
   weights: [5, 20, 35, 25, 11, 4],                     // grau, weiß, grün, blau, lila, orange
   refund: [5, 10, 15, 25, 40, 60],
   types: ['staff', 'wand', 'book', 'relic'],          // alle vier Typen, ohne Nebenhand liegen Buch und Relikt in der Waffenhand (Kevin 2026-11-03)
@@ -55,9 +55,9 @@ function rollTier() {
   for (let t = 0; t < ROLLS.weights.length; t++) { r -= ROLLS.weights[t]; if (r < 0) return t; }
   return 0;
 }
-// Reihenfolge wie im Konzept: Seltenheit, Typ, Hersteller, Kopf (+ Fokus-Spell der Schule), Schaft, Element, Anhänger
-export function rollWeapon() {
-  const r = rollTier(), t = pick(ROLLS.types), head = pick(TYPES[t].heads), school = HEADS[head][1];
+// Reihenfolge wie im Konzept: Seltenheit, Typ, Hersteller, Kopf (+ Fokus-Spell der Schule), Schaft, Element, Anhänger. tier: feste Seltenheit (Dev)
+export function rollWeapon(tier = null) {
+  const r = tier ?? rollTier(), t = pick(ROLLS.types), head = pick(TYPES[t].heads), school = HEADS[head][1];
   const value = pick(Object.keys(VALUE_KEY)), shaft = Object.keys(SHAFTS).find(k => SHAFTS[k].values.includes(value));
   const els = Object.keys(ELEMENTS).filter(e => e !== 'none');
   const s: any = {
@@ -108,6 +108,8 @@ export function buildEquipped() {
   return w.s.unique ? buildWeapon(w.s.unique) : buildBaukastenWeapon(w.s);
 }
 export const inventoryFull = () => meta.inv.length >= ROLLS.invMax;
+// Inventar zum Anzeigen: höchste Seltenheit zuerst, darin die neueste zuerst
+export const sortedInv = () => [...meta.inv].sort((a, b) => b.r - a.r || b.id - a.id);
 
 export function buyChest() {
   if (inventoryFull() || meta.dust < ROLLS.price) return null;
@@ -126,9 +128,10 @@ export function deleteWeapon(id) {
   saveMeta();
 }
 export function equip(id) { meta.equipped = id; saveMeta(); }
-// Dev: Inventar bis zum Limit mit Waffen aus der Kiste füllen, ohne Staub; leeren ohne Rückgabe
-export function devFillInventory() {
-  while (!inventoryFull()) meta.inv.push(rollWeapon());
+// Dev: Inventar neu mit devInvMax Waffen aus der Kiste füllen, ohne Staub (tier null = Zufall). Die angelegte Waffe bleibt. Leeren ohne Rückgabe
+export function devFillInventory(tier = null) {
+  meta.inv = meta.inv.filter(w => w.id === meta.equipped);
+  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
   saveMeta();
 }
 export function devClearInventory() {

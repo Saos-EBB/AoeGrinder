@@ -194,7 +194,13 @@
   .menuHead { margin: 10px 0 5px; font-size: 14px; }
   #menuInfo { font-size: 12px; color: #c9b88a; margin: 10px 0 0; }
   .chipRow { display: flex; flex-wrap: wrap; gap: 4px; }
-  #menuWeapons { max-height: 22vh; overflow-y: auto; }   /* bis zu 15 Waffen aus dem Inventar */
+  #menuWeapons { max-height: 26vh; overflow-y: auto; }   /* bis zu 15 Waffen, im Dev bis 50 */
+  #menuWeapons .chip { padding: 2px 7px; font-size: 11px; }
+  .invGroup { flex-basis: 100%; font: 700 11px system-ui, sans-serif; margin: 4px 0 0; }
+  .invGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
+  .invGrid .shopItem { margin: 0; padding: 3px 6px; font-size: 12px; }
+  .invGrid .shopItem span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .invGrid .shopItem span:last-child { flex: none; opacity: .8; }
   .chip { font: 600 12px system-ui, sans-serif; padding: 4px 8px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 12px; cursor: pointer; }
   .chip.selected { border-color: #ffe27a; color: #ffe27a; box-shadow: 0 0 6px #ffe27a88; }
   .chip:disabled { opacity: .35; cursor: not-allowed; }
@@ -244,6 +250,7 @@
   body.mobile .btn { font-size: 22px; padding: 14px 28px; }
   body.mobile .smallBtn, body.mobile .bindBtn { font-size: 17px; padding: 12px; }
   body.mobile .chip { font-size: 15px; padding: 8px 12px; }
+  body.mobile .invGrid { grid-template-columns: 1fr; }
   body.mobile .shopItem { font-size: 16px; padding: 12px; }
   body.mobile #shopList, body.mobile #charBody { max-height: none; font-size: 16px; }
   body.mobile #cardModal { justify-content: center; }
@@ -378,7 +385,8 @@
       <button class="bindBtn" id="devUnlock">Alles freischalten</button>
       <button class="bindBtn" id="devMetaReset">Meta zurücksetzen</button>
       <button class="bindBtn" id="devComplete">Run abschließen</button>
-      <button class="bindBtn" id="devInvFill">Inventar zufällig füllen</button>
+      <select class="bindBtn" id="devInvTier"><option value="">Alle zufällig</option><option value="4">Nur Epic (lila)</option><option value="5">Nur Legi (orange)</option></select>
+      <button class="bindBtn" id="devInvFill">Inventar neu füllen (50)</button>
       <button class="bindBtn" id="devInvClear">Inventar leeren</button>
     </div>
     <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">

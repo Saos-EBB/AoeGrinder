@@ -10,7 +10,7 @@ import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
-import { equip, equipped, weaponName, rarityOf, applyRunWeapon } from '../weaponRolls';
+import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
@@ -112,7 +112,13 @@ export function renderMenu() {
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
     weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), 'Pilgerast (ohne Effekt)', () => pickW(null)));
-    for (const w of meta.inv) {
+    let group = null;
+    for (const w of sortedInv()) {                     // nach Seltenheit gruppiert, damit auch 50 Waffen lesbar bleiben
+      if (rarityOf(w) !== group) {
+        group = rarityOf(w);
+        const n = meta.inv.filter(x => x.r === w.r).length;
+        weapons.appendChild(Object.assign(document.createElement('div'), { className: 'invGroup', textContent: `${group.name} · ${n}` })).style.color = group.color;
+      }
       const b = button('chip' + (equipped() === w ? ' selected' : ''), weaponName(w), () => pickW(w.id));   // Details zeigt die Info-Karte beim Hovern
       b.style.borderColor = rarityOf(w).color;
       b.style.color = rarityOf(w).color;
