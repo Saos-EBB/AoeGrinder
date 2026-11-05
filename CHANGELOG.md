@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- fix(karten): Strichkrieger und Klingenstrich: Bei voller Leiste blieb die Ersetzen-Ansicht einer neuen Fähigkeit leer und der Run hing fest; jetzt stehen die eigenen Moves zur Wahl (mit Tasten 1–5); Prozentwerte im Kartentext brechen nicht mehr mitten im Wert um
 - feat(ui): Kompakte Level-up-Karten (ab 4 Karten) zeigen jetzt direkt den Kartentext mit farbigen Stichwörtern, was sie ersetzen, den Wert vorher → nachher und die Seltenheit; kleineres Icon, Höhe nach Inhalt
 - fix(ui): Figur im Hauptmenü dreht sich nicht mehr von selbst (Ziehen dreht sie weiter)
 - feat(ui): Inventar im Glut-Look (Hauptmenü „Waffen“ bei Magiern, Shop „Inventar öffnen“): links Figur mit Waffen-Slot und gesperrten Slots Ring, Amulett, Relikt, Werte der ausgerüsteten Waffe darunter; Mitte Truhe 5×3 mit Seltenheitsrahmen; Hover zeigt die Waffen-Karte mit Vergleich; Rechtsklick rüstet aus, Klick zerlegt mit Rückfrage, Rechtsklick auf die Waffe links legt sie ab

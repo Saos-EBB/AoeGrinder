@@ -102,13 +102,17 @@ function pickCard(card) {
 function chooseReplacement(id) {
   $('cardHint').textContent = `${SPELLS[id].name} ersetzt welchen Spell?`;
   $('cards').innerHTML = '';
-  $('cards').className = 'cards k2';
-  state.slots.forEach((old, slot) => {
-    if (slot >= SLOT.attacks || !old || SPELLS[old].fixed) return;
+  // Kandidaten: Attacken-Slots ohne „fixed“. Strichkrieger und Klingenstrich haben nur fixed-Moves: dann stehen diese zur Wahl,
+  // sonst bliebe die Ansicht leer und der Run hinge fest. Gibt es gar keinen Slot, verfällt die Karte.
+  const attacks = state.slots.map((old, slot) => ({ old, slot })).filter(x => x.slot < SLOT.attacks && x.old);
+  const open = attacks.some(x => !SPELLS[x.old].fixed) ? attacks.filter(x => !SPELLS[x.old].fixed) : attacks;
+  if (!open.length) return finishCard();
+  $('cards').className = `cards ${open.length <= 3 ? 'k2' : 'l2'}`;
+  open.forEach(({ old, slot }, i) => {
     const el = document.createElement('div');
     el.className = 'card lvCard';
     el.style.setProperty('--rc', '#ff3d1f');
-    el.innerHTML = `<div class="lvKind">Ersetzen</div>${ICONS[old] ? `<div class="lvIcon" style="background-image:url(${ICONS[old]})"></div>` : ''}<h3 class="lvName">${SPELLS[old].name}</h3><div class="lvSrc">Slot ${slot + 1}</div><p class="lvText">${SPELLS[old].desc}</p>`;
+    el.innerHTML = `<div class="lvKind">Ersetzen</div>${ICONS[old] ? `<div class="lvIcon" style="background-image:url(${ICONS[old]})"></div>` : ''}<h3 class="lvName">${SPELLS[old].name}</h3><div class="lvSrc">Slot ${slot + 1}</div><p class="lvText">${SPELLS[old].desc}</p><div class="lvFoot"><span></span><span class="lvKey">${CARD_KEYS[i]}</span></div>`;
     el.addEventListener('click', () => { learnSpell(id, slot); finishCard(); });
     $('cards').appendChild(el);
   });

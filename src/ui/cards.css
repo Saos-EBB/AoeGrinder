@@ -25,7 +25,7 @@
 .lvUp { margin-top: calc(6 * var(--hu)); font: 800 calc(15 * var(--hu)) var(--font-num); letter-spacing: .1em; color: #6ee7a0; }
 .lvSrc { margin-top: calc(4 * var(--hu)); font-size: calc(13 * var(--hu)); color: var(--glut-muted); }
 .lvText { margin: calc(12 * var(--hu)) calc(26 * var(--hu)) 0; font-size: calc(16 * var(--hu)); line-height: 1.45; text-align: left; flex: 1; }
-.lvText .pct { text-decoration: underline dotted; }
+.lvText .pct, .tText .pct { text-decoration: underline dotted; white-space: nowrap; }
 .lvRep { margin: calc(10 * var(--hu)) calc(20 * var(--hu)) 0; padding: calc(4 * var(--hu)) calc(8 * var(--hu)); font-size: calc(13 * var(--hu)); color: #ffd0c8; background: #5a1a14cc; border-left: 3px solid #ff5a4a; }
 .lvCard .preview { margin: calc(10 * var(--hu)) calc(20 * var(--hu)) 0; min-height: calc(18 * var(--hu)); font: 700 calc(15 * var(--hu)) var(--font-num); color: #6ee7a0; visibility: hidden; }
 .lvCard:hover .preview, .lvCard.navSel .preview { visibility: visible; }
