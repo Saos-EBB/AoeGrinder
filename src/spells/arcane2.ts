@@ -7,7 +7,7 @@ import { applyRoot } from '../mobs';
 import { mobsOnLine, forward } from '../melee';
 import { mouse, pickGround } from '../input';
 import { takeArcCharges, addArcCharge } from '../schoolMeter';
-import { mobsInRadius, addField } from './core';
+import { mobsInRadius, addField, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { barrageLook, beamLook, beamBoom, arcOrbField } from '../vfx/arcaneLook';
 import { coneLook } from '../vfx/frostLook';
@@ -24,9 +24,11 @@ export const barrage = {
   mana: 80, cd: 3000, range: BARRAGE.range, showDmg: BARRAGE.dmg * UNIT,
   canCast: () => nearestTarget(BARRAGE.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {
-    const t = nearestTarget(BARRAGE.range);
-    if (!t) return;
-    const n = takeArcCharges();                    // vor dem Treffer, sonst zählt der allgemeine Ladungs-Bonus mit
+    const t0 = nearestTarget(BARRAGE.range);
+    if (!t0) return;
+    const n = takeArcCharges();
+    const t = bounceShot(t0);   // Kristallhöhlen
+    if (!t) return;                    // vor dem Treffer, sonst zählt der allgemeine Ladungs-Bonus mit
     barrageLook(t.pos, n);
     c.hitProjectile(t, BARRAGE.dmg * UNIT * (1 + BARRAGE.perCharge * n));
   },

@@ -3,7 +3,7 @@
 import { dist2d } from '../util';
 import { player } from '../state';
 import { UNIT } from '../config';
-import { mobsInRadius, applySlow, hasRune } from './core';
+import { mobsInRadius, applySlow, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { frostboltLook } from '../vfx/frostLook';
 
@@ -26,7 +26,9 @@ export const frostbolt = {
     const k = hasRune('frostbolt', 'swift') ? F.swift : 1;
     const others = mobsInRadius(player.pos, F.range, Infinity).filter(m => m !== target).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos));
     const shots = [{ t: target, mul: 1 }, ...(hasRune('frostbolt', 'split') ? Array.from({ length: F.split.n }, (_, i) => ({ t: others[i] ?? target, mul: F.split.k })) : [])];
-    for (const { t, mul } of shots) {
+    for (const s of shots) {
+      const t = bounceShot(s.t), mul = s.mul;   // Kristallhöhlen
+      if (!t) continue;
       const at = t.pos.clone();
       frostboltLook(at, hasRune('frostbolt', 'bomb') ? c.radius(F.bomb.radius) : 1);
       if (c.hitProjectile(t, F.dmg * UNIT * k * mul) && !t.dead) applySlow(t, F.slow, F.slowMs);

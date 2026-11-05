@@ -2,7 +2,7 @@
 
 Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhöhlen, Mondsee.
 
-**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an), Mondsee in `src/mondsee.ts`. Messungen unten.
+**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an), Mondsee in `src/mondsee.ts`, Kristallhöhlen in `src/kristallhoehlen.ts`. Messungen unten.
 
 ## Gemeinsame Basis (gilt für alle 4)
 - Toon: MeshToonMaterial mit 3-Stufen-gradientMap (DataTexture 3×1), keine Texturen, Farben über Vertex-Farben.
@@ -66,3 +66,9 @@ Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhö
 - 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Bäume, Stege, Tore, Laternen) + Laternen-Kerne + Wasser + Mond + Geisterlichter = 9 Calls.
 - Phasen ab Run-Start: zunehmend, Vollmond (Packs ×2, im Test 88 → 162 Mobs), abnehmend, Neumond (Champion-Chance 60 % statt 20 %, ab Champion-Level 6), je 3 Minuten (`MS.phaseMs`). Nebel pro Phase über `state.fogExtra` in `dunkel.ts`.
 - Abweichungen: Der Mond steht 150 yd vor der Kamera statt am Himmel, weil die Randberge (`heightAt` ab etwa 180 yd) alles Fernere verdecken. Der Run beginnt mit zunehmendem Mond statt Neumond, damit man den Mond sieht. Der Nebel bleibt der exponentielle des Dunkel-Modus (Konzept: linear).
+
+## Messung Kristallhöhlen (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 3 Toon-Meshes (Gelände, Stalagmiten, Pilze) + 2 Kristall-Meshes (Türkis, Pink) + Sporen = 6 Calls.
+- Spiegelung: Geschosse treffen im Spiel sofort, es gibt keine fliegenden Projektile. Deshalb prüft `bounceShot` (`spells/core.ts`) beim Schuss die Strecke Figur → Ziel gegen die Kristall-Kreise; der erste Kristall spiegelt die Richtung, das neue Ziel ist der nächste Mob in einem Kegel von etwa 53° bis 26 yd (`KH.bounce`). Ohne Ziel verpufft der Schuss mit Funken. Höchstens 1 Abprall.
+- Gilt für Feuerball, Frostblitz, Arkane Geschosse, Arkanbeschuss. Nicht für Linien-Spells (Eislanze, Gletschernadel) und die Splitter der Frostkugel.
+- Abweichungen: keine eigene Höhlendecke, der Dunkel-Modus macht den Himmel schwarz; die Kristalle am Kartenrand stehen auf den Randbergen und wirken wie eine Höhlenwand. Mobs sind umgefärbte vorhandene Rigs.

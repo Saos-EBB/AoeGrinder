@@ -1,6 +1,6 @@
 import { dist2d } from '../util';
 import { state, player } from '../state';
-import { mobsInRadius, startChannel, hasRune, schedule } from './core';
+import { mobsInRadius, startChannel, hasRune, schedule, bounceShot } from './core';
 import { mods } from '../config';
 import { meterSchool } from '../schoolMeter';
 
@@ -15,9 +15,10 @@ const SPLIT = { range: 5, mul: 0.5 }, FAST_MS = 2000, CHARGE_RADIUS = 4;   // PH
 // Ein Geschoss aufs Ziel; ist es tot, nimmt der Kanal das nächste
 function fire(ch) {
   if (!ch.target || ch.target.dead) ch.target = nearestTarget(arcmissiles.range);
-  const m = ch.target;
-  if (!m) return;
+  if (!ch.target) return;
   ch.shots++;
+  const m = bounceShot(ch.target);   // Kristallhöhlen: dieser Schuss geht woanders hin oder verpufft
+  if (!m) return;
   missileLook(m.pos);
   const landed = ch.c.hitProjectile(m, arcmissiles.dmg);
   if (landed && meterSchool() === 'Arkan' && Math.random() < SLINGER.chance + mods.splinterSwarm)

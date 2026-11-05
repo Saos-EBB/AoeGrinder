@@ -3,8 +3,10 @@
 import { spellAtAction } from '../hotbar';
 import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
-import { dist2d } from '../util';
+import { dist2d, rand } from '../util';
 import { groundAt } from '../collision';
+import { zone } from '../world';
+import { particles } from '../fx/particles';
 import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS, RANDOM_MAGE } from '../config';
 import { manaCost, spellCd, maxHp } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
@@ -159,6 +161,17 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
     duration: base => base * (state.supports.potency ? 1.4 : 1) * mods.durMul * (stat(id).dur ?? 1),   // stat.dur: Rang-Karte des ?-Magiers
   };
   return c;
+}
+
+// Kristallhöhlen: ein Kristall auf der Linie Figur → Ziel spiegelt das Geschoss (zone.reflect, höchstens einmal).
+// Gibt das Ziel zurück, das es wirklich trifft; null = Kristall hat es geschluckt (kein Ziel in der gespiegelten Richtung)
+const CRYSTAL_BOLT = [2.2, 0.9, 2.4];   // PH
+export function bounceShot(target) {
+  const b = zone.reflect?.(player.pos, target);
+  if (!b) return target;
+  if (b.target) boltFx(b.at, b.target.pos, CRYSTAL_BOLT);
+  else for (let i = 0; i < 10; i++) particles.spawn({ x: b.at.x, y: b.at.y, z: b.at.z, vx: rand(-4, 4), vy: rand(1, 5), vz: rand(-4, 4), life: rand(0.25, 0.5), color: CRYSTAL_BOLT, size: rand(0.15, 0.3) });   // geschluckt: Funken am Kristall
+  return b.target;
 }
 
 // Flächen treffen nur nahe der Wirkfläche: der Boden unter center, damit ein Sprung die Fläche nicht mit anhebt.

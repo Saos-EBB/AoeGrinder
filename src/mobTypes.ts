@@ -43,6 +43,12 @@ export const MOB_TYPES: any = {
   geist: { name: 'Seegeist', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.15,
     build: humanoid({ skin: 0xb8c8f0, body: 0x8a9ad8, trim: 0x5a6ab0, robe: true, hood: true, sleeve: 0x8a9ad8, eye: glowMat(1.2, 1.8, 3), glow: glowMat(0.8, 1.2, 2.6), scale: [0.95, 1.1, 0.95] }) },
 
+  // Kristallhöhlen (Werte PH)
+  kristallgolem: { name: 'Kristallgolem', ability: 'stomp', hpMul: 1.5, speedMul: 0.85, dmgMul: 1.15,
+    build: humanoid({ skin: 0x4a3a66, body: 0x3a2c52, trim: 0x2ad0d8, helm: 0x5a4a7a, eye: glowMat(0.4, 2.4, 2.4), glow: glowMat(2.2, 0.6, 2.0), scale: [1.5, 1.35, 1.5], lean: 0.18 }) },
+  hoehlenfledermaus: { name: 'Höhlenfledermaus', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.1,
+    build: bat({ fur: 0x3a2a52, wing: 0x2a1a40 }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },
