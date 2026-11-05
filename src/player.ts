@@ -237,14 +237,15 @@ const dodgeTrail = d => mage.trail?.add(player.pos.x, player.pos.y, player.pos.z
 export function updatePlayer(dt) {
   const s = dt / 1000;
   const turn = (act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0);
-  if (!mouseBtn.right) player.facing += turn * CFG.turnSpeed * s;
+  const locked = !!state.bossLock;                 // Boss-Lock-on (boss.ts): Blick hält boss.ts, A/D laufen seitwärts
+  if (!mouseBtn.right && !locked) player.facing += turn * CFG.turnSpeed * s;
 
   const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
   let strafe = (act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0);
-  if (mouseBtn.right) strafe -= turn;
+  if (mouseBtn.right || locked) strafe -= turn;
   strafe = clamp(strafe, -1, 1);
   fwd += pad.move.y;
   strafe += pad.move.x;

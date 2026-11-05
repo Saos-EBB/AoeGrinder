@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-05
 
+- feat(boss): Kamera blendet zum Boss in 0,6 s in eine nahe Sicht hinter dem Spieler (6 yd, flach, FOV 70) und zurück; Lock-on hält Spieler und Boss im Bild, W läuft auf den Boss zu, A/D seitwärts um ihn herum, Bodenzauber landen unter dem Boss, Tab oder R3 löst und legt an; Zoom im Kampf gesperrt
 - feat(boss): Boss-Prototyp (nur mit #boss in der URL oder Dev-Knopf „Boss jetzt“): Beim Erreichen von Level 15, 30, 45 … verschwinden die Mobs, der Spawn pausiert, eine Arena mit 20 yd Radius hält Spieler und Boss fest; Boss ist das nächste freigeschaltete Mob-Modell der Zone, ×2,5 groß, rot leuchtend, 40-faches Mob-Leben, Boss-Leiste oben, Einlauf 1,5 s mit Lande-Slam
 
 ## 2026-11-04

@@ -89,7 +89,7 @@ function updateVisuals(dt) {
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
-  updateBossVisuals();
+  updateBossVisuals(dt);
   frameNo++;
   for (const m of state.mobs) {
     // Hinter dem Nebel: weder zeichnen noch animieren. Im Halbdunkel jeden 2. Frame mit doppeltem dt.

@@ -6,7 +6,9 @@ import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
 import { mobMaxHp } from './formulas';
-import { scene } from './render';
+import { scene, camera } from './render';
+import { cam, setCamOverride } from './camera';
+import { pad } from './gamepad';
 import { zone } from './world';
 import { groundAt, resolve } from './collision';
 import { MOB_TYPES } from './mobTypes';
@@ -27,6 +29,9 @@ export const B = {
   speed: 5,                 // PH: Laufen zwischen den Angriffen
   intro: { ms: 1500, fallMs: 600, height: 14, dist: 10, trauma: 0.9, decal: 9, hitstopMs: 90 },   // PH: fällt vor dem Spieler herab
   ringColor: [2.6, 0.5, 0.25],   // PH: leuchtender Bodenring der Arena (> 1 → Bloom)
+  // PH: Boss-Sicht hinter dem Spieler. look: Blickhöhe über dem Spieler, toward: Anteil des Wegs zum Boss, auf den die Kamera schaut
+  cam: { blendMs: 600, dist: 6, pitch: 0.15, fov: 70, height: 1.8, look: 1.6, toward: 0.45, ahead: 3, yawRate: 8 },
+  lockPadBtn: 11,           // Gamepad R3 (Standard-Mapping)
 };
 
 const autoOn = () => location.hash.includes('boss');
@@ -34,6 +39,58 @@ const autoOn = () => location.hash.includes('boss');
 // Laufender Kampf oder null
 let boss: any = null;
 let lastLevel = 1;
+let lockOn = true;
+const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
+
+// ---------- Kamera: blendet in B.cam.blendMs in die Boss-Sicht und zurück ----------
+// Hängt sich über setCamOverride in updateCamera (camera.ts), Wackeln und Kamera-Ruck laufen danach wie immer
+let camK = 0, camIn = false, camYaw = 0, baseFov = 55, saved = null;
+const camBoss = new THREE.Vector3(), _pos = new THREE.Vector3(), _look = new THREE.Vector3();
+function bossCam(c, target) {
+  const C = B.cam, p = player.pos, k = camK * camK * (3 - 2 * camK);
+  const h = Math.cos(C.pitch) * C.dist;
+  _pos.set(p.x - Math.sin(camYaw) * h, p.y + C.height + Math.sin(C.pitch) * C.dist, p.z - Math.cos(camYaw) * h);
+  _pos.y = Math.max(_pos.y, groundAt(_pos.x, _pos.z, _pos.y) + 0.5);
+  if (lockOn && boss) _look.set(p.x + (camBoss.x - p.x) * C.toward, p.y + C.look, p.z + (camBoss.z - p.z) * C.toward);   // Punkt zwischen beiden, der Boss steht dadurch oben im Bild
+  else _look.set(p.x + Math.sin(camYaw) * C.ahead, p.y + C.look, p.z + Math.cos(camYaw) * C.ahead);
+  c.position.lerp(_pos, k);
+  c.lookAt(_look.lerp(target, 1 - k));
+  const fov = baseFov + (C.fov - baseFov) * k;
+  if (c.fov !== fov) { c.fov = fov; c.updateProjectionMatrix(); }
+}
+function camStart() {
+  if (!camIn && camK === 0) { baseFov = camera.fov; saved = { dist: cam.dist, pitch: cam.pitch }; }
+  camIn = true;
+  camYaw = player.facing + cam.offset;
+  setCamOverride(bossCam);
+}
+function camEnd(instant = false) {
+  camIn = false;
+  if (saved) { Object.assign(cam, saved); saved = null; }   // Zoom und Neigung waren im Kampf gesperrt
+  if (instant) camK = 0;
+  if (camK === 0) { setCamOverride(null); camera.fov = baseFov; camera.updateProjectionMatrix(); }
+}
+function updateCam(dt) {
+  if (!camIn && camK === 0) return;
+  camK = clamp(camK + (camIn ? 1 : -1) * dt / B.cam.blendMs, 0, 1);
+  if (camK === 0) return camEnd();
+  if (boss) camBoss.copy(boss.mob.pos);
+  const want = lockOn && boss ? yawTo(player.pos, camBoss) : player.facing + cam.offset;
+  camYaw += wrap(want - camYaw) * (1 - Math.exp(-B.cam.yawRate * dt / 1000));
+}
+
+// Lock-on lösen und wieder anlegen: Tab, Gamepad R3
+function toggleLock() {
+  if (!boss || state.paused) return;
+  lockOn = !lockOn;
+  if (!lockOn) { cam.offset = 0; }
+}
+addEventListener('keydown', e => {
+  if (e.code !== 'Tab' || !boss) return;
+  e.preventDefault();
+  if (!e.repeat) toggleLock();
+});
 
 // ---------- Arena: ein Ring aus zwei Kreisen, auf den Boden gelegt ----------
 const SEG = 96;
@@ -130,6 +187,8 @@ export function startBoss() {
   m.ground = m.pos.y;
   m.pos.y += I.height;
   enterCombat(m, false);
+  lockOn = true;
+  camStart();
   boss = { mob: m, center, step: 'intro', t0: state.now, until: state.now + I.ms, landed: false, startAt: state.now, yaw: Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z) };
   barName.textContent = m.type.name;
   barSub.textContent = `Boss · Level ${level}`;
@@ -188,8 +247,12 @@ export function updateBoss(dt) {
   lastLevel = player.level;
   const m = boss.mob;
   if (m.dead) return endBoss();
+  const locked = lockOn && !player.dead;
+  state.bossLock = locked;
+  state.bossAim = locked ? new THREE.Vector3(m.pos.x, groundAt(m.pos.x, m.pos.z, m.pos.y), m.pos.z) : null;
   if (player.dead) return;
   keepInside();
+  if (locked) { player.facing = yawTo(player.pos, m.pos); cam.offset = 0; }   // W läuft auf den Boss zu
   if (boss.step === 'intro') {
     const I = B.intro, t = clamp((state.now - boss.t0) / I.fallMs, 0, 1);
     if (!boss.landed) {
@@ -208,8 +271,11 @@ function endBoss() {
 }
 
 // Kampf beenden: Arena weg, Leiste weg. Der Spawn läuft danach von selbst weiter (updateRespawn füllt die Packs auf)
-function cleanup() {
+function cleanup(instant = false) {
   boss = null;
+  state.bossLock = false;
+  state.bossAim = null;
+  camEnd(instant);
   arena.visible = false;
   bar.style.display = 'none';
 }
@@ -218,10 +284,12 @@ function cleanup() {
 export const bossBusy = () => !!boss;
 
 // Aus updateVisuals in main.ts, vor den Mob-Modellen: Blickrichtung, Leiste. Neuer Run oder Zonenwechsel räumt den Kampf ab
-export function updateBossVisuals() {
+export function updateBossVisuals(dt) {
+  updateCam(dt);
   if (!boss) return;
   const m = boss.mob;
-  if (!state.mobs.includes(m)) return cleanup();
+  if (!state.mobs.includes(m)) return cleanup(true);
+  if (pad.down[B.lockPadBtn] && !pad.prev[B.lockPadBtn]) toggleLock();
   m.model.root.rotation.y = boss.yaw;
   const pct = `${Math.max(0, m.hp / m.maxHp * 100)}%`;
   if (barFill.style.width !== pct) barFill.style.width = pct;
@@ -234,4 +302,4 @@ $('devPerf').insertAdjacentHTML('afterend', '<button class="bindBtn" id="devBoss
 $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(); });
 
 // Für Tests
-(window as any).__boss = { B, start: () => startBoss(), get boss() { return boss; } };
+(window as any).__boss = { B, start: () => startBoss(), toggleLock, get boss() { return boss; }, get lock() { return lockOn; }, get camK() { return camK; } };
