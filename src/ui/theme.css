@@ -185,3 +185,20 @@ body.mobile #menuTitle { font-size: 26px; }
 body.mobile .charTab { width: 60px; height: 60px; }
 body.mobile .charTab.selected { width: 72px; height: 72px; }
 body.mobile #menuActions { top: 6vh; }
+
+/* ---------- Ladebildschirm (LoadDoom.dc.html) ---------- */
+#loadModal { z-index: 30; background: radial-gradient(ellipse at 50% 60%, #3a0806 0%, #120202 45%, #050101 100%); font-family: 'Oswald', sans-serif; color: #f2e9e4; }
+#loadModal.show { display: block; }
+#loadModal .loadLines { position: absolute; inset: 0; width: 100%; height: 100%; }
+#loadModal .loadMid { position: absolute; left: 0; right: 0; top: 31vh; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#loadModal .loadPre { font-size: 18px; font-weight: 500; letter-spacing: .6em; text-transform: uppercase; color: #ff5a3c; }
+#loadModal .loadZone { font: 400 min(170px, 10.6vw) 'Anton', sans-serif; line-height: 1; letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 0 40px rgba(255, 61, 31, .55); }
+#loadModal .loadBar { width: min(520px, 60vw); height: 3px; margin-top: 18px; background: #2a0a07; }
+#loadModal .loadBar div { height: 3px; width: 0; background: #ff3d1f; box-shadow: 0 0 10px #ff3d1f; }
+#loadModal .loadBest { position: absolute; left: 3.75vw; bottom: 6.2vh; display: flex; flex-direction: column; gap: 4px; }
+#loadModal .loadBest span { font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: #ff5a3c; }
+#loadModal .loadBest b { font: 400 44px 'Anton', sans-serif; }
+#loadModal .loadTip { position: absolute; left: 20vw; right: 20vw; bottom: 7.1vh; text-align: center; font-size: 22px; font-weight: 500; color: #cbb8b0; }
+#loadModal .loadMods { position: absolute; right: 3.75vw; bottom: 6.2vh; display: flex; gap: 8px; }
+#loadModal .loadMods span { border: 2px solid #5a1e18; color: #cbb8b0; font-size: 16px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; }
+#loadModal .loadMods span.on { border-color: #ff3d1f; color: #ff5a3c; }

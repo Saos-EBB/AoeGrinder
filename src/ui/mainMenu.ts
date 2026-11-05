@@ -23,6 +23,7 @@ import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
+import { showLoad } from './loadScreen';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). Beschreibung und Werte gibt es im Code nicht, das Menü zeigt dort „—“
 const CHARS = [
@@ -203,8 +204,8 @@ function startRun() {
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
   applyRunWeapon(!!mage.weapon);
   renderActionbar();
+  showLoad(() => { syncPause(); ding(); });
   syncPause();
-  ding();
 }
 $('startBtn').addEventListener('click', startRun);
 const openSettings = () => { $('settingsModal').classList.add('show'); };

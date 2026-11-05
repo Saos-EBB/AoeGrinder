@@ -1,4 +1,5 @@
 import { state, player } from '../state';
+import { showLoad } from './loadScreen';
 import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
@@ -104,7 +105,7 @@ export function closeBinds() {
 }
 
 // Pausiert, solange irgendein Fenster offen ist oder die Figur tot
-const BLOCKING = ['codeModal', 'startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal'];
+const BLOCKING = ['loadModal', 'codeModal', 'startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal'];
 export function syncPause() {
   state.paused = player.dead || BLOCKING.some(id => $(id)?.classList.contains('show'));
 }
@@ -201,6 +202,7 @@ $('restartBtn').addEventListener('click', () => {
   resetSpells();
   applyRunWeapon(!!mage.weapon);
   renderActionbar();
+  showLoad(syncPause);
   syncPause();
 });
 $('devPerf').addEventListener('click', () => { togglePerf(); renderDevZones(); });
