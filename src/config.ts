@@ -94,7 +94,8 @@ export function resetMods() {
   Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
     fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
     iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
-    splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0 });   // Arkan-Talente (v31)
+    splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0,   // Arkan-Talente (v31)
+    condenser: 0, boltLeap: 0 });   // Blitz-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -225,6 +226,11 @@ export const CARDS = [
     desc: () => 'Jeder Blink löst am Ziel eine Arcane Explosion aus.', apply: () => { mods.blinkBomb = 1; } },
   { id: 'doublejump', name: 'Doppelsprung', only: ['Arkan'], max: 1,
     desc: () => '+1 Blink-Ladung.', apply: () => { mods.blinkExtra += 1; } },
+  // Blitz (v31)
+  { id: 'condenser', name: 'Kondensator', only: ['Blitz'], max: 1,
+    desc: () => 'Batterie bis 130, Überladung erst bei 130.', apply: () => { mods.condenser = 30; } },
+  { id: 'boltleap', name: 'Blitzsprung', only: ['Blitz'], max: 1,
+    desc: () => 'Blink gibt +15 Ladung, statt 10 zu kosten.', apply: () => { mods.boltLeap = 25; } },   // 10 Kosten zurück + 15
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

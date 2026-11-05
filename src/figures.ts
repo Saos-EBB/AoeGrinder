@@ -32,6 +32,7 @@ export function frozenGroundTick(f) {
 export function resetFigures() {
   state.shards = 0;
   state.archon = null; state.warp = null;
+  state.keeper = 0; state.chainCount = 0;
   player.iceGroundUntil = 0;
 }
 

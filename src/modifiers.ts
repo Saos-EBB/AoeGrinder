@@ -17,7 +17,8 @@ export const MODIFIERS = [
   { id: 'arcane', name: 'Nur Arkan', desc: 'nur Arkan-Spells und -Karten, Trinken bleibt; schwebt, +10 % Tempo', scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge', 'blitz', 'blood'], startKit: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'surge', 'drink', 'blink', null], onlyTag: 'Arkan',
     pool: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'arcmark', 'beam', 'arcorb', 'surge', 'arcstrike'], relics: ['archon', 'timewarp'],
     castWhileMoving: true, blinkCharges: 2, hp: 0.85, manaCost: 1.15 },   // PH: Zaubern und Kanäle im Laufen, Leben, Manakosten
-  { id: 'blitz', name: 'Nur Blitz', desc: 'nur Blitz-Spells und -Karten, Batterie statt Mana, Aufladen statt Trinken, Blink bleibt', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge', 'blood'], startKit: ['chain', 'arc', 'strike', 'ball', null, 'recharge', 'blink', null], onlyTag: 'Blitz', noDrink: true,
+  { id: 'blitz', name: 'Nur Blitz', desc: 'nur Blitz-Spells und -Karten, Batterie statt Mana, Aufladen statt Trinken, Blink bleibt', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge', 'blood'], startKit: ['chain', 'arc', 'strike', 'ball', 'discharge', 'recharge', 'blink', null], onlyTag: 'Blitz',
+    pool: ['chain', 'arc', 'strike', 'ball', 'discharge', 'storm', 'quake', 'keeper', 'staticfield'], relics: ['stormelem'], noDrink: true,
     battery: true },   // PH: Batterie in battery.ts, Zahlen in BATTERY (config.ts)
   { id: 'blood', name: 'Nur Blut', desc: 'Blutmagier: Zauber kosten Leben, −40 % Leben, +40 % Schaden, mehr Schaden bei wenig Leben, heilt nur über Infekt, Saugen und Lachen', scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'blitz', 'realmen', 'klinge'],
     startKit: ['bwhip', 'bjump', 'siphon', 'bwave', 'glue', null, 'melt', null], onlyTag: 'Blut', noDrink: true, hp: 0.6, dmg: 1.4, lifeCost: true, lowHpDmg: 0.6 },   // PH, Spells in spells/blood.ts

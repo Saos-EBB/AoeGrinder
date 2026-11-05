@@ -7,6 +7,7 @@ import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune, stat, makeCtx } from './core';
 import { mods } from '../config';
 import { ae } from './ae';
+import { batteryCharge } from '../battery';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
 
 const COLD = { radius: 6, dur: 6000, slow: 0.3, min: 30, max: 36 };   // PH: Kalter Boden
@@ -71,6 +72,7 @@ export const blink = {
     blinkFx(from, player.pos);
     if (hasRune('blink', 'target')) { coldGround(c, from); coldGround(c, player.pos.clone()); }
     if (mods.blinkBomb) ae.effect(makeCtx('ae'));   // Blinkbombe: Arcane Explosion am Ziel
+    if (mods.boltLeap) batteryCharge(mods.boltLeap);   // Blitzsprung: Kosten zurück und dazu Ladung
     if (hasRune('blink', 'nova')) {
       const r = c.radius(NOVA.radius);
       for (const m of mobsInRadius(from, r)) if (c.hit(m, rand(NOVA.min, NOVA.max)) && !m.dead) applyRoot(m, NOVA.root);
