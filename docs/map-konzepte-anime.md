@@ -2,7 +2,7 @@
 
 Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhöhlen, Mondsee.
 
-**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Ergebnis unten unter „Messung Schritt 1“.
+**Stand:** Schritt 1 (gemeinsame Basis) gebaut in `src/toon.ts`, nur mit `?toon=1` an, an Tirisfal getestet. Schritt 2 Winterquell gebaut in `src/winterquell.ts` (Toon immer an), Mondsee in `src/mondsee.ts`, Kristallhöhlen in `src/kristallhoehlen.ts`, Kathedrale in `src/kathedrale.ts`. Alle 4 Maps gebaut. Messungen unten.
 
 ## Gemeinsame Basis (gilt für alle 4)
 - Toon: MeshToonMaterial mit 3-Stufen-gradientMap (DataTexture 3×1), keine Texturen, Farben über Vertex-Farben.
@@ -56,3 +56,24 @@ Auswahl aus dem 15er-Brainstorm: Winterquell, Kathedrale der Hölle, Kristallhö
 - Ohne und mit `?toon=1` je 60 FPS. Calls pro Frame schwanken von Lauf zu Lauf zwischen 42 und 90, je nach Blickrichtung beim Start, in beiden Varianten gleich.
 - Gezählt in einem Frame: Umgebung 18 Lambert-Meshes ohne Toon, mit Toon 17 Toon-Meshes + 1 Lambert (Wasser). Toon und Rand kosten also 0 extra Draw Calls.
 - Abweichung vom Konzept: Das Spiel läuft immer dunkel (Spotlicht mit Schatten an der Figur, `dunkel.ts`). Daran ist nichts geändert. Weil das Toon-Material von Three.js nur den Lichtwinkel stuft und der Spot weich abfällt, stuft `toon.ts` zusätzlich die Summe des Lichts in 3 Bänder; dadurch bekommt der Lichtkreis harte Kanten. Den Verlaufs-Himmel gibt es schon (`render.ts`), im Dunkel-Modus ist er schwarz.
+
+## Messung Winterquell (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Tannen, Eisblöcke, Steine, Seen) + 1 Points (Schnee) = 6 Calls, Himmel wie überall.
+- Eis: Knockback 1,5 yd an Land, 3 yd auf dem See. Ein Mob, der 1 s übers Eis läuft, rutscht ohne Befehl noch etwa 2 yd weiter (`WQ.ice.grip`).
+- Abweichungen: Dunkel-Modus bleibt, deshalb sieht man den rosa-blauen Himmel nicht und der Schnee ist nur im Umkreis der Figur sichtbar. Die Mobs sind umgefärbte vorhandene Rigs (humanoid, quadruped), keine eigenen Modelle. Die Zone ist nur über das Dev-Menü oder `?zone=winterquell` erreichbar, wie die anderen Zonen außer Tirisfal.
+
+## Messung Mondsee (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 5 Toon-Meshes (Gelände, Bäume, Stege, Tore, Laternen) + Laternen-Kerne + Wasser + Mond + Geisterlichter = 9 Calls.
+- Phasen ab Run-Start: zunehmend, Vollmond (Packs ×2, im Test 88 → 162 Mobs), abnehmend, Neumond (Champion-Chance 60 % statt 20 %, ab Champion-Level 6), je 3 Minuten (`MS.phaseMs`). Nebel pro Phase über `state.fogExtra` in `dunkel.ts`.
+- Abweichungen: Der Mond steht 150 yd vor der Kamera statt am Himmel, weil die Randberge (`heightAt` ab etwa 180 yd) alles Fernere verdecken. Der Run beginnt mit zunehmendem Mond statt Neumond, damit man den Mond sieht. Der Nebel bleibt der exponentielle des Dunkel-Modus (Konzept: linear).
+
+## Messung Kristallhöhlen (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung im Frame gezählt: 3 Toon-Meshes (Gelände, Stalagmiten, Pilze) + 2 Kristall-Meshes (Türkis, Pink) + Sporen = 6 Calls.
+- Spiegelung: Geschosse treffen im Spiel sofort, es gibt keine fliegenden Projektile. Deshalb prüft `bounceShot` (`spells/core.ts`) beim Schuss die Strecke Figur → Ziel gegen die Kristall-Kreise; der erste Kristall spiegelt die Richtung, das neue Ziel ist der nächste Mob in einem Kegel von etwa 53° bis 26 yd (`KH.bounce`). Ohne Ziel verpufft der Schuss mit Funken. Höchstens 1 Abprall.
+- Gilt für Feuerball, Frostblitz, Arkane Geschosse, Arkanbeschuss. Nicht für Linien-Spells (Eislanze, Gletschernadel) und die Splitter der Frostkugel.
+- Abweichungen: keine eigene Höhlendecke, der Dunkel-Modus macht den Himmel schwarz; die Kristalle am Kartenrand stehen auf den Randbergen und wirken wie eine Höhlenwand. Mobs sind umgefärbte vorhandene Rigs.
+
+## Messung Kathedrale der Hölle (Level 1, voller Pack, headless Chromium, 10 s)
+- 60 FPS. Umgebung: Gelände, Fugen, Wände, Säulen, Bänke, Altar, Kerzen, Flammen, Risse, Funken = 10 Calls (Risse auf Etage 1 aus).
+- Etagen: alle 60 Kills (`KA.killsPerFloor`, zählt `player.kills`) eine tiefer, 3 Etagen. Gewechselt werden Bodenfarben (`recolorGround` in `world.ts`), Tönung aller Props (Instanz-Farben), Glut der Risse, Funken und die Spawn-Tabelle (`zone.mobs`). Einblendung „Treppe hinab“ und kurzes Kamerawackeln. Im Test: 60 Kills → Etage 2, Start-Mob Gefallener.
+- Abweichungen: Rundbau statt Kirchenschiff mit Etagen-Treppe, damit die große Karte (Radius ~145 yd innen) gefüllt ist; die Flammen sind einfache leuchtende Kegel statt Feuer-eMat (eMat lässt sich nicht instanzieren). Knochen- und Fleischsäulen („später“) fehlen. Fliesen-Fugen sind ein eigenes Linien-Mesh, weil das Gelände-Raster zu grob für 4-yd-Fliesen ist (+1 Call gegenüber dem Konzept). Wellen-Modus spawnt innen an der Wand (`zone.edgeR`).

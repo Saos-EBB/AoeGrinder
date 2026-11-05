@@ -29,7 +29,7 @@ const AFFIX_IDS = Object.keys(C.affixes);
 
 // Würfelt beim Pack-Spawn: null oder die Affixe des Packs
 export function rollChampionPack() {
-  if (player.level < C.minLevel || Math.random() >= C.chance) return null;
+  if (player.level < C.minLevel || Math.random() >= (state.champChance ?? C.chance)) return null;   // champChance: Neumond am Mondsee
   return rollAffixes();
 }
 export function rollAffixes() {

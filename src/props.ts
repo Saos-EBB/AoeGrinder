@@ -8,7 +8,8 @@ import { addCircle, addBox, addWalk } from './collision';
 import { TOON, toonMat } from './toon';
 
 // ?toon=1: Anime-Basis zum Ausprobieren (toon.ts)
-const lambert = (color, opts = {}) => TOON ? toonMat({ color, ...opts }) : new THREE.MeshLambertMaterial({ color, ...opts });
+// Toon kennt kein flatShading, die Option fällt dort weg
+const lambert = (color, opts: any = {}) => { const { flatShading, ...rest } = opts; return TOON ? toonMat({ color, ...rest }) : new THREE.MeshLambertMaterial({ color, ...opts }); };
 export { lambert };
 
 function baked(geo, x, y, z, rx, ry, rz) {
@@ -48,7 +49,9 @@ export function makeCtx(group, obstacles, heightAt) {
     },
     add(mesh) { group.add(mesh); return mesh; },
     // list: [{ x, z, y?, s?, ry?, tilt?, color? }]; y ist die Höhe über dem Boden
+    // Gibt die InstancedMeshes zurück (Kathedrale färbt sie pro Etage über setColorAt um)
     place(pre, list) {
+      const out: THREE.InstancedMesh[] = [];
       for (const { mat, geo } of pre) {
         const inst = new THREE.InstancedMesh(geo, mat, list.length);
         list.forEach((p, i) => {
@@ -61,7 +64,9 @@ export function makeCtx(group, obstacles, heightAt) {
         });
         inst.frustumCulled = false;
         group.add(inst);
+        out.push(inst);
       }
+      return out;
     },
   };
 }

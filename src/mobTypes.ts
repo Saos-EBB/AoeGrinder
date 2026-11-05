@@ -29,6 +29,32 @@ export const MOB_TYPES: any = {
   abgesandter: { name: 'Zwielicht-Abgesandter', ability: 'lavaPool', hpMul: 0.9,
     build: humanoid({ skin: 0x5f4a6a, body: 0x35224f, trim: 0x1c1230, robe: true, hood: true, sleeve: 0x35224f, weapon: 'staff', glow: glowMat(2.4, 0.5, 2), eye: glowMat(2, 0.5, 2.2), scale: [0.95, 1.12, 0.95], lean: 0.05 }) },
 
+  // Winterquell (Werte PH)
+  yeti: { name: 'Zottelyeti', ability: null, hpMul: 1.1,
+    build: humanoid({ skin: 0xdfe8f2, body: 0xc9d6e6, trim: 0x8fa4c0, tusks: true, weapon: 'club', eye: glowMat(0.6, 1.6, 2.4), scale: [1.45, 1.3, 1.45], lean: 0.22 }) },
+  frostsaebler: { name: 'Frostsäbler', ability: 'pounce', speedMul: 1.1,
+    build: quadruped({ coat: 0xe6eef8, dark: 0x5a78a8, stripes: true, eye: glowMat(0.5, 1.8, 2.6), tailLen: 0.6, ears: 0.2, scale: [1.1, 1.05, 1.15] }) },
+  eulenbestie: { name: 'Eulenbestie', ability: 'stomp', hpMul: 1.4, speedMul: 0.9,
+    build: humanoid({ skin: 0x8a6a48, body: 0x6e5236, trim: 0xd8cfc0, eye: glowMat(2.4, 1.8, 0.3), scale: [1.3, 1.2, 1.3], lean: 0.3 }) },
+
+  // Mondsee (Werte PH)
+  ertrunkener: { name: 'Ertrunkener', ability: null, speedMul: 0.9, hpMul: 1.1,
+    build: humanoid({ skin: 0x5f7a72, body: 0x2c3a40, trim: 0x1a2428, eye: glowMat(0.4, 1.8, 1.6), lean: 0.28 }) },
+  geist: { name: 'Seegeist', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.15,
+    build: humanoid({ skin: 0xb8c8f0, body: 0x8a9ad8, trim: 0x5a6ab0, robe: true, hood: true, sleeve: 0x8a9ad8, eye: glowMat(1.2, 1.8, 3), glow: glowMat(0.8, 1.2, 2.6), scale: [0.95, 1.1, 0.95] }) },
+
+  // Kristallhöhlen (Werte PH)
+  kristallgolem: { name: 'Kristallgolem', ability: 'stomp', hpMul: 1.5, speedMul: 0.85, dmgMul: 1.15,
+    build: humanoid({ skin: 0x4a3a66, body: 0x3a2c52, trim: 0x2ad0d8, helm: 0x5a4a7a, eye: glowMat(0.4, 2.4, 2.4), glow: glowMat(2.2, 0.6, 2.0), scale: [1.5, 1.35, 1.5], lean: 0.18 }) },
+  hoehlenfledermaus: { name: 'Höhlenfledermaus', ability: 'drainBite', rootImmune: true, hpMul: 0.8, speedMul: 1.1,
+    build: bat({ fur: 0x3a2a52, wing: 0x2a1a40 }) },
+
+  // Kathedrale der Hölle (Werte PH), dazu das Klapperskelett aus Tirisfal
+  gefallener: { name: 'Gefallener', ability: 'leapBite', hpMul: 0.75, speedMul: 1.15,
+    build: humanoid({ skin: 0xb8402a, body: 0x5a1a14, trim: 0x2a0a08, tusks: true, weapon: 'sword', eye: glowMat(3, 1.4, 0.2), scale: [0.8, 0.78, 0.8], lean: 0.32 }) },
+  daemon: { name: 'Höllendämon', ability: 'heatAura', hpMul: 1.6, dmgMul: 1.2, speedMul: 0.9,
+    build: humanoid({ skin: 0x5a1410, body: 0x2a0a0a, trim: 0xff5a1a, helm: 0x1a0606, tusks: true, weapon: 'axe', eye: glowMat(3.4, 1.2, 0.2), glow: glowMat(2.6, 0.8, 0.2), scale: [1.45, 1.4, 1.45], lean: 0.15 }) },
+
   // Tanaris (Werte PH)
   hyaene: { name: 'Wüstenhyäne', ability: null,
     build: quadruped({ coat: 0xb09a68, dark: 0x4a3c28, stripes: true, hump: true, tailLen: 0.4, ears: 0.22, scale: [0.95, 0.95, 0.95] }) },

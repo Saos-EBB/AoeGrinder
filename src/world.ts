@@ -10,7 +10,9 @@ import { clearColliders, colliders, groundAt } from './collision';
 import { TOON, toonMat } from './toon';
 
 export let zone = ZONES.tirisfal;
-export let zoneId = 'tirisfal';
+const lambertGround = new THREE.MeshLambertMaterial({ vertexColors: true }), toonGround = toonMat({ vertexColors: true, rim: false });
+export let zoneId = new URLSearchParams(location.search).get('zone') ?? 'tirisfal';   // ?zone=winterquell zum Testen
+if (!ZONES[zoneId]) zoneId = 'tirisfal';
 let nextStorm = 0, stormEnd = 0;
 
 export function heightAt(x, z) {
@@ -25,7 +27,7 @@ export const terrain = (() => {
   const size = 340 * WORLD_K, segs = 150 * WORLD_K;
   const geo = new THREE.PlaneGeometry(size, size, segs, segs);
   geo.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geo, TOON ? toonMat({ vertexColors: true, rim: false }) : new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const mesh = new THREE.Mesh<THREE.PlaneGeometry, THREE.Material>(geo, lambertGround);
   scene.add(mesh);
   return mesh;
 })();
@@ -37,21 +39,18 @@ scene.add(props);
 
 // Baut Himmel, Gelände und Dekoration der Zone neu auf
 export function buildWorld(id) {
+  zone.leave?.();   // Zonen mit eigenem Zustand (Mondsee: Phase) räumen auf
   zoneId = id;
   zone = ZONES[id];
   setEnv(zone.env);
+  terrain.material = TOON || zone.toon ? toonGround : lambertGround;   // Anime-Maps (toon.ts)
   state.stormK = 0;
   nextStorm = state.now + (zone.storm?.every ?? 0);
 
-  const geo = terrain.geometry, pos = geo.attributes.position, colors = [], c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i), h = heightAt(x, z);
-    pos.setY(i, h);
-    zone.ground(c, x, z, h);
-    colors.push(c.r, c.g, c.b);
-  }
+  const geo = terrain.geometry, pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
   pos.needsUpdate = true;
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  recolorGround();
   geo.computeVertexNormals();
 
   props.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); o.dispose?.(); });
@@ -60,6 +59,13 @@ export function buildWorld(id) {
   clearColliders(heightAt);
   zone.props(makeCtx(props, obstacles, heightAt));
   if (colliderView) showColliders(true);
+}
+
+// Bodenfarben aus zone.ground neu setzen, ohne die Welt neu zu bauen (Kathedrale: neue Etage)
+export function recolorGround() {
+  const geo = terrain.geometry, pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) { zone.ground(c, pos.getX(i), pos.getZ(i), pos.getY(i)); colors.set([c.r, c.g, c.b], i * 3); }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 }
 
 // Dev: Collider als Drahtgitter. Massives rot, begehbare Flächen grün.
@@ -103,6 +109,7 @@ buildWorld(zoneId);
 
 // Sandsturm: alle paar Minuten Sicht zu, danach wieder klar
 export function updateZoneEvent(dt) {
+  zone.update?.(dt);
   const st = zone.storm;
   if (!st) return;
   if (state.now >= nextStorm) { nextStorm = state.now + st.every; stormEnd = state.now + st.dur; }

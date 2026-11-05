@@ -1,7 +1,7 @@
 import { rand, dist2d } from '../util';
 import { player } from '../state';
 import { mods } from '../config';
-import { mobsInRadius, hasRune } from './core';
+import { mobsInRadius, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { fireballLook } from '../vfx/fireLook';
 
@@ -25,7 +25,9 @@ export const fireball = {
     const shots = [1, ...Array(mods.fbExtra).fill(1), ...(hasRune('fireball', 'split') ? Array(SPLIT.n).fill(SPLIT.k) : [])];
     const others = mobsInRadius(player.pos, fireball.range, Infinity).filter(m => m !== target).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos));
     shots.forEach((mul, i) => {
-      const t = i === 0 ? target : others[i - 1] ?? target, at = t.pos.clone();
+      const t = bounceShot(i === 0 ? target : others[i - 1] ?? target);   // Kristallhöhlen
+      if (!t) return;
+      const at = t.pos.clone();
       c.hitProjectile(t, rand(fireball.min, fireball.max) * k * mul);
       for (const m of mobsInRadius(at, r)) if (m !== t) c.hit(m, rand(fireball.min, fireball.max) * k * mul * SPLASH_MUL);
       fireballLook(at, r, mul < 1 ? .7 : 1);

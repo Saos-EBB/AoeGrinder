@@ -40,7 +40,7 @@ const levelPackSize = () => clamp(3 + Math.floor((player.level - 20) / 2) + zone
 const liveMobs = () => state.mobs.filter(m => !m.dead);
 const livePackCount = () => new Set(liveMobs().map(m => m.packId)).size;
 // Nie unter dem Startwert; ab dem Level, wo die Packs wachsen, skaliert die Dichte wie bisher mit Packanzahl × Packgröße
-const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * PACK_SIZE_MUL * modFactor('packSize');
+const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSize()) * PACK_SIZE_MUL * modFactor('packSize') * (state.packMul ?? 1);   // packMul: Vollmond am Mondsee
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
@@ -206,9 +206,10 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (d < 0.01) return;
   const step = Math.min(d, speed * dt / 1000);
   const dir = steer(mob, dx / d, dz / d, 0.7);
+  mob.moving = true;
+  if (zone.iceAt?.(mob.pos.x, mob.pos.z)) { mob.iceWant = { x: dir.x * speed, z: dir.z * speed }; mob.speed = speed; return; }   // Eis (Winterquell): zone.slide gleitet
   mob.pos.x += dir.x * step;
   mob.pos.z += dir.z * step;
-  mob.moving = true;
   mob.speed = speed;
 }
 
@@ -249,6 +250,7 @@ export function updateMob(mob, dt) {
   if (mob.dead) return;
   mob.moving = false;
   if (mob.leap) return updateLeap(mob);
+  zone.slide?.(mob, dt);
   const d = dist2d(mob.pos, player.pos);
 
   if (mob.state === 'idle') {
@@ -428,6 +430,7 @@ function bigKnock(mob, frac) {
 // Rückschlag im Bogen, weg vom Punkt
 export function knockbackMob(mob, center, dist, dur = 450) {
   if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hängt im Blutwirbel (klinge.ts), noKnock: Steinhaut (champions.ts)
+  dist *= zone.knockMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Eis: fliegt weiter
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
   target.y = mob.pos.y;
