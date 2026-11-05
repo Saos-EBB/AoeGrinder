@@ -28,7 +28,8 @@ export const MODIFIERS = [
   { id: 'realmen', name: 'Real Men', desc: 'Strichkrieger mit Riesenschwert: Wut statt Mana, mehr Wut und weniger Leben machen mehr Schaden', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge', 'blitz', 'plague'], startKit: ['wQ', 'wR', 'wCharge', 'wShout', 'wCry', 'wEat', 'wLeap', null], onlyTag: 'Krieger',
     pool: ['wQ', 'wE', 'wR', 'wExec', 'wCry', 'wLast', 'wCharge', 'wClap', 'wShout'], relics: ['wBerserk'] },
   // Nahkämpfer aus klinge.ts: keine Ressource, nur Abklingzeiten
-  { id: 'klinge', name: 'Klingenstrich', desc: 'Strichmännchen mit 2 Katanas, Einhand oder Zweihand, nur Abklingzeiten', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'blitz', 'plague'], startKit: ['kQ', 'kE', 'kR', 'kAder', 'kSwap', 'kEat', 'kDash', 'kClones'], onlyTag: 'Klinge' },
+  { id: 'klinge', name: 'Klingenstrich', desc: 'Strichmännchen mit 2 Katanas, Einhand oder Zweihand, nur Abklingzeiten', scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'blitz', 'plague'], startKit: ['kQ', 'kE', 'kAder', 'kR', 'kKunai', 'kEat', 'kDash', null], onlyTag: 'Klinge',
+    pool: ['kQ', 'kE', 'kR', 'kAder', 'kStorm', 'kKunai', 'kCounter', 'kIaido', 'kSmoke'], relics: ['kClones'] },
   { id: 'nodrink', name: 'Kein Trinken', desc: 'kein Trinken, Mana nur über Regeneration', scoreMult: 1.5, excludes: [], noDrink: true },
   { id: 'classic', name: 'Classic pur', desc: 'keine Level-Karten, alle 2 Level ein Rang auf alle Spells', scoreMult: 1.5, excludes: ['noluck'], noCards: true },
   { id: 'noluck', name: 'Kein Glück', desc: 'Glück bleibt 0, immer 4 Karten', scoreMult: 1.2, excludes: ['classic'], noLuck: true },

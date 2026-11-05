@@ -97,7 +97,8 @@ export function resetMods() {
     splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0,   // Arkan-Talente (v31)
     condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
     toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0,   // Seuchen-Talente (v31)
-    annihilator: 0, bladeMaster: 0 });   // Krieger-Talente (v31)
+    annihilator: 0, bladeMaster: 0,   // Krieger-Talente (v31)
+    deepWounds: 0, flicker: 0, shadowPact: 0 });   // Klingen-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
@@ -251,6 +252,13 @@ export const CARDS = [
     desc: () => 'Schlagfolge +10 % schneller.', apply: () => { mods.bladeMaster += 1; } },
   { id: 'abyss', name: 'Tanz am Abgrund', only: ['Krieger'], max: 3,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
+  // Klingenstrich (v31)
+  { id: 'deepwounds', name: 'Tiefe Wunden', only: ['Klinge'], max: 3,
+    desc: () => 'Blutung +20 %.', apply: () => { mods.deepWounds += 1; } },
+  { id: 'flicker', name: 'Flicker', only: ['Klinge'], needs: 'kDash', max: 1,
+    desc: () => 'Strichschnitt springt zum nächsten Ziel in 10 yd, ein Kill gibt die Ladung zurück, höchstens 2 Ladungen.', apply: () => { mods.flicker = 1; } },
+  { id: 'shadowpact', name: 'Schattenpakt', only: ['Klinge'], needs: 'kClones', max: 3,
+    desc: () => 'Schattenklone: +1 Klon.', apply: () => { mods.shadowPact += 1; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
     desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },

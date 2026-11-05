@@ -250,7 +250,8 @@ export function updateMob(mob, dt) {
   const d = dist2d(mob.pos, player.pos);
 
   if (mob.state === 'idle') {
-    if (!player.dead && d < (mob.type.aggro ?? aggroRadius(mob))) enterCombat(mob, true);
+    if (player.smokeUntil > state.now) { /* Rauchbombe: unsichtbar */ }
+    else if (!player.dead && d < (mob.type.aggro ?? aggroRadius(mob))) enterCombat(mob, true);
     else if (mob.assistAt && state.now >= mob.assistAt) enterCombat(mob, false);
   }
   else if (mob.state === 'combat') {

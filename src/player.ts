@@ -38,7 +38,7 @@ import { resetBuffs, buffSpeedMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
-import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable } from './klinge';
+import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable, klingeHurt } from './klinge';
 
 export function resetGame() {
   startMageRun();
@@ -120,8 +120,10 @@ export function setLevel(level) {
 
 export function damagePlayer(amount, dot = false, source = '') {
   if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
-  if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
+  if (!dot && dodgeIframes()) { perfectDodge(); return; }
+  if (!dot && player.parryUntil > state.now) { player.onParry?.(); return; }   // Konter des Klingenstrichs   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
+  klingeHurt(amount / maxHp());   // Haltungs-Leiste: erlittener Schaden
   if (player.shield > 0 && player.shieldUntil > state.now) {   // Eisbarriere (spells/icebarrier.ts)
     const a = Math.min(player.shield, amount);
     player.shield -= a; amount -= a;

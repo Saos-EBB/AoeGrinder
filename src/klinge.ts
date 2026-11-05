@@ -3,7 +3,9 @@
 
 import { state, player } from './state';
 import { $, dist2d } from './util';
-import { SPELLS, CFG } from './config';
+import { SPELLS, CFG, UNIT, mods } from './config';
+import { pdRateMul } from './dodge';
+import { combatText } from './ui/hud';
 import { mage, onWarriorHit } from './models/mage';
 import { hitstopActive } from './fx/impact';
 import { DG, consumeCombo } from './dodge';
@@ -20,11 +22,22 @@ import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, for
 
 // Alle Zahlen hier. Alles // PH
 const KLINGE = {
+  // Haltungen (v31): 1 Einhand ohne Boni und ohne Blutung. Leiste 0–100 füllt sich durch Schaden (ausgeteilt +1 pro Einheit, erlitten +1 pro 1 % Leben).
+  // Voll: F wechselt in 2 (Zweihand, +30 %, Blutung). Nach 1,5 min in 2 kommt 3 (dazu Tempo +25 %, Angriffstempo ×2). 10 s ohne Kill leert sich die Leiste, leer → 1
   stance: {
-    1: { name: 'Einhand · Iai', move: 1.25, rate: 1.3, range: 1.4, dmg: 1, cdOnHit: 500, bleed: false },     // PH
-    2: { name: 'Zweihand · Nitō', move: 1, rate: 1, range: 1, dmg: 2.5, cdOnHit: 0, bleed: true },           // PH
+    1: { name: 'Einhand', move: 1, rate: 1, range: 1, dmg: 1, cdOnHit: 0, bleed: false, model: 1 },          // PH
+    2: { name: 'Zweihand', move: 1, rate: 1, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 },        // PH
+    3: { name: 'Zweihand III', move: 1.25, rate: 2, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 }, // PH
   },
-  swap: { cd: 1000, bonus: 0.3 },                                                                            // PH
+  bar: { max: 100, perUnit: 1, perPctTaken: 1, idleMs: 10000, drainPerS: 25, toThreeMs: 90000 },            // PH
+  // Neu v31, Schaden in Einheiten (UNIT)
+  storm: { ms: 6000, radius: 3, tickMs: 300, dmg: 0.5, blades: 4, boom: { radius: 2, dmg: 1 }, cd: 12000 },   // PH
+  kunai: { n: 3, spread: 30 * Math.PI / 180, len: 15, width: 1, dmg: 0.8, cd: 3000 },                       // PH
+  counter: { ms: 500, radius: 4, angle: Math.PI / 2, dmg: 3, cd: 8000 },                                    // PH
+  iaido: { drawMs: 400, len: 10, width: 2, dmg: 3, cd: 6000 },                                              // PH
+  smoke: { ms: 3000, cd: 25000 },                                                                            // PH
+  flicker: { range: 10 },                                                                                    // PH: Talent Flicker
+  deepWounds: 0.2,                                                                                           // PH: Blutung +20 % pro Rang
   bleed: { share: 0.33, ms: 5000, tickMs: 1000, max: 7 },                                                    // PH: 33 % des Treffers über 5 s, 7 Stapel pro Mob
   // Q-Kette: ein Schlag pro Druck, nächster Druck im Zeitfenster nach dem Schlag, sonst wieder Schlag 1. Dauern in KLINGE_TIMING.qChain.
   // Pro Schlag die Treffer-Ereignisse in Modell-Reihenfolge. Schaden vor dem Haltungs-Faktor. cone: Kegel in Grad, sonst rundum. line: Länge in yd. Alles PH
@@ -65,9 +78,13 @@ Object.assign(SPELLS, {
   kE: move('Kreisschnitt', 'Drehung um dich, verlangsamt 40 % für 3 s.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.e.cd, () => pressE(), { showDmg: K.e.dmg }),
   kR: move('Blutwirbel', 'Zieht Mobs an, sie kreisen um dich, am Ende fliegen sie weg. Du gehst mit 50 % Tempo.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.wirbel.cd, () => pressWirbel(), { showDmg: K.wirbel.tick }),
   kAder: move('Aderlass', 'Alle blutenden Mobs in 15 yd nehmen sofort ihre restliche Blutung ×1,5.', ['Blutung', 'Fläche'], K.ader.cd, () => pressAder()),
-  kClones: move('Schattenklone', 'Zwei Klone neben dir machen 8 s jeden Move mit, 50 % Schaden.', [], K.clones.cd, () => pressClones()),
-  kSwap: move('Haltung', 'Wechselt zwischen Einhand und Zweihand. Der erste Treffer danach macht +30 %.', [], K.swap.cd, () => pressSwap()),
+  kClones: { ...move('Schattenklone', 'Zwei Klone neben dir machen 8 s jeden Move mit, 50 % Schaden.', [], K.clones.cd, () => pressClones()), figRelic: true },
   kDash: move('Strichschnitt', 'Sprint, dabei nicht angreifbar. Danach trifft es alles auf der Linie.', ['Nahkampf', 'Bewegung', 'Linie'], K.dash.cd, () => pressDash(), { showDmg: K.dash.dmg, charges: K.dash.charges }),
+  kStorm: move('Klingensturm', '6 s kreisen Klingen in 3 yd, 0,5 Einheiten pro 0,3 s, legen Blutung (nur Zweihand). Aderlass zündet sie.', ['Nahkampf', 'Fläche'], K.storm.cd, () => pressStorm(), { showDmg: K.storm.dmg * UNIT }),
+  kKunai: move('Kunai', '3 Wurfmesser im Fächer 30°, 15 yd, je 0,8 Einheiten.', ['Fernkampf', 'Geschoss'], K.kunai.cd, () => pressKunai(), { showDmg: K.kunai.dmg * UNIT }),
+  kCounter: move('Konter', '0,5 s Parade. Getroffen: Gegenschlag im Kegel 4 yd, 3 Einheiten, kein Schaden durch den Treffer.', ['Nahkampf', 'Kontrolle'], K.counter.cd, () => pressCounter(), { showDmg: K.counter.dmg * UNIT }),
+  kIaido: move('Iaido', '0,4 s Ziehen, dann Schnitt 10 × 2 yd nach vorn, 3 Einheiten.', ['Nahkampf', 'Linie'], K.iaido.cd, () => pressIaido(), { showDmg: K.iaido.dmg * UNIT }),
+  kSmoke: move('Rauchbombe', '3 s unsichtbar, Mobs verlieren das Ziel. Ein Angriff beendet es.', ['Bewegung'], K.smoke.cd, () => pressSmoke()),
   kEat: move('Essen', 'Sitzen und in 18 s alles Leben auffüllen. Bewegung oder Angriff bricht ab, Schaden nicht.', [], 0, () => pressEat()),
 });
 // Wie bei Real Men gilt pro Move eine Rune. stages: mehrere Stufen derselben Rune (Karte zählt in state.cardPicks).
@@ -99,21 +116,16 @@ SPELLS.kAder.runes = [
   { id: 'killCd', name: 'Blutzoll', desc: 'Kill durch Aderlass: −3 s Blutwirbel-Abklingzeit.' },
   { id: 'heal', name: 'Lebenssaft', desc: 'Heilt 10 % des Schadens.' },
 ];
-SPELLS.kSwap.runes = [
-  { id: 'mini', name: 'Wechselschnitt', desc: 'Der Wechsel macht einen kleinen Kreisschnitt.' },
-  { id: 'bonus', name: 'Überraschung', desc: 'Wechsel-Bonus +60 % statt +30 %.' },
-  { id: 'nocd', name: 'Fließender Wechsel', desc: 'Wechsel ohne Abklingzeit.', cdMul: 0 },
-];
 
 // Nicht in Object.keys: keine Karte, nur Farbe für Funken und Schadenszahlen
 Object.defineProperty(SPELLS, 'kBleed', { value: { name: 'Blutung', cls: 'fire', school: 'warrior', tags: [] }, enumerable: false });
 
 const on = () => mage.skin === 'klinge';
 const S = () => K.stance[stance];
-const swapMul = () => swapBonus ? 1 + (hasRune('kSwap', 'bonus') ? K.runes.bonus : K.swap.bonus) : 1;
+const swapMul = () => 1;   // Wechsel-Bonus ist seit v31 raus
 const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`] || 1 : 0;
 
-let stance = 1;
+let stance = 1, bar = 0, lastKill = -1e9, stanceAt = 0;   // Leiste 0–100, letzter Kill, seit wann Haltung 2
 let act = null;                 // laufender Move: { id, ability, start, ms, rate, ctx }
 let seq = 0;                    // zählt jeden Start, damit das Modell zweimal denselben Move erkennt
 let swapBonus = false;
@@ -126,9 +138,29 @@ let clones = [], clonesUntil = 0;
 let trails = [];                // Blutspuren: { a, b, until, next }
 
 const showStance = () => {
-  player.resLabel = S().name;
+  player.resLabel = `${S().name} · ${Math.floor(bar)}${stance === 1 && bar >= K.bar.max ? ' · F: Zweihand' : ''}`;
+  player.mana = bar;
   $('manaFill').style.background = stance === 1 ? 'linear-gradient(#c8ccd6, #6a7080)' : 'linear-gradient(#d8343c, #7a1016)';
 };
+// Leiste: Schaden ausgeteilt (in Einheiten) und erlitten (in Prozent der Leben)
+const fillBar = v => { if (bar <= 0 && v > 0) lastKill = state.now; bar = Math.min(K.bar.max, bar + v); };   // die 10 s ohne Kill zählen ab dem ersten Punkt
+function setStance(n) {
+  stance = n;
+  stanceAt = state.now;
+  mage.hero.setStance(K.stance[n].model);
+  showStance();
+}
+// Taste F: mit voller Leiste in Zweihand
+function pressStance() {
+  if (!on() || player.dead) return;
+  if (stance !== 1) return;
+  if (bar < K.bar.max) return showError('Haltung: Leiste noch nicht voll');
+  setStance(2);
+  mage.hero.fx.ring(player.pos, mage.hero.fx.RED, 2.5, 0.5);
+}
+state.stanceKey = pressStance;
+// Erlittener Schaden (player.ts damagePlayer) füllt die Leiste
+export function klingeHurt(pct) { if (on()) fillBar(pct * 100 * K.bar.perPctTaken); }
 
 // Nach dem Zurücksetzen von Leben und Mana im Run-Start, nach resetRealMen
 export function resetKlinge() {
@@ -136,8 +168,8 @@ export function resetKlinge() {
   useKlingeBinds(on() || mage.skin === 'krieger');
   clearClones();
   if (!on()) return;
-  player.rageMax = 1; player.mana = 1;             // Keine Ressource: Balken zeigt die Haltung
-  stance = 1; act = null; swapBonus = false; attackUntil = 0; attackCtx = null;
+  player.rageMax = K.bar.max; player.mana = 0;     // Keine Ressource: Balken zeigt die Haltungs-Leiste
+  stance = 1; bar = 0; lastKill = -1e9; act = null; swapBonus = false; attackUntil = 0; attackCtx = null; stormUntil = 0; player.parryUntil = 0; player.smokeUntil = 0;
   resetChain();
   bleeding.clear();
   trails = [];
@@ -156,7 +188,7 @@ function ready(id, grounded = true) {
   player.lastCombat = state.now;
   return true;
 }
-const rateOf = id => S().rate * (stat(id).tempo ?? 1);
+const rateOf = id => S().rate * (stat(id).tempo ?? 1) * pdRateMul();   // Perfekter Dodge
 function startAct(id, ability, ms, rate = rateOf(id)) {
   attackUntil = 0;
   resetChain();                                    // jeder andere Move bricht die Q-Kette ab
@@ -170,11 +202,11 @@ function pressQ() {
   if (state.now < attackUntil) { chain.buffered = true; return; }
   stopDrink();
   if (state.now > chain.until) chain.step = 0;
-  const n = chain.step, len = K.q.chain[stance].length;
+  const n = chain.step, len = K.q.chain[Math.min(stance, 2)].length;
   attackRate = rateOf('kQ');
-  attackUntil = state.now + TIMING.qChain[stance][n] / attackRate;
+  attackUntil = state.now + TIMING.qChain[Math.min(stance, 2)][n] / attackRate;
   attackCtx = makeCtx('kQ', S().dmg, S().range);
-  Object.assign(attackCtx, { step: n, stance, combo: consumeCombo('klingeQ') });   // Dodge-Kombo: +100 % und ein Blutungs-Stapel, für den ganzen Schlag
+  Object.assign(attackCtx, { step: n, stance: Math.min(stance, 2), combo: consumeCombo('klingeQ') });   // Dodge-Kombo: +100 % und ein Blutungs-Stapel, für den ganzen Schlag
   chain.step = (n + 1) % len;
   chain.until = chain.step ? attackUntil + K.q.windowMs : 0;
   chain.buffered = false; sheatheUntil = 0;
@@ -193,7 +225,12 @@ function pressE() {
 }
 function pressDash() {
   if (act || !ready('kDash')) return;
-  startAct('kDash', 'dash', TIMING.dash.ms).yd = K.dash.yd[stance];
+  // Flicker: springt zum nächsten Ziel in 10 yd
+  const target = mods.flicker ? mobsInRadius(player.pos, K.flicker.range, Infinity).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos))[0] : null;
+  if (target) player.facing = Math.atan2(target.pos.x - player.pos.x, target.pos.z - player.pos.z);
+  const a = startAct('kDash', 'dash', TIMING.dash.ms);
+  a.yd = target ? Math.max(1, dist2d(target.pos, player.pos) + 0.5) : K.dash.yd[Math.min(stance, 2)];
+  a.flicker = !!target;
 }
 function pressWirbel() {
   if (act || !ready('kR')) return;
@@ -214,7 +251,7 @@ function pressEat() {
 function pressClones() {
   if (!ready('kClones', false)) return;
   clearClones();
-  clones = [cloneKlinge(mage.hero), cloneKlinge(mage.hero)];
+  clones = Array.from({ length: 2 + mods.shadowPact }, () => cloneKlinge(mage.hero));   // Schattenpakt: +1 Klon pro Rang
   for (const c of clones) scene.add(c.root);
   clonesUntil = state.now + K.clones.ms;
   updateKlingeVisuals();
@@ -229,7 +266,7 @@ export function updateKlingeVisuals() {
   if (!clones.length) return;
   const f = player.facing, sx = Math.cos(f) * K.clones.side, sz = -Math.sin(f) * K.clones.side;
   clones.forEach((c, i) => {
-    const d = i ? -1 : 1, x = player.pos.x + sx * d, z = player.pos.z + sz * d;
+    const d = (i % 2 ? -1 : 1) * (1 + Math.floor(i / 2)), x = player.pos.x + sx * d, z = player.pos.z + sz * d;
     c.sync();
     c.root.position.set(x, groundAt(x, z, player.pos.y), z);
   });
@@ -239,17 +276,84 @@ function origins() {
   const list = [{ x: player.pos.x, y: player.pos.y, z: player.pos.z, ox: 0, oz: 0, mul: 1, self: true }];
   if (!clones.length) return list;
   const f = player.facing, sx = Math.cos(f) * K.clones.side, sz = -Math.sin(f) * K.clones.side;
-  for (const d of [1, -1]) list.push({ x: list[0].x + sx * d, y: list[0].y, z: list[0].z + sz * d, ox: sx * d, oz: sz * d, mul: K.clones.dmg, self: false });
+  for (let i = 0; i < clones.length; i++) { const d = (i % 2 ? -1 : 1) * (1 + Math.floor(i / 2)); list.push({ x: list[0].x + sx * d, y: list[0].y, z: list[0].z + sz * d, ox: sx * d, oz: sz * d, mul: K.clones.dmg, self: false }); }
   return list;
 }
 
-function pressSwap() {
-  if (act || !ready('kSwap')) return;
-  stance = stance === 1 ? 2 : 1;
-  mage.hero.setStance(stance);
-  swapBonus = true;
-  startAct('kSwap', 'swap', TIMING.swap, 1);       // Wechsel dauert immer gleich lang
+
+// ---------- Haltung: Verfall und Stufe 3 ----------
+function updateStance(dt) {
+  if (state.now - lastKill > K.bar.idleMs) bar = Math.max(0, bar - K.bar.drainPerS * dt / 1000);
+  if (stance !== 1 && bar <= 0) setStance(1);
+  else if (stance === 2 && state.now - stanceAt >= K.bar.toThreeMs) setStance(3);
   showStance();
+}
+
+// ---------- Neu v31 ----------
+let stormUntil = 0, stormCtx = null, nextStorm = 0;
+function pressStorm() {
+  if (!ready('kStorm', false)) return;
+  stormUntil = state.now + K.storm.ms;
+  stormCtx = makeCtx('kStorm', S().dmg, S().range);
+  nextStorm = state.now;
+}
+const bladePos = i => { const a = state.now / 300 + i / K.storm.blades * Math.PI * 2; return { x: player.pos.x + Math.sin(a) * K.storm.radius, y: player.pos.y, z: player.pos.z + Math.cos(a) * K.storm.radius }; };
+function updateStorm() {
+  if (stormUntil <= state.now) return;
+  for (let i = 0; i < K.storm.blades; i++) { const p = bladePos(i); mage.hero.fx.blood({ x: p.x, y: p.y + 1, z: p.z }, 1, 0.4); }
+  if (state.now < nextStorm) return;
+  nextStorm += K.storm.tickMs;
+  strike('kStorm', stormCtx, K.storm.dmg * UNIT, o => mobsInRadius(o, stormCtx.radius(K.storm.radius)));
+}
+// Aderlass: jede Klinge explodiert, der Sturm ist danach vorbei
+function detonateStorm(c) {
+  for (let i = 0; i < K.storm.blades; i++) {
+    const p = bladePos(i);
+    strike('kStorm', c, K.storm.boom.dmg * UNIT, o => o.self ? mobsInRadius(p, K.storm.boom.radius) : []);
+    mage.hero.fx.ring(p, mage.hero.fx.RED, K.storm.boom.radius, 0.4);
+  }
+  stormUntil = 0;
+}
+function pressKunai() {
+  if (!ready('kKunai', false)) return;
+  const c = makeCtx('kKunai', S().dmg, S().range), Kn = K.kunai;
+  for (let i = 0; i < Kn.n; i++) {
+    const yaw = player.facing + (i / (Kn.n - 1) - 0.5) * Kn.spread;
+    const to = { x: player.pos.x + Math.sin(yaw) * Kn.len, z: player.pos.z + Math.cos(yaw) * Kn.len };
+    const first = mobsOnLine(player.pos, to, Kn.width).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos))[0];
+    const V = mage.hero.root.position.constructor;
+    mage.hero.fx.streak(new V(player.pos.x, player.pos.y + 1.2, player.pos.z), new V(first ? first.pos.x : to.x, player.pos.y + 1.2, first ? first.pos.z : to.z), mage.hero.fx.LIGHT, 0.08, 0.25, 0.05);
+    if (first) strike('kKunai', c, Kn.dmg * UNIT, o => o.self ? [first] : []);
+  }
+}
+function pressCounter() {
+  if (act || !ready('kCounter')) return;
+  player.parryUntil = state.now + K.counter.ms;
+  const c = makeCtx('kCounter', S().dmg, S().range);
+  // Treffer in der Parade (player.ts damagePlayer): kein Schaden, Gegenschlag im Kegel
+  player.onParry = () => {
+    player.parryUntil = 0;
+    strike('kCounter', c, K.counter.dmg * UNIT, o => mobsInRadius(o, c.radius(K.counter.radius)).filter(m => Math.abs(angleTo(m, o)) <= K.counter.angle / 2));
+    mage.hero.fx.ring(player.pos, mage.hero.fx.LIGHT, K.counter.radius, 0.35);
+    combatText(player.pos, 'Konter', 'info', 2.6);
+  };
+}
+function pressIaido() {
+  if (act || !ready('kIaido')) return;
+  const c = makeCtx('kIaido', S().dmg, S().range), I = K.iaido;
+  after(I.drawMs / pdRateMul(), () => {
+    if (!on() || player.dead) return;
+    const f = forward(), len = c.radius(I.len);
+    strike('kIaido', c, I.dmg * UNIT, o => mobsOnLine(o, { x: o.x + f.x * len, z: o.z + f.z * len }, I.width));
+    const V = mage.hero.root.position.constructor;
+    mage.hero.fx.streak(new V(player.pos.x, player.pos.y + 1, player.pos.z), new V(player.pos.x + f.x * len, player.pos.y + 1, player.pos.z + f.z * len), mage.hero.fx.LIGHT, 0.3, 0.4, 0.1);
+  });
+}
+function pressSmoke() {
+  if (!ready('kSmoke', false)) return;
+  player.smokeUntil = state.now + K.smoke.ms;
+  for (const m of state.mobs) if (!m.dead && m.state === 'combat' && !m.boss) { m.state = 'idle'; m.assistAt = 0; }   // verlieren das Ziel
+  mage.hero.fx.ring(player.pos, 0x606060, 4, 0.6);
 }
 
 // Einhand: jedes Treffer-Ereignis kürzt alle Abklingzeiten, nur das Relikt nicht
@@ -262,10 +366,13 @@ function reduceCds(ms) {
 function strike(id, ctx, amount, targets, onMob?) {
   const mul = swapMul();
   let landed = 0;
+  player.smokeUntil = 0;                           // Rauchbombe endet mit dem Angriff
   for (const o of origins()) for (const m of targets(o)) {
     const dmg = amount * mul * o.mul;
     if (!ctx.hit(m, dmg)) continue;
     landed++;
+    fillBar(dmg * S().dmg / UNIT * K.bar.perUnit);
+    if (m.dead) lastKill = state.now;
     if (S().bleed) addBleed(m, dmg * stat(id).dmg * S().dmg * damageMult(id));
     onMob?.(m);
     mage.hero.fx.blood({ x: m.pos.x, y: m.pos.y + 1.1, z: m.pos.z }, 6);
@@ -323,7 +430,7 @@ function hitDash(i) {
   let killed = false;
   const onMob = m => { killed ||= m.dead; };
   event('kDash', c, K.dash.dmg / parts, targets, onMob);
-  if (killed && hasRune('kDash', 'reset')) {
+  if (killed && (hasRune('kDash', 'reset') || act.flicker)) {   // Flicker: ein Kill gibt die Ladung zurück
     const ch = player.charges.kDash;
     ch[ch.indexOf(Math.max(...ch))] = 0;
   }
@@ -378,8 +485,10 @@ function updateWirbel() {
 // Aderlass trifft ohne Wurf: die Blutung sitzt schon. Kein Haltungs-Schaden, der steckt schon in den Stapeln.
 function hitAder() {
   const c = act.ctx, A = K.ader;
+  if (stormUntil > state.now) detonateStorm(c);
   const list = mobsInRadius(player.pos, c.radius(A.radius), Infinity).filter(m => m.bleeds?.length);
   if (!list.length) return;
+  lastKill = state.now;   // Aderlass hält die Leiste
   // Die Stapel gibt es nur einmal: Klone zünden nicht selbst, sie geben je 50 % dazu
   const mul = swapMul() * A.mul * stat('kAder').dmg * damageMult('kAder') * (1 + clones.length * K.clones.dmg);
   for (const m of list) {
@@ -410,14 +519,13 @@ onWarriorHit((kind, x, z, i) => {
   else if (kind === 'wirbelTick') tickWirbel();
   else if (kind === 'wirbelEnd') endWirbel();
   else if (kind === 'ader') hitAder();
-  else if (kind === 'swap' && hasRune('kSwap', 'mini')) strike('kSwap', act.ctx, K.runes.miniDmg, o => mobsInRadius(o, act.ctx.radius(K.runes.miniRadius)));
 });
 
 // Blutung: jeder Treffer ein eigener Stapel, der 8. ersetzt den ältesten. raw ist der Schaden vor den Spielerfaktoren, damit damageMob sie nur einmal rechnet.
 function addBleed(m, raw) {
   const B = K.bleed, ticks = Math.round(B.ms / B.tickMs);
   m.bleeds ??= [];
-  m.bleeds.push({ tick: raw * B.share / ticks, left: ticks, next: state.now + B.tickMs });
+  m.bleeds.push({ tick: raw * B.share * (1 + K.deepWounds * mods.deepWounds) / ticks, left: ticks, next: state.now + B.tickMs });   // Tiefe Wunden
   if (m.bleeds.length > B.max) m.bleeds.shift();
   bleeding.add(m);
 }
@@ -466,6 +574,8 @@ function followMouse(dt) {
 export function updateKlinge(dt) {
   if (!on() || player.dead) return;
   updateMelee();
+  updateStance(dt);
+  updateStorm();
   updateBleeds();
   if (clones.length && state.now >= clonesUntil) clearClones();
   updateTrails();
@@ -482,6 +592,7 @@ export function updateKlinge(dt) {
 const dashWindow = [TIMING.dash.move.from, TIMING.dash.move.to];
 export const klingeUntouchable = () => on() && act?.id === 'kDash' && inWindow(dashWindow, act.start, act.ms);
 export const klingeMoveMul = () => !on() ? 1 : S().move * (act?.id === 'kR' ? K.wirbel.moveMul : 1);
+export const klingeHidden = () => on() && player.smokeUntil > state.now;
 // Eigene Bewegung oder keine; im Wirbel geht er langsam weiter. Die Abschluss-Schläge der Q-Kette (Stoß, Wirbelsprung) stehen.
 export const klingeRooted = () => on() && (!!act && act.id !== 'kR' || state.now < attackUntil && !!K.q.chain[attackCtx?.stance]?.[attackCtx.step]?.rooted);
 

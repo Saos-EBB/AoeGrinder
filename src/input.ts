@@ -28,6 +28,7 @@ export const ACTIONS = [
   { id: 'autorun',     label: 'Autorun',           code: 'KeyR',   key: 'R' },
   { group: 'Fenster' },
   { id: 'charWin', label: 'Charakterfenster', code: 'KeyX', key: 'X' },
+  { id: 'stance', label: 'Haltung (Klingenstrich)', code: '', key: '–' },   // nur in der Belegung des Klingenstrichs auf F
   { group: 'Zauber' },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
   { id: 'nova',  label: 'Attacke 1',        code: 'Digit1', key: '1', spell: true },
@@ -43,7 +44,7 @@ const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
 // Die Nahkämpfer Klingenstrich und Strichkrieger haben eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
 const KLINGE_BIND_STORE = 'frostgrind.binds.klinge.v1';
-const KLINGE_SLOTS = { nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
+const KLINGE_SLOTS = { stance: ['KeyF', 'F'], nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
 let klingeBinds = false, normalBinds = binds;
 function klingeDefaults() {
   const b = { ...normalBinds }, used = Object.values(KLINGE_SLOTS).map(s => s[0]);
@@ -124,6 +125,7 @@ function runAction(id) {
   if (id === 'charWin') toggleChar();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
+  if (id === 'stance') state.stanceKey?.();   // Klingenstrich (klinge.ts)
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;
 }
