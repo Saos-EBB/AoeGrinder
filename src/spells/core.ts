@@ -1,5 +1,6 @@
 // Spell-Kern: Slots, Tags, cast, Channel. Die Spells selbst liegen je in einer Datei, Registrierung in index.ts.
 
+import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
 import { dist2d } from '../util';
 import { groundAt } from '../collision';
@@ -55,6 +56,7 @@ export function resetSpells() {
 
 // Dauerflächen und verzögerte Wirkungen enden mit dem Run oder dem Zonenwechsel
 export function clearSpellEffects() {
+  clearEnergy();
   for (const f of state.fields ?? []) f.visual?.remove();
   state.fields = [];
   state.scheduled = [];

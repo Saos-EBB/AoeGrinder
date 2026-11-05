@@ -40,6 +40,7 @@ import { menuYaw, enterMenu } from './ui/mainMenu';
 import * as menuMod from './ui/mainMenu';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
+import { updateEnergy } from './vfx/energy';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
@@ -128,6 +129,7 @@ function updateVisuals(dt) {
   ambientParticles(state.paused ? 0 : dt);
   particles.update(state.paused ? 0 : dt);
   updateEffects();
+  updateEnergy(state.paused ? 0 : dt / 1000);
   updateWucht();
 }
 
