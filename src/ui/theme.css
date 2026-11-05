@@ -302,3 +302,36 @@ body.mobile .endStat { width: auto; flex: 1; }
   #charModal #charBody { grid-template-columns: 1fr; }
   .charCol:not(.on) { display: none; }
 }
+
+/* ---------- Inventar (InvDiablo.dc.html, Look Glut) ---------- */
+#invModal { z-index: 5; }
+#invModal #invBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; }
+.invHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.invHead h1 { font-size: 32px !important; }
+#invInfo { font-size: 16px; color: var(--glut-muted); }
+#invInfo b { color: var(--rar-relikt); }
+.invMain { display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
+.invFig { position: relative; padding: 18px 22px; display: grid; grid-template-columns: 1fr 92px; grid-template-rows: auto auto auto 1fr; gap: 6px 16px; }
+.invFigName { grid-column: 1 / -1; font: var(--font-title-weight) 22px var(--font-title); letter-spacing: .08em; text-transform: uppercase; color: var(--glut-accent); }
+.invFigBody { grid-row: 2 / 4; color: color-mix(in srgb, var(--glut-text) 55%, transparent); width: 120px; justify-self: center; }
+.invSlot { --rc: var(--glut-line); width: 86px; height: 86px; box-sizing: border-box; border: 2px solid var(--rc); background: var(--glut-card); display: grid; place-items: center; position: relative; }
+.invSlot.weapon { box-shadow: 0 0 14px color-mix(in srgb, var(--rc) 50%, transparent); cursor: context-menu; }
+.invSlotLabel { grid-column: 2; font-size: 13px; color: var(--glut-muted); text-align: center; margin-top: -4px; }
+.invLocked { grid-column: 2; display: flex; flex-direction: column; gap: 8px; }
+.invSlot.locked { color: #5a4038; opacity: .7; }
+.invSlot.locked svg { width: 26px; height: 26px; }
+.invSlot.locked span { position: absolute; bottom: 4px; font-size: 11px; color: var(--glut-muted); }
+.invStats { grid-column: 1 / 2; grid-row: 4; align-self: end; font-size: 14px; display: flex; flex-direction: column; gap: 4px; color: var(--glut-muted); }
+.invWName { font: 700 15px var(--font-body); }
+.invChest { padding: 18px 22px; }
+.invGrid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; max-height: 60vh; overflow: auto; }
+.invCell { --rc: #2b2118; height: 110px; min-width: 0; box-sizing: border-box; border: 2px solid var(--rc); background: #0d0907; display: grid; place-items: center; cursor: pointer; }
+.invCell:hover { box-shadow: 0 0 16px var(--rc); }
+.invCell.equipped { background: #2a1606; }
+.invItem { width: 22px; height: 70px; color: var(--rc); display: block; }
+.invItem svg { width: 100%; height: 100%; }
+.invSlot .invItem { width: 18px; height: 60px; }
+.invHint { margin: 12px 0 0; font-size: 13px; color: var(--glut-muted); }
+#invClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
+.shopInvBtn { width: auto !important; margin-top: 14px !important; padding: 8px 18px !important; }
+body.mobile .invMain { grid-template-columns: 1fr; }

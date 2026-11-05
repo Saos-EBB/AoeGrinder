@@ -7,10 +7,11 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, sortedInv, effectRows, equipped, equip } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
+import { openInventory } from './inventory';
 import { pick } from '../util';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
@@ -123,38 +124,6 @@ function fuseCol() {
   return col;
 }
 
-// Inventar: Zerlegen gibt Staub zurück. Nach Seltenheit gruppiert, Details zeigt die Hover-Karte
-function inventoryBox() {
-  const box = document.createElement('div');
-  box.append(el('h3', '', `Inventar ${meta.inv.length}/${ROLLS.invMax}`));
-  let grid = null, group = null;
-  for (const w of sortedInv()) {
-    if (rarityOf(w) !== group) {
-      group = rarityOf(w);
-      const g = el('div', 'invGroup', `${group.name} · ${meta.inv.filter(x => x.r === w.r).length}`);
-      g.style.color = group.color;
-      grid = el('div', 'invGrid');
-      box.append(g, grid);
-    }
-    const row = el('button', 'shopItem');
-    row.style.borderColor = rarityOf(w).color;
-    const n = el('span', '', weaponName(w)), t = el('span', '', `✕ +${ROLLS.refund[w.r]}`);
-    n.style.color = rarityOf(w).color;
-    t.title = 'Zerlegen';
-    attachWeaponCard(row, w);
-    row.append(n, t);
-    row.dataset.nav = `inv-${w.id}`;
-    row.addEventListener('click', async () => {
-      if (spinning || !await askConfirm('Waffe löschen?', `${weaponName(w)} löschen? Du bekommst ${ROLLS.refund[w.r]} Staub zurück.`, 'Löschen')) return;
-      deleteWeapon(w.id);
-      mage.refreshWeapon();
-      renderShop();
-    });
-    grid.appendChild(row);
-  }
-  return box;
-}
-
 function renderShop() {
   $('shopInfo').innerHTML = `<b>${meta.dust}</b> Knochenstaub · Inventar ${meta.inv.length} / ${ROLLS.invMax}${tierNow ? ` · Shop-Stufe ${tierNow}` : ''}`;
   const cols = $('shopCols');
@@ -178,7 +147,9 @@ function renderShop() {
       box.appendChild(b);
     }
   }
-  box.append(inventoryBox());
+  const inv = el('button', 'smallBtn shopInvBtn', `Inventar öffnen · ${meta.inv.length} / ${ROLLS.invMax}`);
+  inv.addEventListener('click', () => openInventory(renderShop));
+  box.append(inv);
 }
 
 $('deathShopBtn').addEventListener('click', () => {

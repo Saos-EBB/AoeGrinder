@@ -24,6 +24,7 @@ import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
+import { openInventory } from './inventory';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). Beschreibung und Werte gibt es im Code nicht, das Menü zeigt dort „—“
 const CHARS = [
@@ -170,7 +171,11 @@ $('menuBoardTabs').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
 });
-$('menuWeaponsBtn').addEventListener('click', () => { $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden; });
+// Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger und Klingenstrich: feste Waffenwahl als Liste
+$('menuWeaponsBtn').addEventListener('click', () => {
+  if (mage.weapon) openInventory(renderMenu);
+  else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
+});
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
 addEventListener('pointermove', e => {
   if (turning === null) return;
