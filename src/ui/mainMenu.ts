@@ -17,7 +17,7 @@ import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
-import { startHudEdit, hudEditing, stopHudEdit } from './hudLayout';
+import { startHudEdit, hudEditing, stopHudEdit } from './hud/layout';
 import { toggleChar } from './charWindow';
 import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';

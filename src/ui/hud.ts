@@ -19,7 +19,7 @@ import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
-import './hudLayout';
+import './hud/layout';
 import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMeter';
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
 import { markStacks } from '../plagueMarks';

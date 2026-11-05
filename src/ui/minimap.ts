@@ -1,4 +1,4 @@
-// Minimap: runde Karte um den Spieler, oben ist die Blickrichtung der Kamera. Lage und Größe über hudLayout.ts (Element hudMap).
+// Minimap: runde Karte um den Spieler, oben ist die Blickrichtung der Kamera. Lage und Größe über hud/layout.ts (Element minimap).
 // Zeigt Mobs im Umkreis (rot, im Kampf heller, Champions blau), den Kartenrand und den Spieler als Pfeil. Alles PH.
 
 import { state, player } from '../state';

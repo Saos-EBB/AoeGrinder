@@ -14,7 +14,7 @@
     border-radius: 6px; box-shadow: 0 2px 8px #0008; }
   .title { font-family: Cinzel, serif; color: #f2c94c; letter-spacing: .5px; }
 
-  /* HUD: Position kommt aus ui/hudLayout.ts */
+  /* HUD: Position kommt aus ui/hud/layout.ts (Wrapper .hudEl) */
   #hudHeader { width: 100vw; border-width: 0 0 2px; border-radius: 0; padding: 4px 0 0; }
   #hudRow { display: flex; justify-content: center; gap: 26px; font-size: 13px; padding-bottom: 4px; }
   #hudRow span { display: flex; flex-direction: column; align-items: center; min-width: 44px; position: relative; }
@@ -35,7 +35,6 @@
   #hudHp .bar, #hudMana .bar { margin: 0; height: 22px; border-radius: 3px; }
   #hudHp .bar > span, #hudMana .bar > span { line-height: 22px; font-size: 13px; }
   body.hudEdit #castbar { display: block !important; }
-  .hudDockTarget { outline-color: #5dff7a !important; outline-style: solid !important; }
   #hudEffects { display: flex; flex-wrap: wrap; gap: 3px; max-width: 26vw; font-size: 11px; }
   .fxChip { padding: 1px 6px; background: #000a; border: 1px solid #6b5426; border-radius: 3px; white-space: nowrap; }
   .fxChip b { color: #ffe27a; margin-left: 3px; }
@@ -44,15 +43,9 @@
   #hudMap canvas { display: block; }
   .relicBox { width: 88px; padding: 8px 4px; text-align: center; font: 700 12px Cinzel, serif; color: #f2c94c; background: linear-gradient(#2a2010ee, #120d06ee);
     border: 3px solid #f2c94c; border-radius: 8px; box-shadow: 0 0 10px #f2c94c88; }
-  body.hudEdit #hudHeader, body.hudEdit #hudHp, body.hudEdit #hudMana, body.hudEdit #hudCast, body.hudEdit #actionbar, body.hudEdit #hudEffects, body.hudEdit #hudRelics, body.hudEdit #hudMap {
-    outline: 2px dashed #ffe27a; outline-offset: 1px; cursor: move; min-width: 90px; min-height: 26px; }
-  body.hudEdit #hudHeader::after, body.hudEdit #hudHp::after, body.hudEdit #hudMana::after, body.hudEdit #hudCast::after, body.hudEdit #actionbar::after, body.hudEdit #hudEffects::after, body.hudEdit #hudRelics::after, body.hudEdit #hudMap::after {
-    content: attr(data-hud-name); position: absolute; top: 100%; left: 0; font: 700 11px system-ui; color: #ffe27a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
   #hudEditBar button { white-space: nowrap; }
-  #hudEditBar { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
-  #hudEditBar[hidden], #hudGrid[hidden] { display: none; }
-  #hudGrid { position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background-image: linear-gradient(#ffffff2e 1px, transparent 1px), linear-gradient(90deg, #ffffff2e 1px, transparent 1px); }
+  #hudEditBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 5; padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
+  #hudEditBar[hidden] { display: none; }
   #hudMana { position: relative; }
   #fsr { position: absolute; top: 100%; left: 0; right: 0; height: 3px; background: #ffffff22; margin-top: 3px; }
   #fsrFill { height: 100%; background: #9cc4ff; width: 0; }
@@ -325,13 +318,10 @@
 <div id="hudRelics"></div>
 <div id="hudMap"></div>
 <div id="actionbar" class="frame"></div>
-<div id="hudGrid" hidden></div>
 <div id="hudEditBar" class="frame" hidden>
-  <span class="title">Ziehen verschiebt, nah heran rastet ein, Shift + Ziehen trennt, Mausrad ändert die Größe</span>
-  <button class="bindBtn" id="hudEditGrid"></button>
-  <button class="bindBtn" id="hudEditStep"></button>
-  <button class="bindBtn" id="hudEditReset">Zurücksetzen</button>
-  <button class="bindBtn" id="hudEditDone">Fertig</button>
+  <span class="hint">Ziehen = verschieben (Shift = frei) · Mausrad = Größe · H = ein/aus · Rechtsklick = Element zurück</span>
+  <button class="smallBtn" id="hudEditReset">Preset zurücksetzen</button>
+  <button class="btn" id="hudEditDone">Fertig</button>
 </div>
 <div id="err"></div>
 <div id="perf" hidden></div>

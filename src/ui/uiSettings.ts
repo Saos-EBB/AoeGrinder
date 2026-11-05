@@ -15,6 +15,7 @@ export const NUM_STYLES: [string, string][] = [
 export const UI_DEFAULTS = {
   font: 'standard' as 'standard' | 'fraktur',
   hudPreset: 'H01',
+  hudOverrides: {} as Record<string, Record<string, any>>,   // eigene Lage pro Preset (ui/hud/layout.ts)
   hudScale: 100,          // % (70–150)
   showCombo: true,        // Combo- und Kill-Anzeige
   numStyle: 'N01',
