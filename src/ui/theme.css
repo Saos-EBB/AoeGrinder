@@ -268,3 +268,37 @@ body.mobile #shopCols { grid-template-columns: 1fr; }
 .endBtns [hidden] { display: none; }
 body.mobile .endCols { grid-template-columns: 1fr; }
 body.mobile .endStat { width: auto; flex: 1; }
+
+/* ---------- Charakterfenster (C2.dc.html) ---------- */
+#charModal #charBox { width: min(1200px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 20px 30px; text-align: left; }
+.charHead { display: flex; justify-content: center; align-items: baseline; position: relative; }
+.charHead h1 { font-size: 34px !important; }
+.charHead span { position: absolute; right: 0; font-size: 14px; color: var(--glut-muted); }
+#charTabs { display: flex; justify-content: center; gap: 8px; margin: 14px 0; }
+.cTab { width: 116px; height: 38px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--glut-muted); font: 600 16px var(--font-body); cursor: pointer; }
+.cTab.on { background: rgba(255, 255, 255, .06); border-bottom-color: var(--glut-top); color: var(--glut-text); }
+#charModal #charBody { display: grid; grid-template-columns: 300fr 540fr 300fr; gap: 30px; max-height: none; overflow: visible; font-size: 15px; }
+.charCol { padding: 16px 20px; min-height: 420px; }
+.charCol .title { font-size: 18px; margin-bottom: 12px; }
+.cRow { display: flex; justify-content: space-between; gap: 10px; min-height: 30px; align-items: center; color: var(--glut-muted); }
+.cRow b { color: var(--glut-text); font-weight: 700; }
+.cTiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cTile { --tc: #fff; height: 108px; box-sizing: border-box; background: var(--glut-card); border: 2px solid var(--tc); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 4px; }
+.cTile i { width: 34px; height: 34px; background: center / cover; border: 1px solid var(--tc); }
+.cTile i.none { border-radius: 50%; background: color-mix(in srgb, var(--tc) 25%, transparent); }
+.cTile b { font-size: 13px; line-height: 1.1; }
+.cTile span { font: 800 13px var(--font-num); color: var(--tc); }
+.cSub { margin: 16px 0 6px; font-size: 15px; font-weight: 700; color: var(--glut-muted); }
+.cRelic { display: inline-block; padding: 14px 18px; border: 2px solid var(--rar-relikt); background: #1a1608; box-shadow: 0 0 14px rgba(227, 194, 122, .45); color: var(--rar-relikt); font: var(--font-title-weight) 17px var(--font-title); }
+.cWeapon { font: 700 17px var(--font-body); }
+.cNone { color: var(--glut-muted); margin: 0; }
+.cDmg { margin-bottom: 10px; }
+.cDmg i { display: block; height: 10px; }
+.cDps { margin-top: 20px; }
+.cDps b { font: 700 28px var(--font-num); }
+#charClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
+/* Schmale Fenster: nur der aktive Tab */
+@media (max-width: 1099px) {
+  #charModal #charBody { grid-template-columns: 1fr; }
+  .charCol:not(.on) { display: none; }
+}

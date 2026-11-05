@@ -138,12 +138,6 @@
   .shopItem:disabled { opacity: .45; cursor: not-allowed; }
   .shopItem.bought { opacity: .7; }
   .chip.locked { opacity: .55; }
-  #charBody { text-align: left; max-height: 60vh; overflow: auto; font-size: 14px; }
-  #charBody table { width: 100%; border-collapse: collapse; }
-  #charBody td { padding: 3px 6px; }
-  #charBody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
-  #charBody .dmgBar td { padding: 0 6px 5px; }
-  #charBody .dmgBar div { height: 4px; }
   /* Hauptmenü */
   body.menu .hudEl, body.menu #hudDeco, body.menu #overlay, body.menu #siegeHud, body.menu #scoreHud { display: none; }
   #startModal { background: radial-gradient(ellipse at center, #0000 30%, #000c 100%); display: none; }
@@ -196,7 +190,7 @@
   body.mobile .chip { font-size: 15px; padding: 8px 12px; }
   body.mobile .invGrid { grid-template-columns: 1fr; }
   body.mobile .shopItem { font-size: 16px; padding: 12px; }
-  body.mobile #shopList, body.mobile #charBody { max-height: none; font-size: 16px; }
+  body.mobile #shopList { max-height: none; font-size: 16px; }
   body.mobile #cardModal { justify-content: center; }
   body.mobile .cards { width: 100vw; max-height: 100vh; padding: 8px; }
   body.mobile #cardModal h1 { font-size: 22px; }
@@ -397,11 +391,11 @@
 </div>
 
 <div id="charModal" class="modal" style="z-index:4">
-  <div class="frame panel" style="width:min(640px,92vw)">
-    <h1 class="title" style="font-size:26px">Charakter</h1>
-    <div id="charTabs" class="row2" style="margin:10px 0"></div>
+  <div class="frame panel" id="charBox">
+    <div class="charHead"><h1 class="title">Charakter</h1><span>X schließt · pausiert</span></div>
+    <div id="charTabs"></div>
     <div id="charBody"></div>
-    <button class="smallBtn" id="charClose" style="width:auto;padding:6px 14px">Schließen (X)</button>
+    <button class="smallBtn" id="charClose">Schließen (X)</button>
   </div>
 </div>
 
