@@ -1,6 +1,7 @@
 // Klingenstrich: Nahkämpfer ohne Ressource, nur Abklingzeiten. Zwei Haltungen, 8 Slots. Die Moves liegen als Spells in den Slots wie bei Real Men,
 // damit Leiste, Tasten, Pad und Karten mitlaufen. Modell und Treffer-Momente kommen aus models/klingeModel.ts.
 
+import { kunaiLook, stormLook, stormBoom, parryLook, counterLook, iaidoLook, smokeLook } from './vfx/klingeLook';
 import { state, player } from './state';
 import { $, dist2d } from './util';
 import { SPELLS, CFG, UNIT, mods } from './config';
@@ -298,11 +299,11 @@ function pressStorm() {
   stormUntil = state.now + K.storm.ms;
   stormCtx = makeCtx('kStorm', S().dmg, S().range);
   nextStorm = state.now;
+  stormLook(K.storm.blades, bladePos, () => stormUntil > state.now, () => stance);
 }
 const bladePos = i => { const a = state.now / 300 + i / K.storm.blades * Math.PI * 2; return { x: player.pos.x + Math.sin(a) * K.storm.radius, y: player.pos.y, z: player.pos.z + Math.cos(a) * K.storm.radius }; };
 function updateStorm() {
   if (stormUntil <= state.now) return;
-  for (let i = 0; i < K.storm.blades; i++) { const p = bladePos(i); mage.hero.fx.blood({ x: p.x, y: p.y + 1, z: p.z }, 1, 0.4); }
   if (state.now < nextStorm) return;
   nextStorm += K.storm.tickMs;
   strike('kStorm', stormCtx, K.storm.dmg * UNIT, o => mobsInRadius(o, stormCtx.radius(K.storm.radius)));
@@ -312,7 +313,7 @@ function detonateStorm(c) {
   for (let i = 0; i < K.storm.blades; i++) {
     const p = bladePos(i);
     strike('kStorm', c, K.storm.boom.dmg * UNIT, o => o.self ? mobsInRadius(p, K.storm.boom.radius) : []);
-    mage.hero.fx.ring(p, mage.hero.fx.RED, K.storm.boom.radius, 0.4);
+    stormBoom(p, K.storm.boom.radius);
   }
   stormUntil = 0;
 }
@@ -323,20 +324,20 @@ function pressKunai() {
     const yaw = player.facing + (i / (Kn.n - 1) - 0.5) * Kn.spread;
     const to = { x: player.pos.x + Math.sin(yaw) * Kn.len, z: player.pos.z + Math.cos(yaw) * Kn.len };
     const first = mobsOnLine(player.pos, to, Kn.width).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos))[0];
-    const V = mage.hero.root.position.constructor;
-    mage.hero.fx.streak(new V(player.pos.x, player.pos.y + 1.2, player.pos.z), new V(first ? first.pos.x : to.x, player.pos.y + 1.2, first ? first.pos.z : to.z), mage.hero.fx.LIGHT, 0.08, 0.25, 0.05);
+    kunaiLook(first ? first.pos : to);
     if (first) strike('kKunai', c, Kn.dmg * UNIT, o => o.self ? [first] : []);
   }
 }
 function pressCounter() {
   if (act || !ready('kCounter')) return;
   player.parryUntil = state.now + K.counter.ms;
+  parryLook(() => player.parryUntil > state.now);
   const c = makeCtx('kCounter', S().dmg, S().range);
   // Treffer in der Parade (player.ts damagePlayer): kein Schaden, Gegenschlag im Kegel
   player.onParry = () => {
     player.parryUntil = 0;
     strike('kCounter', c, K.counter.dmg * UNIT, o => mobsInRadius(o, c.radius(K.counter.radius)).filter(m => Math.abs(angleTo(m, o)) <= K.counter.angle / 2));
-    mage.hero.fx.ring(player.pos, mage.hero.fx.LIGHT, K.counter.radius, 0.35);
+    counterLook(c.radius(K.counter.radius), stance);
     combatText(player.pos, 'Konter', 'info', 2.6);
   };
 }
@@ -348,7 +349,7 @@ function pressIaido() {
     const f = forward(), len = c.radius(I.len);
     strike('kIaido', c, I.dmg * UNIT, o => mobsOnLine(o, { x: o.x + f.x * len, z: o.z + f.z * len }, I.width));
     const V = mage.hero.root.position.constructor;
-    mage.hero.fx.streak(new V(player.pos.x, player.pos.y + 1, player.pos.z), new V(player.pos.x + f.x * len, player.pos.y + 1, player.pos.z + f.z * len), mage.hero.fx.LIGHT, 0.3, 0.4, 0.1);
+    iaidoLook(new V(player.pos.x, player.pos.y + 1.1, player.pos.z), new V(player.pos.x + f.x * len, player.pos.y + 1.1, player.pos.z + f.z * len));
   });
 }
 function pressSmoke() {
@@ -356,6 +357,7 @@ function pressSmoke() {
   player.smokeUntil = state.now + K.smoke.ms;
   for (const m of state.mobs) if (!m.dead && m.state === 'combat' && !m.boss) { m.state = 'idle'; m.assistAt = 0; }   // verlieren das Ziel
   mage.hero.fx.ring(player.pos, 0x606060, 4, 0.6);
+  smokeLook(K.smoke.ms);
 }
 
 // Einhand: jedes Treffer-Ereignis kürzt alle Abklingzeiten, nur das Relikt nicht
@@ -602,7 +604,7 @@ export function klingeAnim() {
   if (!on() || player.dead) return {};
   const attack = state.now < attackUntil ? 'q' : state.now < sheatheUntil ? 'sheathe' : null;
   return { ability: act?.ability ?? null, attack: act ? null : attack, step: attackCtx?.step ?? 0, hold: chain.step > 0 && state.now <= chain.until,
-    seq, rate: act?.rate ?? attackRate, dur: act?.dur, frozen: !!((state.paused || hitstopActive()) && (act || attack)) };
+    seq, rate: act?.rate ?? attackRate, dur: act?.dur, h3: stance === 3, smoke: player.smokeUntil > state.now, frozen: !!((state.paused || hitstopActive()) && (act || attack)) };
 }
 
 // Für den Handtest

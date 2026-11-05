@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { eMat, PAL, arc as eArc, ring as eRing, streak as eStreak } from '../vfx/energy';
 
 // Dauern in ms bei Tempo 1. Die Spielregeln (Tempo, Reichweite) stehen in KLINGE (klinge.ts)
 export const KLINGE_TIMING = {
@@ -151,6 +152,9 @@ export function buildKlinge({ bloom = false } = {}) {
     return g;
   })), VMAT);
   body.frustumCulled = false; root.add(body); body.bind(new THREE.Skeleton(bones));
+  // Haltung 3: Blut-Hülle aus dem Spell-Viewer (H3), nur dann ein Draw Call mehr
+  const H3M = eMat(PAL.blut, { sc: 4, core: .2, inf: .035, puff: .02, flow: [0, 2.5, 0] });
+  const H3 = new THREE.SkinnedMesh(body.geometry, H3M); H3.frustumCulled = false; root.add(H3); H3.bind(body.skeleton, body.bindMatrix); H3.visible = false;
   const swordR = katana(root), swordL = katana(root);
   // Yakitori-Spieß zum Essen: Griff unten im Ursprung, Spitze nach +y
   const skewer = new THREE.Mesh(mergeGeometries([
@@ -237,25 +241,19 @@ export function buildKlinge({ bloom = false } = {}) {
   const fxList = [];
   const fxMat = (color, op) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false });
   // Sichel im Wurzel-Raum: Mitte, Euler der Ebene (XY-Ebene, offen Richtung +y), Radius, Bogen
+  // Spell-Viewer: Sicheln, Linien und Ringe im Energie-Look. Haltung 1 Stahl, ab Haltung 2 Blut; RED immer Blut, Grau Rauch
+  const palOf = color => color === FX_RED ? PAL.blut : color === 0x606060 ? PAL.rauch : stance > 1 ? PAL.blut : PAL.stahl;
+  const _yq = new THREE.Quaternion(), _eu = new THREE.Euler();
   function arc(center, euler, r, th, color = FX_LIGHT, life = .32) {
-    const holder = new THREE.Object3D(); holder.position.copy(root.position); holder.rotation.y = root.rotation.y; fxGroup.add(holder);
-    const add = (r0, r1, c, op) => { const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 40, 1, Math.PI / 2 - th / 2, th), fxMat(c, op)); m.position.fromArray(center); m.rotation.fromArray(euler); holder.add(m); return m; };
-    const outer = add(r * .8, r, color, .9), inner = add(r * .86, r * .96, FX_RED, .9);
-    if (bloom) inner.material.color.multiplyScalar(1.8);
-    fxList.push({ obj: holder, t: 0, life, upd: k => { holder.scale.setScalar(1 + .25 * k); outer.material.opacity = inner.material.opacity = .9 * (1 - k); } });
+    const yq = _yq.setFromAxisAngle(V(0, 1, 0), root.rotation.y).clone();
+    const c = V(center[0], center[1], center[2]).applyQuaternion(yq).add(root.position);
+    eArc(c, yq.multiply(new THREE.Quaternion().setFromEuler(_eu.set(euler[0], euler[1], euler[2]))), r, th, palOf(stance > 1 ? FX_RED : color), life * 1.3);
   }
   function streak(a, b, color, w, life, y = 1.15) {
-    const len = a.distanceTo(b);
-    if (len < .01) return;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, w * .4, len), fxMat(color, .95));
-    m.position.copy(a).lerp(b, .5); m.position.y += y; m.lookAt(b.x, m.position.y, b.z); fxGroup.add(m);
-    fxList.push({ obj: m, t: 0, life, upd: k => { m.material.opacity = .95 * (1 - k); m.scale.x = m.scale.y = 1 - .6 * k; } });
+    if (a.distanceTo(b) < .01) return;
+    eStreak(V(a.x, a.y + y, a.z), V(b.x, b.y + y, b.z), Math.max(.08, w), palOf(color), life * 1.2);
   }
-  function ring(pos, color, r, life) {
-    const m = new THREE.Mesh(new THREE.RingGeometry(.85, 1, 48), fxMat(color, .8));
-    m.rotation.x = -Math.PI / 2; m.position.copy(pos); m.position.y += .05; fxGroup.add(m);
-    fxList.push({ obj: m, t: 0, life, upd: k => { m.scale.setScalar(.2 + r * outC(k)); m.material.opacity = .8 * (1 - k); } });
-  }
+  function ring(pos, color, r, life) { eRing(V(pos.x, pos.y, pos.z), r, palOf(color), life * 1.2); }
   function ghost() {
     root.updateMatrixWorld(true);
     const g = SkeletonUtils.clone(root) as THREE.Object3D, mat = new THREE.MeshBasicMaterial({ color: 0x9aa0a8, transparent: true, opacity: .35, depthWrite: false });
@@ -315,7 +313,7 @@ export function buildKlinge({ bloom = false } = {}) {
   const windArcs = [];
   for (let i = 0; i < 4; i++) {
     const r = 1.7 + i * .35;
-    const m = new THREE.Mesh(new THREE.RingGeometry(r - .06, r, 48, 1, 0, 1.6), fxMat(i % 2 ? FX_RED : FX_LIGHT, .6));
+    const m = new THREE.Mesh(new THREE.RingGeometry(r - .28, r, 48, 2, 0, 1.6), eMat(i % 2 ? PAL.blut : PAL.stahl, { sc: 2.5, core: 0, local: true, flow: [0, 0, 0], side: THREE.DoubleSide }));
     m.rotation.x = -Math.PI / 2; m.position.y = .9 + i * .22; m.userData.off = i * 1.7; windG.add(m); windArcs.push(m);
   }
 
@@ -458,7 +456,7 @@ export function buildKlinge({ bloom = false } = {}) {
         if (u > a && u < b) {
           const t = performance.now() / 1000;
           windG.position.copy(root.position);
-          windArcs.forEach((m, n) => { m.rotation.z = -(spinAng * 1.05 + m.userData.off); m.material.opacity = .45 + .25 * Math.sin(t * 20 + n); });
+          windArcs.forEach((m, n) => { m.rotation.z = -(spinAng * 1.05 + m.userData.off); m.material.userData.u.uK.value = .75 + .15 * Math.sin(t * 20 + n); });
         }
       },
       end() { spinAng = 0; windG.visible = false; },
@@ -631,6 +629,11 @@ export function buildKlinge({ bloom = false } = {}) {
     pa.needsUpdate = true;
 
     updateFx(s); updateBlood(s);
+    H3.visible = !!anim.h3 && loco !== 'dead'; H3M.userData.u.uK.value = .78 + .08 * Math.sin(T * 8);
+    // Rauchbombe: Figur halbdurchsichtig
+    const smoke = !!anim.smoke;
+    if (VMAT.transparent !== smoke) { VMAT.transparent = smoke; VMAT.depthWrite = !smoke; VMAT.needsUpdate = true; }
+    VMAT.opacity = smoke ? .22 : 1;
   }
 
   const model: any = {
@@ -644,9 +647,9 @@ export function buildKlinge({ bloom = false } = {}) {
 }
 
 // Schattenklon: Kopie mit eigenem Skelett, spielt jede Pose des Originals mit. sync() kopiert alle Gelenke, die Lage setzt der Aufrufer.
-export function cloneKlinge(model, color = 0x14141c, opacity = .55) {
+export function cloneKlinge(model) {
   const root = SkeletonUtils.clone(model.root) as THREE.Object3D;
-  const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
+  const material = eMat(PAL.schatten, { sc: 4, core: .5, flow: [0, 1.5, 0], k: .85 });   // Spell-Viewer: Schatten-Material
   const src = [], dst = [];
   model.root.traverse(o => src.push(o));
   root.traverse((o: any) => { dst.push(o); if (o.isMesh) o.material = material; });
