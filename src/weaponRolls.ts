@@ -139,6 +139,11 @@ export function devFillInventory(tier = null) {
   while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
   saveMeta();
 }
+// Dev: Inventar bis devInvMax auffüllen, vorhandene Waffen bleiben (bei 5 kommen 45 dazu)
+export function devTopUpInventory(tier = null) {
+  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
+  saveMeta();
+}
 // Dev: Waffe aus dem Baukasten (ui/devForge.ts) ins Inventar, ohne Staub und Limit
 export function devAddWeapon(w, equipIt) {
   const id = ++meta.nextWeapon;

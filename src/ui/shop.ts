@@ -7,7 +7,7 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, devFillInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
@@ -191,6 +191,11 @@ const refreshInv = () => { refresh(); if ($('shopModal').classList.contains('sho
 $('devInvFill').addEventListener('click', () => {
   const v = ($('devInvTier') as HTMLSelectElement).value;
   devFillInventory(v === '' ? null : Number(v));
+  refreshInv();
+});
+$('devInvTopUp').addEventListener('click', () => {
+  const v = ($('devInvTier') as HTMLSelectElement).value;
+  devTopUpInventory(v === '' ? null : Number(v));
   refreshInv();
 });
 $('devInvClear').addEventListener('click', () => { devClearInventory(); refreshInv(); });

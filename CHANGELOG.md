@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-06
+
+- feat(dev): Dev → Meta: Knopf „Inventar auffüllen (bis 50)“ ergänzt nur die fehlenden Waffen bis 50, vorhandene bleiben (Seltenheits-Auswahl gilt)
+
 ## 2026-11-05
 
 - feat(welt): Neue Zone Kathedrale der Hölle (Dev → Zone oder `?zone=kathedrale`): runder Kirchenbau mit Außenwand, drei Säulenringen, Bänken, Altar und Kerzen, Fliesenboden, Asche und Funken; alle 60 Kills „Treppe hinab“ in die nächste von drei Etagen (Kirchenschiff → Gruft der Glut → Höllenschlund): Boden und Props werden wärmer und röter, ab Etage 2 glühen Risse im Boden, mehr Funken, andere Start-Gegner (Klapperskelett → Gefallener → Höllendämon); Wellen kommen dort innen an der Wand
