@@ -145,7 +145,9 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #menuDesc { margin: 0; font-size: 17px; line-height: 1.5; color: var(--glut-muted); }
 .menuStat { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 .menuStat span { width: 110px; color: var(--glut-muted); }
-.menuStat b { flex: 1; height: 8px; line-height: 8px; font-weight: 600; color: var(--glut-muted); }
+.menuStat b { flex: 1; display: flex; gap: 5px; height: 10px; }
+.menuStat b i { flex: 1; border-radius: 2px; background: var(--glut-line); transform: skewX(-18deg); transition: background .2s, box-shadow .2s; }
+.menuStat b i.on { background: var(--fc); box-shadow: 0 0 8px color-mix(in srgb, var(--fc) 55%, transparent); }
 .menuHead { margin-top: 6px; font: 800 14px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-accent); }
 #menuKit { justify-content: flex-start; }
 #menuInfo { margin: 0; font-size: 13px; color: var(--glut-muted); }

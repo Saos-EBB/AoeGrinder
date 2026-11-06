@@ -26,18 +26,18 @@ import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openInventory } from './inventory';
 
-// color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). Beschreibung und Werte gibt es im Code nicht, das Menü zeigt dort „—“
+// color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
-  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen', color: '#f2e9e4' },
-  { mod: 'frost', name: 'Eismagier', sub: 'Frost', color: '#7dd3fc' },
-  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer', color: '#fb923c' },
-  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan', color: '#c4b5fd' },
-  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie', color: '#fde047' },
-  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten', color: '#a3e635' },
-  { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert', color: '#f87171' },
-  { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung', color: '#e5e7eb' },
+  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen', color: '#f2e9e4', stats: [3, 3, 3] },
+  { mod: 'frost', name: 'Eismagier', sub: 'Frost', color: '#7dd3fc', stats: [3, 5, 3] },
+  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer', color: '#fb923c', stats: [5, 1, 2] },
+  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan', color: '#c4b5fd', stats: [4, 3, 2] },
+  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie', color: '#fde047', stats: [4, 3, 2] },
+  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten', color: '#a3e635', stats: [3, 4, 2] },
+  { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert', color: '#f87171', stats: [4, 2, 5] },
+  { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung', color: '#e5e7eb', stats: [4, 3, 3] },
 ];
-const STAT_NAMES = ['Schaden', 'Kontrolle', 'Überleben'];   // Mockup; Werte fehlen im Code
+const STAT_NAMES = ['Schaden', 'Kontrolle', 'Überleben'], STAT_MAX = 5;
 let boardMode: 'time' | 'score' = 'time';
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
@@ -146,7 +146,7 @@ export function renderMenu() {
   $('menuTitle').textContent = fig.name;
   $('menuTitle').style.color = fig.color;
   $('menuRole').textContent = fig.sub;
-  $('menuStats').innerHTML = STAT_NAMES.map(n => `<div class="menuStat"><span>${n}</span><b>—</b></div>`).join('');
+  $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${fig.stats[i]} von ${STAT_MAX}"><span>${n}</span><b>${Array.from({ length: STAT_MAX }, (_, k) => `<i${k < fig.stats[i] ? ` class="on" style="--fc:${fig.color}"` : ''}></i>`).join('')}</b></div>`).join('');
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
   $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
