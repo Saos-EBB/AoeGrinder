@@ -228,7 +228,7 @@ export function pollGamepad() {
   for (const id of touch.held) if (padBinds[id] >= 0) pad.down[padBinds[id]] = true;
   if (touch.move.x || touch.move.y) pad.move = { ...touch.move };
   if (touch.look.x || touch.look.y) pad.look = { ...touch.look };
-  const touching = touch.held.size > 0;
+  const touching = touch.held.size > 0 || touch.aiming;   // mobile.ts zielt selbst über state.padAim
   if (!player.targeting || (!gp && !touching) || state.paused) { if (state.padAim) cancelAim(); }
   if (state.lastInput !== 'pad' && (pad.down.some(Boolean) || pad.move.x || pad.move.y || pad.look.x || pad.look.y)) {
     state.lastInput = 'pad';
