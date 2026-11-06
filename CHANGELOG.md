@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-06
 
+- fix(boss): Im Bosskampf kein Level-up mehr mitten im Kampf: XP aus Boss-Körpern und Adds wird gesammelt und erst nach dem Kampf gutgeschrieben
 - feat(dev): Dev → Meta: Knopf „Inventar auffüllen (bis 50)“ ergänzt nur die fehlenden Waffen bis 50, vorhandene bleiben (Seltenheits-Auswahl gilt)
 
 ## 2026-11-05

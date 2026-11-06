@@ -53,6 +53,7 @@ export function resetGame() {
   state.cardPicks = {};
   state.now = 0;
   state.pendingLevelUps = 0;
+  heldXp = 0;
   state.nextCardAt = 0;
   state.cardRush = false;
   state.newMob = null;
@@ -189,7 +190,12 @@ function regenerate(dt) {
 // boss.ts: true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod
 let runEndHook = () => false;
 export const setRunEndHook = fn => { runEndHook = fn; };
+// boss.ts: im Bosskampf wird XP gesammelt und erst nach dem Kampf gutgeschrieben (kein Level-up mitten im Kampf)
+let xpHold = () => false, heldXp = 0;
+export const setXpHold = fn => { xpHold = fn; };
+export function releaseXp() { const xp = heldXp; heldXp = 0; if (xp > 0) gainXp(xp); }
 export function gainXp(xp) {
+  if (xpHold()) { heldXp += xp; return; }
   const fromLevel = player.level;
   player.xp += xp;
   while (player.level < LEVEL_MAX && player.xp >= xpNeeded()) {

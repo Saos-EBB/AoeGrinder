@@ -21,7 +21,7 @@ import { C } from './champions';
 import { run } from './score';
 import { meta, saveMeta } from './meta';
 import { combatText, fmtTime } from './ui/hud';
-import { completeRun, setRunEndHook } from './player';
+import { completeRun, setRunEndHook, setXpHold, releaseXp } from './player';
 import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
 import { shockwave, lightFlash, hitstop } from './fx/impact';
@@ -503,10 +503,12 @@ function cleanup(instant = false) {
   camEnd(instant);
   arena.visible = false;
   bar.style.display = 'none';
+  releaseXp();                                         // im Kampf gesammelte XP jetzt gutschreiben
 }
 
 // Läuft der Kampf? Dann pausiert der Mob-Spawn (main.ts)
 export const bossBusy = () => !!boss;
+setXpHold(bossBusy);
 
 // Aus updateVisuals in main.ts, vor den Mob-Modellen: Blickrichtung, Leiste. Neuer Run oder Zonenwechsel räumt den Kampf ab
 export function updateBossVisuals(dt) {
