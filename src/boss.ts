@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { connectBoss } from './waves';
+import { device } from './device';
 import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
@@ -282,8 +283,8 @@ export function startBoss(id?: string, tier?: string) {
   }
   for (const r of def.rules) ruleOf(r.k)(boss, { ...(r.p || {}), n: r.n });
   layRing(arena, center, boss.arena - 0.25, boss.arena + 0.25);
-  lockOn = true;
-  camStart();
+  lockOn = !device.mobile;                             // Handy: feste Kamera (camera.ts), kein Lock und keine Boss-Kamera
+  if (!device.mobile) camStart();
   barName.textContent = def.name;
   barBase = `Boss · Level ${level}`;
   barSub.textContent = barBase;

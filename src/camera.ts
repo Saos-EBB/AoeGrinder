@@ -3,9 +3,12 @@ import { state, player } from './state';
 import { camera } from './render';
 import { heightAt, obstacles } from './world';
 import { addTrauma, shakeOffset } from './wucht';
+import { device } from './device';
 
 // Kamera wie in WoW: Orbit um den Spieler
 export const cam = { offset: 0, pitch: 0.45, dist: 16 };
+// Handy: feste Kamera von schräg oben, dreht nie mit (mobile.ts). Bildschirm-oben ist Welt-Richtung MOBILE_YAW, Zoom über cam.dist
+export const MOBILE_YAW = Math.PI, MOBILE_PITCH = 0.95;   // PH
 
 // Kamera-Wackeln: Trauma-Modell in wucht.ts, amount wie bisher (0,1 klein … 1 stark)
 export function shakeCamera(amount) { addTrauma(amount); }
@@ -45,12 +48,13 @@ export function setCamOverride(fn) { override = fn; }
 
 let lastShake = performance.now();
 export function updateCamera() {
-  const yaw = player.facing + cam.offset;
+  const fixed = device.mobile && !document.body.classList.contains('menu');   // im Hauptmenü dreht die Figur vor der Kamera wie am PC
+  const yaw = fixed ? MOBILE_YAW : player.facing + cam.offset, pitch = fixed ? MOBILE_PITCH : cam.pitch;
   const target = new THREE.Vector3(player.pos.x, player.pos.y + 1.8, player.pos.z);
-  const horiz = Math.cos(cam.pitch) * cam.dist;
+  const horiz = Math.cos(pitch) * cam.dist;
   camera.position.set(
     target.x - Math.sin(yaw) * horiz,
-    target.y + Math.sin(cam.pitch) * cam.dist,
+    target.y + Math.sin(pitch) * cam.dist,
     target.z - Math.cos(yaw) * horiz);
   // Kamera vor Baumkronen heranziehen (wie WoW-Kamerakollision)
   let nearest = 1;

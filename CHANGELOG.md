@@ -2,8 +2,13 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-07
+
+- feat(mobile): Touch-Tasten zeigen Abklingzeit (dunkler Kreisausschnitt, ab 1,5 s Restzeit die Sekunden), Ladungen und „kein Mana“ (Taste blasser), wie an der Leiste am PC; Springen gibt es am Handy nicht mehr
+
 ## 2026-11-06
 
+- feat(mobile)!: Handy-Steuerung neu im Stil von Wild Rift: feste Kamera schräg von oben, Lauf-Stick bewegt in Bildschirm-Richtung; rechts unten die 5 Zauber im Bogen (Zauber 1 groß) plus Ausweichen, links neben dem Stick Trinken, Blink, Relikt; Zauber kurz tippen = Schnellzauber aufs nächste Ziel, Taste ziehen = zielen (Bodenzauber mit Zielkreis), loslassen = zaubern, auf ✕ loslassen = abbrechen; Einstellungen → Steuerung → Handy: Zoom und welcher Zauber auf welcher Taste liegt; kein Boss-Lock und keine Boss-Kamera am Handy; Aktionsleiste und „buggy“-Banner am Handy weg, Combo-Anzeige unter die Minimap
 - fix(ui): Hauptmenü: Balken Schaden / Kontrolle / Überleben zeigen pro Figur eine Wertung 1–5 als 5 Segmente (gefüllte in der Schulfarbe mit leichtem Glühen) statt „—“
 - fix(boss): Im Bosskampf kein Level-up mehr mitten im Kampf: XP aus Boss-Körpern und Adds wird gesammelt und erst nach dem Kampf gutgeschrieben
 - feat(dev): Dev → Meta: Knopf „Inventar auffüllen (bis 50)“ ergänzt nur die fehlenden Waffen bis 50, vorhandene bleiben (Seltenheits-Auswahl gilt)

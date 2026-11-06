@@ -6,7 +6,8 @@ import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
 import { heightAt, zone, zoneId, buildWorld } from './world';
 import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
-import { cam, autoCamOn } from './camera';
+import { cam, autoCamOn, MOBILE_YAW } from './camera';
+import { device } from './device';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards, levelRefill } from './ui/menus';
 import { rankAllSpells } from './cards';
@@ -282,8 +283,14 @@ export function updatePlayer(dt) {
   let strafe = ((act('strafeRight') ? 1 : 0) - (act('strafeLeft') ? 1 : 0)) * mirror;
   if (mouseBtn.right || locked) strafe -= turn;
   strafe = clamp(strafe, -1, 1);
-  fwd += pad.move.y;
-  strafe += pad.move.x * mirror;
+  if (device.mobile && (pad.move.x || pad.move.y)) {      // Handy, feste Kamera: Stick zeigt die Richtung auf dem Bildschirm, die Figur dreht sich dorthin
+    const y = MOBILE_YAW, mx = pad.move.x * mirror, my = pad.move.y;
+    player.facing = Math.atan2(Math.sin(y) * my - Math.cos(y) * mx, Math.cos(y) * my + Math.sin(y) * mx);
+    fwd = Math.min(1, Math.hypot(mx, my)); strafe = 0;
+  } else {
+    fwd += pad.move.y;
+    strafe += pad.move.x * mirror;
+  }
   if (stunned) fwd = strafe = 0;
 
   const dodging = dodgeMove(player.pos, player.vel, dodgeMode() === 'feuer' ? dodgeTrail : null);   // Dodge setzt die Position selbst

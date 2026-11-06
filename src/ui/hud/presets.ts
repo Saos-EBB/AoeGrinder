@@ -141,4 +141,5 @@ export const MOBILE: Partial<Record<HudElementId, Placement>> = {
   buffs: { anchor: 'tl', x: 1, y: 28, scale: 1 },
   relics: { anchor: 'tr', x: -9, y: 11, scale: 0.7 },
   minimap: { anchor: 'tr', x: -1, y: 11, scale: 0.6 },
+  combo: { anchor: 'tr', x: -1, y: 30, scale: 0.5 },     // unter der Minimap, über dem Zauberbogen (mobile.ts)
 };
