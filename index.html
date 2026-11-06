@@ -176,6 +176,11 @@
   .tbtn.empty { background: #0006; border-color: #6b5426; opacity: .4; }
   .tbtn.down { border-color: #ffe27a; box-shadow: 0 0 12px #ffe27a; transform: scale(.92); opacity: 1; }
   .tDodge { border-color: #7dd3fc; font-size: 9px; }
+  .tcd { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+  .tcdText { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 20px system-ui; color: #fff; text-shadow: 0 0 4px #000, 0 1px 2px #000; pointer-events: none; }
+  .tbtn.big .tcdText { font-size: 28px; } .tbtn.small .tcdText { font-size: 16px; }
+  .tcharges { position: absolute; right: 8%; bottom: 6%; font: 800 12px system-ui; color: #fff3d6; text-shadow: 0 1px 2px #000; pointer-events: none; }
+  .tbtn.nomana { filter: saturate(.35) brightness(.75); }
   #tCancel { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 64px); left: 50%; width: 64px; height: 64px; margin-left: -32px; border-radius: 50%;
     background: #0d0b08cc; border: 2px solid #c4120c; color: #ff8a7a; font: 700 30px/60px system-ui; text-align: center; }
   #tCancel.hot { background: #c4120c; color: #fff; transform: scale(1.15); }

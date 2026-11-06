@@ -12,6 +12,8 @@ import { device, goFullscreen, toView } from './device';
 import { blizCursor } from './fx/spellFx';
 import { groundAt, SKY } from './collision';
 import { isGround, castSpell } from './spells';
+import { cdEnd, chargesOf, paysLife } from './spells/core';
+import { manaCost, spellCd } from './formulas';
 import { cam, MOBILE_YAW } from './camera';
 import * as THREE from 'three';
 
@@ -113,10 +115,13 @@ function quickCast(id: string) {
   castSpell(id);
 }
 
-const btns: { el: HTMLElement, action: string, spell: string | null }[] = [];
+type Btn = { el: HTMLElement, action: string, spell: string | null, size: string, label: HTMLElement, cd: HTMLElement, cdText: HTMLElement, charges: HTMLElement, shown: string };
+const btns: Btn[] = [];
+const part = (el: HTMLElement, cls: string) => el.appendChild(Object.assign(document.createElement('span'), { className: cls }));
 function spellButton(action: string, cls: string) {
   const el = document.createElement('div');
   el.className = 'tbtn ' + cls;
+  const label = part(el, 'tlabel'), cd = part(el, 'tcd'), cdText = part(el, 'tcdText'), charges = part(el, 'tcharges');
   let id = -1, ox = 0, oy = 0, aiming = false, spell: string = null, aimDir = { x: 0, z: 1 }, aimLen = 0;
   el.addEventListener('touchstart', e => {
     e.preventDefault(); e.stopPropagation();
@@ -161,7 +166,7 @@ function spellButton(action: string, cls: string) {
   };
   el.addEventListener('touchend', e => end(e));
   el.addEventListener('touchcancel', e => end(e, true));
-  btns.push({ el, action, spell: undefined });
+  btns.push({ el, action, spell: undefined, size: cls, label, cd, cdText, charges, shown: '' });
   return el;
 }
 
@@ -241,13 +246,29 @@ export function updateTouch() {
   cam.dist = zoomDist;                                 // Menü und dunkel.ts setzen eigene Abstände, im Run gilt der Zoom aus den Einstellungen
   btns.forEach(b => {
     const spell = spellAtAction(b.action);
-    if (spell === b.spell) return;
-    b.spell = spell;
-    const size = b.el.classList.contains('big') ? 'big' : b.el.classList.contains('small') ? 'small' : '';
-    b.el.className = `tbtn ${size} ${spell ? SPELLS[spell].cls ?? '' : 'empty'}`;
-    b.el.style.backgroundImage = spell && ICONS[spell] ? `url(${ICONS[spell]})` : '';
-    b.el.textContent = spell && !ICONS[spell] ? SPELLS[spell].name : '';
+    if (spell !== b.spell) {
+      b.spell = spell;
+      b.el.className = `tbtn ${b.size} ${spell ? SPELLS[spell].cls ?? '' : 'empty'}`;
+      b.el.style.backgroundImage = spell && ICONS[spell] ? `url(${ICONS[spell]})` : '';
+      b.label.textContent = spell && !ICONS[spell] ? SPELLS[spell].name : '';
+    }
+    if (spell) showCd(b, spell);
   });
+}
+
+// Abklingzeit wie an der Leiste (ui/hud.ts): dunkler Kreisausschnitt, ab 1,5 s Restzeit die Sekunden; dazu Ladungen und „kein Mana“
+function showCd(b: Btn, id: string) {
+  const end = cdEnd(id), left = Math.max(0, end - state.now), total = spellCd(id) || 1;
+  const pct = Math.min(100, left / total * 100), n = chargesOf(id) ?? 0;
+  const ready = n > 1 ? (player.charges[id] ? player.charges[id].filter(t => t <= state.now).length : n) : -1;
+  const key = `${Math.round(pct)}|${left > 1500 ? Math.ceil(left / 1000) : ''}|${ready}`;
+  if (key !== b.shown) {
+    b.shown = key;
+    b.cd.style.background = pct > 0 ? `conic-gradient(#000b ${pct}%, transparent 0)` : 'none';
+    b.cdText.textContent = left > 1500 ? String(Math.ceil(left / 1000)) : '';
+    b.charges.textContent = ready >= 0 ? String(ready) : '';
+  }
+  b.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
 }
 
 // ---------- Einstellungen → Steuerung: Zoom und Tastenbelegung ----------
