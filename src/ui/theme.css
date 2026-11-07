@@ -139,10 +139,9 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #menuTop .menuGame { position: absolute; left: 4.4vw; font-size: 28px; }
 #menuTop .menuPick { font: 700 22px var(--font-title); letter-spacing: .3em; text-transform: uppercase; color: var(--glut-muted); }
 #menuDust { position: absolute; right: 4.4vw; font: 700 18px var(--font-num); color: var(--rar-relikt); letter-spacing: .04em; }
-#menuLeft { position: absolute; left: 4.4vw; top: 18.9vh; width: min(440px, 30vw); max-height: 52vh; overflow: auto; padding: 26px 28px; display: flex; flex-direction: column; gap: 12px; }
+#menuLeft { position: absolute; left: 4.4vw; top: 13vh; width: min(480px, 32vw); max-height: calc(87vh - 3.8vh - 130px); overflow: auto; padding: 26px 28px; display: flex; flex-direction: column; gap: 12px; }
 #menuTitle { font-size: 40px; line-height: 1.05; text-shadow: var(--glut-title-glow); }
 #menuRole { font: 800 18px var(--font-num); letter-spacing: .16em; text-transform: uppercase; color: var(--glut-accent); }
-#menuDesc { margin: 0; font-size: 17px; line-height: 1.5; color: var(--glut-muted); }
 .menuStat { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 .menuStat span { width: 110px; color: var(--glut-muted); }
 .menuStat b { flex: 1; display: flex; gap: 5px; height: 10px; }
