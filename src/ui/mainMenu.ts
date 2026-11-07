@@ -19,6 +19,7 @@ import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
 import { startHudEdit, hudEditing, stopHudEdit } from './hud/layout';
 import { toggleChar } from './charWindow';
+import { figureRules } from './charInfo';
 import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
@@ -147,6 +148,8 @@ export function renderMenu() {
   $('menuTitle').style.color = fig.color;
   $('menuRole').textContent = fig.sub;
   $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${fig.stats[i]} von ${STAT_MAX}"><span>${n}</span><b>${Array.from({ length: STAT_MAX }, (_, k) => `<i${k < fig.stats[i] ? ` class="on" style="--fc:${fig.color}"` : ''}></i>`).join('')}</b></div>`).join('');
+  const rules = figureRules();   // Besonderheit der Figur, gleicher Text wie im Charakterfenster
+  $('menuRules').innerHTML = rules ? `<div class="menuHead" style="color:${rules.color}">${rules.name}</div><p>${rules.rules}</p>` : '';
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
   $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;

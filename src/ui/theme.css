@@ -149,6 +149,7 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 .menuStat b i { flex: 1; border-radius: 2px; background: var(--glut-line); transform: skewX(-18deg); transition: background .2s, box-shadow .2s; }
 .menuStat b i.on { background: var(--fc); box-shadow: 0 0 8px color-mix(in srgb, var(--fc) 55%, transparent); }
 .menuHead { margin-top: 6px; font: 800 14px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--glut-accent); }
+#menuRules p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--glut-muted); }
 #menuKit { justify-content: flex-start; }
 #menuInfo { margin: 0; font-size: 13px; color: var(--glut-muted); }
 #menuRight { position: absolute; right: 4.4vw; top: 18.9vh; width: min(380px, 26vw); max-height: 58vh; overflow: auto; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; }
