@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-07
 
+- fix(karten): Mana-Ränge senken die Kosten multiplikativ (×0,9 pro weißem Rang) statt linear; in Classic waren die Kosten sonst ab Level 18 bei 10 %, jetzt etwa 35 % bei Level 20 und 12 % bei Level 40. Gilt auch für die Mana-Rangkarten
 - feat(mobile): Touch-Tasten zeigen Abklingzeit (dunkler Kreisausschnitt, ab 1,5 s Restzeit die Sekunden), Ladungen und „kein Mana“ (Taste blasser), wie an der Leiste am PC; Springen gibt es am Handy nicht mehr
 
 ## 2026-11-06

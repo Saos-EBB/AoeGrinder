@@ -21,9 +21,11 @@ const RANK_TEXT = {
   range: (name, m) => `${name}: +${num(CARD_RANK.range * m)} yd Reichweite.`,
   dur: (name, m) => `${name}: +${pct(CARD_RANK.dur * m)} Dauer und Radius.`,
 };
+// Mana-Rang multiplikativ: ×0,9 pro weißem Rang, so fallen die Kosten nicht linear an die Untergrenze
+const manaAfter = (v, m) => Math.max(0.1, v * (1 - CARD_RANK.mana * m));   // PH: Untergrenze
 const RANK_APPLY = {
   dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
-  mana: (s, m) => { s.mana = Math.max(0.1, s.mana - CARD_RANK.mana * m); },   // PH: Untergrenze
+  mana: (s, m) => { s.mana = manaAfter(s.mana, m); },
   radius: (s, m) => { s.radius += CARD_RANK.radius * m; },
   tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Klingenstrich: Dauer der Aktion
   cd: (s, m) => { s.cd = Math.max(0.3, (s.cd ?? 1) - CARD_RANK.cd * m); },   // PH: Untergrenze
@@ -142,7 +144,7 @@ export function cardPreview(c, m) {
   if (c.kind === 'rang') {
     const key = c.id.split('-').pop(), s = SPELLS[c.spell];
     if (key === 'dmg') return dmgLine(c.spell, CARD_RANK.dmg * m);
-    if (key === 'mana') { const v = stat(c.spell).mana; return `${s.name} Mana ${manaCost(c.spell)} → ${Math.round(manaCost(c.spell) * Math.max(0.1, v - CARD_RANK.mana * m) / v)}`; }
+    if (key === 'mana') { const v = stat(c.spell).mana; return `${s.name} Mana ${manaCost(c.spell)} → ${Math.round(manaCost(c.spell) * manaAfter(v, m) / v)}`; }
     if (key === 'range') { const now = (s.dist ?? s.range) + (stat(c.spell).range ?? 0); return `${s.name} Reichweite ${num(now)} → ${num(now + CARD_RANK.range * m)} yd`; }
     if (key === 'cd') { const v = stat(c.spell).cd ?? 1, cd = spellCd(c.spell); return `${s.name} Abklingzeit ${num((cd / 1000).toFixed(1))} → ${num((cd * Math.max(0.3, v - CARD_RANK.cd * m) / v / 1000).toFixed(1))} s`; }
     if (key === 'radius' && s.radius) return `${s.name} Radius ${(s.radius * stat(c.spell).radius).toFixed(1)} → ${(s.radius * (stat(c.spell).radius + CARD_RANK.radius * m)).toFixed(1)} yd`;
