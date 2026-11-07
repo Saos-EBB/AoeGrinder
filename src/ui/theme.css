@@ -294,6 +294,7 @@ body.mobile .endStat { width: auto; flex: 1; }
 .cRelic { display: inline-block; padding: 14px 18px; border: 2px solid var(--rar-relikt); background: #1a1608; box-shadow: 0 0 14px rgba(227, 194, 122, .45); color: var(--rar-relikt); font: var(--font-title-weight) 17px var(--font-title); }
 .cWeapon { font: 700 17px var(--font-body); }
 .cNone { color: var(--glut-muted); margin: 0; }
+.cNote { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--glut-muted); }
 .cDmg { margin-bottom: 10px; }
 .cDmg i { display: block; height: 10px; }
 .cDps { margin-top: 20px; }

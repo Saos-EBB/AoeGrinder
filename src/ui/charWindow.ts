@@ -18,6 +18,7 @@ import { ICONS } from './icons';
 import { attachSpellCard } from './spellCard';
 import { attachWeaponCard } from './weaponCard';
 import { equipped, rarityOf, weaponName } from '../weaponRolls';
+import { figureInfo } from './charInfo';
 
 const TABS = { stats: 'Werte', build: 'Build', dmg: 'Schaden' };
 let tab = 'stats';
@@ -33,7 +34,7 @@ function statsTab() {
   return `<div class="title">Werte</div>
     ${kv('Leben', `${Math.ceil(player.hp)} / ${maxHp()}`)}
     ${player.resLabel ? kv('Haltung', player.resLabel) : kv(rage ? 'Wut' : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
-    ${rage ? '' : kv('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
+    ${rage || modValue('lifeCost') ? '' : kv('Mana-Regeneration', `${(spirit() / 4 + 12.5).toFixed(1).replace('.', ',')} alle ${CFG.regenTick / 1000} s`)}
     ${kv('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
     ${kv('Tempo', `${(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1).replace('.', ',')} yd/s`)}
     ${kv('Schaden allgemein', pct(dmgMult() * modFactor('dmg')))}
@@ -41,7 +42,8 @@ function statsTab() {
       const best = Math.max(...owned.filter(id => (SPELLS[id].school ?? SPELLS[id].cls) === s).map(id => spellValue(id)));
       return kv(`<span style="color:${COLORS.school[s]}">${SCHOOLS[s] ?? 'Krieger'}</span>`, best ? `bis ${best} pro Treffer` : '—');
     }).join('')}
-    ${player.luck ? kv('Glück', player.luck) : ''}`;
+    ${player.luck ? kv('Glück', player.luck) : ''}
+    ${figureInfo()}`;
 }
 
 // Build: Spells mit Rang und Rune, Talente, Supports, Relikt, Waffe. Seltenheit der gewählten Karten speichert das Spiel nicht: Rahmen = Schule bzw. Typ

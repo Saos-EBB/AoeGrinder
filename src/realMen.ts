@@ -391,6 +391,8 @@ export const warriorUntouchable = () => isWarrior() && cur?.id === 'wLeap' && in
 export function cancelWarriorMove() { if (!isWarrior() || !cur) return; cur = null; seq++; }
 export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
+// Charakterfenster (ui/charInfo.ts)
+export const warriorInfo = () => ({ rageMul: rageMul(), qLength: qLength(), R });
 export const takenMul = () => isWarrior() ? 1 - R.armor : 1;
 export const moveMul = () => whirlOn && !hasRune('wR', 'stride') ? R.whirl.speedMul : 1;
 export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Bewegung oder keine

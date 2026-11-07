@@ -594,6 +594,8 @@ export function updateKlinge(dt) {
 }
 
 const dashWindow = [TIMING.dash.move.from, TIMING.dash.move.to];
+// Charakterfenster (ui/charInfo.ts)
+export const klingeInfo = () => ({ stance, name: S().name, bar, inStanceMs: state.now - stanceAt, K });
 export const klingeUntouchable = () => on() && act?.id === 'kDash' && inWindow(dashWindow, act.start, act.ms);
 export const klingeMoveMul = () => !on() ? 1 : S().move * (act?.id === 'kR' ? K.wirbel.moveMul : 1);
 export const klingeHidden = () => on() && player.smokeUntil > state.now;

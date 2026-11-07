@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-07
 
+- feat(ui): Charakterfenster → Werte erklärt für jede Figur ihre Besonderheit, mit aktuellem Stand und den Regeln in Kurzform: Hitze (Feuer), Kälte und Eissplitter (Frost), Ladungen (Arkan), Batterie (Blitz), Male (Seuche), Wut und Schlagfolge (Strichkrieger), Haltung (Klingenstrich), nächste Würfe (?-Magier); Seuchenmagier zeigt keine Mana-Regeneration mehr
 - fix(karten): Mana-Ränge senken die Kosten multiplikativ (×0,9 pro weißem Rang) statt linear; in Classic waren die Kosten sonst ab Level 18 bei 10 %, jetzt etwa 35 % bei Level 20 und 12 % bei Level 40. Gilt auch für die Mana-Rangkarten
 - feat(mobile): Touch-Tasten zeigen Abklingzeit (dunkler Kreisausschnitt, ab 1,5 s Restzeit die Sekunden), Ladungen und „kein Mana“ (Taste blasser), wie an der Leiste am PC; Springen gibt es am Handy nicht mehr
 
