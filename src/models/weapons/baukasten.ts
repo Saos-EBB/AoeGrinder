@@ -43,12 +43,12 @@ export const ELEMENTS = {   // die aktiven Schulen + Arkan (nur über Gegenstän
   arkan: { name: t('element.arkan.name'), color: 0xd070ff, adj: t('element.arkan.adj'), fx: t('element.arkan.fx') },
 };
 export const elementColor = el => `#${ELEMENTS[el].color.toString(16).padStart(6, '0')}`;   // CSS-Farbe für UI
-export const MAKERS = {
-  grab: { name: t('maker.grab.name'), gen: t('maker.grab.gen'), trait: t('maker.grab.trait'), main: 'bone', accent: 'rust', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
-  stern: { name: t('maker.stern.name'), gen: t('maker.stern.gen'), trait: t('maker.stern.trait'), main: 'brass', accent: 'brass', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },
-  morra: { name: t('maker.morra.name'), gen: t('maker.morra.gen'), trait: t('maker.morra.trait'), main: 'wood', accent: 'wood', detail: 'glass', thick: 1.0, radial: 7, bend: 0.07, float: false },
-  vey: { name: t('maker.vey.name'), gen: t('maker.vey.gen'), trait: t('maker.vey.trait'), main: 'crystal', accent: 'crystal', detail: 'brass', thick: 0.9, radial: 6, bend: 0, float: true },
-  brandt: { name: t('maker.brandt.name'), gen: t('maker.brandt.gen'), trait: t('maker.brandt.trait'), main: 'steel', accent: 'steel', detail: 'leather', thick: 1.1, radial: 6, bend: 0, float: false },
+export const MAKERS = {   // jeder Hersteller hat sein eigenes Material mit Textur (Kevin 2026-11-08), Namen in wmat.*
+  grab: { name: t('maker.grab.name'), gen: t('maker.grab.gen'), trait: t('maker.grab.trait'), main: 'bronze', accent: 'bronze', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
+  stern: { name: t('maker.stern.name'), gen: t('maker.stern.gen'), trait: t('maker.stern.trait'), main: 'gold', accent: 'gold', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },
+  morra: { name: t('maker.morra.name'), gen: t('maker.morra.gen'), trait: t('maker.morra.trait'), main: 'darkwood', accent: 'darkwood', detail: 'leather', thick: 1.0, radial: 7, bend: 0.07, float: false },
+  vey: { name: t('maker.vey.name'), gen: t('maker.vey.gen'), trait: t('maker.vey.trait'), main: 'crystal', accent: 'crystal', detail: 'glass', thick: 0.9, radial: 6, bend: 0, float: true },
+  brandt: { name: t('maker.brandt.name'), gen: t('maker.brandt.gen'), trait: t('maker.brandt.trait'), main: 'blueiron', accent: 'blueiron', detail: 'leather', thick: 1.1, radial: 6, bend: 0, float: false },
 };
 
 // Deutsch baut ein Wort mit Endung nach Geschlecht (Eisiger Kristallstab der Grabkammer), Englisch reiht Wörter (Icy Crystal Staff of the Crypt)
@@ -69,21 +69,30 @@ function strokes(g, s, n, cols, vertical, w = [1, 3], a = [0.1, 0.3]) {
   g.globalAlpha = 1;
 }
 function blot(g, s, n, col, r = [3, 12]) { for (let i = 0; i < n; i++) { g.fillStyle = col; g.beginPath(); g.arc(rnd(0, s), rnd(0, s), rnd(r[0], r[1]), 0, 7); g.fill(); } }
-const TEX = {
-  bone: () => canvasTex(256, (g, s) => { g.fillStyle = '#d8c7a0'; g.fillRect(0, 0, s, s); strokes(g, s, 120, ['#b8a27a', '#f2e6c8'], true); blot(g, s, 14, 'rgba(90,60,40,0.25)');
-    g.strokeStyle = 'rgba(60,40,30,0.6)'; g.lineWidth = 1.5; for (let i = 0; i < 6; i++) { g.beginPath(); let x = rnd(0, s), y = rnd(0, s); g.moveTo(x, y); for (let k = 0; k < 5; k++) g.lineTo(x += rnd(-10, 10), y += rnd(4, 14)); g.stroke(); } }),
-  rust: () => canvasTex(256, (g, s) => { g.fillStyle = '#5c5550'; g.fillRect(0, 0, s, s); strokes(g, s, 160, ['#3a3530', '#7a726a'], false); blot(g, s, 30, 'rgba(160,80,30,0.45)', [4, 16]); }),
+const TEX = {   // gemalt wie im Viewer: grab Bronze mit Grünspan, stern Gold mit Filigran, morra Dunkelholz mit Maserung, vey Kristall, brandt gehämmertes Blaueisen mit Nieten
   leather: () => canvasTex(256, (g, s) => { g.fillStyle = '#4a2c18'; g.fillRect(0, 0, s, s); blot(g, s, 60, 'rgba(20,10,5,0.25)', [2, 8]); strokes(g, s, 80, ['#6a4224', '#2a160a'], false);
     g.fillStyle = 'rgba(230,200,150,0.7)'; for (let x = 4; x < s; x += 16) g.fillRect(x, s * 0.1, 8, 2); }, [1, 3]),
-  brass: () => canvasTex(256, (g, s) => { const grd = g.createLinearGradient(0, 0, s, 0); grd.addColorStop(0, '#6a4a18'); grd.addColorStop(0.4, '#e2b45a'); grd.addColorStop(0.55, '#fff0b8'); grd.addColorStop(1, '#8a6224');
-    g.fillStyle = grd; g.fillRect(0, 0, s, s); g.strokeStyle = 'rgba(70,45,10,0.6)'; g.lineWidth = 2; for (let y = 10; y < s; y += 24) { g.beginPath(); g.moveTo(0, y); g.lineTo(s, y); g.stroke(); }
-    for (let y = 22; y < s; y += 48) for (let x = 10; x < s; x += 20) { g.beginPath(); g.arc(x, y, 3, 0, 7); g.stroke(); } }),
-  wood: () => canvasTex(256, (g, s) => { g.fillStyle = '#3a2618'; g.fillRect(0, 0, s, s); strokes(g, s, 200, ['#5a3a22', '#1e120a', '#6e4a2c'], true, [2, 5], [0.3, 0.6]); blot(g, s, 8, 'rgba(10,6,4,0.6)', [3, 7]); }, [1, 3]),
   crystal: () => canvasTex(256, (g, s) => { const grd = g.createLinearGradient(0, 0, s, s); grd.addColorStop(0, '#e8f4ff'); grd.addColorStop(0.5, '#a8c4e0'); grd.addColorStop(1, '#f6fbff');
     g.fillStyle = grd; g.fillRect(0, 0, s, s); g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 2; for (let i = 0; i < 10; i++) { g.beginPath(); g.moveTo(rnd(0, s), 0); g.lineTo(rnd(0, s), s); g.stroke(); } }),
-  steel: () => canvasTex(256, (g, s) => { const grd = g.createLinearGradient(0, 0, s, 0); grd.addColorStop(0, '#3e4148'); grd.addColorStop(0.5, '#a8adb6'); grd.addColorStop(1, '#4a4d55');
-    g.fillStyle = grd; g.fillRect(0, 0, s, s); strokes(g, s, 200, ['#c8ccd4', '#2a2c30'], true, [1, 2], [0.1, 0.25]);
-    for (let y = 16; y < s; y += 64) for (let x = 8; x < s; x += 32) { g.fillStyle = '#2a2c30'; g.beginPath(); g.arc(x + 1, y + 1, 5, 0, 7); g.fill(); g.fillStyle = '#d8dce4'; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); } }),
+  gold: () => canvasTex(256, (g, s) => {
+    const grd = g.createLinearGradient(0, 0, s, 0); grd.addColorStop(0, '#7a5408'); grd.addColorStop(0.35, '#f2c84a'); grd.addColorStop(0.5, '#fff6c8'); grd.addColorStop(0.65, '#e6b032'); grd.addColorStop(1, '#6a4806');
+    g.fillStyle = grd; g.fillRect(0, 0, s, s); g.strokeStyle = 'rgba(90,55,5,0.75)'; g.lineWidth = 2.5;
+    for (let y = 0; y < s; y += 64) for (let x = 0; x < s; x += 64) { g.beginPath(); g.arc(x + 20, y + 32, 14, 0.3, 4.4); g.stroke(); g.beginPath(); g.arc(x + 44, y + 32, 14, 3.4, 7.5); g.stroke(); }
+  }),
+  darkwood: () => canvasTex(256, (g, s) => {
+    g.fillStyle = '#3a2416'; g.fillRect(0, 0, s, s); strokes(g, s, 260, ['#6a3a22', '#24140c', '#8a4a2a'], true, [2, 6], [0.35, 0.7]);
+    for (let i = 0; i < 5; i++) { const x = rnd(20, s - 20), y = rnd(20, s - 20); g.strokeStyle = '#5a2c18'; g.lineWidth = 3; g.beginPath(); g.ellipse(x, y, 7, 14, 0, 0, 7); g.stroke(); g.fillStyle = '#0a0604'; g.beginPath(); g.ellipse(x, y, 3, 7, 0, 0, 7); g.fill(); }
+  }, [1, 3]),
+  bronze: () => canvasTex(256, (g, s) => {
+    const grd = g.createLinearGradient(0, 0, s, 0); grd.addColorStop(0, '#5a2e10'); grd.addColorStop(0.45, '#c07a3a'); grd.addColorStop(0.55, '#e8a868'); grd.addColorStop(1, '#5a2e10');
+    g.fillStyle = grd; g.fillRect(0, 0, s, s); strokes(g, s, 120, ['#7a4420', '#f0b880'], false, [1, 2], [0.1, 0.3]);
+    blot(g, s, 40, 'rgba(60,170,140,0.5)', [4, 14]); blot(g, s, 20, 'rgba(120,220,190,0.35)', [2, 6]);
+  }),
+  blueiron: () => canvasTex(256, (g, s) => {
+    g.fillStyle = '#2c4664'; g.fillRect(0, 0, s, s);
+    for (let i = 0; i < 70; i++) { const x = rnd(0, s), y = rnd(0, s), r = rnd(8, 18), grd = g.createRadialGradient(x - 3, y - 3, 1, x, y, r); grd.addColorStop(0, 'rgba(150,190,230,0.5)'); grd.addColorStop(1, 'rgba(10,20,40,0)'); g.fillStyle = grd; g.fillRect(x - r, y - r, r * 2, r * 2); }
+    for (let y = 16; y < s; y += 64) for (let x = 8; x < s; x += 32) { g.fillStyle = '#0e1828'; g.beginPath(); g.arc(x + 1, y + 1, 5, 0, 7); g.fill(); g.fillStyle = '#b8d0ec'; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); }
+  }),
   paper: () => canvasTex(128, (g, s) => { g.fillStyle = '#e8dcb8'; g.fillRect(0, 0, s, s); g.strokeStyle = 'rgba(120,90,50,0.5)'; for (let y = 4; y < s; y += 6) { g.beginPath(); g.moveTo(0, y); g.lineTo(s, y); g.stroke(); } }),
 };
 const texCache: any = {}; const tex = k => texCache[k] || (texCache[k] = TEX[k]());
@@ -93,7 +102,7 @@ function makeMats(spec) {
   const lit = (k, extra = {}) => {
     if (k === 'glass') return new THREE.MeshLambertMaterial({ color: new THREE.Color(0.75, 0.9, 1).multiplyScalar(dim), transparent: true, opacity: 0.45, ...extra });
     if (k === 'crystal') return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim), transparent: true, opacity: 0.8, emissive: 0x22303c, ...extra });
-    return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim * (k === 'brass' || k === 'steel' ? 1.25 : 1.1)), ...extra });
+    return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim * 1.15), ...extra });
   };
   const el = ELEMENTS[spec.element], hasEl = spec.element !== 'none';
   let gem;
