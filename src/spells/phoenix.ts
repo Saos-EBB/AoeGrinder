@@ -10,17 +10,18 @@ import { combatText } from '../ui/hud';
 import { mobsInRadius, addField, hasRune, hasSpell, cdEnd, startCd, makeCtx } from './core';
 import { meteor } from './meteor';
 import { phoenixLook, fireField } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 // PH: Meteor-Schaden ×2,5, Radius wie Meteor ×1,5, Knockback in yd, Hitstop in ms, Leben nach dem Aufstehen, Schutz, Aufstehen, Wiedergeburt
 const P = { dmgMul: 2.5, radiusMul: 1.5, knock: 16, knockMs: 800, hitstopMs: 320, shake: 1, hp: 0.5, ashHp: 1, invulnMs: 1500, riseMs: 900, rebornMs: 8000, rebornDmg: 0.5 };
 
 export const phoenix = {
-  name: 'Phönix', figRelic: true, desc: 'Passiv: Stirbst du, explodierst du stattdessen mit 2,5-fachem Meteor-Schaden und stehst mit 50 % Leben wieder auf. CD 90 s.', ranks: ['dmg', 'radius', 'cd'], tags: ['Feuer', 'Nova'], cls: 'fire',
+  name: t('spell.phoenix.name'), figRelic: true, desc: t('spell.phoenix.desc'), ranks: ['dmg', 'radius', 'cd'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 0, cd: 90000, min: meteor.min * P.dmgMul, max: meteor.max * P.dmgMul, radius: meteor.radius * P.radiusMul,   // PH
   runes: [
-    { id: 'ash', name: 'Asche', desc: 'Aufstehen mit 100 % Leben.' },
-    { id: 'ember', name: 'Ewige Glut', desc: 'CD 60 s.', cdMul: 60 / 90 },
-    { id: 'reborn', name: 'Wiedergeburt', desc: 'Nach dem Aufstehen 8 s +50 % Schaden.' },
+    { id: 'ash', name: t('spell.phoenix.runes.ash.name'), desc: t('spell.phoenix.runes.ash.desc') },
+    { id: 'ember', name: t('spell.phoenix.runes.ember.name'), desc: t('spell.phoenix.runes.ember.desc'), cdMul: 60 / 90 },
+    { id: 'reborn', name: t('spell.phoenix.runes.reborn.name'), desc: t('spell.phoenix.runes.reborn.desc') },
   ],
   canCast: () => 'Passiv: wirkt, wenn du stirbst',
   effect() {},

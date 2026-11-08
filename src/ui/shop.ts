@@ -15,7 +15,7 @@ import { openInventory } from './inventory';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 
-const rarityColor = name => CARD_RARITIES.find(r => r.name === name)?.color ?? '#fff';
+const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
 
 // Staub vergeben, Shop vorbereiten. Gibt die Staub-Rechnung zurück, das Run-Ende zeigt sie (leaderboardView.ts)

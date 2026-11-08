@@ -7,11 +7,12 @@ import { barrierLook } from '../vfx/frostLook';
 import { applyRoot } from '../mobs';
 import { combatText } from '../ui/hud';
 import { mobsInRadius } from './core';
+import { t } from '../i18n';
 
 const B = { pct: 0.2, ms: 10000, nova: 6, freezeMs: 2000 };   // PH
 
 export const icebarrier = {
-  name: 'Eisbarriere', desc: 'Schild über 20 % der max. Leben, 10 s. Bricht er: Mini-Nova 6 yd, friert 2 s ein.', ranks: ['mana', 'cd'], tags: ['Frost', 'Schutz'], cls: 'frost',
+  name: t('spell.icebarrier.name'), desc: t('spell.icebarrier.desc'), ranks: ['mana', 'cd'], tags: ['Frost', 'Schutz'], cls: 'frost',
   mana: 150, cd: 25000,   // PH
   effect() {
     player.shield = Math.round(maxHp() * B.pct);

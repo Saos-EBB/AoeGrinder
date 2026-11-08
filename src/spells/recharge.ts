@@ -4,9 +4,10 @@ import { state, player } from '../state';
 import { BATTERY } from '../config';
 import { combatText } from '../ui/hud';
 import { batteryCharge } from '../battery';
+import { t } from '../i18n';
 
 export const recharge = {
-  name: 'Aufladen', cls: 'lightning', desc: '2 s stehen bleiben, dann +60 Ladung.', tags: [],
+  name: t('spell.recharge.name'), cls: 'lightning', desc: t('spell.recharge.desc'), tags: [],
   mana: 0, charge: 0, cd: 0, fixed: true,   // PH
   canCast: () => player.grounded ? null : 'Du kannst das nicht im Sprung tun',
   effect() {

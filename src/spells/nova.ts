@@ -5,17 +5,18 @@ import { applyRoot, enterCombat } from '../mobs';
 import { mobsInRadius, hasRune, schedule, addField } from './core';
 import { iceAge, frozenGroundTick } from '../figures';
 import { iceGroundField } from '../vfx/frostLook';
+import { t } from '../i18n';
 
 const AGE = { radius: 1.5, groundMs: 6000 };   // PH: Eiszeit
 
 export const nova = {
-  get name() { return iceAge() ? 'Ice Age' : 'Frost Nova'; },
-  get desc() { return iceAge() ? 'Frost Nova mit 1,5-fachem Radius, der Boden bleibt 6 s gefroren.' : 'Friert Gegner um dich bis zu 8 s ein.'; }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Nova'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.nova.name' : 'spell.nova.name'); },
+  get desc() { return t(iceAge() ? 'iceage.nova.desc' : 'spell.nova.desc'); }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Nova'], cls: 'frost',
   mana: 55, cd: 25000, min: 19, max: 21, radius: 10, root: 8000,   // Rang 1 Wowhead, Radius PH
   runes: [
-    { id: 'repeat', name: 'Kaltes Echo', desc: 'Wiederholt sich von jedem getroffenen Gegner.' },
-    { id: 'deep', name: 'Tiefes Eis', desc: 'Doppelte Eisdauer, kein Schaden.' },
-    { id: 'charges', name: 'Zweiter Frost', desc: '2 Ladungen.', charges: 2 },
+    { id: 'repeat', name: t('spell.nova.runes.repeat.name'), desc: t('spell.nova.runes.repeat.desc') },
+    { id: 'deep', name: t('spell.nova.runes.deep.name'), desc: t('spell.nova.runes.deep.desc') },
+    { id: 'charges', name: t('spell.nova.runes.charges.name'), desc: t('spell.nova.runes.charges.desc'), charges: 2 },
   ],
   effect(c) {
     const r = c.radius(nova.radius) * (iceAge() ? AGE.radius : 1), targets = mobsInRadius(player.pos, r);

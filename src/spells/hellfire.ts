@@ -4,16 +4,17 @@ import { mods } from '../config';
 import { combatText } from '../ui/hud';
 import { mobsInRadius, startChannel, stopChannel, hasRune } from './core';
 import { hellfireLook } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 const HEAL_PER_KILL = 0.05, GROW_PER_S = 1, HEAL_PER_TICK = 0.01, LIFE_PER_TICK = 0.03;   // PH: heilt 1 %, kostet 3 % max. Leben pro Tick (v31 statt Mana)
 
 export const hellfire = {
-  name: 'Höllenfeuer', desc: 'Kanal um dich, kostet 3 % Leben pro Tick und heilt dich um 1 % pro Tick.', ranks: ['dmg', 'radius'], tags: ['Feuer', 'Kanal'], cls: 'fire',
+  name: t('spell.hellfire.name'), desc: t('spell.hellfire.desc'), ranks: ['dmg', 'radius'], tags: ['Feuer', 'Kanal'], cls: 'fire',
   mana: 0, cd: 0, channel: 15000, tickDmg: 30, radius: 10,   // PH
   runes: [
-    { id: 'heal', name: 'Seelenernte', desc: 'Heilt pro Kill.' },
-    { id: 'walk', name: 'Brennender Gang', desc: 'Laufen erlaubt, halber Schaden.' },
-    { id: 'grow', name: 'Ausbreitung', desc: 'Radius wächst pro Sekunde.' },
+    { id: 'heal', name: t('spell.hellfire.runes.heal.name'), desc: t('spell.hellfire.runes.heal.desc') },
+    { id: 'walk', name: t('spell.hellfire.runes.walk.name'), desc: t('spell.hellfire.runes.walk.desc') },
+    { id: 'grow', name: t('spell.hellfire.runes.grow.name'), desc: t('spell.hellfire.runes.grow.desc') },
   ],
   canCast: () => player.hp <= maxHp() * LIFE_PER_TICK ? 'Nicht genug Leben' : null,
   effect(c) {

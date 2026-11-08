@@ -4,12 +4,13 @@ import { state } from '../state';
 import { UNIT } from '../config';
 import { mobsInRadius, applySlow, addField, onFireHit } from './core';
 import { canisterLook, oilField, igniteLook } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 // PH: Lache 6 yd 8 s, 30 % Slow; gezündet 6 s Brand mit 1,5 Einheiten pro Sekunde
 const G = { radius: 6, ms: 8000, slow: 0.3, burnMs: 6000, burn: 1.5, slowTickMs: 500 };
 
 export const gasoline = {
-  name: 'Benzin', desc: 'Kanister aufs Bodenziel: Lache 6 yd für 8 s, 30 % langsamer. Ein Feuer-Treffer zündet sie: 6 s Brand, 1,5 Einheiten pro Sekunde.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
+  name: t('spell.gasoline.name'), desc: t('spell.gasoline.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
   mana: 120, cd: 10000, range: 30, radius: G.radius, ground: true, showDmg: G.burn * UNIT,   // PH
   effect(c, point) {
     canisterLook(point);

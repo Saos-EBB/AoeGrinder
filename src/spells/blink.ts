@@ -9,6 +9,7 @@ import { mods } from '../config';
 import { ae } from './ae';
 import { batteryCharge } from '../battery';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
+import { t } from '../i18n';
 
 const COLD = { radius: 6, dur: 6000, slow: 0.3, min: 30, max: 36 };   // PH: Kalter Boden
 const NOVA = { radius: 8, min: 19, max: 21, root: 6000 };              // PH
@@ -54,12 +55,12 @@ function coldGround(c, pos) {
 }
 
 export const blink = {
-  name: 'Blink', desc: '20 yd vorwärts, löst Betäubung. Kein Schaden.', ranks: ['range', 'cd'], tags: ['Arkan', 'Bewegung'], cls: 'arcane',
+  name: t('spell.blink.name'), desc: t('spell.blink.desc'), ranks: ['range', 'cd'], tags: ['Arkan', 'Bewegung'], cls: 'arcane',
   mana: 80, cd: 15000, dist: 20,   // Mana PH
   runes: [
-    { id: 'target', name: 'Eisportal', desc: 'Teleport zum Bodenziel, Frostschaden + Kalter Boden an Start und Ziel.', ground: true, range: 30, radius: 6 },
-    { id: 'nova', name: 'Frostabschied', desc: 'Nova am Start.' },
-    { id: 'charges', name: 'Doppelsprung', desc: '2 Ladungen.', charges: 2 },
+    { id: 'target', name: t('spell.blink.runes.target.name'), desc: t('spell.blink.runes.target.desc'), ground: true, range: 30, radius: 6 },
+    { id: 'nova', name: t('spell.blink.runes.nova.name'), desc: t('spell.blink.runes.nova.desc') },
+    { id: 'charges', name: t('spell.blink.runes.charges.name'), desc: t('spell.blink.runes.charges.desc'), charges: 2 },
   ],
   effect(c, point) {
     const from = player.pos.clone();

@@ -7,17 +7,18 @@ import { iceAge } from '../figures';
 
 const BEAK = { range: 25, speed: 18, width: 4, k: 1.5, freezeMs: 2000 };   // PH: Eiszeit, Schaden 1,5 × Explosion der Kugel
 import { frostOrbField, frostSplinter, frostBoom, beakField } from '../vfx/frostLook';
+import { t } from '../i18n';
 
 const SPEED = 8, RANGE = 20, HOLD = 4000, SPLINTER_SLOW = 0.3;   // PH
 
 export const frostorb = {
-  get name() { return iceAge() ? 'Pheasant Beak' : 'Frostkugel'; },
-  get desc() { return iceAge() ? 'Eisvogel fliegt 25 yd, 4 yd breit, 1,5-facher Schaden, friert 2 s ein.' : 'Fliegt 20 yd vorwärts, Splitter rundum, Explosion am Ende.'; }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Geschoss', 'Fläche'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.frostorb.name' : 'spell.frostorb.name'); },
+  get desc() { return t(iceAge() ? 'iceage.frostorb.desc' : 'spell.frostorb.desc'); }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Geschoss', 'Fläche'], cls: 'frost',
   mana: 180, cd: 8000, splinter: 14, splinterRadius: 8, splinters: 4, blast: 40, blastRadius: 6,   // PH
   runes: [
-    { id: 'return', name: 'Bumerang', desc: 'Kehrt zurück.' },
-    { id: 'hold', name: 'Eisstern', desc: 'Bleibt stehen und dreht.' },
-    { id: 'chill', name: 'Kalte Splitter', desc: 'Splitter verlangsamen.' },
+    { id: 'return', name: t('spell.frostorb.runes.return.name'), desc: t('spell.frostorb.runes.return.desc') },
+    { id: 'hold', name: t('spell.frostorb.runes.hold.name'), desc: t('spell.frostorb.runes.hold.desc') },
+    { id: 'chill', name: t('spell.frostorb.runes.chill.name'), desc: t('spell.frostorb.runes.chill.desc') },
   ],
   effect(c) {
     const dir = new THREE.Vector3(Math.sin(player.facing), 0, Math.cos(player.facing));

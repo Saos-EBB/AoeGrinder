@@ -2,16 +2,17 @@ import { rand } from '../util';
 import { state, player } from '../state';
 import { flameStrikeLook, fireField } from '../vfx/fireLook';
 import { mobsInRadius, addField, hasRune } from './core';
+import { t } from '../i18n';
 
 const AFTER_BLINK = 5000, WANDER_SPEED = 3;   // PH
 
 export const flame = {
-  name: 'Flammenstoß', desc: '0,5 s Zauber aufs Bodenziel, Treffer + Brandfläche 8 s.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
+  name: t('spell.flame.name'), desc: t('spell.flame.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
   mana: 195, cd: 0, castTime: 500, min: 55, max: 65, burn: 12, burnDur: 8000, range: 30, radius: 8, ground: true,   // PH
   runes: [
-    { id: 'blink', name: 'Heißer Sprung', desc: 'Sofort nach Blink.' },
-    { id: 'wander', name: 'Feuerspur', desc: 'Fläche wandert zum Spieler.' },
-    { id: 'wide', name: 'Flächenbrand', desc: 'Doppelter Radius, halber Schaden.', radius: 16 },
+    { id: 'blink', name: t('spell.flame.runes.blink.name'), desc: t('spell.flame.runes.blink.desc') },
+    { id: 'wander', name: t('spell.flame.runes.wander.name'), desc: t('spell.flame.runes.wander.desc') },
+    { id: 'wide', name: t('spell.flame.runes.wide.name'), desc: t('spell.flame.runes.wide.desc'), radius: 16 },
   ],
   instantCast: () => hasRune('flame', 'blink') && state.now - player.lastBlink < AFTER_BLINK,
   effect(c, point) {

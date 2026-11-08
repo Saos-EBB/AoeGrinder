@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { rng } from './textures';
 import { rndDir } from './fx';
+import { t } from '../../i18n';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
@@ -52,11 +53,11 @@ function ext(shape, depth, bevel = false) {
 export const WEAPONS: any[] = [];
 const def = o => WEAPONS.push(o);
 
-def({ id: 'pilgerast', gripY: 1.02, cane: true, pitch: .06, name: 'Pilgerast', school: 'Alle', arch: 'Wanderstab des grauen Pilgers',
-  story: 'Ein Wanderer schnitt ihn aus einer Esche, in die dreimal der Blitz geschlagen hatte. Den Stein fand er im Wurzelloch. Eingesetzt hat er ihn nie: Die Äste sind von selbst um den Stein gewachsen und halten ihn seitdem fest.',
+def({ id: 'pilgerast', gripY: 1.02, cane: true, pitch: .06, name: t('wmodel.pilgerast.name'), school: 'Alle', arch: 'Wanderstab des grauen Pilgers',
+  story: t('wmodel.pilgerast.story'),
   read: 'Drei Äste schließen sich zu einer Krone, wie eine offene Hand um den Stein.',
   wear: 'Die Lederwicklung ist in Griffhöhe glatt gewetzt, der Fuß vom Gehen gesplittert.',
-  fx: 'Ruhiges Licht mit langsamen Strahlen. Staub steigt auf, als würde der Stein atmen.',
+  fx: t('wmodel.pilgerast.fx'),
   build(g, fx) {
     const bark = S('bark', 0x8a6a4a, { rep: [6, 1], rot: true });
     const sh = tube(g, gnarl(11, 0, 1.52, .07), .03, bark, 16, 6);
@@ -77,11 +78,11 @@ def({ id: 'pilgerast', gripY: 1.02, cane: true, pitch: .06, name: 'Pilgerast', s
       spawn: (R, p, v) => { const a = R() * 6.28; p.set(Math.cos(a) * .1, 1.85 + R() * .1, Math.sin(a) * .1); } });
   } });
 
-def({ id: 'knoechelzweig', gripY: 0.055, cane: false, pitch: 0.95, name: 'Knöchelzweig', school: 'Arkan', arch: 'Zauberstab des dunklen Lords',
-  story: 'Der Hexer schnitzte ihn aus dem Fingerknochen, den er für seinen Pakt hergab. Der Zweig fühlt sich immer warm an, wie eine Hand. Wer ihn hält, hört manchmal ein leises Klopfen, als würde jemand mit dem Finger tippen.',
+def({ id: 'knoechelzweig', gripY: 0.055, cane: false, pitch: 0.95, name: t('wmodel.knoechelzweig.name'), school: 'Arkan', arch: 'Zauberstab des dunklen Lords',
+  story: t('wmodel.knoechelzweig.story'),
   read: 'Ein Griff aus drei Knöcheln, die Spitze knickt ab und endet in einem Haken.',
   wear: 'Die Gelenkringe sind dunkel vom Schweiß und die Spitze ist leicht verzogen, weil er sich biegt, wenn der Träger zögert.',
-  fx: 'Kleine violette Blitze zucken an der Spitze. Dunkler Rauch und Funken kriechen am Knochen hoch.',
+  fx: t('wmodel.knoechelzweig.fx'),
   build(g, fx) {
     const bone = S('bone', 0xeadcbc, { rep: [1, 1] }), dark = S('iron', 0x5a4a3a);
     for (let i = 0; i < 3; i++) part(g, new THREE.IcosahedronGeometry(.02, 1), bone, 0, .02 + i * .034, 0).scale.set(1.1, .8, 1);
@@ -100,11 +101,11 @@ def({ id: 'knoechelzweig', gripY: 0.055, cane: false, pitch: 0.95, name: 'Knöch
       spawn: (R, p, v) => { p.set(.004 + (R() - .5) * .02, .08 + R() * .3, (R() - .5) * .02); v.set((R() - .5) * .02, .03, (R() - .5) * .02); } });
   } });
 
-def({ id: 'grenzwaechter', gripY: .97, cane: true, pitch: .06, name: 'Grenzwächterstab Nr. 47', school: 'Frost', arch: 'Einfacher Stab aus der Questbelohnung',
-  story: 'Die Garnison am Grenzturm ließ Hunderte davon schmieden, alle gleich. Nr. 47 ist der einzige, der zurückkam. Die Kerben am Schaft zählen die Nächte am Turm. Es sind sieben, dann hören sie auf.',
+def({ id: 'grenzwaechter', gripY: .97, cane: true, pitch: .06, name: t('wmodel.grenzwaechter.name'), school: 'Frost', arch: 'Einfacher Stab aus der Questbelohnung',
+  story: t('wmodel.grenzwaechter.story'),
   read: 'Gerade und symmetrisch: vier Eisenkrallen halten einen Eiskristall, dazu baumelt eine Marke.',
   wear: 'Sieben Kerben auf einer Seite, die Marke mit der Nummer hängt noch am Band.',
-  fx: 'Schneeflocken rieseln vom Kristall, an den Krallen glitzert Reif und kalter Dunst sinkt nach unten.',
+  fx: t('wmodel.grenzwaechter.fx'),
   build(g, fx) {
     const wood = S('wood', 0xa8733f, { rep: [1, 4] }), iron = S('iron', 0x7a7e86);
     part(g, cyl(.026, .03, 1.7, 6), wood, 0, .87, 0);
@@ -134,11 +135,11 @@ def({ id: 'grenzwaechter', gripY: .97, cane: true, pitch: .06, name: 'Grenzwäch
       spawn: (R, p, v) => { rndDir(R, p).multiplyScalar(.05).add(P); v.y = -.05; } });
   } });
 
-def({ id: 'schlachtblech', gripY: 0.24, cane: false, pitch: 0.75, name: 'Schlachtblech', school: 'Alle', arch: 'Zu großes Schwert des schwarzen Söldners',
-  story: 'Der Dorfschmied nannte es nie ein Schwert. Er schmiedete es aus dem Eisen von drei Pflügen für ein Tier, an das im Dorf keiner glaubte. Als das Tier kam, gab es nur einen, der das Ding heben konnte. Seitdem gehört es niemandem mehr außer ihm.',
+def({ id: 'schlachtblech', gripY: 0.24, cane: false, pitch: 0.75, name: t('wmodel.schlachtblech.name'), school: 'Alle', arch: 'Zu großes Schwert des schwarzen Söldners',
+  story: t('wmodel.schlachtblech.story'),
   read: 'Eine rohe Platte, breiter als jede Klinge im Set. Die Scharten an den Kanten sieht man sogar in der Silhouette.',
   wear: 'Drei tiefe Scharten, Rost bis in die Kanten, Nieten aus Pflugeisen. Verziert ist nichts.',
-  fx: 'Keine Magie. Ab und zu sprühen Funken aus einer Scharte, als hätte die Klinge gerade etwas getroffen.',
+  fx: t('wmodel.schlachtblech.fx'),
   build(g, fx) {
     const rust = S('rust', 0xffffff, { rep: [2, 2] }), riv = S('metal', 0x9a9ea4);
     part(g, new THREE.IcosahedronGeometry(.05, 0), S('rust', 0xffffff, { rep: [1, 1] }), 0, -.04, 0);
@@ -157,11 +158,11 @@ def({ id: 'schlachtblech', gripY: 0.24, cane: false, pitch: 0.75, name: 'Schlach
     fx.every(() => { if (em.burstT > prev) cur = chips[Math.floor(Math.random() * 4)]; prev = em.burstT; });
   } });
 
-def({ id: 'runenzunge', gripY: 0.1, cane: false, pitch: 0.85, name: 'Runenzunge', school: 'Arkan', arch: 'Magierklinge',
-  story: 'Die Klinge der Spruchfechter. Wo andere Schwerter eine Blutrinne haben, hat sie einen Kanal, in den der Träger seine Formeln spricht. Die Lücken im Leuchten sind Worte, die einer der Vorbesitzer vergessen hat. Keiner der späteren Träger konnte sie wieder füllen.',
+def({ id: 'runenzunge', gripY: 0.1, cane: false, pitch: 0.85, name: t('wmodel.runenzunge.name'), school: 'Arkan', arch: 'Magierklinge',
+  story: t('wmodel.runenzunge.story'),
   read: 'Eine schmale, gerade Klinge mit einer Leuchtlinie, die mehrmals abreißt. Die Parierstange ist ein Halbmond.',
   wear: 'Die leuchtende Linie hat Lücken, und der Griff ist frisch neu gewickelt.',
-  fx: 'Die Runen pulsieren von unten nach oben. Kleine Blitze springen an der Klinge entlang, als würde jemand flüstern.',
+  fx: t('wmodel.runenzunge.fx'),
   build(g, fx) {
     const brass = S('metal', 0xd0a650);
     part(g, new THREE.TorusGeometry(.03, .008, 4, 8), brass, 0, -.02, 0);
@@ -182,11 +183,11 @@ def({ id: 'runenzunge', gripY: 0.1, cane: false, pitch: 0.85, name: 'Runenzunge'
       spawn: (R, p, v) => { p.set(0, .25 + R() * .9, 0); v.set((R() - .5) * .12, .04, (R() - .5) * .12); } });
   } });
 
-def({ id: 'glutrute', gripY: 1.0, cane: true, pitch: .06, name: 'Glutrute', school: 'Feuer', arch: 'Feuerstab',
-  story: 'Früher war das eine Schmiedezange, die zu lange im Feuer lag. Die Feuermagierin hat sie danach nie abkühlen lassen. Seit dem Tag, an dem sie sie zum ersten Mal aufhob, glühen die Risse. Die Krallen haben sich um die letzte Kohle aus der Esse geschlossen.',
+def({ id: 'glutrute', gripY: 1.0, cane: true, pitch: .06, name: t('wmodel.glutrute.name'), school: 'Feuer', arch: 'Feuerstab',
+  story: t('wmodel.glutrute.story'),
   read: 'Ein schwarzer Stab mit fünf Krallen um eine glühende Kohle. Die Risse leuchten den ganzen Schaft entlang.',
   wear: 'Das Eisen ist rissig und verzundert, glatt ist es nirgends.',
-  fx: 'Echte Flamme aus der Kohle, Glutfunken steigen hoch, dunkler Rauch zieht ab, die Risse atmen.',
+  fx: t('wmodel.glutrute.fx'),
   build(g, fx) {
     const iron = S('iron', 0x4a3e38, { rep: [1, 4] });
     part(g, cyl(.022, .034, 1.68, 6), iron, 0, .84, 0);
@@ -214,11 +215,11 @@ def({ id: 'glutrute', gripY: 1.0, cane: true, pitch: .06, name: 'Glutrute', scho
       spawn: (R, p, v) => { p.set((R() - .5) * .05, 1.98, (R() - .5) * .05); v.set((R() - .5) * .04, .22, (R() - .5) * .04); } });
   } });
 
-def({ id: 'zirkelstab', gripY: 1.0, cane: true, pitch: .06, name: 'Zirkelstab', school: 'Arkan', arch: 'Stab des Hofastronomen',
-  story: 'Ein Astronom hat ihn gebaut, um die Bahnen der Sterne nachzurechnen. Die Ringe drehen sich weiter, auch wenn ihn niemand hält. Er rechnet also immer noch. Was genau er ausrechnet, weiß keiner mehr.',
+def({ id: 'zirkelstab', gripY: 1.0, cane: true, pitch: .06, name: t('wmodel.zirkelstab.name'), school: 'Arkan', arch: 'Stab des Hofastronomen',
+  story: t('wmodel.zirkelstab.story'),
   read: 'Der Kopf schwebt über dem Schaft: ein Prisma in drei Messingringen.',
   wear: 'Die Messingkappen sind poliert vom vielen Anfassen, das Holz ist dunkel vom Lampenöl.',
-  fx: 'Blitze springen vom Prisma auf die Ringe, Sternenstaub kreist auf eigenen Bahnen um den Kopf.',
+  fx: t('wmodel.zirkelstab.fx'),
   build(g, fx) {
     const brass = S('metal', 0xd8b05a);
     part(g, cyl(.02, .026, 1.72, 6), S('wood', 0x5a3a62, { rep: [1, 4] }), 0, .86, 0);
@@ -239,11 +240,11 @@ def({ id: 'zirkelstab', gripY: 1.0, cane: true, pitch: .06, name: 'Zirkelstab', 
     };
   } });
 
-def({ id: 'lampenhaken', gripY: 1.0, cane: true, pitch: .06, name: 'Lampenhaken', school: 'Feuer', arch: 'Laternenstab des Lichtbringers',
-  story: 'Der Laternenanzünder einer Stadt, die es nicht mehr gibt, ging jeden Abend dieselbe Runde. Die Flamme in dieser Laterne ist die letzte, die aus der Stadt übrig ist. Wer sie ausbläst, vergisst den Namen der Stadt. Darum weiß ihn heute keiner mehr.',
+def({ id: 'lampenhaken', gripY: 1.0, cane: true, pitch: .06, name: t('wmodel.lampenhaken.name'), school: 'Feuer', arch: 'Laternenstab des Lichtbringers',
+  story: t('wmodel.lampenhaken.story'),
   read: 'Oben ein Hirtenhaken, an dessen Ende eine Laterne pendelt. Die Form ist stark asymmetrisch.',
   wear: 'Das Holz unter dem Haken ist rußgeschwärzt, an der Laterne fehlt eine Scheibe.',
-  fx: 'Eine kleine Flamme hinter Glas wirft flackerndes Licht auf den Stab. Glühwürmchen schwirren um die Laterne.',
+  fx: t('wmodel.lampenhaken.fx'),
   build(g, fx) {
     const wood = S('wood', 0x9a6a3e, { rep: [1, 4] }), metal = S('iron', 0x4a4a4a);
     part(g, cyl(.024, .028, 1.7, 6), wood, 0, .85, 0);
@@ -269,11 +270,11 @@ def({ id: 'lampenhaken', gripY: 1.0, cane: true, pitch: .06, name: 'Lampenhaken'
     return t => { pv.rotation.z = Math.sin(t * 1.4) * .1; };
   } });
 
-def({ id: 'erntemond', gripY: 1.0, cane: true, pitch: .06, name: 'Erntemond', school: 'Frost', arch: 'Sense des Totenbeschwörers',
-  story: 'Mit dieser Sense hat nie ein Bauer gemäht. Sie schneidet nur, was schon tot ist, und erntet dabei, was die Toten noch wissen. Das Tuch daran stammt von ihrem ersten Träger. Er hat es nie zurückgefordert.',
+def({ id: 'erntemond', gripY: 1.0, cane: true, pitch: .06, name: t('wmodel.erntemond.name'), school: 'Frost', arch: 'Sense des Totenbeschwörers',
+  story: t('wmodel.erntemond.story'),
   read: 'Ein Halbmond-Blatt quer am Kopf und ein Dorn nach hinten. Die Form ist klar asymmetrisch.',
   wear: 'Die Klinge ist fleckig angelaufen, das Tuch ist ausgefranst und verblichen.',
-  fx: 'Grüne Seelenfetzen lösen sich von der Schneide und steigen auf. Von der Spitze tropft Frost.',
+  fx: t('wmodel.erntemond.fx'),
   build(g, fx) {
     tube(g, gnarl(55, 0, 1.86, .04), .024, S('bark', 0x5a554c, { rep: [6, 1], rot: true }), 12, 5);
     const iron = S('iron', 0x6d7078);
@@ -293,11 +294,11 @@ def({ id: 'erntemond', gripY: 1.0, cane: true, pitch: .06, name: 'Erntemond', sc
       spawn: (R, p) => p.set(.77, 1.62, 0) });
   } });
 
-def({ id: 'totenglocke', gripY: 1.02, cane: true, pitch: .06, name: 'Totenglocke', school: 'Frost', arch: 'Stab des Seelenhirten',
-  story: 'Die Glocke hing früher in einer Kapelle, die bei einer Flut im See versank. Ein Priester holte sie herauf und band sie an seinen Wanderstab. Wenn sie läutet, hören die Ertrunkenen auf zu frieren. Und alle anderen in der Nähe fangen an zu frieren.',
+def({ id: 'totenglocke', gripY: 1.02, cane: true, pitch: .06, name: t('wmodel.totenglocke.name'), school: 'Frost', arch: 'Stab des Seelenhirten',
+  story: t('wmodel.totenglocke.story'),
   read: 'Ein Querbalken wie ein Galgen, an dessen Ende eine Glocke schwingt.',
   wear: 'Die Bronze hat grünen Grünspan angesetzt, an der Kette fehlt ein Glied, es wurde mit Draht ersetzt.',
-  fx: 'Kalter Nebel quillt aus der Glocke und sinkt zu Boden. Jeder Schlag schickt einen sichtbaren Klangring nach außen.',
+  fx: t('wmodel.totenglocke.fx'),
   build(g, fx) {
     const wood = S('wood', 0x4a3c30, { rep: [1, 4] }), metal = S('iron', 0x5a5a56);
     part(g, cyl(.024, .028, 1.8, 6), wood, 0, .9, 0);
@@ -327,11 +328,11 @@ def({ id: 'totenglocke', gripY: 1.02, cane: true, pitch: .06, name: 'Totenglocke
     return t => { pv.rotation.z = Math.sin(t * 1.1) * .18; };
   } });
 
-def({ id: 'eidstumpf', gripY: 1, cane: true, pitch: .06, name: 'Eidstumpf', school: 'Feuer', arch: 'Zerbrochenes Heldenschwert',
-  story: 'Das Schwert eines Ritters, das in dem Moment zerbrach, als er seinen Eid brach. Seine Tochter band den Stumpf an einen Stock und wurde Magierin statt Ritterin. Die Bruchkante glüht, sobald in ihrer Nähe jemand lügt. Sie glüht fast immer.',
+def({ id: 'eidstumpf', gripY: 1, cane: true, pitch: .06, name: t('wmodel.eidstumpf.name'), school: 'Feuer', arch: 'Zerbrochenes Heldenschwert',
+  story: t('wmodel.eidstumpf.story'),
   read: 'Eine Parierstange auf einem krummen Stock, darüber eine kurze Klinge mit gezackter Bruchkante.',
   wear: 'Das Seil ist mehrfach neu geknotet und der alte Griff ist neben den Stock gebunden. Den Stumpf hat nie jemand nachgeschliffen.',
-  fx: 'Goldene Blitze springen von der Bruchkante zum schwebenden Splitter, dahinter drehen sich Strahlen und Glut steigt auf.',
+  fx: t('wmodel.eidstumpf.fx'),
   build(g, fx) {
     const sh = tube(g, gnarl(77, 0, 1.5, .03), .026, S('bark', 0x8a6844, { rep: [6, 1], rot: true }), 12, 5);
     wrap(g, 1.28, 1.52, .033, S('cloth', 0xc8ac78, { rep: [1, 2] }), 6, sh);
@@ -351,11 +352,11 @@ def({ id: 'eidstumpf', gripY: 1, cane: true, pitch: .06, name: 'Eidstumpf', scho
     return t => { shard.position.y = 1.98 + Math.sin(t * 2) * .015; shard.rotation.y = t * 2; };
   } });
 
-def({ id: 'tidenast', gripY: 1, cane: true, pitch: .06, name: 'Tidenast', school: 'Frost', arch: 'Stab der Gezeitenpriesterin',
-  story: 'Treibholz von einem Schiff, das nie angekommen ist. Es trieb zehn Jahre im Meer, und in der Zeit haben sich Muscheln und Korallen festgesetzt. Hält man die Schnecke ans Ohr, hört man die Mannschaft noch singen.',
+def({ id: 'tidenast', gripY: 1, cane: true, pitch: .06, name: t('wmodel.tidenast.name'), school: 'Frost', arch: 'Stab der Gezeitenpriesterin',
+  story: t('wmodel.tidenast.story'),
   read: 'Ein krummes, bleiches Holz, aus dem Korallen-Dornen wachsen. Oben sitzt eine schiefe Schnecke.',
   wear: 'Das Holz ist salzgebleicht, die Korallen wachsen kreuz und quer und folgen keinem Muster.',
-  fx: 'Luftblasen steigen am Holz auf, als stünde der Stab noch unter Wasser. Aus der Schnecke tropft Wasser.',
+  fx: t('wmodel.tidenast.fx'),
   build(g, fx) {
     const sh = tube(g, gnarl(91, 0, 1.6, .09, 10), .03, S('bark', 0xc4c8be, { rep: [6, 1], rot: true }), 18, 5), curve = sh.userData.curve;
     const r = rng(92), cols = [0xf08a78, 0x5fc8b8, 0xe8d088].map(c => S('bone', c));
@@ -376,11 +377,11 @@ def({ id: 'tidenast', gripY: 1, cane: true, pitch: .06, name: 'Tidenast', school
       spawn: (R, p) => p.set(-.04 + (R() - .5) * .06, 1.6, (R() - .5) * .06) });
   } });
 
-def({ id: 'kammerschluessel', gripY: 1.08, cane: true, pitch: .06, name: 'Kammerschlüssel', school: 'Arkan', arch: 'Schlüssel der verbotenen Bibliothek',
-  story: 'Für diesen Schlüssel gibt es genau ein Schloss, und niemand weiß, wo es ist. Die Akademie vergibt ihn alle hundert Jahre an den Lehrling, der die meisten Türen geöffnet hat, die er nicht hätte öffnen dürfen. Das Auge im Griff sucht das Schloss bis heute.',
+def({ id: 'kammerschluessel', gripY: 1.08, cane: true, pitch: .06, name: t('wmodel.kammerschluessel.name'), school: 'Arkan', arch: 'Schlüssel der verbotenen Bibliothek',
+  story: t('wmodel.kammerschluessel.story'),
   read: 'Ein riesiger Schlüssel als Stab: Oben ist der Ring mit dem Auge, unten der Bart mit den Zähnen.',
   wear: 'Der Bart ist abgegriffen, als hätte jemand tausend Schlösser ausprobiert.',
-  fx: 'Hinter dem Auge drehen sich goldene Strahlen. Ein Staubring kreist um den Griff, das Auge sieht sich um.',
+  fx: t('wmodel.kammerschluessel.fx'),
   build(g, fx) {
     const metal = S('metal', 0xa88850, { rep: [1, 4] }), dark = S('iron', 0x5a4a30);
     part(g, cyl(.03, .03, 1.62, 6), metal, 0, .91, 0);
@@ -405,11 +406,11 @@ def({ id: 'kammerschluessel', gripY: 1.08, cane: true, pitch: .06, name: 'Kammer
     return t => { const s = 1 + Math.sin(t * 1.7) * .08; eye.scale.setScalar(s); eye.rotation.y = Math.sin(t * .7) * .6; eye.rotation.x = Math.sin(t * .43) * .3; };
   } });
 
-def({ id: 'sandwender', gripY: 1, cane: true, pitch: .06, name: 'Sandwender', school: 'Arkan', arch: 'Stab des Zeitmagiers',
-  story: 'Wer ihn umdreht, bekommt eine Minute zurück. Sein Erbauer hat ihn so oft umgedreht, dass er am Ende älter starb als die Burg, in der er wohnte. Inzwischen dreht sich der Stab von selbst um.',
+def({ id: 'sandwender', gripY: 1, cane: true, pitch: .06, name: t('wmodel.sandwender.name'), school: 'Arkan', arch: 'Stab des Zeitmagiers',
+  story: t('wmodel.sandwender.story'),
   read: 'Eine Sanduhr in einem Messingrahmen sitzt auf einem geraden Schaft. Der Kopf ist breit, flach und symmetrisch.',
   wear: 'Das Glas ist matt, auf dem Rahmen sind Striche eingeritzt, einer für jede zurückgeholte Minute.',
-  fx: 'Sand rinnt wirklich, die Sanduhr dreht sich alle acht Sekunden. Goldener Zeitstaub kreist spiralförmig darum.',
+  fx: t('wmodel.sandwender.fx'),
   build(g, fx) {
     const brass = S('metal', 0xd0a048);
     part(g, cyl(.024, .028, 1.62, 6), S('wood', 0x6a4a36, { rep: [1, 4] }), 0, .81, 0);
@@ -437,11 +438,11 @@ def({ id: 'sandwender', gripY: 1, cane: true, pitch: .06, name: 'Sandwender', sc
     };
   } });
 
-def({ id: 'frostzahn', gripY: 0.12, cane: false, pitch: 0.85, name: 'Frostzahn', school: 'Frost', arch: 'Eisklinge des Nordens',
-  story: 'Der Fangzahn eines Eiswurms. Schmieden konnten ihn die Nordleute nicht, also haben sie ihn geschliffen. Er schmilzt nie. Jede Wunde, die er schlägt, friert zu, bevor sie bluten kann.',
+def({ id: 'frostzahn', gripY: 0.12, cane: false, pitch: 0.85, name: t('wmodel.frostzahn.name'), school: 'Frost', arch: 'Eisklinge des Nordens',
+  story: t('wmodel.frostzahn.story'),
   read: 'Ein gebogener Zahn statt einer geraden Klinge, darunter eine Parierstange aus Eisdornen.',
   wear: 'Am Griff ist noch das Fell des Wurmjägers, die Dornen sind unterschiedlich lang nachgewachsen.',
-  fx: 'Durchscheinendes Eis mit Rissen. Kalter Dunst fließt von der Klinge herab, Reif glitzert auf der Schneide.',
+  fx: t('wmodel.frostzahn.fx'),
   build(g, fx) {
     part(g, new THREE.IcosahedronGeometry(.035, 0), ICE, 0, -.02, 0);
     part(g, cyl(.02, .022, .24, 6), S('cloth', 0xe0e4e8, { rep: [2, 1] }), 0, .12, 0);

@@ -6,19 +6,20 @@ import { mobsInRadius, applySlow, hasRune } from './core';
 import { iceAge } from '../figures';
 import { mobsOnLine, forward } from '../melee';
 import { capsuleLook } from '../vfx/frostLook';
+import { t } from '../i18n';
 
 const CAPSULE = { len: 15, width: 3, freezeMs: 3000 };   // PH: Eiszeit
 
 const FREEZE = 4000, CD_PER_KILL = 5000;   // PH
 
 export const coc = {
-  get name() { return iceAge() ? 'Ice Time Capsule' : 'Cone of Cold'; },
-  get desc() { return iceAge() ? 'Eiswelle als Linie 15 × 3 yd, friert 3 s ein.' : 'Kegel vor dir, verlangsamt um 50 %.'; }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.coc.name' : 'spell.coc.name'); },
+  get desc() { return t(iceAge() ? 'iceage.coc.desc' : 'spell.coc.desc'); }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche'], cls: 'frost',
   mana: 210, cd: 10000, min: 98, max: 108, range: 10, angle: Math.PI / 3, slow: 0.5, slowDur: 8000,   // Rang 1 Wowhead, Reichweite PH
   runes: [
-    { id: 'round', name: 'Eisring', desc: '360°, halber Schaden.' },
-    { id: 'freeze', name: 'Eiskegel', desc: 'Friert statt Slow.' },
-    { id: 'reap', name: 'Kalte Ernte', desc: 'CD −5 s pro Kill.' },
+    { id: 'round', name: t('spell.coc.runes.round.name'), desc: t('spell.coc.runes.round.desc') },
+    { id: 'freeze', name: t('spell.coc.runes.freeze.name'), desc: t('spell.coc.runes.freeze.desc') },
+    { id: 'reap', name: t('spell.coc.runes.reap.name'), desc: t('spell.coc.runes.reap.desc') },
   ],
   effect(c) {
     if (iceAge()) {

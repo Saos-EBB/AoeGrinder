@@ -9,6 +9,7 @@ import { clamp, lerpTo as lerp, inOut, outC } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 import { eMat, PAL } from '../vfx/energy';
+import { t } from '../i18n';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -54,13 +55,13 @@ const col = h => new THREE.Color(h);
 
 const L1 = .46, L2 = .46, A1 = .31, A2 = .29;
 const SKINS = {
-  base: { name: 'Basis', ink: col(0x2b2b33), accent: col(0x2a2622), orb: col(0xe2b13c) },
-  fire: { name: 'Feuer', ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
-  ice: { name: 'Eis', ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
-  arcane: { name: 'Arkan', ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) },
-  blitz: { name: 'Blitz', ink: col(0x1b2336), accent: col(0x3a5f9e), orb: col(0xbff4ff) },
-  plague: { name: 'Seuche', ink: col(0xffffff), accent: col(0xb9a3c9), orb: col(0x9cff5a) },
-  qm: { name: '?-Magier', ink: col(0x141418), accent: col(0x2a2a32), orb: col(0xffd23a) },
+  base: { name: t('skin.base.name'), ink: col(0x2b2b33), accent: col(0x2a2622), orb: col(0xe2b13c) },
+  fire: { name: t('skin.fire.name'), ink: col(0x2a1c18), accent: col(0x7a2a10), orb: col(0xffb02e) },
+  ice: { name: t('skin.ice.name'), ink: col(0x1f3550), accent: col(0x5d86a8), orb: col(0x9fe9ff), ice: col(0xe4f6ff) },
+  arcane: { name: t('skin.arcane.name'), ink: col(0x2a1f45), accent: col(0x5b3a8f), orb: col(0xc58bff) },
+  blitz: { name: t('skin.blitz.name'), ink: col(0x1b2336), accent: col(0x3a5f9e), orb: col(0xbff4ff) },
+  plague: { name: t('skin.plague.name'), ink: col(0xffffff), accent: col(0xb9a3c9), orb: col(0x9cff5a) },
+  qm: { name: t('skin.qm.name'), ink: col(0x141418), accent: col(0x2a2a32), orb: col(0xffd23a) },
 };
 
 // ───────────────────────── Körper-Shader: Glühen (aGlow), Eiszapfen wachsen nach uM (icT ≥ 0), Requisite (icT = -2), Rand-Licht

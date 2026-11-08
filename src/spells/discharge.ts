@@ -7,17 +7,18 @@ import { shakeCamera } from '../camera';
 import { mobsInRadius, hasRune, schedule } from './core';
 import { boltFx, BOLT } from './fx';
 import { dischargeLook } from '../vfx/boltLook';
+import { t } from '../i18n';
 
 const D = { overMul: 1.5, perCharge: 1.5, after: { ms: 500, k: 0.5 }, manaLoad: 50, minCharge: 10, keep: 0.3, wide: 12, stun: 1000 };   // PH: Schaden pro Ladung, Ladung ohne Batterie, Rest-Rune behält 30 %
 
 export const discharge = {
-  name: 'Entladung', desc: 'Nova 8 yd, verbraucht die ganze Ladung: Schaden = Ladung × 1,5, überladen noch einmal ×1,5.', ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Nova'], cls: 'lightning',
+  name: t('spell.discharge.name'), desc: t('spell.discharge.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Nova'], cls: 'lightning',
   mana: 200, charge: 0, cd: 4000, radius: 8, showDmg: D.perCharge * BATTERY.max,   // PH
   runes: [
-    { id: 'keep', name: 'Restladung', desc: 'Behält 30 % der Ladung.' },
-    { id: 'wide', name: 'Weite Entladung', desc: 'Radius 12 yd.' },
-    { id: 'shock', name: 'Schockwelle', desc: 'Betäubt 1 s.' },
-    { id: 'after', name: 'Nachentladung', desc: 'Zweite Nova nach 0,5 s mit 50 %.' },
+    { id: 'keep', name: t('spell.discharge.runes.keep.name'), desc: t('spell.discharge.runes.keep.desc') },
+    { id: 'wide', name: t('spell.discharge.runes.wide.name'), desc: t('spell.discharge.runes.wide.desc') },
+    { id: 'shock', name: t('spell.discharge.runes.shock.name'), desc: t('spell.discharge.runes.shock.desc') },
+    { id: 'after', name: t('spell.discharge.runes.after.name'), desc: t('spell.discharge.runes.after.desc') },
   ],
   canCast: () => batteryMode() && player.mana < D.minCharge && !player.overcharged ? 'Zu wenig Ladung' : null,
   effect(c) {

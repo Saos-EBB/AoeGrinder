@@ -7,6 +7,7 @@ import { whirlField } from '../vfx/frostLook';
 import { UNIT } from '../config';
 import { iceAge } from '../figures';
 import { coneOfColdFx } from '../fx/spellFx';
+import { t } from '../i18n';
 
 const SABER = { range: 4, angle: 120 * Math.PI / 180, dmg: 3 };   // PH: Eiszeit
 
@@ -32,13 +33,13 @@ function spawnWhirl(c, pos, radius, k) {
 }
 
 export const whirl = {
-  get name() { return iceAge() ? 'Ice Saber' : 'Wirbel'; },
-  get desc() { return iceAge() ? 'Kegel 4 yd, 120°, 3 Einheiten.' : 'Nova + Wirbel 6 s am Boden, 30 % Slow.'; }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Nova', 'Fläche'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.whirl.name' : 'spell.whirl.name'); },
+  get desc() { return t(iceAge() ? 'iceage.whirl.desc' : 'spell.whirl.desc'); }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Nova', 'Fläche'], cls: 'frost',
   mana: 140, cd: 15000, min: 28, max: 32, radius: 8, dur: 6000, field: 6, tickDmg: 12, slow: 0.3,   // PH
   runes: [
-    { id: 'follow', name: 'Eisläufer', desc: 'Folgt dir.' },
-    { id: 'three', name: 'Dreifach', desc: '3 kleine Wirbel.' },
-    { id: 'pull', name: 'Mahlstrom', desc: 'Zieht an.' },
+    { id: 'follow', name: t('spell.whirl.runes.follow.name'), desc: t('spell.whirl.runes.follow.desc') },
+    { id: 'three', name: t('spell.whirl.runes.three.name'), desc: t('spell.whirl.runes.three.desc') },
+    { id: 'pull', name: t('spell.whirl.runes.pull.name'), desc: t('spell.whirl.runes.pull.desc') },
   ],
   effect(c) {
     if (iceAge()) {

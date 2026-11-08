@@ -4,16 +4,17 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { t, lang } from '../../i18n';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
 const RARITY = [
   { name: 'grau', color: '#b0b0b0', mult: 0.5 }, { name: 'weiß', color: '#ffffff', mult: 1 }, { name: 'grün', color: '#3fe05a', mult: 2 },
   { name: 'blau', color: '#4aa3ff', mult: 3 }, { name: 'lila', color: '#c573ff', mult: 4 }, { name: 'orange', color: '#ff9a2e', mult: 5 }];
 export const TYPES = {
-  staff: { name: 'Langer Stab', noun: 'stab', g: 'm', slot: 'beide Hände', rule: 'Radius +10 %, Kanäle +1 Tick, Zauberzeit +10 %', heads: ['kristall', 'kaefig', 'gabel', 'ring', 'sichel'] },
-  wand: { name: 'Zauberstab', noun: 'zauberstab', g: 'm', slot: 'Haupthand', rule: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', heads: ['splitter', 'kugel', 'klaue', 'nadel'] },
-  book: { name: 'Buch', noun: 'buch', g: 'n', slot: 'Nebenhand', rule: '+1 Ladung auf den Fokus-Spell, Manakosten −10 %', heads: ['auge', 'rune', 'siegel', 'maul'] },
-  relic: { name: 'Relikt', noun: 'relikt', g: 'n', slot: 'Nebenhand', rule: 'Aura: alle 3 s Puls, 6 yd, 30 % des Element-Effekts; Dauereffekte +10 %', heads: ['schaedel', 'laterne', 'auge', 'kugel', 'herz'] },
+  staff: { name: t('wtype.staff.name'), noun: 'stab', g: 'm', slot: t('wtype.staff.slot'), rule: t('wtype.staff.rule'), heads: ['kristall', 'kaefig', 'gabel', 'ring', 'sichel'] },
+  wand: { name: t('wtype.wand.name'), noun: 'zauberstab', g: 'm', slot: t('wtype.wand.slot'), rule: t('wtype.wand.rule'), heads: ['splitter', 'kugel', 'klaue', 'nadel'] },
+  book: { name: t('wtype.book.name'), noun: 'buch', g: 'n', slot: t('wtype.book.slot'), rule: t('wtype.book.rule'), heads: ['auge', 'rune', 'siegel', 'maul'] },
+  relic: { name: t('wtype.relic.name'), noun: 'relikt', g: 'n', slot: t('wtype.relic.slot'), rule: t('wtype.relic.rule'), heads: ['schaedel', 'laterne', 'auge', 'kugel', 'herz'] },
 };
 export const HEADS = {   // Name im Waffennamen, Schule des Fokus-Spells (Form verrät die Schule)
   kristall: ['Kristall', 'Frost'], sichel: ['Sichel', 'Frost'], splitter: ['Splitter', 'Frost'], nadel: ['Nadel', 'Frost'],
@@ -29,28 +30,30 @@ export const SHAFTS = {
   segmentiert: { values: ['Mana', 'Dauereffekte'], names: { staff: 'segmentiert', wand: 'segmentiert', book: 'Metallecken', relic: 'Käfig' } },
   umwickelt: { values: ['Radius'], names: { staff: 'umwickelt', wand: 'umwickelt', book: 'Kette', relic: 'Kette' } },
 };
-export const EXTRAS = { baender: 'Bänder', ketten: 'Ketten', federn: 'Federn', gloeckchen: 'Glöckchen' };
+export const EXTRAS = { baender: t('wextra.baender'), ketten: t('wextra.ketten'), federn: t('wextra.federn'), gloeckchen: t('wextra.gloeckchen') };
 export const ELEMENTS = {
-  none: { name: 'keins', color: 0x000000, adj: '' },
-  frost: { name: 'Frost', color: 0x9fe4ff, adj: 'Eisig', fx: 'Treffer verlangsamen 20 % für 2 s' },
-  feuer: { name: 'Feuer', color: 0xff7a22, adj: 'Glühend', fx: 'Brand: 30 % des Treffers über 3 s' },
-  arkan: { name: 'Arkan', color: 0xd070ff, adj: 'Runisch', fx: '2 % Mana zurück' },
-  blitz: { name: 'Blitz', color: 0xffe866, adj: 'Knisternd', fx: 'Kettenblitz: 40 % auf 3 Mobs in 6 yd' },
-  blut: { name: 'Blut', color: 0xe0202e, adj: 'Blutig', fx: 'Seuchen-Mal: +1 Stapel' },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
-  dunkel: { name: 'Dunkel', color: 0xff2440, adj: 'Finster', fx: 'True Damage, heilt 20 %' },
+  none: { name: t('element.none.name'), color: 0x000000, adj: '' },
+  frost: { name: t('element.frost.name'), color: 0x9fe4ff, adj: t('element.frost.adj'), fx: t('element.frost.fx') },
+  feuer: { name: t('element.feuer.name'), color: 0xff7a22, adj: t('element.feuer.adj'), fx: t('element.feuer.fx') },
+  arkan: { name: t('element.arkan.name'), color: 0xd070ff, adj: t('element.arkan.adj'), fx: t('element.arkan.fx') },
+  blitz: { name: t('element.blitz.name'), color: 0xffe866, adj: t('element.blitz.adj'), fx: t('element.blitz.fx') },
+  blut: { name: t('element.blut.name'), color: 0xe0202e, adj: t('element.blut.adj'), fx: t('element.blut.fx') },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
+  dunkel: { name: t('element.dunkel.name'), color: 0xff2440, adj: t('element.dunkel.adj'), fx: t('element.dunkel.fx') },
 };
 export const elementColor = el => `#${ELEMENTS[el].color.toString(16).padStart(6, '0')}`;   // CSS-Farbe für UI
 export const MAKERS = {
-  grab: { name: 'Grabkammer & Söhne', gen: 'der Grabkammer', trait: 'Schaden +10 %, Zauberzeit +10 %', main: 'bone', accent: 'rust', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
-  stern: { name: 'Sternwarte Ost', gen: 'der Sternwarte', trait: 'Crit +5 %, Crits geben 1 % Mana', main: 'brass', accent: 'brass', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },
-  morra: { name: 'Hexenküche Morra', gen: 'der Hexenküche', trait: 'Dauereffekte +15 %, ein zufälliger Wert +5 % pro Run', main: 'wood', accent: 'wood', detail: 'glass', thick: 1.0, radial: 7, bend: 0.07, float: false },
-  vey: { name: 'Kristallgießerei Vey', gen: 'der Kristallgießerei', trait: 'Abklingzeit −5 %, Mana +10 %', main: 'crystal', accent: 'crystal', detail: 'brass', thick: 0.9, radial: 6, bend: 0, float: true },
-  brandt: { name: 'Kriegsschmiede Brandt', gen: 'der Kriegsschmiede', trait: 'Leben +10 %, 2 % Lebensraub', main: 'steel', accent: 'steel', detail: 'leather', thick: 1.1, radial: 6, bend: 0, float: false },
+  grab: { name: t('maker.grab.name'), gen: t('maker.grab.gen'), trait: t('maker.grab.trait'), main: 'bone', accent: 'rust', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
+  stern: { name: t('maker.stern.name'), gen: t('maker.stern.gen'), trait: t('maker.stern.trait'), main: 'brass', accent: 'brass', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },
+  morra: { name: t('maker.morra.name'), gen: t('maker.morra.gen'), trait: t('maker.morra.trait'), main: 'wood', accent: 'wood', detail: 'glass', thick: 1.0, radial: 7, bend: 0.07, float: false },
+  vey: { name: t('maker.vey.name'), gen: t('maker.vey.gen'), trait: t('maker.vey.trait'), main: 'crystal', accent: 'crystal', detail: 'brass', thick: 0.9, radial: 6, bend: 0, float: true },
+  brandt: { name: t('maker.brandt.name'), gen: t('maker.brandt.gen'), trait: t('maker.brandt.trait'), main: 'steel', accent: 'steel', detail: 'leather', thick: 1.1, radial: 6, bend: 0, float: false },
 };
 
+// Deutsch baut ein Wort mit Endung nach Geschlecht (Eisiger Kristallstab der Grabkammer), Englisch reiht Wörter (Icy Crystal Staff of the Crypt)
 export function weaponNameOf(s) {
-  const T = TYPES[s.type], el = ELEMENTS[s.element], adj = el.adj ? `${el.adj}${T.g === 'm' ? 'er' : 'es'} ` : '';
-  return `${adj}${HEADS[s.head][0]}${T.noun} ${MAKERS[s.maker].gen}`;
+  const T = TYPES[s.type], el = ELEMENTS[s.element], head = t(`whead.${s.head}`);
+  if (lang === 'de') return `${el.adj ? `${el.adj}${T.g === 'm' ? 'er' : 'es'} ` : ''}${head}${T.noun} ${MAKERS[s.maker].gen}`;
+  return `${el.adj ? `${el.adj} ` : ''}${head} ${t(`wtype.${s.type}.noun`)} ${MAKERS[s.maker].gen}`;
 }
 
 function canvasTex(size, draw, rep = [1, 1]) {

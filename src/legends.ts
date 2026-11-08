@@ -18,6 +18,7 @@ import { blinkTo } from './spells/blink';
 import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE, SHADOW, BOLT } from './spells/fx';
 import { combatText, showError } from './ui/hud';
 import { forward } from './melee';
+import { t } from './i18n';
 
 export const LEG = {
   combo: { keys: ['KeyQ', 'KeyE', 'Digit1'], labels: ['Q', 'E', '1'], windowMs: 3000, cdMs: 60000 },
@@ -35,15 +36,15 @@ export const LEG = {
 
 // Alle Legenden: kind 'mage' kommt aus der Kiste (element: nur mit diesem Element), 'krieger' und 'klinge' aus der Waffenwahl
 export const LEGENDS = {
-  sheep: { kind: 'mage', name: 'Mass Sheep', desc: 'Alle Gegner im Sichtfeld werden 4 s zu Schafen, Schaden bricht es nicht ab.' },
-  cow: { kind: 'mage', name: 'Cow Level', desc: 'Das nächste Pack (10 yd um den nächsten Mob) wird zu Kühen: Leben ×2, Erfahrung ×3, Staub ×3.' },
-  murky: { kind: 'mage', name: 'Murky-Ei', desc: 'Ei an deiner Position (60 s, höchstens 1). Stirbst du, stehst du am Ei mit 50 % Leben auf. Phönix greift zuerst.' },
-  pyroclasm: { kind: 'mage', element: 'feuer', name: 'Pyroclasm', desc: 'Feuerball springt 5× in 8 yd, doppelter Feuerball-Schaden, setzt Brand.' },
-  snowball: { kind: 'mage', element: 'frost', name: 'Schneeball', desc: 'Rollt 20 yd. Pro Treffer +10 % Radius und Schaden, schleudert 1 s hoch.' },
-  barrage: { kind: 'mage', element: 'arkan', name: 'Arkanbeschuss', desc: '8 Arkane Geschosse auf die nächsten Ziele, danach 10 s +25 % Zaubertempo.' },
-  leeroy: { kind: 'krieger', base: 'sword', name: 'Leeroy Jenkins', desc: 'Sturm 10 yd, alle Mobs in 20 yd laufen auf dich zu, 8 s +50 % Schaden.' },
-  freshmeat: { kind: 'krieger', base: 'sword', name: 'Fresh Meat', desc: 'Haken auf den stärksten Mob in 20 yd (Champion zuerst), zieht ihn heran, betäubt 1 s.' },
-  thunderfury: { kind: 'klinge', name: 'Thunderfury', desc: 'Kettenblitz auf bis zu 10 Ziele in 12 yd, alle 5 s um 20 % verlangsamt.' },
+  sheep: { kind: 'mage', name: t('legend.sheep.name'), desc: t('legend.sheep.desc') },
+  cow: { kind: 'mage', name: t('legend.cow.name'), desc: t('legend.cow.desc') },
+  murky: { kind: 'mage', name: t('legend.murky.name'), desc: t('legend.murky.desc') },
+  pyroclasm: { kind: 'mage', element: 'feuer', name: t('legend.pyroclasm.name'), desc: t('legend.pyroclasm.desc') },
+  snowball: { kind: 'mage', element: 'frost', name: t('legend.snowball.name'), desc: t('legend.snowball.desc') },
+  barrage: { kind: 'mage', element: 'arkan', name: t('legend.barrage.name'), desc: t('legend.barrage.desc') },
+  leeroy: { kind: 'krieger', base: 'sword', name: t('legend.leeroy.name'), desc: t('legend.leeroy.desc') },
+  freshmeat: { kind: 'krieger', base: 'sword', name: t('legend.freshmeat.name'), desc: t('legend.freshmeat.desc') },
+  thunderfury: { kind: 'klinge', name: t('legend.thunderfury.name'), desc: t('legend.thunderfury.desc') },
 };
 
 // Kiste: orange Waffe, mit 3 % eine Legende. Element-Legenden nur, wenn die Waffe das Element hat

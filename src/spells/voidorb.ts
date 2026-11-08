@@ -4,6 +4,7 @@ import { pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { voidOrbField } from '../vfx/arcaneLook';
 import { boom, PAL } from '../vfx/energy';
+import { t } from '../i18n';
 
 const PULL_PER_S = 4, MAX_SLOW = 0.4, FOLLOW_SPEED = 3, IMPLODE = 25, TWIN_OFFSET = 6;   // PH
 
@@ -30,12 +31,12 @@ function spawnOrb(c, pos, radius, k) {
 }
 
 export const voidorb = {
-  name: 'Leerenkugel', desc: 'Dunkle Kugel aufs Bodenziel 6 s, zieht alle in 15 yd zur Mitte, bis 40 % Slow nahe der Mitte. Kein Schaden.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Leere', 'Fläche'], cls: 'arcane',
+  name: t('spell.voidorb.name'), desc: t('spell.voidorb.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Leere', 'Fläche'], cls: 'arcane',
   mana: 350, cd: 30000, dur: 6000, pulse: 18, range: 30, radius: 15, ground: true,   // PH
   runes: [
-    { id: 'follow', name: 'Leerenbegleiter', desc: 'Folgt dir.' },
-    { id: 'implode', name: 'Implosion', desc: 'Implodiert am Ende, Schaden pro Gefangenem.' },
-    { id: 'twins', name: 'Zwillinge', desc: '2 kleine Kugeln.' },
+    { id: 'follow', name: t('spell.voidorb.runes.follow.name'), desc: t('spell.voidorb.runes.follow.desc') },
+    { id: 'implode', name: t('spell.voidorb.runes.implode.name'), desc: t('spell.voidorb.runes.implode.desc') },
+    { id: 'twins', name: t('spell.voidorb.runes.twins.name'), desc: t('spell.voidorb.runes.twins.desc') },
   ],
   effect(c, point) {
     const radius = c.radius(voidorb.radius);

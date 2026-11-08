@@ -16,6 +16,7 @@ import { nearestTarget } from './target';
 import { zapLook } from '../vfx/boltLook';
 import { sludgeLook, slimeTrapField, slimeWaveLook, blackHoleField, holeImpact, poisonCloudField, webLook, contractLook, drainLook, burstLook, meltField, pestilenceLook } from '../vfx/plagueLook';
 import { mark, markStacks, clearMark, poison, poisoned } from '../plagueMarks';
+import { t } from '../i18n';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
 const heal = v => { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + v); };
@@ -88,7 +89,7 @@ function withScale(c) { c.scaleOut = () => 1; return c; }
 const spell = (o) => ({ ranks: ['dmg', 'radius'], tags: ['Seuche', ...(o.tags ?? [])], cls: 'nature', ...o });
 
 export const sludge = spell({
-  name: 'Schlammwurf', desc: 'Wirft ein Stück von sich selbst aufs nächste Ziel: 1 Einheit, Explosion 2 yd, markiert.', tags: ['Geschoss'],
+  name: t('spell.sludge.name'), desc: t('spell.sludge.desc'), tags: ['Geschoss'],
   lifePct: 0.01, mana: 40, cd: 0, range: P.sludge.range, showDmg: P.sludge.dmg * UNIT,
   canCast: () => nearestTarget(P.sludge.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {
@@ -100,7 +101,7 @@ export const sludge = spell({
 });
 
 export const slimetrap = spell({
-  name: 'Schleimfalle', desc: 'Bodenziel: Falle 4 yd, klebt 2 s fest, markiert.', tags: ['Fläche', 'Kontrolle'],
+  name: t('spell.slimetrap.name'), desc: t('spell.slimetrap.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.02, mana: 80, cd: 8000, range: P.trap.range, radius: P.trap.radius, ground: true,
   effect(c, point) {
     const seen = new Set();
@@ -111,7 +112,7 @@ export const slimetrap = spell({
 });
 
 export const slimewave = spell({
-  name: 'Schleimwelle', desc: 'Welle 12 yd nach vorn, 6 yd breit, schiebt Gegner 5 yd weg, klebt 1 s fest, markiert.', tags: ['Fläche', 'Kontrolle'],
+  name: t('spell.slimewave.name'), desc: t('spell.slimewave.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.03, mana: 110, cd: 6000, showDmg: P.wave.dmg * UNIT,
   effect(c) {
     const f = forward(), a = player.pos.clone(), len = c.radius(P.wave.length), b = { x: a.x + f.x * len, y: a.y, z: a.z + f.z * len };
@@ -126,7 +127,7 @@ export const slimewave = spell({
 });
 
 export const blackhole = spell({
-  name: 'Schwarzes Loch', desc: 'Bodenziel: saugt alle in 8 yd ein. Nach 1,5 s fliegen sie auf die nächste andere Gruppe bis 20 yd: Aufprall 4 yd, 3 Einheiten.', tags: ['Fläche', 'Kontrolle'],
+  name: t('spell.blackhole.name'), desc: t('spell.blackhole.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.05, mana: 200, cd: 20000, range: P.hole.range, radius: P.hole.radius, ground: true, showDmg: P.hole.dmg * UNIT,
   effect(c, point) {
     const caught = new Set<any>();
@@ -154,7 +155,7 @@ export const blackhole = spell({
 });
 
 export const poisoncloud = spell({
-  name: 'Giftwolke', desc: 'Fläche 6 yd für 6 s, 0,3 Einheiten pro Sekunde, markiert jede Sekunde.', tags: ['Fläche'],
+  name: t('spell.poisoncloud.name'), desc: t('spell.poisoncloud.desc'), tags: ['Fläche'],
   lifePct: 0.03, mana: 120, cd: 10000, range: P.cloud.range, radius: P.cloud.radius, ground: true, showDmg: P.cloud.dps * UNIT,
   effect(c, point) {
     addField(c, { pos: point, radius: c.radius(P.cloud.radius), dur: P.cloud.ms, visual: poisonCloudField(),
@@ -164,7 +165,7 @@ export const poisoncloud = spell({
 });
 
 export const web = spell({
-  name: 'Klebefaden', desc: 'Fläche 8 yd: kettet jeden an bis zu 2 Nachbarn, 6 s. Schaden und Kontrolle gehen zu 50 % auf die Angeketteten über.', tags: ['Fläche', 'Kontrolle'],
+  name: t('spell.web.name'), desc: t('spell.web.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.04, mana: 150, cd: 30000, range: P.web.range, radius: P.web.radius, ground: true,
   effect(c, point) {
     const list = mobsInRadius(point, c.radius(P.web.radius));
@@ -178,28 +179,28 @@ export const web = spell({
 });
 
 export const contract = spell({
-  name: 'Zusammenziehen', desc: 'Alle Markierten in 15 yd auf einen Haufen, 4 s festgehalten, × Stapel. Verbraucht die Male.', tags: ['Kontrolle'],
+  name: t('spell.contract.name'), desc: t('spell.contract.desc'), tags: ['Kontrolle'],
   lifePct: 0.03, mana: 100, cd: 10000,
   canCast: () => marked(P.contract.radius).length ? null : 'Kein markierter Gegner in der Nähe',
   effect(c) { contractAll(c, marked(c.radius(P.contract.radius))); },
 });
 
 export const drain = spell({
-  name: 'Entziehen', desc: 'Alle Markierten in 15 yd: 2 Einheiten pro Stapel, heilt 0,5 % pro Treffer. Verbraucht die Male.', tags: ['Heilung'],
+  name: t('spell.drain.name'), desc: t('spell.drain.desc'), tags: ['Heilung'],
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
   canCast: () => marked(P.drain.radius).length ? null : 'Kein markierter Gegner in der Nähe',
   effect(c) { drainAll(c, marked(c.radius(P.drain.radius))); },
 });
 
 export const burst = spell({
-  name: 'Platzen', desc: 'Alle Markierten in 15 yd: Gift in Höhe des Entziehen-Schadens, verteilt auf 12 s. Verbraucht die Male.',
+  name: t('spell.burst.name'), desc: t('spell.burst.desc'),
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
   canCast: () => marked(P.burst.radius).length ? null : 'Kein markierter Gegner in der Nähe',
   effect(c) { burstAll(withScale(c), marked(c.radius(P.burst.radius))); },
 });
 
 export const melt = spell({
-  name: 'Zerfließen', desc: 'Du zerfließt 3 s zu einer Lache bis 15 yd (nicht angreifbar, kein Zaubern, markiert darin). Dann reißt der Schleim alle darin zur Mitte und hält sie 2 s fest.', tags: ['Bewegung', 'Fläche', 'Kontrolle'],
+  name: t('spell.melt.name'), desc: t('spell.melt.desc'), tags: ['Bewegung', 'Fläche', 'Kontrolle'],
   lifePct: 0.1, mana: 300, cd: 45000, ranks: ['mana', 'radius'],
   effect(c) {
     const M = P.melt, pos = player.pos.clone(), R = c.radius(M.radius);
@@ -222,7 +223,7 @@ export const melt = spell({
 
 // Relikt Pestilenz: alle Male im Umkreis platzen, ziehen zusammen und entziehen gleichzeitig, ohne sich zu verbrauchen
 export const pestilence = {
-  name: 'Pestilenz', figRelic: true, desc: 'Alle Male in der Nähe platzen, ziehen zusammen und entziehen gleichzeitig, ohne sich zu verbrauchen.', ranks: [], tags: ['Seuche'], cls: 'nature',
+  name: t('spell.pestilence.name'), figRelic: true, desc: t('spell.pestilence.desc'), ranks: [], tags: ['Seuche'], cls: 'nature',
   mana: 0, cd: P.pestilence.cd,
   press() {
     if (cdEnd('pestilence') > state.now) return showError('Fähigkeit ist noch nicht bereit');

@@ -5,6 +5,7 @@ import { novaFx } from '../fx/spellFx';
 import { iceBlockLook } from '../vfx/frostLook';
 import { showError } from '../ui/hud';
 import { cdEnd, startCd, stopChannel, stopDrink, noteCastStart } from './core';
+import { t } from '../i18n';
 
 const ICEBLOCK = { ms: 6000, cd: 90000, novaRadius: 3 };   // PH, Optik in vfx/frostLook.ts
 
@@ -24,7 +25,7 @@ export function updateIceBlock() {
 }
 
 export const iceblock = {
-  name: 'Eisblock', figRelic: true, desc: '6 s unverwundbar, keine Aktion, kein Laufen. Erneut drücken beendet ihn.', ranks: [], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
+  name: t('spell.iceblock.name'), figRelic: true, desc: t('spell.iceblock.desc'), ranks: [], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
   mana: 0, cd: ICEBLOCK.cd,
   press() {
     if (block) return endIceBlock();

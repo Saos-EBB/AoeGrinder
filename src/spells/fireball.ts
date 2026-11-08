@@ -4,16 +4,17 @@ import { mods } from '../config';
 import { mobsInRadius, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { fireballLook } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
 export const fireball = {
-  name: 'Feuerball', desc: '0,35 s Zauber aufs nächste Ziel, explodiert mit 50 % Schaden drumherum.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Geschoss'], cls: 'fire',
+  name: t('spell.fireball.name'), desc: t('spell.fireball.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Geschoss'], cls: 'fire',
   mana: 110, cd: 0, castTime: 350, min: 85, max: 100, radius: 4, range: 30,   // PH
   runes: [
-    { id: 'big', name: 'Große Explosion', desc: '+75 % Radius.' },
-    { id: 'split', name: 'Splitterball', desc: '+2 Projektile im Fächer, je 70 %.' },
-    { id: 'swift', name: 'Schnellwurf', desc: 'Sofort, −40 % Schaden.' },
+    { id: 'big', name: t('spell.fireball.runes.big.name'), desc: t('spell.fireball.runes.big.desc') },
+    { id: 'split', name: t('spell.fireball.runes.split.name'), desc: t('spell.fireball.runes.split.desc') },
+    { id: 'swift', name: t('spell.fireball.runes.swift.name'), desc: t('spell.fireball.runes.swift.desc') },
   ],
   instantCast: () => hasRune('fireball', 'swift'),
   canCast: () => nearestTarget(fireball.range) ? null : 'Kein Ziel in Reichweite',

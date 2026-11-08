@@ -16,9 +16,10 @@ import { applyRoot, knockbackMob } from '../mobs';
 import { mobsInRadius, addField, schedule } from './core';
 import { runChain, nearestMob } from './chain';
 import { fieldDecal, areaParticles, burstFx, boltFx, visuals, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
+import { t } from '../i18n';
 
 export const ragnaros = {
-  name: 'Zorn des Ragnaros', relic: true, desc: 'Feuerschlag 15 yd, alle fliegen weg.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
+  name: t('spell.ragnaros.name'), relic: true, desc: t('spell.ragnaros.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 200, cd: 25000, dmg: 150, radius: 15, knock: 15,
   effect(c) {
     const r = c.radius(ragnaros.radius);
@@ -29,7 +30,7 @@ export const ragnaros = {
 };
 
 export const desecrate = {
-  name: 'Entweihen', relic: true, desc: 'Dunkle Fläche aufs Bodenziel 10 s, wächst mit jedem Tick, der trifft. Dunkel-Schaden trifft immer, ignoriert die Rüstung und heilt dich.', ranks: ['dmg', 'mana', 'radius'], tags: ['Dunkel', 'Fläche'], cls: 'shadow',
+  name: t('spell.desecrate.name'), relic: true, desc: t('spell.desecrate.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Dunkel', 'Fläche'], cls: 'shadow',
   mana: 250, cd: 40000, dur: 10000, tickDmg: 20, range: 30, radius: 6, grow: 0.6, ground: true,
   effect(c, point) {
     if (!vfxOld()) desecrateOpen(point, c.radius(desecrate.radius));
@@ -54,7 +55,7 @@ function lineOfSight(a, b) {
 }
 
 export const frostbreath = {
-  name: 'Frostatem', relic: true, desc: 'Nach 3 s Einschlag, trifft alle in 30 yd mit Sichtlinie, Eingefrorene ×2.', ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche'], cls: 'frost',
+  name: t('spell.frostbreath.name'), relic: true, desc: t('spell.frostbreath.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche'], cls: 'frost',
   mana: 300, cd: 60000, dmg: 200, delay: 3000, radius: 30,
   effect(c) {
     const r = c.radius(frostbreath.radius);
@@ -70,7 +71,7 @@ export const frostbreath = {
 };
 
 export const froststrike = {
-  name: 'Frostschlag', relic: true, desc: 'Friert Ziel 4 s ein, springt als Kette auf jeden in 10 yd.', ranks: ['dmg', 'mana'], tags: ['Frost', 'Kette'], cls: 'frost',
+  name: t('spell.froststrike.name'), relic: true, desc: t('spell.froststrike.desc'), ranks: ['dmg', 'mana'], tags: ['Frost', 'Kette'], cls: 'frost',
   mana: 200, cd: 45000, dmg: 60, root: 4000, jumpRange: 10, range: 30,
   canCast: () => nearestMob(froststrike.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {
@@ -83,7 +84,7 @@ export const froststrike = {
 };
 
 export const firenova = {
-  name: 'Feuernova', relic: true, desc: 'Feuerring breitet sich auf 40 yd aus.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
+  name: t('spell.firenova.name'), relic: true, desc: t('spell.firenova.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 280, cd: 30000, dmg: 120, radius: 40, speed: 20,
   effect(c) {
     const maxR = c.radius(firenova.radius), done = new Set();
@@ -116,7 +117,7 @@ function boneRing(pos, radius) {
 }
 
 export const bonecage = {
-  name: 'Knochengefängnis', relic: true, desc: 'Knochenring um ein Pack, 6 s gefangen, Leerenkugel + Arkane Geschosse +50 % darin.', ranks: ['mana', 'radius'], tags: ['Knochen', 'Fläche'], cls: 'bone',
+  name: t('spell.bonecage.name'), relic: true, desc: t('spell.bonecage.desc'), ranks: ['mana', 'radius'], tags: ['Knochen', 'Fläche'], cls: 'bone',
   mana: 150, cd: 35000, dur: 6000, range: 30, radius: 8, ground: true,
   effect(c, point) {
     const radius = c.radius(bonecage.radius), caught = mobsInRadius(point, radius);

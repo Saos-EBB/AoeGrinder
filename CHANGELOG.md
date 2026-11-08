@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(i18n)!: Neue Namen laut `docs/namen-i18n.md` für Figuren, Spells, Runen, Talente, Relikte, Karten, Ressourcen, Affixe, legendäre Waffen und Bosse (z. B. Feuerball → Glutschädel, Blink → Huschen, Strichkrieger → Kohlenhüne); alle Spell-, Karten-, Modus-, Waffen-, Mob- und Boss-Texte kommen jetzt aus `src/i18n` und gibt es auf Englisch
 - feat(i18n): Sprache Deutsch/English in Einstellungen → Interface (Standard Deutsch, gespeichert in `frostgrind.lang`, Umschalten lädt die Seite neu); Grundgerüst `src/i18n` mit `t()`; Spell-Icons hängen jetzt an der Spell-ID statt am Namen
 
 ## 2026-11-07

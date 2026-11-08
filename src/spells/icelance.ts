@@ -6,17 +6,18 @@ import { iceAge } from '../figures';
 
 const PARTISAN = { n: 5, spread: 40 * Math.PI / 180, k: 0.6 };   // PH: Eiszeit
 import { lanceLook } from '../vfx/frostLook';
+import { t } from '../i18n';
 
 const CHILL = { slow: 0.4, ms: 3000 }, SWIFT_DMG = 0.75, WIDE = 2, FROZEN_MUL = 2;   // PH
 
 export const icelance = {
-  get name() { return iceAge() ? 'Partisan' : 'Eislanze'; },
-  get desc() { return iceAge() ? '5 Speere im Fächer 40°, je 60 %.' : 'Durchbohrt alles auf 20 yd vor dir, Eingefrorene nehmen doppelten Schaden.'; }, ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.icelance.name' : 'spell.icelance.name'); },
+  get desc() { return t(iceAge() ? 'iceage.icelance.desc' : 'spell.icelance.desc'); }, ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
   mana: 70, cd: 4000, min: 44, max: 52, length: 20, width: 2,   // PH
   runes: [
-    { id: 'wide', name: 'Breite Lanze', desc: 'Doppelte Breite.' },
-    { id: 'chill', name: 'Kalte Spitze', desc: 'Getroffene sind 3 s 40 % langsamer.' },
-    { id: 'swift', name: 'Schnelle Lanze', desc: 'Halbe CD, −25 % Schaden.', cdMul: 0.5 },
+    { id: 'wide', name: t('spell.icelance.runes.wide.name'), desc: t('spell.icelance.runes.wide.desc') },
+    { id: 'chill', name: t('spell.icelance.runes.chill.name'), desc: t('spell.icelance.runes.chill.desc') },
+    { id: 'swift', name: t('spell.icelance.runes.swift.name'), desc: t('spell.icelance.runes.swift.desc'), cdMul: 0.5 },
   ],
   effect(c) {
     const from = player.pos, k = hasRune('icelance', 'swift') ? SWIFT_DMG : 1;

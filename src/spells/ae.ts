@@ -3,14 +3,15 @@ import { player } from '../state';
 import { arcaneExplosionFx } from '../fx/spellFx';
 import { pullMob } from '../mobs';
 import { mobsInRadius, hasRune } from './core';
+import { t } from '../i18n';
 
 export const ae = {
-  name: 'Arcane Explosion', desc: 'Arkane Explosion um dich.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Nova'], cls: 'arcane',
+  name: t('spell.ae.name'), desc: t('spell.ae.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Nova'], cls: 'arcane',
   mana: 75, cd: 0, min: 34, max: 38, radius: 10,   // Rang 1 Wowhead, Radius PH
   runes: [
-    { id: 'pull', name: 'Arkaner Sog', desc: 'Zieht Gegner 3 yd an.' },
-    { id: 'free5', name: 'Überladung', desc: 'Gratis bei 5+ Treffern.' },
-    { id: 'third', name: 'Rhythmus', desc: 'Jede 3. gratis.' },
+    { id: 'pull', name: t('spell.ae.runes.pull.name'), desc: t('spell.ae.runes.pull.desc') },
+    { id: 'free5', name: t('spell.ae.runes.free5.name'), desc: t('spell.ae.runes.free5.desc') },
+    { id: 'third', name: t('spell.ae.runes.third.name'), desc: t('spell.ae.runes.third.desc') },
   ],
   effect(c) {
     const r = c.radius(ae.radius);

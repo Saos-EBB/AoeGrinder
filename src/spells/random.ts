@@ -12,6 +12,7 @@ import { addBuff, buffs } from '../buffs';
 import { castSpell, cdEnd, startCd, stat, isGround, mobsInRadius, applySlow, makeCtx, schedule, onCastStart } from './core';
 import { flame } from './flame';
 import { FIRE, EMBER } from './fx';
+import { t } from '../i18n';
 
 const R = RANDOM_MAGE, CATS = R.cats;
 
@@ -41,7 +42,7 @@ function pressCat(cat, point) {
 
 const category = cat => ({
   name: CATS[cat].name, cls: 'util', tags: [], fixed: true, random: true, cd: CATS[cat].cd,
-  desc: `Würfelt einen Spell: ${CATS[cat].pool.map(id => SPELLS[id]?.name ?? id).join(', ')}.`,
+  get desc() { return t('spell.random.desc', { list: CATS[cat].pool.map(id => SPELLS[id]?.name ?? id).join(', ') }); },
   ranks: cat === 'rOff' ? ['dmg'] : cat === 'rDef' ? ['dur'] : ['cd'],
   // Rang-Karten wirken auf alle Spells der Kategorie, die Abklingzeit auf die Kategorie selbst
   rankTargets: key => key === 'cd' ? [cat] : CATS[cat].pool,
@@ -55,7 +56,7 @@ const category = cat => ({
 // Drink Something: 2 s sitzen mit dem gewürfelten Getränk, bricht ab wie Trinken. Wirkung erst am Ende des Sitzens
 const drinkSpell = {
   name: CATS.rDrink.name, cls: 'util', tags: [], fixed: true, random: true, cd: CATS.rDrink.cd, mana: 0, ranks: [],
-  desc: 'Würfelt eins der 4 Magier-Getränke: Goldbecher, Feuerschnaps, Heiße Tasse, Tee-Schale.',
+  desc: t('spell.rDrink.desc'),
   preview: () => nextOf('rDrink'),
   press() {
     if (cdEnd('rDrink') > state.now) return showError('Fähigkeit ist noch nicht bereit');

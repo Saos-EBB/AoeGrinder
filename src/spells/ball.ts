@@ -4,6 +4,7 @@ import { boltFx, BOLT } from './fx';
 import { ballField } from '../vfx/boltLook';
 import { mods } from '../config';
 import { state } from '../state';
+import { t } from '../i18n';
 
 const ORBIT = { yd: 4, max: 3, ms: 10000, turn: 2 };   // PH: Rune Orbit, rad/s
 
@@ -31,14 +32,14 @@ function orbit(c) {
 }
 
 export const ball = {
-  name: 'Kugelblitz', desc: 'Langsame Kugel 20 yd nach vorn, zappt alle 0,5 s alles in 5 yd.', ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Geschoss', 'Fläche'], cls: 'lightning',
+  name: t('spell.ball.name'), desc: t('spell.ball.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Geschoss', 'Fläche'], cls: 'lightning',
   mana: 220, charge: 25, cd: 6000, zap: 11, radius: 5, dist: 20, speed: 5, tickMs: 500,   // PH
   runes: [
-    { id: 'big', name: 'Großkugel', desc: '+40 % Radius.' },
-    { id: 'slow', name: 'Träge Kugel', desc: 'Halbes Tempo, zappt doppelt so lange.' },
-    { id: 'twin', name: 'Zwillingskugel', desc: '2 Kugeln im Fächer mit je 70 % Schaden.' },
-    { id: 'fast', name: 'Schnellzapper', desc: 'Zappt alle 0,25 s.' },
-    { id: 'orbit', name: 'Orbit', desc: 'Kugeln kreisen in 4 yd um dich statt zu fliegen, höchstens 3, je 10 s.' },
+    { id: 'big', name: t('spell.ball.runes.big.name'), desc: t('spell.ball.runes.big.desc') },
+    { id: 'slow', name: t('spell.ball.runes.slow.name'), desc: t('spell.ball.runes.slow.desc') },
+    { id: 'twin', name: t('spell.ball.runes.twin.name'), desc: t('spell.ball.runes.twin.desc') },
+    { id: 'fast', name: t('spell.ball.runes.fast.name'), desc: t('spell.ball.runes.fast.desc') },
+    { id: 'orbit', name: t('spell.ball.runes.orbit.name'), desc: t('spell.ball.runes.orbit.desc') },
   ],
   effect(c) {
     if (hasRune('ball', 'orbit')) return orbit(c);

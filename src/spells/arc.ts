@@ -2,18 +2,19 @@ import { state } from '../state';
 import { hasRune } from './core';
 import { mods } from '../config';
 import { runChain, nearestMob } from './chain';
+import { t } from '../i18n';
 
 const SHOCK = 5000, SPARK = 8, MORE = 6;   // v30: Sprünge verdoppelt   // PH: Dauer, Sprünge pro Stufe der Rune Funkenregen
 
 export const arc = {
-  name: 'Bogenblitz', desc: 'Springt 10× in 10 yd.', ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
+  name: t('spell.arc.name'), desc: t('spell.arc.desc'), ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
   mana: 90, cd: 3000, dmg: 15, jumps: 10,   // v29: Schaden halbiert; v30: doppelte Sprünge
   jumpRange: 10, range: 30,   // PH
   runes: [
-    { id: 'more', name: 'Weiter Bogen', desc: '+6 Sprünge.' },
-    { id: 'shock', name: 'Schock', desc: 'Ziele nehmen +10 % Schaden.' },
-    { id: 'corpses', name: 'Totenleiter', desc: 'Springt über Leichen.' },
-    { id: 'spark', name: 'Funkenregen', desc: '+8 Sprünge, zweimal wählbar.', stages: 2 },
+    { id: 'more', name: t('spell.arc.runes.more.name'), desc: t('spell.arc.runes.more.desc') },
+    { id: 'shock', name: t('spell.arc.runes.shock.name'), desc: t('spell.arc.runes.shock.desc') },
+    { id: 'corpses', name: t('spell.arc.runes.corpses.name'), desc: t('spell.arc.runes.corpses.desc') },
+    { id: 'spark', name: t('spell.arc.runes.spark.name'), desc: t('spell.arc.runes.spark.desc'), stages: 2 },
   ],
   canCast: () => nearestMob(arc.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {

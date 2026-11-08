@@ -3,16 +3,17 @@ import { player } from '../state';
 import { blastLook, fireRingField } from '../vfx/fireLook';
 import { knockbackMob, pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
+import { t } from '../i18n';
 
 const RING = { dur: 5000, width: 1.5, dmg: 14 };   // PH
 
 export const blast = {
-  name: 'Druckwelle', desc: 'Nova mit Rückschlag und 50 % Slow.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
+  name: t('spell.blast.name'), desc: t('spell.blast.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 150, cd: 12000, min: 40, max: 48, radius: 10, knock: 8, slow: 0.5, slowDur: 6000,   // PH
   runes: [
-    { id: 'suck', name: 'Implosion', desc: 'Sog statt Rückschlag.' },
-    { id: 'ring', name: 'Feuerring', desc: 'Hinterlässt einen Feuerring.' },
-    { id: 'quick', name: 'Kurzer Stoß', desc: 'Halbe CD, kein Rückschlag.', cdMul: 0.5 },
+    { id: 'suck', name: t('spell.blast.runes.suck.name'), desc: t('spell.blast.runes.suck.desc') },
+    { id: 'ring', name: t('spell.blast.runes.ring.name'), desc: t('spell.blast.runes.ring.desc') },
+    { id: 'quick', name: t('spell.blast.runes.quick.name'), desc: t('spell.blast.runes.quick.desc'), cdMul: 0.5 },
   ],
   effect(c) {
     const r = c.radius(blast.radius), center = player.pos.clone();

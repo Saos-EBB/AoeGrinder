@@ -6,18 +6,19 @@ import { shakeCamera } from '../camera';
 import { knockbackMob } from '../mobs';
 import { mobsInRadius, addField, hasRune, schedule } from './core';
 import { meteorLook, fireField } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 const SWARM = { n: 3, offset: 7, k: 0.5, gap: 300 }, STARS = { n: 6, offset: 8, k: 0.4, gap: 200 }, LONG_BURN = 2, KNOCK = 8;   // PH
 const STARFALL = { perHeat: 25, ms: 2000, min: 5000 };   // PH: Sternenfall
 
 export const meteor = {
-  name: 'Meteor', desc: 'Bodenziel: Schlägt nach 1,5 s ein und lässt eine Brandfläche für 6 s zurück.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
+  name: t('spell.meteor.name'), desc: t('spell.meteor.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
   mana: 320, cd: 20000, min: 180, max: 210, radius: 9, range: 30, delay: 1500, burn: 16, burnDur: 6000, ground: true,   // PH
   runes: [
-    { id: 'swarm', name: 'Meteorschauer', desc: '3 kleine Meteore mit halbem Schaden und Radius.' },
-    { id: 'crater', name: 'Glutkrater', desc: 'Brandfläche hält doppelt so lang.' },
-    { id: 'impact', name: 'Einschlag', desc: 'Schleudert Gegner weg.' },
-    { id: 'stars', name: 'Sternenregen', desc: '6 Meteore mit je 40 %.' },
+    { id: 'swarm', name: t('spell.meteor.runes.swarm.name'), desc: t('spell.meteor.runes.swarm.desc') },
+    { id: 'crater', name: t('spell.meteor.runes.crater.name'), desc: t('spell.meteor.runes.crater.desc') },
+    { id: 'impact', name: t('spell.meteor.runes.impact.name'), desc: t('spell.meteor.runes.impact.desc') },
+    { id: 'stars', name: t('spell.meteor.runes.stars.name'), desc: t('spell.meteor.runes.stars.desc') },
   ],
   effect(c, point) {
     const strike = (pos, k, delay) => {

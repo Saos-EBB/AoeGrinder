@@ -9,6 +9,7 @@ import { tempestLook } from '../vfx/boltLook';
 // Tempest (Blitz-Figur, passiv): nach 6 Kettenblitzen wird der nächste ein Spaltschlag 8 yd vor dir, 5 Einheiten, betäubt 1 s. Sturmhüter: ×2 und sofort // PH
 const TEMPEST = { every: 6, radius: 8, angle: Math.PI, dmg: 5, stunMs: 1000 }, KEEPER_MUL = 2, KILL_DMG = 0.005;
 import { boltFx } from './fx';
+import { t } from '../i18n';
 
 const STEP_DELAY = 45, MORE = 40, KILL = 10;   // MORE: Rune Überschlag, KILL: Rune Entladung (v30 verdoppelt)   // PH: ms je Sprung, damit man die Kette sieht
 
@@ -41,14 +42,14 @@ export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = fa
 export const nearestMob = range => nearestFirst(mobsInRadius(player.pos, range, Infinity), player.pos)[0];
 
 export const chain = {
-  name: 'Kettenblitz', desc: 'Bis zu 100 Sprünge in 12 yd, 0,35 s Zauber. Jeder Kill in der Kette +0,5 % Schaden für die restlichen Sprünge.', ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
+  name: t('spell.chain.name'), desc: t('spell.chain.desc'), ranks: ['dmg', 'mana'], tags: ['Blitz', 'Kette'], cls: 'lightning',
   mana: 280, cd: 6000, castTime: 350, dmg: 25, jumps: 100,   // v29: 0,35 s statt 1,5 s, Schaden halbiert; v30: doppelte Sprünge
   jumpRange: 12, range: 30,   // PH
   runes: [
-    { id: 'repeat', name: 'Wiederkehr', desc: 'Gleiches Ziel mehrfach.' },
-    { id: 'kill', name: 'Entladung', desc: 'Kill = +10 Sprünge.' },
-    { id: 'fork', name: 'Gabelung', desc: 'Gabelt bei jedem 10. Sprung.' },
-    { id: 'more', name: 'Überschlag', desc: '+40 Sprünge.' },
+    { id: 'repeat', name: t('spell.chain.runes.repeat.name'), desc: t('spell.chain.runes.repeat.desc') },
+    { id: 'kill', name: t('spell.chain.runes.kill.name'), desc: t('spell.chain.runes.kill.desc') },
+    { id: 'fork', name: t('spell.chain.runes.fork.name'), desc: t('spell.chain.runes.fork.desc') },
+    { id: 'more', name: t('spell.chain.runes.more.name'), desc: t('spell.chain.runes.more.desc') },
   ],
   canCast: () => nearestMob(chain.range) ? null : 'Kein Ziel in Reichweite',
   instantCast: () => (state.keeper ?? 0) > 0,

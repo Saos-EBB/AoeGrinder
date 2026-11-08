@@ -6,17 +6,18 @@ import { UNIT } from '../config';
 import { mobsInRadius, applySlow, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { frostboltLook } from '../vfx/frostLook';
+import { t } from '../i18n';
 
 // PH: 1,2 Einheiten, 30 % Slow 2 s; Runen: +2 Projektile je 70 %, Explosion 4 yd mit 60 %, sofort mit −30 %
 const F = { dmg: 1.2, range: 30, slow: 0.3, slowMs: 2000, split: { n: 2, k: 0.7 }, bomb: { radius: 4, k: 0.6 }, swift: 0.7 };
 
 export const frostbolt = {
-  name: 'Frostblitz', desc: '0,3 s Zauber aufs nächste Ziel, 1,2 Einheiten, 30 % langsamer für 2 s.', ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
+  name: t('spell.frostbolt.name'), desc: t('spell.frostbolt.desc'), ranks: ['dmg', 'mana'], tags: ['Frost', 'Geschoss'], cls: 'frost',
   mana: 60, cd: 0, castTime: 300, range: F.range, showDmg: F.dmg * UNIT,   // PH
   runes: [
-    { id: 'split', name: 'Splitterblitz', desc: '+2 Projektile, je 70 %.' },
-    { id: 'bomb', name: 'Frostbombe', desc: 'Explosion 4 yd mit 60 %.' },
-    { id: 'swift', name: 'Schnellblitz', desc: 'Sofort, −30 % Schaden.' },
+    { id: 'split', name: t('spell.frostbolt.runes.split.name'), desc: t('spell.frostbolt.runes.split.desc') },
+    { id: 'bomb', name: t('spell.frostbolt.runes.bomb.name'), desc: t('spell.frostbolt.runes.bomb.desc') },
+    { id: 'swift', name: t('spell.frostbolt.runes.swift.name'), desc: t('spell.frostbolt.runes.swift.desc') },
   ],
   instantCast: () => hasRune('frostbolt', 'swift'),
   canCast: () => nearestTarget(F.range) ? null : 'Kein Ziel in Reichweite',

@@ -7,6 +7,7 @@ import { blizStart, blizMove, blizStop } from '../fx/spellFx';
 import { groundAt } from '../collision';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, startChannel, hasRune, addField } from './core';
+import { t } from '../i18n';
 
 const FIELD = { radius: 10, ms: 8000 }, EYE_MS = 8000, STORM_EYE_MS = 300;   // PH: Eisfeld, Frostauge, Sturmauge pro Rang
 
@@ -24,13 +25,13 @@ function tickAt(c, point, radius, last, k = 1) {
 }
 
 export const bliz = {
-  get name() { return iceAge() ? 'Eisfeld' : 'Blizzard'; },
-  get desc() { return iceAge() ? 'Gefrorener Boden 10 yd für 8 s, ohne Kanal, die Blizzard-Ticks laufen von selbst.' : 'Kanal aufs Bodenziel, 8 Ticks.'; }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche', 'Kanal'], cls: 'frost',
+  get name() { return t(iceAge() ? 'iceage.field.name' : 'spell.bliz.name'); },
+  get desc() { return t(iceAge() ? 'iceage.field.desc' : 'spell.bliz.desc'); }, ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche', 'Kanal'], cls: 'frost',
   mana: 320, cd: 0, tickDmg: 26, channel: 8000, range: 30, radius: 8, ground: true,   // Rang 1 Wowhead, Radius PH
   runes: [
-    { id: 'walk', name: 'Wandelnder Sturm', desc: 'Laufen erlaubt, halber Schaden.' },
-    { id: 'wander', name: 'Treibender Sturm', desc: 'Wandert zum Spieler.' },
-    { id: 'lastfreeze', name: 'Letzter Frost', desc: 'Letzter Tick friert ein.' },
+    { id: 'walk', name: t('spell.bliz.runes.walk.name'), desc: t('spell.bliz.runes.walk.desc') },
+    { id: 'wander', name: t('spell.bliz.runes.wander.name'), desc: t('spell.bliz.runes.wander.desc') },
+    { id: 'lastfreeze', name: t('spell.bliz.runes.lastfreeze.name'), desc: t('spell.bliz.runes.lastfreeze.desc') },
   ],
   effect(c, point) {
     // Eiszeit: Eisfeld. Frostauge: solange eine Frostkugel fliegt, läuft der Blizzard von selbst

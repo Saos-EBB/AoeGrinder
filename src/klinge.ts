@@ -20,15 +20,16 @@ import { maxHp } from './formulas';
 import { damageMob, knockbackMob, applyRoot, pullMob } from './mobs';
 import { makeCtx, stat, cdEnd, startCd, damageMult, stopDrink, mobsInRadius, applySlow, supported, hasRune } from './spells/core';
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
+import { t } from './i18n';
 
 // Alle Zahlen hier. Alles // PH
 const KLINGE = {
   // Haltungen (v31): 1 Einhand ohne Boni und ohne Blutung. Leiste 0–100 füllt sich durch Schaden (ausgeteilt +1 pro Einheit, erlitten +1 pro 1 % Leben).
   // Voll: F wechselt in 2 (Zweihand, +30 %, Blutung). Nach 1,5 min in 2 kommt 3 (dazu Tempo +25 %, Angriffstempo ×2). 10 s ohne Kill leert sich die Leiste, leer → 1
   stance: {
-    1: { name: 'Einhand', move: 1, rate: 1, range: 1, dmg: 1, cdOnHit: 0, bleed: false, model: 1 },          // PH
-    2: { name: 'Zweihand', move: 1, rate: 1, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 },        // PH
-    3: { name: 'Zweihand III', move: 1.25, rate: 2, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 }, // PH
+    1: { name: t('klinge.stance.1.name'), move: 1, rate: 1, range: 1, dmg: 1, cdOnHit: 0, bleed: false, model: 1 },          // PH
+    2: { name: t('klinge.stance.2.name'), move: 1, rate: 1, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 },        // PH
+    3: { name: t('klinge.stance.3.name'), move: 1.25, rate: 2, range: 1, dmg: 1.3, cdOnHit: 0, bleed: true, model: 2 }, // PH
   },
   bar: { max: 100, perUnit: 1, perPctTaken: 1, idleMs: 10000, drainPerS: 25, toThreeMs: 90000 },            // PH
   // Neu v31, Schaden in Einheiten (UNIT)
@@ -72,56 +73,56 @@ const KLINGE = {
 };
 const K = KLINGE;
 // Waffenwahl vor dem Run (ui/mainMenu.ts): Standard oder die Legende Thunderfury (legends.ts), gleiches Kit
-export const KLINGE_WEAPON_NAMES = { standard: 'Katanas', thunderfury: 'Thunderfury' };
+export const KLINGE_WEAPON_NAMES = { standard: t('weapon.katanas.name'), thunderfury: t('legend.thunderfury.name') };
 
 // Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3
 const move = (name, desc, tags, cd, press, extra = {}) => ({ name, desc, ranks: [], tags: ['Klinge', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana: 0, press, ...extra });
 Object.assign(SPELLS, {
-  kQ: move('Schnitt', 'Schlag-Kette, ein Schlag pro Druck. Einhand 3 Schläge, der letzte trifft beim Wegstecken. Zweihand 4 Schläge bis zum Wirbelsprung.', ['Nahkampf', 'Fläche', 'Schnitt'], 0, () => pressQ(), { showDmg: K.q.chain[1][0].hits[0].dmg }),
-  kE: move('Kreisschnitt', 'Drehung um dich, verlangsamt 40 % für 3 s.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.e.cd, () => pressE(), { showDmg: K.e.dmg }),
-  kR: move('Blutwirbel', 'Zieht Mobs an, sie kreisen um dich, am Ende fliegen sie weg. Du gehst mit 50 % Tempo.', ['Nahkampf', 'Fläche', 'Kontrolle'], K.wirbel.cd, () => pressWirbel(), { showDmg: K.wirbel.tick }),
-  kAder: move('Aderlass', 'Alle blutenden Mobs in 15 yd nehmen sofort ihre restliche Blutung ×1,5.', ['Blutung', 'Fläche'], K.ader.cd, () => pressAder()),
-  kClones: { ...move('Schattenklone', 'Zwei Klone neben dir machen 8 s jeden Move mit, 50 % Schaden.', [], K.clones.cd, () => pressClones()), figRelic: true },
-  kDash: move('Strichschnitt', 'Sprint, dabei nicht angreifbar. Danach trifft es alles auf der Linie.', ['Nahkampf', 'Bewegung', 'Linie'], K.dash.cd, () => pressDash(), { showDmg: K.dash.dmg, charges: K.dash.charges }),
-  kStorm: move('Klingensturm', '6 s kreisen Klingen in 3 yd, 0,5 Einheiten pro 0,3 s, legen Blutung (nur Zweihand). Aderlass zündet sie.', ['Nahkampf', 'Fläche'], K.storm.cd, () => pressStorm(), { showDmg: K.storm.dmg * UNIT }),
-  kKunai: move('Kunai', '3 Wurfmesser im Fächer 30°, 15 yd, je 0,8 Einheiten.', ['Fernkampf', 'Geschoss'], K.kunai.cd, () => pressKunai(), { showDmg: K.kunai.dmg * UNIT }),
-  kCounter: move('Konter', '0,5 s Parade. Getroffen: Gegenschlag im Kegel 4 yd, 3 Einheiten, kein Schaden durch den Treffer.', ['Nahkampf', 'Kontrolle'], K.counter.cd, () => pressCounter(), { showDmg: K.counter.dmg * UNIT }),
-  kIaido: move('Iaido', '0,4 s Ziehen, dann Schnitt 10 × 2 yd nach vorn, 3 Einheiten.', ['Nahkampf', 'Linie'], K.iaido.cd, () => pressIaido(), { showDmg: K.iaido.dmg * UNIT }),
-  kSmoke: move('Rauchbombe', '3 s unsichtbar, Mobs verlieren das Ziel. Ein Angriff beendet es.', ['Bewegung'], K.smoke.cd, () => pressSmoke()),
-  kEat: move('Essen', 'Sitzen und in 18 s alles Leben auffüllen. Bewegung oder Angriff bricht ab, Schaden nicht.', [], 0, () => pressEat()),
+  kQ: move(t('spell.kQ.name'), t('spell.kQ.desc'), ['Nahkampf', 'Fläche', 'Schnitt'], 0, () => pressQ(), { showDmg: K.q.chain[1][0].hits[0].dmg }),
+  kE: move(t('spell.kE.name'), t('spell.kE.desc'), ['Nahkampf', 'Fläche', 'Kontrolle'], K.e.cd, () => pressE(), { showDmg: K.e.dmg }),
+  kR: move(t('spell.kR.name'), t('spell.kR.desc'), ['Nahkampf', 'Fläche', 'Kontrolle'], K.wirbel.cd, () => pressWirbel(), { showDmg: K.wirbel.tick }),
+  kAder: move(t('spell.kAder.name'), t('spell.kAder.desc'), ['Blutung', 'Fläche'], K.ader.cd, () => pressAder()),
+  kClones: { ...move(t('spell.kClones.name'), t('spell.kClones.desc'), [], K.clones.cd, () => pressClones()), figRelic: true },
+  kDash: move(t('spell.kDash.name'), t('spell.kDash.desc'), ['Nahkampf', 'Bewegung', 'Linie'], K.dash.cd, () => pressDash(), { showDmg: K.dash.dmg, charges: K.dash.charges }),
+  kStorm: move(t('spell.kStorm.name'), t('spell.kStorm.desc'), ['Nahkampf', 'Fläche'], K.storm.cd, () => pressStorm(), { showDmg: K.storm.dmg * UNIT }),
+  kKunai: move(t('spell.kKunai.name'), t('spell.kKunai.desc'), ['Fernkampf', 'Geschoss'], K.kunai.cd, () => pressKunai(), { showDmg: K.kunai.dmg * UNIT }),
+  kCounter: move(t('spell.kCounter.name'), t('spell.kCounter.desc'), ['Nahkampf', 'Kontrolle'], K.counter.cd, () => pressCounter(), { showDmg: K.counter.dmg * UNIT }),
+  kIaido: move(t('spell.kIaido.name'), t('spell.kIaido.desc'), ['Nahkampf', 'Linie'], K.iaido.cd, () => pressIaido(), { showDmg: K.iaido.dmg * UNIT }),
+  kSmoke: move(t('spell.kSmoke.name'), t('spell.kSmoke.desc'), ['Bewegung'], K.smoke.cd, () => pressSmoke()),
+  kEat: move(t('spell.kEat.name'), t('spell.kEat.desc'), [], 0, () => pressEat()),
 });
 // Wie bei Real Men gilt pro Move eine Rune. stages: mehrere Stufen derselben Rune (Karte zählt in state.cardPicks).
 const ranks = (ids, list) => { for (const id of ids) SPELLS[id].ranks = list; };
 ranks(['kQ', 'kE', 'kR', 'kDash'], ['dmg', 'radius', 'tempo']);
 ranks(['kAder'], ['dmg', 'radius']);
 SPELLS.kQ.runes = [
-  { id: 'cone', name: 'Weiter Bogen', desc: 'Kegel 180°, zweite Stufe 360°.', stages: 2 },
-  { id: 'echo', name: 'Nachhall', desc: 'Zweiter Schnitt nach 0,3 s mit 50 %.' },
-  { id: 'reach', name: 'Lange Klinge', desc: '+1 yd Radius pro Stufe.', stages: 3 },
+  { id: 'cone', name: t('spell.kQ.runes.cone.name'), desc: t('spell.kQ.runes.cone.desc'), stages: 2 },
+  { id: 'echo', name: t('spell.kQ.runes.echo.name'), desc: t('spell.kQ.runes.echo.desc') },
+  { id: 'reach', name: t('spell.kQ.runes.reach.name'), desc: t('spell.kQ.runes.reach.desc'), stages: 3 },
 ];
 SPELLS.kE.runes = [
-  { id: 'freeze', name: 'Eisschnitt', desc: 'Friert 1 s ein statt zu verlangsamen.' },
-  { id: 'pull', name: 'Sog', desc: 'Zieht Mobs 2 yd zu dir.' },
-  { id: 'charges', name: 'Doppelte Drehung', desc: '2 Ladungen.', charges: 2 },
+  { id: 'freeze', name: t('spell.kE.runes.freeze.name'), desc: t('spell.kE.runes.freeze.desc') },
+  { id: 'pull', name: t('spell.kE.runes.pull.name'), desc: t('spell.kE.runes.pull.desc') },
+  { id: 'charges', name: t('spell.kE.runes.charges.name'), desc: t('spell.kE.runes.charges.desc'), charges: 2 },
 ];
 SPELLS.kDash.runes = [
-  { id: 'reset', name: 'Nachsetzen', desc: 'Ein Kill setzt eine Ladung zurück.' },
-  { id: 'trail', name: 'Blutspur', desc: 'Zweihand: Wer über die Linie läuft, blutet.' },
-  { id: 'back', name: 'Rückstrich', desc: 'Zurück zum Start, schneidet erneut.' },
+  { id: 'reset', name: t('spell.kDash.runes.reset.name'), desc: t('spell.kDash.runes.reset.desc') },
+  { id: 'trail', name: t('spell.kDash.runes.trail.name'), desc: t('spell.kDash.runes.trail.desc') },
+  { id: 'back', name: t('spell.kDash.runes.back.name'), desc: t('spell.kDash.runes.back.desc') },
 ];
 SPELLS.kR.runes = [
-  { id: 'follow', name: 'Jäger', desc: 'Folgt der Maus.' },
-  { id: 'direct', name: 'Gerichteter Wurf', desc: 'Wirft alle nach vorn statt rundum.' },
-  { id: 'long', name: 'Langer Wirbel', desc: '+1 s Dauer.' },
+  { id: 'follow', name: t('spell.kR.runes.follow.name'), desc: t('spell.kR.runes.follow.desc') },
+  { id: 'direct', name: t('spell.kR.runes.direct.name'), desc: t('spell.kR.runes.direct.desc') },
+  { id: 'long', name: t('spell.kR.runes.long.name'), desc: t('spell.kR.runes.long.desc') },
 ];
 SPELLS.kAder.runes = [
-  { id: 'jump', name: 'Übersprung', desc: 'Gezündete Stapel springen auf 1 Mob in 5 yd über.' },
-  { id: 'killCd', name: 'Blutzoll', desc: 'Kill durch Aderlass: −3 s Blutwirbel-Abklingzeit.' },
-  { id: 'heal', name: 'Lebenssaft', desc: 'Heilt 10 % des Schadens.' },
+  { id: 'jump', name: t('spell.kAder.runes.jump.name'), desc: t('spell.kAder.runes.jump.desc') },
+  { id: 'killCd', name: t('spell.kAder.runes.killCd.name'), desc: t('spell.kAder.runes.killCd.desc') },
+  { id: 'heal', name: t('spell.kAder.runes.heal.name'), desc: t('spell.kAder.runes.heal.desc') },
 ];
 
 // Nicht in Object.keys: keine Karte, nur Farbe für Funken und Schadenszahlen
-Object.defineProperty(SPELLS, 'kBleed', { value: { name: 'Blutung', cls: 'fire', school: 'warrior', tags: [] }, enumerable: false });
+Object.defineProperty(SPELLS, 'kBleed', { value: { name: t('spell.kBleed.name'), cls: 'fire', school: 'warrior', tags: [] }, enumerable: false });
 
 const on = () => mage.skin === 'klinge';
 const S = () => K.stance[stance];

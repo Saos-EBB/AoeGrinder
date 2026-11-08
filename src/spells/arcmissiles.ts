@@ -9,6 +9,7 @@ const SLINGER = { chance: 0.2, delay: 1000, mul: 0.3 };
 import { nearestTarget } from './target';
 import { missileLook, missileBoom } from '../vfx/arcaneLook';
 import { PAL } from '../vfx/energy';
+import { t } from '../i18n';
 
 const SPLIT = { range: 5, mul: 0.5 }, FAST_MS = 2000, CHARGE_RADIUS = 4;   // PH
 
@@ -35,12 +36,12 @@ function fire(ch) {
 }
 
 export const arcmissiles = {
-  name: 'Arkane Geschosse', desc: 'Kanal 3 s aufs nächste Ziel, 5 Geschosse.', ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss', 'Kanal'], cls: 'arcane',
+  name: t('spell.arcmissiles.name'), desc: t('spell.arcmissiles.desc'), ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss', 'Kanal'], cls: 'arcane',
   mana: 140, cd: 0, channel: 3000, dmg: 48, missiles: 5, range: 30,   // PH
   runes: [
-    { id: 'split', name: 'Splitter', desc: 'Jeder Treffer springt auf 1 Mob in 5 yd (50 %).' },
-    { id: 'fast', name: 'Schnellfeuer', desc: 'Kanal 2 s, gleicher Schaden.' },
-    { id: 'charge', name: 'Arkane Ladung', desc: 'Das letzte Geschoss explodiert in 4 yd.' },
+    { id: 'split', name: t('spell.arcmissiles.runes.split.name'), desc: t('spell.arcmissiles.runes.split.desc') },
+    { id: 'fast', name: t('spell.arcmissiles.runes.fast.name'), desc: t('spell.arcmissiles.runes.fast.desc') },
+    { id: 'charge', name: t('spell.arcmissiles.runes.charge.name'), desc: t('spell.arcmissiles.runes.charge.desc') },
   ],
   canCast: () => nearestTarget(arcmissiles.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {

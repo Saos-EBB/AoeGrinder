@@ -12,6 +12,7 @@ import { nearestTarget } from './target';
 import { barrageLook, beamLook, beamBoom, arcOrbField } from '../vfx/arcaneLook';
 import { coneLook } from '../vfx/frostLook';
 import { PAL } from '../vfx/energy';
+import { t } from '../i18n';
 
 // Alle Werte PH, Schaden in Einheiten (UNIT)
 const BARRAGE = { dmg: 2, perCharge: 0.5, range: 30 };
@@ -20,7 +21,7 @@ const ORB = { len: 20, speed: 10, width: 4, dmg: 1.5 };
 const STRIKE = { range: 6, angle: Math.PI / 2, dmg: 1.2, stunMs: 500 };   // Kegel-Winkel nicht vorgegeben
 
 export const barrage = {
-  name: 'Arkanbeschuss', desc: 'Geschoss aufs nächste Ziel, 2 Einheiten, +50 % pro verbrauchter Ladung. Verbraucht alle Ladungen.', ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss'], cls: 'arcane',
+  name: t('spell.barrage.name'), desc: t('spell.barrage.desc'), ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss'], cls: 'arcane',
   mana: 80, cd: 3000, range: BARRAGE.range, showDmg: BARRAGE.dmg * UNIT,
   canCast: () => nearestTarget(BARRAGE.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {
@@ -45,7 +46,7 @@ function aimDir() {
 }
 
 export const beam = {
-  name: 'Arkanstrahl', desc: 'Linie 25 × 2 yd in Mausrichtung, 1,5 Einheiten. Trifft er eine Leerenkugel: Explosion 15 yd, 6 Einheiten, Markierte ×1,8.', ranks: ['dmg', 'mana'], tags: ['Arkan', 'Linie'], cls: 'arcane',
+  name: t('spell.beam.name'), desc: t('spell.beam.desc'), ranks: ['dmg', 'mana'], tags: ['Arkan', 'Linie'], cls: 'arcane',
   mana: 150, cd: 8000, showDmg: BEAM.dmg * UNIT,
   effect(c) {
     const f = aimDir(), from = player.pos, to = { x: from.x + f.x * BEAM.len, y: from.y, z: from.z + f.z * BEAM.len };
@@ -64,7 +65,7 @@ export const beam = {
 };
 
 export const arcorb = {
-  name: 'Arkane Kugel', desc: 'Rollt 20 yd, 4 yd breit, 1,5 Einheiten auf alles auf dem Weg. Gibt höchstens 1 Ladung.', ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss', 'Fläche'], cls: 'arcane',
+  name: t('spell.arcorb.name'), desc: t('spell.arcorb.desc'), ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss', 'Fläche'], cls: 'arcane',
   mana: 110, cd: 6000, showDmg: ORB.dmg * UNIT,
   effect(c) {
     const dir = new THREE.Vector3(Math.sin(player.facing), 0, Math.cos(player.facing)), seen = new Set();
@@ -83,7 +84,7 @@ export const arcorb = {
 };
 
 export const arcstrike = {
-  name: 'Arkanschlag', desc: 'Kegel 6 yd, 1,2 Einheiten, betäubt 0,5 s.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche', 'Kontrolle'], cls: 'arcane',
+  name: t('spell.arcstrike.name'), desc: t('spell.arcstrike.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche', 'Kontrolle'], cls: 'arcane',
   mana: 50, cd: 4000, showDmg: STRIKE.dmg * UNIT,
   effect(c) {
     const r = c.radius(STRIKE.range);

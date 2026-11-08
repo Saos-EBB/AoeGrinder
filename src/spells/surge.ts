@@ -4,16 +4,17 @@ import { pullMob } from '../mobs';
 import { mobsOnLine, forward } from '../melee';
 import { hasRune, schedule } from './core';
 import { surgeLook } from '../vfx/arcaneLook';
+import { t } from '../i18n';
 
 const WIDE = 1.5, PULL = 8, TWICE = { ms: 400, mul: 0.6 };   // PH
 
 export const surge = {
-  name: 'Arkane Woge', desc: 'Welle 16 yd nach vorn, 6 yd breit.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche'], cls: 'arcane',
+  name: t('spell.surge.name'), desc: t('spell.surge.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche'], cls: 'arcane',
   mana: 130, cd: 6000, min: 60, max: 72, length: 16, radius: 6,   // PH: radius ist die Breite
   runes: [
-    { id: 'wide', name: 'Breite Woge', desc: '+50 % Breite.' },
-    { id: 'pull', name: 'Rücksog', desc: 'Zieht Getroffene 8 yd zu dir.' },
-    { id: 'twice', name: 'Doppelwoge', desc: 'Zweite Welle nach 0,4 s mit 60 % Schaden.' },
+    { id: 'wide', name: t('spell.surge.runes.wide.name'), desc: t('spell.surge.runes.wide.desc') },
+    { id: 'pull', name: t('spell.surge.runes.pull.name'), desc: t('spell.surge.runes.pull.desc') },
+    { id: 'twice', name: t('spell.surge.runes.twice.name'), desc: t('spell.surge.runes.twice.desc') },
   ],
   effect(c) {
     const f = forward(), from = player.pos.clone(), to = { x: from.x + f.x * surge.length, y: from.y, z: from.z + f.z * surge.length };

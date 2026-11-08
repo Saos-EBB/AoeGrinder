@@ -22,6 +22,7 @@ import { shakeCamera } from './camera';
 import { $, rand, clamp } from './util';
 
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
+import { t } from './i18n';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
 const REALMEN = {
@@ -44,10 +45,10 @@ const REALMEN = {
   berserk: { ms: 25000, dmg: 0.35, cd: 90000 },
   // Waffe vor dem Run (models/mage.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert
   weapons: {
-    sword: { name: 'Riesenschwert', dmgMul: 1, rate: 1, ragePerHit: 6 },
+    sword: { name: t('weapon.sword.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
     // Legenden (legends.ts): gleiches Kit wie das Riesenschwert, dazu die Combo Q → E → 1
-    leeroy: { name: 'Leeroy Jenkins', dmgMul: 1, rate: 1, ragePerHit: 6 },
-    freshmeat: { name: 'Fresh Meat', dmgMul: 1, rate: 1, ragePerHit: 6 },
+    leeroy: { name: t('legend.leeroy.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
+    freshmeat: { name: t('legend.freshmeat.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
   },
   eat: { ms: 18000 },
   echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },
@@ -65,25 +66,25 @@ const R = REALMEN, RU = R.runes;
 const spell = (name, desc, tags, ranks, cd, mana, press, showDmg?, runes?) => ({ name, desc, showDmg, ranks, tags: ['Krieger', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press, runes });
 // Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3. fixed: nie als Karte in anderen Modi
 Object.assign(SPELLS, {
-  wQ: spell('Schlagfolge', 'Vier Schläge, alle 25 Kills mit der Folge einer mehr (höchstens 8). Der letzte ist ein schneller Spin in Laufrichtung. Bringt Wut.', ['Nahkampf', 'Fläche'], ['dmg', 'radius', 'tempo'], 0, 0, () => pressQ(), R.q.dmg[0], [
-    { id: 'wide', name: 'Weiter Schwung', desc: '+50 % Radius.' }, { id: 'leech', name: 'Blutdurst', desc: 'Heilt 1 % Leben pro getroffenem Mob.' }, { id: 'wrath', name: 'Wutschlag', desc: '+50 % Wut pro Schlag.' }]),
-  wE: spell('Bodenbrecher', 'Klinge in den Boden, Risse laufen 8 yd nach vorn und schleudern weg.', ['Nahkampf', 'Linie', 'Fläche'], ['dmg', 'tempo'], R.e.cd, R.e.rage, () => pressMove('wE', 'e', WT().e, SPELLS.wE.mana), R.e.dmg, [
-    { id: 'long', name: 'Tiefe Risse', desc: 'Risse laufen 5 yd weiter.' }, { id: 'stun', name: 'Erdstoß', desc: 'Betäubt 1 s.' }, { id: 'charges', name: 'Zweiter Stoß', desc: '2 Ladungen.', charges: 2 }]),
-  wR: spell('Wirbelwind', 'Halten: trifft alles um dich, kostet Wut pro Sekunde.', ['Nahkampf', 'Fläche'], ['dmg', 'radius'], 0, 0, () => pressWhirl(), (R.whirl.dmg[0] + R.whirl.dmg[1]) / 2, [
-    { id: 'stride', name: 'Sturmschritt', desc: 'Volles Lauftempo im Wirbel.' }, { id: 'frenzy', name: 'Rasender Tanz', desc: 'Halbe Wutkosten, −20 % Schaden.' }, { id: 'maelstrom', name: 'Mahlstrom', desc: 'Zieht Mobs zu dir.' }]),
-  wExec: spell('Hinrichtung', 'Langes Ausholen, ein gewaltiger Schlag im Kegel vor dir.', ['Nahkampf', 'Fläche'], ['dmg', 'tempo'], R.exec.cd, R.exec.rage, () => pressMove('wExec', 'exec', WT().exec, SPELLS.wExec.mana), R.exec.dmg, [
-    { id: 'low', name: 'Gnadenstoß', desc: 'Doppelter Schaden unter 30 % Leben des Ziels.' }, { id: 'wide', name: 'Breite Klinge', desc: '+50 % Kegel.' }, { id: 'refund', name: 'Blutgier', desc: 'Ein Kill gibt 30 Wut.' }]),
-  wLast: spell('Letzter Atem', 'Schwert in den Boden, Brüllen: 5 s nicht unter 1 Leben, Wut voll.', [], [], R.last.cd, 0, () => pressMove('wLast', 'last', TIMING.last, 0)),
-  wCry: spell('Kampfschrei', '+40 Wut und eine Druckwelle, die Mobs wegstößt.', [], [], R.cry.cd, 0, () => pressMove('wCry', 'cry', TIMING.cry, 0), undefined, [
-    { id: 'rage', name: 'Zorniger Schrei', desc: '+70 statt +40 Wut.' }, { id: 'fear', name: 'Schreckensschrei', desc: 'Betäubt Mobs in 8 yd für 2 s.' }, { id: 'shock', name: 'Schockwelle', desc: 'Die Druckwelle macht Schaden.' }]),
-  wLeap: spell('Sturzsprung', '10 yd Sprung, in der Luft nicht angreifbar. Die Landung schleudert weg.', ['Nahkampf', 'Bewegung', 'Fläche'], ['dmg', 'radius', 'tempo'], R.leap.cd, R.leap.rage, () => pressMove('wLeap', 'leap', TIMING.leap.ms, R.leap.rage), R.leap.dmg, [
-    { id: 'quake', name: 'Beben', desc: '+50 % Radius.' }, { id: 'stun', name: 'Einschlag', desc: 'Betäubt 2 s.' }, { id: 'haste', name: 'Hast', desc: 'Halbe Abklingzeit.', cdMul: 0.5 }]),
-  wEat: spell('Essen', 'Sitzen und in 18 s alles Leben auffüllen. Bewegung oder Angriff bricht ab, Schaden nicht.', [], [], 0, 0, () => pressEat()),
+  wQ: spell(t('spell.wQ.name'), t('spell.wQ.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'radius', 'tempo'], 0, 0, () => pressQ(), R.q.dmg[0], [
+    { id: 'wide', name: t('spell.wQ.runes.wide.name'), desc: t('spell.wQ.runes.wide.desc') }, { id: 'leech', name: t('spell.wQ.runes.leech.name'), desc: t('spell.wQ.runes.leech.desc') }, { id: 'wrath', name: t('spell.wQ.runes.wrath.name'), desc: t('spell.wQ.runes.wrath.desc') }]),
+  wE: spell(t('spell.wE.name'), t('spell.wE.desc'), ['Nahkampf', 'Linie', 'Fläche'], ['dmg', 'tempo'], R.e.cd, R.e.rage, () => pressMove('wE', 'e', WT().e, SPELLS.wE.mana), R.e.dmg, [
+    { id: 'long', name: t('spell.wE.runes.long.name'), desc: t('spell.wE.runes.long.desc') }, { id: 'stun', name: t('spell.wE.runes.stun.name'), desc: t('spell.wE.runes.stun.desc') }, { id: 'charges', name: t('spell.wE.runes.charges.name'), desc: t('spell.wE.runes.charges.desc'), charges: 2 }]),
+  wR: spell(t('spell.wR.name'), t('spell.wR.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'radius'], 0, 0, () => pressWhirl(), (R.whirl.dmg[0] + R.whirl.dmg[1]) / 2, [
+    { id: 'stride', name: t('spell.wR.runes.stride.name'), desc: t('spell.wR.runes.stride.desc') }, { id: 'frenzy', name: t('spell.wR.runes.frenzy.name'), desc: t('spell.wR.runes.frenzy.desc') }, { id: 'maelstrom', name: t('spell.wR.runes.maelstrom.name'), desc: t('spell.wR.runes.maelstrom.desc') }]),
+  wExec: spell(t('spell.wExec.name'), t('spell.wExec.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'tempo'], R.exec.cd, R.exec.rage, () => pressMove('wExec', 'exec', WT().exec, SPELLS.wExec.mana), R.exec.dmg, [
+    { id: 'low', name: t('spell.wExec.runes.low.name'), desc: t('spell.wExec.runes.low.desc') }, { id: 'wide', name: t('spell.wExec.runes.wide.name'), desc: t('spell.wExec.runes.wide.desc') }, { id: 'refund', name: t('spell.wExec.runes.refund.name'), desc: t('spell.wExec.runes.refund.desc') }]),
+  wLast: spell(t('spell.wLast.name'), t('spell.wLast.desc'), [], [], R.last.cd, 0, () => pressMove('wLast', 'last', TIMING.last, 0)),
+  wCry: spell(t('spell.wCry.name'), t('spell.wCry.desc'), [], [], R.cry.cd, 0, () => pressMove('wCry', 'cry', TIMING.cry, 0), undefined, [
+    { id: 'rage', name: t('spell.wCry.runes.rage.name'), desc: t('spell.wCry.runes.rage.desc') }, { id: 'fear', name: t('spell.wCry.runes.fear.name'), desc: t('spell.wCry.runes.fear.desc') }, { id: 'shock', name: t('spell.wCry.runes.shock.name'), desc: t('spell.wCry.runes.shock.desc') }]),
+  wLeap: spell(t('spell.wLeap.name'), t('spell.wLeap.desc'), ['Nahkampf', 'Bewegung', 'Fläche'], ['dmg', 'radius', 'tempo'], R.leap.cd, R.leap.rage, () => pressMove('wLeap', 'leap', TIMING.leap.ms, R.leap.rage), R.leap.dmg, [
+    { id: 'quake', name: t('spell.wLeap.runes.quake.name'), desc: t('spell.wLeap.runes.quake.desc') }, { id: 'stun', name: t('spell.wLeap.runes.stun.name'), desc: t('spell.wLeap.runes.stun.desc') }, { id: 'haste', name: t('spell.wLeap.runes.haste.name'), desc: t('spell.wLeap.runes.haste.desc'), cdMul: 0.5 }]),
+  wEat: spell(t('spell.wEat.name'), t('spell.wEat.desc'), [], [], 0, 0, () => pressEat()),
   // v31
-  wCharge: spell('Ansturm', 'Ansturm bis 15 yd aufs nächste Ziel in Blickrichtung, 1,5 Einheiten, betäubt 1 s, +15 Wut.', ['Nahkampf', 'Bewegung'], ['dmg', 'cd'], R.charge.cd, 0, () => pressCharge(), R.charge.dmg * UNIT),
-  wClap: spell('Donnerknall', 'Ring 6 yd, 1,5 Einheiten, 40 % langsamer für 3 s.', ['Nahkampf', 'Fläche'], ['dmg', 'radius'], R.clap.cd, R.clap.rage, () => pressClap(), R.clap.dmg * UNIT),
-  wShout: spell('Einschüchterungsruf', 'Mobs in 8 yd fliehen 4 s.', ['Kontrolle'], ['cd', 'radius'], R.shout.cd, 0, () => pressShout()),
-  wBerserk: { ...spell('Berserker', '25 s +35 % Schaden, kann nicht verlangsamt werden.', [], [], R.berserk.cd, 0, () => pressBerserk()), figRelic: true },
+  wCharge: spell(t('spell.wCharge.name'), t('spell.wCharge.desc'), ['Nahkampf', 'Bewegung'], ['dmg', 'cd'], R.charge.cd, 0, () => pressCharge(), R.charge.dmg * UNIT),
+  wClap: spell(t('spell.wClap.name'), t('spell.wClap.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'radius'], R.clap.cd, R.clap.rage, () => pressClap(), R.clap.dmg * UNIT),
+  wShout: spell(t('spell.wShout.name'), t('spell.wShout.desc'), ['Kontrolle'], ['cd', 'radius'], R.shout.cd, 0, () => pressShout()),
+  wBerserk: { ...spell(t('spell.wBerserk.name'), t('spell.wBerserk.desc'), [], [], R.berserk.cd, 0, () => pressBerserk()), figRelic: true },
 });
 
 export const WAR_WEAPON_NAMES = Object.fromEntries(Object.entries(R.weapons).map(([id, w]) => [id, w.name]));

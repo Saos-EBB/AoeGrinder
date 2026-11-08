@@ -5,17 +5,18 @@ import { dist2d } from '../util';
 import { state } from '../state';
 import { mobsInRadius, applySlow, hasRune, makeCtx, onArcaneHit } from './core';
 import { markLook, markPop } from '../vfx/arcaneLook';
+import { t } from '../i18n';
 
 const MARK = { dur: 8000, popMul: 0.8 };   // PH; Anzeige über dem Mob: vfx/mobStatus.ts
 const LAME = { pct: 0.6, ms: 3000 }, CHAIN_RANGE = 5, BIG = 1.5;             // PH
 
 export const arcmark = {
-  name: 'Arkanes Mal', desc: 'Bodenziel: markiert alle Mobs in 6 yd für 8 s. Trifft ein anderer Arkan-Spell, platzt das Mal: +80 % des Treffers als Extra-Schaden.', ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche', 'Kontrolle'], cls: 'arcane',
+  name: t('spell.arcmark.name'), desc: t('spell.arcmark.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Arkan', 'Fläche', 'Kontrolle'], cls: 'arcane',
   mana: 120, cd: 6000, range: 30, radius: 6, ground: true,   // PH
   runes: [
-    { id: 'lame', name: 'Lähmendes Mal', desc: 'Platzen verlangsamt um 60 % für 3 s statt Extra-Schaden.' },
-    { id: 'chain', name: 'Kettenmal', desc: 'Platzen markiert 1 Mob in 5 yd neu.' },
-    { id: 'big', name: 'Großes Mal', desc: 'Radius ×1,5.', radius: 9 },
+    { id: 'lame', name: t('spell.arcmark.runes.lame.name'), desc: t('spell.arcmark.runes.lame.desc') },
+    { id: 'chain', name: t('spell.arcmark.runes.chain.name'), desc: t('spell.arcmark.runes.chain.desc') },
+    { id: 'big', name: t('spell.arcmark.runes.big.name'), desc: t('spell.arcmark.runes.big.desc'), radius: 9 },
   ],
   effect(c, point) {
     const r = c.radius(arcmark.radius) * (hasRune('arcmark', 'big') ? BIG : 1);

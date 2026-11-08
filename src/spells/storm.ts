@@ -4,17 +4,18 @@ import { mobsInRadius, addField, hasRune } from './core';
 import { stormField, stormHit } from '../vfx/boltLook';
 import { groundAt } from '../collision';
 import { mods } from '../config';
+import { t } from '../i18n';
 
 const FOLLOW_SPEED = 4, BIG = 12;   // PH
 
 export const storm = {
-  name: 'Gewitter', desc: 'Bodenziel: Gewitter 8 s, alle 0,5 s ein Blitz auf einen zufälligen Gegner darin.', ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Fläche'], cls: 'lightning',
+  name: t('spell.storm.name'), desc: t('spell.storm.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Fläche'], cls: 'lightning',
   mana: 300, charge: 35, cd: 12000, dur: 8000, tickMs: 500, dmg: 60, radius: 8, range: 30, ground: true,   // PH
   runes: [
-    { id: 'double', name: 'Doppelblitz', desc: '2 Blitze pro Takt.' },
-    { id: 'follow', name: 'Wanderndes Gewitter', desc: 'Folgt dir.' },
-    { id: 'big', name: 'Großes Gewitter', desc: 'Radius 12 yd.', radius: 12 },
-    { id: 'hail', name: 'Blitzhagel', desc: '3 Blitze pro Takt.' },
+    { id: 'double', name: t('spell.storm.runes.double.name'), desc: t('spell.storm.runes.double.desc') },
+    { id: 'follow', name: t('spell.storm.runes.follow.name'), desc: t('spell.storm.runes.follow.desc') },
+    { id: 'big', name: t('spell.storm.runes.big.name'), desc: t('spell.storm.runes.big.desc'), radius: 12 },
+    { id: 'hail', name: t('spell.storm.runes.hail.name'), desc: t('spell.storm.runes.hail.desc') },
   ],
   effect(c, point) {
     const radius = c.radius(hasRune('storm', 'big') ? BIG : storm.radius);

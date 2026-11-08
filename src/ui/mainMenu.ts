@@ -26,17 +26,18 @@ import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openInventory } from './inventory';
+import { t } from '../i18n';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
-  { mod: null, name: '?-Magier', sub: 'Zufall aus allen Schulen', color: '#f2e9e4', stats: [3, 3, 3] },
-  { mod: 'frost', name: 'Eismagier', sub: 'Frost', color: '#7dd3fc', stats: [3, 5, 3] },
-  { mod: 'fire', name: 'Feuermagier', sub: 'Feuer', color: '#fb923c', stats: [5, 1, 2] },
-  { mod: 'arcane', name: 'Arkanmagier', sub: 'Arkan', color: '#c4b5fd', stats: [4, 3, 2] },
-  { mod: 'blitz', name: 'Blitzmagier', sub: 'Blitz und Batterie', color: '#fde047', stats: [4, 3, 2] },
-  { mod: 'plague', name: 'Seuchenmagier', sub: 'Male und Gift, Leben als Kosten', color: '#a3e635', stats: [3, 4, 2] },
-  { mod: 'realmen', name: 'Strichkrieger', sub: 'Wut und Riesenschwert', color: '#f87171', stats: [4, 2, 5] },
-  { mod: 'klinge', name: 'Klingenstrich', sub: 'Tempo und Blutung', color: '#e5e7eb', stats: [4, 3, 3] },
+  { mod: null, name: t('char.normal.name'), sub: t('char.normal.sub'), color: '#f2e9e4', stats: [3, 3, 3] },
+  { mod: 'frost', name: t('char.frost.name'), sub: t('char.frost.sub'), color: '#7dd3fc', stats: [3, 5, 3] },
+  { mod: 'fire', name: t('char.fire.name'), sub: t('char.fire.sub'), color: '#fb923c', stats: [5, 1, 2] },
+  { mod: 'arcane', name: t('char.arcane.name'), sub: t('char.arcane.sub'), color: '#c4b5fd', stats: [4, 3, 2] },
+  { mod: 'blitz', name: t('char.blitz.name'), sub: t('char.blitz.sub'), color: '#fde047', stats: [4, 3, 2] },
+  { mod: 'plague', name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
+  { mod: 'realmen', name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
+  { mod: 'klinge', name: t('char.klinge.name'), sub: t('char.klinge.sub'), color: '#e5e7eb', stats: [4, 3, 3] },
 ];
 const STAT_NAMES = ['Schaden', 'Kontrolle', 'Überleben'], STAT_MAX = 5;
 let boardMode: 'time' | 'score' = 'time';

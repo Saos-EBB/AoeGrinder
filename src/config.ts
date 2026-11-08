@@ -1,5 +1,6 @@
 // Werte aus docs/mechanics-spec.md (VMaNGOS-Code + Wowhead-Tooltips).
 // "PH" = Platzhalter, nicht belegt.
+import { t } from './i18n';
 
 
 // Kartengröße: Radius-Faktor, 2 = vierfache Fläche. Bauwerke bleiben in der Mitte, Gelände und Streu wachsen mit. // PH
@@ -105,17 +106,17 @@ export function resetMods() {
 export const RANDOM_MAGE = {
   kit: ['rOff', 'rDef', 'rUtil', 'rDrink', null, null, 'blink', null],   // v31: Blink auf der Bewegungs-Taste, die 4 Kategorien bleiben auf 1–4
   cats: {
-    rOff: { name: 'Offensiv', cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'sludge', 'drain', 'burst', 'staticfield', 'quake'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
-    rDef: { name: 'Defensiv', cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'slimewave', 'slimetrap', 'contract', 'web'] },
-    rUtil: { name: 'Utility', cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'blackhole', 'poisoncloud', 'keeper'] },
-    rDrink: { name: 'Drink Something', cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
+    rOff: { name: t('spell.rOff.name'), cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'sludge', 'drain', 'burst', 'staticfield', 'quake'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rDef: { name: t('spell.rDef.name'), cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'slimewave', 'slimetrap', 'contract', 'web'] },
+    rUtil: { name: t('spell.rUtil.name'), cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'blackhole', 'poisoncloud', 'keeper'] },
+    rDrink: { name: t('spell.rDrink.name'), cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
   },
   sitMs: 2000,
   drinks: {
-    gold: { name: 'Goldbecher', short: 'Gold', skin: 'base', ms: 10000, speed: 0.3, crit: 0.15 },
-    schnaps: { name: 'Feuerschnaps', short: 'Schnaps', skin: 'fire', ms: 10000, dmg: 0.25, mana: true, burp: { range: 6, halfAngle: 0.7 } },
-    tasse: { name: 'Heiße Tasse', short: 'Tasse', skin: 'ice', ms: 6000, heal: true, slow: 0.5, slowYd: 8 },   // Slow, solange er sitzt; danach Leben voll über 6 s
-    tee: { name: 'Tee-Schale', short: 'Tee', skin: 'arcane', ms: 10000, cd: 0.3, mana: true },
+    gold: { name: t('drink.gold.name'), short: t('drink.gold.short'), skin: 'base', ms: 10000, speed: 0.3, crit: 0.15 },
+    schnaps: { name: t('drink.schnaps.name'), short: t('drink.schnaps.short'), skin: 'fire', ms: 10000, dmg: 0.25, mana: true, burp: { range: 6, halfAngle: 0.7 } },
+    tasse: { name: t('drink.tasse.name'), short: t('drink.tasse.short'), skin: 'ice', ms: 6000, heal: true, slow: 0.5, slowYd: 8 },   // Slow, solange er sitzt; danach Leben voll über 6 s
+    tee: { name: t('drink.tee.name'), short: t('drink.tee.short'), skin: 'arcane', ms: 10000, cd: 0.3, mana: true },
   },
 };
 
@@ -143,22 +144,22 @@ export const PLAGUE = {
 export const SCHOOL_METER = {
   perKill: 0.02, perChampion: 0.10, idleMs: 3000, decayPerS: 0.05,
   // Feuer: Hitze statt Kills. Treffer heizen, Hitze macht Schaden und Brand stärker, ab max brennt er selbst bis unter overheatUntil
-  Feuer: { name: 'Hitze', color: '#ff7a1a', hot: '#ff2a12', hotFrom: 80, full: 'Überhitzt', max: 100, perHit: 1.5, coolDelayMs: 1500, coolPerS: 10,
+  Feuer: { name: t('meter.Feuer.name'), color: '#ff7a1a', hot: '#ff2a12', hotFrom: 80, full: t('meter.Feuer.full'), max: 100, perHit: 1.5, coolDelayMs: 1500, coolPerS: 10,
     dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500,
     overDmg: 0.25, killHeal: 0.005 },   // v31: überhitzt +25 % Schaden, jeder Kill heilt 0,5 % Leben (Feuer-Figur)
-  Frost: { name: 'Kälte', color: '#7fd0ff', full: 'Kälte voll: +35 % Slow', slow: 0.35, slowMax: 0.8 },
+  Frost: { name: t('meter.Frost.name'), color: '#7fd0ff', full: t('meter.Frost.full'), slow: 0.35, slowMax: 0.8 },
   // Arkan (v31): Arkane Ladungen statt Fokus. Pro Ladung +15 % Schaden und +25 % Kosten auf Arkan-Spells, verfallen nach idleMs ohne Arkan-Zauber
-  Arkan: { name: 'Ladungen', color: '#c573ff', full: 'Ladungen voll', max: 4, dmg: 0.15, cost: 0.25, idleMs: 10000, gain: ['ae', 'arcmissiles', 'arcstrike'] },
+  Arkan: { name: t('meter.Arkan.name'), color: '#c573ff', full: t('meter.Arkan.full'), max: 4, dmg: 0.15, cost: 0.25, idleMs: 10000, gain: ['ae', 'arcmissiles', 'arcstrike'] },
 };
 
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
 export const CARD_RARITIES = [
-  { name: 'grau',   color: '#b0b0b0', mult: 0.5, weight: 30 },
-  { name: 'weiß',   color: '#ffffff', mult: 1,   weight: 35 },
-  { name: 'grün',   color: '#3fe05a', mult: 2,   weight: 20 },
-  { name: 'blau',   color: '#4aa3ff', mult: 3,   weight: 10 },
-  { name: 'lila',   color: '#c573ff', mult: 4,   weight: 4 },
-  { name: 'orange', color: '#ff9a2e', mult: 5,   weight: 1 },
+  { id: 'grau', name: t('rarity.grau'),   color: '#b0b0b0', mult: 0.5, weight: 30 },
+  { id: 'weiß', name: t('rarity.weiß'),   color: '#ffffff', mult: 1,   weight: 35 },
+  { id: 'grün', name: t('rarity.grün'),   color: '#3fe05a', mult: 2,   weight: 20 },
+  { id: 'blau', name: t('rarity.blau'),   color: '#4aa3ff', mult: 3,   weight: 10 },
+  { id: 'lila', name: t('rarity.lila'),   color: '#c573ff', mult: 4,   weight: 4 },
+  { id: 'orange', name: t('rarity.orange'), color: '#ff9a2e', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
 export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3, dur: 0.10 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink), dur = Dauer und Radius (?-Magier Defensiv)
@@ -169,10 +170,10 @@ export const CARD_RELIC_LEVEL = 30;
 // Kartentakt, Reihe im Hauptmenü. levels: bis Level "to" alle "every" Level. gap: ms Spielzeit zwischen zwei Kartenfenstern, der Rest wartet.
 // Gestaffelt: 31 Karten, anfangs Build aufbauen, am Ende spielen. gap liegt unter dem Abstand der Karten (etwa 9 s pro Level), sonst staut es sich. // PH
 export const CARD_PACES = [
-  { id: 'staffel', name: 'Gestaffelt', title: 'Jedes Level bis 10, jedes 3. bis 40, dann jedes 5. Zusammen 31 Karten', levels: [{ to: 10, every: 1 }, { to: 40, every: 3 }, { to: 100, every: 5 }], gap: 15000 },
-  { id: 'every1', name: '1 pro Level', title: '99 Karten', levels: [{ to: 100, every: 1 }], gap: 5000 },
-  { id: 'every2', name: '1 pro 2 Level', title: '50 Karten', levels: [{ to: 100, every: 2 }], gap: 10000 },
-  { id: 'every3', name: '1 pro 3 Level', title: '33 Karten', levels: [{ to: 100, every: 3 }], gap: 15000 },
+  { id: 'staffel', name: t('pace.staffel.name'), title: t('pace.staffel.title'), levels: [{ to: 10, every: 1 }, { to: 40, every: 3 }, { to: 100, every: 5 }], gap: 15000 },
+  { id: 'every1', name: t('pace.every1.name'), title: t('pace.every1.title'), levels: [{ to: 100, every: 1 }], gap: 5000 },
+  { id: 'every2', name: t('pace.every2.name'), title: t('pace.every2.title'), levels: [{ to: 100, every: 2 }], gap: 10000 },
+  { id: 'every3', name: t('pace.every3.name'), title: t('pace.every3.title'), levels: [{ to: 100, every: 3 }], gap: 15000 },
 ];
 export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 
@@ -181,99 +182,99 @@ export const CARD_CLASSIC_EVERY = 2;   // Classic pur: alle 2 Level ein Rang
 export const CARDS = [
   // Grundwerte für alle Figuren (v31): ersetzen Arkane Macht, Eisherz, Glutherz, Sturmherz, Kampfkunst, Frostrüstung, Knochenpanzer, Arcane Mind, Glutseele
   // notOnly: nicht in diesen Modi (onlyTag). Weisheit nur für Magier mit Mana
-  { id: 'might', name: 'Macht', always: true, max: 5,
-    desc: (r, m) => `+${Math.round(12 * m)} % Schaden.`, apply: (r, m) => { mods.dmg += 0.12 * m; } },
-  { id: 'tough', name: 'Zähigkeit', always: true, max: 3,
-    desc: (r, m) => `+${Math.round(15 * m)} % maximale Gesundheit.`, apply: (r, m) => { mods.hpMult += 0.15 * m; } },
-  { id: 'wisdom', name: 'Weisheit', always: true, notOnly: ['Krieger', 'Klinge', 'Blitz', 'Seuche'], max: 3,
-    desc: (r, m) => `+${Math.round(10 * m)} % maximales Mana.`, apply: (r, m) => { mods.manaMult += 0.10 * m; } },
-  { id: 'ibliz', name: 'Improved Blizzard', tags: ['Frost'], needs: 'bliz', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
-    desc: (r, m) => `Blizzard verlangsamt Gegner um ${Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100)} % für 1,5 s.`,
+  { id: 'might', name: t('card.might.name'), always: true, max: 5,
+    desc: (r, m) => t('card.might.desc', { n: Math.round(12 * m) }), apply: (r, m) => { mods.dmg += 0.12 * m; } },
+  { id: 'tough', name: t('card.tough.name'), always: true, max: 3,
+    desc: (r, m) => t('card.tough.desc', { n: Math.round(15 * m) }), apply: (r, m) => { mods.hpMult += 0.15 * m; } },
+  { id: 'wisdom', name: t('card.wisdom.name'), always: true, notOnly: ['Krieger', 'Klinge', 'Blitz', 'Seuche'], max: 3,
+    desc: (r, m) => t('card.wisdom.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.manaMult += 0.10 * m; } },
+  { id: 'ibliz', name: t('card.ibliz.name'), tags: ['Frost'], needs: 'bliz', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
+    desc: (r, m) => t('card.ibliz.desc', { n: Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100) }),
     apply: (r, m) => { mods.blizSlow = Math.max(mods.blizSlow, Math.min(0.9, [0.3, 0.5][r] * m)); } },
-  { id: 'ifn', name: 'Improved Frost Nova', tags: ['Frost'], needs: 'nova', max: 2,   // 2 s je Rang belegt (Wowhead) bei ×1
-    desc: (r, m) => `Frost Nova Abklingzeit −${String(2 * m).replace('.', ',')} s.`,
+  { id: 'ifn', name: t('card.ifn.name'), tags: ['Frost'], needs: 'nova', max: 2,   // 2 s je Rang belegt (Wowhead) bei ×1
+    desc: (r, m) => t('card.ifn.desc', { n: 2 * m }),
     apply: (r, m) => { mods.novaCd += 2000 * m; } },
-  { id: 'shatter', name: 'Shatter', tags: ['Frost'], max: 3,
-    desc: (r, m) => `+${Math.round(10 * m)} % kritische Trefferchance gegen eingefrorene Ziele.`, apply: (r, m) => { mods.shatter += 0.10 * m; } },
-  { id: 'storm', name: 'Weiter Sturm', tags: ['Frost'], needs: 'bliz', max: 2,
-    desc: (r, m) => `Blizzard-Radius +${String(2 * m).replace('.', ',')} yd.`, apply: (r, m) => { mods.blizRadius += 2 * m; } },
+  { id: 'shatter', name: t('card.shatter.name'), tags: ['Frost'], max: 3,
+    desc: (r, m) => t('card.shatter.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.shatter += 0.10 * m; } },
+  { id: 'storm', name: t('card.storm.name'), tags: ['Frost'], needs: 'bliz', max: 2,
+    desc: (r, m) => t('card.storm.desc', { n: 2 * m }), apply: (r, m) => { mods.blizRadius += 2 * m; } },
   // Feuer (v31). Ränge zählen ganz, nur Prozente wachsen mit der Seltenheit
-  { id: 'madness', name: 'Wahnsinn', only: ['Feuer'], needs: 'fireball', max: 3,
-    desc: () => 'Feuerball +1 Projektil.', apply: () => { mods.fbExtra += 1; } },
-  { id: 'rapidfire', name: 'Dauerfeuer', only: ['Feuer'], needs: 'fireball', max: 2,
-    desc: r => `Jeder ${r ? 3 : 4}. Feuerball kostet nichts.`, apply: r => { mods.fbFreeEvery = r ? 3 : 4; } },
-  { id: 'embercore', name: 'Glutkern', only: ['Feuer'], max: 3,
-    desc: (r, m) => `Überhitzt +${Math.round(15 * m)} % Schaden.`, apply: (r, m) => { mods.emberCore += 0.15 * m; } },
-  { id: 'soulfire', name: 'Seelenfeuer', only: ['Feuer'], needs: 'hellfire', max: 2,
-    desc: (r, m) => `Kills im Höllenfeuer heilen +${String(Math.round(5 * m) / 10).replace('.', ',')} % Leben.`, apply: (r, m) => { mods.soulFire += 0.005 * m; } },
-  { id: 'starfall', name: 'Sternenfall', only: ['Feuer'], needs: 'meteor', max: 3,
-    desc: () => 'Meteor-Abklingzeit −2 s pro 25 Hitze (mindestens 5 s).', apply: () => { mods.starfall += 1; } },
-  { id: 'wildfire', name: 'Lauffeuer', only: ['Feuer'], needs: 'firestorm', max: 5,
-    desc: () => 'Feuersbrunst springt auf 2 Mobs mehr.', apply: () => { mods.wildfire += 2; } },
+  { id: 'madness', name: t('card.madness.name'), only: ['Feuer'], needs: 'fireball', max: 3,
+    desc: () => t('card.madness.desc'), apply: () => { mods.fbExtra += 1; } },
+  { id: 'rapidfire', name: t('card.rapidfire.name'), only: ['Feuer'], needs: 'fireball', max: 2,
+    desc: r => t('card.rapidfire.desc', { n: r ? 3 : 4 }), apply: r => { mods.fbFreeEvery = r ? 3 : 4; } },
+  { id: 'embercore', name: t('card.embercore.name'), only: ['Feuer'], max: 3,
+    desc: (r, m) => t('card.embercore.desc', { n: Math.round(15 * m) }), apply: (r, m) => { mods.emberCore += 0.15 * m; } },
+  { id: 'soulfire', name: t('card.soulfire.name'), only: ['Feuer'], needs: 'hellfire', max: 2,
+    desc: (r, m) => t('card.soulfire.desc', { n: Math.round(5 * m) / 10 }), apply: (r, m) => { mods.soulFire += 0.005 * m; } },
+  { id: 'starfall', name: t('card.starfall.name'), only: ['Feuer'], needs: 'meteor', max: 3,
+    desc: () => t('card.starfall.desc'), apply: () => { mods.starfall += 1; } },
+  { id: 'wildfire', name: t('card.wildfire.name'), only: ['Feuer'], needs: 'firestorm', max: 5,
+    desc: () => t('card.wildfire.desc'), apply: () => { mods.wildfire += 2; } },
   // Frost (v31). Eiszeit ist immer orange und einmal pro Run, sie legt sich auf die Bewegungs-Taste (figures.ts)
-  { id: 'iceage', name: 'Eiszeit', only: ['Frost'], max: 1, minTier: 5,
-    desc: () => 'Liegt passiv auf der Bewegungs-Taste statt Blink und baut die Frost-Spells um: Ice Age, Ice Time Capsule, Partisan, Pheasant Beak, Ice Saber, Eisfeld. Auf gefrorenem Boden +20 % Tempo, Gegner −40 %.',
+  { id: 'iceage', name: t('card.iceage.name'), only: ['Frost'], max: 1, minTier: 5,
+    desc: () => t('card.iceage.desc'),
     apply: () => { mods.iceAge = 1; } },
-  { id: 'permafrost', name: 'Permafrost', only: ['Frost'], max: 2,
-    desc: (r, m) => `Kälte sinkt ${Math.round(25 * m)} % langsamer.`, apply: (r, m) => { mods.permafrost += 0.25 * m; } },
-  { id: 'coldburn', name: 'Kältebrand', only: ['Frost'], max: 3,
-    desc: (r, m) => `Eingefrorene nehmen +${Math.round(10 * m)} % Schaden.`, apply: (r, m) => { mods.coldBurn += 0.10 * m; } },
-  { id: 'stormeye', name: 'Sturmauge', only: ['Frost'], needs: 'bliz', max: 3,
-    desc: () => 'Jeder Blizzard-Tick senkt die Frostkugel-Abklingzeit um 0,3 s.', apply: () => { mods.stormEye += 1; } },
-  { id: 'frosteye', name: 'Frostauge', only: ['Frost'], needs: 'frostorb', max: 1,
-    desc: () => 'Solange die Frostkugel fliegt, ist Blizzard sofort, ohne Kanal, und läuft 8 s von selbst.', apply: () => { mods.frostEye = 1; } },
-  { id: 'shardhail', name: 'Splitterhagel', only: ['Frost'], max: 5,
-    desc: (r, m) => `+${Math.max(1, Math.round(m))} maximale Eissplitter (höchstens 50).`, apply: (r, m) => { mods.shardMax += Math.max(1, Math.round(m)); } },
+  { id: 'permafrost', name: t('card.permafrost.name'), only: ['Frost'], max: 2,
+    desc: (r, m) => t('card.permafrost.desc', { n: Math.round(25 * m) }), apply: (r, m) => { mods.permafrost += 0.25 * m; } },
+  { id: 'coldburn', name: t('card.coldburn.name'), only: ['Frost'], max: 3,
+    desc: (r, m) => t('card.coldburn.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.coldBurn += 0.10 * m; } },
+  { id: 'stormeye', name: t('card.stormeye.name'), only: ['Frost'], needs: 'bliz', max: 3,
+    desc: () => t('card.stormeye.desc'), apply: () => { mods.stormEye += 1; } },
+  { id: 'frosteye', name: t('card.frosteye.name'), only: ['Frost'], needs: 'frostorb', max: 1,
+    desc: () => t('card.frosteye.desc'), apply: () => { mods.frostEye = 1; } },
+  { id: 'shardhail', name: t('card.shardhail.name'), only: ['Frost'], max: 5,
+    desc: (r, m) => t('card.shardhail.desc', { n: Math.max(1, Math.round(m)) }), apply: (r, m) => { mods.shardMax += Math.max(1, Math.round(m)); } },
   // Arkan (v31)
-  { id: 'splinterswarm', name: 'Splitterschwarm', only: ['Arkan'], needs: 'arcmissiles', max: 3,
-    desc: (r, m) => `+${Math.round(10 * m)} % Splitter-Chance bei Arkanen Geschossen.`, apply: (r, m) => { mods.splinterSwarm += 0.10 * m; } },
-  { id: 'blinkbomb', name: 'Blinkbombe', only: ['Arkan'], max: 1,
-    desc: () => 'Jeder Blink löst am Ziel eine Arcane Explosion aus.', apply: () => { mods.blinkBomb = 1; } },
-  { id: 'doublejump', name: 'Doppelsprung', only: ['Arkan'], max: 1,
-    desc: () => '+1 Blink-Ladung.', apply: () => { mods.blinkExtra += 1; } },
+  { id: 'splinterswarm', name: t('card.splinterswarm.name'), only: ['Arkan'], needs: 'arcmissiles', max: 3,
+    desc: (r, m) => t('card.splinterswarm.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.splinterSwarm += 0.10 * m; } },
+  { id: 'blinkbomb', name: t('card.blinkbomb.name'), only: ['Arkan'], max: 1,
+    desc: () => t('card.blinkbomb.desc'), apply: () => { mods.blinkBomb = 1; } },
+  { id: 'doublejump', name: t('card.doublejump.name'), only: ['Arkan'], max: 1,
+    desc: () => t('card.doublejump.desc'), apply: () => { mods.blinkExtra += 1; } },
   // Blitz (v31)
-  { id: 'condenser', name: 'Kondensator', only: ['Blitz'], max: 1,
-    desc: () => 'Batterie bis 130, Überladung erst bei 130.', apply: () => { mods.condenser = 30; } },
-  { id: 'boltleap', name: 'Blitzsprung', only: ['Blitz'], max: 1,
-    desc: () => 'Blink gibt +15 Ladung, statt 10 zu kosten.', apply: () => { mods.boltLeap = 25; } },   // 10 Kosten zurück + 15
+  { id: 'condenser', name: t('card.condenser.name'), only: ['Blitz'], max: 1,
+    desc: () => t('card.condenser.desc'), apply: () => { mods.condenser = 30; } },
+  { id: 'boltleap', name: t('card.boltleap.name'), only: ['Blitz'], max: 1,
+    desc: () => t('card.boltleap.desc'), apply: () => { mods.boltLeap = 25; } },   // 10 Kosten zurück + 15
   // Seuche (v31)
-  { id: 'toughslime', name: 'Zäher Schleim', only: ['Seuche'], max: 3,
-    desc: () => 'Festkleben und Zusammenziehen halten 1 s länger.', apply: () => { mods.toughSlime += 1; } },
-  { id: 'leech', name: 'Blutegel', only: ['Seuche'], max: 3,
-    desc: (r, m) => `Entziehen heilt +${String(Math.round(25 * m) / 100).replace('.', ',')} % pro Treffer.`, apply: (r, m) => { mods.leech += 0.0025 * m; } },
-  { id: 'contagion', name: 'Ansteckung', only: ['Seuche'], max: 3,
-    desc: () => 'Stirbt ein vergifteter Mob, springt das Gift auf 1 Mob mehr über.', apply: () => { mods.contagion += 1; } },
-  { id: 'wreckingball', name: 'Abrissbirne', only: ['Seuche'], needs: 'blackhole', max: 3,
-    desc: (r, m) => `Schwarzes Loch: +${Math.round(25 * m)} % Aufprallschaden.`, apply: (r, m) => { mods.wreckingBall += 0.25 * m; } },
+  { id: 'toughslime', name: t('card.toughslime.name'), only: ['Seuche'], max: 3,
+    desc: () => t('card.toughslime.desc'), apply: () => { mods.toughSlime += 1; } },
+  { id: 'leech', name: t('card.leech.name'), only: ['Seuche'], max: 3,
+    desc: (r, m) => t('card.leech.desc', { n: Math.round(25 * m) / 100 }), apply: (r, m) => { mods.leech += 0.0025 * m; } },
+  { id: 'contagion', name: t('card.contagion.name'), only: ['Seuche'], max: 3,
+    desc: () => t('card.contagion.desc'), apply: () => { mods.contagion += 1; } },
+  { id: 'wreckingball', name: t('card.wreckingball.name'), only: ['Seuche'], needs: 'blackhole', max: 3,
+    desc: (r, m) => t('card.wreckingball.desc', { n: Math.round(25 * m) }), apply: (r, m) => { mods.wreckingBall += 0.25 * m; } },
   // Strichkrieger (v31)
-  { id: 'annihilator', name: 'Vernichter', only: ['Krieger'], needs: 'wExec', max: 3,
-    desc: () => 'Hinrichtung +30 % gegen Betäubte.', apply: () => { mods.annihilator += 1; } },
-  { id: 'blademaster', name: 'Klingenmeister', only: ['Krieger'], needs: 'wQ', max: 3,
-    desc: () => 'Schlagfolge +10 % schneller.', apply: () => { mods.bladeMaster += 1; } },
-  { id: 'abyss', name: 'Tanz am Abgrund', only: ['Krieger'], max: 3,
-    desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
+  { id: 'annihilator', name: t('card.annihilator.name'), only: ['Krieger'], needs: 'wExec', max: 3,
+    desc: () => t('card.annihilator.desc'), apply: () => { mods.annihilator += 1; } },
+  { id: 'blademaster', name: t('card.blademaster.name'), only: ['Krieger'], needs: 'wQ', max: 3,
+    desc: () => t('card.blademaster.desc'), apply: () => { mods.bladeMaster += 1; } },
+  { id: 'abyss', name: t('card.abyss.name'), only: ['Krieger'], max: 3,
+    desc: () => t('card.abyss.desc'), apply: () => { mods.dodgeCharges += 1; } },
   // Klingenstrich (v31)
-  { id: 'deepwounds', name: 'Tiefe Wunden', only: ['Klinge'], max: 3,
-    desc: () => 'Blutung +20 %.', apply: () => { mods.deepWounds += 1; } },
-  { id: 'flicker', name: 'Flicker', only: ['Klinge'], needs: 'kDash', max: 1,
-    desc: () => 'Strichschnitt springt zum nächsten Ziel in 10 yd, ein Kill gibt die Ladung zurück, höchstens 2 Ladungen.', apply: () => { mods.flicker = 1; } },
-  { id: 'shadowpact', name: 'Schattenpakt', only: ['Klinge'], needs: 'kClones', max: 3,
-    desc: () => 'Schattenklone: +1 Klon.', apply: () => { mods.shadowPact += 1; } },
+  { id: 'deepwounds', name: t('card.deepwounds.name'), only: ['Klinge'], max: 3,
+    desc: () => t('card.deepwounds.desc'), apply: () => { mods.deepWounds += 1; } },
+  { id: 'flicker', name: t('card.flicker.name'), only: ['Klinge'], needs: 'kDash', max: 1,
+    desc: () => t('card.flicker.desc'), apply: () => { mods.flicker = 1; } },
+  { id: 'shadowpact', name: t('card.shadowpact.name'), only: ['Klinge'], needs: 'kClones', max: 3,
+    desc: () => t('card.shadowpact.desc'), apply: () => { mods.shadowPact += 1; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
-  { id: 'dodgeCharge', name: 'Ausweichrolle', always: true, tags: ['Bewegung'], max: 1,
-    desc: () => '+1 Dodge-Ladung.', apply: () => { mods.dodgeCharges += 1; } },
-  { id: 'comboWindow', name: 'Kombo-Meister', always: true, tags: ['Bewegung'], max: 2,
-    desc: (r, m) => `Kombo-Fenster nach dem Dodge +${Math.round(50 * m)} %.`, apply: (r, m) => { mods.comboWindow += 0.5 * m; } },   // PH
+  { id: 'dodgeCharge', name: t('card.dodgeCharge.name'), always: true, tags: ['Bewegung'], max: 1,
+    desc: () => t('card.dodgeCharge.desc'), apply: () => { mods.dodgeCharges += 1; } },
+  { id: 'comboWindow', name: t('card.comboWindow.name'), always: true, tags: ['Bewegung'], max: 2,
+    desc: (r, m) => t('card.comboWindow.desc', { n: Math.round(50 * m) }), apply: (r, m) => { mods.comboWindow += 0.5 * m; } },   // PH
   // Blitzmagier: mehr Sprünge und Schläge statt mehr Grundschaden (v29) // PH
-  { id: 'conduct', name: 'Leitfähigkeit', only: ['Blitz'], max: 3,
-    desc: (r, m) => `Kettenblitz +${Math.max(1, Math.round(20 * m))} Sprünge, Bogenblitz +${Math.max(1, Math.round(4 * m))} Sprünge.`, apply: (r, m) => { mods.chainJumps += Math.max(1, Math.round(20 * m)); mods.arcJumps += Math.max(1, Math.round(4 * m)); } },   // v30 verdoppelt
+  { id: 'conduct', name: t('card.conduct.name'), only: ['Blitz'], max: 3,
+    desc: (r, m) => t('card.conduct.desc', { a: Math.max(1, Math.round(20 * m)), b: Math.max(1, Math.round(4 * m)) }), apply: (r, m) => { mods.chainJumps += Math.max(1, Math.round(20 * m)); mods.arcJumps += Math.max(1, Math.round(4 * m)); } },   // v30 verdoppelt
   // Immer orange, selten im Angebot (offerChance), einmal pro Run
-  { id: 'jumps2', name: 'Gewitterkaskade', only: ['Blitz'], max: 1, minTier: 5, offerChance: 0.15,
-    desc: () => 'Alle Sprünge von Kettenblitz und Bogenblitz ×2.', apply: () => { mods.jumpMul *= 2; } },
-  { id: 'thunder', name: 'Donnerhall', only: ['Blitz'], needs: 'strike', max: 2,
-    desc: () => 'Blitzschlag schlägt 1 Mal mehr nach (50 %).', apply: () => { mods.strikeExtra += 1; } },
-  { id: 'front', name: 'Sturmfront', only: ['Blitz'], needs: 'storm', max: 2,
-    desc: () => 'Gewitter: +1 Blitz pro Takt.', apply: () => { mods.stormBolts += 1; } },
-  { id: 'net', name: 'Kugelnetz', only: ['Blitz'], needs: 'ball', max: 2,
-    desc: () => 'Kugelblitz zappt doppelt so oft.', apply: () => { mods.ballZaps += 1; } },
+  { id: 'jumps2', name: t('card.jumps2.name'), only: ['Blitz'], max: 1, minTier: 5, offerChance: 0.15,
+    desc: () => t('card.jumps2.desc'), apply: () => { mods.jumpMul *= 2; } },
+  { id: 'thunder', name: t('card.thunder.name'), only: ['Blitz'], needs: 'strike', max: 2,
+    desc: () => t('card.thunder.desc'), apply: () => { mods.strikeExtra += 1; } },
+  { id: 'front', name: t('card.front.name'), only: ['Blitz'], needs: 'storm', max: 2,
+    desc: () => t('card.front.desc'), apply: () => { mods.stormBolts += 1; } },
+  { id: 'net', name: t('card.net.name'), only: ['Blitz'], needs: 'ball', max: 2,
+    desc: () => t('card.net.desc'), apply: () => { mods.ballZaps += 1; } },
 ];

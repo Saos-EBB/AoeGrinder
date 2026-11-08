@@ -10,6 +10,7 @@ import { burstFx, FIRE, EMBER } from './spells/fx';
 import { schedule } from './spells/core';
 import { hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
+import { t } from './i18n';
 
 // Alle Zahlen PH
 export const C = {
@@ -18,11 +19,11 @@ export const C = {
   plateColor: '#8fc4ff',                                    // Name und Affixe im Nameplate
   trauma: 0.6,                                              // Kill: starkes Wackeln, Hitstop W.hitstop.championMs, großer Riss W.decal.champion
   affixes: {
-    fast: { name: 'Schnell', move: 1.5, attack: 1.3 },
-    strong: { name: 'Stark', dmg: 1.5 },
-    fire: { name: 'Feuer-verzaubert', delayMs: 600, radius: 5, dmgPct: 0.12 },   // Explosion nach dem Tod, Schaden in Anteil der Spieler-Leben
-    cold: { name: 'Kälte-verzaubert', slowMs: 2000 },        // 30 % Slow über player.slowUntil (CFG.curseSlow)
-    stone: { name: 'Steinhaut', taken: 0.7 },                 // erhaltener Schaden, dazu immun gegen Knockback
+    fast: { name: t('affix.fast.name'), move: 1.5, attack: 1.3 },
+    strong: { name: t('affix.strong.name'), dmg: 1.5 },
+    fire: { name: t('affix.fire.name'), delayMs: 600, radius: 5, dmgPct: 0.12 },   // Explosion nach dem Tod, Schaden in Anteil der Spieler-Leben
+    cold: { name: t('affix.cold.name'), slowMs: 2000 },        // 30 % Slow über player.slowUntil (CFG.curseSlow)
+    stone: { name: t('affix.stone.name'), taken: 0.7 },                 // erhaltener Schaden, dazu immun gegen Knockback
   },
 };
 const AFFIX_IDS = Object.keys(C.affixes);

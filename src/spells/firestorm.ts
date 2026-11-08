@@ -6,6 +6,7 @@ import { state } from '../state';
 import { mobsInRadius, addField, burnLeft } from './core';
 import { nearestTarget } from './target';
 import { firestormLance, firestormJump } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 // PH: 1,5 Einheiten aufs Ziel, je 3 Nachbarn in 5 yd, höchstens 30 Sprünge; Brand der Sprünge 6 s mit 0,5 Einheiten pro Sekunde (Wert nicht vorgegeben)
 const S = { dmg: 1.5, range: 30, per: 3, radius: 5, maxJumps: 30, burnMs: 6000, burnDps: 0.5 };
@@ -20,7 +21,7 @@ export function igniteMob(c, m, dps = S.burnDps * UNIT, ms = S.burnMs) {
 }
 
 export const firestorm = {
-  name: 'Feuersbrunst', desc: 'Trifft das nächste Ziel (1,5 Einheiten). Brennt es, springt der Brand auf 3 Mobs in 5 yd, die springen weiter, solange sie brennen. Höchstens 30 Sprünge.', ranks: ['dmg', 'mana'], tags: ['Feuer', 'Kette'], cls: 'fire',
+  name: t('spell.firestorm.name'), desc: t('spell.firestorm.desc'), ranks: ['dmg', 'mana'], tags: ['Feuer', 'Kette'], cls: 'fire',
   mana: 90, cd: 8000, range: S.range, showDmg: S.dmg * UNIT,   // PH
   canCast: () => nearestTarget(S.range) ? null : 'Kein Ziel in Reichweite',
   effect(c) {

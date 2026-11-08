@@ -5,16 +5,17 @@ import { maxHp } from '../formulas';
 import { combatText } from '../ui/hud';
 import { mobsInRadius, addField, hasRune, burnLeft } from './core';
 import { detonateLook, fireField } from '../vfx/fireLook';
+import { t } from '../i18n';
 
 const BOOM = { mul: 1.5, radius: 3, big: 5 }, CHAIN = { dmg: 10, dur: 4000 }, HEAL = 0.01;   // PH
 
 export const detonate = {
-  name: 'Brandmal-Detonation', desc: 'Zündet alle brennenden Mobs in 20 yd: restlicher Brandschaden sofort ×1,5 als Explosion 3 yd um jeden, der Brand erlischt.', ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
+  name: t('spell.detonate.name'), desc: t('spell.detonate.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
   mana: 160, cd: 8000, radius: 20,   // PH
   runes: [
-    { id: 'chain', name: 'Kettenbrand', desc: 'Jede Explosion hinterlässt Brand.' },
-    { id: 'big', name: 'Großer Knall', desc: 'Explosion 5 yd.' },
-    { id: 'glow', name: 'Nachglühen', desc: 'Heilt 1 % Leben pro gezündetem Mob.' },
+    { id: 'chain', name: t('spell.detonate.runes.chain.name'), desc: t('spell.detonate.runes.chain.desc') },
+    { id: 'big', name: t('spell.detonate.runes.big.name'), desc: t('spell.detonate.runes.big.desc') },
+    { id: 'glow', name: t('spell.detonate.runes.glow.name'), desc: t('spell.detonate.runes.glow.desc') },
   ],
   canCast: () => mobsInRadius(player.pos, detonate.radius, Infinity).some(m => burnLeft(m) > 0) ? null : 'Kein brennender Gegner in der Nähe',
   effect(c) {

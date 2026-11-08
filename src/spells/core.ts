@@ -24,6 +24,7 @@ import { legendDmgMul, legendCastMul } from '../legends';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast, arcDmgMul } from '../schoolMeter';
+import { t } from '../i18n';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -69,7 +70,7 @@ export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
 export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
 export const hasSpell = id => state.slots.includes(id);
 // Arcane only läuft ohnehin beim Zaubern: Runen „Laufen erlaubt, halber Schaden“ werden dort zu +1 Ladung
-const WALK_CHARGE = { name: 'Zusatzladung', desc: '+1 Ladung.' };
+const WALK_CHARGE = { name: t('rune.walkCharge.name'), desc: t('rune.walkCharge.desc') };
 export const runesOf = id => modValue('castWhileMoving') ? SPELLS[id].runes?.map(r => r.id === 'walk' ? { ...WALK_CHARGE, id: 'walk', charges: (baseCharges(id) ?? 1) + 1 } : r) : SPELLS[id].runes;
 export const rune = id => runesOf(id)?.find(r => r.id === state.runes[id]);
 export const hasRune = (id, runeId) => state.runes[id] === runeId;
