@@ -1,19 +1,19 @@
-// HUD-Layout: Jedes Element steckt in einem Wrapper (position: fixed), Lage = Preset + eigene Änderungen (Overrides) pro Preset.
-// x, y in % vom Bildschirm ab dem Anker; ein Fensterwechsel behält die %. Gespeichert in frostgrind.ui.v1 (hudPreset, hudOverrides).
-// Bearbeiten-Modus: ziehen (Raster 0,5 %, Shift = frei), Mausrad = Größe, H = ein/aus, Rechtsklick = Element auf Preset zurück.
+// HUD-Layout: Jedes Element steckt in einem Wrapper (position: fixed), Lage = Layout + eigene Änderungen (Overrides) pro Layout.
+// x, y in % vom Bildschirm ab dem Anker; ein Fensterwechsel behält die %. Overrides in frostgrind.ui.v1 (hudOverrides).
+// Bearbeiten-Modus: ziehen (Raster 0,5 %, Shift = frei), Mausrad = Größe, H = ein/aus, Rechtsklick = Element auf Layout zurück.
 
 import { $ } from '../../util';
 import { device } from '../../device';
 import { UI } from '../uiConfig';
 import { uiSettings, setUi } from '../uiSettings';
-import { PRESETS, MOBILE } from './presets';
+import { DEFAULT_LAYOUT, MOBILE } from './presets';
 import { t } from '../../i18n';
 
 export type Anchor = 'tl' | 't' | 'tr' | 'l' | 'c' | 'r' | 'bl' | 'b' | 'br';
 export type HudElementId = 'timer' | 'runinfo' | 'xp' | 'hp' | 'mana' | 'cast' | 'hotbar' | 'killmeter' | 'combo' | 'buffs' | 'relics'
   | 'minimap' | 'compass' | 'splits' | 'tracker' | 'unitframe';
 export type Placement = { anchor: Anchor; x: number; y: number; scale: number; hidden?: boolean; variant?: string };
-export type HudPreset = { id: string; name: string; theme: string; elements: Partial<Record<HudElementId, Placement>> };
+export type HudLayout = { id: string; elements: Partial<Record<HudElementId, Placement>> };
 
 export const HUD_NAMES: Record<HudElementId, string> = {
   timer: t('hudEl.timer'), runinfo: t('hudEl.runinfo'), xp: t('hudEl.xp'), hp: t('hudEl.hp'), mana: t('hudEl.mana'), cast: t('hudEl.cast'), hotbar: t('hudEl.hotbar'), killmeter: t('hudEl.killmeter'), combo: t('hudEl.combo'), buffs: t('hudEl.buffs'), relics: t('hudEl.relics'), minimap: t('hudEl.minimap'), compass: t('hudEl.compass'), splits: t('hudEl.splits'), tracker: t('hudEl.tracker'), unitframe: t('hudEl.unitframe'),
@@ -21,11 +21,11 @@ export const HUD_NAMES: Record<HudElementId, string> = {
 const ANCHORS: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
 const SNAP = 0.5;   // Raster in %
 
-export const activePreset = (): HudPreset => PRESETS.find(p => p.id === uiSettings.hudPreset) ?? PRESETS[0];
-const overrideKey = () => activePreset().id + (device.mobile ? '@mobile' : '');
+export const activeLayout = (): HudLayout => DEFAULT_LAYOUT;
+const overrideKey = () => activeLayout().id + (device.mobile ? '@mobile' : '');
 const overrides = (): Partial<Record<HudElementId, Placement>> => uiSettings.hudOverrides[overrideKey()] ?? {};
 function base(id: HudElementId): Placement | undefined {
-  const p = activePreset().elements[id];
+  const p = activeLayout().elements[id];
   return device.mobile && p && MOBILE[id] ? { ...p, ...MOBILE[id] } : p;
 }
 export function placementOf(id: HudElementId): Placement | undefined {
@@ -67,7 +67,6 @@ function place(id: HudElementId) {
 }
 export function applyLayout() {
   for (const id of wrappers.keys()) place(id);
-  document.body.dataset.hudTheme = activePreset().theme;
 }
 addEventListener('uisettings', applyLayout);
 
@@ -141,24 +140,6 @@ $('hudEditReset').addEventListener('click', () => {
   setUi('hudOverrides', all);
 });
 $('hudEditDone').addEventListener('click', stopHudEdit);
-
-// Eigenes Layout aus dem alten Speicher (frostgrind.hud.v1) einmal als Override von H01 übernehmen
-const OLD_IDS: Record<string, HudElementId> = { hudHeader: 'runinfo', hudHp: 'hp', hudMana: 'mana', hudCast: 'cast', actionbar: 'hotbar', hudEffects: 'buffs', hudRelics: 'relics', hudMap: 'minimap' };
-const OLD_ANCHOR: Record<string, Anchor> = { tl: 'tl', tc: 't', tr: 'tr', cl: 'l', c: 'c', cr: 'r', bl: 'bl', bc: 'b', br: 'br' };
-(function migrate() {
-  const store = device.mobile ? 'frostgrind.hud.mobile.v1' : 'frostgrind.hud.v1', key = 'H01' + (device.mobile ? '@mobile' : '');
-  try {
-    const old = JSON.parse(localStorage.getItem(store) || 'null');
-    if (!old || uiSettings.hudOverrides[key]) return;
-    const mine = {};
-    for (const [oldId, id] of Object.entries(OLD_IDS)) {
-      const o = old[oldId];
-      if (o && OLD_ANCHOR[o.anchor]) mine[id] = { anchor: OLD_ANCHOR[o.anchor], x: o.x, y: o.y, scale: o.scale ?? 1 };
-    }
-    setUi('hudOverrides', { ...uiSettings.hudOverrides, [key]: mine });
-    localStorage.removeItem(store);
-  } catch { /* kein Storage */ }
-})();
 
 // Alle HUD-Elemente: id → Markup in index.html
 const DOM_IDS: Record<HudElementId, string> = {

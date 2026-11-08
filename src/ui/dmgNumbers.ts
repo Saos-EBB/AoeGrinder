@@ -1,4 +1,4 @@
-// Schadenszahlen: Größe nach Schaden, Look nach Zahlen-Stil (Einstellung numStyle, ui/numbers.css). Kleine Treffer am selben Mob
+// Schadenszahlen: Größe nach Schaden, Look in ui/numbers.css. Kleine Treffer am selben Mob
 // werden kurz zusammengefasst (×N). Arten: Treffer, Crit, Mega-Crit, zusammengefasst, Tick, Heilung, Schaden an dir.
 
 import { state } from '../state';
@@ -6,18 +6,11 @@ import { rand, clamp } from '../util';
 import { SPELLS } from '../config';
 import { onCrit } from '../fx/impact';
 import { overlay, screenPos } from './hud';
-import { COLORS } from './colors';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
 import './numbers.css';
-import { locale } from '../i18n';
 
-// Schulfarben für N01 (Frost, Feuer, Arkan aus dem Mockup; Blitz, Seuche, Krieger eigene Wahl)
-const SCHOOL: Record<string, string> = {
-  frost: '#7dd3fc', Frost: '#7dd3fc', fire: '#fb923c', Feuer: '#fb923c', arcane: '#c4b5fd', Arkan: '#c4b5fd',
-  lightning: '#fde047', nature: '#a3e635', warrior: '#ffffff',
-};
-const MEGA = 10;   // Mega-Crit (N02) ab 10× Grundschaden des Spells // PH
+const MEGA = 10;   // Mega-Crit ab 10× Grundschaden des Spells // PH
 const BASE_HIT = s => s?.tickDmg ?? (s?.min ? (s.min + s.max) / 2 : s?.dmg ?? s?.pulse ?? s?.showDmg);
 
 const live = [];
@@ -27,33 +20,24 @@ const sizeOf = dmg => {
   const k = clamp(Math.log(Math.max(1, dmg) / UI.dmg.refLow) / Math.log(UI.dmg.refHigh / UI.dmg.refLow), 0, 1);
   return (UI.dmg.minPx + (UI.dmg.maxPx - UI.dmg.minPx) * k) * uiSettings.numSize / 100;
 };
-// Tausender: N01 und N02 mit schmalem Leerzeichen wie im Mockup
-const fmt = (n: number) => ['N01', 'N02'].includes(uiSettings.numStyle) ? Math.round(n).toLocaleString(locale).replace(/\./g, ' ') : String(Math.round(n));
+// Ganze Zahl mit Tausenderpunkt
+const fmt = (n: number) => Math.round(n).toLocaleString('de-DE');
 function label(kind: string, n: number, count = 1) {
-  const s = uiSettings.numStyle, v = fmt(n);
-  if (kind === 'merged') {
-    if (s === 'N04') return `${v} (${count})`;
-    if (s === 'N07') return `${v}x${count}`;
-    if (s === 'N08') return `${v} <span class="mx">x${count}</span>`;
-    if (s === 'N03' || s === 'N10') return `${v}<span class="mx"> ×${count}</span>`;
-    return `<span class="mx">×${count} </span>${v}`;
-  }
-  if (kind === 'crit' || kind === 'mega') return s === 'N08' ? `[${v}]` : s === 'N01' || s === 'N03' ? `${v}!` : v;
+  const v = fmt(n);
+  if (kind === 'merged') return `${v}<span class="mx"> ×${count}</span>`;
   if (kind === 'heal') return `+${v}`;
-  if (kind === 'hurt') return s === 'N02' ? v : ['N04', 'N07', 'N08'].includes(s) ? `-${v}` : `−${v}`;
   return v;
 }
 
-function spawn(pos, height, kind: string, html: string, px: number, color?: string) {
+function spawn(pos, height, kind: string, html: string, px: number) {
   const p = screenPos(pos, height);
   if (!p) return null;
   const el = document.createElement('div');
-  el.className = `ct num n-${uiSettings.numStyle} k-${kind}${kind === 'crit' || kind === 'mega' ? ' crit' : ''}`;
+  el.className = `ct num k-${kind}${kind === 'crit' || kind === 'mega' ? ' crit' : ''}`;
   el.innerHTML = html;
   el.style.left = `${p.x + rand(-18, 18)}px`;
   el.style.top = `${p.y}px`;
   el.style.fontSize = `${px}px`;
-  if (color) el.style.setProperty('--sc', color);
   overlay.appendChild(el);
   live.push(el);
   if (live.length > UI.dmg.maxLive) live.shift().remove();
@@ -72,12 +56,10 @@ export function damageNumber(mob, dmg, crit, source, tick = false) {
     open.el.style.fontSize = `${sizeOf(open.total)}px`;
     return;
   }
-  const def = SPELLS[source], key = def?.school ?? def?.cls;
-  const color = key === 'warrior' && crit ? '#ef4444' : SCHOOL[key] ?? COLORS.school[key] ?? '#ffffff';   // Krieger: weiß, Crit rot
-  const base = BASE_HIT(def);
+  const base = BASE_HIT(SPELLS[source]);
   const kind = crit ? (base && dmg >= base * MEGA ? 'mega' : 'crit') : tick ? 'tick' : 'hit';
   const px = sizeOf(dmg) * (crit ? UI.dmg.critMul : tick ? 0.65 : 1);
-  const el = spawn(mob.pos, 2, kind, label(kind, dmg), px, color);
+  const el = spawn(mob.pos, 2, kind, label(kind, dmg), px);
   if (el && !crit) merging.set(mob, { el, total: dmg, n: 1, at: state.now });
 }
 

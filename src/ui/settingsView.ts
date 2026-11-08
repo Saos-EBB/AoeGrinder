@@ -1,9 +1,8 @@
 // Einstellungen (Mockup Settings.dc.html, Look Glut): Tabs links, Inhalt rechts. Alles wirkt sofort und landet in frostgrind.ui.v1.
 
 import { $ } from '../util';
-import { uiSettings, setUi, HUD_PRESETS, NUM_STYLES, UiSettings, saveProfile, loadProfile } from './uiSettings';
+import { uiSettings, setUi, UiSettings, saveProfile, loadProfile } from './uiSettings';
 import { askConfirm } from './confirm';
-import { NUM_FONTS, numFontFamily } from './numFonts';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
 import { t, locale, lang, LANGS, setLang, Lang } from '../i18n';
@@ -23,14 +22,6 @@ function row(label, control: HTMLElement) {
   r.className = 'setRow';
   r.append(Object.assign(document.createElement('span'), { textContent: label }), control);
   return r;
-}
-function select(key: keyof UiSettings, options: [string, string][]) {
-  const s = document.createElement('select');
-  s.className = 'setSelect';
-  for (const [v, name] of options) s.add(new Option(`${v} · ${name}`, v));
-  s.value = uiSettings[key] as string;
-  s.addEventListener('change', () => setUi(key, s.value as never));
-  return s;
 }
 function check(key: keyof UiSettings) {
   const c = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!uiSettings[key] });
@@ -62,21 +53,6 @@ function segmented(key: keyof UiSettings, options: [string, string][]) {
   return box;
 }
 const h2 = text => Object.assign(document.createElement('h2'), { textContent: text });
-const h3 = text => Object.assign(document.createElement('h3'), { className: 'setH3', textContent: text });
-// Kacheln mit Vorschau: jede Schrift zeigt Beispielzahlen in sich selbst
-function fontGrid() {
-  const box = document.createElement('div');
-  box.className = 'setFonts';
-  for (const [id, name] of [['', t('set.likeStyle')], ...NUM_FONTS.map(([i, n]) => [i, n])]) {
-    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'setFont' + (uiSettings.numFont === id ? ' on' : '') });
-    const sample = Object.assign(document.createElement('span'), { className: 'setFontSample', textContent: '1284 +86' });
-    if (id) sample.style.fontFamily = `'${numFontFamily(id)}', sans-serif`;
-    b.append(sample, Object.assign(document.createElement('small'), { textContent: name }));
-    b.addEventListener('click', () => { setUi('numFont', id as any); for (const x of box.children) x.classList.toggle('on', x === b); });
-    box.append(b);
-  }
-  return box;
-}
 function button(text, cls, onClick) {
   const b = Object.assign(document.createElement('button'), { type: 'button', className: cls, textContent: text });
   b.addEventListener('click', onClick);
@@ -91,7 +67,7 @@ function profileRows() {
   uiSettings.profiles.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'setProfile';
-    const info = Object.assign(document.createElement('span'), { textContent: p ? t('set.slot', { n: i + 1, preset: p.data.hudPreset, num: p.data.numStyle, at: fmtAt(p.at) }) : t('set.slotEmpty', { n: i + 1 }) });
+    const info = Object.assign(document.createElement('span'), { textContent: p ? t('set.slot', { n: i + 1, at: fmtAt(p.at) }) : t('set.slotEmpty', { n: i + 1 }) });
     const save = button(t('set.save'), 'smallBtn', async () => {
       if (p && !await askConfirm(t('set.overTitle'), t('set.overText', { n: i + 1 }), t('set.over'))) return;
       saveProfile(i); buildInterface();
@@ -130,14 +106,9 @@ function buildInterface() {
     h2(t('set.ownUi')),
     profileRows(),
     h2('HUD'),
-    row(t('set.hudLayout'), select('hudPreset', HUD_PRESETS)),
     row(t('set.hudSize'), slider('hudScale', 70, 150)),
-    row(t('set.combo'), check('showCombo')),
     btnRow,
     h2(t('set.dmgNums')),
-    row(t('set.numStyle'), select('numStyle', NUM_STYLES)),
-    h3(t('set.numFont')),
-    fontGrid(),
     row(t('set.size'), slider('numSize', 50, 200)),
     row(t('set.merge'), check('numMerge')),
     row(t('set.heal'), check('healNums')),

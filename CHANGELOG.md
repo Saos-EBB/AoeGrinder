@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(ui)!: Alte HUD-Presets (H01–H19), Zahlen-Stile (N01–N10), die 15 Zahlen-Schriften und die Einstellung „Combo- und Kill-Anzeige“ entfernt; alte Werte in `frostgrind.ui.v1` werden beim Laden verworfen, das HUD läuft bis zu den UI-Flavors auf einem Grundlayout (UI-Mix Phase 1)
 - feat(ui): Ranglisten und Split-Bestzeiten gelten jetzt pro Map (Figur + Mods + Mob-Modus + Map); Runs speichern die Map-ID (UI-Mix Phase 0)
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist
 - feat(krieger): Sions Axt als zweite legendäre Waffe: 3 schwere Axthiebe; Vernichtender Hieb (laden bis 2 s, hochschleudern, Bodenspalte), Seelenofen (Schild, Explosion mit 2× absorbiert), Brüllen des Schlächters (Mob als Bowlingkugel), Unaufhaltsamer Ansturm (mit der Maus lenkbar) statt Hinrichtung, Letzter Atem, Donnerknall, Ansturm; Ruhm im Tod (10 s untot, nur Kette und Todesrausch, 120 s Abklingzeit), +0,1 % max. Leben pro Kill bis +50 %; Combo Für Noxus!
