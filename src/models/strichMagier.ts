@@ -10,6 +10,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 import { eMat, PAL } from '../vfx/energy';
 import { t } from '../i18n';
+import { ELEMENTS } from './weapons/baukasten';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -803,9 +804,11 @@ const airOf = (A, t) => P(A.run(0.3), { fL: [.16, .36, .18], fR: [-.16, .26, -.2
 
 // Partikel pro Sekunde: Rauch beim Überhitzen, Reif bei Kälte // PH
 const STAGE_FX = { smoke: 25, frost: 30 };
+const WEL_STONE_Y = .95;   // Stein des Waffen-Elements, Höhe am Stab-Gelenk (Viewer) // PH
 const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchteile über die Frames verteilt
 
-export function buildStrichMagier(gameSkin = 'alle') {
+// weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element
+export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null) {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
   const S = SKINS[skin];
   const U = { uTime: { value: 0 }, uM: { value: 0 }, uK: { value: 0 }, uLvl: { value: 0 } };   // pro Figur
@@ -886,6 +889,18 @@ export function buildStrichMagier(gameSkin = 'alle') {
       [F.legL.th, [0, -.2, .08], .055, W], [F.legR.th, [0, -.15, .08], .055, Y], [head, [0, .2, .17], .05, Y]];
     for (const [b, p, sc, c] of deco) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
     for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; glow(head, qGeo(), Y, [Math.sin(a) * .36, .52 + .06 * i, Math.cos(a) * .36], [0, a, 0], [.14, .14, .07]); }
+  }
+  // Element der Waffe (Spell-Viewer, Block WEL): Kragen, Schärpe, Armreifen, schwebender Stein über dem Stab, Augen in der Element-Farbe.
+  // Alles hängt an Bones im Körper-Mesh, kein Draw Call mehr. Ohne Element bleibt die Figur wie bisher.
+  F.wel = weaponElement && weaponElement !== 'none' && ELEMENTS[weaponElement] ? ELEMENTS[weaponElement].color : null;
+  if (F.wel != null) {
+    const E = col(F.wel), add = skin === 'plague' ? glow : part;   // auf Schleim leuchten, sonst geht die Farbe im Muster unter
+    add(chest, new THREE.TorusGeometry(.14, .045, 4, 12), E, [0, .555, 0], [Math.PI / 2, 0, 0], [1.05, 1, .85]);   // Kragen // PH
+    add(hips, new THREE.TorusGeometry(.16, .035, 4, 12), E, [0, .03, 0], [Math.PI / 2, 0, 0], [1.2, 1, .95]);       // Schärpe // PH
+    for (let i = 0; i < 3; i++) add(hips, new THREE.ConeGeometry(.03, .22, 4).translate(0, -.11, 0), E, [.12 - i * .03, .02, .13 - i * .02], [0, 0, .15 * i]);   // Schärpen-Enden // PH
+    for (const a of [F.armL, F.armR]) add(a.fa, new THREE.TorusGeometry(.06, .022, 3, 8), E, [0, -A2 * .82, 0], [Math.PI / 2, 0, 0]);   // Armreifen // PH
+    glow(staff, new THREE.OctahedronGeometry(.055, 0), E, [0, WEL_STONE_Y, 0], [0, 0, 0], [1, 1.5, 1]);   // Stein über dem Knauf
+    for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH
   }
   // Trink-Requisiten: je ein Bone, der ?-Magier hat alle 4 Getränke (anim.drinkSkin wählt)
   for (const k of skin === 'qm' ? ['base', 'fire', 'ice', 'arcane'] : [skin]) {
@@ -968,6 +983,7 @@ export function buildStrichMagier(gameSkin = 'alle') {
   const _o = new THREE.Object3D(), _om = new THREE.Matrix4();
   return {
     root: F.root,
+    element: F.wel != null ? weaponElement : null,   // Element der Waffe, nach dem gebaut wurde (models/mage.ts baut bei Wechsel neu)
     body: F.body,                                 // Körper-Mesh: Hüllen der Effekte (Archon) binden an sein Skelett
     anchors: { crystal: F.crystal, handL: F.armL.hand, handR: F.armR.hand },
     trail,

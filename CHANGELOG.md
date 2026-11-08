@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(magier): Strichmagier-Modell kann die Farbe eines Waffen-Elements tragen: Kragen, Schärpe mit 3 Enden, Armreifen, schwebender Stein über dem Stab und leuchtende Augen (Seuchenmagier: alles leuchtend); ohne Element unverändert, kein Draw Call mehr
 - feat(waffen)!: Magier-Waffen-Elemente jetzt Frost, Feuer, Blitz, Seuche und Arkan (Arkan nur über Waffen). Blut heißt jetzt Seuche (setzt weiter 1 Seuchen-Mal, tropft grün), Dunkel fällt weg; alte Blut-Waffen werden Seuche, Dunkel-Waffen Arkan
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist
 - feat(krieger): Sions Axt als zweite legendäre Waffe: 3 schwere Axthiebe; Vernichtender Hieb (laden bis 2 s, hochschleudern, Bodenspalte), Seelenofen (Schild, Explosion mit 2× absorbiert), Brüllen des Schlächters (Mob als Bowlingkugel), Unaufhaltsamer Ansturm (mit der Maus lenkbar) statt Hinrichtung, Letzter Atem, Donnerknall, Ansturm; Ruhm im Tod (10 s untot, nur Kette und Todesrausch, 120 s Abklingzeit), +0,1 % max. Leben pro Kill bis +50 %; Combo Für Noxus!
