@@ -7,7 +7,8 @@ import { META } from './meta';
 import { $ } from './util';
 import { COLORS } from './ui/colors';
 import { run, scoreBreakdown } from './score';
-import { zone } from './world';
+import { zone, zoneId } from './world';
+import { ZONES } from './zones';
 import { t } from './i18n';
 
 const STORE = 'frostgrind.runs.v1';
@@ -30,7 +31,7 @@ export function recordRun() {
   const entry = {
     date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'waves' ? ` · ${t('board.waves')}` : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(), wave: run.wave ?? 0,
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
-    zone: zone.name, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: '',
+    zone: zone.name, zoneId, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: '',
   };
   const list = [...loadRuns(), entry];
   saveRuns(list);
@@ -63,23 +64,26 @@ export function importRuns(text) {
   return added;
 }
 
-// Gleiche Kombination aus Figur, Mods und Mob-Modus: Darauf beziehen sich beide Ranglisten und die Splits
+// Gleiche Kombination aus Figur, Mods, Mob-Modus und Map: Darauf beziehen sich beide Ranglisten und die Splits
 const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
-export function comboRuns() {
+// Map eines Runs: neue Einträge haben zoneId, alte nur den Anzeigenamen (ohne Namen = Tirisfal)
+export const runZone = r => r.zoneId ?? Object.keys(ZONES).find(id => ZONES[id].name === r.zone) ?? 'tirisfal';
+export function comboRuns(map = zoneId) {
   const ids = activeModIds();
-  return loadRuns().filter(r => Array.isArray(r.mods) && sameSet(r.mods, ids) && (r.mobMode ?? 'packs') === mobMode && (r.siegeGoal ?? 0) === siegeGoal);
+  return loadRuns().filter(r => Array.isArray(r.mods) && sameSet(r.mods, ids) && (r.mobMode ?? 'packs') === mobMode && (r.siegeGoal ?? 0) === siegeGoal && runZone(r) === map);
 }
 export const byTime = list => list.filter(r => typeof r.timeTo100 === 'number').sort((a, b) => a.timeTo100 - b.timeTo100);
 
 // Splits gegen den schnellsten Run derselben Kombination, grün heißt schneller
 const fmtDiff = ms => { const t = Math.abs(ms) / 1000; return `${ms < 0 ? '−' : '+'}${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`; };
-// Bestwert pro Split, auch aus Runs, die Level 100 nicht erreicht haben. Schlüssel wie comboRuns: Figur + Mods + Mob-Modus
+// Bestwert pro Split, auch aus Runs, die Level 100 nicht erreicht haben. Schlüssel wie comboRuns: Figur + Mods + Mob-Modus + Map
 const SPLIT_STORE = 'frostgrind.splits.v1';
-const splitKey = () => `${[...activeModIds()].sort().join(',')}|${mobMode}|${siegeGoal ?? 0}`;
+const oldSplitKey = () => `${[...activeModIds()].sort().join(',')}|${mobMode}|${siegeGoal ?? 0}`;   // bis ui-mix ohne Map, gilt als Tirisfal
+const splitKey = () => `${oldSplitKey()}|${zoneId}`;
 function loadSplitBests() {
   try { const all = JSON.parse(localStorage.getItem(SPLIT_STORE) || '{}'); return all && typeof all === 'object' ? all : {}; } catch { return {}; }
 }
-export const bestSplits = (): Record<number, number> => loadSplitBests()[splitKey()] ?? {};
+export const bestSplits = (): Record<number, number> => { const all = loadSplitBests(); return all[splitKey()] ?? (zoneId === 'tirisfal' ? all[oldSplitKey()] : null) ?? {}; };
 function saveSplitBest(lvl, ms) {
   if (state.devUsed) return;   // Dev-Läufe (Level setzen usw.) schreiben keine Bestzeiten
   const all = loadSplitBests(), mine = all[splitKey()] ?? (all[splitKey()] = {});

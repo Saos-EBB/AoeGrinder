@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(ui): Ranglisten und Split-Bestzeiten gelten jetzt pro Map (Figur + Mods + Mob-Modus + Map); Runs speichern die Map-ID (UI-Mix Phase 0)
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist
 - feat(krieger): Sions Axt als zweite legendäre Waffe: 3 schwere Axthiebe; Vernichtender Hieb (laden bis 2 s, hochschleudern, Bodenspalte), Seelenofen (Schild, Explosion mit 2× absorbiert), Brüllen des Schlächters (Mob als Bowlingkugel), Unaufhaltsamer Ansturm (mit der Maus lenkbar) statt Hinrichtung, Letzter Atem, Donnerknall, Ansturm; Ruhm im Tod (10 s untot, nur Kette und Todesrausch, 120 s Abklingzeit), +0,1 % max. Leben pro Kill bis +50 %; Combo Für Noxus!
 - feat(krieger)!: Legendäre Waffe als eigenes Feld (`legendary`, zum Testen im Dev-Panel unter Build → Krieger-Legende): ersetzt Schlagfolge und Pool-Spells. Leeroys Klinge (Der Unbedachte): Rücksichtslos (+3 % Schaden pro Mob in 10 yd, Rüstung −20 %), 5 wilde Schläge mit Sprung ins nächste Pack, LEEEROY! statt Ansturm, Hühnchen statt Letzter Atem, Combo Q → E → 1 jetzt in 1,5 s. Waffenwahl im Hauptmenü nur noch Riesenschwert, Fleischerhaken geparkt
