@@ -31,3 +31,18 @@
 export const legendCastMul = () => state.castHasteUntil > state.now ? 1 + LEG.barrage.haste : 1;
 // resetLegends setzte dazu state.castHasteUntil = 0; spells/core.ts cast() teilte castTime durch legendCastMul()
 // Imports dafür: SHADOW, BOLT aus './spells/fx', runChain aus './spells/chain'
+
+// Geparkt am 2026-11-08 (Schlagfolge E): Fleischerhaken, Krieger-Legende ohne Platz in der Planung (Krieger: nur Leeroys Klinge und Sions Axt)
+// LEG:  meat: { range: 20, stunMs: 1000 },
+// LEGENDS: freshmeat: { kind: 'krieger', base: 'sword', name: t('legend.freshmeat.name'), desc: t('legend.freshmeat.desc') },
+// EFFECTS:
+  freshmeat() {
+    const list = mobsInRadius(player.pos, LEG.meat.range, Infinity);
+    const t = list.sort((a, b) => (+!!b.champion - +!!a.champion) || b.maxHp - a.maxHp)[0];
+    if (!t) return showError(t('msg.noTarget'));
+    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, [1.4, 1.2, 1], 300);
+    pullMob(t, player.pos, Math.max(0, dist2d(t.pos, player.pos) - 1.5));
+    applyRoot(t, LEG.meat.stunMs);
+  },
+// Imports dafür: dist2d aus './util', pullMob aus './mobs'
+// Krieger-Legenden liefen bis dahin über die Waffenwahl im Menü (mage.warWeapon: 'leeroy' | 'freshmeat'), jetzt über warLegendary() in realMen.ts

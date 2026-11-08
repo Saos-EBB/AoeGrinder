@@ -10,7 +10,7 @@ import { maxHp } from './formulas';
 import { meta, saveMeta } from './meta';
 import { camera, scene } from './render';
 import { mage } from './models/mage';
-import { applyRoot, enterCombat, startLeap, pullMob, knockbackMob, onMobDeath } from './mobs';
+import { applyRoot, enterCombat, startLeap, knockbackMob, onMobDeath } from './mobs';
 import { mobsInRadius, makeCtx, addField } from './spells/core';
 import { runChain } from './spells/chain';
 import { igniteMob } from './spells/firestorm';
@@ -18,10 +18,11 @@ import { blinkTo } from './spells/blink';
 import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE } from './spells/fx';
 import { combatText, showError } from './ui/hud';
 import { forward } from './melee';
+import { warLegendary } from './realMen';
 import { t } from './i18n';
 
 export const LEG = {
-  combo: { keys: ['KeyQ', 'KeyE', 'Digit1'], labels: ['Q', 'E', '1'], windowMs: 3000, cdMs: 60000 },
+  combo: { keys: ['KeyQ', 'KeyE', 'Digit1'], labels: ['Q', 'E', '1'], windowMs: 1500, cdMs: 60000 },
   dropChance: 0.03,
   sheep: { ms: 4000, range: 45 },
   cow: { radius: 10, hp: 2, xp: 3, dust: 3, range: 40 },
@@ -29,10 +30,9 @@ export const LEG = {
   pyro: { jumps: 5, range: 8, mul: 2 },
   snow: { len: 20, speed: 10, radius: 2, grow: 0.1, dmg: 1.5, upMs: 1000 },
   leeroy: { yd: 10, pull: 20, ms: 8000, dmg: 0.5 },
-  meat: { range: 20, stunMs: 1000 },
 };
 
-// Alle Legenden: kind 'mage' kommt aus der Kiste (element: nur mit diesem Element), 'krieger' aus der Waffenwahl. Geparkt: maybeLater/src/legends.parked.ts
+// Alle Legenden: kind 'mage' kommt aus der Kiste (element: nur mit diesem Element), 'krieger' aus dem Feld legendary (realMen.ts, Dev-Panel). Geparkt: maybeLater/src/legends.parked.ts
 export const LEGENDS = {
   sheep: { kind: 'mage', name: t('legend.sheep.name'), desc: t('legend.sheep.desc') },
   cow: { kind: 'mage', name: t('legend.cow.name'), desc: t('legend.cow.desc') },
@@ -40,7 +40,6 @@ export const LEGENDS = {
   pyroclasm: { kind: 'mage', element: 'feuer', name: t('legend.pyroclasm.name'), desc: t('legend.pyroclasm.desc') },
   snowball: { kind: 'mage', element: 'frost', name: t('legend.snowball.name'), desc: t('legend.snowball.desc') },
   leeroy: { kind: 'krieger', base: 'sword', name: t('legend.leeroy.name'), desc: t('legend.leeroy.desc') },
-  freshmeat: { kind: 'krieger', base: 'sword', name: t('legend.freshmeat.name'), desc: t('legend.freshmeat.desc') },
 };
 
 // Kiste: orange Waffe, mit 3 % eine Legende. Element-Legenden nur, wenn die Waffe das Element hat
@@ -52,7 +51,7 @@ export const pickLegend = element => pick(Object.keys(LEGENDS).filter(id => LEGE
 
 // Aktive Legende des Runs: Magier über die angelegte Waffe, Nahkampf über die Waffenwahl
 function activeLegend() {
-  if (mage.skin === 'krieger') return LEGENDS[mage.warWeapon] ? mage.warWeapon : null;
+  if (mage.skin === 'krieger') return LEGENDS[warLegendary()] ? warLegendary() : null;   // legendäre Waffe des Kriegers (realMen.ts)
   const w = meta.inv.find(x => x.id === meta.equipped);
   return LEGENDS[w?.s?.legend] ? w.s.legend : null;   // geparkte Legende (Achtfacher Stern) zählt nicht
 }
@@ -138,14 +137,6 @@ const EFFECTS = {
     for (const m of mobsInRadius(player.pos, LEG.leeroy.pull, Infinity)) { m.state = 'idle'; enterCombat(m, false); }
     state.leeroyUntil = state.now + LEG.leeroy.ms;   // core.ts: +50 % Schaden
     burstFx(player.pos, 4, [EMBER, FIRE], 0xff6030);
-  },
-  freshmeat() {
-    const list = mobsInRadius(player.pos, LEG.meat.range, Infinity);
-    const t = list.sort((a, b) => (+!!b.champion - +!!a.champion) || b.maxHp - a.maxHp)[0];
-    if (!t) return showError(t('msg.noTarget'));
-    boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, [1.4, 1.2, 1], 300);
-    pullMob(t, player.pos, Math.max(0, dist2d(t.pos, player.pos) - 1.5));
-    applyRoot(t, LEG.meat.stunMs);
   },
 };
 export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy.dmg : 1;

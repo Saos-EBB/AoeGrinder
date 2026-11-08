@@ -13,8 +13,9 @@ import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
 import { showError, combatText } from './ui/hud';
-import { applyRoot, pullMob, knockbackMob } from './mobs';
-import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow } from './spells/core';
+import { applyRoot, pullMob, knockbackMob, enterCombat } from './mobs';
+import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow, setSpellSwap } from './spells/core';
+import { activeModIds } from './modifiers';
 import { UNIT, mods } from './config';
 import { pdRateMul } from './dodge';
 import { maxHp } from './formulas';
@@ -48,12 +49,9 @@ const REALMEN = {
   clap: { radius: 6, dmg: 1.5, slow: 0.4, slowMs: 3000, rage: 10, cd: 6000 },
   shout: { radius: 8, fleeMs: 4000, cd: 30000 },
   berserk: { ms: 25000, dmg: 0.35, cd: 90000 },
-  // Waffe vor dem Run (models/mage.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert
+  // Waffe vor dem Run (models/mage.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert. Legendäre Waffen: LEGENDARY unten
   weapons: {
     sword: { name: t('weapon.sword.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
-    // Legenden (legends.ts): gleiches Kit wie das Riesenschwert, dazu die Combo Q → E → 1
-    leeroy: { name: t('legend.leeroy.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
-    freshmeat: { name: t('legend.freshmeat.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
   },
   eat: { ms: 18000 },
   echo: { ms: 500, mul: 0.7, bigMs: [500, 1000], bigMul: [1.2, 1.4] },
@@ -67,6 +65,18 @@ const REALMEN = {
   },
 };
 const R = REALMEN, RU = R.runes;
+// Legendäre Waffen (08.11.): ersetzen die Schlagfolge (eigene Kette, keine Stufen), einzelne Pool-Spells (swap) und geben Passiv + Combo (legends.ts). Alle Zahlen // PH
+// chain: a = Animation, dmg, r = Radius, half = halber Kegelwinkel (fehlt: rundum), knock, jumpYd = Sprung ins nächste Pack
+const LEGENDARY = {
+  leeroy: {
+    rate: 1.4, pal: 'wut', perMobDmg: 0.03, perMobYd: 10, armorMul: 0.8,   // Rücksichtslos: +3 % Schaden pro Mob in 10 yd, Rüstung −20 %
+    chain: [{ a: 'q0', ms: 520, dmg: 22, r: 3, half: 1 }, { a: 'q1', ms: 480, dmg: 20, r: 3.2, half: 1.4 }, { a: 'q2', ms: 500, dmg: 22, r: 3, half: 1 },
+      { a: 'q1', ms: 480, dmg: 20, r: 3.2, half: 1.4 }, { a: 'fm', ms: 820, dmg: 45, r: 3.5, knock: 5, jumpYd: 6, findYd: 12 }],
+    swap: { wCharge: 'lLeeroy', wLast: 'lChicken' },
+    leeroy: { yd: 15, pullYd: 20, stunImmuneMs: 4000, cd: 12000, ms: 350, dmg: 1 },   // LEEEROY!: rennt ins nächste Pack, Schaden in UNIT
+    chicken: { heal: 0.3, ms: 3000, cd: 45000 },                                       // Hühnchen: Sofort-Essen
+  },
+};
 // Finisher pro Stufe: Spins mit Radius-Faktor s, Tornado (tor) wandert nach vorn, am Ende Sprung-Smash // PH
 const FINISHER = {
   4: [{ h: 'spin', s: 1 }],
@@ -98,6 +108,9 @@ Object.assign(SPELLS, {
   wClap: spell(t('spell.wClap.name'), t('spell.wClap.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'radius'], R.clap.cd, R.clap.rage, () => pressClap(), R.clap.dmg * UNIT),
   wShout: spell(t('spell.wShout.name'), t('spell.wShout.desc'), ['Kontrolle'], ['cd', 'radius'], R.shout.cd, 0, () => pressShout()),
   wBerserk: { ...spell(t('spell.wBerserk.name'), t('spell.wBerserk.desc'), [], [], R.berserk.cd, 0, () => pressBerserk()), figRelic: true },
+  // Leeroys Klinge (LEGENDARY.leeroy): ersetzen Ansturm und Letzter Atem
+  lLeeroy: spell(t('spell.lLeeroy.name'), t('spell.lLeeroy.desc'), ['Nahkampf', 'Bewegung'], ['cd'], LEGENDARY.leeroy.leeroy.cd, 0, () => pressLeeroy(), LEGENDARY.leeroy.leeroy.dmg * UNIT),
+  lChicken: spell(t('spell.lChicken.name'), t('spell.lChicken.desc'), [], [], LEGENDARY.leeroy.chicken.cd, 0, () => pressChicken()),
 });
 
 export const WAR_WEAPON_NAMES = Object.fromEntries(Object.entries(R.weapons).map(([id, w]) => [id, w.name]));
@@ -119,6 +132,18 @@ let seq = 0, combo = 0, comboUntil = 0, lastRageAt = 0, undyingUntil = 0;
 let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0, whirlStart = 0;
 let charge = null;   // Ansturm: { from, target, start, ctx }
 const moveLog = [];
+// Feld legendary: null oder Waffen-ID aus LEGENDARY. Zum Testen im Dev-Panel, gespeichert wie die Waffenwahl
+const LEGENDARY_STORE = 'frostgrind.warLegendary';
+let legendary: string | null = (() => { try { const v = localStorage.getItem(LEGENDARY_STORE); return LEGENDARY[v] ? v : null; } catch { return null; } })();
+export const warLegendary = () => legendary;
+export const WAR_LEGENDARIES = Object.keys(LEGENDARY);
+export function setWarLegendary(id: string | null) {
+  legendary = LEGENDARY[id] ? id : null;
+  try { if (legendary) localStorage.setItem(LEGENDARY_STORE, legendary); else localStorage.removeItem(LEGENDARY_STORE); } catch { /* egal */ }
+}
+const LG = (): any => (legendary && activeModIds().includes('realmen') ? LEGENDARY[legendary] : null);
+setSpellSwap(id => LG()?.swap[id] ?? id);
+let stunImmuneUntil = 0, chickenUntil = 0;
 let stage = R.q.start, autoQ = 0, autoAt = 0, slowUntil = 0;   // Schlagfolge Version E: Stufe, Auto-Kette nach dem Aufstieg, Zeitlupe (performance.now)
 
 const gainRage = n => { player.mana = Math.min(R.rage.max, player.mana + n); };
@@ -133,7 +158,7 @@ export function resetRealMen() {
   $('manaFill').style.background = on ? 'linear-gradient(#e0503c, #8a1a10)' : '';
   player.resNote = '';
   cur = null; seq = 0; combo = 0; comboUntil = 0; lastRageAt = 0; undyingUntil = 0; charge = null;
-  state.qKills = 0; player.berserkUntil = 0; stage = R.q.start; autoQ = 0; slowUntil = 0;
+  state.qKills = 0; player.berserkUntil = 0; stage = R.q.start; autoQ = 0; slowUntil = 0; stunImmuneUntil = 0; chickenUntil = 0;
   whirlOn = false; whirlUntil = 0; whirlCtx = null; nextWhirlTick = 0;   // state.now startet pro Run bei 0
   state.heroWeapon = on ? WP().name : '';
   if (on) {
@@ -145,7 +170,7 @@ export function resetRealMen() {
 const rateOf = id => stat(id).tempo ?? 1;
 function startMove(id, ability, ms) {
   whirlOn = false; whirlUntil = 0;
-  const rate = rateOf(id) * WP().rate * pdRateMul() * (id === 'wQ' ? 1 + R.q.masterRate * mods.bladeMaster : 1);   // Perfekter Dodge, Klingenmeister
+  const rate = rateOf(id) * WP().rate * pdRateMul() * (id === 'wQ' ? (1 + R.q.masterRate * mods.bladeMaster) * (LG()?.rate ?? 1) : 1);   // Perfekter Dodge, Klingenmeister, legendäre Kette
   cur = { id, ability, start: state.now, ms: ms / rate, rate, ctx: makeCtx(id), from: { x: player.pos.x, y: player.pos.y, z: player.pos.z } };
   seq++;
   moveLog.push(ability); if (moveLog.length > 60) moveLog.shift();   // Handtest (__krieger.log)
@@ -154,6 +179,7 @@ function pressQ() {
   if (cur) return;
   stopDrink();
   if (state.now > comboUntil) combo = 0;
+  if (LG()) return pressLegendQ();
   const step = combo, n = qLength(), part = step >= 3 ? FINISHER[stage][step - 3] : null, Q = R.q;
   combo = (combo + 1) % n;
   player.lastCombat = state.now;
@@ -165,6 +191,21 @@ function pressQ() {
   if (step === n - 1) cur.combo = consumeCombo('smash');   // Dodge-Kombo: auf den letzten Teil
   cur.walk = !part;
 }
+// Kette der legendären Waffe: feste Schläge, der letzte kann ins nächste Pack springen
+function pressLegendQ() {
+  const L = LG(), step = combo % L.chain.length, part = L.chain[step];
+  combo = (combo + 1) % L.chain.length;
+  player.lastCombat = state.now;
+  let yd = 0;
+  if (part.jumpYd) {
+    const m = nearestMob(part.findYd);
+    if (m) { player.facing = Math.atan2(m.pos.x - player.pos.x, m.pos.z - player.pos.z); yd = Math.min(part.jumpYd, Math.max(0, Math.hypot(m.pos.x - player.pos.x, m.pos.z - player.pos.z) - 1.5)); }
+  }
+  startMove('wQ', part.a, part.ms);
+  cur.lpart = part; cur.yd = yd; cur.walk = !part.jumpYd;
+  if (step === L.chain.length - 1) cur.combo = consumeCombo('smash');
+}
+const nearestMob = yd => mobsInRadius(player.pos, yd, Infinity).filter(m => !m.dead).sort((a, b) => Math.hypot(a.pos.x - player.pos.x, a.pos.z - player.pos.z) - Math.hypot(b.pos.x - player.pos.x, b.pos.z - player.pos.z))[0];
 // Länge der Schlagfolge = Stufe: 3 Grundschläge + Finisher-Teile
 const qLength = () => 3 + FINISHER[stage].length;
 const bladeScale = () => 1 + R.q.growPerStage * (stage - R.q.start);
@@ -215,10 +256,15 @@ function pressEat() {
   player.drink = { start: state.now, end: state.now + R.eat.ms, dur: R.eat.ms, hp: 1, label: t('spell.wEat.name'), keepOnHit: true };
 }
 
+// Passiv der legendären Waffe (Leeroy: Rücksichtslos, +x % pro Mob in der Nähe)
+function legendPassiveMul() {
+  const L = LG();
+  return L?.perMobDmg ? 1 + L.perMobDmg * mobsInRadius(player.pos, L.perMobYd, Infinity).filter(m => !m.dead).length : 1;
+}
 // Ein Treffer-Ereignis: Wut kommt nur, wenn etwas getroffen wurde, und ist pro Schlag gedeckelt
 function strike(ctx, amount, targets, onMob?, rageK = 1) {
   let landed = 0;
-  const W = WP(), mul = rageMul() * W.dmgMul * (cur?.combo ? DG.combo.smashMul : 1);   // Dodge-Kombo: +50 % auf den Smash
+  const W = WP(), mul = rageMul() * W.dmgMul * (cur?.combo ? DG.combo.smashMul : 1) * legendPassiveMul();   // Dodge-Kombo: +50 % auf den Smash
   for (const m of targets()) {
     const dmg = amount(m) * mul;
     if (!ctx.hit(m, dmg)) continue;
@@ -255,11 +301,15 @@ function hitQ() {
   const c = cur.ctx, wide = hasRune('wQ', 'wide') ? RU.wide : 1, rageK = hasRune('wQ', 'wrath') ? RU.wrath : 1;
   const leech = m => {
     if (hasRune('wQ', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RU.leech);
-    if (m.dead && !m.qCounted) { m.qCounted = true; state.qKills = (state.qKills ?? 0) + 1; if (state.qKills % R.q.killsPerHit === 0) stageUp(); }   // Kills mit der Folge
+    if (m.dead && !m.qCounted && !LG()) { m.qCounted = true; state.qKills = (state.qKills ?? 0) + 1; if (state.qKills % R.q.killsPerHit === 0) stageUp(); }   // Kills mit der Folge, legendäre Waffe ohne Stufen
     return m;
   };
-  const part = cur.part, reach = bladeScale() * wide;
-  if (part) {
+  const part = cur.part, reach = bladeScale() * wide, lp = cur.lpart;
+  if (lp) {
+    const r = c.radius(lp.r) * wide;
+    const hit = event('wQ', c, () => lp.dmg, () => lp.half ? inCone(player.pos, r, lp.half) : mobsInRadius(player.pos, r), m => { leech(m); if (lp.knock && !m.dead) knockbackMob(m, player.pos, lp.knock); }, rageK);
+    if (!lp.half) smash(hit);
+  } else if (part) {
     const S = part.h === 'spin' ? R.q.spin : R.q.smash, r = c.radius(S.radius) * reach * part.s;
     smash(event('wQ', c, () => S.dmg * part.s, () => mobsInRadius(player.pos, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, S.knock); }, rageK));
   } else {
@@ -345,15 +395,44 @@ function pressCharge() {
   charge = { from: player.pos.clone(), target, start: state.now, ctx: makeCtx('wCharge') };
   chargeLook(R.charge.ms);
 }
+// LEEEROY!: rennt ins nächste Pack, alle Mobs in 20 yd laufen auf dich zu, kurz immun gegen Betäubung
+function pressLeeroy() {
+  if (cur || charge) return;
+  if (cdEnd('lLeeroy') > state.now) return showError(t('msg.notReady'));
+  const L = LEGENDARY.leeroy.leeroy, target = nearestMob(L.yd);
+  if (!target) return showError(t('msg.noTarget'));
+  stopDrink();
+  startCd('lLeeroy');
+  player.lastCombat = state.now;
+  charge = { from: player.pos.clone(), target, start: state.now, ctx: makeCtx('lLeeroy'), leeroy: true };
+  stunImmuneUntil = state.now + L.stunImmuneMs;
+  combatText(player.pos, t('war.leeroyShout'), 'info', 2.8);
+  chargeLook(L.ms);
+}
+// Hühnchen: Sofort-Essen, Leben über ein paar Sekunden
+function pressChicken() {
+  if (cdEnd('lChicken') > state.now) return showError(t('msg.notReady'));
+  startCd('lChicken');
+  chickenUntil = state.now + LEGENDARY.leeroy.chicken.ms;
+  mage.hero.fx.ring(player.pos, 0xe0141c, 2.5, 0.5, 0.1);
+}
 function updateCharge() {
-  const C = R.charge, t = Math.min(1, (state.now - charge.start) / C.ms), to = charge.target.pos;
+  const C: any = charge.leeroy ? LEGENDARY.leeroy.leeroy : R.charge, t = Math.min(1, (state.now - charge.start) / C.ms), to = charge.target.pos;
   const d = Math.hypot(to.x - charge.from.x, to.z - charge.from.z) || 1, stop = Math.max(0, 1 - 1.2 / d);   // vor dem Ziel stehen bleiben
   player.pos.x = charge.from.x + (to.x - charge.from.x) * stop * t;
   player.pos.z = charge.from.z + (to.z - charge.from.z) * stop * t;
   player.facing = Math.atan2(to.x - charge.from.x, to.z - charge.from.z);
   if (t < 1) return;
-  const m = charge.target, c = charge.ctx;
+  const m = charge.target, c = charge.ctx, leeroy = charge.leeroy;
   charge = null;
+  if (leeroy) {
+    const L = LEGENDARY.leeroy.leeroy;
+    strike(c, () => L.dmg * UNIT, () => mobsInRadius(player.pos, 3));
+    for (const o of mobsInRadius(player.pos, L.pullYd, Infinity)) if (!o.dead) { o.state = 'idle'; enterCombat(o, false); }
+    chargeHit(m.pos);
+    shakeCamera(0.4);
+    return;
+  }
   strike(c, () => C.dmg * UNIT, () => (m.dead ? [] : [m]), o => { if (!o.dead) applyRoot(o, C.stunMs); });
   chargeHit(m.pos);
   gainRage(C.rage);
@@ -420,6 +499,8 @@ export function updateRealMen(dt) {
   const now = state.now, s = dt / 1000;
   updateMelee();
   if (charge) updateCharge();
+  if (stunImmuneUntil > now) player.stunUntil = 0;   // LEEEROY!
+  if (chickenUntil > now) player.hp = Math.min(maxHp(), player.hp + maxHp() * LEGENDARY.leeroy.chicken.heal * dt / LEGENDARY.leeroy.chicken.ms);
   if (undyingUntil > now) player.mana = R.rage.max;
   else if (now - lastRageAt > R.rage.idleMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
   if (cur) {
@@ -444,14 +525,14 @@ export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
 // Charakterfenster (ui/charInfo.ts)
 export const warriorInfo = () => ({ rageMul: rageMul(), qLength: qLength(), R });
-export const takenMul = () => isWarrior() ? 1 - R.armor : 1;
+export const takenMul = () => isWarrior() ? 1 - R.armor * (LG()?.armorMul ?? 1) : 1;
 export const moveMul = () => whirlOn && !hasRune('wR', 'stride') ? R.whirl.speedMul : 1;
 export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Bewegung oder keine
 
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, qPal: R.q.pal[stage - R.q.start], fin: { s: bladeScale() * (cur?.part?.s ?? 1), tor: cur?.part?.tor ?? 0 }, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, qPal: LG()?.pal ?? R.q.pal[stage - R.q.start], fin: { s: LG() ? 1 : bladeScale() * (cur?.part?.s ?? 1), tor: cur?.part?.tor ?? 0 }, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest

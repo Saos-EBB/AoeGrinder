@@ -509,6 +509,10 @@ export const de: Record<string, string> = {
   'spell.kStorm.name': "Klingenkranz",
   'spell.keeper.desc': "Die nächsten 2 @{spell.chain.name} sind sofort und machen +100 % Schaden.",
   'spell.keeper.name': "Donnerschwur",
+  'spell.lChicken.desc': "Sofort essen: 30 % Leben über 3 s.",
+  'spell.lChicken.name': "Hühnchen",
+  'spell.lLeeroy.desc': "Rennt bis 15 yd ins nächste Pack. Alle Mobs in 20 yd laufen auf dich zu, 4 s immun gegen Betäubung.",
+  'spell.lLeeroy.name': "LEEEROY!",
   'spell.melt.desc': "Du zerfließt 3 s zu einer Lache bis 15 yd (nicht angreifbar, kein Zaubern, markiert darin). Dann reißt der Schleim alle darin zur Mitte und hält sie 2 s fest.",
   'spell.melt.name': "Zerrinnen",
   'spell.meteor.desc': "Bodenziel: Schlägt nach 1,5 s ein und lässt eine Brandfläche für 6 s zurück.",
@@ -1869,6 +1873,7 @@ export const de: Record<string, string> = {
   'war.finStage': "FINISHER STUFE {n}",
   'war.kills': "{n} Kills",
   'war.last': " · @{spell.wLast.name}",
+  'war.leeroyShout': "LEEEROY JENKINS!",
   'war.note': "Schaden ×{mul} · @{spell.wQ.name} {q}",
 
   'wave.boss': "Welle {a} / {b} · Boss",

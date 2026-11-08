@@ -33,11 +33,14 @@ export function modRule(key): any { return activeMods().find(m => m[key])?.[key]
 // Fokus-Waffe: ein Spell außerhalb der Schule kommt für den Run in den Pool
 export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 // Pool der Figur (modifiers.ts pool): nur daraus kommen „Neuer Spell“-Karten. Ohne Pool gilt die Schule wie bisher
-export const figurePool = (): string[] | undefined => modRule('pool');
+export const figurePool = (): string[] | undefined => modRule('pool')?.map(swapSpell);
+// Legendäre Krieger-Waffe (realMen.ts): ersetzt einzelne Spells in Start-Kit und Pool. Ablage an der Funktion: realMen.ts meldet sich im Import-Kreis vor dem Rest dieser Datei an
+function swapSpell(id: string): string { return (swapSpell as any).fn?.(id) ?? id; }
+export function setSpellSwap(fn: (id: string) => string) { (swapSpell as any).fn = fn; }
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 export function startKit() {
-  const kit = (randomMode() ? RANDOM_MAGE.kit : modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id);
+  const kit = (randomMode() ? RANDOM_MAGE.kit : modRule('startKit') ?? SPELL_START).map(id => id === 'drink' && modRule('noDrink') ? null : id && swapSpell(id));
   return [...kit, ...Array(SPELL_SLOTS - kit.length).fill(null)];
 }
 

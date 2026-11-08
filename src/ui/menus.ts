@@ -13,6 +13,8 @@ import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled }
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, keyText, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone } from '../player';
+import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
+import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { ZONES } from '../zones';
@@ -215,6 +217,20 @@ $('devForce').addEventListener('click', () => {
   showCards(offer);
 });
 $('devLuck').addEventListener('click', () => { player.luck += 25; });
+
+// Dev: legendäre Waffe des Strichkriegers (realMen.ts LEGENDARY). Wechsel startet den Run neu, damit Kit und Kette stimmen
+$('devCards').insertAdjacentHTML('afterend', `<select class="bindBtn" id="devLegend" style="width:100%;margin-bottom:4px"></select>`);
+setTimeout(() => {   // erst nach dem Laden aller Module: realMen.ts und legends.ts hängen im Import-Kreis
+  for (const [id, name] of [['', 'keine'], ...WAR_LEGENDARIES.map(id => [id, LEGENDS[id]?.name ?? id])]) $('devLegend').insertAdjacentHTML('beforeend', `<option value="${id}">${name}</option>`);
+  ($('devLegend') as HTMLSelectElement).value = warLegendary() ?? '';
+});
+$('devLegend').addEventListener('change', e => {
+  setWarLegendary((e.target as HTMLSelectElement).value || null);
+  stopChannel(true);
+  resetGame();
+  resetSpells();
+  renderActionbar();
+});
 
 mountVolume($('settingsVol'), 'beforeend');
 Object.assign($('bindList').parentElement.style, { maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' });

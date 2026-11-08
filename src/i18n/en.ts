@@ -508,6 +508,10 @@ export const en: Record<string, string> = {
   'spell.kStorm.name': "Blade Wreath",
   'spell.keeper.desc': "Your next 2 @{spell.chain.name} are instant and deal +100 % damage.",
   'spell.keeper.name': "Thunder Oath",
+  'spell.lChicken.desc': "Eat instantly: 30 % health over 3 s.",
+  'spell.lChicken.name': "Chicken",
+  'spell.lLeeroy.desc': "Charges up to 15 yd into the nearest pack. All mobs within 20 yd run at you, 4 s immune to stuns.",
+  'spell.lLeeroy.name': "LEEEROY!",
   'spell.melt.desc': "You ooze into a puddle up to 15 yd for 3 s (untargetable, no casting, marks within). Then the slime pulls everyone inside to the center and holds them for 2 s.",
   'spell.melt.name': "Ooze",
   'spell.meteor.desc': "Ground target: lands after 1.5 s and leaves a burning area for 6 s.",
@@ -1868,6 +1872,7 @@ export const en: Record<string, string> = {
   'war.finStage': "FINISHER LEVEL {n}",
   'war.kills': "{n} kills",
   'war.last': " · @{spell.wLast.name}",
+  'war.leeroyShout': "LEEEROY JENKINS!",
   'war.note': "Damage ×{mul} · @{spell.wQ.name} {q}",
 
   'wave.boss': "Wave {a} / {b} · boss",

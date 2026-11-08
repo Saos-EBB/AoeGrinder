@@ -40,7 +40,7 @@ function sortGroups() {
     ['Spieler', [['', byId('devMobAtk')], ['', byId('devLuck')]]],
     ['Level', [['Level setzen', byId('devLevels')], ['Karte erzwingen', byId('devCards')], ['', byId('devComplete')]]],
     ['Spawn', [['Zone', byId('devZones')], ['Champion-Pack', parentOf('devChamp')], ['Boss', parentOf('devBoss')]]],
-    ['Build', [['Meta', byId('devMeta')], ['Waffen-Baukasten', byId('devForge')]]],
+    ['Build', [['Krieger-Legende', byId('devLegend')], ['Meta', byId('devMeta')], ['Waffen-Baukasten', byId('devForge')]]],
     ['Anzeige', [['', byId('devPerf')], ['', byId('devColliders')]]],
   ];
   const rest = [...body.children];

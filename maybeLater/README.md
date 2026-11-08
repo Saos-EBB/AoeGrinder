@@ -26,7 +26,7 @@ Teile aus Dateien, die im Spiel bleiben, liegen als `*.parked.ts` daneben: ausge
 - `modifiers.parked.ts`: Figuren `arcane` und `klinge`, Modi `arcaneonly` und `klinge`
 - `schoolMeter.parked.ts`: Arkane Ladungen · `spells/core.parked.ts`: Arkan-Treffer-Haken, Ladungs-Schaden, Dodge-Kombo „sofort“
 - `vfx/arcaneLook.parked.ts`, `fx/spellFx.parked.ts`: Arkan-Optik (Woge, Blink-Puff und Getränke bleiben im Spiel, die nutzen Seuche, Blink und ?-Magier)
-- `legends.parked.ts`: **Donnerzorn** (Klingen-Legende) und **Achtfacher Stern** (Magier-Legende mit Element Arkan, feuert Arkane Geschosse)
+- `legends.parked.ts`: **Donnerzorn** (Klingen-Legende) und **Achtfacher Stern** (Magier-Legende mit Element Arkan, feuert Arkane Geschosse); seit Schlagfolge E auch **Fleischerhaken** (Krieger-Legende, geplant sind nur Leeroys Klinge und Sions Axt)
 - `bosses/roster.parked.ts`, `bosses/evil.parked.ts`: Verdorbener Arkanmagier, Verdorbener Klingenstrich und ihre zwei Stile der Seele der Asche
 - `ui/mainMenu.parked.ts`, `ui/charInfo.parked.ts`, `ui/icons.parked.ts`, `models/mage.parked.ts`, `player.parked.ts`, `dodge.parked.ts`: Menü, Werte-Fenster, Icons, Skin- und Waffenwahl, Haken in Spieler, Eingabe, HUD
 
