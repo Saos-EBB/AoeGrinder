@@ -26,7 +26,7 @@ export const onGround = p => V(p.x, gy(p), p.z);
 
 // Zahlen der Boss-Kämpfe, alle PH
 export const BK = {
-  hit: 0.25,          // Treffer = 25 % max. Leben
+  hit: 0.25,          // Treffer = 25 % max. Leben (ohne Stufe; sonst fight.hit aus TIER, bosses/roster.ts)
   punish: 1.25,       // Lücke: Boss nimmt +25 % Schaden
   windP2: 0.8,        // Phase 2: Ausholzeiten × 0,8
   dot: 0.05,          // Pfützen, Feuerwand: Anteil max. Leben pro Sekunde, ignoriert Dodge
@@ -34,7 +34,7 @@ export const BK = {
 };
 
 // ---------- Kampf-Zustand ----------
-// fight: { def, bodies, phase, time (s, Boss-Zeit), scale (Zeitstopp 0), arena, center, windMul, dmgMul, flags, hooks }
+// fight: { def, bodies, phase, time (s, Boss-Zeit), scale (Zeitstopp 0), arena, center, windMul, dmgMul, hit, pause, tier, flags, hooks }
 export let fight: any = null;
 export const setFight = f => { fight = f; tasks.length = 0; objs.length = 0; };
 
@@ -132,7 +132,7 @@ export function hurt(mul = 1, from?, body?) {
   if (player.dead || !fight) return false;
   const hp = player.hp;
   if (body) body.mob.attackAt = state.now;
-  const dmg = maxHp() * BK.hit * mul * (fight.dmgMul ?? 1) * (body?.grow ?? 1) * (body?.dmgMul ?? 1);
+  const dmg = maxHp() * (fight.hit ?? BK.hit) * mul * (fight.dmgMul ?? 1) * (body?.grow ?? 1) * (body?.dmgMul ?? 1);
   fight.lastHitTry = state.now;
   damagePlayer(Math.round(dmg), false, fight.def.name);
   if (player.hp < hp) { fight.stats.hits++; for (const fn of fight.hooks.onPlayerHit) fn(body); return true; }
