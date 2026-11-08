@@ -1,4 +1,4 @@
-// Boss-Kämpfe: In Packs bei Level 25 (früh), 50 (mittel), 75 (spät) und 100 (final), in Wellen nach jeder Welle (waves.ts).
+// Boss-Kämpfe: In Packs bei Level 15/30 (früh), 45/60 (mittel), 75/90 (spät) und 100 (final), in Wellen nach jeder Welle (waves.ts).
 // Der Boss kommt aus dem Roster (bosses/roster.ts) in eine Arena, Stufe nach Level. Immer aktiv.
 // Hier: Auswahl, Arena, Kamera und Lock-on, Boss-Leiste, Körper und ihre Steuerung, Phase 2, Ende. Angriffe in bosses/attacks.ts, Regeln in bosses/rules.ts.
 
@@ -27,7 +27,7 @@ import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
 import { shockwave, lightFlash, hitstop } from './fx/impact';
 import { addTrauma, decal, debris } from './wucht';
-import { BOSSES, TIERS, TIER_OF_LEVEL, bossById } from './bosses/roster';
+import { BOSSES, TIERS, TIER_OF_LEVEL, bossById, poolOf } from './bosses/roster';
 import { buildBossModel } from './bosses/models';
 import { buildEvil } from './bosses/evil';
 import { ATT, RANGE } from './bosses/attacks';
@@ -37,7 +37,7 @@ import { t } from './i18n';
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
 export const B = {
-  every: 25,                // PH: Boss bei Level 25, 50, 75 (Packs); dazu der finale bei 100
+  every: 15,                // PH: Boss bei Level 15, 30, …, 90 (Packs); dazu der finale bei 100
   arena: 20,                // PH: Radius der Arena um den Spieler
   hpMul: 15,                // PH: × Mob-Leben des Levels (Handoff: Start 40; der Prototyp hat 15 gemessen: 40 dauerten 245 s mit Start-Kit)
   body: 2,                  // PH: Körperradius, der Spieler wird hinausgeschoben
@@ -249,7 +249,7 @@ function spawnCopy(b, pos) {
 const seen = new Set<string>();
 // Boss für dieses Level: aus der Stufe würfeln, kein Boss doppelt im Run
 function pickBoss(tier) {
-  const all = BOSSES.filter(b => b.tier === tier), fresh = all.filter(b => !seen.has(b.id)), list = fresh.length ? fresh : all;
+  const all = poolOf(tier), fresh = all.filter(b => !seen.has(b.id)), list = fresh.length ? fresh : all;
   return list[Math.floor(Math.random() * list.length)];
 }
 
@@ -538,7 +538,9 @@ export function updateBossVisuals(dt) {
 
 // ---------- Dev: alle Bosse nach Stufe, Starten ----------
 {
-  const opts = TIERS.map(([t, label]) => `<optgroup label="${label}">${BOSSES.filter(b => b.tier === t).map(b => `<option value="${b.id}">${b.evil ? 'V · ' : ''}${b.name}</option>`).join('')}</optgroup>`).join('') + '<option value="prototyp">Prototyp-Boss</option>';
+  const group = (label, list) => `<optgroup label="${label}">${list.map(b => `<option value="${b.id}">${b.evil ? 'V · ' : ''}${b.name}</option>`).join('')}</optgroup>`;
+  const opts = TIERS.map(([t, label]) => group(label, poolOf(t))).join('') + group('Verdorbene', BOSSES.filter(b => b.evil))
+    + group('nicht im Pool', BOSSES.filter(b => b.tier === 'aus')) + '<option value="prototyp">Prototyp-Boss</option>';
   $('devPerf').insertAdjacentHTML('afterend', `<div style="display:flex;gap:6px;margin-bottom:14px"><select id="devBossPick" class="bindBtn" style="flex:1">${opts}</select><button class="bindBtn" id="devBoss">Starten</button></div>`);
   $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(($('devBossPick') as HTMLSelectElement).value); });
 }

@@ -1,6 +1,7 @@
 // Alle Bosse aus dem Boss-Viewer (Artifact „Frost Grind – Boss-Viewer“), Daten 1:1 übernommen. Alle Werte PH aus dem Boss-Plan.
 // Boss = Daten-Objekt: Modell (t, p), Angriffe { n, k, p, i, b?, p2? }, Regeln { n, k, p, i }. Angriffe mit „(P2)“ im Namen kommen erst in Phase 2.
-// k verweist auf ATT (bosses/attacks.ts) bzw. RULE (bosses/rules.ts). tier: frueh, mittel, spaet, final. evil: verdorbene Figur (zählt zu mittel).
+// k verweist auf ATT (bosses/attacks.ts) bzw. RULE (bosses/rules.ts). tier: frueh, mittel, spaet, final, 'aus' = nicht im Run-Pool (nur Dev-Menü).
+// Pool (Kader 08.11.): je Stufe genau 5 Bosse. evil: verdorbene Figur, eigener Platz an jedem Termin (boss.ts).
 import { t } from '../i18n';
 
 // Verdorbene Figuren: Viewer-Strichmännchen als Platzhalter; im Spiel baut boss.ts das echte Spielermodell der Figur (evil = Skin-ID)
@@ -15,7 +16,7 @@ export const BOSSES: any[] = [
   model:{t:'quadruped',p:{skin:0x8d8f98,eye:0xd0e0ff,metal:0xc8ccd8,swordInMouth:true,scale:1.9}},
   attacks:[{n:t('boss.sif.attacks.0.n'),k:'slam',p:{r:6,warn:1.0},i:t('boss.sif.attacks.0.i')},{n:t('boss.sif.attacks.1.n'),k:'ansturm',p:{len:14,warn:.7},i:t('boss.sif.attacks.1.i')},{n:t('boss.sif.attacks.2.n'),k:'explosion',p:{r:5,warn:.7,spin:true,color:0xffffff,fx:0xd8e0ff},i:t('boss.sif.attacks.2.i')}],
   rules:[{n:t('boss.sif.rules.0.n'),k:'hinken',i:t('boss.sif.rules.0.i')}]},
- {id:'duriel',nr:35,name:t('boss.duriel.name'),from:t('boss.duriel.from'),tier:'frueh',desc:t('boss.duriel.desc'),
+ {id:'duriel',nr:35,name:t('boss.duriel.name'),from:t('boss.duriel.from'),tier:'aus',desc:t('boss.duriel.desc'),
   model:{t:'maggot',p:{skin:0xb79a6a,armor:0x7a6040,accent:0x4a3a2a,eye:0xff4040,scale:1.45}},
   attacks:[{n:t('boss.duriel.attacks.0.n'),k:'kette',p:{hits:[.75,.5],r:4.5,ang:110},i:t('boss.duriel.attacks.0.i')},{n:t('boss.duriel.attacks.1.n'),k:'ansturm',p:{len:10,w:3,warn:.6},i:t('boss.duriel.attacks.1.i')}],
   rules:[{n:t('boss.duriel.rules.0.n'),k:'arenaRadius',p:{r:10},i:t('boss.duriel.rules.0.i')},{n:t('boss.duriel.rules.1.n'),k:'slowAura',i:t('boss.duriel.rules.1.i')}]},
@@ -29,12 +30,12 @@ export const BOSSES: any[] = [
  {id:'lazarus',nr:33,name:t('boss.lazarus.name'),from:t('boss.lazarus.from'),tier:'frueh',desc:t('boss.lazarus.desc'),
   model:{t:'biped',p:{float:true,skin:0xc8b8a0,armor:0x5a1a1a,accent:0xb08a3a,eye:0xff6a2a,glow:0xff6a2a,head:'hood',weapon:'staff',scale:1.65}},
   attacks:[{n:t('boss.lazarus.attacks.0.n'),k:'blink',p:{behind:5,color:0xff6a2a},i:t('boss.lazarus.attacks.0.i')},{n:t('boss.lazarus.attacks.1.n'),k:'feuerwand',p:{len:18,dur:4},i:t('boss.lazarus.attacks.1.i')},{n:t('boss.lazarus.attacks.2.n'),k:'faecher',p:{n:3,spread:30,speed:13,color:0xff6a2a},i:t('boss.lazarus.attacks.2.i')}],rules:[]},
- {id:'flickwerk',nr:11,name:t('boss.flickwerk.name'),from:t('boss.flickwerk.from'),tier:'frueh',desc:t('boss.flickwerk.desc'),
+ {id:'flickwerk',nr:11,name:t('boss.flickwerk.name'),from:t('boss.flickwerk.from'),tier:'aus',desc:t('boss.flickwerk.desc'),
   model:{t:'biped',p:{skin:0x9aa58a,armor:0x5a4a3a,accent:0x7a2a2a,eye:0xffe060,bulk:1.6,belly:true,head:'bare',weapon:'hook',weapon2:'hook',pauldrons:false,scale:1.9}},
   attacks:[{n:t('boss.flickwerk.attacks.0.n'),k:'kette',p:{hits:[.6,.6,.6],r:4,ang:70},i:t('boss.flickwerk.attacks.0.i')}],
   rules:[{n:t('boss.flickwerk.rules.0.n'),k:'enrage',p:{then:true},i:t('boss.flickwerk.rules.0.i')}]},
  // mittel
- {id:'gruul',nr:17,name:t('boss.gruul.name'),from:t('boss.gruul.from'),tier:'mittel',desc:t('boss.gruul.desc'),
+ {id:'gruul',nr:17,name:t('boss.gruul.name'),from:t('boss.gruul.from'),tier:'aus',desc:t('boss.gruul.desc'),
   model:{t:'biped',p:{skin:0x7a8a9a,armor:0x4a4038,accent:0x5a5a6a,eye:0xffa040,bulk:1.5,head:'bare',tusks:true,weapon:'none',scale:2.3}},
   attacks:[{n:t('boss.gruul.attacks.0.n'),k:'kette',p:{hits:[.9,.7],r:5,ang:90},i:t('boss.gruul.attacks.0.i')},{n:t('boss.gruul.attacks.1.n'),k:'slam',p:{r:6,warn:1.0},i:t('boss.gruul.attacks.1.i')},{n:t('boss.gruul.attacks.2.n'),k:'slam',p:{r:10,warn:1.4,gap:2},i:t('boss.gruul.attacks.2.i')}],
   rules:[{n:t('boss.gruul.rules.0.n'),k:'wachstum',i:t('boss.gruul.rules.0.i')}]},
@@ -45,7 +46,7 @@ export const BOSSES: any[] = [
  {id:'azmodan',nr:44,name:t('boss.azmodan.name'),from:t('boss.azmodan.from'),tier:'mittel',desc:t('boss.azmodan.desc'),
   model:{t:'spider',p:{skin:0x8a3a2a,armor:0x3a1a14,eye:0x9aff4a,glow:0x9aff4a,scale:1.6}},
   attacks:[{n:t('boss.azmodan.attacks.0.n'),k:'riesenkugel',p:{size:2.4,speed:5,r:7},i:t('boss.azmodan.attacks.0.i')},{n:t('boss.azmodan.attacks.1.n'),k:'pfuetze',p:{n:3,r:3,color:0x6a8a3a,label:t('boss.azmodan.attacks.1.p.label')},i:t('boss.azmodan.attacks.1.i')},{n:t('boss.azmodan.attacks.2.n'),k:'explosion',p:{r:7,warn:.9,color:0xff5a2a},i:t('boss.azmodan.attacks.2.i')}],rules:[]},
- {id:'abgrund',nr:62,name:t('boss.abgrund.name'),from:t('boss.abgrund.from'),tier:'mittel',desc:t('boss.abgrund.desc'),
+ {id:'abgrund',nr:62,name:t('boss.abgrund.name'),from:t('boss.abgrund.from'),tier:'aus',desc:t('boss.abgrund.desc'),
   bodies:[{m:{t:'biped',p:{skin:0x3a3438,armor:0x26242a,accent:0x3a2a2a,eye:0xff6a3a,cape:0x5a1a1a,bulk:.95,head:'helm',weapon:'greatsword',weapon2:'katana',scale:1.45}},off:[0,-4]},
           {m:{t:'biped',p:{skin:0x3a3438,armor:0x26242a,accent:0x3a2a2a,eye:0xff6a3a,cape:0x5a1a1a,bulk:.95,head:'helm',weapon:'greatsword',weapon2:'katana',scale:1.45}},off:[-6,-6]},
           {m:{t:'biped',p:{skin:0x3a3438,armor:0x26242a,accent:0x3a2a2a,eye:0xff1a1a,cape:0x5a1a1a,bulk:.95,head:'helm',weapon:'greatsword',weapon2:'katana',scale:1.45}},off:[6,-6]}],
@@ -54,11 +55,11 @@ export const BOSSES: any[] = [
  {id:'hornet',nr:85,name:t('boss.hornet.name'),from:t('boss.hornet.from'),tier:'mittel',desc:t('boss.hornet.desc'),
   model:{t:'biped',p:{skin:0x2a1a24,armor:0x9a1e2a,accent:0x7a1420,eye:0x1a1418,bulk:.7,head:'mask',weapon:'needle',pauldrons:false,cape:0x9a1e2a,scale:1.35}},
   attacks:[{n:t('boss.hornet.attacks.0.n'),k:'ansturm',p:{len:16,w:1.6,warn:.45},i:t('boss.hornet.attacks.0.i')},{n:t('boss.hornet.attacks.1.n'),k:'faecher',p:{n:1,speed:18,size:.3,color:0xf2ede4},i:t('boss.hornet.attacks.1.i')},{n:t('boss.hornet.attacks.2.n'),k:'explosion',p:{r:4.5,warn:.5,color:0xf2ede4,fx:0xffffff},i:t('boss.hornet.attacks.2.i')}],rules:[]},
- {id:'thaddius',nr:14,name:t('boss.thaddius.name'),from:t('boss.thaddius.from'),tier:'mittel',desc:t('boss.thaddius.desc'),
+ {id:'thaddius',nr:14,name:t('boss.thaddius.name'),from:t('boss.thaddius.from'),tier:'aus',desc:t('boss.thaddius.desc'),
   model:{t:'biped',p:{skin:0x4a6a5a,armor:0x3a4a44,accent:0x6a8a7a,eye:0x80e0ff,glow:0x60c8ff,bulk:1.7,head:'bare',coils:true,belly:true,weapon:'none',scale:2.1}},
   attacks:[{n:t('boss.thaddius.attacks.0.n'),k:'kette',p:{hits:[.9,.7],r:5,ang:90},i:t('boss.thaddius.attacks.0.i')},{n:t('boss.thaddius.attacks.1.n'),k:'explosion',p:{r:8,warn:1.0,color:0x60c8ff},i:t('boss.thaddius.attacks.1.i')}],
   rules:[{n:t('boss.thaddius.rules.0.n'),k:'polaritaet',i:t('boss.thaddius.rules.0.i')}]},
- {id:'ragnaros',nr:3,name:t('boss.ragnaros.name'),from:t('boss.ragnaros.from'),tier:'mittel',desc:t('boss.ragnaros.desc'),
+ {id:'ragnaros',nr:3,name:t('boss.ragnaros.name'),from:t('boss.ragnaros.from'),tier:'final',desc:t('boss.ragnaros.desc'),
   model:{t:'lavaTorso',p:{skin:0x8a2a10,armor:0x5a1a08,accent:0xff6a1a,eye:0xffee60,metal:0x3a2a20,scale:1.45}},
   attacks:[{n:t('boss.ragnaros.attacks.0.n'),k:'kette',p:{hits:[1.0,.8],r:7,ang:120,color:0xff4a1a},i:t('boss.ragnaros.attacks.0.i')},{n:t('boss.ragnaros.attacks.1.n'),k:'ring',p:{r:10,color:0xff7a2a},i:t('boss.ragnaros.attacks.1.i')},{n:t('boss.ragnaros.attacks.2.n'),k:'meteor',p:{n:5,r:3},i:t('boss.ragnaros.attacks.2.i')}],
   rules:[{n:t('boss.ragnaros.rules.0.n'),k:'abtauchen',i:t('boss.ragnaros.rules.0.i')}]},
@@ -81,7 +82,7 @@ export const BOSSES: any[] = [
   model:evil('eis',{weapon:'staff',glow:0x6ac8ff,color:0x0a1420}),
   attacks:[{n:t('boss.v-eis.attacks.0.n'),k:'explosion',p:{r:7,warn:.5,color:0x6ac8ff},i:t('boss.v-eis.attacks.0.i')},{n:t('boss.v-eis.attacks.1.n'),k:'meteor',p:{n:9,r:2,warn:.8,spread:5,stagger:.12,color:0x9ad8ff},i:t('boss.v-eis.attacks.1.i')},{n:t('boss.v-eis.attacks.2.n'),k:'faecher',p:{n:3,spread:24,speed:15,color:0xbfe8ff},i:t('boss.v-eis.attacks.2.i')}],rules:[]},
  // spät
- {id:'os',nr:55,name:t('boss.os.name'),from:t('boss.os.from'),tier:'spaet',desc:t('boss.os.desc'),
+ {id:'os',nr:55,name:t('boss.os.name'),from:t('boss.os.from'),tier:'aus',desc:t('boss.os.desc'),
   bodies:[{m:{t:'biped',p:{skin:0x8a7a5a,armor:0xc9a24a,accent:0xe0c060,eye:0xffe070,metal:0xffe9a0,bulk:.9,head:'lion',weapon:'spear',scale:1.7}},off:[-3.5,-4]},
           {m:{t:'biped',p:{skin:0x8a7a5a,armor:0xb08a3a,accent:0xd0a850,eye:0xffc060,bulk:1.8,belly:true,head:'helm',weapon:'hammer',scale:2.1}},off:[3.5,-5]}],
   attacks:[{n:t('boss.os.attacks.0.n'),k:'ansturm',b:0,p:{len:13,w:1.6,warn:.55,color:0xffe070},i:t('boss.os.attacks.0.i')},{n:t('boss.os.attacks.1.n'),k:'slam',b:1,p:{r:6,warn:1.1},i:t('boss.os.attacks.1.i')},{n:t('boss.os.attacks.2.n'),k:'faecher',b:0,p:{n:1,speed:16,size:.4,color:0xffe070},i:t('boss.os.attacks.2.i')}],
@@ -90,7 +91,7 @@ export const BOSSES: any[] = [
   bodies:[0,1,2,3].map(i=>({m:{t:'biped',p:{skin:0x18141f,armor:0x221c2c,accent:0x3a2a54,eye:0xb890ff,glow:0x9a70ff,bulk:.85,head:'crown',weapon:'sword',weaponGlow:0x9a70ff,scale:2.0}},off:[(i-1.5)*4.5,-5-(i%2)*1.5],state:i===0?'active':'hidden'})),
   attacks:[{n:t('boss.koenige.attacks.0.n'),k:'kette',p:{hits:[.8,.6],r:5,ang:90,color:0x9a70ff},i:t('boss.koenige.attacks.0.i')},{n:t('boss.koenige.attacks.1.n'),k:'faecher',p:{n:6,spread:70,color:0x9a70ff},i:t('boss.koenige.attacks.1.i')},{n:t('boss.koenige.attacks.2.n'),k:'explosion',p:{r:8,warn:1.0,color:0x7a50d0},i:t('boss.koenige.attacks.2.i')}],
   rules:[{n:t('boss.koenige.rules.0.n'),k:'spawnUeberZeit',p:{every:50,max:4,label:t('boss.koenige.rules.0.p.label')},i:t('boss.koenige.rules.0.i')}]},
- {id:'godrick',nr:76,name:t('boss.godrick.name'),from:t('boss.godrick.from'),tier:'spaet',desc:t('boss.godrick.desc'),
+ {id:'godrick',nr:76,name:t('boss.godrick.name'),from:t('boss.godrick.from'),tier:'aus',desc:t('boss.godrick.desc'),
   model:{t:'biped',p:{skin:0x9a8a6a,armor:0xb08a3a,accent:0x8a6a2a,eye:0xffd070,cape:0x6a6040,bulk:1.5,head:'crown',weapon:'axe',scale:2.0}},
   attacks:[{n:t('boss.godrick.attacks.0.n'),k:'kette',p:{hits:[.9,.6,1.1],r:5,ang:100},i:t('boss.godrick.attacks.0.i')},{n:t('boss.godrick.attacks.1.n'),k:'slam',p:{r:7,warn:1.0,fx:0xd0d8e0},i:t('boss.godrick.attacks.1.i')},{n:t('boss.godrick.attacks.2.n'),k:'ring',p:{r:10,color:0xd0d8e0},i:t('boss.godrick.attacks.2.i')}],
   rules:[{n:t('boss.godrick.rules.0.n'),p2:true,k:'neuePhaseWaffe',i:t('boss.godrick.rules.0.i')}]},
@@ -101,11 +102,11 @@ export const BOSSES: any[] = [
   model:{t:'biped',p:{skin:0x5a6a7a,armor:0x3a4a5a,accent:0x5a6a8a,eye:0x80d8ff,cape:0x14203a,bulk:1.1,head:'lich',weapon:'greatsword',weaponGlow:0x6ac8ff,scale:2.0}},
   attacks:[{n:t('boss.lich.attacks.0.n'),k:'kette',p:{hits:[.8,.6],r:5,ang:100,color:0x6ac8ff},i:t('boss.lich.attacks.0.i')},{n:t('boss.lich.attacks.1.n'),k:'explosion',p:{r:7,warn:.9,color:0x6ac8ff},i:t('boss.lich.attacks.1.i')}],
   rules:[{n:t('boss.lich.rules.0.n'),k:'pfuetzeWaechst',i:t('boss.lich.rules.0.i')}]},
- {id:'yogg',nr:23,name:t('boss.yogg.name'),from:t('boss.yogg.from'),tier:'spaet',desc:t('boss.yogg.desc'),
+ {id:'yogg',nr:23,name:t('boss.yogg.name'),from:t('boss.yogg.from'),tier:'aus',desc:t('boss.yogg.desc'),
   model:{t:'blob',p:{skin:0x3a2a34,armor:0x2a3a22,eye:0xffd040,scale:1.3}},
   attacks:[{n:t('boss.yogg.attacks.0.n'),k:'atem',p:{color:0xb060ff,len:18,ang:30},i:t('boss.yogg.attacks.0.i')},{n:t('boss.yogg.attacks.1.n'),k:'faecher',p:{n:12,spread:360,color:0x9a50d0,speed:8},i:t('boss.yogg.attacks.1.i')},{n:t('boss.yogg.attacks.2.n'),k:'sog',p:{color:0x5a8a3a},i:t('boss.yogg.attacks.2.i')}],
   rules:[{n:t('boss.yogg.rules.0.n'),k:'wahnsinn',i:t('boss.yogg.rules.0.i')}]},
- {id:'atziri',nr:96,name:t('boss.atziri.name'),from:t('boss.atziri.from'),tier:'spaet',desc:t('boss.atziri.desc'),
+ {id:'atziri',nr:96,name:t('boss.atziri.name'),from:t('boss.atziri.from'),tier:'aus',desc:t('boss.atziri.desc'),
   model:{t:'biped',p:{skin:0xc8a890,armor:0x6a1a2a,accent:0xd0a040,eye:0xff8a40,bulk:.85,head:'crown',weapon:'staff',glow:0xffb050,cape:0x6a1a2a,scale:1.8}},
   attacks:[{n:t('boss.atziri.attacks.0.n'),k:'explosion',p:{r:6,warn:1.3,color:0xff7a2a},i:t('boss.atziri.attacks.0.i')},{n:t('boss.atziri.attacks.1.n'),k:'faecher',p:{n:3,spread:30,speed:15,color:0xfff070},i:t('boss.atziri.attacks.1.i')}],
   rules:[{n:t('boss.atziri.rules.0.n'),k:'spiegelbilder',i:t('boss.atziri.rules.0.i')}]},
@@ -167,6 +168,8 @@ export const PROTOTYPE = {
 };
 export const ALL_BOSSES = [...BOSSES, PROTOTYPE];
 export const bossById = id => ALL_BOSSES.find(b => b.id === id);
-// Boss-Termine: Stufe nach Level. Verdorbene zählen zu mittel
+// Boss-Termine (Level 15, 30, …, 90 und 100): Stufe nach Level
 export const TIER_OF_LEVEL = lv => lv >= 100 ? 'final' : lv >= 75 ? 'spaet' : lv >= 45 ? 'mittel' : 'frueh';
 export const TIERS = [['frueh', t('boss.tier.frueh')], ['mittel', t('boss.tier.mittel')], ['spaet', t('boss.tier.spaet')], ['final', t('boss.tier.final')]];
+// Run-Pool einer Stufe: die 5 Bosse der Stufe, ohne Verdorbene und ohne 'aus'
+export const poolOf = tier => BOSSES.filter(b => b.tier === tier && !b.evil);
