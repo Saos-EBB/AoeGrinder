@@ -89,3 +89,17 @@ body[data-flavor=schlachtbank] #fgOverlay .fx-glitch { inset: 0; animation: fgGl
     linear-gradient(rgba(255,61,31,0.20), rgba(255,61,31,0.20)) 62.0% 38.2% / 18.8% 3px no-repeat,
     linear-gradient(rgba(255,61,31,0.24), rgba(255,61,31,0.24)) 69.5% 34.4% / 10.6% 2px no-repeat,
     linear-gradient(rgba(255,61,31,0.43), rgba(255,61,31,0.43)) 23.7% 56.5% / 17.6% 1px no-repeat; }
+
+/* ---------- HUD (X2H, gen4.py hud2 + gen5 m2_hud_extras) ---------- */
+body[data-flavor=schlachtbank] .hudEl[data-hud=hotbar] { --slot: calc(44 * var(--hu)); }
+body[data-flavor=schlachtbank] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); }
+/* rote Leuchtlinie über den großen Zahlen */
+body[data-flavor=schlachtbank] .hudEl[data-variant~=bignum] .hBar::after { content: ''; position: absolute; top: calc(-104 * var(--hu)); left: calc(-94 * var(--hu)); width: calc(300 * var(--hu)); height: 2px;
+  background: #ff3d1f; box-shadow: 0 0 12px #ff3d1f; }
+body[data-flavor=schlachtbank] .hudEl[data-hud=mana][data-variant~=bignum] .hBar::after { left: auto; right: calc(-94 * var(--hu)); }
+body[data-flavor=schlachtbank] .hudEl[data-hud=killmeter] { --mw: 288; --mh: 4; }
+body[data-flavor=schlachtbank] .hudEl[data-hud=xp] { --xw: 340; --xh: 3; }
+body[data-flavor=schlachtbank] .hudEl[data-hud=cast] { --cw: 260; --ch: 12; }
+body[data-flavor=schlachtbank] .hudEl[data-hud=runinfo] #hudRun { font-family: 'Oswald', sans-serif; }
+/* Warnstreifen am unteren Rand, nur im Spiel */
+body[data-flavor=schlachtbank] #fgOverlay .fx-hazard.bot { top: auto; bottom: 0; height: 10px; opacity: .9; background: repeating-linear-gradient(-45deg, #ff3d1f 0 12px, #000 12px 24px); }

@@ -50,6 +50,7 @@ body.font-fraktur[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-t
 #fgOverlay > * { position: absolute; pointer-events: none; }
 #fgOverlay > :not(.lite) { display: none; }
 body:has(.modal.show) #fgOverlay > * { display: block; }
+body:has(.modal.show) #fgOverlay > .hud { display: none; }   /* .hud = nur im Spiel */
 body.fgNoFx #fgOverlay, body.hudEdit #fgOverlay { display: none; }
 /* Funken: kleine Glutpunkte, die langsam steigen (eine Ebene, zwei Bilder versetzt) */
 @keyframes fgRise { from { transform: translateY(0); } to { transform: translateY(-60px); } }

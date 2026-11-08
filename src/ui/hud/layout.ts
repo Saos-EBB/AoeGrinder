@@ -6,22 +6,25 @@ import { $ } from '../../util';
 import { device } from '../../device';
 import { UI } from '../uiConfig';
 import { uiSettings, setUi } from '../uiSettings';
-import { DEFAULT_LAYOUT, MOBILE } from './presets';
+import { MOBILE } from './presets';
+import { activeFlavor } from '../flavors';
 import { t } from '../../i18n';
 
 export type Anchor = 'tl' | 't' | 'tr' | 'l' | 'c' | 'r' | 'bl' | 'b' | 'br';
 export type HudElementId = 'timer' | 'runinfo' | 'xp' | 'hp' | 'mana' | 'cast' | 'hotbar' | 'killmeter' | 'combo' | 'buffs' | 'relics'
-  | 'minimap' | 'compass' | 'splits' | 'tracker' | 'unitframe';
+  | 'minimap' | 'compass' | 'splits' | 'tracker' | 'unitframe' | 'micro';
 export type Placement = { anchor: Anchor; x: number; y: number; scale: number; hidden?: boolean; variant?: string };
 export type HudLayout = { id: string; elements: Partial<Record<HudElementId, Placement>> };
 
 export const HUD_NAMES: Record<HudElementId, string> = {
   timer: t('hudEl.timer'), runinfo: t('hudEl.runinfo'), xp: t('hudEl.xp'), hp: t('hudEl.hp'), mana: t('hudEl.mana'), cast: t('hudEl.cast'), hotbar: t('hudEl.hotbar'), killmeter: t('hudEl.killmeter'), combo: t('hudEl.combo'), buffs: t('hudEl.buffs'), relics: t('hudEl.relics'), minimap: t('hudEl.minimap'), compass: t('hudEl.compass'), splits: t('hudEl.splits'), tracker: t('hudEl.tracker'), unitframe: t('hudEl.unitframe'),
+  micro: t('hudEl.micro'),
 };
 const ANCHORS: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
 const SNAP = 0.5;   // Raster in %
 
-export const activeLayout = (): HudLayout => DEFAULT_LAYOUT;
+// Layout = Standard-Layout des aktiven UI-Flavors; eigene Änderungen gelten pro Flavor
+export const activeLayout = (): HudLayout => { const f = activeFlavor(); return { id: f.id, elements: f.hud }; };
 const overrideKey = () => activeLayout().id + (device.mobile ? '@mobile' : '');
 const overrides = (): Partial<Record<HudElementId, Placement>> => uiSettings.hudOverrides[overrideKey()] ?? {};
 function base(id: HudElementId): Placement | undefined {
@@ -64,6 +67,7 @@ function place(id: HudElementId) {
     transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${(p.scale ?? 1) * uiSettings.hudScale / 100})`, transformOrigin: `${fx * 100}% ${fy * 100}%` });
   w.dataset.anchor = p.anchor;
   if (p.variant) w.dataset.variant = p.variant; else delete w.dataset.variant;
+  w.classList.toggle('fg-panel', !!p.variant?.split(' ').includes('panel'));   // Panel mit den Ornamenten des Flavors
 }
 export function applyLayout() {
   for (const id of wrappers.keys()) place(id);
@@ -145,6 +149,7 @@ $('hudEditDone').addEventListener('click', stopHudEdit);
 const DOM_IDS: Record<HudElementId, string> = {
   timer: 'hudTimer', runinfo: 'hudRun', xp: 'hudXp', hp: 'hudHp', mana: 'hudMana', cast: 'hudCast', hotbar: 'actionbar', killmeter: 'hudKill',
   combo: 'hudCombo', buffs: 'hudEffects', relics: 'hudRelics', minimap: 'hudMap', compass: 'hudCompass', splits: 'hudSplits', tracker: 'hudTracker', unitframe: 'hudUnit',
+  micro: 'hudMicro',
 };
 for (const [id, dom] of Object.entries(DOM_IDS)) registerHudElement(id as HudElementId, $(dom));
 applyLayout();

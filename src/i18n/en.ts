@@ -1938,4 +1938,11 @@ export const en: Record<string, string> = {
   'set.numFlavor': "Numbers & messages",
   'set.numSize': "Number size",
   'set.screenFx': "Screen effects",
+  'hudEl.micro': "Micro menu",
+  'hudx.annihilation': "Annihilation",
+  'hudx.massacre': "MASSACRE",
+  'hudx.micro.binds': "Key bindings",
+  'hudx.micro.char': "Character (X)",
+  'hudx.micro.pause': "Pause (Esc)",
+  'hudx.micro.settings': "Settings",
 };

@@ -1,4 +1,4 @@
-// HUD-Elemente neben Leben, Mana und Leiste: Kompass, Splits, Spielerrahmen, Tracker.
+// HUD-Elemente neben Leben, Mana und Leiste: Kompass, Splits, Spielerrahmen, Tracker, Mikro-Menü.
 // Alle anderen Elemente füllt ui/hud.ts. Aktualisiert wird nur, was sich ändert; Kompass und Splits höchstens 10× pro Sekunde.
 
 import { state, player } from '../../state';
@@ -7,7 +7,10 @@ import { maxHp, maxMana } from '../../formulas';
 import { cam } from '../../camera';
 import { META } from '../../meta';
 import { modeId } from '../../modifiers';
-import { currentFigure } from '../mainMenu';
+import { currentFigure, openPause } from '../mainMenu';
+import { toggleChar } from '../charWindow';
+import { openBinds } from '../menus';
+import { t } from '../../i18n';
 import { run } from '../../score';
 import { bestSplits } from '../../leaderboard';
 import { placementOf } from './layout';
@@ -21,8 +24,32 @@ const figureName = () => currentFigure()?.name ?? '';
 let ready = false;
 function init() {
   ready = true;
+  // Beschriftungen und Wörter für die Varianten der Flavors (hud.css: bignum, massaker)
+  ($('hudHp').querySelector('.hBar') as HTMLElement).dataset.label = t('hudEl.hp');
+  ($('hudMana').querySelector('.hBar') as HTMLElement).dataset.label = t('hudEl.mana');
+  $('scoreCombo').dataset.word = t('hudx.massacre');
+  ($('hudCombo').querySelector('.cMulti') as HTMLElement).dataset.word = t('hudx.annihilation');
   const title = $('hudTracker').querySelector('.trTitle'), siege = document.getElementById('siegeHud');
   if (siege) title.replaceWith(siege);
+}
+
+// ---------- Mikro-Menü (Krypta): Charakter, Pause, Einstellungen, Tasten; darüber 4 Taschen (nur Deko) ----------
+const MICRO: [string, string, () => void][] = [
+  ['hudx.micro.char', 'M4 20V6l8-3 8 3v14', () => toggleChar()],
+  ['hudx.micro.pause', 'M5 5h14v14H5z', () => openPause()],
+  ['hudx.micro.settings', 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3', () => { openPause(); $('pauseSettings').click(); }],
+  ['hudx.micro.binds', 'M4 4h16v4H4zM4 10h16v10H4z', () => openBinds()],
+];
+const micro = $('hudMicro');
+micro.innerHTML = `<div class="mBags" aria-hidden="true">${'<i class="mBag"></i>'.repeat(4)}</div>`;
+for (const [key, d, run] of MICRO) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.title = t(key);
+  b.setAttribute('aria-label', t(key));
+  b.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#f2d58a" stroke-width="1.8"><path d="${d}"/></svg>`;
+  b.addEventListener('click', run);
+  micro.append(b);
 }
 
 // ---------- Spielerrahmen ----------

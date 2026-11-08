@@ -94,3 +94,18 @@ body[data-flavor=hoellenfeste] #fgOverlay .fx-chain { top: 0; width: 16px; backg
 body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.a { left: 34.4%; height: 84px; }
 body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.b { left: 82.2%; height: 70px; }
 body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.c { left: 78.1%; height: 42px; }
+
+/* ---------- HUD (X1H, gen4.py hud1 + gen5 m1_orb/m1_hud_extras) ---------- */
+/* Panel 580 × 92 unten Mitte mit kompakter Leiste (46 px, 2 px Abstand), Schädel mit roten Augen darüber */
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] { --slot: calc(46 * var(--hu)); width: calc(580 * var(--hu)); height: calc(92 * var(--hu)); box-sizing: border-box;
+  justify-content: center; align-items: flex-start; padding-top: calc(28 * var(--hu)); outline-offset: calc(5 * var(--hu)); }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar::before { content: ''; position: absolute; left: 50%; top: calc(-66 * var(--hu)); width: calc(44 * var(--hu)); height: calc(40 * var(--hu));
+  margin-left: calc(-22 * var(--hu)); background: url(./hoellenfeste/skull.svg) 0 0 / 100% 100%; pointer-events: none; }
+/* Kugeln 140 px mit Gold-Zackenring */
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hp], body[data-flavor=hoellenfeste] .hudEl[data-hud=mana] { --orb: 140; }
+body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudHp::before, body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudMana::before { content: ''; position: absolute; z-index: 1; pointer-events: none;
+  left: calc(-12 * var(--hu)); top: calc(-12 * var(--hu)); width: calc(164 * var(--hu)); height: calc(164 * var(--hu)); background: url(./hoellenfeste/orbring.svg) 0 0 / 100% 100%; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=killmeter] { --mw: 468; --mh: 6; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=xp] { --xw: 540; --xh: 4; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=cast] { --cw: 260; --ch: 14; }

@@ -1939,4 +1939,11 @@ export const de: Record<string, string> = {
   'set.numFlavor': "Zahlen & Meldungen",
   'set.numSize': "Zahlen-Größe",
   'set.screenFx': "Bildschirm-Effekte",
+  'hudEl.micro': "Mikro-Menü",
+  'hudx.annihilation': "Vernichtung",
+  'hudx.massacre': "MASSAKER",
+  'hudx.micro.binds': "Tastenbelegung",
+  'hudx.micro.char': "Charakter (X)",
+  'hudx.micro.pause': "Pause (Esc)",
+  'hudx.micro.settings': "Einstellungen",
 };

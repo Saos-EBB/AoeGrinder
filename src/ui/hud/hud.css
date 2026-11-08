@@ -30,7 +30,7 @@ body {
 #scorePts { color: var(--h-gold); }
 
 /* ---------- Erfahrung ---------- */
-#xpbar { width: calc(520 * var(--hu)); height: calc(4 * var(--hu)); min-height: 3px; }
+#xpbar { width: calc(var(--xw, 520) * var(--hu)); height: calc(var(--xh, 4) * var(--hu)); min-height: 3px; }
 #xpFill { background: var(--h-xp); }
 #xpText { display: none; }
 .hudEl[data-variant=text] #xpbar { height: calc(14 * var(--hu)); }
@@ -38,37 +38,37 @@ body {
 
 /* ---------- Leben und Mana ---------- */
 #hudHp, #hudMana { width: auto; position: relative; }
-#hudHp .hBar, #hudMana .hBar { width: calc(147 * var(--hu)); height: calc(16 * var(--hu)); }
-#hudHp .hBar > span, #hudMana .hBar > span { font-size: calc(12 * var(--hu)); line-height: calc(14 * var(--hu)); }
+.hudEl[data-hud=hp] .hBar, .hudEl[data-hud=mana] .hBar { width: calc(147 * var(--hu)); height: calc(16 * var(--hu)); }
+.hudEl[data-hud=hp] .hBar > span, .hudEl[data-hud=mana] .hBar > span { font-size: calc(12 * var(--hu)); line-height: calc(14 * var(--hu)); }
 #hpFill { background: linear-gradient(var(--h-hp), color-mix(in srgb, var(--h-hp) 60%, #000)); }
 #manaFill { background: linear-gradient(var(--h-mana), color-mix(in srgb, var(--h-mana) 60%, #000)); }
 #hpText .max, #manaText .max { font-weight: 600; }
 /* Kugeln: füllen von unten */
-.hudEl[data-variant=orbs] .hBar { width: calc(132 * var(--hu)) !important; height: calc(132 * var(--hu)) !important; border-radius: 50%;
+.hudEl[data-variant~=orb] .hBar { width: calc(var(--orb, 132) * var(--hu)); height: calc(var(--orb, 132) * var(--hu)); border-radius: 50%;
   border: calc(5 * var(--hu)) solid #8a6a35; box-shadow: 0 0 0 3px #000, inset 0 0 22px #000; background: #0b0606; }
-.hudEl[data-variant=orbs] .hBar > .fill { transform-origin: bottom; transform: scaleY(var(--v, 0)); }
-.hudEl[data-variant=orbs] .hBar::after { content: ''; position: absolute; left: 20%; top: 12%; width: 40%; height: 18%; border-radius: 50%; background: rgba(255, 255, 255, .12); }
-.hudEl[data-variant=orbs] .hBar > span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: calc(20 * var(--hu)); font-weight: 900; -webkit-text-stroke-width: 4px; }
-.hudEl[data-variant=orbs] .hBar > span .max { display: none; }
-.hudEl[data-variant=orbs] #hpCut { display: none; }
+.hudEl[data-variant~=orb] .hBar > .fill { transform-origin: bottom; transform: scaleY(var(--v, 0)); }
+.hudEl[data-variant~=orb] .hBar::after { content: ''; position: absolute; left: 20%; top: 12%; width: 40%; height: 18%; border-radius: 50%; background: rgba(255, 255, 255, .12); }
+.hudEl[data-variant~=orb] .hBar > span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: calc(20 * var(--hu)); font-weight: 900; -webkit-text-stroke-width: 4px; }
+.hudEl[data-variant~=orb] .hBar > span .max { display: none; }
+.hudEl[data-variant~=orb] #hpCut { display: none; }
 #fsr { height: 3px; }
 #dodgeDots { position: absolute; left: 0; right: 0; top: calc(100% + 3px); }
 
 /* ---------- Castbar ---------- */
 #hudCast { width: auto; }
-#castbar { display: none; position: relative; overflow: hidden; width: calc(300 * var(--hu)); height: calc(14 * var(--hu)); background: var(--h-bar-bg); border: var(--h-bar-bd); border-radius: var(--h-bar-r); }
+#castbar { display: none; position: relative; overflow: hidden; width: calc(var(--cw, 300) * var(--hu)); height: calc(var(--ch, 14) * var(--hu)); background: var(--h-bar-bg); border: var(--h-bar-bd); border-radius: var(--h-bar-r); }
 #castFill { position: absolute; inset: 0; transform-origin: left; background: var(--h-cast); }
 #castbar span { position: relative; display: block; text-align: center; font: 700 calc(11 * var(--hu)) var(--h-font); line-height: calc(12 * var(--hu)); -webkit-text-stroke: 3px #000; paint-order: stroke fill; }
 #status { font-size: calc(12 * var(--hu)); color: var(--h-accent); }
 
 /* ---------- Kill-Anzeige der Schule ---------- */
-#meter { width: calc(420 * var(--hu)); height: calc(12 * var(--hu)); margin: 0; }
+#meter { width: calc(var(--mw, 420) * var(--hu)); height: calc(var(--mh, 12) * var(--hu)); margin: 0; }
 #meterFill { background: var(--h-accent); }
 #meter > span { font-size: calc(10 * var(--hu)); line-height: calc(10 * var(--hu)); }
 /* senkrecht */
-.hudEl[data-variant=vertical] #meter { width: calc(12 * var(--hu)); height: calc(150 * var(--hu)); }
-.hudEl[data-variant=vertical] #meterFill { transform-origin: bottom; transform: scaleY(var(--v, 0)); }
-.hudEl[data-variant=vertical] #meter > span { display: none; }
+.hudEl[data-variant~=vertical] #meter { width: calc(12 * var(--hu)); height: calc(150 * var(--hu)); }
+.hudEl[data-variant~=vertical] #meterFill { transform-origin: bottom; transform: scaleY(var(--v, 0)); }
+.hudEl[data-variant~=vertical] #meter > span { display: none; }
 
 /* ---------- Combo, Multi-Kill, Kills ---------- */
 #hudCombo { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05; white-space: nowrap; }
@@ -86,7 +86,7 @@ body {
 .fxChip { padding: 1px calc(6 * var(--hu)); font-size: calc(12 * var(--hu)); font-weight: 600; background: var(--h-slot-bg); border: var(--h-slot-bd); border-radius: var(--h-slot-r); color: var(--h-txt); white-space: nowrap; }
 .fxChip b { color: var(--h-gold); margin-left: 3px; }
 #hudRelics { display: flex; gap: calc(8 * var(--hu)); }
-.hudEl[data-variant=vertical] #hudRelics { flex-direction: column; }
+.hudEl[data-variant~=vertical] #hudRelics { flex-direction: column; }
 .relicBox { min-width: calc(40 * var(--hu)); height: calc(40 * var(--hu)); padding: 0 calc(6 * var(--hu)); display: flex; align-items: center; justify-content: center; box-sizing: border-box;
   font: 700 calc(11 * var(--hu)) var(--h-font); color: var(--h-gold); background: #1a1608; border: 2px solid var(--h-gold); border-radius: 6px; box-shadow: 0 0 10px color-mix(in srgb, var(--h-gold) 45%, transparent); }
 .relicBox.hasIcon { width: calc(40 * var(--hu)); padding: 0; background: #1a1608 center / cover no-repeat; }
@@ -98,7 +98,8 @@ body {
 .hudEl[data-hud=minimap]:not([data-variant^=square]) #hudMap, .hudEl[data-hud=minimap]:not([data-variant^=square]) canvas { border-radius: 50% !important; }
 .mapLabel { display: none; position: absolute; left: 50%; top: calc(100% + 6 * var(--hu)); transform: translateX(-50%); line-height: 1.1;
   font-size: calc(14 * var(--hu)); font-weight: 700; color: var(--h-muted); white-space: nowrap; }
-.hudEl[data-variant$='+name'] .mapLabel { display: block; }
+.hudEl[data-variant~=name] .mapLabel { display: block; font-family: var(--h-title); color: var(--h-gold); }
+.hudEl[data-variant~=nametop] .mapLabel { display: block; top: auto; bottom: calc(100% + 8 * var(--hu)); font: 800 calc(16 * var(--hu)) 'Cinzel', serif; color: var(--h-gold); }
 
 /* ---------- Kompass ---------- */
 #hudCompass { position: relative; width: calc(600 * var(--hu)); height: calc(42 * var(--hu)); overflow: hidden;
@@ -158,3 +159,71 @@ body {
 
 /* Combo mittig, wenn oben mittig verankert */
 .hudEl[data-hud=combo][data-anchor=t] #hudCombo { align-items: center; }
+
+/* ---------- Varianten der Flavor-Layouts (Mockups X?H, gen4.py hud1–hud3) ---------- */
+/* Panel um die Zauberleiste und Spielerrahmen: Farben aus dem HUD, Ornamente aus dem Flavor (.fg-panel) */
+.hudEl.fg-panel { position: fixed; background: var(--h-panel-bg); border: var(--h-panel-bd); border-top: var(--h-panel-bt); box-shadow: var(--h-panel-sh); color: var(--h-txt); }
+/* Kugeln: Zahl in der Mitte, Größe --orb */
+.hudEl[data-variant~=orb] .hBar > span .max { display: none; }
+.hudEl[data-variant~=orb] #fsr { display: none; }
+/* Große Zahl über dünnem Balken mit Beschriftung (Schlachtbank) */
+.hudEl[data-variant~=bignum] { --bw: 220; }
+.hudEl[data-variant~=bignum] .hBar { width: calc(var(--bw) * var(--hu)); height: calc(8 * var(--hu)); margin: calc(82 * var(--hu)) 0 0 calc(90 * var(--hu)); overflow: visible; }
+.hudEl[data-hud=mana][data-variant~=bignum] .hBar { margin: calc(82 * var(--hu)) calc(90 * var(--hu)) 0 0; }
+.hudEl[data-variant~=bignum] .hBar > span { position: absolute; left: calc(-90 * var(--hu)); bottom: calc(100% + 14 * var(--hu)); text-align: left; line-height: 1; }
+.hudEl[data-hud=mana][data-variant~=bignum] .hBar > span { left: auto; right: calc(-90 * var(--hu)); text-align: right; }
+.hudEl[data-variant~=bignum] .hBar > span .cur { font: 400 calc(68 * var(--hu)) var(--h-title); color: #f6eee9; -webkit-text-stroke: 0; text-shadow: 0 0 18px rgba(255, 61, 31, .35); }
+.hudEl[data-hud=mana][data-variant~=bignum] .hBar > span .cur { color: var(--h-mana); }
+.hudEl[data-variant~=bignum] .hBar > span .max { display: none; }
+.hudEl[data-variant~=bignum] .hBar::before { content: attr(data-label); position: absolute; top: 50%; transform: translateY(-50%); left: calc(-88 * var(--hu));
+  font: 700 calc(14 * var(--hu)) var(--h-font); letter-spacing: .2em; text-transform: uppercase; color: var(--h-accent); }
+.hudEl[data-hud=mana][data-variant~=bignum] .hBar::before { left: auto; right: calc(-88 * var(--hu)); }
+.hudEl[data-variant~=bignum] #hpCut, .hudEl[data-variant~=bignum] #fsr { display: none; }
+/* Nur die Dodge-Punkte (Krypta: Leben steht im Spielerrahmen) */
+.hudEl[data-variant~=dotsonly] .hBar, .hudEl[data-variant~=dotsonly] #fsr { display: none; }
+.hudEl[data-variant~=dotsonly] #dodgeDots { position: static; justify-content: flex-start !important; }
+/* Kill-Anzeige als dünne Linie, Beschriftung links davor */
+.hudEl[data-variant~=thin] #meter { overflow: visible; }
+.hudEl[data-variant~=thin] #meter > span { position: absolute; right: calc(100% + 8 * var(--hu)); top: 50%; transform: translateY(-50%); width: max-content;
+  font: 800 calc(12 * var(--hu)) var(--h-font); letter-spacing: .12em; text-transform: uppercase; color: var(--meter, var(--h-accent)); }
+/* Zeit in Titelschrift oder groß in Anton */
+.hudEl[data-variant~=title] #iTime { font-family: var(--h-title); }
+.hudEl[data-variant~=big] #iTime { font-family: 'Anton', sans-serif; font-weight: 400; -webkit-text-stroke-width: 0; }
+.hudEl[data-variant~=big] #hSplit { font-family: 'Oswald', sans-serif; font-weight: 600; }
+/* Goldrauten am Rand der runden Karte */
+.hudEl[data-hud=minimap]:not([data-variant^=square])::before { content: ''; position: absolute; left: calc(-12 * var(--hu)); top: calc(-12 * var(--hu)); z-index: 1;
+  width: calc(174 * var(--hu)); height: calc(174 * var(--hu)); background: url(./map-ring.svg) 0 0 / 100% 100%; pointer-events: none; }
+/* Relikte als Goldrauten */
+.hudEl[data-variant~=diamond] #hudRelics { filter: drop-shadow(0 0 1px var(--h-gold)) drop-shadow(0 0 1px var(--h-gold)) drop-shadow(0 0 6px rgba(227, 194, 122, .5)); gap: calc(14 * var(--hu)); }
+.hudEl[data-variant~=diamond] .relicBox { border: 0; border-radius: 0; box-shadow: none; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+/* Combo „MASSAKER ×47 / Vernichtung ×6“ (Höllenfeste) */
+.hudEl[data-variant~=massaker] #hudCombo { align-items: center; }
+.hudEl[data-variant~=massaker] #hudCombo .cLabel, .hudEl[data-variant~=massaker] #hudCombo .cKills, .hudEl[data-variant~=massaker] #scoreBar { display: none; }
+.hudEl[data-variant~=massaker] #scoreCombo { font: 900 calc(33 * var(--hu)) var(--h-title); color: var(--h-gold); -webkit-text-stroke-width: 5px; }
+.hudEl[data-variant~=massaker] #scoreCombo::before { content: attr(data-word) ' ×'; }
+.hudEl[data-variant~=massaker] .cMulti { font: 700 calc(16 * var(--hu)) var(--h-title) !important; color: var(--h-txt) !important; text-transform: none !important; }
+.hudEl[data-variant~=massaker] .cMulti > span { display: none; }
+.hudEl[data-variant~=massaker] .cMulti::before { content: attr(data-word) ' '; -webkit-text-stroke: 3px #000; paint-order: stroke fill; }
+/* Combo im Doom-Stil: COMBO klein rot, riesige Zahl, MULTI im roten Kasten */
+.hudEl[data-variant~=doom] #hudCombo .cLabel { font: 700 calc(14 * var(--hu)) 'Oswald', sans-serif; letter-spacing: .3em; color: #ff3d1f; -webkit-text-stroke-width: 0; }
+.hudEl[data-variant~=doom] #scoreCombo { font: 400 calc(92 * var(--hu)) 'Anton', sans-serif; color: #f6eee9; -webkit-text-stroke-width: 0; text-shadow: 0 0 22px rgba(255, 61, 31, .6); line-height: 1.1; }
+.hudEl[data-variant~=doom] .cMulti { margin-top: calc(6 * var(--hu)); padding: calc(2 * var(--hu)) calc(10 * var(--hu)); background: #c4120c; color: #fff !important; font: 400 calc(22 * var(--hu)) 'Anton', sans-serif !important; text-transform: uppercase; }
+.hudEl[data-variant~=doom] .cMulti > span, .hudEl[data-variant~=doom] .cMulti b { -webkit-text-stroke: 0; }
+.hudEl[data-variant~=doom] .cMulti > span { display: none; }
+.hudEl[data-variant~=doom] .cMulti::before { content: 'MULTI '; }
+.hudEl[data-variant~=doom] .cKills, .hudEl[data-variant~=doom] #scoreBar { display: none; }
+/* Spielerrahmen mit Level-Abzeichen am Portrait (Krypta) */
+.hudEl[data-variant~=badge] .ufPortrait { position: relative; }
+.hudEl[data-variant~=badge] .ufLvl { position: absolute; left: calc(50 * var(--hu)); top: calc(62 * var(--hu)); width: calc(26 * var(--hu)); height: calc(26 * var(--hu)); box-sizing: border-box;
+  border-radius: 50%; background: #1a1208; border: 2px solid #d9b44a; box-shadow: 0 0 0 1px #000; font: 800 calc(14 * var(--hu)) var(--h-font); color: #f2d58a;
+  display: grid; place-items: center; -webkit-text-stroke: 0; }
+#hudUnit { position: relative; }
+/* Mikro-Menü + Taschen (Krypta, gen5 m3_hud_extras) */
+#hudMicro { display: grid; grid-template-columns: repeat(6, calc(26 * var(--hu))); gap: calc(4 * var(--hu)); justify-content: end; }
+#hudMicro .mBag { grid-row: 1; width: calc(36 * var(--hu)); height: calc(36 * var(--hu)); box-sizing: border-box; border-radius: 6px;
+  background: radial-gradient(circle at 40% 35%, #6a4a2a, #2a1a10); border: 2px solid #8a7440; box-shadow: 0 0 0 1px #000; }
+#hudMicro .mBags { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: calc(4 * var(--hu)); margin-bottom: calc(10 * var(--hu)); }
+#hudMicro button { width: calc(26 * var(--hu)); height: calc(32 * var(--hu)); padding: 0; display: grid; place-items: center; cursor: pointer; box-sizing: border-box;
+  background: linear-gradient(to bottom, #3a2a1a, #14100c); border: 1px solid #8a7440; border-radius: 3px; box-shadow: 0 0 0 1px #000; }
+#hudMicro button:hover { border-color: #f2d58a; }
+#hudMicro svg { width: calc(16 * var(--hu)); height: calc(16 * var(--hu)); }

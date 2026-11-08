@@ -69,3 +69,17 @@ body[data-flavor=krypta] #fgOverlay .fx-corner.tl { left: 12px; top: 12px; }
 body[data-flavor=krypta] #fgOverlay .fx-corner.tr { right: 12px; top: 12px; transform: rotate(90deg); }
 body[data-flavor=krypta] #fgOverlay .fx-corner.br { right: 12px; bottom: 12px; transform: rotate(180deg); }
 body[data-flavor=krypta] #fgOverlay .fx-corner.bl { left: 12px; bottom: 12px; transform: rotate(270deg); }
+
+/* ---------- HUD (X3H, gen4.py hud3 + gen5 m3_hud_extras) ---------- */
+/* Steinpanel 400 × 54 mit Leiste (40 px), Gold-Flügel an beiden Enden */
+body[data-flavor=krypta] .hudEl[data-hud=hotbar] { --slot: calc(40 * var(--hu)); width: calc(400 * var(--hu)); height: calc(54 * var(--hu)); box-sizing: border-box;
+  justify-content: center; align-items: flex-start; padding-top: calc(5 * var(--hu)); }
+body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
+body[data-flavor=krypta] .hudEl[data-hud=hotbar]  #actionbar::before, body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::after { content: ''; position: absolute; top: calc(-24 * var(--hu));
+  width: calc(64 * var(--hu)); height: calc(74 * var(--hu)); background: url(./krypta/wing.svg) 0 0 / 100% 100%; pointer-events: none; }
+body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::before { right: calc(100% + 26 * var(--hu)); }
+body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::after { left: calc(100% + 26 * var(--hu)); transform: scaleX(-1); }
+body[data-flavor=krypta] .hudEl[data-hud=unitframe] #hudUnit { background: none; border: 0; box-shadow: none; }
+body[data-flavor=krypta] .hudEl[data-hud=killmeter] { --mw: 228; --mh: 6; }
+body[data-flavor=krypta] .hudEl[data-hud=xp] { --xw: 400; --xh: 5; }
+body[data-flavor=krypta] .hudEl[data-hud=cast] { --cw: 240; --ch: 14; }
