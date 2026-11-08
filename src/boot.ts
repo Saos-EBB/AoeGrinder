@@ -1,6 +1,9 @@
 // Startbildschirm: Desktop oder Handy. Erst danach lädt das Spiel, damit Layout und Steuerung von Anfang an passen.
 
 import { device, detectedMobile, goFullscreen, updateRotation } from './device';
+import { translateDom } from './i18n';
+
+translateDom();   // statisches HTML in index.html, vor allem anderen
 
 const box = document.getElementById('deviceModal')!;
 const pick = async (mobile: boolean) => {

@@ -6,6 +6,7 @@ import { askConfirm } from './confirm';
 import { NUM_FONTS, numFontFamily } from './numFonts';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
+import { t, lang, LANGS, setLang, Lang } from '../i18n';
 
 let tab = 'interface';
 function showTab(id) {
@@ -115,7 +116,17 @@ function buildInterface() {
     }),
     button('Layout zurücksetzen', 'smallBtn', () => $('hudEditReset').click()),
   );
+  const langSel = document.createElement('select');
+  langSel.className = 'setSelect';
+  for (const [v, name] of LANGS) langSel.add(new Option(name, v));
+  langSel.value = lang;
+  langSel.addEventListener('change', async () => {
+    if (!await askConfirm(t('settings.lang'), t('settings.langNote'), LANGS.find(([v]) => v === langSel.value)![1])) { langSel.value = lang; return; }
+    setLang(langSel.value as Lang);
+  });
   ui.append(
+    h2(t('settings.lang')),
+    row(t('settings.lang'), langSel),
     h2('Eigene UI'),
     profileRows(),
     h2('HUD'),

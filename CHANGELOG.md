@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-08
+
+- feat(i18n): Sprache Deutsch/English in Einstellungen → Interface (Standard Deutsch, gespeichert in `frostgrind.lang`, Umschalten lädt die Seite neu); Grundgerüst `src/i18n` mit `t()`; Spell-Icons hängen jetzt an der Spell-ID statt am Namen
+
 ## 2026-11-07
 
 - fix(ui): Hauptmenü: linke Box breiter, höher und weiter oben, damit der Figuren-Text ohne Scrollen reinpasst (auch bei 1366 × 768); leere Zeile „—“ unter dem Untertitel entfernt
