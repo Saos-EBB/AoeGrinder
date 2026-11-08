@@ -6,9 +6,10 @@
 import { state } from './state';
 import { SPELL_ACTIONS } from './config';
 import { activeModIds } from './modifiers';
+import { t } from './i18n';
 
 export type CastMode = 'instant' | 'release' | 'click';
-export const MODE_NAMES: Record<CastMode, string> = { instant: 'Sofort', release: 'Bei Loslassen', click: 'Klicken' };
+export const MODE_NAMES: Record<CastMode, string> = { instant: t('cast.mode.instant'), release: t('cast.mode.release'), click: t('cast.mode.click') };
 const STORE = 'frostgrind.hotbar';
 const N = SPELL_ACTIONS.length;
 

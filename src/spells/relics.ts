@@ -73,7 +73,7 @@ export const frostbreath = {
 export const froststrike = {
   name: t('spell.froststrike.name'), relic: true, desc: t('spell.froststrike.desc'), ranks: ['dmg', 'mana'], tags: ['Frost', 'Kette'], cls: 'frost',
   mana: 200, cd: 45000, dmg: 60, root: 4000, jumpRange: 10, range: 30,
-  canCast: () => nearestMob(froststrike.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestMob(froststrike.range) ? null : t('msg.noTarget'),
   effect(c) {
     const first = nearestMob(froststrike.range);
     if (!first) return;

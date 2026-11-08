@@ -29,7 +29,7 @@ export const iceblock = {
   mana: 0, cd: ICEBLOCK.cd,
   press() {
     if (block) return endIceBlock();
-    if (cdEnd('iceblock') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+    if (cdEnd('iceblock') > state.now) return showError(t('msg.notReady'));
     startCd('iceblock');
     noteCastStart('iceblock');
     stopChannel(true); stopDrink();

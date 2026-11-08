@@ -16,6 +16,7 @@ import { showError, refreshKeyLabels } from './ui/hud';
 import { pressSpell } from './input';
 import { closeBinds, renderBinds } from './ui/menus';
 import { touch, updateTouch } from './mobile';
+import { t } from './i18n';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -26,22 +27,22 @@ export const pad = {
 
 // Aktion -> Button-Index im Standard-Mapping
 export const PAD_ACTIONS = [
-  { id: 'jump',      label: 'Springen',            btn: 0 },
-  { id: 'dodge',     label: 'Ausweichen',          btn: 6 },   // L2; B (○) ist Cone of Cold und Abbruch
-  { id: 'coc',       label: 'Cone of Cold',        btn: 1 },
-  { id: 'ae',        label: 'Arcane Explosion',    btn: 2 },
-  { id: 'nova',      label: 'Frost Nova',          btn: 3 },
-  { id: 'blink',     label: 'Blink',               btn: 4 },
-  { id: 'bliz',      label: 'Blizzard',            btn: 5 },
-  { id: 'charWin',   label: 'Charakterfenster',    btn: 8 },
-  { id: 'menu',      label: 'Pause und Belegung',  btn: 9 },
-  { id: 'autorun',   label: 'Autorun',             btn: 10 },
-  { id: 'camBehind', label: 'Kamera hinter Figur', btn: 11 },
-  { id: 'zoomIn',    label: 'Zoom rein',           btn: 12 },
-  { id: 'zoomOut',   label: 'Zoom raus',           btn: 13 },
-  { id: 'drink',     label: 'Trinken',             btn: 14 },
-  { id: 'slot7',     label: 'Slot 7',              btn: 7 },
-  { id: 'slot8',     label: 'Slot 8',              btn: 15 },
+  { id: 'jump',      label: t('bind.jump'),            btn: 0 },
+  { id: 'dodge',     label: t('bind.dodge'),          btn: 6 },   // L2; B (○) ist Cone of Cold und Abbruch
+  { id: 'coc',       label: t('bind.coc'),        btn: 1 },
+  { id: 'ae',        label: t('bind.ae'),    btn: 2 },
+  { id: 'nova',      label: t('bind.nova'),          btn: 3 },
+  { id: 'blink',     label: t('bind.blink'),               btn: 4 },
+  { id: 'bliz',      label: t('bind.bliz'),            btn: 5 },
+  { id: 'charWin',   label: t('bind.charWin'),    btn: 8 },
+  { id: 'menu',      label: t('bind.menu'),  btn: 9 },
+  { id: 'autorun',   label: t('bind.autorun'),             btn: 10 },
+  { id: 'camBehind', label: t('bind.camBehind'), btn: 11 },
+  { id: 'zoomIn',    label: t('bind.zoomIn'),           btn: 12 },
+  { id: 'zoomOut',   label: t('bind.zoomOut'),           btn: 13 },
+  { id: 'drink',     label: t('bind.drink'),             btn: 14 },
+  { id: 'slot7',     label: t('bind.slot7'),              btn: 7 },
+  { id: 'slot8',     label: t('bind.slot8'),              btn: 15 },
 ];
 const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
 const PAD_STORE = 'frostgrind.padbinds.v1';
@@ -259,9 +260,9 @@ export function updatePadCamera(dt) {
 }
 
 addEventListener('gamepadconnected', (e: any) => {
-  showError(e.gamepad.mapping === 'standard' ? 'Pad verbunden' : 'Pad ohne Standard-Mapping, keine Steuerung möglich');
+  showError(t(e.gamepad.mapping === 'standard' ? 'pad.connected' : 'pad.noMapping'));
 });
 addEventListener('gamepaddisconnected', () => {
-  showError('Pad getrennt');
+  showError(t('pad.disconnected'));
   state.autorun = false;
 });

@@ -51,7 +51,7 @@ export const chain = {
     { id: 'fork', name: t('spell.chain.runes.fork.name'), desc: t('spell.chain.runes.fork.desc') },
     { id: 'more', name: t('spell.chain.runes.more.name'), desc: t('spell.chain.runes.more.desc') },
   ],
-  canCast: () => nearestMob(chain.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestMob(chain.range) ? null : t('msg.noTarget'),
   instantCast: () => (state.keeper ?? 0) > 0,
   effect(c) {
     const first = nearestMob(chain.range);

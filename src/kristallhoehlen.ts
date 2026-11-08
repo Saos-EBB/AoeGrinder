@@ -8,6 +8,7 @@ import { clamp, rand } from './util';
 import { state, player } from './state';
 import { cone, cyl, ball, scatter } from './props';
 import { toonMat } from './toon';
+import { t } from './i18n';
 
 const KH = {
   shade: 0x7a5ac8,
@@ -145,7 +146,7 @@ export function reflectShot(from, mob) {
 }
 
 export const kristallhoehlen = {
-  name: 'Kristallhöhlen',
+  name: t('zone.kristall.name'),
   toon: true,
   env: {   // PH: im Dunkel-Modus übersteuert dunkel.ts Himmel und Nebel
     fog: 0x120a24, fogNear: 25, fogFar: 110,

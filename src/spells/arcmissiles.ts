@@ -43,7 +43,7 @@ export const arcmissiles = {
     { id: 'fast', name: t('spell.arcmissiles.runes.fast.name'), desc: t('spell.arcmissiles.runes.fast.desc') },
     { id: 'charge', name: t('spell.arcmissiles.runes.charge.name'), desc: t('spell.arcmissiles.runes.charge.desc') },
   ],
-  canCast: () => nearestTarget(arcmissiles.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(arcmissiles.range) ? null : t('msg.noTarget'),
   effect(c) {
     const ch = startChannel(c, player.pos, hasRune('arcmissiles', 'fast') ? FAST_MS : arcmissiles.channel);
     ch.target = nearestTarget(arcmissiles.range);

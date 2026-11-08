@@ -1,4 +1,5 @@
 // Rückfrage im Spiel-Look statt der Browser-Abfrage: askConfirm(...) → Promise<boolean>. Enter bestätigt nicht, Esc bricht ab.
+import { t } from '../i18n';
 
 const modal = document.createElement('div');
 modal.className = 'modal';
@@ -7,7 +8,7 @@ modal.innerHTML = `<div class="frame panel" role="alertdialog" aria-labelledby="
   <h1 class="title" id="askTitle" style="font-size:22px"></h1>
   <p id="askText"></p>
   <div class="row2">
-    <button class="smallBtn" id="askNo" style="width:auto;padding:6px 14px">Abbrechen</button>
+    <button class="smallBtn" id="askNo" style="width:auto;padding:6px 14px">${t('ui.cancel')}</button>
     <button class="smallBtn" id="askYes" style="width:auto;padding:6px 14px"></button>
   </div>
 </div>`;
@@ -24,7 +25,7 @@ const onKey = e => { if (e.code === 'Escape') { e.stopImmediatePropagation(); cl
 el('askNo').addEventListener('click', () => close(false));
 el('askYes').addEventListener('click', () => close(true));
 
-export function askConfirm(title, text, yes = 'Ja') {
+export function askConfirm(title, text, yes = t('ui.yes')) {
   if (done) close(false);
   el('askTitle').textContent = title;
   el('askText').textContent = text;

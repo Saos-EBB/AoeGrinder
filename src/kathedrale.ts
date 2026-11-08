@@ -11,15 +11,16 @@ import { box, cyl, cone } from './props';
 import { toonMat } from './toon';
 import { recolorGround } from './world';
 import { shakeCamera } from './camera';
+import { t } from './i18n';
 
 const R = 72 * WORLD_K;                      // Innenradius der Außenwand
 const KA = {
   killsPerFloor: 60,
   // Pro Etage: Boden (zwei Fliesen, Fugen), Tönung aller Props, Glut der Risse (0 = aus), Funken-Farbe und -Menge, Spawn-Tabelle (erster = Start-Mob)
   floors: [
-    { name: 'Etage 1: Kirchenschiff', tileA: 0x6a6e7a, tileB: 0x585c68, seam: 0x3a3e4a, tint: [0.85, 0.92, 1.1], crack: 0, spark: [0.5, 0.55, 0.65], sparkK: 0.35, mobs: ['skelett', 'gefallener', 'daemon'] },
-    { name: 'Etage 2: Gruft der Glut', tileA: 0x5a4844, tileB: 0x4a3a38, seam: 0x2a1c1a, tint: [1.1, 0.78, 0.66], crack: 1.4, spark: [2.2, 0.9, 0.25], sparkK: 0.7, mobs: ['gefallener', 'daemon', 'skelett'] },
-    { name: 'Etage 3: Höllenschlund', tileA: 0x3a1a18, tileB: 0x2a1010, seam: 0x120606, tint: [0.95, 0.42, 0.36], crack: 3.0, spark: [3.0, 1.2, 0.3], sparkK: 1, mobs: ['daemon', 'gefallener', 'skelett'] },
+    { name: t('floor.1'), tileA: 0x6a6e7a, tileB: 0x585c68, seam: 0x3a3e4a, tint: [0.85, 0.92, 1.1], crack: 0, spark: [0.5, 0.55, 0.65], sparkK: 0.35, mobs: ['skelett', 'gefallener', 'daemon'] },
+    { name: t('floor.2'), tileA: 0x5a4844, tileB: 0x4a3a38, seam: 0x2a1c1a, tint: [1.1, 0.78, 0.66], crack: 1.4, spark: [2.2, 0.9, 0.25], sparkK: 0.7, mobs: ['gefallener', 'daemon', 'skelett'] },
+    { name: t('floor.3'), tileA: 0x3a1a18, tileB: 0x2a1010, seam: 0x120606, tint: [0.95, 0.42, 0.36], crack: 3.0, spark: [3.0, 1.2, 0.3], sparkK: 1, mobs: ['daemon', 'gefallener', 'skelett'] },
   ],
   sparks: { n: 420, box: 60, height: 12, size: 0.12, maxPx: 6, seeR: 30 },
 };
@@ -181,11 +182,11 @@ function applyFloor(i, announce) {
   if (seams) (seams.material as THREE.MeshBasicMaterial).color.setHex(f.seam);
   if (cracks) { cracks.visible = f.crack > 0; (cracks.material as THREE.MeshBasicMaterial).color.setRGB(f.crack, f.crack * 0.38, f.crack * 0.08); }
   if (sparks) { sparks.uniforms.uColor.value.setRGB(f.spark[0], f.spark[1], f.spark[2]); sparks.uniforms.uK.value = f.sparkK; }
-  if (announce) { state.newMob = { text: `Treppe hinab · ${f.name}`, at: state.now }; shakeCamera(0.5); }
+  if (announce) { state.newMob = { text: t('msg.stairs', { name: f.name }), at: state.now }; shakeCamera(0.5); }
 }
 
 export const kathedrale: any = {
-  name: 'Kathedrale der Hölle',
+  name: t('zone.kathedrale.name'),
   toon: true,
   env: {   // PH: im Dunkel-Modus übersteuert dunkel.ts Himmel und Nebel
     fog: 0x10121a, fogNear: 30, fogFar: 130,

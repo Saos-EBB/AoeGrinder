@@ -214,12 +214,12 @@
 
 <!-- HUD-Elemente, Lage und Variante aus ui/hud/layout.ts, Inhalt aus ui/hud.ts und ui/hud/elements.ts -->
 <div id="hudTimer" class="hPanel"><b id="iTime">0:00</b><span id="hSplit">–</span></div>
-<div id="hudRun" class="hPanel"><span>LVL <b id="lvl">1</b></span><span><b id="scorePts">0</b> Pkt</span><span>Glück <b id="luck">0</b></span><span id="hWaveBox" hidden>Welle <b id="hWave">0</b></span></div>
+<div id="hudRun" class="hPanel"><span><span data-i18n="hud.lvl">LVL</span> <b id="lvl">1</b></span><span><b id="scorePts">0</b> <span data-i18n="hud.pts">Pkt</span></span><span><span data-i18n="hud.luck">Glück</span> <b id="luck">0</b></span><span id="hWaveBox" hidden><span data-i18n="hud.wave">Welle</span> <b id="hWave">0</b></span></div>
 <div id="hudXp"><div id="xpbar" class="hBar"><div class="fill" id="xpFill"></div><span id="xpText"></span></div></div>
 <div id="hudCombo"><i class="cLabel">Combo</i><b id="scoreCombo">–</b><div id="scoreBar"><div></div></div>
-  <span class="cMulti">Multi-Kill <b id="hMulti">–</b></span><span class="cKills"><b id="iKills">0</b> Kills</span></div>
+  <span class="cMulti"><span data-i18n="hud.multi">Multi-Kill</span> <b id="hMulti">–</b></span><span class="cKills"><b id="iKills">0</b> <span data-i18n="hud.kills">Kills</span></span></div>
 <div id="hudKill"><div id="meter" class="hBar" hidden><div class="fill" id="meterFill"></div><span id="meterText"></span></div></div>
-<div id="hudTracker"><b class="trTitle"></b><span class="trMobs">Mobs in der Nähe <b id="iCombat">0</b></span></div>
+<div id="hudTracker"><b class="trTitle"></b><span class="trMobs"><span data-i18n="hud.nearby">Mobs in der Nähe</span> <b id="iCombat">0</b></span></div>
 <div id="hudSplits" class="hPanel"></div>
 <div id="hudCompass"></div>
 <div id="hudUnit" class="hPanel"><div class="ufPortrait"></div><div class="ufMain"><div class="ufHead"><b class="ufName"></b><b class="ufLvl"></b></div>
@@ -227,7 +227,7 @@
 <div id="hudHp"><div class="bar hBar"><div class="fill" id="hpFill"></div><div id="hpCut"></div><span id="hpText"><b class="cur"></b><span class="max"></span></span></div></div>
 <div id="hudMana">
   <div class="bar hBar"><div class="fill" id="manaFill"></div><span id="manaText"><b class="cur"></b><span class="max"></span></span></div>
-  <div id="fsr" title="5-Sekunden-Regel"><div id="fsrFill"></div></div>
+  <div id="fsr" title="5-Sekunden-Regel" data-i18n-title="hud.fsr"><div id="fsrFill"></div></div>
 </div>
 <div id="hudCast">
   <div id="castbar"><div id="castFill"></div><span id="castText"></span></div>
@@ -238,59 +238,59 @@
 <div id="hudMap"><span id="hZone" class="mapLabel"></span></div>
 <div id="actionbar"></div>
 <div id="hudEditBar" class="frame" hidden>
-  <span class="hint">Ziehen = verschieben (Shift = frei) · Mausrad = Größe · H = ein/aus · Rechtsklick = Element zurück</span>
-  <button class="smallBtn" id="hudEditReset">Preset zurücksetzen</button>
-  <button class="btn" id="hudEditDone">Fertig</button>
+  <span class="hint" data-i18n="hudEdit.hint">Ziehen = verschieben (Shift = frei) · Mausrad = Größe · H = ein/aus · Rechtsklick = Element zurück</span>
+  <button class="smallBtn" id="hudEditReset" data-i18n="hudEdit.reset">Preset zurücksetzen</button>
+  <button class="btn" id="hudEditDone" data-i18n="hudEdit.done">Fertig</button>
 </div>
 <div id="err"></div>
 <div id="perf" hidden></div>
 <div id="overlay"></div>
 
 <div id="startModal" class="modal show">
-  <div id="menuTop"><span class="menuGame title">Frost Grind</span><span class="menuPick">Wähle deine Figur</span><span id="menuDust"></span></div>
+  <div id="menuTop"><span class="menuGame title">Frost Grind</span><span class="menuPick" data-i18n="menu.pick">Wähle deine Figur</span><span id="menuDust"></span></div>
   <div id="menuLeft" class="gPanel">
     <div class="title" id="menuTitle"></div>
     <div id="menuRole"></div>
     <div id="menuStats"></div>
     <div id="menuRules"></div>
-    <div class="menuHead">Start-Kit</div>
+    <div class="menuHead" data-i18n="menu.kit">Start-Kit</div>
     <div id="menuKit" class="kitRow" title=""></div>
     <p id="menuInfo"></p>
   </div>
   <div id="menuRight" class="gPanel">
-    <div class="menuBoardHead"><span class="title">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time">Zeit</button> · <button type="button" data-b="score">Punkte</button></span></div>
+    <div class="menuBoardHead"><span class="title" data-i18n="menu.board">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time" data-i18n="menu.boardTime">Zeit</button> · <button type="button" data-b="score" data-i18n="menu.boardScore">Punkte</button></span></div>
     <div id="menuTimeBoard"></div>
     <div id="menuBoard"></div>
     <div id="menuBoardBtn"></div>
-    <div class="menuHead">Mods</div><div id="menuMods" class="chipRow"></div>
-    <div class="menuHead">Mobs</div><div id="menuMobs" class="chipRow"></div>
-    <div class="menuHead">Karten</div><div id="menuCards" class="chipRow"></div>
+    <div class="menuHead" data-i18n="menu.mods">Mods</div><div id="menuMods" class="chipRow"></div>
+    <div class="menuHead" data-i18n="menu.mobs">Mobs</div><div id="menuMobs" class="chipRow"></div>
+    <div class="menuHead" data-i18n="menu.cards">Karten</div><div id="menuCards" class="chipRow"></div>
   </div>
-  <div id="menuWeaponBox" class="gPanel" hidden><div class="menuHead">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuWeaponBox" class="gPanel" hidden><div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
   <div id="menuActions">
-    <button class="smallBtn" id="menuWeaponsBtn">Waffen</button>
-    <button class="smallBtn" id="menuShop">Shop</button>
-    <button class="smallBtn" id="menuSettings">Einstellungen</button>
-    <button class="smallBtn" id="menuBinds">Keybinds</button>
-    <button class="smallBtn" id="menuEdit">UI bearbeiten</button>
+    <button class="smallBtn" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button>
+    <button class="smallBtn" id="menuShop" data-i18n="menu.shop">Shop</button>
+    <button class="smallBtn" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
+    <button class="smallBtn" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
+    <button class="smallBtn" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
   </div>
   <div id="menuBottom">
     <span class="menuKey">A / LB</span>
     <div id="menuChars"></div>
     <span class="menuKey">D / RB</span>
-    <button class="btn" id="startBtn">Run starten</button>
+    <button class="btn" id="startBtn" data-i18n="menu.start">Run starten</button>
   </div>
 </div>
 
 <div id="pauseModal" class="modal">
   <div class="frame panel pauseBox">
     <h1 class="title" style="font-size:28px">Pause</h1>
-    <button class="btn" id="pauseResume">Weiter</button>
-    <button class="smallBtn" id="pauseChar">Charakterfenster</button>
-    <button class="smallBtn" id="pauseSettings">Einstellungen</button>
-    <button class="smallBtn" id="pauseEdit">UI bearbeiten</button>
-    <button class="smallBtn" id="pauseBinds">Keybinds</button>
-    <button class="smallBtn" id="pauseGiveUp">Aufgeben</button>
+    <button class="btn" id="pauseResume" data-i18n="pause.resume">Weiter</button>
+    <button class="smallBtn" id="pauseChar" data-i18n="pause.char">Charakterfenster</button>
+    <button class="smallBtn" id="pauseSettings" data-i18n="menu.settings">Einstellungen</button>
+    <button class="smallBtn" id="pauseEdit" data-i18n="menu.editUi">UI bearbeiten</button>
+    <button class="smallBtn" id="pauseBinds" data-i18n="menu.binds">Keybinds</button>
+    <button class="smallBtn" id="pauseGiveUp" data-i18n="pause.giveUp">Aufgeben</button>
     <div class="title" style="font-size:14px;margin-top:8px">Deine Spells</div>
     <div id="pauseKit" class="kitRow"></div>
   </div>
@@ -298,32 +298,32 @@
 
 <div id="settingsModal" class="modal">
   <div class="frame panel" id="settingsBox">
-    <div class="setHead"><h1 class="title">Einstellungen</h1><span>Esc schließt · Spiel pausiert</span></div>
+    <div class="setHead"><h1 class="title" data-i18n="menu.settings">Einstellungen</h1><span data-i18n="settings.head">Esc schließt · Spiel pausiert</span></div>
     <div class="setMain">
-      <nav id="setTabs" aria-label="Einstellungen">
-        <button data-tab="grafik">Grafik</button>
-        <button data-tab="audio">Audio</button>
-        <button data-tab="steuerung">Steuerung &amp; Tasten</button>
-        <button data-tab="interface">Interface</button>
-        <button data-tab="gameplay">Gameplay</button>
+      <nav id="setTabs" aria-label="Einstellungen" data-i18n-aria="menu.settings">
+        <button data-tab="grafik" data-i18n="settings.tab.grafik">Grafik</button>
+        <button data-tab="audio" data-i18n="settings.tab.audio">Audio</button>
+        <button data-tab="steuerung" data-i18n="settings.tab.steuerung">Steuerung &amp; Tasten</button>
+        <button data-tab="interface" data-i18n="settings.tab.interface">Interface</button>
+        <button data-tab="gameplay" data-i18n="settings.tab.gameplay">Gameplay</button>
       </nav>
       <div class="setBody">
-        <section data-tab="grafik" id="setGrafik"><h2>Bild</h2></section>
-        <section data-tab="audio"><h2>Lautstärke</h2><div id="settingsVol"></div></section>
-        <section data-tab="steuerung" id="setSteuerung"><h2>Kamera</h2>
+        <section data-tab="grafik" id="setGrafik"><h2 data-i18n="settings.image">Bild</h2></section>
+        <section data-tab="audio"><h2 data-i18n="settings.volume">Lautstärke</h2><div id="settingsVol"></div></section>
+        <section data-tab="steuerung" id="setSteuerung"><h2 data-i18n="settings.camera">Kamera</h2>
           <button class="bindBtn" id="setAutoCam"></button>
-          <h2>Tasten</h2><button class="bindBtn" id="setBinds">Tastenbelegung öffnen</button>
+          <h2 data-i18n="settings.keys">Tasten</h2><button class="bindBtn" id="setBinds" data-i18n="settings.openBinds">Tastenbelegung öffnen</button>
         </section>
         <section data-tab="interface" id="setInterface"></section>
-        <section data-tab="gameplay"><h2>Gameplay</h2><p class="setNote">Noch keine Einstellungen.</p>
+        <section data-tab="gameplay"><h2 data-i18n="settings.tab.gameplay">Gameplay</h2><p class="setNote" data-i18n="settings.none">Noch keine Einstellungen.</p>
     <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
       <summary class="title" style="cursor:pointer">Credits</summary>
-      <p style="margin:6px 0 0">Spell-Icons: eigene SVGs aus dem Spell-Viewer.</p>
+      <p style="margin:6px 0 0" data-i18n="settings.credits">Spell-Icons: eigene SVGs aus dem Spell-Viewer.</p>
     </details>
         </section>
       </div>
     </div>
-    <div class="setFoot"><button class="btn" id="settingsClose">Schließen</button></div>
+    <div class="setFoot"><button class="btn" id="settingsClose" data-i18n="ui.close">Schließen</button></div>
   </div>
 </div>
 
@@ -356,7 +356,7 @@
 </div>
 
 <div id="cardModal" class="modal">
-  <h1 class="title">Stufe <span id="cardLvl"></span></h1>
+  <h1 class="title"><span data-i18n="card.level">Stufe</span> <span id="cardLvl"></span></h1>
   <div id="cardHint"></div>
   <div class="cards" id="cards"></div>
 </div>
@@ -368,63 +368,63 @@
     <p id="deathStats" hidden></p>
     <div id="runResult"></div>
     <div class="endBtns">
-      <button class="btn" id="deathShopBtn" hidden>Zum Shop</button>
-      <button class="smallBtn" id="restartBtn">Nochmal</button>
-      <button class="smallBtn" id="deathMenuBtn">Hauptmenü</button>
+      <button class="btn" id="deathShopBtn" hidden data-i18n="end.toShop">Zum Shop</button>
+      <button class="smallBtn" id="restartBtn" data-i18n="end.again">Nochmal</button>
+      <button class="smallBtn" id="deathMenuBtn" data-i18n="end.menu">Hauptmenü</button>
     </div>
   </div>
 </div>
 
 <div id="bindModal" class="modal">
   <div class="frame panel">
-    <h1 class="title" style="font-size:26px">Tastenbelegung</h1>
-    <p style="margin:6px 0 0;font-size:13px">Feld anklicken, dann neue Taste drücken. Esc bricht ab.</p>
+    <h1 class="title" style="font-size:26px" data-i18n="binds.title">Tastenbelegung</h1>
+    <p style="margin:6px 0 0;font-size:13px" data-i18n="binds.hint">Feld anklicken, dann neue Taste drücken. Esc bricht ab.</p>
     <div id="help" style="font-size:12px;margin-top:8px"></div>
     <div id="bindList"></div>
     <div class="row2">
-      <button class="smallBtn" id="bindsReset" style="width:auto;padding:6px 14px">Standard</button>
-      <button class="smallBtn" id="bindsClose" style="width:auto;padding:6px 14px">Schließen</button>
+      <button class="smallBtn" id="bindsReset" style="width:auto;padding:6px 14px" data-i18n="binds.reset">Standard</button>
+      <button class="smallBtn" id="bindsClose" style="width:auto;padding:6px 14px" data-i18n="ui.close">Schließen</button>
     </div>
   </div>
 </div>
 
 <div id="shopModal" class="modal" style="z-index:4">
   <div class="frame panel" id="shopBox">
-    <div class="shopHead"><h1 class="title">Magische Kiste</h1><span id="shopInfo"></span></div>
+    <div class="shopHead"><h1 class="title" data-i18n="res.chest">Gruftkiste</h1><span id="shopInfo"></span></div>
     <div id="shopCols"></div>
     <div id="shopList"></div>
-    <button class="btn" id="shopClose">Weiter zum Hauptmenü</button>
+    <button class="btn" id="shopClose" data-i18n="shop.close">Weiter zum Hauptmenü</button>
   </div>
 </div>
 
 <div id="charModal" class="modal" style="z-index:4">
   <div class="frame panel" id="charBox">
-    <div class="charHead"><h1 class="title">Charakter</h1><span>X schließt · pausiert</span></div>
+    <div class="charHead"><h1 class="title" data-i18n="char.title">Charakter</h1><span data-i18n="char.head">X schließt · pausiert</span></div>
     <div id="charTabs"></div>
     <div id="charBody"></div>
-    <button class="smallBtn" id="charClose">Schließen (X)</button>
+    <button class="smallBtn" id="charClose" data-i18n="char.close">Schließen (X)</button>
   </div>
 </div>
 
 <div id="resetModal" class="modal">
   <div class="frame panel" role="alertdialog" aria-labelledby="resetTitle">
-    <h1 class="title" id="resetTitle" style="font-size:22px">Belegung zurücksetzen?</h1>
-    <p>Alle eigenen Tasten für Tastatur und Pad gehen verloren.</p>
+    <h1 class="title" id="resetTitle" style="font-size:22px" data-i18n="binds.resetTitle">Belegung zurücksetzen?</h1>
+    <p data-i18n="binds.resetText">Alle eigenen Tasten für Tastatur und Pad gehen verloren.</p>
     <div class="row2">
-      <button class="smallBtn" id="resetNo" style="width:auto;padding:6px 14px">Abbrechen</button>
-      <button class="smallBtn" id="resetYes" style="width:auto;padding:6px 14px">Zurücksetzen</button>
+      <button class="smallBtn" id="resetNo" style="width:auto;padding:6px 14px" data-i18n="ui.cancel">Abbrechen</button>
+      <button class="smallBtn" id="resetYes" style="width:auto;padding:6px 14px" data-i18n="binds.resetYes">Zurücksetzen</button>
     </div>
   </div>
 </div>
 
 <div id="deviceModal" class="modal show" style="z-index:20;background:#0d0b08">
   <h1 class="title">Frost Grind</h1>
-  <p style="margin:0">Womit spielst du?</p>
+  <p style="margin:0" data-i18n="device.ask">Womit spielst du?</p>
   <div class="row2">
     <button class="btn" id="pickDesktop">Desktop</button>
-    <button class="btn" id="pickMobile">Handy</button>
+    <button class="btn" id="pickMobile" data-i18n="device.mobile">Handy</button>
   </div>
-  <p style="margin:0;font-size:13px;color:#c9b88a">Handy: Vollbild, quer, Touch-Steuerung</p>
+  <p style="margin:0;font-size:13px;color:#c9b88a" data-i18n="device.mobileNote">Handy: Vollbild, quer, Touch-Steuerung</p>
 </div>
 
 <script type="module" src="/src/boot.ts"></script>

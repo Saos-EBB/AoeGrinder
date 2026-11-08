@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(i18n): Alle Menüs, HUD, Tooltips, Kartentexte, Ladetipps, schwebende Texte, Boss-Leisten, Rangliste, Shop, Inventar und Spielstand-Code auf Englisch umschaltbar; Zahlen mit Komma bzw. Punkt je Sprache; Pad-Belegung zeigt die Slots (Attacke 1 …) statt alter Spell-Namen; Prüfskript `npm run check:i18n`
 - feat(i18n)!: Neue Namen laut `docs/namen-i18n.md` für Figuren, Spells, Runen, Talente, Relikte, Karten, Ressourcen, Affixe, legendäre Waffen und Bosse (z. B. Feuerball → Glutschädel, Blink → Huschen, Strichkrieger → Kohlenhüne); alle Spell-, Karten-, Modus-, Waffen-, Mob- und Boss-Texte kommen jetzt aus `src/i18n` und gibt es auf Englisch
 - feat(i18n): Sprache Deutsch/English in Einstellungen → Interface (Standard Deutsch, gespeichert in `frostgrind.lang`, Umschalten lädt die Seite neu); Grundgerüst `src/i18n` mit `t()`; Spell-Icons hängen jetzt an der Spell-ID statt am Namen
 

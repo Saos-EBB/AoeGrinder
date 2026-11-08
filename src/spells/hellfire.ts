@@ -16,7 +16,7 @@ export const hellfire = {
     { id: 'walk', name: t('spell.hellfire.runes.walk.name'), desc: t('spell.hellfire.runes.walk.desc') },
     { id: 'grow', name: t('spell.hellfire.runes.grow.name'), desc: t('spell.hellfire.runes.grow.desc') },
   ],
-  canCast: () => player.hp <= maxHp() * LIFE_PER_TICK ? 'Nicht genug Leben' : null,
+  canCast: () => player.hp <= maxHp() * LIFE_PER_TICK ? t('msg.noLife') : null,
   effect(c) {
     const ch = startChannel(c, player.pos, hellfire.channel);
     ch.mobile = hasRune('hellfire', 'walk');

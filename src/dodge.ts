@@ -12,6 +12,7 @@ import { hitstop } from './fx/impact';
 import { combatText } from './ui/hud';
 import { activeModIds } from './modifiers';
 import { mods } from './config';
+import { t } from './i18n';
 
 // Alle Zahlen PH
 export const DG = {
@@ -119,7 +120,7 @@ export function perfectDodge() {
   hitstop(DG.perfect.hitstopMs);
   flash.style.transition = 'none'; flash.style.opacity = '1';
   requestAnimationFrame(() => { flash.style.transition = `opacity ${DG.perfect.flashMs}ms ease-out`; flash.style.opacity = '0'; });
-  combatText(player.pos, 'Perfekt', 'info', 2.8);
+  combatText(player.pos, t('res.perfectDodge'), 'info', 2.8);
   const P = DG.perfect;
   state.pdBuff = { stacks: Math.min(P.maxStacks, pdStacks() + 1), until: state.now + P.buffMs };
 }

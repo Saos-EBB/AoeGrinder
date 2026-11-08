@@ -6,6 +6,7 @@ import { die } from '../player';
 import { run, tickScore } from '../score';
 import { put } from './hud';
 import { SCORE_COMBO_WINDOW, SCORE_MULTI_BANNER, LEVEL_NEW_MOB_BANNER } from '../config';
+import { t, locale } from '../i18n';
 
 document.head.insertAdjacentHTML('beforeend', `<style>
   #scoreHud { position: fixed; top: 78px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; text-align: center; text-shadow: 0 1px 3px #000; }
@@ -20,18 +21,18 @@ function frame() {
     tickScore();
     const limit = timeLimit();
     if (limit && state.now >= limit && !player.dead) {
-      player.lastHitBy = 'Zeitlimit';
+      player.lastHitBy = t('mod.time.name');
       die();
     }
   }
-  put(pts, run.killPoints.toLocaleString('de-DE'));
+  put(pts, run.killPoints.toLocaleString(locale));
   const left = 1 - (state.now - run.lastKill) / SCORE_COMBO_WINDOW, live = run.combo > 0 && left > 0;
   put(combo, live ? String(run.combo) : '0');
   combo.classList.toggle('idle', !live);
   bar.style.visibility = live ? 'visible' : 'hidden';
   (bar.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, left)})`;
   const showMulti = run.lastMulti >= SCORE_MULTI_BANNER && state.now - run.multiAt < 1500;   // PH: Anzeigedauer
-  if (showMulti) multi.textContent = `MULTI-KILL ×${run.lastMulti}`;
+  if (showMulti) multi.textContent = t('msg.multi', { n: run.lastMulti });
   multi.style.opacity = showMulti ? '1' : '0';
   const showNew = state.newMob && state.now - state.newMob.at < LEVEL_NEW_MOB_BANNER;
   if (showNew) newMob.textContent = state.newMob.text;

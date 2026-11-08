@@ -207,20 +207,20 @@ export function cast(action, point?) {
 export function castSpell(id, point?) {
   if (state.paused || player.dead) return;
   const s = SPELLS[id];
-  if (player.stunUntil > state.now && id !== 'blink') return showError('Du bist betäubt');
-  if (player.iceUntil > state.now && id !== 'iceblock') return showError('Du bist im Eisblock');
-  if (player.meltUntil > state.now) return showError('Du bist zerflossen');   // Seuchenmagier: Zerfließen
+  if (player.stunUntil > state.now && id !== 'blink') return showError(t('msg.youStunned'));
+  if (player.iceUntil > state.now && id !== 'iceblock') return showError(t('msg.inIceblock'));
+  if (player.meltUntil > state.now) return showError(t('msg.melted'));   // Seuchenmagier: Zerfließen
   if (dodgeRecovery()) return;                              // kurz nach dem Dodge kein Zauber
   if (s.press) return s.press(point);                     // Real Men, Eisblock, ?-Magier: eigene Kosten und Abklingzeit
   if (isGround(id) && !point && state.bossAim) point = state.bossAim.clone();   // Boss-Lock-on (boss.ts): Bodenzauber landen unter dem Boss
   if (isGround(id) && !point) return startTargeting(id);
   if (id === 'blink') player.stunUntil = 0;               // Blink löst Betäubung
-  if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd(id) > state.now) return showError(t('msg.notReady'));
   const cost = manaCost(id);
   const life = paysLife(id), freeOk = comboReady('freeMana');   // Dodge-Kombo Normal: nächster Spell ohne Mana
-  if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
-  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range) + (stat(id).range ?? 0)) return showError('Außer Reichweite');   // stat.range: Rang-Karte
-  if (id === 'drink' && !player.grounded) return showError('Du kannst das nicht im Sprung tun');
+  if (!freeOk && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? t('msg.noLife') : t('msg.noMana'));
+  if (isGround(id) && dist2d(player.pos, point) > (rune(id)?.range ?? s.range) + (stat(id).range ?? 0)) return showError(t('msg.outOfRange'));   // stat.range: Rang-Karte
+  if (id === 'drink' && !player.grounded) return showError(t('msg.notInAir'));
 
   const fail = s.canCast?.();
   if (fail) return showError(fail);
@@ -248,7 +248,7 @@ export function noteCastStart(id) { meterCast(SPELLS[id].tags, id); for (const f
 function release(id, point, opts: any = {}) {
   const s = SPELLS[id], cost = opts.free ? 0 : manaCost(id);
   const life = paysLife(id);
-  if (!opts.free && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? 'Nicht genug Leben' : 'Nicht genug Mana');
+  if (!opts.free && (life ? player.hp <= cost : player.mana < cost)) return showError(life ? t('msg.noLife') : t('msg.noMana'));
   if (life) player.hp -= cost; else spendMana(cost);
   startCd(id);
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
@@ -261,7 +261,7 @@ function release(id, point, opts: any = {}) {
 }
 
 // damagePlayer trägt diese Quellen ein, wenn der letzte Schaden ein Tick war
-const DOT_SOURCES = ['Gift', 'Lava', 'Überhitzt'];
+const DOT_SOURCES = [t('fx.poison'), t('cause.lava'), t('meter.Feuer.full')];   // Ursachen-Texte wie in player.ts
 
 // Zauber läuft: Bewegung bricht ab, Treffer schieben auf (Spec §7: maximal bis zur vollen Castzeit)
 function updateCast() {
@@ -360,7 +360,7 @@ function buildText() {
   const spells = owned.filter(id => !SPELLS[id].relic).map(id => rune(id) ? `${SPELLS[id].name} (${rune(id).name})` : SPELLS[id].name);
   const supports = SUPPORTS.filter(x => state.supports[x.id]).map(x => x.name);
   const relic = owned.find(id => SPELLS[id].relic);
-  return [spells.join(', '), supports.join(', '), relic && `Relikt: ${SPELLS[relic].name}`, (state.runWeapon || state.heroWeapon) && `Waffe: ${state.runWeapon || state.heroWeapon}`].filter(Boolean).join(' · ');
+  return [spells.join(', '), supports.join(', '), relic && `${t('cw.relic')}: ${SPELLS[relic].name}`, (state.runWeapon || state.heroWeapon) && `${t('cw.weapon')}: ${state.runWeapon || state.heroWeapon}`].filter(Boolean).join(' · ');
 }
 
 // recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.

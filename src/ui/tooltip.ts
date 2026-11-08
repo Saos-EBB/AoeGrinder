@@ -3,6 +3,7 @@
 // Erscheint nach TIP_DELAY, bleibt im Bild (klappt an den Rändern um). Shift zeigt Formeln, wenn es welche gibt.
 
 import { uiSettings } from './uiSettings';
+import { t } from '../i18n';
 
 export type TipData = {
   label?: string;                 // über der Karte, z. B. „SPELL (Taste 4)“
@@ -43,7 +44,7 @@ function card(d: TipData, ext: boolean, label?: string) {
     for (const r of d.rows ?? []) out.push(`<p class="tText">${r}</p>`);
     if (d.flavor) out.push(`<p class="tFlavor">${d.flavor}</p>`);
     for (const [l, r] of d.facts ?? []) out.push(pair(l, r, 'tFact'));
-    if (d.formulas) out.push(`<div class="tFormula">${d.formulas}</div>${pair('Shift = Formeln', '', 'tFact tShift')}`);
+    if (d.formulas) out.push(`<div class="tFormula">${d.formulas}</div>${pair(t('tip.shift'), '', 'tFact tShift')}`);
     if (d.footer) out.push(pair(d.footer[0], d.footer[1], 'tFoot'));
   }
   out.push('</div>');

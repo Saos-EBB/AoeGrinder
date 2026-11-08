@@ -5,7 +5,7 @@ import { $, rand, clamp, dist2d } from '../util';
 import { CFG, SPELLS, CARDS, SPELL_ACTIONS, LEVEL_MAX } from '../config';
 import { xpColor, xpNeeded, maxHp, maxMana, manaCost, spellCd } from '../formulas';
 import { camera, renderer } from '../render';
-import { ACTIONS, binds } from '../input';
+import { ACTIONS, binds, keyText } from '../input';
 import { castSpell, paysLife, cdEnd as spellCdEnd, saveRunBuild, chargesOf, isGround } from '../spells/core';
 import { padBinds, padLabel } from '../gamepad';
 import { onCrit } from '../fx/impact';
@@ -28,6 +28,7 @@ import { markStacks } from '../plagueMarks';
 import { buffs } from '../buffs';
 import { batteryMode } from '../battery';
 import { BATTERY } from '../config';
+import { t, fmtNum } from '../i18n';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
@@ -80,7 +81,7 @@ export function renderActionbar() {
   SPELL_ACTIONS.forEach((actionId, pos) => {
     const id = state.slots[slotAt(pos)] ?? null;
     const action = ACTIONS.find(a => a.id === actionId);
-    action.label = id ? `Leiste ${pos + 1}: ${SPELLS[id].name}` : `Leiste ${pos + 1}: leer`;
+    action.label = id ? t('hud.bar', { n: pos + 1, name: SPELLS[id].name }) : t('hud.barEmpty', { n: pos + 1 });
     const el = document.createElement('div');
     el.dataset.pos = String(pos);
     if (!id) {
@@ -98,7 +99,7 @@ export function renderActionbar() {
       el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(pos)); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); hideSpellCards(); });
       el.addEventListener('dragend', () => el.classList.remove('dragging'));
       el.addEventListener('contextmenu', e => { e.preventDefault(); openModeMenu(el, pos, id); });
-      attachSpellCard(el, id, `${SPELLS[id].relic ? 'Relikt' : 'Spell'} (Taste ${binds[actionId]?.key ?? '—'})`);
+      attachSpellCard(el, id, t(SPELLS[id].relic ? 'hud.relicKey' : 'hud.spellKey', { key: keyText(binds[actionId]?.key ?? '—') }));
       slots[id] = { el, action: actionId, key: el.querySelector('.key'), cost: el.querySelector('.cost'), charges: el.querySelector('.charges'), cd: el.querySelector('.cd'), cdText: el.querySelector('.cdText'), next: el.querySelector('.next'), shown: '' };
     }
     // Jeder Platz nimmt Spells an: tauscht mit dem gezogenen Platz
@@ -115,7 +116,7 @@ export function renderActionbar() {
 }
 function labelSlots() {
   const onPad = state.lastInput === 'pad';
-  const label = action => onPad ? padLabel(padBinds[action] ?? -1) : binds[action]?.key ?? '';
+  const label = action => onPad ? padLabel(padBinds[action] ?? -1) : keyText(binds[action]?.key ?? '');
   for (const id in slots) slots[id].key.textContent = label(slots[id].action);
   for (const e of empties) e.key.textContent = label(e.action);
 }
@@ -142,9 +143,9 @@ function openModeMenu(el, pos, id) {
   setTimeout(() => addEventListener('pointerdown', outside, true));
 }
 const MODE_HINT = {
-  instant: g => g ? 'beim Drücken, unter der Maus' : 'beim Drücken',
-  release: g => g ? 'Zielkreis halten, beim Loslassen' : 'beim Loslassen',
-  click: g => g ? 'Zielkreis, dann Klick' : 'beim Drücken',
+  instant: g => t(g ? 'cast.instant' : 'cast.instantNoGround'),
+  release: g => t(g ? 'cast.release' : 'cast.releaseNoGround'),
+  click: g => t(g ? 'cast.click' : 'cast.instantNoGround'),
 };
 function outside(e) { if (modeMenu && !modeMenu.contains(e.target)) closeModeMenu(); }
 function closeModeMenu() { modeMenu?.remove(); modeMenu = null; removeEventListener('pointerdown', outside, true); }
@@ -155,16 +156,12 @@ export function refreshKeyLabels() {
   if (onPad) {
     const p = id => `<b>${padLabel(padBinds[id])}</b>`;
     $('help').innerHTML =
-      `<b>Linker Stick</b> laufen · <b>Rechter Stick</b> Kamera<br>` +
-      `${p('jump')} springen · ${p('autorun')} Autorun · ${p('camBehind')} Kamera hinter Figur<br>` +
-      `Bodenziel: Taste halten, rechter Stick zielt · ${p('zoomIn')} ${p('zoomOut')} Zoom`;
+      t('help.pad', { jump: p('jump'), autorun: p('autorun'), cam: p('camBehind'), zin: p('zoomIn'), zout: p('zoomOut') });
     return;
   }
-  const b = id => `<b>${binds[id].key}</b>`;
+  const b = id => `<b>${keyText(binds[id].key)}</b>`;
   $('help').innerHTML =
-    `${b('forward')} ${b('back')} vor/zurück · ${b('turnLeft')} ${b('turnRight')} drehen<br>` +
-    `${b('strafeLeft')} ${b('strafeRight')} seitwärts · ${b('jump')} springen · ${b('autorun')} Autorun<br>` +
-    `<b>LMB ziehen</b> Kamera · <b>RMB ziehen</b> Charakter<br><b>Mausrad</b> Zoom`;
+    t('help.keys', { fw: b('forward'), bk: b('back'), tl: b('turnLeft'), tr: b('turnRight'), sl: b('strafeLeft'), sr: b('strafeRight'), jump: b('jump'), autorun: b('autorun') });
 }
 
 // Dev: Leistungsanzeige. Draw Calls über den ganzen Frame, inklusive Bloom-Durchgänge
@@ -203,7 +200,7 @@ function showNext(sl, pid) {
 let chipKey = '', relicKey = '';
 function updateBuildChips() {
   const chips = [];
-  if (player.poison) chips.push(['Gift', player.poison.stacks]);
+  if (player.poison) chips.push([t('fx.poison'), player.poison.stacks]);
   for (const b of buffs()) chips.push([b.name, Math.ceil((b.until - state.now) / 1000)]);   // Getränke des ?-Magiers, Zahl = Sekunden
   for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
   for (const id of Object.keys(state.supports ?? {})) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
@@ -231,7 +228,7 @@ function updateMeterBar() {
     const heat = meterHeat(), over = meterOverheated(), color = over || heat >= M.hotFrom ? M.hot : M.color, key = `Feuer${color}`;
     if (meterKey !== key) { meterKey = key; el.style.setProperty('--meter', color); $('meterFill').style.background = `linear-gradient(${color}, ${color}88)`; }
     fillTo($('meterFill'), v);
-    $('meterText').textContent = over ? `Überhitzt · ${Math.floor(heat)}` : `Hitze ${Math.floor(heat)}`;
+    $('meterText').textContent = t(over ? 'meter.overheat' : 'meter.heat', { n: Math.floor(heat) });
     el.classList.toggle('full', over);
     return;
   }
@@ -239,7 +236,7 @@ function updateMeterBar() {
   if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
   if (school === 'Arkan') { fillTo($('meterFill'), v); $('meterText').textContent = `${M.name} ${Math.round(v * M.max)} / ${M.max}`; el.classList.toggle('full', full); return; }
   fillTo($('meterFill'), v);
-  $('meterText').textContent = full ? M.full : `${M.name} ${Math.floor(v * 100)} %`;
+  $('meterText').textContent = full ? M.full : t('meter.pct', { name: M.name, n: Math.floor(v * 100) });
   el.classList.toggle('full', full);
 }
 
@@ -247,7 +244,7 @@ export function updateHud() {
   saveRunBuild();
   const hpMax = maxHp(), manaMax = maxMana();
   put($('lvl'), String(player.level));
-  put($('luck'), String(player.luck).replace('.', ','));
+  put($('luck'), fmtNum(player.luck));
   const cut = player.hpCut ?? 0;   // Zerstörung: Leben-Balken bezieht sich aufs volle Leben, der verlorene Teil ist grau
   fillTo($('hpFill'), clamp(player.hp / hpMax * (1 - cut), 0, 1));
   $('hpCut').style.width = `${cut * 100}%`;
@@ -262,12 +259,12 @@ export function updateHud() {
   $('hudMana').classList.toggle('over', bat && !!player.overcharged);
   const fsrLeft = clamp(1 - (state.now - player.lastManaUse) / CFG.fiveSecRule, 0, 1);
   $('fsrFill').style.width = `${fsrLeft * 100}%`;
-  $('status').textContent = player.stunUntil > state.now ? 'Betäubt (Blink löst)' : player.poison ? `Gift ×${player.poison.stacks}` : player.slowUntil > state.now ? 'Verflucht: langsamer' : player.drink ? (player.drink.pose === 'charge' ? 'Lädt auf …' : player.drink.label && !player.drink.custom ? 'Isst …' : 'Trinkt …') : state.autorun ? 'Autorun' : fsrLeft > 0 ? '5-Sekunden-Regel: keine Regeneration' : '';
+  $('status').textContent = player.stunUntil > state.now ? t('status.stun') : player.poison ? t('status.poison', { n: player.poison.stacks }) : player.slowUntil > state.now ? t('status.cursed') : player.drink ? t(player.drink.pose === 'charge' ? 'status.charging' : player.drink.label && !player.drink.custom ? 'status.eating' : 'status.drinking') : state.autorun ? t('status.autorun') : fsrLeft > 0 ? t('status.fsr') : '';
 
   const need = xpNeeded();
   const atMax = player.level >= LEVEL_MAX;
   fillTo($('xpFill'), atMax ? 1 : player.xp / need);
-  put($('xpText'), atMax ? 'Max' : `${player.xp} / ${need}`);
+  put($('xpText'), atMax ? t('hud.xpMax') : `${player.xp} / ${need}`);
 
   put($('iTime'), fmtTime(state.now));
   put($('iKills'), String(player.kills));
@@ -290,7 +287,7 @@ export function updateHud() {
     const left = clamp((bar.end - state.now) / (bar.end - bar.start), 0, 1);
     $('castbar').style.display = 'block';
     $('castFill').style.transform = `scaleX(${left})`;
-    $('castText').textContent = `${ch ? SPELLS[ch.id].name : dr.label ?? 'Trinken'} ${((bar.end - state.now) / 1000).toFixed(1)}`;
+    $('castText').textContent = `${ch ? SPELLS[ch.id].name : dr.label ?? t('spell.drink.name')} ${((bar.end - state.now) / 1000).toFixed(1)}`;
   } else $('castbar').style.display = 'none';
 
   for (const [id, sl] of Object.entries<any>(slots)) {

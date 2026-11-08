@@ -33,6 +33,7 @@ import { buildEvil } from './bosses/evil';
 import { ATT, RANGE } from './bosses/attacks';
 import { ruleOf } from './bosses/rules';
 import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo as yawOf, BK } from './bosses/core';
+import { t } from './i18n';
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
 export const B = {
@@ -286,7 +287,7 @@ export function startBoss(id?: string, tier?: string) {
   lockOn = !device.mobile;                             // Handy: feste Kamera (camera.ts), kein Lock und keine Boss-Kamera
   if (!device.mobile) camStart();
   barName.textContent = def.name;
-  barBase = `Boss · Level ${level}`;
+  barBase = t('boss.bar', { n: level });
   barSub.textContent = barBase;
   barLag.style.width = barFill.style.width = '100%';
   barTrack.style.display = 'block';
@@ -306,7 +307,7 @@ export function awaken(b, intro = false) {
     if (intro && b.state === 'active') { b.mob.pos.y += B.intro.height; b.falling = true; }
   }
   if (b.state === 'sleep') { b.mob.model.ctl.lean = .9; return; }
-  if (!intro) { b.state = 'active'; b.mob.model.ctl.lean = 0; impactFx(b.mob.pos, 5, 0xa070ff, .4); textAt(b.mob.pos, 'erwacht', 'info', 3); }
+  if (!intro) { b.state = 'active'; b.mob.model.ctl.lean = 0; impactFx(b.mob.pos, 5, 0xa070ff, .4); textAt(b.mob.pos, t('msg.awakens'), 'info', 3); }
 }
 const alive = () => boss.bodies.filter(b => b.mob && !b.mob.dead || b.state === 'hidden');
 const active = () => boss.bodies.filter(b => b.state === 'active' && b.mob && !b.mob.dead);
@@ -353,7 +354,7 @@ export function updateBoss(dt) {
     if (player.level < lastLevel) seen.clear();   // neuer Run
     const crossed = Math.floor(Math.min(player.level, 99) / B.every) > Math.floor(Math.min(lastLevel, 99) / B.every);
     lastLevel = player.level;
-    if (finalPending) { finalPending = false; if (!startBoss()) completeRun('Level 100'); return; }
+    if (finalPending) { finalPending = false; if (!startBoss()) completeRun(t('cause.lv100')); return; }
     if (crossed && mobMode === 'packs') startBoss();   // Packs: Boss alle B.every Level, Wellen starten ihn selbst (waves.ts)
     return;
   }
@@ -445,7 +446,7 @@ function roar() {
   ringFx(m.pos, 10, [2.6, 0.6, 0.2], 600);
   lightFlash(m.pos, 0xff5a2a, 600, 35, 400);
   m.attackAt = state.now;
-  textAt(m.pos, 'Phase 2', 'info', 3);
+  textAt(m.pos, t('msg.phase2'), 'info', 3);
 }
 function updatePush(dt) {
   const p = boss.push;
@@ -477,18 +478,18 @@ function endBoss() {
   run.killPoints += Math.round(xpForKill(m.level) * C.xp * (B.points - 1) * scoreMult());
   meta.dust += B.dust;
   saveMeta();
-  combatText(m.pos, `+${B.dust} Knochenstaub`, 'xp', 4);
+  combatText(m.pos, t('msg.dust', { n: B.dust }), 'xp', 4);
   for (const fn of boss.hooks.onEnd) fn(m.pos);
   const final = def.tier === 'final';
   cleanup();
-  barName.textContent = `${def.name} besiegt`;
+  barName.textContent = t('boss.defeated', { name: def.name });
   bar.classList.add('won');
   barTrack.style.display = 'none';
-  barSub.textContent = `Kampfzeit ${fmtTime(time)} · Treffer genommen ${st.hits} · Perfekte Dodges ${perfect} · +${B.dust} Knochenstaub`;
+  barSub.textContent = t('boss.stats', { time: fmtTime(time), hits: st.hits, perfect, dust: B.dust });
   bar.style.display = 'block';
   statsTimer = window.setTimeout(() => { bar.style.display = 'none'; }, E.statsMs);
   lastResult = { id: def.id, time, hits: st.hits, perfect };
-  if (final && player.level >= 100) window.setTimeout(() => completeRun('Level 100'), E.stopMs + E.slowMs + 600);   // Finale: danach Ergebnis
+  if (final && player.level >= 100) window.setTimeout(() => completeRun(t('cause.lv100')), E.stopMs + E.slowMs + 600);   // Finale: danach Ergebnis
 }
 let lastResult = null;
 

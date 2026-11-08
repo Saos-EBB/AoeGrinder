@@ -8,6 +8,7 @@ import { WORLD_K } from './config';
 import { state, player } from './state';
 import { box, cyl, cone, scatter } from './props';
 import { toonMat } from './toon';
+import { t } from './i18n';
 
 const WQ = {
   lakes: [[34, 26, 15], [-46, -18, 19], [8, -58, 12], [-30, 52, 13], [130, -60, 24], [-120, 110, 20], [60, 140, 18]] as [number, number, number][],
@@ -110,7 +111,7 @@ function winterProps(ctx) {
 }
 
 export const winterquell = {
-  name: 'Winterquell',
+  name: t('zone.winterquell.name'),
   toon: true,
   env: {   // PH: Anime-Wintermorgen, im Dunkel-Modus übersteuert dunkel.ts Himmel und Nebel
     fog: 0xdfe8f8, fogNear: 45, fogFar: 170,

@@ -18,7 +18,7 @@ export const icebarrier = {
     player.shield = Math.round(maxHp() * B.pct);
     player.shieldUntil = state.now + B.ms;
     barrierLook();
-    combatText(player.pos, 'Eisbarriere', 'info', 2.6);
+    combatText(player.pos, t('spell.icebarrier.name'), 'info', 2.6);
     player.onShieldBreak = () => {
       player.shield = 0;
       for (const m of mobsInRadius(player.pos, B.nova)) applyRoot(m, B.freezeMs, 'ice');

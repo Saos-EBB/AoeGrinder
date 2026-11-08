@@ -10,6 +10,7 @@ import { mondsee } from './mondsee';
 import { kristallhoehlen } from './kristallhoehlen';
 import { kathedrale } from './kathedrale';
 import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
+import { t } from './i18n';
 
 const near = (x, z, cx, cz, r) => Math.hypot(x - cx, z - cz) < r;
 // Abstand zum Polygonzug, für Wege und Flüsse
@@ -127,7 +128,7 @@ function tirisfalProps(ctx) {
 }
 
 const tirisfal = {
-  name: 'Tirisfal',
+  name: t('zone.tirisfal.name'),
   env: {   // PH
     fog: 0x71895e, fogNear: 30, fogFar: 125,
     top: 0x4f5e52, mid: 0x74836f, sunDisc: 0,
@@ -227,7 +228,7 @@ function stvProps(ctx) {
 }
 
 const stv = {
-  name: 'Schlingendorntal',
+  name: t('zone.stranglethorn.name'),
   env: {   // PH
     fog: 0xdfe6b4, fogNear: 40, fogFar: 150,
     top: 0x3f90d8, mid: 0xb6dbe6, sunDisc: 1,
@@ -303,7 +304,7 @@ function tanarisProps(ctx) {
 }
 
 const tanaris = {
-  name: 'Tanaris',
+  name: t('zone.tanaris.name'),
   env: {   // PH
     fog: 0xfff2d6, fogNear: 55, fogFar: 195, heat: 1,
     top: 0x0b3a9c, mid: 0x3f8ae6, sunDisc: 1,
@@ -422,7 +423,7 @@ function brdProps(ctx) {
 }
 
 const brd = {
-  name: 'Blackrock Depths',
+  name: t('zone.brd.name'),
   env: {   // PH
     fog: 0x4a1409, fogNear: 25, fogFar: 115, heat: 0.45,
     top: 0x040202, mid: 0x0b0403, sunDisc: 0,
@@ -456,7 +457,7 @@ const brd = {
 
 // ---------- Elvyn: der Wald vom Anfang ----------
 const elvyn = {
-  name: 'Elvyn',
+  name: t('zone.elvyn.name'),
   env: {   // PH
     fog: 0xe8c9a4, fogNear: 45, fogFar: 185,
     top: 0x2c4f8c, mid: 0x9fb4d0, sunDisc: 1,

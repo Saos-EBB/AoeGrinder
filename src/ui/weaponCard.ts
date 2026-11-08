@@ -3,6 +3,7 @@
 import { weaponName, effectRows, rarityOf, equipped, ROLLS } from '../weaponRolls';
 import { attachTip, TipData } from './tooltip';
 import { COLORS } from './colors';
+import { t, fmtNum } from '../i18n';
 
 // Werte-Block: jede Schicht in fester Zeile, links farbiges Etikett, Zahlen in derselben Farbe. Fehlende Schichten bleiben als „—“ stehen.
 export function weaponStats(w) {
@@ -20,7 +21,7 @@ export function weaponStats(w) {
       const [head, ...rest] = r.text.split(': ');   // Name vor dem Doppelpunkt in der Zeilenfarbe
       const body = rest.length ? rest.join(': ') : head;
       if (rest.length) text.append(Object.assign(document.createElement('b'), { textContent: head + ': ', style: `color:${color}` }));
-      for (const part of body.split(/([+−]\d[\d,]* %)/)) {
+      for (const part of body.split(/([+−]\d[\d,.]* %)/)) {
         if (!part) continue;
         text.append(/^[+−]\d/.test(part) ? Object.assign(document.createElement('b'), { textContent: part, style: `color:${color}` }) : part);
       }
@@ -32,7 +33,7 @@ export function weaponStats(w) {
 
 // Hover-Karte einer Waffe (Mockup T1): Name in Seltenheitsfarbe, großer Hauptwert, ▲/▼ gegenüber der ausgerüsteten Waffe,
 // Affixe blau (Element in seiner Farbe), Legendär-Effekt orange, Combo-Zeile, „Zerlegen +x Staub“. Vergleich: diese Waffe links, ausgerüstete rechts.
-const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:,\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
+const pctOf = (s: string) => { const m = s?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 function weaponTip(w): TipData {
   const rar = rarityOf(w), rows = effectRows(w), byKind = Object.fromEntries(rows.map(r => [r.kind, r]));
   const main = pctOf(byKind.value?.text?.replace(/^[^:]*: /, '') ?? byKind.value?.text);
@@ -49,18 +50,18 @@ function weaponTip(w): TipData {
   const delta = main && other && other.label === main.label && other.v !== main.v ? main.v - other.v : null;
   return {
     title: weaponName(w), color: rar.color, border: rar.color, sub: `${rar.name}${byKind.type?.text ? ` · ${byKind.type.text.split(':')[0]}` : ''}`,
-    big: main ? { value: `${main.v > 0 ? '+' : ''}${String(main.v).replace('.', ',')} %`, label: main.label,
-      delta: eq === w ? 'ausgerüstet' : delta === null ? undefined : `${delta > 0 ? '▲ +' : '▼ −'}${String(Math.abs(Math.round(delta * 10) / 10)).replace('.', ',')} %`,
+    big: main ? { value: `${main.v > 0 ? '+' : ''}${fmtNum(main.v)} %`, label: main.label,
+      delta: eq === w ? t('wcard.equippedLow') : delta === null ? undefined : `${delta > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(Math.round(delta * 10) / 10))} %`,
       deltaColor: eq === w ? '#f87171' : delta > 0 ? '#6ee7a0' : '#f87171' } : undefined,
     short: lines.shift() ?? '', rows: lines,
-    footer: ['Zerlegen', `+${ROLLS.refund[w.r]} Staub`],
+    footer: [t('wcard.salvage'), t('shop.refund', { n: ROLLS.refund[w.r] })],
   };
 }
 export function attachWeaponCard(el: HTMLElement, w) {
   attachTip(el, () => {
     const d = weaponTip(w), eq = equipped();
-    if (eq && eq !== w) Object.assign(d, { compare: weaponTip(eq), compareLabels: ['Diese Waffe', 'Ausgerüstet'] });
-    else d.label = eq === w ? 'Ausgerüstet' : 'Waffe';
+    if (eq && eq !== w) Object.assign(d, { compare: weaponTip(eq), compareLabels: [t('wcard.this'), t('shop.equipped')] });
+    else d.label = eq === w ? t('shop.equipped') : t('wcard.weapon');
     return d;
   });
 }

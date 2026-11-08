@@ -93,18 +93,18 @@ const EFFECTS = {
     for (const m of mobsInRadius(player.pos, LEG.sheep.range, Infinity)) if (visible(m) && !m.boss) {
       m.rootUntil = Math.max(m.rootUntil, state.now + LEG.sheep.ms);   // Schafe laufen und schlagen nicht, Schaden bricht es nicht ab
       m.sheepUntil = state.now + LEG.sheep.ms;
-      combatText(m.pos, 'Mäh', 'info', 2);
+      combatText(m.pos, t('msg.baa'), 'info', 2);
     }
   },
   cow() {
     const first = nearest(mobsInRadius(player.pos, LEG.cow.range, Infinity).filter(m => !m.cow), player.pos)[0];
-    if (!first) return showError('Kein Pack in der Nähe');
+    if (!first) return showError(t('msg.noPack'));
     for (const m of mobsInRadius(first.pos, LEG.cow.radius, Infinity)) {
       if (m.cow || m.boss) continue;
       m.cow = true;
       m.hp *= LEG.cow.hp; m.maxHp *= LEG.cow.hp;
       m.xpMul = (m.xpMul ?? 1) * LEG.cow.xp;
-      combatText(m.pos, 'Muh', 'info', 2);
+      combatText(m.pos, t('msg.moo'), 'info', 2);
     }
   },
   murky() {
@@ -156,7 +156,7 @@ const EFFECTS = {
   freshmeat() {
     const list = mobsInRadius(player.pos, LEG.meat.range, Infinity);
     const t = list.sort((a, b) => (+!!b.champion - +!!a.champion) || b.maxHp - a.maxHp)[0];
-    if (!t) return showError('Kein Ziel in Reichweite');
+    if (!t) return showError(t('msg.noTarget'));
     boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, [1.4, 1.2, 1], 300);
     pullMob(t, player.pos, Math.max(0, dist2d(t.pos, player.pos) - 1.5));
     applyRoot(t, LEG.meat.stunMs);
@@ -171,7 +171,7 @@ export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy
 export const legendCastMul = () => state.castHasteUntil > state.now ? 1 + LEG.barrage.haste : 1;
 
 // Cow Level: tote Kühe geben Staub
-onMobDeath(m => { if (m.cow) { meta.dust += LEG.cow.dust; saveMeta(); combatText(m.pos, `+${LEG.cow.dust} Staub`, 'xp', 2.2); } });
+onMobDeath(m => { if (m.cow) { meta.dust += LEG.cow.dust; saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } });
 
 // ---------- Murky-Ei ----------
 const egg: any = { pos: null, until: 0, mesh: null };
@@ -182,7 +182,7 @@ export function eggRevive() {
   player.pos.copy(egg.pos);
   player.hp = maxHp() * LEG.egg.hp;
   player.invulnUntil = state.now + 1000;
-  combatText(player.pos, 'Murky!', 'heal', 3);
+  combatText(player.pos, t('msg.egg'), 'heal', 3);
   return true;
 }
 

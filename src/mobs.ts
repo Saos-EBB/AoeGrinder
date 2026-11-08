@@ -25,6 +25,7 @@ import { damagePlayer, gainXp } from './player';
 import { damageNumber } from './ui/dmgNumbers';
 import { meterKill, meterKillHeal } from './schoolMeter';
 import { buffCrit } from './buffs';
+import { t } from './i18n';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
 const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
@@ -32,7 +33,7 @@ const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => l
 // Einblendung, wenn der Sprung von fromLevel neue Mobs freigeschaltet hat. Die Anzeige steckt in ui/scoreHud.ts.
 export function announceNewMobs(fromLevel) {
   const names = unlockedMobs(player.level).slice(unlockedMobs(fromLevel).length).map(id => MOB_TYPES[id].name);
-  if (names.length) state.newMob = { text: `Neuer Gegner: ${names.join(', ')}`, at: state.now };
+  if (names.length) state.newMob = { text: t('msg.newMob', { names: names.join(', ') }), at: state.now };
 }
 
 // Packgröße aus dem Level, ohne Zufall und Modifikatoren. Unter LEVEL_PACK_MIN greift ab Level 1 der Startwert.
@@ -193,7 +194,7 @@ function startFlee(mob) {
   mob.state = 'flee';
   mob.fleeTarget = helper;
   mob.fleeUntil = state.now + CFG.fleeDuration;
-  combatText(mob.pos, 'läuft in Panik davon!', 'info', 2.5);
+  combatText(mob.pos, t('msg.panic'), 'info', 2.5);
 }
 
 export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
@@ -309,7 +310,7 @@ export function separateMobs() {
 // Root mit Typ-Regeln: manche Mobs sind immun, manche halten nur kurz
 // look: nur Optik (vfx/mobStatus.ts) – 'ice' Eisblock, 'glue' Schleim am Boden, sonst Betäubungs-Ring
 export function applyRoot(mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
-  if (mob.type.rootImmune) { combatText(mob.pos, 'Immun', 'miss'); return; }
+  if (mob.type.rootImmune) { combatText(mob.pos, t('msg.immune'), 'miss'); return; }
   mob.rootUntil = state.now + Math.min(dur, mob.type.rootMax ?? dur);
   mob.rootLook = look;
   if (mob.web && mob.web.until > state.now && !mob.web.passing) for (const o of mob.web.links) {   // Klebefaden: Kontrolle zur Hälfte auf die Angeketteten
@@ -324,17 +325,17 @@ export function applyRoot(mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
 // dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
 export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false, forceCrit = false) {
   if (mob.dead) return false;
-  if (mob.state === 'evade') { combatText(mob.pos, 'Entkommen', 'miss'); return false; }
+  if (mob.state === 'evade') { combatText(mob.pos, t('msg.evaded'), 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
   player.lastCombat = state.now;
 
-  if (!noRoll && !dark && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, 'Widerstanden', 'miss'); return false; }
+  if (!noRoll && !dark && Math.random() * 100 >= hitChance(mob)) { combatText(mob.pos, t('msg.resisted'), 'miss'); return false; }
 
   mob.castKey = castKey ?? source;
   amount *= modFactor('dmg') * (mob.takenMul ?? 1);   // takenMul: Champion „Steinhaut“
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
-    if (amount <= 0) { combatText(mob.pos, 'Immun', 'miss'); return true; }
+    if (amount <= 0) { combatText(mob.pos, t('msg.immune'), 'miss'); return true; }
   }
 
   const frozen = mob.rootUntil > state.now;
@@ -392,7 +393,7 @@ function killMob(mob) {
   if (mob.champion) championDied(mob, damagePlayer);
   if (mob.type.noXp) return;
   const xp = Math.round(xpForKill(mob.level) * xpMul * paceXpMul());
-  if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, `+${xp} XP`, 'xp', 2); gainXp(xp); }
+  if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, t('msg.xp', { n: xp }), 'xp', 2); gainXp(xp); }
 }
 
 // Leiche versinkt nach 1,5 s im Boden, mit Staubwolke

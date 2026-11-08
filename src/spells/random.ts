@@ -30,11 +30,11 @@ onCastStart(id => {
 });
 
 function pressCat(cat, point) {
-  if (cdEnd(cat) > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd(cat) > state.now) return showError(t('msg.notReady'));
   const id = nextOf(cat), s = SPELLS[id];
   // Kann der Wurf gerade gar nicht (kein Ziel, nichts brennt): neu würfeln, ohne CD, damit die Taste nicht festhängt
   const fail = s.canCast?.();
-  if (fail) { reroll(cat); return showError(`${fail} – neu gewürfelt`); }
+  if (fail) { reroll(cat); return showError(t('msg.reroll', { why: fail })); }
   player.cds[id] = 0;            // der eigene CD des Spells zählt hier nicht
   delete player.charges[id];
   castSpell(id, point);
@@ -59,8 +59,8 @@ const drinkSpell = {
   desc: t('spell.rDrink.desc'),
   preview: () => nextOf('rDrink'),
   press() {
-    if (cdEnd('rDrink') > state.now) return showError('Fähigkeit ist noch nicht bereit');
-    if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
+    if (cdEnd('rDrink') > state.now) return showError(t('msg.notReady'));
+    if (!player.grounded) return showError(t('msg.notInAir'));
     const kind = nextOf('rDrink'), D = R.drinks[kind];
     startCd('rDrink');
     reroll('rDrink');
@@ -91,7 +91,7 @@ function burp() {
     const a = f + rand(-B.halfAngle, B.halfAngle), v = rand(6, 14);
     particles.spawn({ x: player.pos.x, y: player.pos.y + 1.5, z: player.pos.z, vx: Math.sin(a) * v, vy: rand(-0.5, 1.5), vz: Math.cos(a) * v, drag: 2, life: rand(0.4, 0.8), color: i % 2 ? FIRE : EMBER, size: rand(0.5, 1), grow: 0.8 });
   }
-  combatText(player.pos, 'Rülps!', 'heal', 2.8);
+  combatText(player.pos, t('msg.burp'), 'heal', 2.8);
 }
 
 // Jeden Frame aus updatePlayer: Heiße Tasse verlangsamt beim Sitzen und heilt danach

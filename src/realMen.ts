@@ -150,9 +150,9 @@ function pressQ() {
 const qLength = () => Math.min(R.q.max, R.q.start + Math.floor((state.qKills ?? 0) / R.q.killsPerHit));
 function pressMove(id, ability, ms, cost) {
   if (cur) return;
-  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
-  if (cdEnd(id) > state.now) return showError('Fähigkeit ist noch nicht bereit');
-  if (player.mana < cost) return showError('Nicht genug Wut');
+  if (!player.grounded) return showError(t('msg.notInAir'));
+  if (cdEnd(id) > state.now) return showError(t('msg.notReady'));
+  if (player.mana < cost) return showError(t('msg.noRage'));
   stopDrink();
   player.mana -= cost;
   startCd(id);
@@ -161,14 +161,14 @@ function pressMove(id, ability, ms, cost) {
   if (id === 'wLeap' || id === 'wExec') cur.combo = consumeCombo('smash');
 }
 function pressWhirl() {
-  if (!whirlOn && player.mana < R.whirl.minStart) return showError('Nicht genug Wut');
+  if (!whirlOn && player.mana < R.whirl.minStart) return showError(t('msg.noRage'));
   stopDrink();
   whirlUntil = state.now + R.whirl.tapMs;
 }
 function pressEat() {
   if (cur || whirlOn) return;
-  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
-  player.drink = { start: state.now, end: state.now + R.eat.ms, dur: R.eat.ms, hp: 1, label: 'Essen', keepOnHit: true };
+  if (!player.grounded) return showError(t('msg.notInAir'));
+  player.drink = { start: state.now, end: state.now + R.eat.ms, dur: R.eat.ms, hp: 1, label: t('spell.wEat.name'), keepOnHit: true };
 }
 
 // Ein Treffer-Ereignis: Wut kommt nur, wenn etwas getroffen wurde, und ist pro Schlag gedeckelt
@@ -285,12 +285,12 @@ onWarriorHit((kind, x, z, i) => {
 // ---------- Neu v31: Ansturm, Donnerknall, Einschüchterungsruf, Berserker ----------
 function pressCharge() {
   if (cur || charge) return;
-  if (cdEnd('wCharge') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd('wCharge') > state.now) return showError(t('msg.notReady'));
   const C = R.charge, target = mobsInRadius(player.pos, C.yd, Infinity).filter(m => {
     const a = Math.atan2(m.pos.x - player.pos.x, m.pos.z - player.pos.z) - player.facing;
     return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) <= C.halfAngle;
   }).sort((a, b) => a.pos.distanceTo(player.pos) - b.pos.distanceTo(player.pos))[0];
-  if (!target) return showError('Kein Ziel in Blickrichtung');
+  if (!target) return showError(t('msg.noTargetAhead'));
   stopDrink();
   startCd('wCharge');
   player.lastCombat = state.now;
@@ -313,8 +313,8 @@ function updateCharge() {
 }
 function pressClap() {
   if (cur) return;
-  if (cdEnd('wClap') > state.now) return showError('Fähigkeit ist noch nicht bereit');
-  if (player.mana < R.clap.rage) return showError('Nicht genug Wut');
+  if (cdEnd('wClap') > state.now) return showError(t('msg.notReady'));
+  if (player.mana < R.clap.rage) return showError(t('msg.noRage'));
   player.mana -= R.clap.rage;
   startCd('wClap');
   player.lastCombat = state.now;
@@ -324,7 +324,7 @@ function pressClap() {
   shakeCamera(0.35);
 }
 function pressShout() {
-  if (cdEnd('wShout') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd('wShout') > state.now) return showError(t('msg.notReady'));
   startCd('wShout');
   const r = makeCtx('wShout').radius(R.shout.radius);
   for (const m of mobsInRadius(player.pos, r)) {
@@ -335,7 +335,7 @@ function pressShout() {
   shakeCamera(0.25);
 }
 function pressBerserk() {
-  if (cdEnd('wBerserk') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+  if (cdEnd('wBerserk') > state.now) return showError(t('msg.notReady'));
   startCd('wBerserk');
   player.berserkUntil = state.now + R.berserk.ms;
   berserkLook(berserkOn);
@@ -383,7 +383,7 @@ export function updateRealMen(dt) {
   }
   updateWhirl(s);
   if (!cur && !whirlOn && player.stunUntil <= now && held('wQ')) pressQ();   // Ein Druck, ein Schlag; Halten schlägt weiter
-  player.resNote = `Schaden ×${rageMul().toFixed(2).replace('.', ',')} · Schlagfolge ${qLength()}${undyingUntil > now ? ' · Letzter Atem' : ''}${player.berserkUntil > now ? ' · Berserker' : ''}`;
+  player.resNote = t('war.note', { mul: +rageMul().toFixed(2), q: qLength() }) + (undyingUntil > now ? t('war.last') : '') + (player.berserkUntil > now ? t('war.berserk') : '');
 }
 
 const leapWindow = [TIMING.leap.move.from, TIMING.leap.move.to];

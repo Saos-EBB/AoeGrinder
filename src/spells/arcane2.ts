@@ -23,7 +23,7 @@ const STRIKE = { range: 6, angle: Math.PI / 2, dmg: 1.2, stunMs: 500 };   // Keg
 export const barrage = {
   name: t('spell.barrage.name'), desc: t('spell.barrage.desc'), ranks: ['dmg', 'mana'], tags: ['Arkan', 'Geschoss'], cls: 'arcane',
   mana: 80, cd: 3000, range: BARRAGE.range, showDmg: BARRAGE.dmg * UNIT,
-  canCast: () => nearestTarget(BARRAGE.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(BARRAGE.range) ? null : t('msg.noTarget'),
   effect(c) {
     const t0 = nearestTarget(BARRAGE.range);
     if (!t0) return;

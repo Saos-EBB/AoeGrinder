@@ -158,7 +158,7 @@ function setStance(n) {
 function pressStance() {
   if (!on() || player.dead) return;
   if (stance !== 1) return;
-  if (bar < K.bar.max) return showError('Haltung: Leiste noch nicht voll');
+  if (bar < K.bar.max) return showError(t('msg.inkNotFull'));
   setStance(2);
   mage.hero.fx.ring(player.pos, mage.hero.fx.RED, 2.5, 0.5);
 }
@@ -185,8 +185,8 @@ export function resetKlinge() {
 
 // Prüft Abklingzeit und startet sie. Jeder Move bricht das Essen ab.
 function ready(id, grounded = true) {
-  if (grounded && !player.grounded) { showError('Du kannst das nicht im Sprung tun'); return false; }
-  if (cdEnd(id) > state.now) { showError('Fähigkeit ist noch nicht bereit'); return false; }
+  if (grounded && !player.grounded) { showError(t('msg.notInAir')); return false; }
+  if (cdEnd(id) > state.now) { showError(t('msg.notReady')); return false; }
   stopDrink();
   startCd(id);
   player.lastCombat = state.now;
@@ -248,8 +248,8 @@ function pressAder() {
 function pressEat() {
   if (act || state.now < attackUntil) return;
   resetChain();
-  if (!player.grounded) return showError('Du kannst das nicht im Sprung tun');
-  player.drink = { start: state.now, end: state.now + K.eat.ms, dur: K.eat.ms, hp: 1, label: 'Essen', keepOnHit: true };
+  if (!player.grounded) return showError(t('msg.notInAir'));
+  player.drink = { start: state.now, end: state.now + K.eat.ms, dur: K.eat.ms, hp: 1, label: t('spell.kEat.name'), keepOnHit: true };
 }
 // Fester Slot: Es gibt aktive Relikte, aber keins für Nahkämpfer. Klone zählen nicht für die Abklingzeit-Kürzung.
 function pressClones() {
@@ -339,7 +339,7 @@ function pressCounter() {
     player.parryUntil = 0;
     strike('kCounter', c, K.counter.dmg * UNIT, o => mobsInRadius(o, c.radius(K.counter.radius)).filter(m => Math.abs(angleTo(m, o)) <= K.counter.angle / 2));
     counterLook(c.radius(K.counter.radius), stance);
-    combatText(player.pos, 'Konter', 'info', 2.6);
+    combatText(player.pos, t('spell.kCounter.name'), 'info', 2.6);
   };
 }
 function pressIaido() {

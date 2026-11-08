@@ -11,11 +11,12 @@ import { nextOf } from '../spells/random';
 import { warriorInfo } from '../realMen';
 import { klingeInfo } from '../klinge';
 import { COLORS } from './colors';
+import { t, fmtNum } from '../i18n';
 
 const kv = (a, b) => `<div class="cRow"><span>${a}</span><b>${b}</b></div>`;
 const head = (name, color) => `<div class="cSub" style="color:${color}">${name}</div>`;
 const note = text => `<p class="cNote">${text}</p>`;
-const de = v => String(+v.toFixed(1)).replace('.', ',');
+const de = v => fmtNum(+v.toFixed(1));
 const pc = v => `${de(v * 100)} %`;
 const plus = v => `+${de((v - 1) * 100)} %`;
 const sec = ms => `${de(ms / 1000)} s`;
@@ -24,86 +25,71 @@ const name = id => SPELLS[id]?.name ?? id;
 function fire() {
   const S = SCHOOL_METER.Feuer;
   return { name: S.name, color: S.color, rows: `
-    ${kv('Stand', `${Math.round(meterHeat())} / ${S.max}${meterOverheated() ? ' · Überhitzt' : ''}`)}
-    ${kv('Treffer-Schaden', plus(meterDmgMul()))}
-    ${kv('Brand-Schaden', plus(meterDmgMul(true)))}
-  `, rules: `Jeder Feuer-Treffer +${de(S.perHit)} Hitze, Brand-Ticks nicht. Nach ${sec(S.coolDelayMs)} ohne Treffer −${S.coolPerS} pro s.
-      Pro Hitze +${pc(S.dmgPerHeat)} Treffer- und +${pc(S.burnPerHeat)} Brandschaden.
-      Bei ${S.max} überhitzt: +${pc(S.overDmg + mods.emberCore)} Schaden, aber ${pc(S.overheatSelfPctPerS)} Leben pro s, bis unter ${S.overheatUntil}.
-      Frost-Zauber halbieren die Hitze. Jeder Kill heilt ${pc(S.killHeal)} Leben.` };
+    ${kv(t('ci.now'), `${Math.round(meterHeat())} / ${S.max}${meterOverheated() ? ` · ${S.full}` : ''}`)}
+    ${kv(t('ci.fire.hit'), plus(meterDmgMul()))}
+    ${kv(t('ci.fire.burn'), plus(meterDmgMul(true)))}
+  `, rules: t('ci.fire.rules', { hit: de(S.perHit), delay: sec(S.coolDelayMs), cool: S.coolPerS, dmg: pc(S.dmgPerHeat), burn: pc(S.burnPerHeat), max: S.max,
+    over: pc(S.overDmg + mods.emberCore), self: pc(S.overheatSelfPctPerS), until: S.overheatUntil, heal: pc(S.killHeal) }) };
 }
 
 function frost() {
   const M = SCHOOL_METER, S = M.Frost, hit = modValue('hitSlow');
   return { name: S.name, color: S.color, rows: `
-    ${kv('Stand', `${Math.round(meterValue() * 100)} %${meterFrostFull() ? ' · voll' : ''}`)}
-    ${kv('Eissplitter', `${state.shards ?? 0} / ${shardMax()}`)}
-  `, rules: `Kill +${pc(M.perKill)}, Champion +${pc(M.perChampion)}. Nach ${sec(M.idleMs)} ohne Kill −${pc(M.decayPerS)} pro s${mods.permafrost ? ' (Permafrost bremst das)' : ''}.
-      Voll: jeder Slow +${pc(S.slow)}, höchstens ${pc(S.slowMax)}.${hit ? ` Jeder Frost-Treffer verlangsamt ${pc(hit.pct)} für ${sec(hit.ms)}.` : ''}
-      Jeder Treffer auf einen Eingefrorenen gibt 1 Eissplitter.` };
+    ${kv(t('ci.now'), `${Math.round(meterValue() * 100)} %${meterFrostFull() ? ` · ${t('ci.full')}` : ''}`)}
+    ${kv(t('res.shards'), `${state.shards ?? 0} / ${shardMax()}`)}
+  `, rules: t('ci.frost.rules', { kill: pc(M.perKill), champ: pc(M.perChampion), idle: sec(M.idleMs), decay: pc(M.decayPerS), perma: mods.permafrost ? t('ci.frost.perma') : '',
+    slow: pc(S.slow), max: pc(S.slowMax), hit: hit ? t('ci.frost.hit', { pct: pc(hit.pct), ms: sec(hit.ms) }) : '' }) };
 }
 
 function arcane() {
   const S = SCHOOL_METER.Arkan;
   return { name: S.name, color: S.color, rows: `
-    ${kv('Stand', `${arcCharges()} / ${S.max}`)}
-    ${kv('Arkan-Schaden', plus(arcDmgMul()))}
-    ${kv('Arkan-Kosten', plus(arcCostMul()))}
-  `, rules: `${S.gain.map(name).join(', ')} geben je 1 Ladung. Pro Ladung +${pc(S.dmg)} Schaden und +${pc(S.cost)} Kosten auf Arkan-Zauber.
-      ${sec(S.idleMs)} ohne Arkan-Zauber: alle Ladungen weg. ${name('barrage')} verbraucht sie.` };
+    ${kv(t('ci.now'), `${arcCharges()} / ${S.max}`)}
+    ${kv(t('ci.arc.dmg'), plus(arcDmgMul()))}
+    ${kv(t('ci.arc.cost'), plus(arcCostMul()))}
+  `, rules: t('ci.arc.rules', { gain: S.gain.map(name).join(', '), dmg: pc(S.dmg), cost: pc(S.cost), idle: sec(S.idleMs), barrage: name('barrage') }) };
 }
 
 function battery() {
   const B = BATTERY;
-  return { name: 'Batterie', color: B.color, rows: `
-    ${kv('Stand', `${Math.floor(player.mana)} / ${batteryMax()}${overcharged() ? ' · Überladen' : ''}`)}
-  `, rules: `Statt Mana. Start mit ${B.start}, +${B.regenPerS} pro s, +${B.perHitTarget} pro getroffenem Gegner eines Blitz-Zaubers.
-      Zauber kosten Ladung (${name('chain')}: ${batteryCost(SPELLS.chain)}).
-      Voll = überladen: der nächste Blitz-Zauber macht ×${B.overMul} Schaden, betäubt ${sec(B.stunMs)} und leert die Batterie.
-      ${name('recharge')} statt Trinken: ${sec(B.recharge.ms)} stehen, +${B.recharge.amount}.` };
+  return { name: t('res.battery'), color: B.color, rows: `
+    ${kv(t('ci.now'), `${Math.floor(player.mana)} / ${batteryMax()}${overcharged() ? ` · ${t('ci.overcharged')}` : ''}`)}
+  `, rules: t('ci.bat.rules', { start: B.start, regen: B.regenPerS, hit: B.perHitTarget, chain: name('chain'), chainCost: batteryCost(SPELLS.chain), mul: B.overMul, stun: sec(B.stunMs),
+    recharge: name('recharge'), ms: sec(B.recharge.ms), amount: B.recharge.amount }) };
 }
 
 function plague() {
   const P = PLAGUE;
-  return { name: 'Seuche', color: COLORS.school.nature, rows: `
-    ${kv('Male in der Nähe', String(state.mobs.filter(m => !m.dead && m.plague && m.plague.until > state.now).length))}
-  `, rules: `Kein Mana: Zauber kosten einen Anteil der max. Leben (${name('sludge')} ${pc(SPELLS.sludge.lifePct)}). Keine Regeneration, kein Trinken.
-      Markierende Zauber setzen Male, bis ${P.mark.max} Stapel, ${sec(P.mark.ms)}.
-      ${name('contract')}: zieht zusammen, ${sec(P.contract.rootMs + 1000 * mods.toughSlime)} fest pro Stapel.
-      ${name('drain')}: ${de(P.drain.dmg)} Einheiten pro Stapel, heilt ${pc(P.drain.heal + mods.leech)} pro Gegner.
-      ${name('burst')}: Gift in Höhe des Entziehen-Schadens über ${sec(P.burst.ms)}. Alle drei verbrauchen die Male.` };
+  return { name: t('tag.Seuche'), color: COLORS.school.nature, rows: `
+    ${kv(t('ci.plague.near'), String(state.mobs.filter(m => !m.dead && m.plague && m.plague.until > state.now).length))}
+  `, rules: t('ci.plague.rules', { sludge: name('sludge'), life: pc(SPELLS.sludge.lifePct), max: P.mark.max, ms: sec(P.mark.ms), contract: name('contract'),
+    root: sec(P.contract.rootMs + 1000 * mods.toughSlime), drain: name('drain'), dmg: de(P.drain.dmg), heal: pc(P.drain.heal + mods.leech), burst: name('burst'), burstMs: sec(P.burst.ms) }) };
 }
 
 function warrior() {
   const { rageMul, qLength, R } = warriorInfo(), r = R.rage;
-  return { name: 'Wut', color: COLORS.school.warrior ?? '#e05040', rows: `
-    ${kv('Stand', `${Math.floor(player.mana)} / ${r.max}`)}
-    ${kv('Schaden', `×${de(rageMul)}`)}
-    ${kv('Schlagfolge', `${qLength} Schläge`)}
-  `, rules: `Wut statt Mana. +${r.perMobHit} pro getroffenem Gegner (höchstens ${r.perSwingMax} pro Schlag), +${r.perHitTaken} wenn du getroffen wirst.
-      Nach ${sec(r.idleMs)} ohne Treffer −${r.decayPerS} pro s.
-      Schaden ×(1 + ${de(R.mult.rage)} × Wut/${r.max}) × (1 + fehlendes Leben): volle Wut bei wenig Leben fast ×3.
-      Du nimmst ${pc(R.armor)} weniger Schaden. Schlagfolge startet mit ${R.q.start}, alle ${R.q.killsPerHit} Kills einer mehr, höchstens ${R.q.max}.` };
+  return { name: t('res.rage'), color: COLORS.school.warrior ?? '#e05040', rows: `
+    ${kv(t('ci.now'), `${Math.floor(player.mana)} / ${r.max}`)}
+    ${kv(t('stat.dmg'), `×${de(rageMul)}`)}
+    ${kv(name('wQ'), t('ci.war.hits', { n: qLength }))}
+  `, rules: t('ci.war.rules', { hit: r.perMobHit, swing: r.perSwingMax, taken: r.perHitTaken, idle: sec(r.idleMs), decay: r.decayPerS, mult: de(R.mult.rage), max: r.max,
+    armor: pc(R.armor), q: name('wQ'), start: R.q.start, kills: R.q.killsPerHit, qmax: R.q.max }) };
 }
 
 function klinge() {
   const { stance, name: sName, bar, inStanceMs, K } = klingeInfo(), B = K.bar, two = K.stance[2], three = K.stance[3];
-  return { name: 'Haltung', color: COLORS.school.warrior ?? '#d8343c', rows: `
-    ${kv('Stand', `${sName} · ${Math.floor(bar)} / ${B.max}`)}
-    ${stance === 2 ? kv('Bis Zweihand III', sec(Math.max(0, B.toThreeMs - inStanceMs))) : ''}
-  `, rules: `Leiste füllt sich durch Schaden: +${B.perUnit} pro ausgeteilter Einheit, +${B.perPctTaken} pro 1 % erlittener Leben.
-      Voll: F wechselt in Zweihand, +${pc(two.dmg - 1)} Schaden und Blutung (${pc(K.bleed.share)} des Treffers über ${sec(K.bleed.ms)}, bis ${K.bleed.max} Stapel).
-      Nach ${de(B.toThreeMs / 60000)} min Zweihand III: dazu +${pc(three.move - 1)} Tempo, Angriffstempo ×${three.rate}.
-      ${sec(B.idleMs)} ohne Kill: −${B.drainPerS} pro s. Leer → zurück in Einhand.` };
+  return { name: t('ci.stance'), color: COLORS.school.warrior ?? '#d8343c', rows: `
+    ${kv(t('ci.now'), `${sName} · ${Math.floor(bar)} / ${B.max}`)}
+    ${stance === 2 ? kv(t('ci.blade.toThree', { name: t('klinge.stance.3.name') }), sec(Math.max(0, B.toThreeMs - inStanceMs))) : ''}
+  `, rules: t('ci.blade.rules', { unit: B.perUnit, taken: B.perPctTaken, dmg: pc(two.dmg - 1), share: pc(K.bleed.share), ms: sec(K.bleed.ms), max: K.bleed.max,
+    min: de(B.toThreeMs / 60000), move: pc(three.move - 1), rate: three.rate, idle: sec(B.idleMs), drain: B.drainPerS }) };
 }
 
 function random() {
   const C = RANDOM_MAGE.cats;
-  return { name: 'Würfel', color: COLORS.text, rows: `
-    ${['rOff', 'rDef', 'rUtil', 'rDrink'].map(cat => kv(C[cat].name, `als Nächstes ${cat === 'rDrink' ? RANDOM_MAGE.drinks[nextOf(cat)].name : name(nextOf(cat))}`)).join('')}
-  `, rules: `Die 4 Tasten würfeln nach jedem Zauber neu aus ihrer Kategorie. Es zählt nur die Abklingzeit der Kategorie
-      (${['rOff', 'rDef', 'rUtil', 'rDrink'].map(cat => `${C[cat].name} ${sec(C[cat].cd)}`).join(', ')}).
-      Seuchen-Zauber kosten hier Mana statt Leben.` };
+  return { name: t('ci.dice'), color: COLORS.text, rows: `
+    ${['rOff', 'rDef', 'rUtil', 'rDrink'].map(cat => kv(C[cat].name, t('ci.dice.next', { name: cat === 'rDrink' ? RANDOM_MAGE.drinks[nextOf(cat)].name : name(nextOf(cat)) }))).join('')}
+  `, rules: t('ci.dice.rules', { cds: ['rOff', 'rDef', 'rUtil', 'rDrink'].map(cat => `${C[cat].name} ${sec(C[cat].cd)}`).join(', ') }) };
 }
 
 // name, color: Überschrift; rows: Stand jetzt (nur im Lauf); rules: Regeln, auch fürs Hauptmenü

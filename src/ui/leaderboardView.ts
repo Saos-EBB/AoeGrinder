@@ -12,8 +12,9 @@ import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
 import { showColliders } from '../world';
 import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns } from '../leaderboard';
+import { t, fmtNum, locale } from '../i18n';
 
-const fmtMult = v => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
+const fmtMult = v => `×${fmtNum(Math.round(v * 100) / 100)}`;
 const $ = id => document.getElementById(id);
 
 document.head.insertAdjacentHTML('beforeend', `<style>
@@ -54,7 +55,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
 function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
 
-const fmt = n => Math.round(n).toLocaleString('de-DE');
+const fmt = n => Math.round(n).toLocaleString(locale);
 
 
 // Beim Tod: speichern und Aufschlüsselung zeigen
@@ -65,7 +66,7 @@ export function showRunResult() {
   const { entry, rank } = recordRun(), b = entry.breakdown;
   const same = loadRuns().filter(r => r.mode === entry.mode && (r.mobMode ?? 'packs') === entry.mobMode && (r.siegeGoal ?? 0) === entry.siegeGoal);
   const best = same.filter(r => r !== entry && r.date !== entry.date && typeof r.timeTo100 === 'number').reduce((m, r) => Math.min(m, r.timeTo100), Infinity);
-  $('endTitle').textContent = player.won && player.level >= 100 ? 'Level 100 erreicht' : player.won ? 'Geschafft' : player.lastHitBy === 'Zeitlimit' ? `Zeit abgelaufen auf Level ${player.level}` : `Gefallen auf Level ${player.level}`;
+  $('endTitle').textContent = player.won && player.level >= 100 ? t('end.lv100') : player.won ? t('end.done') : player.lastHitBy === t('mod.time.name') ? t('end.timeUp', { n: player.level }) : t('end.fell', { n: player.level });
   const fig = currentFigure()?.name;
   $('endSub').textContent = [fig, entry.zone, entry.modeName !== fig ? entry.modeName : ''].filter(Boolean).join(' · ');
   const t100 = entry.timeTo100;
@@ -76,54 +77,54 @@ export function showRunResult() {
   const award = afterRun(!!player.won);
   $('runResult').innerHTML = `
     <div class="endTime">${fmtT(entry.time)}</div>
-    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${diff <= 0 ? '−' : '+'}${fmtT(Math.abs(diff))} Bestzeit</span> · ` : typeof t100 === 'number' ? '<span style="color:#6ee7a0">Erste Zeit bis Level 100</span> · ' : ''}Platz ${rank} von ${same.length}${rank === 1 && entry.score > 0 ? ' · <b>Neuer Rekord!</b>' : ''}</div>
-    <div class="endStats">${stat(fmt(entry.kills), 'Kills')}${stat(fmt(b.total), 'Punkte')}${stat(fmt(entry.bestCombo), 'Höchste Combo')}${stat(`×${entry.bestMulti}`, 'Multi-Kill')}${stat(player.won ? 0 : 1, 'Tode')}</div>
-    <div class="endPoints">Kills ${fmt(b.kills)} (Modus ${fmtMult(entry.mult)}) · Größter Pull ${fmt(entry.bestPull)} Mobs +${fmt(b.pull)} · Überlebenszeit +${fmt(b.time)} · Ursache: ${esc(entry.cause)}</div>
+    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${t('end.best', { d: `${diff <= 0 ? '−' : '+'}${fmtT(Math.abs(diff))}` })}</span> · ` : typeof t100 === 'number' ? `<span style="color:#6ee7a0">${t('end.firstTime')}</span> · ` : ''}${t('end.rank', { a: rank, b: same.length })}${rank === 1 && entry.score > 0 ? ` · <b>${t('end.record')}</b>` : ''}</div>
+    <div class="endStats">${stat(fmt(entry.kills), t('end.kills'))}${stat(fmt(b.total), t('end.points'))}${stat(fmt(entry.bestCombo), t('end.combo'))}${stat(`×${entry.bestMulti}`, t('end.multi'))}${stat(player.won ? 0 : 1, t('end.deaths'))}</div>
+    <div class="endPoints">${t('end.breakdown', { kills: fmt(b.kills), mult: fmtMult(entry.mult), pull: fmt(entry.bestPull), pullPts: fmt(b.pull), time: fmt(b.time), cause: esc(entry.cause) })}</div>
     <div class="endCols">
-      <div class="gPanel endDmg"><div class="title">Schaden nach Quelle</div>${top.length ? top.map(([id, v]) => {
+      <div class="gPanel endDmg"><div class="title">${t('end.dmgBySource')}</div>${top.length ? top.map(([id, v]) => {
         const s = SPELLS[id], c = s?.relic ? '#e3c27a' : COLORS.school[s?.school ?? s?.cls] ?? '#c4aea6', p = Math.round(v / total * 100);
-        return `<div class="endBar"><span>${esc(s?.name ?? 'Umgebung')}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${p} %</b></div>`;
+        return `<div class="endBar"><span>${esc(s?.name ?? t('cw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${p} %</b></div>`;
       }).join('') : '<p>—</p>'}</div>
-      <div class="gPanel endDust"><div class="title">Knochenstaub</div>
-        <div class="endRow"><span>Level ${entry.level} × ${META.dust.perLevel} × Modus ${fmtMult(entry.mult)}</span><b>${award.base}</b></div>
-        <div class="endRow"><span>Abschluss-Bonus${award.tier ? ` · Shop-Stufe ${award.tier}` : ''}</span><b>+${award.bonus}</b></div>
+      <div class="gPanel endDust"><div class="title">${t('res.dust')}</div>
+        <div class="endRow"><span>${t('end.dustLevel', { lv: entry.level, per: META.dust.perLevel, mult: fmtMult(entry.mult) })}</span><b>${award.base}</b></div>
+        <div class="endRow"><span>${t('end.dustBonus')}${award.tier ? t('shop.tier', { n: award.tier }) : ''}</span><b>+${award.bonus}</b></div>
         <i class="tSep"></i>
-        <div class="endRow sum"><span>Gesamt · jetzt ${meta.dust}</span><b>+${award.dust}</b></div>
+        <div class="endRow sum"><span>${t('end.dustTotal', { n: meta.dust })}</span><b>+${award.dust}</b></div>
       </div>
     </div>
-    <input id="runNote" maxlength="120" placeholder="Notiz zum Run (optional)">`;
+    <input id="runNote" maxlength="120" placeholder="${t('end.note')}">`;
   const note = $('runNote') as HTMLInputElement;
   ownKeys(note);
   note.addEventListener('change', () => setNote(entry.date, note.value));
 }
 
 // ---------- Ranglisten-Ansicht ----------
-const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? 'Eigene Mischungen' : m.name })), { id: 'waves', name: 'Wellen' }, { id: 'all', name: 'Alle' }];
+const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? t('board.custom') : m.name })), { id: 'waves', name: t('board.waves') }, { id: 'all', name: t('board.all') }];
 const TOP = 10;
 let tab = 'normal', versionFilter = '', openDate = null;
 
 document.body.insertAdjacentHTML('beforeend', `<div id="boardModal" class="modal"><div class="frame panel">
-  <h1 class="title" style="font-size:26px">Rangliste</h1>
+  <h1 class="title" style="font-size:26px">${t('board.title')}</h1>
   <div id="boardTabs"></div>
-  <div id="boardBar"><label for="boardVersion">Spielversion</label><select id="boardVersion"></select></div>
+  <div id="boardBar"><label for="boardVersion">${t('board.version')}</label><select id="boardVersion"></select></div>
   <div id="boardList"></div>
   <div id="boardDetailBox"></div>
-  <textarea id="boardIo" placeholder="Export landet hier, falls das Kopieren nicht klappt. Zum Import JSON einfügen."></textarea>
+  <textarea id="boardIo" placeholder="${t('board.io')}"></textarea>
   <div id="boardMsg" role="status"></div>
   <div class="row2">
-    <button class="smallBtn" id="boardExport" style="width:auto;padding:6px 14px">Export kopieren</button>
-    <button class="smallBtn" id="boardImport" style="width:auto;padding:6px 14px">Importieren</button>
-    <button class="smallBtn" id="boardClose" style="width:auto;padding:6px 14px">Schließen</button>
+    <button class="smallBtn" id="boardExport" style="width:auto;padding:6px 14px">${t('board.export')}</button>
+    <button class="smallBtn" id="boardImport" style="width:auto;padding:6px 14px">${t('board.import')}</button>
+    <button class="smallBtn" id="boardClose" style="width:auto;padding:6px 14px">${t('ui.close')}</button>
   </div>
 </div></div>`);
 ownKeys($('boardIo'));
 
 function cell(row, text) { const td = document.createElement('td'); td.textContent = text; row.appendChild(td); }
 const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
-const fmtDate = d => new Date(d).toLocaleDateString('de-DE');
+const fmtDate = d => new Date(d).toLocaleDateString(locale);
 // Importierte Einträge sind fremde Daten: nur über textContent ausgeben und fehlende Felder abfangen
 const num = v => (typeof v === 'number' ? fmt(v) : '–');
-const modNames = r => (Array.isArray(r.mods) ? r.mods.map(id => MODIFIERS.find(m => m.id === id)?.name ?? String(id)).join(', ') : '') || 'keine';
+const modNames = r => (Array.isArray(r.mods) ? r.mods.map(id => MODIFIERS.find(m => m.id === id)?.name ?? String(id)).join(', ') : '') || t('board.none');
 
 function renderBoard() {
   const tabs = $('boardTabs');
@@ -139,30 +140,30 @@ function renderBoard() {
   const versions = [...new Set(all.map(r => r.version).filter(v => typeof v === 'string'))];
   const sel = $('boardVersion') as HTMLSelectElement;
   sel.innerHTML = '';
-  for (const v of ['', ...versions]) sel.add(new Option(v || 'Alle', v));
+  for (const v of ['', ...versions]) sel.add(new Option(v || t('board.all'), v));
   if (!versions.includes(versionFilter)) versionFilter = '';
   sel.value = versionFilter;
 
   const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'waves' ? r.mobMode === 'waves' : r.mode === tab && (r.mobMode ?? 'packs') === 'packs')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
   const list = $('boardList');
   list.innerHTML = '';
-  if (!rows.length) { list.innerHTML = '<div id="boardEmpty">Noch keine Runs in dieser Auswahl.</div>'; $('boardDetailBox').innerHTML = ''; return; }
+  if (!rows.length) { list.innerHTML = `<div id="boardEmpty">${t('board.empty')}</div>`; $('boardDetailBox').innerHTML = ''; return; }
   const table = document.createElement('table');
   table.id = 'boardTable';
-  table.innerHTML = '<thead><tr><th>#</th><th>Modus</th><th>Punkte</th><th>Level</th><th>Kills</th><th>Zeit</th><th>Datum</th></tr></thead>';
+  table.innerHTML = t('board.head');
   const body = table.createTBody();
   rows.forEach((r, i) => {
     const tr = body.insertRow();
     tr.className = (i === 0 ? 'best ' : '') + (r.date === openDate ? 'open' : '');
     cell(tr, i === 0 ? '★' : String(i + 1));
-    cell(tr, r.modeName ?? r.mode);
+    cell(tr, MODES.find(m => m.id === r.mode) ? MODES.find(m => m.id === r.mode).name + (r.mobMode === 'waves' ? ` · ${t('board.waves')}` : '') : r.modeName ?? r.mode);   // Name aus der aktuellen Sprache, alte Einträge tragen ihn als Text
     cell(tr, num(r.score)); cell(tr, num(r.level)); cell(tr, num(r.kills));
     cell(tr, typeof r.time === 'number' ? fmtTime(r.time) : '–');
     cell(tr, fmtDate(r.date));
     tr.addEventListener('click', () => { openDate = openDate === r.date ? null : r.date; renderBoard(); });
   });
   list.appendChild(table);
-  list.insertAdjacentHTML('beforeend', '<div style="opacity:.7;font-size:12px;margin-top:4px">Zeile anklicken: Details mit Build und Waffe</div>');
+  list.insertAdjacentHTML('beforeend', `<div style="opacity:.7;font-size:12px;margin-top:4px">${t('board.clickHint')}</div>`);
   renderDetail(rows.find(r => r.date === openDate));
 }
 
@@ -178,16 +179,16 @@ function renderDetail(r) {
     d.append(b, String(value ?? '–'));
     grid.appendChild(d);
   };
-  add('Modifikatoren', modNames(r));
-  add('Multiplikator', typeof r.mult === 'number' ? fmtMult(r.mult) : '–');
-  add('Größter Pull', r.bestPull);
-  add('Längste Combo', r.bestCombo);
-  add('Bester Multi-Kill', r.bestMulti);
-  add('Zone', r.zone);
-  add('Todesursache', r.cause);
-  add('Spielversion', r.version);
-  add('Build', r.build || '–');   // Spells, Runen, Supports, Relikt und Waffe des Runs
-  if (r.note) add('Notiz', r.note);
+  add(t('board.d.mods'), modNames(r));
+  add(t('board.d.mult'), typeof r.mult === 'number' ? fmtMult(r.mult) : '–');
+  add(t('board.d.pull'), r.bestPull);
+  add(t('board.d.combo'), r.bestCombo);
+  add(t('board.d.multi'), r.bestMulti);
+  add(t('board.d.zone'), r.zone);
+  add(t('board.d.cause'), r.cause);
+  add(t('board.d.version'), r.version);
+  add(t('board.d.build'), r.build || '–');   // Spells, Runen, Supports, Relikt und Waffe des Runs
+  if (r.note) add(t('board.d.note'), r.note);
   box.appendChild(grid);
 }
 
@@ -201,23 +202,23 @@ $('boardExport').addEventListener('click', async () => {
   const json = exportRuns();
   try {
     await navigator.clipboard.writeText(json);
-    $('boardMsg').textContent = `${loadRuns().length} Runs in die Zwischenablage kopiert.`;
+    $('boardMsg').textContent = t('board.copied', { n: loadRuns().length });
   } catch {
     const io = $('boardIo') as HTMLTextAreaElement;
     io.value = json;
     io.select();
-    $('boardMsg').textContent = 'Kopieren nicht möglich. Das JSON steht markiert im Textfeld.';
+    $('boardMsg').textContent = t('board.copyFail');
   }
 });
 $('boardImport').addEventListener('click', () => {
   const io = $('boardIo') as HTMLTextAreaElement;
   try {
     const added = importRuns(io.value);
-    $('boardMsg').textContent = `${added} neue Runs importiert.`;
+    $('boardMsg').textContent = t('board.imported', { n: added });
     io.value = '';
     renderBoard();
   } catch {
-    $('boardMsg').textContent = 'Das ist kein gültiges Ranglisten-JSON. Bitte den kompletten Export einfügen.';
+    $('boardMsg').textContent = t('board.badJson');
   }
 });
 // Esc schließt nur die Rangliste, nicht das Menü darunter
@@ -231,7 +232,7 @@ addEventListener('keydown', e => {
 const boardButton = (cls, style) => {
   const b = document.createElement('button');
   b.className = cls;
-  b.textContent = 'Rangliste';
+  b.textContent = t('board.title');
   b.setAttribute('style', style);
   b.addEventListener('click', openBoard);
   return b;

@@ -7,14 +7,15 @@ import { MODIFIERS, activeModIds } from '../modifiers';
 import { META } from '../meta';
 import { byTime, comboRuns } from '../leaderboard';
 import { TIPS } from './tips';
+import { t } from '../i18n';
 
 const LOAD_MS = 1100;   // PH
 
 document.body.insertAdjacentHTML('beforeend', `<div id="loadModal" class="modal">
   <svg class="loadLines" aria-hidden="true" viewBox="0 0 1600 900" preserveAspectRatio="none" fill="none" stroke="#ff3d1f" stroke-linecap="round">
     <path d="M0 780 L420 720 L700 760 L1000 700 L1300 750 L1600 710" stroke-width="2" opacity="0.5"/><path d="M0 820 L380 790 L760 820 L1120 780 L1600 800" stroke-width="1" opacity="0.35"/></svg>
-  <div class="loadMid"><span class="loadPre">Betrete</span><span class="loadZone"></span><div class="loadBar"><div></div></div></div>
-  <div class="loadBest"><span>Bestzeit</span><b></b></div>
+  <div class="loadMid"><span class="loadPre">${t('load.enter')}</span><span class="loadZone"></span><div class="loadBar"><div></div></div></div>
+  <div class="loadBest"><span>${t('load.best')}</span><b></b></div>
   <div class="loadTip"></div>
   <div class="loadMods"></div>
 </div>`);

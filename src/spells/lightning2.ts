@@ -28,7 +28,7 @@ export const quake = {
 export const keeper = {
   name: t('spell.keeper.name'), desc: t('spell.keeper.desc'), ranks: ['cd'], tags: ['Blitz'], cls: 'lightning',
   mana: 0, charge: 0, cd: 20000,
-  effect() { state.keeper = 2; keeperLook(); combatText(player.pos, 'Sturmhüter', 'info', 2.6); },
+  effect() { state.keeper = 2; keeperLook(); combatText(player.pos, t('spell.keeper.name'), 'info', 2.6); },
 };
 
 // Statikfeld: fester Anteil am aktuellen Leben jedes Gegners, ohne Trefferwurf und Spieler-Boni
@@ -50,7 +50,7 @@ export const stormelem = {
   name: t('spell.stormelem.name'), figRelic: true, desc: t('spell.stormelem.desc'), ranks: [], tags: ['Blitz'], cls: 'lightning',
   mana: 0, cd: ELEM.cd,
   press() {
-    if (cdEnd('stormelem') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+    if (cdEnd('stormelem') > state.now) return showError(t('msg.notReady'));
     startCd('stormelem');
     noteCastStart('stormelem');
     const c = makeCtx('stormelem');

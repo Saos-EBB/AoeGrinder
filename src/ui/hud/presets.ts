@@ -3,6 +3,7 @@
 // Die Elemente sind in --hu gebaut (1 px Mockup), scale = Größe im Mockup / Grundgröße des Elements.
 
 import type { HudPreset, HudElementId, Placement, Anchor } from './layout';
+import { t } from '../../i18n';
 
 const W = 1280, H = 720, CX = 640, CY = 360;
 const FRAC: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
@@ -15,7 +16,7 @@ function pt(anchor: Anchor, ax: number, ay: number, scale = 1, variant?: string)
 const SLOT = 52, MAP = 150, COMBO = 64;
 
 export const PRESETS: HudPreset[] = [
-  { id: 'H01', name: 'Klar', theme: 'clean', elements: {
+  { id: 'H01', name: t('preset.H01'), theme: 'clean', elements: {
     runinfo: pt('t', CX, 0, 1, 'bar'),
     timer: pt('t', CX, 4, 24 / 26),
     xp: pt('t', CX, 46, 1, 'full'),
@@ -100,7 +101,7 @@ export const PRESETS: HudPreset[] = [
     relics: pt('tl', 20, 208),
     tracker: pt('tl', 20, 256),
   } },
-  { id: 'H18', name: 'Gotisch', theme: 'ornate', elements: {
+  { id: 'H18', name: t('preset.H18'), theme: 'ornate', elements: {
     hotbar: pt('b', CX, H, 56 / SLOT, 'ornate'),
     hp: pt('bl', 150, H - 8, 168 / 132, 'orbs'),
     mana: pt('br', W - 150, H - 8, 168 / 132, 'orbs'),

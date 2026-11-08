@@ -18,6 +18,7 @@ import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat, burnMob 
 import { stopChannel, stopDrink } from './spells';
 import { maxMana } from './formulas';
 import { CFG } from './config';
+import { t } from './i18n';
 
 const SHADOW = [1.1, 0.3, 2.0], AXE = [1.6, 0.9, 0.3], DUST = [0.5, 0.4, 0.25];
 const HEAL = [0.4, 2, 0.6], GOLD = [2.2, 1.7, 0.5], EMBER = [2.4, 0.8, 0.15];
@@ -148,7 +149,7 @@ export const ABILITIES: any = {
       if (dist2d(mob.pos, player.pos) <= 30 && ready(mob, 'nextCurse', 14000)) {   // PH
         mob.attackAt = state.now;
         player.slowUntil = state.now + 10000;                   // PH, Stärke in CFG.curseSlow
-        combatText(player.pos, 'Fluch!', 'hurt', 2.6);
+        combatText(player.pos, t('msg.curse'), 'hurt', 2.6);
       }
       return false;
     },
@@ -172,7 +173,7 @@ export const ABILITIES: any = {
     onHit(mob) {
       const stolen = Math.round(maxMana() * 0.05);              // PH
       player.mana = Math.max(0, player.mana - stolen);
-      combatText(player.pos, `-${stolen} Mana`, 'info', 2.6);
+      combatText(player.pos, t('msg.manaStolen', { n: stolen }), 'info', 2.6);
     },
   },
   // Stampfer im Nahkampf: 3 s Betäubung, bricht Blizzard; Blink löst
@@ -183,7 +184,7 @@ export const ABILITIES: any = {
       player.stunUntil = state.now + 3000;                      // PH
       stopChannel();
       stopDrink();
-      combatText(player.pos, 'Betäubt!', 'hurt', 2.6);
+      combatText(player.pos, t('msg.stunned'), 'hurt', 2.6);
       for (let i = 0; i < 40; i++) {
         const a = i / 40 * Math.PI * 2;
         particles.spawn({ x: mob.pos.x, y: mob.pos.y + 0.2, z: mob.pos.z, vx: Math.cos(a) * 12, vy: 0.5, vz: Math.sin(a) * 12, drag: 2.5, life: 0.5, color: DUST, size: 0.7 });
@@ -209,7 +210,7 @@ export const ABILITIES: any = {
     onHit() {
       const stacks = Math.min(5, (player.poison?.stacks ?? 0) + 1);    // PH
       player.poison = { stacks, until: state.now + 12000, nextTick: player.poison?.nextTick ?? state.now + 2000 };   // PH
-      combatText(player.pos, `Gift ×${stacks}`, 'info', 2.6);
+      combatText(player.pos, t('status.poison', { n: stacks }), 'info', 2.6);
     },
   },
   // Heilt das verletzteste Pack-Mitglied, flieht bei 15 % (fleeChance im Typ)
@@ -234,7 +235,7 @@ export const ABILITIES: any = {
       if (!mob.shieldUsed && mob.hp < mob.maxHp * 0.3) {        // PH
         mob.shieldUsed = true;
         mob.shieldUntil = state.now + 6000;                     // PH
-        combatText(mob.pos, 'Gottesschild!', 'info', 2.6);
+        combatText(mob.pos, t('msg.divineShield'), 'info', 2.6);
       }
       return mob.shieldUntil > state.now ? 0 : amount;
     },
@@ -263,7 +264,7 @@ export const ABILITIES: any = {
   // Ruft alle Mobs in 20 yd statt 10
   alarm: {
     onCombatStart(mob) {
-      combatText(mob.pos, 'Alarm!', 'info', 2.6);
+      combatText(mob.pos, t('msg.alarm'), 'info', 2.6);
       for (const other of state.mobs) {
         if (other === mob || other.dead || other.state !== 'idle') continue;
         if (dist2d(other.pos, mob.pos) <= 20) other.assistAt = state.now + 400;   // PH

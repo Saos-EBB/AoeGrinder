@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:vfx": "vite build --mode vfx",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "check:i18n": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

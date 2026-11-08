@@ -17,7 +17,7 @@ export const fireball = {
     { id: 'swift', name: t('spell.fireball.runes.swift.name'), desc: t('spell.fireball.runes.swift.desc') },
   ],
   instantCast: () => hasRune('fireball', 'swift'),
-  canCast: () => nearestTarget(fireball.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(fireball.range) ? null : t('msg.noTarget'),
   effect(c) {
     const target = nearestTarget(fireball.range);
     if (!target) return;

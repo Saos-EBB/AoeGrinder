@@ -10,6 +10,7 @@ import { COLORS } from './colors';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
 import './numbers.css';
+import { locale } from '../i18n';
 
 // Schulfarben für N01 (Frost, Feuer, Arkan aus dem Mockup; Blitz, Seuche, Krieger eigene Wahl)
 const SCHOOL: Record<string, string> = {
@@ -27,7 +28,7 @@ const sizeOf = dmg => {
   return (UI.dmg.minPx + (UI.dmg.maxPx - UI.dmg.minPx) * k) * uiSettings.numSize / 100;
 };
 // Tausender: N01 und N02 mit schmalem Leerzeichen wie im Mockup
-const fmt = (n: number) => ['N01', 'N02'].includes(uiSettings.numStyle) ? Math.round(n).toLocaleString('de-DE').replace(/\./g, ' ') : String(Math.round(n));
+const fmt = (n: number) => ['N01', 'N02'].includes(uiSettings.numStyle) ? Math.round(n).toLocaleString(locale).replace(/\./g, ' ') : String(Math.round(n));
 function label(kind: string, n: number, count = 1) {
   const s = uiSettings.numStyle, v = fmt(n);
   if (kind === 'merged') {

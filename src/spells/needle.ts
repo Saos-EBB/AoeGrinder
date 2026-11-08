@@ -18,6 +18,6 @@ export const needle = {
     const n = takeShards(), f = forward(), from = player.pos, to = { x: from.x + f.x * N.len, y: from.y, z: from.z + f.z * N.len };
     for (const m of mobsOnLine(from, to, N.width)) c.hitProjectile(m, N.dmg * UNIT * (1 + N.perShard * n));
     needleLook(to as any, n);
-    if (n) combatText(player.pos, `${n} Splitter`, 'info', 2.4);
+    if (n) combatText(player.pos, t('msg.shards', { n }), 'info', 2.4);
   },
 };

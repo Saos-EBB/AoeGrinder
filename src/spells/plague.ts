@@ -49,7 +49,7 @@ export function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUnt
 
 // Jeden Frame aus updatePlayer: Gift-Ticks
 export function updatePlague() {
-  if (modValue('lifeCost')) player.resLabel = 'Kein Mana · Zauber kosten Leben';
+  if (modValue('lifeCost')) player.resLabel = t('plague.label');
   for (const m of state.mobs) {
     if (m.dead || !poisoned(m) || state.now < m.poison.next) continue;
     m.poison.next += 1000;
@@ -91,7 +91,7 @@ const spell = (o) => ({ ranks: ['dmg', 'radius'], tags: ['Seuche', ...(o.tags ??
 export const sludge = spell({
   name: t('spell.sludge.name'), desc: t('spell.sludge.desc'), tags: ['Geschoss'],
   lifePct: 0.01, mana: 40, cd: 0, range: P.sludge.range, showDmg: P.sludge.dmg * UNIT,
-  canCast: () => nearestTarget(P.sludge.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(P.sludge.range) ? null : t('msg.noTarget'),
   effect(c) {
     const t = nearestTarget(P.sludge.range);
     if (!t) return;
@@ -181,21 +181,21 @@ export const web = spell({
 export const contract = spell({
   name: t('spell.contract.name'), desc: t('spell.contract.desc'), tags: ['Kontrolle'],
   lifePct: 0.03, mana: 100, cd: 10000,
-  canCast: () => marked(P.contract.radius).length ? null : 'Kein markierter Gegner in der Nähe',
+  canCast: () => marked(P.contract.radius).length ? null : t('msg.noMarked'),
   effect(c) { contractAll(c, marked(c.radius(P.contract.radius))); },
 });
 
 export const drain = spell({
   name: t('spell.drain.name'), desc: t('spell.drain.desc'), tags: ['Heilung'],
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
-  canCast: () => marked(P.drain.radius).length ? null : 'Kein markierter Gegner in der Nähe',
+  canCast: () => marked(P.drain.radius).length ? null : t('msg.noMarked'),
   effect(c) { drainAll(c, marked(c.radius(P.drain.radius))); },
 });
 
 export const burst = spell({
   name: t('spell.burst.name'), desc: t('spell.burst.desc'),
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
-  canCast: () => marked(P.burst.radius).length ? null : 'Kein markierter Gegner in der Nähe',
+  canCast: () => marked(P.burst.radius).length ? null : t('msg.noMarked'),
   effect(c) { burstAll(withScale(c), marked(c.radius(P.burst.radius))); },
 });
 
@@ -215,7 +215,7 @@ export const melt = spell({
         for (const m of mobsInRadius(f.pos, R)) { pullMob(m, f.pos, dist2d(m.pos, f.pos)); applyRoot(m, M.rootMs, 'glue'); }
         spray(f.pos, 50);
         shakeCamera(0.5);
-        combatText(player.pos, 'Zerfließen', 'heal', 2.8);
+        combatText(player.pos, t('spell.melt.name'), 'heal', 2.8);
       },
     });
   },
@@ -226,9 +226,9 @@ export const pestilence = {
   name: t('spell.pestilence.name'), figRelic: true, desc: t('spell.pestilence.desc'), ranks: [], tags: ['Seuche'], cls: 'nature',
   mana: 0, cd: P.pestilence.cd,
   press() {
-    if (cdEnd('pestilence') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+    if (cdEnd('pestilence') > state.now) return showError(t('msg.notReady'));
     const list = marked(P.pestilence.radius);
-    if (!list.length) return showError('Kein markierter Gegner in der Nähe');
+    if (!list.length) return showError(t('msg.noMarked'));
     startCd('pestilence');
     noteCastStart('pestilence');
     const c = withScale(makeCtx('pestilence'));
@@ -236,6 +236,6 @@ export const pestilence = {
     drainAll(c, list, true);
     contractAll(c, list, true);
     pestilenceLook(P.pestilence.radius);
-    combatText(player.pos, 'Pestilenz', 'info', 3);
+    combatText(player.pos, t('spell.pestilence.name'), 'info', 3);
   },
 };

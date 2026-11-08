@@ -23,7 +23,7 @@ export function igniteMob(c, m, dps = S.burnDps * UNIT, ms = S.burnMs) {
 export const firestorm = {
   name: t('spell.firestorm.name'), desc: t('spell.firestorm.desc'), ranks: ['dmg', 'mana'], tags: ['Feuer', 'Kette'], cls: 'fire',
   mana: 90, cd: 8000, range: S.range, showDmg: S.dmg * UNIT,   // PH
-  canCast: () => nearestTarget(S.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(S.range) ? null : t('msg.noTarget'),
   effect(c) {
     const target = nearestTarget(S.range);
     if (!target) return;

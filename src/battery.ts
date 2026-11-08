@@ -4,6 +4,7 @@
 import { state, player } from './state';
 import { BATTERY as B, mods } from './config';
 import { modValue } from './modifiers';
+import { t } from './i18n';
 
 export const batteryMode = () => !!modValue('battery');
 // Kondensator (v31): größere Batterie, Überladung erst bei vollem Wert
@@ -24,7 +25,7 @@ export function updateBattery(dt) {
   if (!batteryMode() || player.dead) return;
   player.rageMax = batteryMax();
   if (!player.overcharged) add(B.regenPerS * dt / 1000);
-  player.resLabel = `Batterie ${Math.floor(player.mana)} / ${batteryMax()}${player.overcharged ? ' · Überladen!' : ''}`;
+  player.resLabel = t('bat.label', { a: Math.floor(player.mana), b: batteryMax() }) + (player.overcharged ? t('bat.over') : '');
 }
 // Pro getroffenem Gegner eines Blitz-Zaubers
 export function batteryHit() { if (batteryMode() && !player.overcharged) add(B.perHitTarget); }

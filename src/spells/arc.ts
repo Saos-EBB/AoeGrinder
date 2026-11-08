@@ -16,7 +16,7 @@ export const arc = {
     { id: 'corpses', name: t('spell.arc.runes.corpses.name'), desc: t('spell.arc.runes.corpses.desc') },
     { id: 'spark', name: t('spell.arc.runes.spark.name'), desc: t('spell.arc.runes.spark.desc'), stages: 2 },
   ],
-  canCast: () => nearestMob(arc.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestMob(arc.range) ? null : t('msg.noTarget'),
   effect(c) {
     const first = nearestMob(arc.range);
     if (!first) return;

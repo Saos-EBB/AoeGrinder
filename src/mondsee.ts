@@ -10,6 +10,7 @@ import { state, player } from './state';
 import { camera } from './render';
 import { box, cyl, scatter } from './props';
 import { toonMat } from './toon';
+import { t } from './i18n';
 
 const MS = {
   lake: { x: 0, z: -70, rx: 70, rz: 46 },       // Ellipse, der See liegt nördlich der Mitte
@@ -19,10 +20,10 @@ const MS = {
   // Phasen in dieser Reihenfolge ab Run-Start (zunehmend zuerst, damit man den Mond sieht), jede phaseMs lang. packMul: Mob-Dichte, champ: Champion-Chance je Pack (statt 20 %), fog: Nebel dazu
   phaseMs: 180000,
   phases: [
-    { name: 'Zunehmender Mond', moon: 0.25, packMul: 1, champ: null, fog: 0.004, text: 'Der Mond nimmt zu' },
-    { name: 'Vollmond', moon: 0.5, packMul: 2, champ: null, fog: -0.008, text: 'Vollmond: doppelt so viele Gegner' },
-    { name: 'Abnehmender Mond', moon: 0.75, packMul: 1, champ: null, fog: 0.004, text: 'Der Mond nimmt ab' },
-    { name: 'Neumond', moon: 0.0, packMul: 1, champ: 0.6, fog: 0.012, text: 'Neumond: Champions streifen umher' },
+    { name: t('moon.0.name'), moon: 0.25, packMul: 1, champ: null, fog: 0.004, text: t('moon.0.text') },
+    { name: t('moon.1.name'), moon: 0.5, packMul: 2, champ: null, fog: -0.008, text: t('moon.1.text') },
+    { name: t('moon.2.name'), moon: 0.75, packMul: 1, champ: null, fog: 0.004, text: t('moon.2.text') },
+    { name: t('moon.3.name'), moon: 0.0, packMul: 1, champ: 0.6, fog: 0.012, text: t('moon.3.text') },
   ],
   lights: { n: 260, box: 90, height: 5, size: 0.22, maxPx: 9, seeR: 42 },
 };
@@ -192,7 +193,7 @@ function setPhase(i, announce) {
 export const moonPhase = () => MS.phases[Math.max(0, phaseIdx)];
 
 export const mondsee = {
-  name: 'Mondsee',
+  name: t('zone.mondsee.name'),
   toon: true,
   env: {   // PH: im Dunkel-Modus übersteuert dunkel.ts Himmel und Nebel
     fog: 0x0a1028, fogNear: 30, fogFar: 140,

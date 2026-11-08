@@ -16,6 +16,7 @@ import { textAt, impactFx, bigImpact, burnPlayer, V, gy, dist2, rnd, TAU, onGrou
 import { ATT } from './attacks';
 import { removeMob } from '../mobs';
 import { STYLES, BOSSES } from './roster';
+import { t } from '../i18n';
 
 // Summe der Boss-Leben (boss.ts hängt sie an f.hp)
 const hpFrac = f => { const { hp, max } = f.hp(); return hp / Math.max(1, max); };
@@ -30,10 +31,10 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       f.speedMul = (f.speedMul ?? 1) * (p.speed ?? 1);
       f.windMul = (f.windMul ?? 1) / (p.speed ?? 1);
       f.dmgMul = (f.dmgMul ?? 1) * (p.dmg ?? 1);
-      for (const b of f.bodies) if (b.mob) { b.mob.bossTint = 'boss2'; impactFx(b.mob.pos, 6, 0xff2a2a, .8); textAt(b.mob.pos, 'ENRAGE', 'hurt', 3.5); }
+      for (const b of f.bodies) if (b.mob) { b.mob.bossTint = 'boss2'; impactFx(b.mob.pos, 6, 0xff2a2a, .8); textAt(b.mob.pos, t('msg.enrage'), 'hurt', 3.5); }
     };
     f.hooks.tick.push(() => { if (!on && (p.after != null ? f.time >= p.after : hpFrac(f) <= (p.hp ?? .2))) fire(); });
-    if (p.after != null) f.hooks.bar.push(() => on ? 'ENRAGE' : `Enrage in ${Math.ceil(p.after - f.time)} s`);
+    if (p.after != null) f.hooks.bar.push(() => on ? t('msg.enrage') : t('bar.enrageIn', { n: Math.ceil(p.after - f.time) }));
   },
   // Hinken: unter hp langsamer, holt länger aus
   hinken(f, p) {
@@ -51,7 +52,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
   // Dauer-Slow über den Spieler-Slow (30 %, CFG.curseSlow), solange der Kampf läuft
   slowAura(f) {
     f.hooks.tick.push(() => { player.slowUntil = Math.max(player.slowUntil, state.now + 300); });
-    f.hooks.bar.push(() => 'Frost-Aura: Tempo −30 %');
+    f.hooks.bar.push(() => t('bar.frostAura'));
   },
   // Garantierter Drop: Magier eine Waffe ab Grün, sonst Staub ×3. Inventar voll → Staub
   loot(f, p) {
@@ -62,12 +63,12 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       if (melee || inventoryFull()) {
         const dust = (p.dust ?? 20) * 3;
         meta.dust += dust; saveMeta();
-        textAt(pos, `+${dust} Knochenstaub`, 'xp', 4);
+        textAt(pos, t('msg.dust', { n: dust }), 'xp', 4);
         return;
       }
       const w = rollWeapon(Math.max(2, rollTier()));
       meta.inv.push(w); saveMeta();
-      textAt(pos, `Waffe: ${CARD_RARITIES[w.r].name}`, 'heal', 4);
+      textAt(pos, t('msg.weapon', { r: CARD_RARITIES[w.r].name }), 'heal', 4);
     });
   },
 
@@ -78,9 +79,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
     f.hooks.tick.push(() => {
       if (f.time < next) return;
       next += p.every ?? 30;
-      for (const b of f.bodies) if (b.mob && !b.mob.dead) { b.grow *= 1.1; b.mob.model.root.scale.multiplyScalar(1.1); b.mob.model.height *= 1.1; impactFx(b.mob.pos, 6, 0xb0c0d0, .4); textAt(b.mob.pos, `Wachstum: ×${b.grow.toFixed(2).replace('.', ',')}`, 'info', 3); }
+      for (const b of f.bodies) if (b.mob && !b.mob.dead) { b.grow *= 1.1; b.mob.model.root.scale.multiplyScalar(1.1); b.mob.model.height *= 1.1; impactFx(b.mob.pos, 6, 0xb0c0d0, .4); textAt(b.mob.pos, t('msg.growth', { n: +b.grow.toFixed(2) }), 'info', 3); }
     });
-    f.hooks.bar.push(() => `Wachstum in ${Math.max(0, Math.ceil(next - f.time))} s`);
+    f.hooks.bar.push(() => t('bar.growthIn', { n: Math.max(0, Math.ceil(next - f.time)) }));
   },
   // Arena schrumpft 20 → 8 yd über 90 s, ab 50 % HP doppelt so schnell. Die Wand bleibt bei 20 yd, außerhalb des Rings Schaden pro Sekunde
   arenaSchrumpft(f, p) {
@@ -92,9 +93,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       r = Math.max(to, r - (from - to) / dur * k * dt);
       if (Math.abs(r - f.arena) > .1 || r === to && f.arena !== to) { f.setArena(r); f.wall = from; }   // Ring nur alle 0,1 yd neu legen
       tick -= dt;
-      if (dist2(player.pos, f.center) > r && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .08, 'Arena'); }
+      if (dist2(player.pos, f.center) > r && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .08, t('src.arena')); }
     });
-    f.hooks.bar.push(() => `Arena ${Math.round(r)} yd`);
+    f.hooks.bar.push(() => t('bar.arena', { n: Math.round(r) }));
   },
   // Abtauchen (Ragnaros bei 50 %): 30 s unangreifbar, 4–6 Söhne der Flamme aus Mobs der Zone, dann Rückkehr mit Ring
   abtauchen(f, p) {
@@ -107,36 +108,36 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
         const y0 = b.mob.pos.y, depth = b.mob.model.height * 1.1;
         b.rise = k => { b.mob.pos.y = y0 - depth * k; };
         tw(null, 1, k => b.rise(ease(k)));                 // versinkt in der Lava
-        textAt(b.mob.pos, 'Taucht ab', 'info', 3); impactFx(b.mob.pos, 6, 0xff7a2a, .6);
+        textAt(b.mob.pos, t('msg.submerge'), 'info', 3); impactFx(b.mob.pos, 6, 0xff7a2a, .6);
         const n = 4 + Math.floor(Math.random() * 3);
         for (let i = 0; i < n; i++) { const a = i / n * TAU + .4, pos = onGround(player.pos).add(V(Math.cos(a) * 6, 0, Math.sin(a) * 6)); adds.push(f.spawnAdd(pos)); impactFx(pos, 2, 0xff8a3a, .2); }
-        textAt(player.pos, 'Söhne der Flamme', 'hurt', 3.5);
+        textAt(player.pos, t('msg.sons'), 'hurt', 3.5);
       }
       if (!b?.submerged) return;
       const left = until - f.time;
       if (left <= 0 || adds.every(m => m.dead)) {
         b.submerged = false; tw(null, .6, k => b.rise(1 - ease(k)));
-        bigImpact(b.mob.pos, 10, 0xff7a2a); textAt(b.mob.pos, 'Kehrt zurück', 'info', 3);
+        bigImpact(b.mob.pos, 10, 0xff7a2a); textAt(b.mob.pos, t('msg.returns'), 'info', 3);
         f.attack(b, 'ring', { r: 10, color: 0xff7a2a });
       }
     });
-    f.hooks.bar.push(() => b?.submerged ? `abgetaucht · ${Math.ceil(until - f.time)} s` : '');
+    f.hooks.bar.push(() => b?.submerged ? t('bar.submerged', { n: Math.ceil(until - f.time) }) : '');
   },
   // Zufalls-Atem (Chromaggus): beim Start 2 von 5 Atem würfeln, nur diese nutzt er (dazu der Biss)
   zufallsAtem(f) {
     const ALL = [
-      { n: 'Zeitraffer', color: 0xd8c050, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 5000); textAt(player.pos, 'Zeitraffer: langsamer', 'hurt'); } },
-      { n: 'Ätzende Säure', color: 0x7aff3a, hit: () => dot(f, .03, 4, 'Säure') },
-      { n: 'Fleisch entzünden', color: 0xff3a1a, hit: () => { f.dmgMul = (f.dmgMul ?? 1) * 1.3; textAt(player.pos, 'nimmt +30 % Schaden', 'hurt'); setTimeout(() => { if (f.dmgMul) f.dmgMul /= 1.3; }, 8000); } },
-      { n: 'Verbrennen', color: 0xff9a2a, hit: () => dot(f, .04, 3, 'Verbrennen') },
-      { n: 'Frostbrand', color: 0x6ac8ff, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 3000); dot(f, .02, 3, 'Frostbrand'); } },
+      { n: t('breath.timelapse'), color: 0xd8c050, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 5000); textAt(player.pos, t('msg.timelapse'), 'hurt'); } },
+      { n: t('breath.acid'), color: 0x7aff3a, hit: () => dot(f, .03, 4, t('src.acid')) },
+      { n: t('breath.ignite'), color: 0xff3a1a, hit: () => { f.dmgMul = (f.dmgMul ?? 1) * 1.3; textAt(player.pos, t('msg.takes30'), 'hurt'); setTimeout(() => { if (f.dmgMul) f.dmgMul /= 1.3; }, 8000); } },
+      { n: t('breath.burn'), color: 0xff9a2a, hit: () => dot(f, .04, 3, t('breath.burn')) },
+      { n: t('breath.frostburn'), color: 0x6ac8ff, hit: () => { player.slowUntil = Math.max(player.slowUntil, state.now + 3000); dot(f, .02, 3, t('breath.frostburn')); } },
     ];
     const pool = [...ALL], pick = [];
     while (pick.length < 2) pick.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     const bite = f.def.attacks.find(a => a.k === 'kette');
     const atts = [bite, ...pick.map(x => ({ n: x.n, k: 'atem', p: { color: x.color, label: x.n, len: 15, ang: 50, onHit: x.hit } }))];
     for (const b of f.bodies) b.attacks = atts;
-    textAt(f.bodies[0].home, `Atem: ${pick[0].n} + ${pick[1].n}`, 'info', 4);
+    textAt(f.bodies[0].home, t('msg.breath', { a: pick[0].n, b: pick[1].n }), 'info', 4);
     f.hooks.bar.push(() => `${pick[0].n} · ${pick[1].n}`);
   },
   // Polarität (Thaddius): alle 8 s würfelt der Spieler eine Ladung, der Boss hat eine feste. Gleich: +30 % Schaden auf den Boss. Verschieden und nah: Schaden pro Sekunde
@@ -149,12 +150,12 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       const b = mainBody(f);
       sB.position.set(b.mob.pos.x, b.mob.pos.y + b.mob.model.height + .9, b.mob.pos.z); sB.scale.setScalar(.5);
       sP.position.set(player.pos.x, player.pos.y + 3, player.pos.z); sP.scale.setScalar(.35);
-      if (f.time >= next) { next += p.every ?? 8; plus = Math.random() < .5; paint(); textAt(player.pos, plus === bossPlus ? 'Gleiche Ladung: +30 % Schaden' : 'Falsche Ladung: Abstand halten!', plus === bossPlus ? 'heal' : 'hurt', 3); }
+      if (f.time >= next) { next += p.every ?? 8; plus = Math.random() < .5; paint(); textAt(player.pos, plus === bossPlus ? t('msg.sameCharge') : t('msg.wrongCharge'), plus === bossPlus ? 'heal' : 'hurt', 3); }
       tick -= dt;
-      if (plus !== bossPlus && dist2(player.pos, b.mob.pos) < (p.r ?? 8) && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .05, 'Polarität'); }
+      if (plus !== bossPlus && dist2(player.pos, b.mob.pos) < (p.r ?? 8) && tick <= 0) { tick = 1; burnPlayer(p.dot ?? .05, t('src.polarity')); }
     });
     f.hooks.dmgTaken.push((b, a) => plus === bossPlus ? a * 1.3 : a);
-    f.hooks.bar.push(() => `Ladung ${plus ? '+' : '−'} / Boss ${bossPlus ? '+' : '−'}`);
+    f.hooks.bar.push(() => t('bar.charge', { a: plus ? '+' : '−', b: bossPlus ? '+' : '−' }));
     f.hooks.cleanup.push(() => killFx(e));
   },
   // Bekämpfen sich (Abgrundwächter): der Rotäugige (letzter Körper) greift alle 15 s auch einen anderen Wächter an
@@ -168,12 +169,12 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       next = f.time + (p.every ?? 15);
       const t = others[Math.floor(Math.random() * others.length)], run = red.run = newRun(), p0 = red.mob.pos.clone();
       red.busy = true;
-      textAt(red.mob.pos, 'rotes Auge', 'hurt', 3);
+      textAt(red.mob.pos, t('msg.redEye'), 'hurt', 3);
       face(red, t.mob.pos);
       const end = t.mob.pos.clone().add(p0.clone().sub(t.mob.pos).setY(0).normalize().multiplyScalar(2.2));
       tw(run, .4, k => moveBody(red, p0.clone().lerp(end, ease(k)))).then(() => {
         t.mob.hp = Math.max(1, t.mob.hp - t.mob.maxHp * (p.dmg ?? .08)); t.mob.hitAt = state.now;
-        impactFx(t.mob.pos, 3, 0xff6a3a, .4); textAt(t.mob.pos, 'Wächter gegen Wächter', 'info', 3);
+        impactFx(t.mob.pos, 3, 0xff6a3a, .4); textAt(t.mob.pos, t('msg.guardVsGuard'), 'info', 3);
         red.busy = false; red.walkUntil = f.time + .6;
       });
     });
@@ -203,9 +204,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       s.grow *= 1.15; s.mob.model.root.scale.multiplyScalar(1.15); s.mob.model.height *= 1.15;
       s.attacks = f.def.attacks.map(a => ({ ...a, b: undefined }));
       s.mob.bossTint = 'boss2';
-      bigImpact(s.mob.pos, 8, 0xffe070); textAt(s.mob.pos, `erbt die Kraft: +${Math.round((k - 1) * 100)} %`, 'hurt', 4);
+      bigImpact(s.mob.pos, 8, 0xffe070); textAt(s.mob.pos, t('msg.inherits', { n: Math.round((k - 1) * 100) }), 'hurt', 4);
     });
-    f.hooks.bar.push(() => f.bodies.some(b => b.inherited) ? 'Kraft geerbt' : '');
+    f.hooks.bar.push(() => f.bodies.some(b => b.inherited) ? t('bar.inherited') : '');
   },
   // Neue Waffe in Phase 2 (Godrick): Drachenarm am Modell, dazu der Feueratem
   neuePhaseWaffe(f, p) {
@@ -215,17 +216,17 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       done = true;
       const b = mainBody(f);
       f.swapModel(b, { ...b.spec, p: { ...b.spec.p, dragonArm: true } });
-      b.attacks = [...f.def.attacks, { n: 'Feueratem', k: 'atem', p: { color: 0xff6a1a, len: p.len ?? 14, ang: 45, label: 'Feueratem', onHit: () => dot(f, .03, 3, 'Verbrennen') } }];
-      bigImpact(b.mob.pos, 6, 0xff6a1a); textAt(b.mob.pos, 'Drachenarm', 'hurt', 4);
+      b.attacks = [...f.def.attacks, { n: t('src.firebreath'), k: 'atem', p: { color: 0xff6a1a, len: p.len ?? 14, ang: 45, label: t('src.firebreath'), onHit: () => dot(f, .03, 3, t('breath.burn')) } }];
+      bigImpact(b.mob.pos, 6, 0xff6a1a); textAt(b.mob.pos, t('msg.dragonArm'), 'hurt', 4);
     });
-    f.hooks.bar.push(() => done ? 'Drachenarm' : '');
+    f.hooks.bar.push(() => done ? t('msg.dragonArm') : '');
   },
   // Entweihen wächst (Lichkönig): eigene Pfütze; jeder Schaden-Tick am Spieler vergrößert sie ×1,4
   pfuetzeWaechst(f, p) {
     const live = [];                                       // Pfützen dieses Kampfs (attacks.ts pfuetze legt sie in p.track)
-    const def = { n: 'Entweihen', k: 'pfuetze', p: { r: 3, color: 0x3a2a5a, label: 'Entweihen', dur: p.dur ?? 25, grow: p.grow ?? 1.4, maxR: p.maxR ?? 14, track: live } };
+    const def = { n: t('src.desecrate'), k: 'pfuetze', p: { r: 3, color: 0x3a2a5a, label: t('src.desecrate'), dur: p.dur ?? 25, grow: p.grow ?? 1.4, maxR: p.maxR ?? 14, track: live } };
     for (const b of f.bodies) b.attacks = [...f.def.attacks, def];
-    f.hooks.bar.push(() => { const r = Math.max(0, ...live.filter(h => !h.gone).map(h => h.r)); return r ? `Entweihen ${r.toFixed(1).replace('.', ',')} yd` : ''; });
+    f.hooks.bar.push(() => { const r = Math.max(0, ...live.filter(h => !h.gone).map(h => h.r)); return r ? t('bar.desecrate', { n: +r.toFixed(1) }) : ''; });
   },
   // Wahnsinn (Yogg-Saron): Sanity 100, sinkt pro Sekunde und pro Treffer. Bei 0: 5 s links und rechts vertauscht, dann zurück auf 50
   wahnsinn(f, p) {
@@ -235,10 +236,10 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       if (san > 0) return;
       state.mirrorUntil = state.now + (p.ms ?? 5000);
       san = p.reset ?? 50;
-      addTrauma(.6); textAt(player.pos, 'WAHNSINN: Steuerung gespiegelt', 'hurt', 4);
+      addTrauma(.6); textAt(player.pos, t('msg.madness'), 'hurt', 4);
     });
     f.hooks.onPlayerHit.push(() => { san = Math.max(0, san - (p.perHit ?? 10)); });
-    f.hooks.bar.push(() => state.mirrorUntil > state.now ? 'WAHNSINN' : `Sanity ${Math.ceil(san)}`);
+    f.hooks.bar.push(() => state.mirrorUntil > state.now ? t('bar.madness') : t('bar.sanity', { n: Math.ceil(san) }));
     f.hooks.cleanup.push(() => { state.mirrorUntil = 0; });
   },
   // Spiegelbilder (Atziri): alle 30 s 4 Kopien, die echte springt an einen der 5 Plätze. Kopien zerplatzen beim ersten Treffer, machen keinen Schaden
@@ -249,7 +250,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       const b = mainBody(f);
       for (const m of copies) { m.model.root.rotation.y = Math.atan2(player.pos.x - m.pos.x, player.pos.z - m.pos.z); Object.assign(m.model.ctl, b.mob.model.ctl); }   // gleiche Pose wie das Original
       const popped = copies.filter(m => m.popped || m.dead);
-      if (popped.length) { for (const m of popped) { impactFx(m.pos, 2.5, 0xff8a40, .3); textAt(m.pos, 'Spiegelbild', 'info', 2); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = copies.filter(m => !m.popped && !m.dead); }
+      if (popped.length) { for (const m of popped) { impactFx(m.pos, 2.5, 0xff8a40, .3); textAt(m.pos, t('msg.mirror'), 'info', 2); removeMob(m); state.mobs.splice(state.mobs.indexOf(m), 1); } copies = copies.filter(m => !m.popped && !m.dead); }
       if (f.time < next || b.busy || f.step !== 'fight') return;
       next = f.time + (p.every ?? 30);
       clear(false);
@@ -259,9 +260,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       impactFx(b.mob.pos, 3, 0xff8a40, .4);
       moveBody(b, spots[real]);
       for (let i = 0; i < n; i++) { if (i === real) continue; const m = f.spawnCopy(b, spots[i]); m.bossTint = b.mob.bossTint; copies.push(m); impactFx(spots[i], 3, 0xff8a40, .4); }
-      textAt(player.pos, 'Spiegelbilder: nur eine ist echt', 'info', 3.5);
+      textAt(player.pos, t('msg.mirrors'), 'info', 3.5);
     });
-    f.hooks.bar.push(() => copies.length ? `${copies.length} Spiegelbilder` : `Spiegelbilder in ${Math.max(0, Math.ceil(next - f.time))} s`);
+    f.hooks.bar.push(() => copies.length ? t('bar.mirrors', { n: copies.length }) : t('bar.mirrorsIn', { n: Math.max(0, Math.ceil(next - f.time)) }));
     f.hooks.cleanup.push(() => clear(false));
   },
   // Konter (Gwyn): perfekter Dodge öffnet 2 s, in denen er dreifachen Schaden nimmt
@@ -273,12 +274,12 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
         seen = n; until = f.time + (p.s ?? 2);
         const b = mainBody(f);
         b.mob.bossTint = 'gap'; b.mob.hitAt = state.now;
-        textAt(b.mob.pos, 'KONTER!', 'heal', 3);
+        textAt(b.mob.pos, t('msg.counter'), 'heal', 3);
       }
       if (until > 0 && f.time >= until) { until = -1; for (const b of f.bodies) if (b.mob && b.mob.bossTint === 'gap' && b.gapUntil <= f.time) b.mob.bossTint = f.phase === 2 ? 'boss2' : 'boss'; }
     });
     f.hooks.dmgTaken.push((b, a) => f.time < until ? a * (p.mul ?? 3) : a);
-    f.hooks.bar.push(() => f.time < until ? `KONTER ×${p.mul ?? 3}` : 'Perfekter Dodge = Konter');
+    f.hooks.bar.push(() => f.time < until ? t('bar.counter', { n: p.mul ?? 3 }) : t('bar.counterHint'));
   },
 
   // ---------- Final ----------
@@ -289,9 +290,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       if (!m || m.dead) return;
       const add = m.maxHp * (p.pct ?? .04);
       m.hp = Math.min(m.maxHp, m.hp + add);
-      textAt(m.pos, `+${Math.round((p.pct ?? .04) * 100)} % geheilt`, 'heal', 2.4);
+      textAt(m.pos, t('msg.healed', { n: Math.round((p.pct ?? .04) * 100) }), 'heal', 2.4);
     });
-    f.hooks.bar.push(() => 'Heilt bei Treffer');
+    f.hooks.bar.push(() => t('bar.healsOnHit'));
   },
   // Zerstörung (Maliketh): jeder Treffer senkt das maximale Leben um 10 %, höchstens bis 30 %. Grauer Teil im Leben-Balken, nach dem Kampf zurück
   maxHpSenken(f, p) {
@@ -300,9 +301,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       if (player.dead) return;
       player.hpCut = Math.min(1 - floor, (player.hpCut ?? 0) + step);
       player.hp = Math.min(player.hp, maxHp());
-      textAt(player.pos, `max. Leben −${Math.round(step * 100)} %`, 'hurt', 2.4);
+      textAt(player.pos, t('msg.maxHp', { n: Math.round(step * 100) }), 'hurt', 2.4);
     });
-    f.hooks.bar.push(() => player.hpCut ? `max. Leben ${Math.round((1 - player.hpCut) * 100)} %` : 'Zerstörung');
+    f.hooks.bar.push(() => player.hpCut ? t('bar.maxHp', { n: Math.round((1 - player.hpCut) * 100) }) : t('bar.destruction'));
     f.hooks.cleanup.push(() => { player.hpCut = 0; });
   },
   // Zeitstopp (Shaper): alle 25 s friert alles 1,3 s (Spieler, Geschosse, Boss-Zeit, Bild grau), danach sofort der Slam-Rhythmus
@@ -324,9 +325,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       f.scale = 0;
       player.stunUntil = Math.max(player.stunUntil, until);
       document.body.classList.add('zeitstopp');
-      addTrauma(.5); textAt(player.pos, 'ZEITSTOPP', 'hurt', 3);
+      addTrauma(.5); textAt(player.pos, t('msg.timestop'), 'hurt', 3);
     });
-    f.hooks.bar.push(() => until ? 'ZEITSTOPP' : `Zeitstopp in ${Math.max(0, Math.ceil(next - f.time))} s`);
+    f.hooks.bar.push(() => until ? t('msg.timestop') : t('bar.timestopIn', { n: Math.max(0, Math.ceil(next - f.time)) }));
     f.hooks.cleanup.push(() => { f.scale = 1; document.body.classList.remove('zeitstopp'); });
   },
   // Stilwechsel (Seele der Asche): bei 75/50/25 % Leben wird er zur nächsten Figur aus STYLES, mit deren Modell und Angriffen

@@ -6,7 +6,7 @@ import { askConfirm } from './confirm';
 import { NUM_FONTS, numFontFamily } from './numFonts';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
-import { t, lang, LANGS, setLang, Lang } from '../i18n';
+import { t, locale, lang, LANGS, setLang, Lang } from '../i18n';
 
 let tab = 'interface';
 function showTab(id) {
@@ -67,7 +67,7 @@ const h3 = text => Object.assign(document.createElement('h3'), { className: 'set
 function fontGrid() {
   const box = document.createElement('div');
   box.className = 'setFonts';
-  for (const [id, name] of [['', 'Wie Zahlen-Stil'], ...NUM_FONTS.map(([i, n]) => [i, n])]) {
+  for (const [id, name] of [['', t('set.likeStyle')], ...NUM_FONTS.map(([i, n]) => [i, n])]) {
     const b = Object.assign(document.createElement('button'), { type: 'button', className: 'setFont' + (uiSettings.numFont === id ? ' on' : '') });
     const sample = Object.assign(document.createElement('span'), { className: 'setFontSample', textContent: '1284 +86' });
     if (id) sample.style.fontFamily = `'${numFontFamily(id)}', sans-serif`;
@@ -84,19 +84,19 @@ function button(text, cls, onClick) {
 }
 
 // Interface-Tab; wird nach dem Laden eines eigenen UI-Stands neu gebaut, damit alle Regler den Stand zeigen
-const fmtAt = iso => { const d = new Date(iso); return `${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`; };
+const fmtAt = iso => { const d = new Date(iso); return `${d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`; };
 function profileRows() {
   const box = document.createElement('div');
   box.className = 'setProfiles';
   uiSettings.profiles.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'setProfile';
-    const info = Object.assign(document.createElement('span'), { textContent: p ? `Platz ${i + 1} · ${p.data.hudPreset} · ${p.data.numStyle} · ${fmtAt(p.at)}` : `Platz ${i + 1} · leer` });
-    const save = button('Speichern', 'smallBtn', async () => {
-      if (p && !await askConfirm('Platz überschreiben?', `Platz ${i + 1} enthält schon einen UI-Stand. Mit dem aktuellen überschreiben?`, 'Überschreiben')) return;
+    const info = Object.assign(document.createElement('span'), { textContent: p ? t('set.slot', { n: i + 1, preset: p.data.hudPreset, num: p.data.numStyle, at: fmtAt(p.at) }) : t('set.slotEmpty', { n: i + 1 }) });
+    const save = button(t('set.save'), 'smallBtn', async () => {
+      if (p && !await askConfirm(t('set.overTitle'), t('set.overText', { n: i + 1 }), t('set.over'))) return;
       saveProfile(i); buildInterface();
     });
-    const load = button('Laden', 'smallBtn', () => { if (loadProfile(i)) buildInterface(); });
+    const load = button(t('set.load'), 'smallBtn', () => { if (loadProfile(i)) buildInterface(); });
     (load as HTMLButtonElement).disabled = !p;
     row.append(info, save, load);
     box.append(row);
@@ -109,12 +109,12 @@ function buildInterface() {
   const btnRow = document.createElement('div');
   btnRow.className = 'setBtns';
   btnRow.append(
-    button('UI bearbeiten (verschieben)', 'smallBtn', () => {
+    button(t('set.editUi'), 'smallBtn', () => {
       const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
       $('settingsClose').click();
       editHud(backdrop);
     }),
-    button('Layout zurücksetzen', 'smallBtn', () => $('hudEditReset').click()),
+    button(t('set.resetLayout'), 'smallBtn', () => $('hudEditReset').click()),
   );
   const langSel = document.createElement('select');
   langSel.className = 'setSelect';
@@ -127,23 +127,23 @@ function buildInterface() {
   ui.append(
     h2(t('settings.lang')),
     row(t('settings.lang'), langSel),
-    h2('Eigene UI'),
+    h2(t('set.ownUi')),
     profileRows(),
     h2('HUD'),
-    row('HUD-Layout', select('hudPreset', HUD_PRESETS)),
-    row('HUD-Größe', slider('hudScale', 70, 150)),
-    row('Combo- und Kill-Anzeige', check('showCombo')),
+    row(t('set.hudLayout'), select('hudPreset', HUD_PRESETS)),
+    row(t('set.hudSize'), slider('hudScale', 70, 150)),
+    row(t('set.combo'), check('showCombo')),
     btnRow,
-    h2('Schadenszahlen'),
-    row('Zahlen-Stil', select('numStyle', NUM_STYLES)),
-    h3('Zahlen-Schrift'),
+    h2(t('set.dmgNums')),
+    row(t('set.numStyle'), select('numStyle', NUM_STYLES)),
+    h3(t('set.numFont')),
     fontGrid(),
-    row('Größe', slider('numSize', 50, 200)),
-    row('Kleine Treffer zusammenfassen', check('numMerge')),
-    row('Heilzahlen', check('healNums')),
-    h2('Schrift und Tooltips'),
-    row('Schrift für Titel und Namen', segmented('font', [['standard', 'Standard'], ['fraktur', 'Fraktur']])),
-    row('Erweiterte Tooltips', check('tooltipsExt')),
+    row(t('set.size'), slider('numSize', 50, 200)),
+    row(t('set.merge'), check('numMerge')),
+    row(t('set.heal'), check('healNums')),
+    h2(t('set.fontTips')),
+    row(t('set.titleFont'), segmented('font', [['standard', t('set.standard')], ['fraktur', t('set.fraktur')]])),
+    row(t('set.extTips'), check('tooltipsExt')),
   );
 }
 buildInterface();

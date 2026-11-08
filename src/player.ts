@@ -42,6 +42,7 @@ import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
 import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable, klingeHurt } from './klinge';
+import { t } from './i18n';
 
 export function resetGame() {
   startMageRun();
@@ -134,13 +135,13 @@ export function damagePlayer(amount, dot = false, source = '') {
     const a = Math.min(player.shield, amount);
     player.shield -= a; amount -= a;
     if (player.shield <= 0) player.onShieldBreak?.();
-    if (amount <= 0) { combatText(player.pos, 'Absorbiert', 'miss', 2.6); return; }
+    if (amount <= 0) { combatText(player.pos, t('msg.absorbed'), 'miss', 2.6); return; }
   }
   player.hp -= amount;
   hurtNumber(player.pos, amount);   // Anzeige im Zahlen-Stil (ui/dmgNumbers.ts)
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
-  player.lastHitBy = source || (dot ? 'Gift' : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? 'Lava');
+  player.lastHitBy = source || (dot ? t('fx.poison') : state.mobs.find(m => m.attackAt === state.now)?.type.name ?? t('cause.lava'));
   player.lastCombat = state.now;
   combatText(player.pos, amount, 'hurt', 2.6);
   addTrauma(amount / maxHp() * W.shake.hurtK);   // Wucht: eigener Schaden wackelt
@@ -209,7 +210,7 @@ export function gainXp(xp) {
   if (player.level >= LEVEL_MAX) player.xp = 0;
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
-  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun('Level 100');   // #boss: erst der finale Boss (boss.ts)
+  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun(t('cause.lv100'));   // #boss: erst der finale Boss (boss.ts)
   if (player.level > fromLevel) levelUpFx();
   updateCardQueue();
 }
@@ -245,7 +246,7 @@ export function die() {
   stopChannel(); stopDrink();
   state.paused = true;
   setTimeout(() => {
-    $('deathStats').innerHTML = `Level <b>${player.level}</b> · <b>${player.kills}</b> Kills · Zeit <b>${fmtTime(state.now)}</b>`;
+    $('deathStats').innerHTML = t('end.deathStats', { lv: player.level, kills: player.kills, time: fmtTime(state.now) });
     $('deathModal').classList.add('show');
   }, 900);
 }
@@ -348,7 +349,7 @@ export function updatePlayer(dt) {
   updateIceBlock();
   updateWeaponAura({ burnMob, pullMob });
   const overheat = updateMeter(dt);                         // Hitze: überhitzt brennt er selbst
-  if (overheat) damagePlayer(maxHp() * overheat, true, 'Überhitzt');
+  if (overheat) damagePlayer(maxHp() * overheat, true, t('meter.Feuer.full'));
   updateRandomMage(dt);
   updateBattery(dt);
   updatePlague();

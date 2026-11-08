@@ -7,6 +7,7 @@ import { device } from '../../device';
 import { UI } from '../uiConfig';
 import { uiSettings, setUi } from '../uiSettings';
 import { PRESETS, MOBILE } from './presets';
+import { t } from '../../i18n';
 
 export type Anchor = 'tl' | 't' | 'tr' | 'l' | 'c' | 'r' | 'bl' | 'b' | 'br';
 export type HudElementId = 'timer' | 'runinfo' | 'xp' | 'hp' | 'mana' | 'cast' | 'hotbar' | 'killmeter' | 'combo' | 'buffs' | 'relics'
@@ -15,9 +16,7 @@ export type Placement = { anchor: Anchor; x: number; y: number; scale: number; h
 export type HudPreset = { id: string; name: string; theme: string; elements: Partial<Record<HudElementId, Placement>> };
 
 export const HUD_NAMES: Record<HudElementId, string> = {
-  timer: 'Zeit', runinfo: 'Kopfleiste', xp: 'Erfahrung', hp: 'Leben', mana: 'Mana', cast: 'Castbar', hotbar: 'Zauberleiste',
-  killmeter: 'Kill-Anzeige', combo: 'Combo', buffs: 'Effekte und Runen', relics: 'Relikte', minimap: 'Minimap', compass: 'Kompass',
-  splits: 'Splits', tracker: 'Welle', unitframe: 'Spielerrahmen',
+  timer: t('hudEl.timer'), runinfo: t('hudEl.runinfo'), xp: t('hudEl.xp'), hp: t('hudEl.hp'), mana: t('hudEl.mana'), cast: t('hudEl.cast'), hotbar: t('hudEl.hotbar'), killmeter: t('hudEl.killmeter'), combo: t('hudEl.combo'), buffs: t('hudEl.buffs'), relics: t('hudEl.relics'), minimap: t('hudEl.minimap'), compass: t('hudEl.compass'), splits: t('hudEl.splits'), tracker: t('hudEl.tracker'), unitframe: t('hudEl.unitframe'),
 };
 const ANCHORS: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
 const SNAP = 0.5;   // Raster in %

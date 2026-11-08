@@ -12,6 +12,7 @@ const DICTS: Record<Lang, Record<string, string>> = { de, en };
 
 export const lang: Lang = (() => { try { const l = localStorage.getItem(STORE); return l === 'en' ? 'en' : 'de'; } catch { return 'de'; } })();
 document.documentElement.lang = lang;
+export const locale = lang === 'de' ? 'de-DE' : 'en-US';   // für toLocaleString und Datum
 
 export function setLang(l: Lang) {
   if (l === lang) return;
@@ -23,7 +24,7 @@ const warned = new Set<string>();
 const warn = (key: string, msg: string) => { if (warned.has(key)) return; warned.add(key); console.warn(`[i18n] ${msg}: ${key}`); };
 
 // Zahl in der Schreibweise der Sprache, ohne Tausenderpunkt (wie bisher im Spiel)
-export const num = (v: number, digits = 2) => v.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US', { maximumFractionDigits: digits, useGrouping: false });
+export const fmtNum = (v: number, digits = 2) => v.toLocaleString(locale, { maximumFractionDigits: digits, useGrouping: false });
 
 export const has = (key: string) => key in DICTS[lang] || key in de;
 
@@ -35,7 +36,7 @@ export function t(key: string, vars?: Record<string, string | number>): string {
     if (lang !== 'de') warn(key, `fehlt in ${lang}`);
   }
   if (s.includes('@{')) s = s.replace(/@\{([\w.\-]+)\}/g, (_, k) => t(k));
-  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => k in vars ? (typeof vars[k] === 'number' ? num(vars[k] as number) : String(vars[k])) : m);
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => k in vars ? (typeof vars[k] === 'number' ? fmtNum(vars[k] as number) : String(vars[k])) : m);
   return s;
 }
 

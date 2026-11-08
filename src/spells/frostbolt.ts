@@ -20,7 +20,7 @@ export const frostbolt = {
     { id: 'swift', name: t('spell.frostbolt.runes.swift.name'), desc: t('spell.frostbolt.runes.swift.desc') },
   ],
   instantCast: () => hasRune('frostbolt', 'swift'),
-  canCast: () => nearestTarget(F.range) ? null : 'Kein Ziel in Reichweite',
+  canCast: () => nearestTarget(F.range) ? null : t('msg.noTarget'),
   effect(c) {
     const target = nearestTarget(F.range);
     if (!target) return;

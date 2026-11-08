@@ -10,7 +10,7 @@ import { burstFx, FIRE, EMBER } from './spells/fx';
 import { schedule } from './spells/core';
 import { hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
-import { t } from './i18n';
+import { t, has } from './i18n';
 
 // Alle Zahlen PH
 export const C = {
@@ -77,7 +77,7 @@ export function championDied(m, damagePlayer) {
     });
   }
   const pack = state.mobs.filter(o => o.packId === m.packId && o.champion);
-  if (pack.every(o => o.dead)) combatText(pos, 'Champions besiegt', 'info', 3);
+  if (pack.every(o => o.dead)) combatText(pos, t('msg.champsDown'), 'info', 3);
 }
 
 // Dev: Champion-Pack neben dem Spieler, Affix wählbar

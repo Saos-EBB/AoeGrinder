@@ -26,7 +26,7 @@ import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openInventory } from './inventory';
-import { t } from '../i18n';
+import { t, fmtNum, locale } from '../i18n';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
@@ -39,11 +39,11 @@ const CHARS = [
   { mod: 'realmen', name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
   { mod: 'klinge', name: t('char.klinge.name'), sub: t('char.klinge.sub'), color: '#e5e7eb', stats: [4, 3, 3] },
 ];
-const STAT_NAMES = ['Schaden', 'Kontrolle', 'Überleben'], STAT_MAX = 5;
+const STAT_NAMES = [t('stat.dmg'), t('stat.control'), t('stat.survive')], STAT_MAX = 5;
 let boardMode: 'time' | 'score' = 'time';
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
-const fmtMult = v => `×${String(v).replace('.', ',')}`;
+const fmtMult = v => `×${fmtNum(v)}`;
 const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
 
 let charIdx = 0, picked = [];
@@ -85,8 +85,8 @@ function renderBoardPanel() {
     });
     box.appendChild(table);
   };
-  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [`Lv ${r.level}`, Math.round(r.score).toLocaleString('de-DE')], 'Noch keine Runs mit dieser Kombination.');
-  fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [`${r.kills} Kills`, fmtTime(r.timeTo100)], mobMode === 'packs' ? 'Noch kein Run bis Level 100.' : 'Nur bei Packs.');
+  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [t('menu.lv', { n: r.level }), Math.round(r.score).toLocaleString(locale)], t('menu.noRuns'));
+  fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [t('menu.kills', { n: r.kills }), fmtTime(r.timeTo100)], mobMode === 'packs' ? t('menu.noTime') : t('menu.packsOnly'));
   $('menuBoard').hidden = boardMode !== 'score';
   $('menuTimeBoard').hidden = boardMode !== 'time';
   for (const b of $('menuBoardTabs').querySelectorAll<HTMLElement>('button')) b.classList.toggle('on', b.dataset.b === boardMode);
@@ -129,7 +129,7 @@ export function renderMenu() {
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
-    weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), 'Pilgerast (ohne Effekt)', () => pickW(null)));
+    weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), t('menu.noWeapon'), () => pickW(null)));
     let group = null;
     for (const w of sortedInv()) {                     // nach Seltenheit gruppiert, damit auch 50 Waffen lesbar bleiben
       if (rarityOf(w) !== group) {
@@ -148,13 +148,13 @@ export function renderMenu() {
   $('menuTitle').textContent = fig.name;
   $('menuTitle').style.color = fig.color;
   $('menuRole').textContent = fig.sub;
-  $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${fig.stats[i]} von ${STAT_MAX}"><span>${n}</span><b>${Array.from({ length: STAT_MAX }, (_, k) => `<i${k < fig.stats[i] ? ` class="on" style="--fc:${fig.color}"` : ''}></i>`).join('')}</b></div>`).join('');
+  $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b>${Array.from({ length: STAT_MAX }, (_, k) => `<i${k < fig.stats[i] ? ` class="on" style="--fc:${fig.color}"` : ''}></i>`).join('')}</b></div>`).join('');
   const rules = figureRules();   // Besonderheit der Figur, gleicher Text wie im Charakterfenster
   $('menuRules').innerHTML = rules ? `<div class="menuHead" style="color:${rules.color}">${rules.name}</div><p>${rules.rules}</p>` : '';
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
   const names = MODIFIERS.filter(m => ids.includes(m.id)).map(m => m.desc).join(' · ');
-  $('menuInfo').textContent = `${names || 'Keine Modifikatoren'} · Punkte ${fmtMult(scoreMult())}`;
-  $('menuDust').textContent = `Knochenstaub ${meta.dust}`;
+  $('menuInfo').textContent = t('menu.info', { mods: names || t('menu.noMods'), mult: fmtMult(scoreMult()) });
+  $('menuDust').textContent = t('menu.dust', { n: meta.dust });
   renderBoardPanel();
   if (nav) document.querySelector(`#startModal [data-nav="${CSS.escape(nav)}"]`)?.classList.add('navSel');
 }
@@ -223,12 +223,12 @@ $('menuSettings').addEventListener('click', openSettings);
 $('pauseSettings').addEventListener('click', openSettings);
 $('settingsClose').addEventListener('click', () => { $('settingsModal').classList.remove('show'); syncPause(); });
 $('menuBinds').addEventListener('click', openBinds);
-const showAutoCam = () => { $('setAutoCam').textContent = `Auto-Kamera: ${autoCamOn() ? 'an' : 'aus'}`; $('setAutoCam').title = 'Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen'; };
+const showAutoCam = () => { $('setAutoCam').textContent = t('settings.autoCam', { v: t(autoCamOn() ? 'ui.on' : 'ui.off') }); $('setAutoCam').title = t('settings.autoCamTip'); };
 $('setAutoCam').addEventListener('click', () => { setAutoCam(!autoCamOn()); showAutoCam(); });
 // Bildschirmwackeln: an, aus, stark
 const shakeBtn = document.createElement('button');
 shakeBtn.className = 'bindBtn';
-const showShake = () => { shakeBtn.textContent = `Bildschirmwackeln: ${shakeModeNow()}`; };
+const showShake = () => { shakeBtn.textContent = t('settings.shake', { v: t(`shake.${shakeModeNow()}`) }); };
 shakeBtn.addEventListener('click', () => { setShakeMode(SHAKE_MODES[(SHAKE_MODES.indexOf(shakeModeNow()) + 1) % SHAKE_MODES.length]); showShake(); });
 $('setGrafik').append(shakeBtn);
 showShake();
@@ -270,7 +270,7 @@ $('pauseEdit').addEventListener('click', () => editHud('pauseModal'));
 $('pauseBinds').addEventListener('click', openBinds);
 $('pauseGiveUp').addEventListener('click', () => {
   $('pauseModal').classList.remove('show');
-  player.lastHitBy = 'Aufgegeben';
+  player.lastHitBy = t('end.gaveUp');
   die();
 });
 

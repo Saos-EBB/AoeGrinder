@@ -1,14 +1,15 @@
 // UI-Einstellungen in einem localStorage-Eintrag. Fehlende Felder bekommen die Standardwerte (wie meta.ts).
+import { t } from '../i18n';
 
 const STORE = 'frostgrind.ui.v1';
 
 // HUD-Presets und Zahlen-Stile (Mockups H… und N…). Wirkung: Presets ab Phase 6, Zahlen-Stile ab Phase 7
 export const HUD_PRESETS: [string, string][] = [
-  ['H01', 'Klar'], ['H03', 'WeakAura kompakt'], ['H07', 'WoW Classic'], ['H08', 'ElvUI'],
-  ['H09', 'MOBA'], ['H13', 'Doom'], ['H18', 'Gotisch'], ['H19', 'Speedrun'],
+  ['H01', t('preset.H01')], ['H03', 'WeakAura kompakt'], ['H07', 'WoW Classic'], ['H08', 'ElvUI'],
+  ['H09', 'MOBA'], ['H13', 'Doom'], ['H18', t('preset.H18')], ['H19', 'Speedrun'],
 ];
 export const NUM_STYLES: [string, string][] = [
-  ['N01', 'Schulfarbe'], ['N02', 'Diablo'], ['N03', 'Pop-Sticker'], ['N04', 'WoW klassisch'],
+  ['N01', t('preset.N01')], ['N02', 'Diablo'], ['N03', t('preset.N03')], ['N04', t('preset.N04')],
   ['N07', 'Pixel'], ['N08', 'Neon'], ['N10', 'Doom'],
 ];
 

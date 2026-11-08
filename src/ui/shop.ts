@@ -14,6 +14,7 @@ import { askConfirm } from './confirm';
 import { openInventory } from './inventory';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
+import { t, fmtNum } from '../i18n';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
@@ -36,13 +37,13 @@ let spinning = false, lastPull = null, lastIsNew = false;   // lastPull: Ergebni
 const el = (tag: string, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
 const CHEST_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3 10h18v10H3zM3 10l2-5h14l2 5M10 13h4v3h-4z"/></svg>';
 const STAFF_SVG = '<svg viewBox="0 0 12 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 46V10"/><circle cx="6" cy="6" r="4"/></svg>';
-const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:,\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
+const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 
 function chestCol(resultName: HTMLElement, result: HTMLElement) {
   const col = el('div', 'gPanel shopCol');
   const icon = el('div', 'shopIcon'); icon.innerHTML = CHEST_SVG;
-  const price = el('div', 'shopPrice', `Ein Zug: ${ROLLS.price} Staub`);
-  const b = el('button', 'btn shopOpen', inventoryFull() ? 'Inventar voll' : 'Öffnen') as HTMLButtonElement;
+  const price = el('div', 'shopPrice', t('shop.price', { n: ROLLS.price }));
+  const b = el('button', 'btn shopOpen', t(inventoryFull() ? 'shop.invFull' : 'shop.open')) as HTMLButtonElement;
   b.disabled = spinning || inventoryFull() || meta.dust < ROLLS.price;
   b.dataset.nav = 'chest';
   b.addEventListener('click', () => {
@@ -64,7 +65,7 @@ function chestCol(resultName: HTMLElement, result: HTMLElement) {
     };
     step();
   });
-  const hint = el('div', 'shopHint', inventoryFull() ? 'Erst eine Waffe zerlegen.' : meta.dust < ROLLS.price ? 'Zu wenig Knochenstaub.' : '');
+  const hint = el('div', 'shopHint', inventoryFull() ? t('shop.needSalvage') : meta.dust < ROLLS.price ? t('shop.noDust') : '');
   col.append(icon, price, b, hint);
   return col;
 }
@@ -74,13 +75,13 @@ function resultCol() {
   const name = el('div', 'resName');
   if (!lastPull) {
     col.classList.add('empty');
-    name.textContent = 'Noch kein Zug';
-    col.append(el('div', 'resIcon'), name, el('div', 'resSub', 'Öffne die Kiste links.'));
+    name.textContent = t('shop.noDraw');
+    col.append(el('div', 'resIcon'), name, el('div', 'resSub', t('shop.openLeft')));
     return { col, name };
   }
   const w = lastPull, rar = rarityOf(w), rows = effectRows(w);
   col.style.setProperty('--rc', rar.color);
-  if (lastIsNew) col.append(el('span', 'resNew', 'Neu'));
+  if (lastIsNew) col.append(el('span', 'resNew', t('shop.new')));
   const icon = el('div', 'resIcon'), img = weaponThumb(w);
   icon.innerHTML = img ? `<img src="${img}" alt="">` : STAFF_SVG;
   name.textContent = weaponName(w);
@@ -91,22 +92,22 @@ function resultCol() {
   col.append(lines, el('i', 'tSep'));
   const eq = equipped(), mine = pctOf(rows.find(r => r.kind === 'value')?.text ?? ''), other = eq && eq !== w ? pctOf(effectRows(eq).find(r => r.kind === 'value')?.text ?? '') : null;
   const cmp = el('div', 'resCmp');
-  if (eq === w) cmp.textContent = 'Ausgerüstet';
+  if (eq === w) cmp.textContent = t('shop.equipped');
   else if (eq) {
-    cmp.textContent = `Aktuell: ${weaponName(eq)}`;
+    cmp.textContent = t('shop.current', { name: weaponName(eq) });
     if (mine && other && mine.label === other.label && mine.v !== other.v) {
       const d = Math.round((mine.v - other.v) * 10) / 10;
-      cmp.append(' · ', Object.assign(el('b', '', `${d > 0 ? '▲ +' : '▼ −'}${String(Math.abs(d)).replace('.', ',')} %`), { style: `color:${d > 0 ? '#6ee7a0' : '#f87171'}` }));
+      cmp.append(' · ', Object.assign(el('b', '', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))} %`), { style: `color:${d > 0 ? '#6ee7a0' : '#f87171'}` }));
     }
-  } else cmp.textContent = 'Aktuell: keine Waffe';
+  } else cmp.textContent = t('shop.noneEquipped');
   const btns = el('div', 'resBtns');
-  const equipB = el('button', 'btn', eq === w ? 'Ausgerüstet' : 'Ausrüsten') as HTMLButtonElement;
+  const equipB = el('button', 'btn', t(eq === w ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
   equipB.disabled = eq === w;
   equipB.addEventListener('click', () => { equip(w.id); mage.refreshWeapon(); lastIsNew = false; renderShop(); });
-  const dust = el('button', 'smallBtn', `+${ROLLS.refund[w.r]} Staub`) as HTMLButtonElement;
-  dust.title = 'Zerlegen';
+  const dust = el('button', 'smallBtn', t('shop.refund', { n: ROLLS.refund[w.r] })) as HTMLButtonElement;
+  dust.title = t('shop.salvage');
   dust.addEventListener('click', async () => {
-    if (spinning || !await askConfirm('Waffe zerlegen?', `${weaponName(w)} zerlegen? Du bekommst ${ROLLS.refund[w.r]} Staub zurück.`, 'Zerlegen')) return;
+    if (spinning || !await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name: weaponName(w), n: ROLLS.refund[w.r] }), t('shop.salvage'))) return;
     deleteWeapon(w.id); mage.refreshWeapon(); lastPull = null; renderShop();
   });
   btns.append(equipB, dust);
@@ -117,39 +118,39 @@ function resultCol() {
 
 function fuseCol() {
   const col = el('div', 'gPanel shopCol shopFuse');
-  col.append(el('div', 'title fuseTitle', 'Verschmelzen'), el('p', 'shopHint', '3 Waffen gleicher Seltenheit → 1 Zug eine Stufe höher. Ausgerüstete sind gesperrt.'));
+  col.append(el('div', 'title fuseTitle', t('shop.fuse')), el('p', 'shopHint', t('shop.fuseHint')));
   const slots = el('div', 'fuseSlots');
   for (let i = 0; i < 3; i++) slots.append(el('div', 'fuseSlot'));
-  const b = el('button', 'smallBtn', 'Kommt bald') as HTMLButtonElement;
+  const b = el('button', 'smallBtn', t('shop.soon')) as HTMLButtonElement;
   b.disabled = true;
   col.append(slots, el('div', 'fuseArrow', '▼'), el('div', 'fuseSlot result', '?'), b);
   return col;
 }
 
 function renderShop() {
-  $('shopInfo').innerHTML = `<b>${meta.dust}</b> Knochenstaub · Inventar ${meta.inv.length} / ${ROLLS.invMax}${tierNow ? ` · Shop-Stufe ${tierNow}` : ''}`;
+  $('shopInfo').innerHTML = t('shop.info', { dust: meta.dust, inv: meta.inv.length, max: ROLLS.invMax }) + (tierNow ? t('shop.tier', { n: tierNow }) : '');
   const cols = $('shopCols');
   cols.textContent = '';
   const res = resultCol();
   cols.append(chestCol(res.name, res.col), res.col, fuseCol());
   const box = $('shopList');
   box.textContent = '';
-  box.append(el('h3', '', 'Freischaltungen'));
-  if (!offer.length) box.insertAdjacentText('beforeend', 'Alles für diese Stufe ist schon freigeschaltet.');
+  box.append(el('h3', '', t('shop.unlocks')));
+  if (!offer.length) box.insertAdjacentText('beforeend', t('shop.allUnlocked'));
   for (const type of [...new Set(offer.map(e => e.type))]) {
-    box.appendChild(el('h4', '', type));
+    box.appendChild(el('h4', '', t(`shop.type.${type}`)));
     for (const e of offer.filter(x => x.type === type)) {
       const owned = meta.unlocked.includes(e.key), price = priceOf(e);
       const b = el('button', 'shopItem' + (owned ? ' bought' : '')) as HTMLButtonElement;
       b.style.borderColor = rarityColor(e.rarity);
-      b.append(el('span', '', e.name), el('span', '', owned ? 'gekauft' : `${price} Staub`));
+      b.append(el('span', '', e.name), el('span', '', owned ? t('shop.bought') : t('shop.cost', { n: price })));
       b.disabled = owned || meta.dust < price;
       b.dataset.nav = e.key;
       b.addEventListener('click', () => { buy(e); renderShop(); });
       box.appendChild(b);
     }
   }
-  const inv = el('button', 'smallBtn shopInvBtn', `Inventar öffnen · ${meta.inv.length} / ${ROLLS.invMax}`);
+  const inv = el('button', 'smallBtn shopInvBtn', t('shop.openInv', { a: meta.inv.length, b: ROLLS.invMax }));
   inv.addEventListener('click', () => openInventory(renderShop));
   box.append(inv);
 }
@@ -165,7 +166,7 @@ function openMenuShop() {
   fromMenu = true;
   tierNow = menuTier();
   offer = menuOffer();
-  $('shopClose').textContent = 'Zurück';
+  $('shopClose').textContent = t('shop.back');
   $('shopModal').classList.add('show');
   renderShop();
 }
@@ -174,7 +175,7 @@ $('shopClose').addEventListener('click', () => {
   $('shopModal').classList.remove('show');
   if (fromMenu) {
     fromMenu = false;
-    $('shopClose').textContent = 'Weiter zum Hauptmenü';
+    $('shopClose').textContent = t('shop.close');
     renderMenu();
     return;
   }

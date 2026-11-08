@@ -10,6 +10,7 @@ import {
   V, TAU, clamp, ease, easeIn, rnd, wrap, yawTo, dist2, gy, onGround, fight, tw, wait, addObj, tele, hurt, burnPlayer,
   face, dirOf, arms, lean, R, windMul, windup, strike, gap, moveBody, impactFx, bigImpact, shoot, lob, palOf, textAt, BK, liveMesh,
 } from './core';
+import { t } from '../i18n';
 
 const deg = d => d * Math.PI / 180;
 const inArena = p => { const c = fight.center, d = dist2(p, c), max = fight.arena - 1; if (d > max) { p.x = c.x + (p.x - c.x) / d * max; p.z = c.z + (p.z - c.z) / d * max; } return p; };
@@ -108,7 +109,7 @@ export const ATT = {
     const d = V(player.pos.x - b.mob.pos.x, 0, player.pos.z - b.mob.pos.z).normalize();
     moveBody(b, inArena(onGround(player.pos).addScaledVector(d, p.behind ?? 3.6)));
     face(b); boom(chest(b), 1.4, palOf(color), .4, { ground: b.mob.pos.y, n: 14 });
-    textAt(b.mob.pos, 'Blink');
+    textAt(b.mob.pos, t('spell.blink.name'));
     if (p.explode) await ATT.explosion(run, b, { r: p.explode, warn: p.warn ?? .6, color, gap: p.gap ?? 1.0 });
     else await wait(run, .4);
   },
@@ -131,8 +132,8 @@ export const ATT = {
     let hit = false;
     const out = spots.map(t => { const h = puddle(t, r, color, p.dur ?? 6, p.label); if (!hit && dist2(t, player.pos) < r) { hit = true; hurt(1, t, b); } return h; });
     p.track?.push(...out);
-    if (p.grow) for (const h of out) h.onTouch = () => { h.r = Math.min(p.maxR ?? 14, h.r * p.grow); textAt(h.pos, `${p.label ?? 'Pfütze'} wächst`, 'hurt', 2); };   // pfuetzeWaechst
-    textAt(b.mob.pos, p.label ?? 'Pfütze');
+    if (p.grow) for (const h of out) h.onTouch = () => { h.r = Math.min(p.maxR ?? 14, h.r * p.grow); textAt(h.pos, t('msg.grows', { name: p.label ?? t('msg.puddle') }), 'hurt', 2); };   // pfuetzeWaechst
+    textAt(b.mob.pos, p.label ?? t('msg.puddle'));
     await gap(run, b, p.gap ?? .8);
     return out;
   },
@@ -148,9 +149,9 @@ export const ATT = {
     const e = fx(1e9), flames = [];
     for (let i = 0; i <= len / 1.1; i++) { const m = em(e, 'cone', PAL.fire, { sc: 4, core: .35, tip: 1.1, puff: .05, flow: [0, 3.2, 0] }); const q = start.clone().addScaledVector(side, i * 1.1); m.position.set(q.x, gy(q), q.z); flames.push(m); }
     addTrauma(.4);
-    let t = 0, tick = 1;
-    addObj({ update: dt => { const s = dt * (fight?.scale ?? 1); t += s; tick -= s; flames.forEach((m, i) => m.scale.set(.5, 1.6 * (.8 + .5 * Math.abs(Math.sin(t * 30 + i))) * Math.min(1, (p.dur ?? 4) - t + .3), .5));
-      if (onLine() && tick <= 0) { tick = 1; burnPlayer(BK.dot, 'Feuerwand'); } return t < (p.dur ?? 4) && !!fight; }, remove: () => killFx(e) });
+    let ft = 0, tick = 1;
+    addObj({ update: dt => { const s = dt * (fight?.scale ?? 1); ft += s; tick -= s; flames.forEach((m, i) => m.scale.set(.5, 1.6 * (.8 + .5 * Math.abs(Math.sin(ft * 30 + i))) * Math.min(1, (p.dur ?? 4) - ft + .3), .5));
+      if (onLine() && tick <= 0) { tick = 1; burnPlayer(BK.dot, t('src.firewall')); } return ft < (p.dur ?? 4) && !!fight; }, remove: () => killFx(e) });
     await gap(run, b, p.gap ?? .6);
   },
   // Riesenkugel wächst über dem Boss, fliegt langsam auf den Spieler
@@ -172,7 +173,7 @@ export const ATT = {
   async sog(run, b, p) {
     face(b); await tw(run, .5, k => arms(b, -1.6 * ease(k)));
     const color = p.color ?? 0xa070ff, dur = p.dur ?? 2.2, total = dist2(player.pos, b.mob.pos) * .55;   // zieht 55 % des Abstands heran
-    textAt(b.mob.pos, 'Sog');
+    textAt(b.mob.pos, t('msg.pull'));
     let lk = 0;
     await tw(run, dur, k => {
       const dx = b.mob.pos.x - player.pos.x, dz = b.mob.pos.z - player.pos.z, d = Math.hypot(dx, dz) || 1, step = total * (ease(k) - ease(lk));
@@ -236,10 +237,10 @@ export const ATT = {
     while (seq.length < n) seq.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     if (!seq.includes(4)) seq[n - 1] = 4;   // die Mitte ist immer dabei: Stehenbleiben geht nicht
     const grid = cells.map(q => tele('square', { pos: q, size: size - .3 }, 99, 0x3a5a8a, run));
-    textAt(b.mob.pos, 'Merken', 'info', 3);
+    textAt(b.mob.pos, t('msg.memorize'), 'info', 3);
     await wait(run, .6);
     for (const [i, ix] of seq.entries()) { tele('square', { pos: cells[ix], size: size - .3 }, .45, 0x7ae8ff, run); textAt(cells[ix], String(i + 1), 'heal', 2); await wait(run, .45 * windMul(b)); }
-    await wait(run, .7); textAt(b.mob.pos, 'Gleiche Reihenfolge', 'info', 3);
+    await wait(run, .7); textAt(b.mob.pos, t('msg.sameOrder'), 'info', 3);
     for (const ix of seq) {
       const q = cells[ix];
       tele('square', { pos: q, size: size - .3 }, .45 * windMul(b), BK.teleColor, run);

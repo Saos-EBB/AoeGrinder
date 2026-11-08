@@ -1,4 +1,5 @@
 // Synthetische Sounds über WebAudio, kein Download: Einschlag, Frost-Klirren, Blitzknistern, Feuer-Wumms. Alle Werte PH.
+import { t } from '../i18n';
 
 const VOLUME_KEY = 'frostgrind.volume.v1', DEFAULT_VOLUME = 0.6;
 const MIN_GAP = { impact: 70, frost: 90, zap: 60, fire: 90 };   // ms je Art, sonst türmt sich ein 50er-Kettenblitz auf
@@ -97,7 +98,7 @@ export function playSound(kind, strength = 1) {
 
 // Regler, in Menü und Labor gleich
 export function mountVolume(el, position) {
-  el.insertAdjacentHTML(position, `<label for="volumeSlider" style="display:block;margin:6px 0 3px">Lautstärke: <span id="volumeValue"></span></label><input id="volumeSlider" type="range" min="0" max="100" step="5" style="width:100%;margin-bottom:10px">`);
+  el.insertAdjacentHTML(position, `<label for="volumeSlider" style="display:block;margin:6px 0 3px">${t('settings.volume')}: <span id="volumeValue"></span></label><input id="volumeSlider" type="range" min="0" max="100" step="5" style="width:100%;margin-bottom:10px">`);
   const slider = document.getElementById('volumeSlider') as HTMLInputElement, value = document.getElementById('volumeValue');
   const show = () => { value.textContent = `${Math.round(volume * 100)} %`; };
   slider.value = String(Math.round(volume * 100));

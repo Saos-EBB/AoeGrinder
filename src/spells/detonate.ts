@@ -17,7 +17,7 @@ export const detonate = {
     { id: 'big', name: t('spell.detonate.runes.big.name'), desc: t('spell.detonate.runes.big.desc') },
     { id: 'glow', name: t('spell.detonate.runes.glow.name'), desc: t('spell.detonate.runes.glow.desc') },
   ],
-  canCast: () => mobsInRadius(player.pos, detonate.radius, Infinity).some(m => burnLeft(m) > 0) ? null : 'Kein brennender Gegner in der Nähe',
+  canCast: () => mobsInRadius(player.pos, detonate.radius, Infinity).some(m => burnLeft(m) > 0) ? null : t('msg.noBurning'),
   effect(c) {
     const burning = mobsInRadius(player.pos, c.radius(detonate.radius), Infinity).filter(m => burnLeft(m) > 0);
     const r = c.radius(hasRune('detonate', 'big') ? BOOM.big : BOOM.radius);

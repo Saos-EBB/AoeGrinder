@@ -16,6 +16,7 @@ import { cdEnd, chargesOf, paysLife } from './spells/core';
 import { manaCost, spellCd } from './formulas';
 import { cam, MOBILE_YAW } from './camera';
 import * as THREE from 'three';
+import { t } from './i18n';
 
 export const touch = {
   move: { x: 0, y: 0 },        // wie pad.move: x rechts, y vorwärts (auf dem Bildschirm nach oben)
@@ -31,7 +32,7 @@ const QUICK_YD = 30;           // Schnellzauber sucht das nächste Ziel in diese
 
 // Rechts: 5 Zauber (Leistenplätze 0–4), links: Trinken, Blink, Relikt (Plätze 5–7)
 const RIGHT = SPELL_ACTIONS.slice(0, 5), LEFT = SPELL_ACTIONS.slice(5);
-const POS_NAMES = ['Zauber 1 (groß)', 'Zauber 2', 'Zauber 3', 'Zauber 4', 'Zauber 5', 'Links 1', 'Links 2', 'Links 3'];
+const POS_NAMES = Array.from({ length: 8 }, (_, i) => t(`mobile.pos.${i}`));
 
 // Bildschirm-Richtung (x rechts, y unten) → Welt-Richtung bei fester Kamera
 function worldDir(dx: number, dy: number) {
@@ -174,7 +175,7 @@ function spellButton(action: string, cls: string) {
 function dodgeButton() {
   const el = document.createElement('div');
   el.className = 'tbtn tDodge';
-  el.innerHTML = 'Aus-<br>weichen';
+  el.innerHTML = t('mobile.dodge');
   const on = e => { e.preventDefault(); e.stopPropagation(); touch.held.add('dodge'); el.classList.add('down'); };
   const off = e => { e.preventDefault(); touch.held.delete('dodge'); el.classList.remove('down'); };
   el.addEventListener('touchstart', on, { passive: false });
@@ -300,7 +301,7 @@ function settings() {
       sel.id = `setMobileSlot${pos}`;
       for (let slot = 0; slot < SPELL_ACTIONS.length; slot++) {
         const id = state.slots[slot];
-        sel.add(new Option(id ? SPELLS[id].name : `leer (Slot ${slot + 1})`, String(slot)));
+        sel.add(new Option(id ? SPELLS[id].name : t('mobile.empty', { n: slot + 1 }), String(slot)));
       }
       sel.value = String(slotAt(pos));
       sel.addEventListener('change', () => { swapPos(pos, posOf(+sel.value)); render(); });

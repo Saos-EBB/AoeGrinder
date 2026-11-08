@@ -23,7 +23,7 @@ function startArchon() {
   state.slots.splice(0, 3, 'archBeam', 'archNova', 'archPort');
   renderActionbar();
   archonLook(archonActive);
-  combatText(player.pos, 'Archon!', 'info', 3);
+  combatText(player.pos, t('msg.archon'), 'info', 3);
 }
 export function endArchon() {
   if (!state.archon) return;
@@ -44,8 +44,8 @@ export const archon = {
   mana: 0, cd: ARCHON.cd,
   press() {
     if (archonActive()) return;
-    if (cdEnd('archon') > state.now) return showError('Fähigkeit ist noch nicht bereit');
-    if (arcCharges() < 4) return showError('Archon braucht 4 Ladungen');
+    if (cdEnd('archon') > state.now) return showError(t('msg.notReady'));
+    if (arcCharges() < 4) return showError(t('msg.archonNeeds'));
     startCd('archon');
     noteCastStart('archon');
     startArchon();
@@ -80,7 +80,7 @@ export const timewarp = {
   name: t('spell.timewarp.name'), figRelic: true, desc: t('spell.timewarp.desc'), ranks: [], tags: ['Arkan'], cls: 'arcane',
   mana: 0, cd: WARP.cd,
   press() {
-    if (cdEnd('timewarp') > state.now) return showError('Fähigkeit ist noch nicht bereit');
+    if (cdEnd('timewarp') > state.now) return showError(t('msg.notReady'));
     startCd('timewarp');
     noteCastStart('timewarp');
     state.warp = { pos: player.pos.clone(), hp: player.hp, at: state.now + WARP.ms };

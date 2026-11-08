@@ -16,31 +16,32 @@ import { refreshKeyLabels } from './ui/hud';
 import { charOpen, toggleChar } from './ui/charWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';
+import { t } from './i18n';
 
 export const ACTIONS = [
-  { group: 'Bewegung' },
-  { id: 'forward',     label: 'Vorwärts',          code: 'KeyW',   key: 'W' },
-  { id: 'back',        label: 'Rückwärts',         code: 'KeyS',   key: 'S' },
-  { id: 'turnLeft',    label: 'Links drehen',      code: 'KeyA',   key: 'A' },
-  { id: 'turnRight',   label: 'Rechts drehen',     code: 'KeyD',   key: 'D' },
-  { id: 'strafeLeft',  label: 'Seitwärts links',   code: 'KeyQ',   key: 'Q' },
-  { id: 'strafeRight', label: 'Seitwärts rechts',  code: 'KeyE',   key: 'E' },
-  { id: 'jump',        label: 'Springen',          code: 'Space',  key: 'Leertaste' },
-  { id: 'dodge',       label: 'Ausweichen',        code: 'ShiftLeft', key: 'Shift' },
-  { id: 'autorun',     label: 'Autorun',           code: 'KeyR',   key: 'R' },
-  { group: 'Fenster' },
-  { id: 'charWin', label: 'Charakterfenster', code: 'KeyX', key: 'X' },
-  { id: 'stance', label: 'Haltung (Klingenstrich)', code: '', key: '–' },   // nur in der Belegung des Klingenstrichs auf F
-  { group: 'Zauber' },
+  { group: t('bind.group.move') },
+  { id: 'forward',     label: t('bind.forward'),          code: 'KeyW',   key: 'W' },
+  { id: 'back',        label: t('bind.back'),         code: 'KeyS',   key: 'S' },
+  { id: 'turnLeft',    label: t('bind.turnLeft'),      code: 'KeyA',   key: 'A' },
+  { id: 'turnRight',   label: t('bind.turnRight'),     code: 'KeyD',   key: 'D' },
+  { id: 'strafeLeft',  label: t('bind.strafeLeft'),   code: 'KeyQ',   key: 'Q' },
+  { id: 'strafeRight', label: t('bind.strafeRight'),  code: 'KeyE',   key: 'E' },
+  { id: 'jump',        label: t('bind.jump'),          code: 'Space',  key: 'Leertaste' },
+  { id: 'dodge',       label: t('bind.dodge'),        code: 'ShiftLeft', key: 'Shift' },
+  { id: 'autorun',     label: t('bind.autorun'),           code: 'KeyR',   key: 'R' },
+  { group: t('bind.group.windows') },
+  { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
+  { id: 'stance', label: t('bind.stance'), code: '', key: '–' },   // nur in der Belegung des Klingenstrichs auf F
+  { group: t('bind.group.spells') },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
-  { id: 'nova',  label: 'Attacke 1',        code: 'Digit1', key: '1', spell: true },
-  { id: 'ae',    label: 'Attacke 2',        code: 'Digit2', key: '2', spell: true },
-  { id: 'bliz',  label: 'Attacke 3',        code: 'Digit3', key: '3', spell: true },
-  { id: 'coc',   label: 'Attacke 4',        code: 'Digit4', key: '4', spell: true },
-  { id: 'slot7', label: 'Attacke 5',        code: 'KeyF',   key: 'F', spell: true },
-  { id: 'drink', label: 'Trinken / Essen',  code: 'Digit6', key: '6', spell: true },
-  { id: 'blink', label: 'Bewegung',         code: 'Digit5', key: '5', spell: true },
-  { id: 'slot8', label: 'Relikt',           code: 'Digit8', key: '8', spell: true },
+  { id: 'nova',  label: t('bind.nova'),        code: 'Digit1', key: '1', spell: true },
+  { id: 'ae',    label: t('bind.ae'),        code: 'Digit2', key: '2', spell: true },
+  { id: 'bliz',  label: t('bind.bliz'),        code: 'Digit3', key: '3', spell: true },
+  { id: 'coc',   label: t('bind.coc'),        code: 'Digit4', key: '4', spell: true },
+  { id: 'slot7', label: t('bind.slot7'),        code: 'KeyF',   key: 'F', spell: true },
+  { id: 'drink', label: t('bind.drink'),  code: 'Digit6', key: '6', spell: true },
+  { id: 'blink', label: t('bind.blink'),         code: 'Digit5', key: '5', spell: true },
+  { id: 'slot8', label: t('bind.slot8'),           code: 'Digit8', key: '8', spell: true },
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
@@ -77,6 +78,8 @@ function loadBinds() {
 export function saveBinds() {
   try { localStorage.setItem(klingeBinds ? KLINGE_BIND_STORE : BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
 }
+// Tastennamen werden so gespeichert (Leertaste, Maus 4); keyText übersetzt sie nur für die Anzeige
+export const keyText = (k: string) => k === 'Leertaste' ? t('key.space') : k?.startsWith('Maus ') ? `${t('key.mouse')} ${k.slice(5) === 'Mitte' ? t('key.middle') : k.slice(5)}` : k;
 export const keyName = e => e.code === 'Space' ? 'Leertaste' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
 export const actionForCode = code => Object.keys(binds).find(id => binds[id].code === code);
 

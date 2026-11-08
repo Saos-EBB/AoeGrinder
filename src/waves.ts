@@ -12,13 +12,14 @@ import { spawnMob, enterCombat, pickMobType } from './mobs';
 import { run } from './score';
 import { resetGame, completeRun } from './player';
 import { renderMenu } from './ui/mainMenu';
+import { t } from './i18n';
 
 // Gegner pro Welle = base + perWave × (Welle − 1); kommen mit perSecond pro Sekunde, höchstens maxPerFrame pro Frame
 export const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
 
 const CHOICES = [
-  { name: 'Packs', mode: 'packs', title: 'Packs stehen auf der Karte. Bei Level 25, 50 und 75 ein Boss, bei 100 der finale Boss, danach geschafft' },
-  { name: 'Wellen', mode: 'waves', title: `Wellen mit fester Zahl Gegnern vom Kartenrand. Sind alle tot, kommt ein Boss, dann die nächste Welle. Nach ${WAVES.goal} Wellen geschafft` },
+  { name: t('mobmode.packs'), mode: 'packs', title: t('mobmode.packsTip') },
+  { name: t('mobmode.waves'), mode: 'waves', title: t('mobmode.wavesTip', { n: WAVES.goal }) },
 ];
 
 // Boss-Anbindung: boss.ts meldet sich hier an (sonst Import-Kreis über player.ts)
@@ -62,19 +63,19 @@ export function updateWaves(dt) {
     step = bossApi.start() ? 'boss' : 'pause';   // ohne passenden Boss gleich weiter
     stepAt = state.now;
   } else if (step === 'boss' && !bossApi.active()) {
-    if (run.wave >= WAVES.goal) return completeRun(`Welle ${WAVES.goal}`);
+    if (run.wave >= WAVES.goal) return completeRun(t('cause.wave', { n: WAVES.goal }));
     step = 'pause';
     stepAt = state.now;
   } else if (step === 'pause' && state.now - stepAt >= WAVES.pauseMs) {
-    if (run.wave >= WAVES.goal) return completeRun(`Welle ${WAVES.goal}`);
+    if (run.wave >= WAVES.goal) return completeRun(t('cause.wave', { n: WAVES.goal }));
     startWave();
   }
-  const t = performance.now();                       // echte Zeit: dt ist im Spiel auf 50 ms gedeckelt
-  fps += (1000 / Math.max(1, t - lastFrame) - fps) * 0.05;
-  lastFrame = t;
+  const nowMs = performance.now();                       // echte Zeit: dt ist im Spiel auf 50 ms gedeckelt
+  fps += (1000 / Math.max(1, nowMs - lastFrame) - fps) * 0.05;
+  lastFrame = nowMs;
   const live = state.mobs.filter(m => !m.dead).length;
   if (live > (run.peakMobs ?? 0)) { run.peakMobs = live; run.peakFps = Math.round(fps); }
-  const text = step === 'boss' ? `Welle ${run.wave} / ${WAVES.goal} · Boss` : step === 'pause' ? `Welle ${run.wave + 1} / ${WAVES.goal} kommt …` : `Welle ${run.wave} / ${WAVES.goal} · ${waveLeft()} übrig · dann Boss`;
+  const text = step === 'boss' ? t('wave.boss', { a: run.wave, b: WAVES.goal }) : step === 'pause' ? t('wave.next', { a: run.wave + 1, b: WAVES.goal }) : t('wave.left', { a: run.wave, b: WAVES.goal, n: waveLeft() });
   if (hud.textContent !== text) hud.textContent = text;
 }
 

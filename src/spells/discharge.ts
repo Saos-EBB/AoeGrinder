@@ -20,7 +20,7 @@ export const discharge = {
     { id: 'shock', name: t('spell.discharge.runes.shock.name'), desc: t('spell.discharge.runes.shock.desc') },
     { id: 'after', name: t('spell.discharge.runes.after.name'), desc: t('spell.discharge.runes.after.desc') },
   ],
-  canCast: () => batteryMode() && player.mana < D.minCharge && !player.overcharged ? 'Zu wenig Ladung' : null,
+  canCast: () => batteryMode() && player.mana < D.minCharge && !player.overcharged ? t('msg.lowCharge') : null,
   effect(c) {
     // Überladen leert die Batterie schon vor der Wirkung (release), dann zählt sie als voll
     const load = !batteryMode() ? D.manaLoad : c.over ? batteryMax() : player.mana;

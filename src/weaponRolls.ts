@@ -17,6 +17,7 @@ import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS, weaponNameOf, buildBauk
 import { pick, dist2d } from './util';
 import { mark } from './plagueMarks';
 import { rollLegend, LEGENDS, LEG } from './legends';
+import { t, fmtNum } from './i18n';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
@@ -44,11 +45,11 @@ const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bl
 const focusId = (id, w?) => w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id;
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
-const TYPE_TEXT = { staff: 'Radius +10 %, Zauberzeit +10 %', wand: 'Zauberzeit −15 %, Abklingzeit −5 %, Radius −10 %', book: '+1 Ladung auf den Fokus-Spell, Manakosten −10 %', relic: 'Aura alle 3 s in 6 yd mit dem Element-Effekt, Dauereffekte +10 %' };
-const VALUE_TEXT = Object.fromEntries(Object.entries(VALUE_KEY).map(([t, k]) => [k, t]));
+const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
+const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`wval.${k}`)]));   // die deutschen Schlüssel oben stehen so in gespeicherten Waffen
 
 const factor = tier => CARD_RARITIES[tier].mult;
-const pct = v => `${v < 0 ? '−' : '+'}${String(Math.round(Math.abs(v) * 1000) / 10).replace('.', ',')} %`;
+const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
 const isNew = w => w.v === 2;
 
 export function rollTier() {
@@ -76,10 +77,10 @@ export function rollWeapon(tier = null) {
 const oldModelName = id => WEAPONS.find(x => x.id === id)?.name ?? id;
 // Feste Zeilen in fester Reihenfolge, damit jede Wirkung bei jeder Waffe an derselben Stelle steht. text null = Schicht fehlt (Seltenheit zu niedrig o. Ä.).
 // Farben pro Zeile in COLORS.weaponRow (ui/colors.ts), das Element bringt seine eigene Farbe mit.
-export const WEAPON_ROWS = [['type', 'Typ'], ['focus', 'Fokus'], ['value', 'Wert'], ['element', 'Element'], ['maker', 'Hersteller'], ['extra', 'Anhänger'], ['unique', 'Unikat']];
+export const WEAPON_ROWS = ['type', 'focus', 'value', 'element', 'maker', 'extra', 'unique'].map(k => [k, t(`wrow.${k}`)]);
 export function effectRows(w) {
   const f = factor(w.r), rows: any = Object.fromEntries(WEAPON_ROWS.map(([kind, label]) => [kind, { kind, label, text: null, color: null }]));
-  const focus = raw => { const id = focusId(raw, w); return `${SPELLS[id].name}: ${pct(ROLLS.focus.dmg * f)} Schaden, ${pct(ROLLS.focus.radius * f)} Radius`; };
+  const focus = raw => { const id = focusId(raw, w); return t('wrow.focusText', { name: SPELLS[id].name, dmg: pct(ROLLS.focus.dmg * f), radius: pct(ROLLS.focus.radius * f) }); };
   const value = (k, mul = 1) => `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f * mul)} ${VALUE_TEXT[k]}`;
   if (!isNew(w)) {
     if (w.e.startsWith('f:')) rows.focus.text = focus(w.e.slice(2));
@@ -89,10 +90,10 @@ export function effectRows(w) {
     rows.type.text = `${TYPES[s.type].name}: ${TYPE_TEXT[s.type]}`;
     if (w.r >= 1) rows.focus.text = focus(s.focus);
     rows.value.text = value(VALUE_KEY[s.value]);
-    if (s.element !== 'none') Object.assign(rows.element, { text: `${el.name}: ${el.fx}, ${pct(ROLLS.procChance * f).slice(1)} pro Treffer`, color: elementColor(s.element) });
+    if (s.element !== 'none') Object.assign(rows.element, { text: t('wrow.perHit', { name: el.name, fx: el.fx, pct: pct(ROLLS.procChance * f).slice(1) }), color: elementColor(s.element) });
     rows.maker.text = `${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`;
     if (s.extra !== 'none') rows.extra.text = `${EXTRAS[s.extra]}: ${value(VALUE_KEY[s.value2], 0.5)}`;
-    if (s.unique) rows.unique.text = s.legend ? `${LEGENDS[s.legend].name}: ${LEGENDS[s.legend].desc} Combo ${LEG.combo.labels.join(' → ')}` : oldModelName(s.unique);
+    if (s.unique) rows.unique.text = s.legend ? t('wrow.legend', { name: LEGENDS[s.legend].name, desc: LEGENDS[s.legend].desc, combo: LEG.combo.labels.join(' → ') }) : oldModelName(s.unique);
   }
   return WEAPON_ROWS.map(([kind]) => rows[kind]);
 }

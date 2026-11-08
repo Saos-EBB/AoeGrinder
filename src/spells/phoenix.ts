@@ -48,7 +48,7 @@ export function phoenixRevive() {
   cameraKick(0.8);
   lightFlash(pos, 0xff8030, 900, r * 2.5, 700);
   phoenixLook(pos, r);
-  combatText(pos, 'Phönix!', 'heal', 3);
+  combatText(pos, t('msg.phoenix'), 'heal', 3);
   return true;
 }
 
