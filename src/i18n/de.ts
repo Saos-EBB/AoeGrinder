@@ -1813,10 +1813,8 @@ export const de: Record<string, string> = {
 
   'plague.label': "Kein Mana · Zauber kosten Leben",
 
-  'set.dmgNums': "Schadenszahlen",
-  'set.editUi': "UI bearbeiten (verschieben)",
+  'set.editUi': "UI bearbeiten",
   'set.extTips': "Erweiterte Tooltips",
-  'set.fontTips': "Schrift und Tooltips",
   'set.fraktur': "Fraktur",
   'set.heal': "Heilzahlen",
   'set.hudSize': "HUD-Größe",
@@ -1828,11 +1826,9 @@ export const de: Record<string, string> = {
   'set.ownUi': "Eigene UI",
   'set.resetLayout': "Layout zurücksetzen",
   'set.save': "Speichern",
-  'set.size': "Größe",
   'set.slot': "Platz {n} · {at}",
   'set.slotEmpty': "Platz {n} · leer",
   'set.standard': "Standard",
-  'set.titleFont': "Schrift für Titel und Namen",
 
   'shop.allUnlocked': "Alles für diese Stufe ist schon freigeschaltet.",
   'shop.back': "Zurück",
@@ -1935,4 +1931,12 @@ export const de: Record<string, string> = {
   'flavor.schlachtbank.status2': "TEMP 666° ■",
   'flavor.schlachtbank.status3': "■ SYS OK",
   'flavor.schlachtbank.sub': "Doom · WoW-Karte",
+  'set.apply': "Übernehmen",
+  'set.flavor': "UI-Flavor",
+  'set.font': "Schrift",
+  'set.likeFlavor': "wie Flavor",
+  'set.messages': "Erfolgs-Meldungen",
+  'set.numFlavor': "Zahlen & Meldungen",
+  'set.numSize': "Zahlen-Größe",
+  'set.screenFx': "Bildschirm-Effekte",
 };

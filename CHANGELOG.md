@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(ui): Einstellungen im Look des UI-Flavors: Tabs links, Inhalt rechts, im Tab Interface UI-Flavor als 3 Karten mit Vorschau (Wechsel sofort), Zahlen & Meldungen (wie Flavor oder fest), Zahlen-Größe, Erfolgs-Meldungen, Bildschirm-Effekte, Schrift, HUD-Größe; Abbrechen stellt den Stand vom Öffnen wieder her, Übernehmen schließt. Dev-Fenster (F10) mit Panel- und Knopf-Look des Flavors (UI-Mix Phase 3)
 - feat(ui): Drei UI-Flavors als Grundlage (Höllenfeste, Schlachtbank, Kompakt-Krypta): Farben und Schriften als CSS-Variablen pro Flavor, gemeinsame Bausteine (Panel, Titel, Knöpfe, Schalter, Slider, Segment-Knöpfe, Chips) mit Ornamenten als SVG, Bildschirm-Effekte als ein Overlay pro Flavor; alle Fenster nehmen die Farben des Flavors an, das Glut-Theme ist darin aufgegangen (UI-Mix Phase 2)
 - feat(ui)!: Alte HUD-Presets (H01–H19), Zahlen-Stile (N01–N10), die 15 Zahlen-Schriften und die Einstellung „Combo- und Kill-Anzeige“ entfernt; alte Werte in `frostgrind.ui.v1` werden beim Laden verworfen, das HUD läuft bis zu den UI-Flavors auf einem Grundlayout (UI-Mix Phase 1)
 - feat(ui): Ranglisten und Split-Bestzeiten gelten jetzt pro Map (Figur + Mods + Mob-Modus + Map); Runs speichern die Map-ID (UI-Mix Phase 0)

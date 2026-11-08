@@ -1812,10 +1812,8 @@ export const en: Record<string, string> = {
 
   'plague.label': "No mana · spells cost health",
 
-  'set.dmgNums': "Damage numbers",
-  'set.editUi': "Edit UI (move)",
+  'set.editUi': "Edit UI",
   'set.extTips': "Extended tooltips",
-  'set.fontTips': "Font and tooltips",
   'set.fraktur': "Blackletter",
   'set.heal': "Heal numbers",
   'set.hudSize': "HUD size",
@@ -1827,11 +1825,9 @@ export const en: Record<string, string> = {
   'set.ownUi': "Custom UI",
   'set.resetLayout': "Reset layout",
   'set.save': "Save",
-  'set.size': "Size",
   'set.slot': "Slot {n} · {at}",
   'set.slotEmpty': "Slot {n} · empty",
   'set.standard': "Standard",
-  'set.titleFont': "Font for titles and names",
 
   'shop.allUnlocked': "Everything for this tier is already unlocked.",
   'shop.back': "Back",
@@ -1934,4 +1930,12 @@ export const en: Record<string, string> = {
   'flavor.schlachtbank.status2': "TEMP 666° ■",
   'flavor.schlachtbank.status3': "■ SYS OK",
   'flavor.schlachtbank.sub': "Doom · WoW map",
+  'set.apply': "Apply",
+  'set.flavor': "UI flavor",
+  'set.font': "Font",
+  'set.likeFlavor': "like flavor",
+  'set.messages': "Feat messages",
+  'set.numFlavor': "Numbers & messages",
+  'set.numSize': "Number size",
+  'set.screenFx': "Screen effects",
 };

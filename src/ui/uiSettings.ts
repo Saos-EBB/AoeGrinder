@@ -9,6 +9,8 @@ export const UI_DEFAULTS = {
   font: 'standard' as 'standard' | 'fraktur',
   hudOverrides: {} as Record<string, Record<string, any>>,   // eigene Lage pro Layout (ui/hud/layout.ts)
   hudScale: 100,          // % (70–150)
+  numFlavor: 'flavor',    // Zahlen & Meldungen: 'flavor' = wie der UI-Flavor, sonst eine Flavor-ID
+  messages: true,         // Erfolgs-Meldungen (ui/messages.ts)
   numSize: 100,           // % (50–200)
   numMerge: true,         // kleine Treffer zusammenfassen
   healNums: true,

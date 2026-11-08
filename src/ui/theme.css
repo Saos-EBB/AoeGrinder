@@ -16,51 +16,64 @@
   border: 1px solid var(--fg-top); border-radius: 0; }
 .modal .smallBtn:hover { background: color-mix(in srgb, var(--fg-top) 15%, transparent); }
 
-/* Einstellungen (Settings.dc.html: 1100×720, Tabs 210 px) */
-#settingsModal #settingsBox { width: min(1100px, 96vw); max-width: none; height: min(720px, 94vh); padding: 0; display: flex; flex-direction: column; text-align: left; }
-.setHead { height: 64px; flex: none; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--fg-line); }
-.setHead h1 { font-size: 28px !important; letter-spacing: .06em; }
-.setHead span { font-size: 13px; color: var(--fg-muted); }
-.setMain { flex: 1; display: flex; min-height: 0; }
-#setTabs { width: 210px; flex: none; padding: 18px 12px; border-right: 1px solid var(--fg-line); display: flex; flex-direction: column; gap: 4px; }
-#setTabs button { height: 44px; text-align: left; padding: 0 14px; border: 0; border-left: 2px solid transparent; background: transparent; color: var(--fg-muted);
-  font: 500 16px var(--font-body); letter-spacing: .04em; cursor: pointer; }
+/* Einstellungen (X?O, gen9.py settings: Board 1280×720, Tabs 230 × 580, Inhalt 940 × 580, Zeilen 38 px, Steuerung ab 230 px) */
+#settingsModal #settingsBox { width: min(1200px, 94vw); height: min(652px, 92vh); display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--fg-text); font-family: var(--font-body); }
+.setHead { flex: none; position: relative; height: 54px; display: flex; align-items: center; justify-content: center; }
+.setHead h1 { margin: 0; font-size: 34px; }
+.setHead > span { position: absolute; right: 0; top: 12px; font-size: 13px; font-weight: 500; color: var(--fg-muted); }
+.setMain { flex: 1; display: flex; gap: 30px; min-height: 0; }
+#setTabs { width: 230px; flex: none; padding: 22px 16px; display: flex; flex-direction: column; gap: 8px; }
+#setTabs button { height: 44px; text-align: left; padding: 0 14px; border: 0; border-left: 3px solid transparent; background: transparent; color: var(--fg-muted);
+  font: 700 16px var(--font-body); cursor: pointer; position: relative; z-index: 2; }
 #setTabs button:hover { color: var(--fg-text); }
-#setTabs button.active { background: color-mix(in srgb, var(--fg-top) 14%, transparent); border-left-color: var(--fg-top); color: #fff; font-weight: 600; }
-.setBody { flex: 1; padding: 24px 36px; overflow-y: auto; }
-.setBody section { display: flex; flex-direction: column; gap: 14px; }
+#setTabs button.active { background: color-mix(in srgb, var(--fg-accent) 13%, transparent); border-left-color: var(--fg-accent); color: var(--fg-text); }
+.setPane { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 18px 0 18px 30px; }
+.setBody { flex: 1; min-height: 0; overflow-y: auto; padding-right: 30px; position: relative; z-index: 2; }
+.setBody section { display: flex; flex-direction: column; gap: 10px; }
 .setBody section[hidden] { display: none; }
-.setBody h2 { margin: 12px 0 0; font: 800 18px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); }
-.setBody h2:first-child { margin-top: 0; }
-.setRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; font: 400 16px var(--font-body); color: var(--fg-text); }
-.setRow input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--fg-btn); }
-.setSlider { display: flex; align-items: center; gap: 12px; }
-.setSlider input { width: 220px; accent-color: var(--fg-btn); }
-.setSlider span { width: 52px; font: 600 14px var(--font-num); color: var(--fg-muted); }
-.setSelect { min-width: 240px; height: 36px; padding: 0 10px; background: var(--fg-input); color: var(--fg-text); border: 1px solid var(--fg-border); font: 500 15px var(--font-body); }
-.setSeg { display: flex; gap: 4px; padding: 4px; background: var(--fg-input); }
-.setSeg button { height: 36px; padding: 0 14px; border: 0; background: transparent; color: var(--fg-muted); font: 500 14px var(--font-body); cursor: pointer; }
-.setSeg button[aria-pressed=true] { background: var(--fg-btn); color: #fff; }
-.setBtns { display: flex; gap: 10px; }
-.setBtns .smallBtn { width: auto; margin: 0; height: 44px; padding: 0 18px; font-size: 15px; }
-.setBody .bindBtn { padding: 10px; font: 500 15px var(--font-body); background: transparent; border: 1px solid var(--fg-border); color: var(--fg-text); border-radius: 0; }
+.setBody h2 { margin: 14px 0 2px; font: 800 13px var(--font-body); letter-spacing: .16em; text-transform: uppercase; color: var(--fg-accent); }
+.setBody h2:first-child { margin-top: 2px; }
+.setRow { display: grid; grid-template-columns: 230px 1fr; align-items: center; min-height: 34px; font: 600 16px var(--font-body); color: var(--fg-text); }
+.setSlider { display: flex; align-items: center; gap: 16px; }
+.setSlider b { font: 700 15px var(--font-body); color: var(--fg-text); }
+.setSelect { justify-self: start; min-width: 240px; height: 34px; padding: 0 10px; background: var(--fg-input); color: var(--fg-text); border: 1px solid var(--fg-line); font: 600 15px var(--font-body); }
+.setBody .bindBtn { padding: 10px; font: 600 15px var(--font-body); background: transparent; border: var(--fg-btn2-bd); color: var(--fg-btn2-text); border-radius: 0; }
 .setNote { color: var(--fg-muted); margin: 0; }
 #settingsVol { font-family: var(--font-body); }
-.setFoot { height: 64px; flex: none; padding: 0 28px; display: flex; align-items: center; justify-content: flex-end; border-top: 1px solid var(--fg-line); }
-.setFoot .btn { font-size: 15px; padding: 10px 22px; }
+.setFoot { flex: none; display: flex; align-items: center; gap: 14px; padding: 16px 30px 0 0; position: relative; z-index: 2; }
+#setFootLeft { display: flex; gap: 14px; margin-right: auto; }
+#setFootLeft[hidden] { display: none; }
+.setFoot .fg-btn { min-width: 150px; height: 46px; font-size: 15px; }
+#settingsCancel { margin-left: auto; }
+/* UI-Flavor-Karten mit Mini-Vorschau */
+.setFlavors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
+.setFlavor { position: relative; height: 88px; display: flex; align-items: center; gap: 14px; padding: 0 14px; text-align: left; cursor: pointer; color: #f2e9e4;
+  border: 1px solid var(--fc); box-shadow: 0 0 0 1px #000; }
+.setFlavor[aria-pressed=true] { border-width: 3px; padding: 0 12px; box-shadow: 0 0 0 2px #000, 0 0 18px var(--fc); }
+.sfPrev { position: relative; flex: none; width: 60px; height: 60px; border: 1px solid var(--fc); background: rgba(0, 0, 0, .4); }
+.sfPrev i { position: absolute; left: 8px; top: 8px; width: 44px; height: 6px; }
+.sfPrev b { position: absolute; bottom: 6px; width: 20px; height: 20px; border-radius: 50%; }
+.sfPrev b:first-of-type { left: 6px; } .sfPrev b:last-of-type { right: 6px; }
+.sfText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sfText b { font: 700 19px var(--font-body); }
+.sfText small { font: 500 13px var(--font-body); color: #c4aea6; }
+.sfCheck { position: absolute; right: 12px; top: 6px; font: 800 16px var(--font-body); color: var(--fc); }
 body.mobile #setTabs { width: 150px; }
+body.mobile .setRow { grid-template-columns: 1fr; gap: 6px; }
+body.mobile .setFlavors { grid-template-columns: 1fr; }
 
 /* Dev-Panel (F10, Dev.dc.html): schwebend, Titelleiste zieht, Ecke unten rechts ändert die Größe */
 #devPanel { position: fixed; z-index: 10; display: flex; flex-direction: column; min-width: 300px; padding: 0;
-  background: var(--fg-panel); border: 1px solid var(--fg-border); border-top: 2px solid var(--fg-top); border-radius: 0;
-  box-shadow: 0 10px 30px #000a; font-family: var(--font-body); color: var(--fg-text); text-align: left; }
+  background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); border-radius: 0;
+  box-shadow: var(--fg-panel-sh); font-family: var(--font-body); color: var(--fg-text); text-align: left; }
 #devPanel[hidden] { display: none; }
 #devPanel.ghost { background: rgba(14, 4, 3, .45); }   /* PH */
 #devPanel.ghost .devBody { opacity: .75; }
 #devPanel.folded .devBody, #devPanel.folded .devResize { display: none; }
+.devTitle, .devBody, #devFps { position: relative; z-index: 2; }
 .devTitle { flex: none; height: 38px; padding: 0 6px 0 10px; display: flex; align-items: center; gap: 8px; cursor: move; user-select: none;
   border-bottom: 1px solid var(--fg-line); background: color-mix(in srgb, var(--fg-top) 8%, transparent); touch-action: none; }
-.devTitle b { font: 800 16px var(--font-num); letter-spacing: .14em; }
+.devTitle b { font: var(--font-title-weight) 16px var(--font-title); letter-spacing: .14em; color: var(--fg-title); }
 .devGrip { color: var(--fg-muted); }
 .devSub { flex: 1; font-size: 12px; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .devBtns { display: flex; gap: 2px; }
@@ -70,7 +83,7 @@ body.mobile #setTabs { width: 150px; }
 .devBody section { margin-bottom: 10px; }
 .devBody h2 { margin: 6px 0 6px; font: 800 14px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); }
 .devBody h3 { margin: 6px 0 4px; font: 500 12px var(--font-body); color: var(--fg-muted); letter-spacing: .04em; }
-.devBody .bindBtn { width: 100%; margin: 0 0 4px; background: transparent; border: 1px solid var(--fg-border); border-radius: 0; color: var(--fg-text); }
+.devBody .bindBtn { width: 100%; margin: 0 0 4px; background: transparent; border: var(--fg-btn2-bd); border-radius: 0; color: var(--fg-btn2-text); font-family: var(--font-body); }
 .devBody select.bindBtn { background: var(--fg-input); }
 .devBody #devCards, .devBody #devMeta, .devBody #devForge, .devBody #devZones { margin-bottom: 4px; }
 .devBody #devLevels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
@@ -322,9 +335,8 @@ body.mobile .invMain { grid-template-columns: 1fr; }
 
 /* Eigene UI-Stände in den Einstellungen */
 .setProfiles { display: flex; flex-direction: column; gap: 6px; }
-.setProfile { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; font-size: 15px; color: var(--fg-muted); }
-.setProfile .smallBtn { width: auto; margin: 0; padding: 6px 14px; }
-.setProfile .smallBtn:disabled { opacity: .4; cursor: not-allowed; }
+.setProfile { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; font: 600 15px var(--font-body); color: var(--fg-muted); }
+.setProfile .fg-btn { min-height: 34px; padding: 0 14px; font-size: 14px; }
 
 /* Unterüberschrift in den Einstellungen (mobile.ts) */
 .setH3 { margin: 4px 0 0; font: 600 15px var(--font-body); color: var(--fg-text); }

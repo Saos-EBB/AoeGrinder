@@ -189,6 +189,7 @@
   body.mobile #actionbar { display: none; }
   body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
+  body.mobile #settingsBox { width: 100vw !important; height: 100vh !important; }
   body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
   body.mobile .pauseBox { justify-content: center; }
   body.mobile .btn { font-size: 22px; padding: 14px 28px; }
@@ -297,38 +298,43 @@
 </div>
 
 <div id="settingsModal" class="modal">
-  <div class="frame panel" id="settingsBox">
-    <div class="setHead"><h1 class="title" data-i18n="menu.settings">Einstellungen</h1><span data-i18n="settings.head">Esc schließt · Spiel pausiert</span></div>
+  <div id="settingsBox">
+    <div class="setHead"><h1 class="fg-title c" data-i18n="menu.settings">Einstellungen</h1><span data-i18n="settings.head">Esc schließt · Spiel pausiert</span></div>
     <div class="setMain">
-      <nav id="setTabs" aria-label="Einstellungen" data-i18n-aria="menu.settings">
+      <nav id="setTabs" class="fg-panel" aria-label="Einstellungen" data-i18n-aria="menu.settings" data-sektor="SEKTOR 20">
         <button data-tab="grafik" data-i18n="settings.tab.grafik">Grafik</button>
         <button data-tab="audio" data-i18n="settings.tab.audio">Audio</button>
         <button data-tab="steuerung" data-i18n="settings.tab.steuerung">Steuerung &amp; Tasten</button>
         <button data-tab="interface" data-i18n="settings.tab.interface">Interface</button>
         <button data-tab="gameplay" data-i18n="settings.tab.gameplay">Gameplay</button>
       </nav>
-      <div class="setBody">
-        <section data-tab="grafik" id="setGrafik"><h2 data-i18n="settings.image">Bild</h2></section>
-        <section data-tab="audio"><h2 data-i18n="settings.volume">Lautstärke</h2><div id="settingsVol"></div></section>
-        <section data-tab="steuerung" id="setSteuerung"><h2 data-i18n="settings.camera">Kamera</h2>
-          <button class="bindBtn" id="setAutoCam"></button>
-          <h2 data-i18n="settings.keys">Tasten</h2><button class="bindBtn" id="setBinds" data-i18n="settings.openBinds">Tastenbelegung öffnen</button>
-        </section>
-        <section data-tab="interface" id="setInterface"></section>
-        <section data-tab="gameplay"><h2 data-i18n="settings.tab.gameplay">Gameplay</h2><p class="setNote" data-i18n="settings.none">Noch keine Einstellungen.</p>
-    <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
-      <summary class="title" style="cursor:pointer">Credits</summary>
-      <p style="margin:6px 0 0" data-i18n="settings.credits">Spell-Icons: eigene SVGs aus dem Spell-Viewer.</p>
-    </details>
-        </section>
+      <div class="setPane fg-panel" data-sektor="SEKTOR 40">
+        <div class="setBody">
+          <section data-tab="grafik" id="setGrafik"><h2 data-i18n="settings.image">Bild</h2></section>
+          <section data-tab="audio"><h2 data-i18n="settings.volume">Lautstärke</h2><div id="settingsVol"></div></section>
+          <section data-tab="steuerung" id="setSteuerung"><h2 data-i18n="settings.camera">Kamera</h2>
+            <button class="bindBtn" id="setAutoCam"></button>
+            <h2 data-i18n="settings.keys">Tasten</h2><button class="bindBtn" id="setBinds" data-i18n="settings.openBinds">Tastenbelegung öffnen</button>
+          </section>
+          <section data-tab="interface" id="setInterface"></section>
+          <section data-tab="gameplay"><h2 data-i18n="settings.tab.gameplay">Gameplay</h2><p class="setNote" data-i18n="settings.none">Noch keine Einstellungen.</p>
+            <details id="settingsCredits" style="text-align:left;margin-bottom:12px;font-size:13px">
+              <summary class="title" style="cursor:pointer">Credits</summary>
+              <p style="margin:6px 0 0" data-i18n="settings.credits">Spell-Icons: eigene SVGs aus dem Spell-Viewer.</p>
+            </details>
+          </section>
+        </div>
+        <div class="setFoot"><span id="setFootLeft"></span>
+          <button class="fg-btn alt" id="settingsCancel" data-i18n="ui.cancel">Abbrechen</button>
+          <button class="fg-btn" id="settingsClose" data-i18n="set.apply">Übernehmen</button>
+        </div>
       </div>
     </div>
-    <div class="setFoot"><button class="btn" id="settingsClose" data-i18n="ui.close">Schließen</button></div>
   </div>
 </div>
 
 <!-- Dev-Panel (F10). Phase 3 macht daraus ein schwebendes Fenster -->
-<div id="devPanel" class="frame" hidden>
+<div id="devPanel" class="frame fg-panel" hidden>
   <div class="title devHead">Dev <span>F10</span></div>
     <div class="title" style="text-align:left;margin:10px 0 6px">Dev: Zone wechseln</div>
     <div id="devZones"></div>
