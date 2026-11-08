@@ -174,5 +174,14 @@ export const bossById = id => ALL_BOSSES.find(b => b.id === id);
 // Boss-Termine (Level 15, 30, …, 90 und 100): Stufe nach Level
 export const TIER_OF_LEVEL = lv => lv >= 100 ? 'final' : lv >= 75 ? 'spaet' : lv >= 45 ? 'mittel' : 'frueh';
 export const TIERS = [['frueh', t('boss.tier.frueh')], ['mittel', t('boss.tier.mittel')], ['spaet', t('boss.tier.spaet')], ['final', t('boss.tier.final')]];
+// Stärke pro Stufe (Kader 08.11.), alle PH. wind: Ausholzeiten ×, pause: s zwischen zwei Angriffen, hit: Treffer = Anteil max. Leben.
+// Gilt für jeden Boss am Termin; Verdorbene bekommen die Werte des Termins, nicht ihre eigene Stufe
+export const TIER = {
+  frueh: { wind: 1.3, pause: [1.0, 1.6], hit: .15 },    // PH
+  mittel: { wind: 1.1, pause: [.7, 1.2], hit: .20 },    // PH
+  spaet: { wind: 1.0, pause: [.4, .8], hit: .25 },      // PH
+  final: { wind: .9, pause: [.3, .6], hit: .30 },       // PH
+};
+export const EVIL_CHANCE = 1 / 6;   // PH: 5 Bosse der Stufe + 1 Platz „Verdorbener“
 // Run-Pool einer Stufe: die 5 Bosse der Stufe, ohne Verdorbene und ohne 'aus'
 export const poolOf = tier => BOSSES.filter(b => b.tier === tier && !b.evil);

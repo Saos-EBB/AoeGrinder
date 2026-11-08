@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(boss): Verdorbene auf jeder Stufe: an jedem Boss-Termin ein Platz „Verdorbener“ (Chance 1/6, nur Figuren, die im Run noch nicht dran waren); Boss-Stärke pro Stufe: Ausholen ×1,3/×1,1/×1,0/×0,9, Pause 1,0–1,6/0,7–1,2/0,4–0,8/0,3–0,6 s, Treffer 15/20/25/30 % max. Leben (früh/mittel/spät/final), Verdorbene nach dem Termin
 - feat(boss): Hogger übernimmt Duriel: zusätzlich der breite eisblaue Durchbruch (Linie 10 yd), enge Kammer (Arena 10 yd) und Frost-Aura (Dauer-Slow 30 %); Wut-Schrei unter 20 % bleibt. Duriel selbst ist nicht mehr im Pool
 - feat(boss): Boss-Kader neu: Bosse bei Level 15, 30, 45, 60, 75, 90 und 100 (statt 25/50/75/100); Run-Pool je Stufe genau 5 Bosse (früh: Hogger, Sif, Shazzrah, Gräfin, Lazarus · mittel: Lilith, Azmodan, Chromaggus, Wachritter, Hornet · spät: Maven, Gwyn, Lichkönig, Radahn, Vier Könige · final: Ragnaros, Malenia, Maliketh, Shaper, Seele der Asche); Flickwerk, Duriel, Gruul, Abgrundwächter, Thaddius, Ornstein & Smough, Godrick, Yogg-Saron und Atziri nur noch im Dev-Menü (Gruppe „nicht im Pool“)
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist
