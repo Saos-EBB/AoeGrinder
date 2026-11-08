@@ -31,14 +31,13 @@ export const SHAFTS = {
   umwickelt: { values: ['Radius'], names: { staff: 'umwickelt', wand: 'umwickelt', book: 'Kette', relic: 'Kette' } },
 };
 export const EXTRAS = { baender: t('wextra.baender'), ketten: t('wextra.ketten'), federn: t('wextra.federn'), gloeckchen: t('wextra.gloeckchen') };
-export const ELEMENTS = {
+export const ELEMENTS = {   // die aktiven Schulen + Arkan (nur über Gegenstände, Schule geparkt). Kevin 2026-11-08: Blut und Dunkel raus
   none: { name: t('element.none.name'), color: 0x000000, adj: '' },
   frost: { name: t('element.frost.name'), color: 0x9fe4ff, adj: t('element.frost.adj'), fx: t('element.frost.fx') },
   feuer: { name: t('element.feuer.name'), color: 0xff7a22, adj: t('element.feuer.adj'), fx: t('element.feuer.fx') },
-  arkan: { name: t('element.arkan.name'), color: 0xd070ff, adj: t('element.arkan.adj'), fx: t('element.arkan.fx') },
   blitz: { name: t('element.blitz.name'), color: 0xffe866, adj: t('element.blitz.adj'), fx: t('element.blitz.fx') },
-  blut: { name: t('element.blut.name'), color: 0xe0202e, adj: t('element.blut.adj'), fx: t('element.blut.fx') },   // seit v28 statt Gift und Void: nur Schulen, die es im Spiel gibt
-  dunkel: { name: t('element.dunkel.name'), color: 0xff2440, adj: t('element.dunkel.adj'), fx: t('element.dunkel.fx') },
+  seuche: { name: t('element.seuche.name'), color: 0x7dff3a, adj: t('element.seuche.adj'), fx: t('element.seuche.fx') },
+  arkan: { name: t('element.arkan.name'), color: 0xd070ff, adj: t('element.arkan.adj'), fx: t('element.arkan.fx') },
 };
 export const elementColor = el => `#${ELEMENTS[el].color.toString(16).padStart(6, '0')}`;   // CSS-Farbe für UI
 export const MAKERS = {
@@ -186,21 +185,19 @@ function addExtra(g, spec, H, mats) {
   if (spec.extra === 'gloeckchen') for (const sx of [-1, 1]) { const b = new THREE.Group(); b.position.set(sx * 0.03, -0.06, 0); E.add(b); mesh(new THREE.ConeGeometry(0.022, 0.04, 10, 1, true), mats.accent, b); mesh(new THREE.SphereGeometry(0.008, 6, 4), mats.accent, b, 0, -0.02, 0); tubeAlong([V(0, 0.02, 0), V(0, 0.06, 0)], 0.002, 3, mats.detail, b); }
 }
 const dotTex = canvasTex(64, (g, s) => { const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(0.4, 'rgba(255,255,255,0.5)'); grd.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = grd; g.fillRect(0, 0, s, s); });
-const smokeTex = canvasTex(64, (g, s) => { const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); grd.addColorStop(0, 'rgba(255,255,255,0.8)'); grd.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = grd; g.fillRect(0, 0, s, s); });
 // Partikel-Bewegung je Element (lokal um den Kopf)
 const MOTION = {
   frost: (p, v, dt) => { p.y -= dt * 0.18; p.x += Math.sin(p.y * 9) * dt * 0.05; return p.y < -0.5; },
   feuer: (p, v, dt) => { p.y += dt * (0.35 + v.x); p.x += (Math.random() - 0.5) * dt * 0.2; return p.y > 0.45; },
   arkan: (p, v, dt, t) => { const a = v.y + t * 1.4, r = 0.16 + v.x * 0.5; p.set(Math.cos(a) * r, Math.sin(t * 2 + v.y) * 0.08, Math.sin(a) * r); return false; },
   blitz: (p, v, dt) => { if (Math.random() < dt * 8) p.set((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4); return false; },
-  blut: (p, v, dt) => { v.z += dt * 0.6; p.y -= dt * v.z; return p.y < -0.6; },
-  dunkel: (p, v, dt) => { p.y += dt * 0.12; p.x += Math.sin(p.y * 6 + v.y) * dt * 0.04; return p.y > 0.55; },
+  seuche: (p, v, dt) => { v.z += dt * 0.6; p.y -= dt * v.z; return p.y < -0.6; },
 };
 function spawnP(el, p, v) {
   v.set(Math.random() * 0.2, Math.random() * 7, 0);
   if (el === 'frost') p.set((Math.random() - 0.5) * 0.3, Math.random() * 0.2, (Math.random() - 0.5) * 0.3);
-  else if (el === 'feuer' || el === 'dunkel') p.set((Math.random() - 0.5) * 0.08, 0, (Math.random() - 0.5) * 0.08);
-  else if (el === 'blut') p.set((Math.random() - 0.5) * 0.06, -0.03, (Math.random() - 0.5) * 0.06);
+  else if (el === 'feuer') p.set((Math.random() - 0.5) * 0.08, 0, (Math.random() - 0.5) * 0.08);
+  else if (el === 'seuche') p.set((Math.random() - 0.5) * 0.06, -0.03, (Math.random() - 0.5) * 0.06);
   else p.set((Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3);
 }
 function addElement(g, spec, H, size) {
@@ -211,16 +208,14 @@ function addElement(g, spec, H, size) {
     if (el === 'frost') for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, m = mesh(new THREE.ConeGeometry(size * 0.12, size * (0.5 + (k % 2) * 0.3), 5).rotateX(Math.PI), new THREE.MeshLambertMaterial({ color: 0xd8f4ff, transparent: true, opacity: 0.85, emissive: 0x1a3040 }), H, Math.cos(a) * size * 0.45, -size * 0.35, Math.sin(a) * size * 0.45); }
     if (el === 'feuer') for (let k = 0; k < 2; k++) { const m = mesh(new THREE.ConeGeometry(size * (0.35 - k * 0.12), size * (1.4 - k * 0.4), 8, 1, true).translate(0, size * (0.7 - k * 0.2), 0), new THREE.MeshBasicMaterial({ color: k ? 0xffe28a : 0xff6a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), H, 0, size * 0.3, 0); fx.flames.push(m); }
     if (el === 'arkan') { const rt = runeTex(); for (let k = 0; k < 3; k++) { const m = mesh(new THREE.PlaneGeometry(size * 0.5, size * 0.5), new THREE.MeshBasicMaterial({ map: rt, color: col.clone().multiplyScalar(1.5), transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), H); m.userData.orbit = k / 3 * Math.PI * 2; fx.spinners.push(m); } }
-    if (el === 'blut') for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(size * 0.12, 8, 6), new THREE.MeshBasicMaterial({ color: col }), H, (Math.random() - 0.5) * size, -size * 0.4 - Math.random() * size * 0.3, (Math.random() - 0.5) * size).userData.drip = Math.random();
-    if (el === 'dunkel') { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: 0x100008, depthWrite: false })); s.scale.setScalar(size * 2.6); H.add(s); }
+    if (el === 'seuche') for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(size * 0.12, 8, 6), new THREE.MeshBasicMaterial({ color: col }), H, (Math.random() - 0.5) * size, -size * 0.4 - Math.random() * size * 0.3, (Math.random() - 0.5) * size).userData.drip = Math.random();
   }
   if (spec.rarity >= 3) {
-    if (el !== 'dunkel') { const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: col.clone().multiplyScalar(0.9), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.45 })); aura.scale.setScalar(size * 3.2); H.add(aura); fx.aura = aura; }
+    { const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: col.clone().multiplyScalar(0.9), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.45 })); aura.scale.setScalar(size * 3.2); H.add(aura); fx.aura = aura; }
     const n = spec.rarity >= 5 ? 80 : 40, pos = new Float32Array(n * 3), P = [], Vv = [];
-    for (let i = 0; i < n; i++) { const p = V(0, 0, 0), v = V(0, 0, 0); spawnP(el, p, v); if (el === 'frost' || el === 'feuer' || el === 'dunkel' || el === 'blut') p.y += (Math.random() - 0.5) * 0.4; P.push(p); Vv.push(v); }
+    for (let i = 0; i < n; i++) { const p = V(0, 0, 0), v = V(0, 0, 0); spawnP(el, p, v); if (el === 'frost' || el === 'feuer' || el === 'seuche') p.y += (Math.random() - 0.5) * 0.4; P.push(p); Vv.push(v); }
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const dark = el === 'dunkel';
-    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dark ? smokeTex : dotTex, color: dark ? 0x1a0a10 : col.clone().multiplyScalar(1.4), size: dark ? 0.12 : el === 'blut' ? 0.045 : 0.035, transparent: true, depthWrite: false, blending: dark ? THREE.NormalBlending : THREE.AdditiveBlending, opacity: dark ? 0.7 : 1 }));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: dotTex, color: col.clone().multiplyScalar(1.4), size: el === 'seuche' ? 0.045 : 0.035, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     H.add(pts); fx.parts = { pts, P, Vv, el };
     if (el === 'blitz') for (let k = 0; k < 2; k++) { const l = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(8 * 3), 3)), new THREE.LineBasicMaterial({ color: new THREE.Color(0xfff6c0).multiplyScalar(2) })); H.add(l); fx.arcs.push(l); }
   }
@@ -294,6 +289,8 @@ function buildParts(spec) {
       if (u.drip !== undefined) { u.drip = (u.drip + dt * 0.7) % 1; o.position.y = -size * 0.4 - u.drip * size * 1.6; o.scale.setScalar(1 - u.drip * 0.6); }
       if (u.beat) o.scale.setScalar(1 + Math.max(0, Math.sin(t * 6)) * 0.08);
       if (u.look) o.rotation.y = Math.sin(t * 0.7) * 0.6;
+      if (u.sdrip) { u.sdrip.t = (u.sdrip.t + dt * 0.8) % 1; o.position.y = u.sdrip.y - u.sdrip.t * u.sdrip.len; o.scale.setScalar(1 - u.sdrip.t * 0.7); }   // Seuche: Schleim tropft
+      if (u.bubble !== undefined) { u.bubble = (u.bubble + dt * 0.4) % 1; o.position.y = -0.03 + u.bubble * 0.06; }              // Seuche: Blasen steigen
     });
     if (g.userData.float) g.position.y = (g.userData.baseY ?? 0) + Math.sin(t * 1.6) * 0.03;
     fx.flames.forEach((f, i) => f.scale.set(1 + Math.sin(t * 17 + i) * 0.1, 1 + Math.sin(t * 11 + i * 2) * 0.25, 1));
@@ -320,7 +317,7 @@ function buildParts(spec) {
 // Griff und Haltung: der lange Stab stützt wie ein Gehstock, der Zauberstab liegt in der Hand und ist für die Spielkamera vergrößert // PH
 const HOLD = { staff: { gripY: 1.0, cane: true, pitch: 0.06, scale: 1.15 }, wand: { gripY: 0.07, cane: false, pitch: 0.95, scale: 1.5 },
   book: { gripY: -0.12, cane: false, pitch: 0, scale: 1.5 }, relic: { gripY: -0.18, cane: false, pitch: 0, scale: 1.5 } };   // Buch und Relikt schweben über der Hand
-const animated = o => { const u = o.userData; return u.spin || u.bob || u.spinX || u.orbitY || u.flip || u.wave || u.sway || u.drip !== undefined || u.beat || u.look || u.orbit !== undefined; };
+const animated = o => { const u = o.userData; return u.spin || u.bob || u.spinX || u.orbitY || u.flip || u.wave || u.sway || u.drip !== undefined || u.beat || u.look || u.orbit !== undefined || u.sdrip || u.bubble !== undefined; };
 // Statische Meshes pro Material zu einem Mesh verschmelzen; alles unter einem bewegten Teil bleibt, wie es ist
 function mergeStatic(root) {
   root.updateMatrixWorld(true);

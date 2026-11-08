@@ -32,8 +32,8 @@ function load() {
   try { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; }
   catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 }; }
 }
-// Waffen-Elemente, die es nicht mehr gibt (v28): Gift → Blut, Void → Arkan. Auch für Spielstand-Codes
-const ELEMENT_REPLACE = { gift: 'blut', void: 'arkan' };
+// Waffen-Elemente, die es nicht mehr gibt: v28 Gift und Void, 2026-11-08 Blut und Dunkel (Dunkel → Arkan ist Vorschlag, Kevin offen). Auch für Spielstand-Codes
+const ELEMENT_REPLACE = { gift: 'seuche', void: 'arkan', blut: 'seuche', dunkel: 'arkan' };
 export function fixWeapon(w) { if (w?.s && ELEMENT_REPLACE[w.s.element]) w.s.element = ELEMENT_REPLACE[w.s.element]; return w; }
 export const meta = load();
 meta.inv.forEach(fixWeapon);

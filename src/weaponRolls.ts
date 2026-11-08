@@ -32,7 +32,7 @@ export const ROLLS = {
   elementChance: [0, 0.25, 0.5, 1, 1, 1],              // Anteil der Waffen mit Element je Seltenheit
   procChance: 0.05,                                    // Element-Effekt pro Treffer bei weiß, × Seltenheit
   element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6,
-    infectStacks: 1, darkMul: 0.3, darkHeal: 0.2 },
+    infectStacks: 1 },
   maker: { grab: { dmg: 0.1, cast: 0.1 }, stern: { crit: 0.05, critMana: 0.01 }, morra: { dur: 0.15, random: 0.05 }, vey: { cd: -0.05, mana: 0.1 }, brandt: { hp: 0.1, lifesteal: 0.02 } },
   notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt'],   // Waffen des Strichkriegers (Standard und legendär)
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
@@ -230,12 +230,7 @@ function weaponHit(m, dmg, crit, api, el, chance, M) {
     const next = state.mobs.filter(o => !o.dead && o !== m && dist2d(o.pos, m.pos) <= E.chainYd).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, E.chainN);
     for (const o of next) { boltFx(m.pos, o.pos, [2.4, 2.2, 0.8]); api.burnMob(o, Math.max(1, Math.round(dmg * E.chainMul))); }
   }
-  if (el === 'blut' && !m.dead) mark(m, E.infectStacks);   // seit v31 ein Seuchen-Mal statt Infekt (plagueMarks.ts)
-  if (el === 'dunkel' && !m.dead) {
-    const extra = Math.max(1, Math.round(dmg * E.darkMul));
-    api.burnMob(m, extra);                                       // fester Schaden ohne Wurf und Rüstung wie Dunkel
-    player.hp = Math.min(maxHp(), player.hp + extra * E.darkHeal);
-  }
+  if (el === 'seuche' && !m.dead) mark(m, E.infectStacks);   // ein Seuchen-Mal (plagueMarks.ts), bis 08.11. als Element „Blut“
 }
 
 // Relikt: alle 3 s ein Puls um den Spieler, jeder Mob darin bekommt den Element-Effekt mit der Puls-Chance (einmal pro Frame aus updatePlayer)
