@@ -1,4 +1,5 @@
-// Hauptmenü fullscreen und Pause-Menü. Die Figur steht groß in der Hauptszene, drumherum die Auswahl.
+// Hauptmenü = Charakterwahl (Mockups X?M, gen4.py charsel + gen7.py) und Pause-Menü. Die Figur steht groß in der echten, gewählten Map;
+// die Kamera schwenkt langsam, der Rand ist abgedunkelt. Map-Wechsler oben links (Q / E, Pad L2 / R2), die gewählte Map gilt für den Run.
 
 import { state, player } from '../state';
 import { $ } from '../util';
@@ -6,11 +7,17 @@ import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreM
 import { CARD_PACES } from '../config';
 import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
+import { zone, zoneId } from '../world';
+import { ZONES } from '../zones';
+import { switchZone } from '../player';
+import { uiSettings, setUi } from './uiSettings';
+import { fmtInt } from './dmgNumbers';
 import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
+import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
 import { resetGame, die } from '../player';
@@ -37,6 +44,8 @@ const CHARS = [
   { mod: 'realmen', name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
 ];
 const STAT_NAMES = [t('stat.dmg'), t('stat.control'), t('stat.survive')], STAT_MAX = 5;
+// Strichfigur für die Figurenleiste (gen4.py charsel), Farbe über --fc
+const STICK = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--fc)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="6" r="3"/><path d="M12 9v7M12 11l-5 4M12 11l5 3M12 16l-3 6M12 16l3 6"/></svg>';
 let boardMode: 'time' | 'score' = 'time';
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
@@ -82,7 +91,7 @@ function renderBoardPanel() {
     });
     box.appendChild(table);
   };
-  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [t('menu.lv', { n: r.level }), Math.round(r.score).toLocaleString(locale)], t('menu.noRuns'));
+  fill($('menuBoard'), byScore(runs).slice(0, UI.boardRows), r => [t('menu.lv', { n: r.level }), fmtInt(r.score)], t('menu.noRuns'));
   fill($('menuTimeBoard'), byTime(runs).slice(0, UI.boardRows), r => [t('menu.kills', { n: r.kills }), fmtTime(r.timeTo100)], mobMode === 'packs' ? t('menu.noTime') : t('menu.packsOnly'));
   $('menuBoard').hidden = boardMode !== 'score';
   $('menuTimeBoard').hidden = boardMode !== 'time';
@@ -97,7 +106,8 @@ export function renderMenu() {
     const b = button('charTab' + (i === charIdx ? ' selected' : ''), '', () => { charIdx = i; applySelection(); }, c.name);
     b.dataset.nav = c.name;
     b.style.setProperty('--fc', c.color);
-    b.innerHTML = `<b>${c.name.charAt(0)}</b><small>${c.name}</small>`;
+    b.setAttribute('aria-label', c.name);
+    b.innerHTML = STICK;
     chars.appendChild(b);
   });
   const ids = activeModIds(), mods = $('menuMods');
@@ -142,8 +152,14 @@ export function renderMenu() {
   const fig = CHARS[charIdx];
   $('menuTitle').textContent = fig.name;
   $('menuTitle').style.color = fig.color;
+  $('menuTitle').style.textShadow = `0 0 14px ${fig.color}66`;
   $('menuRole').textContent = fig.sub;
-  $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b>${Array.from({ length: STAT_MAX }, (_, k) => `<i${k < fig.stats[i] ? ` class="on" style="--fc:${fig.color}"` : ''}></i>`).join('')}</b></div>`).join('');
+  $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b><i style="width:${fig.stats[i] / STAT_MAX * 100}%;background:${fig.color}"></i></b></div>`).join('');
+  const w = equipped(), wn = $('menuWeaponName');   // Waffe der Figur: Magier aus dem Inventar, Strichkrieger feste Wahl
+  wn.textContent = mage.skin === 'krieger' ? WAR_WEAPON_NAMES[mage.warWeapon] ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
+  wn.style.color = mage.skin !== 'krieger' && w ? rarityOf(w).color : '';
+  $('startModal').style.setProperty('--fc', fig.color);
+  renderMap();
   const rules = figureRules();   // Besonderheit der Figur, gleicher Text wie im Charakterfenster
   $('menuRules').innerHTML = rules ? `<div class="menuHead" style="color:${rules.color}">${rules.name}</div><p>${rules.rules}</p>` : '';
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
@@ -154,12 +170,54 @@ export function renderMenu() {
   if (nav) document.querySelector(`#startModal [data-nav="${CSS.escape(nav)}"]`)?.classList.add('navSel');
 }
 
+// ---------- Map-Wechsler (gen7.py map_selector): alle Maps aus zones.ts, Vorschau aus den Farben der Map, Bestzeit für Figur + Mods + Map ----------
+const MAPS = Object.keys(ZONES).filter(id => ZONES[id].name);
+const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
+function mapThumb(id: string) {
+  const e = ZONES[id].env ?? {};
+  const ground = hex(e.ground ?? 0x333333), path = hex(e.fog ?? 0x666666), hi = hex(e.mid ?? e.top ?? 0x444444), sky = hex(e.sky ?? 0x888888);
+  return `<svg viewBox="0 0 64 44" width="64" height="44"><rect width="64" height="44" fill="${ground}"/><rect width="64" height="44" fill="#000" opacity=".35"/>`
+    + `<path d="M0 37 C19 31 38 22 64 7" stroke="${path}" stroke-width="6" fill="none"/><circle cx="13" cy="13" r="5" fill="${hi}"/><circle cx="48" cy="31" r="6" fill="${hi}"/>`
+    + `<ellipse cx="51" cy="33" rx="9" ry="5" fill="${sky}" opacity=".5"/></svg>`;
+}
+function renderMap() {
+  const i = Math.max(0, MAPS.indexOf(zoneId)), best = byTime(comboRuns(zoneId))[0]?.timeTo100;
+  $('mapThumb').innerHTML = mapThumb(zoneId);
+  $('mapName').textContent = zone.name;
+  $('mapInfo').textContent = t('menux.mapInfo', { i: i + 1, n: MAPS.length, best: typeof best === 'number' ? fmtTime(best) : '—' });
+}
+function showMap(id: string) {
+  stopChannel(true);
+  clearSpellEffects();
+  switchZone(id);
+  setUi('menuZone', id);
+}
+export function cycleMap(step: number) {
+  showMap(MAPS[(Math.max(0, MAPS.indexOf(zoneId)) + step + MAPS.length) % MAPS.length]);
+  renderMenu();
+}
+// Beim ersten Öffnen die zuletzt gewählte Map aufbauen (?zone=… zum Testen hat Vorrang)
+let savedMapShown = new URLSearchParams(location.search).has('zone');
+$('mapPrev').addEventListener('click', () => cycleMap(-1));
+$('mapNext').addEventListener('click', () => cycleMap(1));
+
+// Langsamer Kameraschwenk um die Figur, solange das Menü offen ist; die Figur dreht mit und schaut weiter zur Kamera
+const MENU_PAN = 0.06;   // rad/s // PH
+let panAt = performance.now();
+function pan() {
+  const now = performance.now();
+  if (menuOpen() && turning === null) cam.offset += (now - panAt) / 1000 * MENU_PAN;
+  panAt = now;
+  requestAnimationFrame(pan);
+}
+requestAnimationFrame(pan);
+
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
 export const menuOpen = () => $('startModal').classList.contains('show');
 // Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
 let menuTurn = 0, turning = null;
-export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
+export const menuYaw = () => menuOpen() ? Math.PI + menuTurn + cam.offset : 0;
 // Im Menü läuft die Figur ihre Ladungsstufen durch (Magier: Anzeige 0 … voll, Krieger: Wut)
 const SHOWCASE = { stepMs: 1600, values: [0, 0.3, 0.6, 1] };   // PH
 export function menuShowcase() {
@@ -189,6 +247,7 @@ $('startModal').addEventListener('wheel', e => {
   cam.dist = Math.min(maxDist, Math.max(minDist, cam.dist + Math.sign(e.deltaY) * zoomStep));
 }, { passive: true });
 export function enterMenu() {
+  if (!savedMapShown) { savedMapShown = true; if (ZONES[uiSettings.menuZone] && uiSettings.menuZone !== zoneId) showMap(uiSettings.menuZone); }
   camSaved ??= { dist: cam.dist, pitch: cam.pitch, offset: cam.offset };
   Object.assign(cam, { dist: UI.menuCam.dist, pitch: UI.menuCam.pitch, offset: 0 });
   menuTurn = 0;
@@ -269,12 +328,15 @@ $('pauseGiveUp').addEventListener('click', () => {
   die();
 });
 
-// Tastatur: A/D wechselt die Figur, Enter löst den fokussierten Knopf aus, Esc beendet das Bearbeiten
+// Tastatur: A/D wechselt die Figur, Q/E die Map, Enter startet (oder löst den fokussierten Knopf aus), Esc beendet das Bearbeiten
 addEventListener('keydown', e => {
   if (e.target instanceof HTMLTextAreaElement) return;   // Spielstand-Code tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
   if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
   if (e.code === 'KeyD') cycleChar(1);
+  if (e.code === 'KeyQ') cycleMap(-1);
+  if (e.code === 'KeyE') cycleMap(1);
+  if (e.code === 'Enter' && !(document.activeElement instanceof HTMLButtonElement) && !document.querySelector('#startModal .navSel')) { e.preventDefault(); startRun(); }
 }, true);
 

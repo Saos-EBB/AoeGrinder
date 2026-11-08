@@ -108,61 +108,79 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #hudEditBar .smallBtn { width: auto; margin: 0; padding: 8px 14px; background: transparent; color: var(--fg-btn2-text); border: 1px solid var(--fg-top); border-radius: 0; font: 500 14px var(--font-body); }
 #hudEditBar .btn { font-size: 15px; padding: 8px 20px; }
 
-/* ---------- Hauptmenü = Charakterwahl (CharDiablo.dc.html, 1600×900, Look Glut) ---------- */
-#startModal { background: radial-gradient(ellipse at 50% 55%, transparent 25%, rgba(5, 1, 1, .85) 100%); font-family: var(--font-body); color: var(--fg-text); }
-.gPanel { background: var(--fg-panel); border: 1px solid var(--fg-border); border-top: 2px solid var(--fg-top); box-shadow: 0 10px 30px #000a; box-sizing: border-box; }
-#menuTop { position: absolute; left: 0; right: 0; top: 2.5vh; display: flex; justify-content: center; align-items: baseline; pointer-events: none; }
-#menuTop .menuGame { position: absolute; left: 4.4vw; font-size: 28px; }
-#menuTop .menuPick { font: 700 22px var(--font-title); letter-spacing: .3em; text-transform: uppercase; color: var(--fg-muted); }
-#menuDust { position: absolute; right: 4.4vw; font: 700 18px var(--font-num); color: var(--rar-relikt); letter-spacing: .04em; }
-#menuLeft { position: absolute; left: 4.4vw; top: 13vh; width: min(480px, 32vw); max-height: calc(87vh - 3.8vh - 130px); overflow: auto; padding: 26px 28px; display: flex; flex-direction: column; gap: 12px; }
-#menuTitle { font-size: 40px; line-height: 1.05; text-shadow: var(--fg-title-glow); }
-#menuRole { font: 800 18px var(--font-num); letter-spacing: .16em; text-transform: uppercase; color: var(--fg-accent); }
-.menuStat { display: flex; align-items: center; gap: 10px; font-size: 15px; }
-.menuStat span { width: 110px; color: var(--fg-muted); }
-.menuStat b { flex: 1; display: flex; gap: 5px; height: 10px; }
-.menuStat b i { flex: 1; border-radius: 2px; background: var(--fg-line); transform: skewX(-18deg); transition: background .2s, box-shadow .2s; }
-.menuStat b i.on { background: var(--fc); box-shadow: 0 0 8px color-mix(in srgb, var(--fc) 55%, transparent); }
-.menuHead { margin-top: 6px; font: 800 14px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); }
-#menuRules p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--fg-muted); }
+/* ---------- Hauptmenü = Charakterwahl (X?M, gen4.py charsel + gen7.py, Board 1280×720 in --hu) ---------- */
+#startModal { font-family: var(--font-body); color: var(--fg-text); }
+.gPanel { background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); box-shadow: var(--fg-panel-sh); box-sizing: border-box; }
+#startModal .fg-panel > *, #menuMap > * { position: relative; z-index: 2; }
+#menuTop { position: absolute; left: 0; right: 0; top: calc(16 * var(--hu)); display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--hu)); pointer-events: none; }
+#menuTop .menuGame { margin: 0; font-size: calc(30 * var(--hu)); }
+#menuTop .menuPick { font: 500 calc(14 * var(--hu)) var(--font-body); color: var(--fg-muted); }
+/* Map-Wechsler oben links */
+#menuMap { position: absolute; left: calc(40 * var(--hu)); top: calc(24 * var(--hu)); width: calc(340 * var(--hu)); height: calc(70 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); padding: 0 calc(10 * var(--hu)); }
+#menuMap .mapArrow { flex: none; width: calc(36 * var(--hu)); min-height: 0; height: calc(36 * var(--hu)); padding: 0; font-size: calc(16 * var(--hu)); }
+#mapThumb { flex: none; width: calc(64 * var(--hu)); height: calc(44 * var(--hu)); box-shadow: 0 0 0 1px #000; }
+#mapThumb svg { width: 100%; height: 100%; display: block; }
+#menuMap .mapText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(2 * var(--hu)); }
+#mapName { font-size: calc(22 * var(--hu)); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#mapInfo { font: 600 calc(13 * var(--hu)) var(--font-body); color: var(--fg-muted); white-space: nowrap; }
+/* Figur links */
+#menuLeft { position: absolute; left: calc(40 * var(--hu)); top: calc(110 * var(--hu)); width: calc(360 * var(--hu)); height: calc(420 * var(--hu)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));
+  display: flex; flex-direction: column; gap: calc(8 * var(--hu)); overflow: hidden auto; }
+#menuTitle { font-size: calc(34 * var(--hu)); line-height: 1.1; }
+#menuRole { font: 700 calc(14 * var(--hu)) var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); }
+#menuRules .menuHead { display: none; }
+#menuRules p { margin: 0; font-size: calc(15 * var(--hu)); line-height: 1.45; color: var(--fg-text); }
+.menuStat { display: flex; align-items: center; gap: calc(12 * var(--hu)); font: 600 calc(15 * var(--hu)) var(--font-body); }
+.menuStat span { width: calc(106 * var(--hu)); color: var(--fg-muted); }
+.menuStat b { flex: 1; height: calc(8 * var(--hu)); background: #0a0505; border: 1px solid var(--fg-line); }
+.menuStat b i { display: block; height: 100%; }
+.menuHead { margin-top: calc(4 * var(--hu)); font: 600 calc(14 * var(--hu)) var(--font-body); color: var(--fg-muted); }
+#menuWeaponName { font: 700 calc(18 * var(--hu)) var(--font-body); color: var(--fg-text); }
 #menuKit { justify-content: flex-start; }
-#menuInfo { margin: 0; font-size: 13px; color: var(--fg-muted); }
-#menuRight { position: absolute; right: 4.4vw; top: 18.9vh; width: min(380px, 26vw); max-height: 58vh; overflow: auto; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; }
+#menuInfo { margin: 0; font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
+/* Rangliste rechts */
+#menuRight { position: absolute; right: calc(40 * var(--hu)); top: calc(110 * var(--hu)); width: calc(320 * var(--hu)); height: calc(420 * var(--hu)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));
+  display: flex; flex-direction: column; gap: calc(8 * var(--hu)); overflow: hidden auto; }
 .menuBoardHead { display: flex; justify-content: space-between; align-items: baseline; }
-.menuBoardHead .title { font-size: 20px; }
-#menuBoardTabs { color: var(--fg-muted); font-size: 14px; }
+.menuBoardHead .fg-title { font-size: calc(22 * var(--hu)); }
+#menuBoardTabs { color: var(--fg-muted); font: 600 calc(13 * var(--hu)) var(--font-body); }
 #menuBoardTabs button { background: none; border: 0; padding: 0; font: inherit; color: var(--fg-muted); cursor: pointer; }
-#menuBoardTabs button.on { color: var(--fg-text); text-decoration: underline; text-decoration-color: var(--fg-top); text-underline-offset: 4px; }
-#menuBoard, #menuTimeBoard { font-size: 16px; color: var(--fg-muted); }
+#menuBoardTabs button.on { color: var(--fg-text); text-decoration: underline; text-decoration-color: var(--fg-accent); text-underline-offset: 4px; }
+#menuBoard, #menuTimeBoard { font: 600 calc(17 * var(--hu)) var(--font-body); color: var(--fg-muted); }
 #menuBoard[hidden], #menuTimeBoard[hidden] { display: none; }
 #menuBoard table, #menuTimeBoard table { width: 100%; border-collapse: collapse; }
-#menuBoard td, #menuTimeBoard td { padding: 6px 0; border-bottom: 1px solid var(--fg-line); }
+#menuBoard td, #menuTimeBoard td { padding: calc(10 * var(--hu)) 0; }
 #menuBoard td:first-child, #menuTimeBoard td:first-child { width: 2.2em; }
-#menuBoard td:last-child, #menuTimeBoard td:last-child { text-align: right; font: 700 17px var(--font-num); color: var(--fg-text); }
-#startModal .chipRow { display: flex; flex-wrap: wrap; gap: 6px; }
-#startModal .chip { height: 30px; padding: 0 12px; background: transparent; border: 1px solid var(--fg-line); border-radius: 0; color: var(--fg-muted);
-  font: 700 14px var(--font-num); letter-spacing: .06em; box-shadow: none; }
-#startModal .chip.selected { background: color-mix(in srgb, var(--fg-top) 16%, transparent); border-color: var(--fg-top); color: var(--fg-text); box-shadow: none; }
+#menuBoard td:nth-child(2), #menuTimeBoard td:nth-child(2) { color: var(--fg-text); }
+#menuBoard td:last-child, #menuTimeBoard td:last-child { text-align: right; font: 700 calc(18 * var(--hu)) var(--font-num); color: var(--fg-text); }
+#startModal .chipRow { display: flex; flex-wrap: wrap; gap: calc(6 * var(--hu)); }
+#startModal .chip { height: calc(30 * var(--hu)); padding: 0 calc(12 * var(--hu)); background: transparent; border: 1px solid var(--fg-line); border-radius: 0; color: var(--fg-muted);
+  font: 700 calc(13 * var(--hu)) var(--font-body); box-shadow: none; }
+#startModal .chip.selected { background: color-mix(in srgb, var(--fg-accent) 13%, transparent); border-color: var(--fg-accent); color: var(--fg-text); box-shadow: none; }
+/* Mods unten Mitte über der Figurenleiste */
+#menuMods { position: absolute; left: 50%; top: calc(556 * var(--hu)); transform: translateX(-50%); width: calc(520 * var(--hu)); justify-content: center; }
+#menuMods .chip { min-width: calc(112 * var(--hu)); height: calc(34 * var(--hu)); font-size: calc(14 * var(--hu)); }
 #menuWeaponBox { position: absolute; left: 50%; bottom: 20vh; transform: translateX(-50%); width: min(720px, 70vw); max-height: 40vh; overflow: auto; padding: 16px 20px; z-index: 2; }
 #menuWeaponBox[hidden] { display: none; }
-#menuActions { position: absolute; right: 4.4vw; top: 9vh; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 50vw; }
-#menuActions .smallBtn { margin: 0; width: auto; padding: 6px 12px; }
-#menuBottom { position: absolute; left: 0; right: 0; bottom: 3.8vh; display: flex; justify-content: center; align-items: flex-end; gap: 14px; }
-.menuKey { align-self: center; font: 700 13px var(--font-num); letter-spacing: .1em; color: var(--fg-muted); }
-#menuChars { display: flex; align-items: flex-end; gap: 14px; }
-.charTab { width: 80px; height: 80px; padding: 0; border-radius: 50%; border: 3px solid var(--fg-line); background: var(--fg-card); box-shadow: 0 0 0 2px #000;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; cursor: pointer; color: var(--fc, #fff); }
-.charTab b { font: 900 30px var(--font-title); line-height: 1; }
-.charTab small { font: 800 10px var(--font-num); letter-spacing: .02em; color: var(--fg-text); max-width: 74px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.charTab.selected { width: 100px; height: 100px; border-color: var(--fg-top); box-shadow: 0 0 0 2px #000, 0 0 24px color-mix(in srgb, var(--fg-top) 60%, transparent); }
-.charTab.selected b { font-size: 38px; }
-#startBtn { margin-left: 40px; height: 64px; padding: 0 34px; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
-body.mobile #menuLeft { width: 34vw; max-height: 52vh; top: 12vh; left: 1vw; padding: 10px 12px; }
-body.mobile #menuRight { width: 30vw; max-height: 52vh; top: 12vh; right: 1vw; padding: 10px 12px; }
-body.mobile #menuTitle { font-size: 26px; }
-body.mobile .charTab { width: 60px; height: 60px; }
-body.mobile .charTab.selected { width: 72px; height: 72px; }
-body.mobile #menuActions { top: 6vh; }
+/* Knöpfe und Staub oben rechts */
+#menuActions { position: absolute; right: calc(40 * var(--hu)); top: calc(24 * var(--hu)); max-width: calc(420 * var(--hu)); display: flex; gap: calc(6 * var(--hu)); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+#menuActions .fg-btn { min-height: 0; height: calc(30 * var(--hu)); padding: 0 calc(10 * var(--hu)); font-size: calc(13 * var(--hu)); }
+#menuDust { font: 700 calc(15 * var(--hu)) var(--font-num); color: var(--rar-relikt); margin-right: calc(6 * var(--hu)); }
+/* Ring unter der Figur in Figurenfarbe */
+#menuRing { position: absolute; left: calc(50% - 170 * var(--hu)); top: calc(520 * var(--hu)); width: calc(340 * var(--hu)); height: calc(70 * var(--hu)); border-radius: 50%; pointer-events: none;
+  border: 2px solid color-mix(in srgb, var(--fc, #fff) 55%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--fc, #fff) 33%, transparent); }
+/* Figurenleiste unten, Run starten + Waffen rechts davon */
+#menuBottom { position: absolute; right: calc(50% - 116 * var(--hu)); bottom: calc(18 * var(--hu)); display: flex; align-items: center; gap: calc(12 * var(--hu)); }
+.menuKey { font: 700 calc(12 * var(--hu)) var(--font-num); letter-spacing: .1em; color: var(--fg-muted); white-space: nowrap; }
+#menuChars { display: flex; align-items: center; gap: calc(14 * var(--hu)); }
+.charTab { width: calc(58 * var(--hu)); height: calc(58 * var(--hu)); padding: 0; border-radius: 50%; border: 2px solid var(--fg-line); background: var(--fg-card); box-shadow: 0 0 0 2px #000;
+  display: grid; place-items: center; cursor: pointer; }
+.charTab svg { width: 50%; height: 50%; }
+.charTab.selected { width: calc(74 * var(--hu)); height: calc(74 * var(--hu)); border: 3px solid var(--fc); box-shadow: 0 0 0 2px #000, 0 0 20px var(--fc); }
+#menuGo { position: absolute; left: calc(50% + 150 * var(--hu)); bottom: calc(18 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); }
+#startBtn { width: calc(240 * var(--hu)); height: calc(62 * var(--hu)); font-size: calc(22 * var(--hu)); }
+#menuWeaponsBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
+body.mobile #menuActions { max-width: 50vw; }
 
 /* ---------- Ladebildschirm (LoadDoom.dc.html) ---------- */
 #loadModal { z-index: 30; background: radial-gradient(ellipse at 50% 60%, #3a0806 0%, #120202 45%, #050101 100%); font-family: 'Oswald', sans-serif; color: #f2e9e4; }

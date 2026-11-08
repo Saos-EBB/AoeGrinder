@@ -1999,4 +1999,8 @@ export const de: Record<string, string> = {
   'feat.untouched.krypta': "Nicht mal angeatmet",
   'feat.untouched.schlachtbank': "KEIN KRATZER",
   'hudEl.feats': "Erfolgs-Meldungen",
+  'menux.hint': "A / D wählen · Q / E Map · Enter startet",
+  'menux.mapInfo': "Q / E · Map {i} / {n} · Best {best}",
+  'menux.mapNext': "Nächste Map",
+  'menux.mapPrev': "Vorherige Map",
 };

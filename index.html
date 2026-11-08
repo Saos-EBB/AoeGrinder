@@ -250,38 +250,49 @@
 <div id="overlay"></div>
 
 <div id="startModal" class="modal show">
-  <div id="menuTop"><span class="menuGame title">Frost Grind</span><span class="menuPick" data-i18n="menu.pick">Wähle deine Figur</span><span id="menuDust"></span></div>
-  <div id="menuLeft" class="gPanel">
+  <div id="menuTop"><h1 class="fg-title c menuGame">Frost Grind</h1><span class="menuPick" data-i18n="menux.hint">A / D wählen · Q / E Map · Enter startet</span></div>
+  <div id="menuMap" class="fg-panel">
+    <button type="button" class="fg-btn alt mapArrow" id="mapPrev" aria-label="Vorherige Map" data-i18n-aria="menux.mapPrev">◀</button>
+    <span id="mapThumb" aria-hidden="true"></span>
+    <span class="mapText"><b id="mapName" class="fg-title"></b><small id="mapInfo"></small></span>
+    <button type="button" class="fg-btn alt mapArrow" id="mapNext" aria-label="Nächste Map" data-i18n-aria="menux.mapNext">▶</button>
+  </div>
+  <div id="menuLeft" class="gPanel fg-panel">
     <div class="title" id="menuTitle"></div>
     <div id="menuRole"></div>
-    <div id="menuStats"></div>
     <div id="menuRules"></div>
+    <div id="menuStats"></div>
+    <div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeaponName"></div>
     <div class="menuHead" data-i18n="menu.kit">Start-Kit</div>
     <div id="menuKit" class="kitRow" title=""></div>
     <p id="menuInfo"></p>
   </div>
-  <div id="menuRight" class="gPanel">
-    <div class="menuBoardHead"><span class="title" data-i18n="menu.board">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time" data-i18n="menu.boardTime">Zeit</button> · <button type="button" data-b="score" data-i18n="menu.boardScore">Punkte</button></span></div>
+  <div id="menuRight" class="gPanel fg-panel">
+    <div class="menuBoardHead"><span class="fg-title" data-i18n="menu.board">Rangliste</span><span id="menuBoardTabs"><button type="button" data-b="time" data-i18n="menu.boardTime">Zeit</button> · <button type="button" data-b="score" data-i18n="menu.boardScore">Punkte</button></span></div>
     <div id="menuTimeBoard"></div>
     <div id="menuBoard"></div>
     <div id="menuBoardBtn"></div>
-    <div class="menuHead" data-i18n="menu.mods">Mods</div><div id="menuMods" class="chipRow"></div>
     <div class="menuHead" data-i18n="menu.mobs">Mobs</div><div id="menuMobs" class="chipRow"></div>
     <div class="menuHead" data-i18n="menu.cards">Karten</div><div id="menuCards" class="chipRow"></div>
   </div>
-  <div id="menuWeaponBox" class="gPanel" hidden><div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
+  <div id="menuMods" class="chipRow" role="group" aria-label="Mods" data-i18n-aria="menu.mods"></div>
+  <div id="menuWeaponBox" class="gPanel fg-panel" hidden><div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
   <div id="menuActions">
-    <button class="smallBtn" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button>
-    <button class="smallBtn" id="menuShop" data-i18n="menu.shop">Shop</button>
-    <button class="smallBtn" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
-    <button class="smallBtn" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
-    <button class="smallBtn" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
+    <span id="menuDust"></span>
+    <button class="fg-btn alt" id="menuShop" data-i18n="menu.shop">Shop</button>
+    <button class="fg-btn alt" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
+    <button class="fg-btn alt" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
+    <button class="fg-btn alt" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
   </div>
+  <i id="menuRing" aria-hidden="true"></i>
   <div id="menuBottom">
     <span class="menuKey">A / LB</span>
     <div id="menuChars"></div>
     <span class="menuKey">D / RB</span>
-    <button class="btn" id="startBtn" data-i18n="menu.start">Run starten</button>
+  </div>
+  <div id="menuGo">
+    <button class="fg-btn" id="startBtn" data-i18n="menu.start">Run starten</button>
+    <button class="fg-btn alt" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button>
   </div>
 </div>
 

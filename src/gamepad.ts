@@ -3,7 +3,7 @@
 import { spellAtAction } from './hotbar';
 import { startDodge } from './player';
 import { charOpen, charTab, toggleChar } from './ui/charWindow';
-import { openPause, closePause, cycleChar } from './ui/mainMenu';
+import { openPause, closePause, cycleChar, cycleMap } from './ui/mainMenu';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
@@ -187,6 +187,8 @@ function menuButtons() {
   } else if (isOpen('startModal')) {
     if (pressed(4)) cycleChar(-1);                // L1, R1 wechseln die Figur
     if (pressed(5)) cycleChar(1);
+    if (pressed(6)) cycleMap(-1);                 // L2, R2 wechseln die Map (Tastatur Q / E)
+    if (pressed(7)) cycleMap(1);
     const b = moveSelection([...document.querySelectorAll('#startModal button:not(:disabled)')], step.x || step.y, 'navSel');
     if (pressed(CONFIRM_BTN)) (b as any)?.click();
   }

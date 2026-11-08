@@ -54,8 +54,9 @@ body[data-flavor=schlachtbank] .fg-title.l { border-bottom: 4px solid #ff3d1f; b
 body[data-flavor=schlachtbank] .fg-btn { clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); text-transform: uppercase; letter-spacing: .14em; }
 
 /* Fenster-Hintergrund: feine Diagonalen, Runenring, Risse */
-body[data-flavor=schlachtbank] .modal:not(#startModal) {
-  background: url(./schlachtbank/ring.svg) center / 100% 100% no-repeat, repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 3px, transparent 3px 9px), var(--fg-bg);
+body[data-flavor=schlachtbank] {
+  --fg-back:
+    url(./schlachtbank/ring.svg) center / 100% 100% no-repeat, repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 3px, transparent 3px 9px);
 }
 
 /* Bildschirm-Effekte: Scanlines, Vignette, Warnstreifen oben, rote Winkel, Statuszeilen (auch im Spiel), Glitch-Streifen (nur Menü) */

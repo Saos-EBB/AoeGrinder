@@ -1998,4 +1998,8 @@ export const en: Record<string, string> = {
   'feat.untouched.krypta': "Not Even Breathed On",
   'feat.untouched.schlachtbank': "NOT A SCRATCH",
   'hudEl.feats': "Feat messages",
+  'menux.hint': "A / D choose · Q / E map · Enter starts",
+  'menux.mapInfo': "Q / E · Map {i} / {n} · Best {best}",
+  'menux.mapNext': "Next map",
+  'menux.mapPrev': "Previous map",
 };

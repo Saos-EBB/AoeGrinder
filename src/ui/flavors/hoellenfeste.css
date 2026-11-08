@@ -42,8 +42,8 @@ body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::before { left: -9px; }
 body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::after { right: -9px; }
 
 /* Fenster-Hintergrund: Steinsäulen links/rechts, gotischer Bogen, Mauerfugen, rote Glut unten (Hauptmenü: Phase 7) */
-body[data-flavor=hoellenfeste] .modal:not(#startModal) {
-  background:
+body[data-flavor=hoellenfeste] {
+  --fg-back:
     url(./hoellenfeste/arch.svg) 0 0 / 100% 100% no-repeat,
     linear-gradient(to right, transparent 8px, rgba(201, 162, 74, .25) 8px 10px, transparent 10px 30px, rgba(201, 162, 74, .25) 30px 32px, transparent 32px) left / 40px 100% no-repeat,
     linear-gradient(to right, transparent 8px, rgba(201, 162, 74, .25) 8px 10px, transparent 10px 30px, rgba(201, 162, 74, .25) 30px 32px, transparent 32px) right / 40px 100% no-repeat,
@@ -51,8 +51,7 @@ body[data-flavor=hoellenfeste] .modal:not(#startModal) {
     linear-gradient(to right, #0b0604, #1d130d 40%, #0b0604) right / 40px 100% no-repeat,
     radial-gradient(ellipse at 50% 100%, rgba(255, 61, 31, .22) 0%, transparent 70%) bottom / 100% 220px no-repeat,
     repeating-linear-gradient(0deg, rgba(255, 255, 255, .015) 0 2px, transparent 2px 46px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .18) 0 2px, transparent 2px 92px),
-    var(--fg-bg);
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .18) 0 2px, transparent 2px 92px);
 }
 
 /* Bildschirm-Effekte: Goldecken (auch im Spiel), Funken (auch im Spiel), Ketten, Rauch */

@@ -52,14 +52,13 @@ body[data-flavor=krypta] .fg-btn { border-radius: 4px; background-image: linear-
 body[data-flavor=krypta] .fg-btn.alt { background-image: linear-gradient(to bottom, rgba(255, 255, 255, .06), rgba(0, 0, 0, .2)); }
 
 /* Fenster-Hintergrund: Leder-/Steintextur, zwei hängende Banner, Goldperlen unten */
-body[data-flavor=krypta] .modal:not(#startModal) {
-  background:
+body[data-flavor=krypta] {
+  --fg-back:
     url(./krypta/banner.svg) 11.7% 0 / 70px 170px no-repeat,
     url(./krypta/banner.svg) 82.8% 0 / 70px 170px no-repeat,
     url(./krypta/bead.svg) center bottom 1px / 32px 12px repeat-x,
     repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .012) 0 2px, transparent 2px 7px),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 64px),
-    var(--fg-bg);
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 64px);
 }
 
 /* Bildschirm-Effekte: Vignette und Goldschnörkel-Ecken (auch im Spiel) */
