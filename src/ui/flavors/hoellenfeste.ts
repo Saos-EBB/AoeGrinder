@@ -29,7 +29,11 @@ export const hoellenfeste: Flavor = {
     compass: { ...pt('t', CX, 120, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
   },
-  numbers: (kind, text) => text,
+  // gen8.py NUMS['1']: weiß, Crit gelb mit rotem Glühen, Mega-Crit Cinzel orange zwischen ✦
+  numbers: {
+    text: (kind, n, count) => kind === 'mega' ? `✦ ${n} ✦` : kind === 'merged' ? `${n} <span class="mx">×${count}</span>` : kind === 'heal' ? `+${n}` : n,
+    size: { crit: 1.56, mega: 1.44, tick: 1, heal: 1 },   // PH: Verhältnis zur Trefferzahl im Mockup (32 px)
+  },
   messages: (line, sub) => `${line} ${sub}`,
   overlay: '<i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>'
     + '<i class="fx-smoke"></i><i class="fx-sparks lite"></i><i class="fx-chain a"></i><i class="fx-chain b"></i><i class="fx-chain c"></i>',

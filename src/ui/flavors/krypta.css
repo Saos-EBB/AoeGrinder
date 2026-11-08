@@ -83,3 +83,12 @@ body[data-flavor=krypta] .hudEl[data-hud=unitframe] #hudUnit { background: none;
 body[data-flavor=krypta] .hudEl[data-hud=killmeter] { --mw: 228; --mh: 6; }
 body[data-flavor=krypta] .hudEl[data-hud=xp] { --xw: 400; --xh: 5; }
 body[data-flavor=krypta] .hudEl[data-hud=cast] { --cw: 240; --ch: 14; }
+
+/* ---------- Schadenszahlen (X3Z, gen8.py NUMS['3']): WoW-Art ---------- */
+.ct.num.nf-krypta { font: 700 1em 'Barlow', sans-serif; color: #fff6d0; -webkit-text-stroke: .14em #000; }
+.ct.num.nf-krypta.k-crit { color: #fff; -webkit-text-stroke: .12em #000; }
+.ct.num.nf-krypta.k-mega { font-weight: 800; color: #ffd100; -webkit-text-stroke: .1em #000; }
+.ct.num.nf-krypta .mx { font-size: 1em; }
+.ct.num.nf-krypta.k-tick { color: #e8d9a0; -webkit-text-stroke: .15em #000; }
+.ct.num.nf-krypta.k-heal { color: #3be04a; -webkit-text-stroke: .15em #000; }
+.ct.num.nf-krypta.k-hurt { color: #ff3030; -webkit-text-stroke: .15em #000; }

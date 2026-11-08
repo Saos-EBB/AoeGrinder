@@ -109,3 +109,12 @@ body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudHp::before, body[da
 body[data-flavor=hoellenfeste] .hudEl[data-hud=killmeter] { --mw: 468; --mh: 6; }
 body[data-flavor=hoellenfeste] .hudEl[data-hud=xp] { --xw: 540; --xh: 4; }
 body[data-flavor=hoellenfeste] .hudEl[data-hud=cast] { --cw: 260; --ch: 14; }
+
+/* ---------- Schadenszahlen (X1Z, gen8.py NUMS['1']); Konturen in em, Mockup-Kontur / Größe ---------- */
+.ct.num.nf-hoellenfeste { font: 900 1em 'Barlow Condensed', sans-serif; color: #fff; -webkit-text-stroke: .16em #000; }
+.ct.num.nf-hoellenfeste.k-crit { color: #ffd23f; -webkit-text-stroke: .14em #2a1300; text-shadow: 0 0 .28em rgba(255, 61, 31, .6); }
+.ct.num.nf-hoellenfeste.k-mega { font-family: 'Cinzel', serif; color: #ff8a1a; -webkit-text-stroke: .15em #000; text-shadow: 0 0 .48em rgba(255, 61, 31, .9); }
+.ct.num.nf-hoellenfeste .mx { font-size: .6em; color: #c9a24a; }
+.ct.num.nf-hoellenfeste.k-tick { font-weight: 800; color: #bdb3a3; -webkit-text-stroke: .2em #000; }
+.ct.num.nf-hoellenfeste.k-heal { color: #6ee7a0; -webkit-text-stroke: .18em #000; }
+.ct.num.nf-hoellenfeste.k-hurt { color: #ff4d4d; -webkit-text-stroke: .18em #000; }

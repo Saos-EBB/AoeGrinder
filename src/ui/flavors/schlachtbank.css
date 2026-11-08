@@ -103,3 +103,12 @@ body[data-flavor=schlachtbank] .hudEl[data-hud=cast] { --cw: 260; --ch: 12; }
 body[data-flavor=schlachtbank] .hudEl[data-hud=runinfo] #hudRun { font-family: 'Oswald', sans-serif; }
 /* Warnstreifen am unteren Rand, nur im Spiel */
 body[data-flavor=schlachtbank] #fgOverlay .fx-hazard.bot { top: auto; bottom: 0; height: 10px; opacity: .9; background: repeating-linear-gradient(-45deg, #ff3d1f 0 12px, #000 12px 24px); }
+
+/* ---------- Schadenszahlen (X2Z, gen8.py NUMS['2']) ---------- */
+.ct.num.nf-schlachtbank { font: 400 1em 'Anton', sans-serif; color: #f6eee9; -webkit-text-stroke: .09em #000; }
+.ct.num.nf-schlachtbank.k-crit { color: #fff; background: #c4120c; padding: .04em .22em; -webkit-text-stroke: 0; rotate: -4deg; box-shadow: 4px 4px 0 #000; }
+.ct.num.nf-schlachtbank.k-mega { color: #fff; -webkit-text-stroke: .07em #000; text-shadow: 0 0 .46em #ff3d1f, 0 0 .14em #ff3d1f; rotate: -6deg; }
+.ct.num.nf-schlachtbank .mx { font-size: .66em; color: #ff5a3c; }
+.ct.num.nf-schlachtbank.k-tick { color: #ff8a6a; -webkit-text-stroke: 0; }
+.ct.num.nf-schlachtbank.k-heal { color: #7cf29a; }
+.ct.num.nf-schlachtbank.k-hurt { color: #ff2a1a; -webkit-text-stroke: 0; text-shadow: 0 0 .43em #ff2a1a; }

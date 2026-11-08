@@ -17,7 +17,7 @@ export type Flavor = {
   sub: string;                        // i18n-Key, Unterzeile der Auswahlkarte
   tokens: { bg: string; frame: string; hp: string; mana: string; bar: string };   // Farben für JS (Vorschau-Karte); alles andere als CSS-Variable in <id>.css
   hud: Partial<Record<HudElementId, Placement>>;   // Standard-Layout (Phase 4)
-  numbers: (kind: string, text: string, count: number) => string;   // Inhalt einer Schadenszahl (Phase 5)
+  numbers: { text: (kind: string, n: string, count: number) => string; size: Partial<Record<string, number>> };   // Schadenszahl: Inhalt (n mit Tausenderpunkt) und Größenfaktor pro Art
   messages: (line: string, sub: string, big: boolean) => string;    // Erfolgs-Meldung (Phase 6)
   overlay: string;                    // Bildschirm-Effekte; .lite = auch im Spiel, sonst nur bei offenem Menü
 };

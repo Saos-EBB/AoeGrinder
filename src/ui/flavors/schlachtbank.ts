@@ -31,7 +31,11 @@ export const schlachtbank: Flavor = {
     compass: { ...pt('t', CX, 14, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
   },
-  numbers: (kind, text) => text,
+  // gen8.py NUMS['2']: Anton, Crit im roten Kasten schräg, Mega-Crit riesig „48.120!!“
+  numbers: {
+    text: (kind, n, count) => kind === 'mega' ? `${n}!!` : kind === 'merged' ? `${n} <span class="mx">×${count}</span>` : kind === 'heal' ? `+${n}` : kind === 'hurt' ? `−${n}` : n,
+    size: { crit: 1.44, mega: 1.75 },   // PH: Verhältnis zur Trefferzahl im Mockup (32 px)
+  },
   messages: (line, sub) => `${line} ${sub}`,
   overlay: '<i class="fx-scan lite"></i><i class="fx-vig lite"></i><i class="fx-glitch"></i><i class="fx-hazard lite"></i>'
     + '<i class="fx-hazard bot lite hud"></i><i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>'

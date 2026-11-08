@@ -30,7 +30,11 @@ export const krypta: Flavor = {
     compass: { ...pt('t', CX, 14, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
   },
-  numbers: (kind, text) => text,
+  // gen8.py NUMS['3']: WoW-Art in Barlow, Crit groß weiß, Mega-Crit gelb, zusammengefasst „2.140 (6)“
+  numbers: {
+    text: (kind, n, count) => kind === 'merged' ? `${n} (${count})` : kind === 'heal' ? `+${n}` : kind === 'hurt' ? `-${n}` : n,
+    size: { crit: 1.85, mega: 2.07 },   // PH: Verhältnis zur Trefferzahl im Mockup (28 px)
+  },
   messages: (line, sub) => `${line} ${sub}`,
   overlay: '<i class="fx-vig lite"></i><i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>',
 };
