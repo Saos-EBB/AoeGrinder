@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { t, lang } from '../../i18n';
+import { toonMat } from '../../toon';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
 const RARITY = [
@@ -96,20 +97,27 @@ const TEX = {   // gemalt wie im Viewer: grab Bronze mit Grünspan, stern Gold m
   paper: () => canvasTex(128, (g, s) => { g.fillStyle = '#e8dcb8'; g.fillRect(0, 0, s, s); g.strokeStyle = 'rgba(120,90,50,0.5)'; for (let y = 4; y < s; y += 6) { g.beginPath(); g.moveTo(0, y); g.lineTo(s, y); g.stroke(); } }),
 };
 const texCache: any = {}; const tex = k => texCache[k] || (texCache[k] = TEX[k]());
+// Stil (Kevin 2026-11-08): Toon wie im Viewer, flache Grundfarbe, 3 Lichtstufen und Fresnel-Rand aus toon.ts (0 extra Draw Calls), auch ohne ?toon=1.
+// 'gemalt' = Lambert mit den Canvas-Texturen oben (Viewer-Stil „Gemalt“), bleibt zum Umschalten
+const STYLE: 'toon' | 'gemalt' = 'toon';
+const TOON_COL = { gold: 0xe8b23a, darkwood: 0x5a3420, bronze: 0xb8743a, crystal: 0xc8ecff, blueiron: 0x3e6490, leather: 0x5a3420, glass: 0xc0e4ff, paper: 0xe8dcb8 };
+const shade = (o: any) => STYLE === 'toon' ? toonMat(o) : new THREE.MeshLambertMaterial(o);   // alle beleuchteten Teile der Waffen
 // Materialien pro Waffe neu (grau entsättigt sie)
 function makeMats(spec) {
   const M = MAKERS[spec.maker], dim = spec.rarity === 0 ? 0.55 : 1;
-  const lit = (k, extra = {}) => {
-    if (k === 'glass') return new THREE.MeshLambertMaterial({ color: new THREE.Color(0.75, 0.9, 1).multiplyScalar(dim), transparent: true, opacity: 0.45, ...extra });
-    if (k === 'crystal') return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim), transparent: true, opacity: 0.8, emissive: 0x22303c, ...extra });
-    return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim * 1.15), ...extra });
+  const see = k => k === 'glass' || k === 'crystal';
+  const lit = k => {
+    if (STYLE === 'toon') return toonMat({ color: new THREE.Color(TOON_COL[k]).multiplyScalar(dim), transparent: see(k), opacity: k === 'glass' ? 0.5 : k === 'crystal' ? 0.85 : 1 });   // PH
+    if (k === 'glass') return new THREE.MeshLambertMaterial({ color: new THREE.Color(0.75, 0.9, 1).multiplyScalar(dim), transparent: true, opacity: 0.45 });
+    if (k === 'crystal') return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim), transparent: true, opacity: 0.8, emissive: 0x22303c });
+    return new THREE.MeshLambertMaterial({ map: tex(k), color: new THREE.Color(1, 1, 1).multiplyScalar(dim * 1.15) });
   };
   const el = ELEMENTS[spec.element], hasEl = spec.element !== 'none';
   let gem;
   if (hasEl && spec.rarity >= 2) gem = new THREE.MeshBasicMaterial({ color: new THREE.Color(el.color).multiplyScalar(1.6) });     // grün+: leuchtet in Element-Farbe
-  else if (hasEl) gem = new THREE.MeshLambertMaterial({ color: el.color, emissive: new THREE.Color(el.color).multiplyScalar(0.15) });   // weiß: nur gefärbt
-  else gem = new THREE.MeshLambertMaterial({ color: new THREE.Color(0.85, 0.85, 0.9).multiplyScalar(dim), emissive: 0x111118, transparent: true, opacity: 0.85 });
-  return { main: lit(M.main), accent: lit(M.accent), detail: lit(M.detail), glass: lit('glass'), paper: lit('paper'), gem, bone: new THREE.MeshLambertMaterial({ color: 0xe8dcc0 }), dark: new THREE.MeshLambertMaterial({ color: 0x15121a }) };
+  else if (hasEl) gem = shade({ color: el.color, emissive: new THREE.Color(el.color).multiplyScalar(0.15) });   // weiß: nur gefärbt
+  else gem = shade({ color: new THREE.Color(0.85, 0.85, 0.9).multiplyScalar(dim), emissive: 0x111118, transparent: true, opacity: 0.85 });
+  return { main: lit(M.main), accent: lit(M.accent), detail: lit(M.detail), glass: lit('glass'), paper: lit('paper'), gem, bone: shade({ color: 0xe8dcc0 }), dark: shade({ color: 0x15121a }) };
 }
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -140,7 +148,7 @@ function shaft(parent, spec, M, mats, y0, y1, r) {
   // Hersteller-Details am Schaft
   if (spec.maker === 'stern') for (const t of [0.3, 0.7]) { const m = mesh(new THREE.TorusGeometry(r * 3, r * 0.25, 4, 20), mats.accent, parent, 0, y0 + L * t, 0); m.rotation.x = Math.PI / 2; }
   if (spec.maker === 'brandt') for (const t of [0.15, 0.85]) for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI * 2, m = mesh(new THREE.ConeGeometry(r * 0.6, r * 3, 4), mats.accent, parent, Math.cos(a) * r * 1.2, y0 + L * t, Math.sin(a) * r * 1.2); m.rotation.z = -Math.cos(a) * Math.PI / 2; m.rotation.x = Math.sin(a) * Math.PI / 2; }
-  if (spec.maker === 'morra') { mesh(new THREE.SphereGeometry(r * 2, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.5, 1), mats.detail === mats.main ? mats.accent : new THREE.MeshLambertMaterial({ color: 0xc04a3a }), parent, r * 1.2, y0 + L * 0.35, 0); }
+  if (spec.maker === 'morra') { mesh(new THREE.SphereGeometry(r * 2, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.5, 1), mats.detail === mats.main ? mats.accent : shade({ color: 0xc04a3a }), parent, r * 1.2, y0 + L * 0.35, 0); }
   if (spec.maker === 'grab') for (const t of [0.25, 0.6]) mesh(new THREE.TorusGeometry(r * 1.3, r * 0.5, 5, 8), mats.main, parent, 0, y0 + L * t, 0).rotation.x = Math.PI / 2;
   return pts;
 }
@@ -158,7 +166,7 @@ function skull(H, s, mats, jawOpen = 0) {
 function makeHead(H, head, s, mats, r) {
   if (head === 'frostorb') {                                             // gefrorene Kugel mit Eissplittern
     mesh(new THREE.IcosahedronGeometry(s, 1), mats.gem, H).userData.spin = 0.5;
-    const ice = new THREE.MeshLambertMaterial({ color: 0xe0f6ff, transparent: true, opacity: 0.85, emissive: 0x18303c });
+    const ice = shade({ color: 0xe0f6ff, transparent: true, opacity: 0.85, emissive: 0x18303c });
     for (let k = 0; k < 7; k++) { const d = new THREE.Vector3(Math.sin(k * 2.4), Math.cos(k * 1.7) * 0.8, Math.cos(k * 2.4)).normalize(), m = mesh(new THREE.ConeGeometry(s * 0.18, s * 0.9, 4), ice, H, d.x * s, d.y * s, d.z * s); m.quaternion.setFromUnitVectors(V(0, 1, 0), d); }
   }
   if (head === 'sichel') {
@@ -180,7 +188,7 @@ function makeHead(H, head, s, mats, r) {
     mesh(new THREE.OctahedronGeometry(s * 0.4), mats.gem, H, 0, -s * 0.05, s * 0.2);
   }
   if (head === 'wolke') {                                                // Gewitterwolke, darunter ein Blitz
-    const cloud = new THREE.MeshLambertMaterial({ color: 0x4a4e60, emissive: 0x101420 });
+    const cloud = shade({ color: 0x4a4e60, emissive: 0x101420 });
     for (const [x, y, z, k] of [[0, 0.3, 0, 1], [-0.8, 0.1, 0.1, 0.75], [0.8, 0.15, -0.1, 0.8], [-0.35, 0.55, -0.2, 0.7], [0.4, 0.6, 0.15, 0.65], [0, 0, 0.45, 0.6]]) mesh(new THREE.IcosahedronGeometry(s * k, 1), cloud, H, x * s, y * s, z * s);
     const bolt = new THREE.Shape(); bolt.moveTo(0, 0); bolt.lineTo(s * 0.35, -s * 0.7); bolt.lineTo(s * 0.05, -s * 0.7); bolt.lineTo(s * 0.3, -s * 1.5); bolt.lineTo(-s * 0.25, -s * 0.55); bolt.lineTo(s * 0.05, -s * 0.55); bolt.lineTo(-s * 0.2, 0); bolt.closePath();
     mesh(new THREE.ShapeGeometry(bolt), mats.gem, H, 0, -s * 0.35, s * 0.3).material.side = THREE.DoubleSide;
@@ -201,7 +209,7 @@ function makeHead(H, head, s, mats, r) {
     mesh(new THREE.SphereGeometry(s * 1.0, 16, 12), mats.glass, H);
     mesh(new THREE.CylinderGeometry(s * 0.3, s * 0.38, s * 0.9, 12, 1, true), mats.glass, H, 0, s * 1.2, 0);
     mesh(new THREE.SphereGeometry(s * 0.82, 14, 10, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.65), mats.gem, H, 0, -s * 0.05, 0);
-    mesh(new THREE.CylinderGeometry(s * 0.33, s * 0.28, s * 0.35, 10), new THREE.MeshLambertMaterial({ color: 0x8a6440 }), H, 0, s * 1.75, 0);
+    mesh(new THREE.CylinderGeometry(s * 0.33, s * 0.28, s * 0.35, 10), shade({ color: 0x8a6440 }), H, 0, s * 1.75, 0);
     for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(s * 0.1, 6, 5), new THREE.MeshBasicMaterial({ color: 0xc8ff9a }), H, (Math.random() - 0.5) * s, -s * 0.3 + k * s * 0.2, (Math.random() - 0.5) * s).userData.bubble = Math.random();
   }
   if (head === 'ring') { mesh(new THREE.TorusGeometry(s * 1.7, r * 0.6, 6, 24), mats.accent, H, 0, s * 0.9, 0); mesh(new THREE.IcosahedronGeometry(s * 0.6, 0), mats.gem, H, 0, s * 0.9, 0).userData.spin = 0.8; }
@@ -237,7 +245,7 @@ function addExtra(g, spec, H, mats) {
   if (spec.extra === 'none') return;
   const at = spec.type === 'staff' ? V(H.position.x, H.position.y - 0.2, H.position.z) : spec.type === 'wand' ? V(0, 0, 0) : spec.type === 'book' ? V(0.05, -0.14, 0) : V(0, -0.12, 0);
   const E = new THREE.Group(); E.position.copy(at); g.add(E); E.userData.sway = true;
-  const col = new THREE.MeshLambertMaterial({ color: new THREE.Color(RARITY[spec.rarity].color), side: THREE.DoubleSide });
+  const col = shade({ color: new THREE.Color(RARITY[spec.rarity].color), side: THREE.DoubleSide });
   if (spec.extra === 'baender') for (const sx of [-1, 1]) { const m = mesh(new THREE.PlaneGeometry(0.03, 0.3, 1, 6).translate(0, -0.15, 0), col, E, sx * 0.03, 0, 0); m.rotation.z = sx * 0.2; m.userData.wave = true; }
   if (spec.extra === 'ketten') for (const sx of [-1, 1]) chain(E, V(sx * 0.02, 0, 0), V(sx * 0.06, -0.22, 0), mats.accent, 0.016);
   if (spec.extra === 'federn') for (let k = 0; k < 3; k++) { const m = mesh(new THREE.ConeGeometry(0.02, 0.16, 4).scale(1, 1, 0.2).translate(0, -0.08, 0), col, E, (k - 1) * 0.025, 0, 0); m.rotation.z = (k - 1) * 0.35; }
@@ -264,7 +272,7 @@ function addElement(g, spec, H, size) {
   if (el === 'none' || spec.rarity < 1) return fx;
   // Kopf-Details in Element-Form (ab grün sichtbar, Aura + Partikel ab blau)
   if (spec.rarity >= 2) {
-    if (el === 'frost') for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, m = mesh(new THREE.ConeGeometry(size * 0.12, size * (0.5 + (k % 2) * 0.3), 5).rotateX(Math.PI), new THREE.MeshLambertMaterial({ color: 0xd8f4ff, transparent: true, opacity: 0.85, emissive: 0x1a3040 }), H, Math.cos(a) * size * 0.45, -size * 0.35, Math.sin(a) * size * 0.45); }
+    if (el === 'frost') for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, m = mesh(new THREE.ConeGeometry(size * 0.12, size * (0.5 + (k % 2) * 0.3), 5).rotateX(Math.PI), shade({ color: 0xd8f4ff, transparent: true, opacity: 0.85, emissive: 0x1a3040 }), H, Math.cos(a) * size * 0.45, -size * 0.35, Math.sin(a) * size * 0.45); }
     if (el === 'feuer') for (let k = 0; k < 2; k++) { const m = mesh(new THREE.ConeGeometry(size * (0.35 - k * 0.12), size * (1.4 - k * 0.4), 8, 1, true).translate(0, size * (0.7 - k * 0.2), 0), new THREE.MeshBasicMaterial({ color: k ? 0xffe28a : 0xff6a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), H, 0, size * 0.3, 0); fx.flames.push(m); }
     if (el === 'arkan') { const rt = runeTex(); for (let k = 0; k < 3; k++) { const m = mesh(new THREE.PlaneGeometry(size * 0.5, size * 0.5), new THREE.MeshBasicMaterial({ map: rt, color: col.clone().multiplyScalar(1.5), transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), H); m.userData.orbit = k / 3 * Math.PI * 2; fx.spinners.push(m); } }
     if (el === 'seuche') for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(size * 0.12, 8, 6), new THREE.MeshBasicMaterial({ color: col }), H, (Math.random() - 0.5) * size, -size * 0.4 - Math.random() * size * 0.3, (Math.random() - 0.5) * size).userData.drip = Math.random();
@@ -388,7 +396,8 @@ function mergeStatic(root) {
 export function buildBaukastenWeapon(spec) {
   const built = buildParts(spec), hold = HOLD[spec.type] ?? HOLD.staff;
   const inner = built.root;
-  // Der Kopf (Edelstein, Element) bleibt beweglich, der Rest wird verschmolzen
+  // Der Kopf (Edelstein, Element) bleibt beweglich, der Rest wird verschmolzen; im Kopf werden die festen Teile für sich verschmolzen
+  mergeStatic(built.head);
   built.head.userData.keep = true;
   mergeStatic(inner);
   inner.scale.setScalar(hold.scale);

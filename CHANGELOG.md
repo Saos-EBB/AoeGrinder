@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(waffen): Magier-Waffen im Toon-Look (flache Grundfarbe je Material, 3 Lichtstufen, dunkler Rand), immer an, auch ohne `?toon=1`; leuchtende Edelsteine ab grün bleiben
 - feat(waffen): Jeder Waffen-Hersteller hat sein eigenes Material: Grabkammer Bronze mit Grünspan, Sternwarte Gold mit Filigran, Hexenküche Dunkelholz, Kristallgießerei Kristall, Kriegsschmiede gehämmertes Blaueisen mit Nieten (im Dev-Schmied beim Hersteller angezeigt)
 - feat(waffen)!: Neue Waffen-Köpfe, zwei je Schule und an jedem Typ: Frostkugel und Sichel (Frost), Glutschädel und Dreizack (Feuer), Wolken und Spulen (Blitz), Speischädel und Phiolen (Seuche), Ring und Augen (Arkan). Beim Buch schwebt der Kopf über dem Buch, beim Relikt sitzt er als Kern in der Fassung. Seuchen-Köpfe geben einen Seuchen-Spell als Fokus
 - feat(i18n): Texte DE/EN für die neuen Waffen-Köpfe (Frostkugel, Glutschädel, Dreizack, Wolken, Spulen, Speischädel, Phiolen) und die Hersteller-Materialien (Bronze, Gold, Dunkelholz, Kristall, Blaueisen)
