@@ -4,16 +4,19 @@
 import { actionOfSpell } from './hotbar';
 import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
-import { SPELLS, SPELL_ACTIONS } from './config';
+import { SPELLS, SPELL_ACTIONS, SLOT } from './config';
 import { mage, onWarriorHit } from './models/mage';
 import { hitstopActive, hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
 import { DG, consumeCombo } from './dodge';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
-import { act } from './input';
 import { pad, padBinds } from './gamepad';
 import { showError, combatText } from './ui/hud';
-import { applyRoot, pullMob, knockbackMob, enterCombat } from './mobs';
+import { applyRoot, pullMob, knockbackMob, enterCombat, startLeap, onMobDeath } from './mobs';
+import { resolve } from './collision';
+import { act, pickGround, mouse } from './input';
+import { die } from './player';
+import { renderActionbar } from './ui/hud';
 import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow, setSpellSwap } from './spells/core';
 import { activeModIds } from './modifiers';
 import { UNIT, mods } from './config';
@@ -22,7 +25,7 @@ import { maxHp } from './formulas';
 import { shakeCamera } from './camera';
 import { $, rand, clamp } from './util';
 
-import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward } from './melee';
+import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward, stepForward } from './melee';
 import { t } from './i18n';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
@@ -76,6 +79,18 @@ const LEGENDARY = {
     leeroy: { yd: 15, pullYd: 20, stunImmuneMs: 4000, cd: 12000, ms: 350, dmg: 1 },   // LEEEROY!: rennt ins nächste Pack, Schaden in UNIT
     chicken: { heal: 0.3, ms: 3000, cd: 45000 },                                       // Hühnchen: Sofort-Essen
   },
+  sion: {
+    rate: 0.8, pal: 'wut',
+    chain: [{ a: 'q0', ms: 620, dmg: 34, r: 3.2, half: 1 }, { a: 'q1', ms: 600, dmg: 34, r: 3.4, half: 1.4 }, { a: 'q3', ms: 900, dmg: 48, r: 3.4, knock: 3 }],   // 3 schwere Axthiebe, der dritte stößt zurück
+    swap: { wExec: 'sQ', wLast: 'sW', wClap: 'sE', wCharge: 'sR' },
+    // Ruhm im Tod: 10 s untot, Leben verfällt (ganz in decayS), Angriffe ×2 schneller und heilen, nur Q und Todesrausch. Dazu pro Kill +0,1 % max. Leben, höchstens +50 %
+    undead: { ms: 10000, decayS: 10, rate: 2, heal: 0.01, cd: 120000, rushMs: 3000, rushSpeed: 1.6 },
+    hpPerKill: 0.001, hpMax: 0.5,
+    q: { maxMs: 2000, len: [4, 10], half: 0.6, dmg: [1.5, 5], stunFromMs: 1000, stunMs: 1500, upMs: 700, takenMul: 0.7, crackYd: 6, crackDmg: 2, cd: 8000, rage: 20 },   // Vernichtender Hieb, Schaden in UNIT
+    w: { shield: 0.15, ms: 6000, cd: 14000, perKill: 0.03, radius: 6, mul: 2 },     // Seelenofen: Schild, Kills füllen nach, Explosion = 2× absorbiert
+    e: { len: 12, width: 2.5, dmg: 1.5, slow: 0.4, slowMs: 3000, shockMs: 4000, flyYd: 8, perHitYd: 2, speed: 24, maxHits: 5, hitR: 1.6, cd: 10000, rage: 10 },   // Brüllen des Schlächters: Bowling
+    r: { cd: 30000, speed: [8, 22], accelS: 1.5, turnPerS: 2.2, r: [3, 8], rAtYd: 30, dmg: 2, knock: 5, side: 2.2, trample: 1.6, maxMs: 8000 },   // Unaufhaltsamer Ansturm
+  },
 };
 // Finisher pro Stufe: Spins mit Radius-Faktor s, Tornado (tor) wandert nach vorn, am Ende Sprung-Smash // PH
 const FINISHER = {
@@ -111,7 +126,19 @@ Object.assign(SPELLS, {
   // Leeroys Klinge (LEGENDARY.leeroy): ersetzen Ansturm und Letzter Atem
   lLeeroy: spell(t('spell.lLeeroy.name'), t('spell.lLeeroy.desc'), ['Nahkampf', 'Bewegung'], ['cd'], LEGENDARY.leeroy.leeroy.cd, 0, () => pressLeeroy(), LEGENDARY.leeroy.leeroy.dmg * UNIT),
   lChicken: spell(t('spell.lChicken.name'), t('spell.lChicken.desc'), [], [], LEGENDARY.leeroy.chicken.cd, 0, () => pressChicken()),
+  // Sions Axt (LEGENDARY.sion): ersetzen Hinrichtung, Letzter Atem, Donnerknall, Ansturm; Todesrausch nur im Untot-Zustand
+  sQ: spell(t('spell.sQ.name'), t('spell.sQ.desc'), ['Nahkampf', 'Fläche'], ['dmg', 'cd'], LEGENDARY.sion.q.cd, LEGENDARY.sion.q.rage, () => pressSionQ(), LEGENDARY.sion.q.dmg[1] * UNIT),
+  sW: spell(t('spell.sW.name'), t('spell.sW.desc'), [], ['cd'], LEGENDARY.sion.w.cd, 0, () => pressSionW()),
+  sE: spell(t('spell.sE.name'), t('spell.sE.desc'), ['Nahkampf', 'Linie'], ['dmg', 'cd'], LEGENDARY.sion.e.cd, LEGENDARY.sion.e.rage, () => pressSionE(), LEGENDARY.sion.e.dmg * UNIT),
+  sR: spell(t('spell.sR.name'), t('spell.sR.desc'), ['Nahkampf', 'Bewegung'], ['cd'], LEGENDARY.sion.r.cd, 0, () => pressSionR(), LEGENDARY.sion.r.dmg * UNIT),
+  sRush: spell(t('spell.sRush.name'), t('spell.sRush.desc'), [], [], 0, 0, () => { rushBuffUntil = state.now + LEGENDARY.sion.undead.rushMs; }),
 });
+// Ruhm im Tod: untot sind alle Krieger-Spells gesperrt außer Schlagfolge und Todesrausch
+const UNDEAD_OK = ['wQ', 'sRush'];
+for (const [id, s] of Object.entries<any>(SPELLS)) if (s.tags?.includes('Krieger') && s.press) {
+  const press = s.press;
+  s.press = () => (undeadUntil > state.now && !UNDEAD_OK.includes(id) ? showError(t('war.undeadLocked')) : press());
+}
 
 export const WAR_WEAPON_NAMES = Object.fromEntries(Object.entries(R.weapons).map(([id, w]) => [id, w.name]));
 const weaponId = () => R.weapons[mage.warWeapon] ? mage.warWeapon : 'sword';
@@ -141,9 +168,14 @@ export function setWarLegendary(id: string | null) {
   legendary = LEGENDARY[id] ? id : null;
   try { if (legendary) localStorage.setItem(LEGENDARY_STORE, legendary); else localStorage.removeItem(LEGENDARY_STORE); } catch { /* egal */ }
 }
+// Combo „Für Noxus!“ (legends.ts): so lange ist der Vernichtende Hieb sofort voll geladen, dazu mehr Schaden // PH
+export const NOXUS = { ms: 8000, dmg: 0.4 };
+const NOXUS_DMG = NOXUS.dmg;
 const LG = (): any => (legendary && activeModIds().includes('realmen') ? LEGENDARY[legendary] : null);
 setSpellSwap(id => LG()?.swap[id] ?? id);
 let stunImmuneUntil = 0, chickenUntil = 0;
+// Sions Axt: untot, Vernichtender Hieb (Laden), Seelenofen, Bowling-Mob, Ansturm
+let undeadUntil = 0, undeadReadyAt = 0, rushBuffUntil = 0, sq = null, sw = null, bowl = null, rush = null;
 let stage = R.q.start, autoQ = 0, autoAt = 0, slowUntil = 0;   // Schlagfolge Version E: Stufe, Auto-Kette nach dem Aufstieg, Zeitlupe (performance.now)
 
 const gainRage = n => { player.mana = Math.min(R.rage.max, player.mana + n); };
@@ -159,6 +191,7 @@ export function resetRealMen() {
   player.resNote = '';
   cur = null; seq = 0; combo = 0; comboUntil = 0; lastRageAt = 0; undyingUntil = 0; charge = null;
   state.qKills = 0; player.berserkUntil = 0; stage = R.q.start; autoQ = 0; slowUntil = 0; stunImmuneUntil = 0; chickenUntil = 0;
+  undeadUntil = 0; undeadReadyAt = 0; rushBuffUntil = 0; sq = null; sw = null; bowl = null; rush = null; player.bonusHp = 0; state.noxusUntil = 0;
   whirlOn = false; whirlUntil = 0; whirlCtx = null; nextWhirlTick = 0;   // state.now startet pro Run bei 0
   state.heroWeapon = on ? WP().name : '';
   if (on) {
@@ -170,7 +203,7 @@ export function resetRealMen() {
 const rateOf = id => stat(id).tempo ?? 1;
 function startMove(id, ability, ms) {
   whirlOn = false; whirlUntil = 0;
-  const rate = rateOf(id) * WP().rate * pdRateMul() * (id === 'wQ' ? (1 + R.q.masterRate * mods.bladeMaster) * (LG()?.rate ?? 1) : 1);   // Perfekter Dodge, Klingenmeister, legendäre Kette
+  const rate = rateOf(id) * WP().rate * pdRateMul() * (id === 'wQ' ? (1 + R.q.masterRate * mods.bladeMaster) * (LG()?.rate ?? 1) * (undeadUntil > state.now ? LEGENDARY.sion.undead.rate : 1) : 1);   // Perfekter Dodge, Klingenmeister, legendäre Kette
   cur = { id, ability, start: state.now, ms: ms / rate, rate, ctx: makeCtx(id), from: { x: player.pos.x, y: player.pos.y, z: player.pos.z } };
   seq++;
   moveLog.push(ability); if (moveLog.length > 60) moveLog.shift();   // Handtest (__krieger.log)
@@ -259,7 +292,8 @@ function pressEat() {
 // Passiv der legendären Waffe (Leeroy: Rücksichtslos, +x % pro Mob in der Nähe)
 function legendPassiveMul() {
   const L = LG();
-  return L?.perMobDmg ? 1 + L.perMobDmg * mobsInRadius(player.pos, L.perMobYd, Infinity).filter(m => !m.dead).length : 1;
+  const noxus = legendary === 'sion' && state.noxusUntil > state.now ? 1 + NOXUS_DMG : 1;   // Für Noxus! (legends.ts)
+  return noxus * (L?.perMobDmg ? 1 + L.perMobDmg * mobsInRadius(player.pos, L.perMobYd, Infinity).filter(m => !m.dead).length : 1);
 }
 // Ein Treffer-Ereignis: Wut kommt nur, wenn etwas getroffen wurde, und ist pro Schlag gedeckelt
 function strike(ctx, amount, targets, onMob?, rageK = 1) {
@@ -270,6 +304,7 @@ function strike(ctx, amount, targets, onMob?, rageK = 1) {
     if (!ctx.hit(m, dmg)) continue;
     landed++;
     onMob?.(m);
+    if (undeadUntil > state.now) player.hp = Math.min(maxHp(), player.hp + maxHp() * LEGENDARY.sion.undead.heal);   // untot: Treffer heilen
     mage.hero.fx.blood(m.pos.x, m.pos.y + 1.1, m.pos.z);
   }
   if (landed) {
@@ -375,7 +410,7 @@ onWarriorHit((kind, x, z, i) => {
   if (kind === 'q') hitQ();
   else if (kind === 'e') hitE(at);
   else if (kind === 'leap') hitLeap();
-  else if (kind === 'exec') hitExec();
+  else if (kind === 'exec') cur.sq ? hitSionQ() : hitExec();
   else if (kind === 'cry') hitCry();
   else if (kind === 'last') hitLast();
 });
@@ -470,12 +505,168 @@ function pressBerserk() {
   mage.hero.fx.ring(player.pos, 0xd8121c, 4, 0.6, 0.15);
 }
 // Berserker: Schaden obendrauf (core.ts), kein Slow (player.ts)
+// ---------- Sions Axt ----------
+const SN = LEGENDARY.sion;
+const lerpN = (a, b, k) => a + (b - a) * k;
+// Ruhm im Tod: aus player.ts beim Tod. true = der Tod ist abgefangen
+export function warriorRevive() {
+  if (!isWarrior() || legendary !== 'sion' || state.now < undeadReadyAt) return false;
+  undeadUntil = state.now + SN.undead.ms; undeadReadyAt = state.now + SN.undead.cd;
+  player.hp = maxHp();
+  undeadSlot = state.slots[SLOT.move]; state.slots[SLOT.move] = 'sRush'; renderActionbar();
+  combatText(player.pos, t('spell.sGlory.name'), 'info', 3);
+  mage.hero.fx.ring(player.pos, 0x7cff9a, 6, 0.8, 0.15);
+  return true;
+}
+let undeadSlot = null;
+function endUndead() {
+  undeadUntil = 0; rushBuffUntil = 0;
+  state.slots[SLOT.move] = undeadSlot; renderActionbar();
+  player.hp = 0; die();
+}
+// Vernichtender Hieb: Halten lädt, Loslassen (oder volle Ladung) schlägt. Für Noxus!: sofort voll
+function pressSionQ() {
+  if (cur || sq || rush) return;
+  if (cdEnd('sQ') > state.now) return showError(t('msg.notReady'));
+  if (player.mana < SN.q.rage) return showError(t('msg.noRage'));
+  stopDrink();
+  player.lastCombat = state.now;
+  sq = { start: state.now };
+  if (state.noxusUntil > state.now) releaseSionQ(SN.q.maxMs);
+}
+function releaseSionQ(ms) {
+  sq = null;
+  player.mana -= SN.q.rage;
+  startCd('sQ');
+  startMove('sQ', 'exec', TIMING.weapons.sword.exec);
+  cur.rate *= 2; cur.ms /= 2;   // schneller Schlag nach dem Laden
+  cur.sq = { k: clamp(ms / SN.q.maxMs, 0, 1), ms };
+}
+function hitSionQ() {
+  const Q = SN.q, { k, ms } = cur.sq, c = cur.ctx, len = c.radius(lerpN(Q.len[0], Q.len[1], k)), f = forward();
+  smash(strike(c, () => lerpN(Q.dmg[0], Q.dmg[1], k) * UNIT, () => inCone(player.pos, len, Q.half), m => {
+    if (m.dead || ms < Q.stunFromMs) return;
+    startLeap(m, m.pos.clone(), Q.upMs, () => {});   // hochschleudern
+    applyRoot(m, Q.stunMs);
+  }));
+  if (k < 1) return;
+  const a = { x: player.pos.x + f.x * len, z: player.pos.z + f.z * len }, b = { x: a.x + f.x * Q.crackYd, z: a.z + f.z * Q.crackYd };   // Bodenspalte läuft weiter
+  for (let i = 0; i < 3; i++) after(i * 80, () => mage.hero.fx.crackAt(a.x + f.x * i * 2, a.z + f.z * i * 2, f.x, f.z));
+  after(120, () => strike(c, () => Q.crackDmg * UNIT, () => mobsOnLine(a, b, 2.5), undefined, 0));
+}
+// Seelenofen: Schild, Kills füllen nach; Ablauf oder zweiter Druck: Explosion mit 2× dem Absorbierten
+function pressSionW() {
+  if (sw) return detonateSionW();
+  if (cdEnd('sW') > state.now) return showError(t('msg.notReady'));
+  startCd('sW');
+  const amount = maxHp() * SN.w.shield;
+  sw = { until: state.now + SN.w.ms, given: amount };
+  player.shield = amount; player.shieldUntil = sw.until;
+  mage.hero.fx.ring(player.pos, 0x7cff9a, 2.5, 0.5, 0.1);
+}
+function detonateSionW() {
+  const absorbed = Math.max(0, sw.given - Math.max(0, player.shield)), W = SN.w, c = makeCtx('sW'), r = c.radius(W.radius);
+  sw = null; player.shield = 0; player.shieldUntil = 0;
+  if (absorbed > 0) strike(c, () => absorbed * W.mul, () => mobsInRadius(player.pos, r), m => { if (!m.dead) knockbackMob(m, player.pos, 3); }, 0);
+  mage.hero.fx.ring(player.pos, 0x7cff9a, r, 0.6, 0.15);
+  shakeCamera(0.4);
+}
+// Brüllen des Schlächters: Schockwelle nach vorn, der erste Mob fliegt wie eine Bowlingkugel durch die anderen
+function pressSionE() {
+  if (cur || rush) return;
+  if (cdEnd('sE') > state.now) return showError(t('msg.notReady'));
+  if (player.mana < SN.e.rage) return showError(t('msg.noRage'));
+  player.mana -= SN.e.rage;
+  startCd('sE');
+  player.lastCombat = state.now;
+  const E = SN.e, f = forward(), from = { x: player.pos.x, z: player.pos.z }, to = { x: from.x + f.x * E.len, z: from.z + f.z * E.len };
+  for (let i = 0; i < 5; i++) after(i * 50, () => mage.hero.fx.crackAt(from.x + f.x * i * E.len / 5, from.z + f.z * i * E.len / 5, f.x, f.z));
+  shoutLook(3);
+  const first = mobsOnLine(from, to, E.width).filter(m => !m.dead).sort((a, b) => Math.hypot(a.pos.x - from.x, a.pos.z - from.z) - Math.hypot(b.pos.x - from.x, b.pos.z - from.z))[0];
+  if (!first) return;
+  const c = makeCtx('sE');
+  strike(c, () => E.dmg * UNIT, () => [first], m => { if (m.dead) return; applySlow(m, E.slow, E.slowMs); m.shockUntil = state.now + E.shockMs; });   // Rüstung runter: Schock (core.ts +10 % Schaden)
+  if (!first.dead && !first.boss && !first.noKnock) bowl = { m: first, dir: { x: f.x, z: f.z }, left: E.flyYd, hits: 0, seen: new Set([first]), ctx: c };
+}
+function updateBowl(s) {
+  const E = SN.e, m = bowl.m;
+  if (m.dead) { bowl = null; return; }
+  const step = E.speed * s;
+  m.pos.x += bowl.dir.x * step; m.pos.z += bowl.dir.z * step;
+  resolve(m.pos, 0.7);
+  bowl.left -= step;
+  const o = bowl.hits < E.maxHits && mobsInRadius(m.pos, E.hitR, Infinity).find(x => !x.dead && !bowl.seen.has(x));   // ein Zusammenstoß pro Frame, höchstens maxHits
+  if (o) {
+    bowl.seen.add(o); bowl.hits++; bowl.left += E.perHitYd;
+    strike(bowl.ctx, () => E.dmg * UNIT, () => [o], x => { if (!x.dead) knockbackMob(x, m.pos, 3); }, 0);
+    mage.hero.fx.blood(o.pos.x, o.pos.y + 1, o.pos.z);
+  }
+  if (bowl.left <= 0) bowl = null;
+}
+// Unaufhaltsamer Ansturm: lenkbar mit der Maus, wird schneller, überrennt Mobs; Ende durch Champion, Wand oder zweiten Druck
+function pressSionR() {
+  if (rush) return endRush();
+  if (cur || sq) return;
+  if (cdEnd('sR') > state.now) return showError(t('msg.notReady'));
+  stopDrink();
+  startCd('sR');
+  rush = { start: state.now, dist: 0, ctx: makeCtx('sR'), seen: new Set() };
+  chargeLook(400);
+}
+function updateRush(s) {
+  const Rr = SN.r, tS = (state.now - rush.start) / 1000;
+  player.lastCombat = state.now;
+  pickGround();
+  const want = Math.atan2(mouse.ground.x - player.pos.x, mouse.ground.z - player.pos.z);
+  let d = Math.atan2(Math.sin(want - player.facing), Math.cos(want - player.facing));
+  player.facing += clamp(d, -Rr.turnPerS * s, Rr.turnPerS * s);
+  const step = lerpN(Rr.speed[0], Rr.speed[1], clamp(tS / Rr.accelS, 0, 1)) * s;
+  const blocked = !stepForward(step);   // stepForward: true, wenn der Schritt ging
+  rush.dist += step;
+  if (Math.random() < 0.3) mage.hero.fx.ghost?.();
+  const f = forward();
+  for (const m of mobsInRadius(player.pos, Rr.trample, Infinity)) {
+    if (m.dead || rush.seen.has(m)) continue;
+    if (m.champion || m.boss) return endRush();   // Champion stoppt
+    rush.seen.add(m);
+    const sideSign = (m.pos.x - player.pos.x) * f.z - (m.pos.z - player.pos.z) * f.x > 0 ? 1 : -1;   // zur Seite wegschleudern
+    strike(rush.ctx, () => Rr.dmg * UNIT * 0.5, () => [m], o => { if (!o.dead) knockbackMob(o, { x: o.pos.x - f.z * sideSign, z: o.pos.z + f.x * sideSign }, Rr.side); }, 0.3);
+  }
+  if (blocked || state.now - rush.start > Rr.maxMs) endRush();
+}
+function endRush() {
+  const Rr = SN.r, c = rush.ctx, r = c.radius(lerpN(Rr.r[0], Rr.r[1], clamp(rush.dist / Rr.rAtYd, 0, 1)));
+  rush = null;
+  smash(strike(c, () => Rr.dmg * UNIT, () => mobsInRadius(player.pos, r), m => { if (!m.dead) knockbackMob(m, player.pos, Rr.knock); }));
+  mage.hero.fx.ring(player.pos, 0xd8121c, r, 0.5, 0.15);
+  chargeHit(player.pos);
+  shakeCamera(0.6);
+}
+function updateSion(dt) {
+  if (legendary !== 'sion') return;
+  const s = dt / 1000;
+  if (undeadUntil) {
+    player.hp -= maxHp() / SN.undead.decayS * s;   // Leben verfällt
+    if (player.hp <= 0 || state.now >= undeadUntil) return endUndead();
+  }
+  if (sq && (!held('sQ') || state.now - sq.start >= SN.q.maxMs)) releaseSionQ(state.now - sq.start);
+  if (sq && Math.floor((state.now - sq.start) / 300) !== sq.pulse) { sq.pulse = Math.floor((state.now - sq.start) / 300); mage.hero.fx.ring(player.pos, 0xd8121c, 1.5 + sq.pulse * 0.6, 0.3, 0.08); }
+  if (sw && state.now >= sw.until) detonateSionW();
+  if (bowl) updateBowl(s);
+  if (rush) updateRush(s);
+}
+// Kills mit Sions Axt: max. Leben wächst für den Run, Seelenofen füllt nach
+onMobDeath(() => {
+  if (!isWarrior() || legendary !== 'sion') return;
+  player.bonusHp = Math.min(SN.hpMax, (player.bonusHp ?? 0) + SN.hpPerKill);
+  if (sw) { const add = maxHp() * SN.w.perKill; player.shield = Math.max(0, player.shield) + add; sw.given += add; }
+});
 export const berserkMul = () => isWarrior() && player.berserkUntil > state.now ? 1 + R.berserk.dmg : 1;
 
 function updateWhirl(s) {
   const W = R.whirl, frenzy = hasRune('wR', 'frenzy');
   // Einmal an, läuft er bis 0 Wut; neu starten braucht minStart, sonst stottert er bei jedem kassierten Treffer an
-  const want = !cur && player.stunUntil <= state.now && player.mana >= (whirlOn ? 0.01 : W.minStart) && (held('wR') || state.now < whirlUntil);
+  const want = !cur && !(undeadUntil > state.now) && player.stunUntil <= state.now && player.mana >= (whirlOn ? 0.01 : W.minStart) && (held('wR') || state.now < whirlUntil);
   if (!want) { whirlOn = false; return; }
   if (!whirlOn) { whirlOn = true; whirlCtx = makeCtx('wR'); whirlStart = state.now; seq++; }
   const r = whirlCtx.radius(W.radius);
@@ -499,7 +690,8 @@ export function updateRealMen(dt) {
   const now = state.now, s = dt / 1000;
   updateMelee();
   if (charge) updateCharge();
-  if (stunImmuneUntil > now) player.stunUntil = 0;   // LEEEROY!
+  if (stunImmuneUntil > now || rush) player.stunUntil = 0;   // LEEEROY!, Unaufhaltsamer Ansturm
+  updateSion(dt);
   if (chickenUntil > now) player.hp = Math.min(maxHp(), player.hp + maxHp() * LEGENDARY.leeroy.chicken.heal * dt / LEGENDARY.leeroy.chicken.ms);
   if (undyingUntil > now) player.mana = R.rage.max;
   else if (now - lastRageAt > R.rage.idleMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
@@ -525,15 +717,15 @@ export const warriorUndying = () => isWarrior() && undyingUntil > state.now;
 // Schadensfaktor: nur der Krieger hat Rüstung
 // Charakterfenster (ui/charInfo.ts)
 export const warriorInfo = () => ({ rageMul: rageMul(), qLength: qLength(), R });
-export const takenMul = () => isWarrior() ? 1 - R.armor * (LG()?.armorMul ?? 1) : 1;
-export const moveMul = () => whirlOn && !hasRune('wR', 'stride') ? R.whirl.speedMul : 1;
-export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Bewegung oder keine
+export const takenMul = () => isWarrior() ? (1 - R.armor * (LG()?.armorMul ?? 1)) * (sq ? LEGENDARY.sion.q.takenMul : 1) : 1;   // Vernichtender Hieb: beim Laden weniger Schaden
+export const moveMul = () => (whirlOn && !hasRune('wR', 'stride') ? R.whirl.speedMul : 1) * (rushBuffUntil > state.now ? LEGENDARY.sion.undead.rushSpeed : 1);
+export const rooted = () => isWarrior() && (!!cur && !cur.walk || !!rush || !!sq);   // eigene Bewegung oder keine; Ansturm lenkt selbst, beim Laden des Vernichtenden Hiebs steht er
 
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, qPal: LG()?.pal ?? R.q.pal[stage - R.q.start], fin: { s: LG() ? 1 : bladeScale() * (cur?.part?.s ?? 1), tor: cur?.part?.tor ?? 0 }, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
+  return { ...(rush ? { state: 'run', speed: 12 } : {}), ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, qPal: LG()?.pal ?? R.q.pal[stage - R.q.start], fin: { s: LG() ? 1 : bladeScale() * (cur?.part?.s ?? 1), tor: cur?.part?.tor ?? 0 }, berserk: berserkOn() || undeadUntil > state.now, frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest
-(window as any).__krieger = { get cur() { return cur; }, get combo() { return combo; }, get stage() { return stage; }, stageUp, log: moveLog, rageMul, get undying() { return undyingUntil; }, REALMEN };
+(window as any).__krieger = { get cur() { return cur; }, get combo() { return combo; }, get stage() { return stage; }, stageUp, log: moveLog, get sion() { return { undeadUntil, sq, sw, bowl: bowl && { hits: bowl.hits, left: bowl.left }, rush: rush && { dist: rush.dist } }; }, rageMul, get undying() { return undyingUntil; }, REALMEN };

@@ -61,7 +61,7 @@ export const paceXpMul = () => clamp(2 ** ((paceLevel() - player.level) / LEVEL_
 const baseHp = () => LEVEL_HP_AT_20 + LEVEL_HP_STEP * (player.level - 20);
 const MANA_PER_HP = 4 / 3;                       // Mana = Leben + 1/3
 // Modi als eigener Faktor, damit Karten-Boni in jedem Modus relativ gleich wirken
-export const fullHp = () => Math.round(baseHp() * mods.hpMult * modFactor('hp'));
+export const fullHp = () => Math.round(baseHp() * mods.hpMult * modFactor('hp') * (1 + (player.bonusHp ?? 0)));   // bonusHp: Sions Axt, Kills im Run
 export const maxHp = () => Math.round(fullHp() * (1 - (player.hpCut ?? 0)));   // hpCut: Zerstörung (Maliketh, bosses/rules.ts), grauer Teil im Leben-Balken
 export const maxMana = () => player.rageMax ?? Math.round(baseHp() * MANA_PER_HP * mods.manaMult * modFactor('mana'));
 export const spirit = () => 45 + 2 * (player.level - 20);

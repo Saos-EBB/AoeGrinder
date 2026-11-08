@@ -18,7 +18,7 @@ export function mobsOnLine(a, b, width) {
 }
 
 // Schritt nach vorn mit Wänden und Stufen wie beim Laufen. Gibt false, wenn etwas im Weg steht.
-function stepForward(step) {
+export function stepForward(step) {
   const pos = player.pos, f = forward(), x = pos.x + f.x * step, z = pos.z + f.z * step, y0 = pos.y;
   pos.x = x; pos.z = z;
   resolve(pos, 0.45);

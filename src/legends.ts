@@ -18,7 +18,7 @@ import { blinkTo } from './spells/blink';
 import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE } from './spells/fx';
 import { combatText, showError } from './ui/hud';
 import { forward } from './melee';
-import { warLegendary } from './realMen';
+import { warLegendary, NOXUS } from './realMen';
 import { t } from './i18n';
 
 export const LEG = {
@@ -40,6 +40,7 @@ export const LEGENDS = {
   pyroclasm: { kind: 'mage', element: 'feuer', name: t('legend.pyroclasm.name'), desc: t('legend.pyroclasm.desc') },
   snowball: { kind: 'mage', element: 'frost', name: t('legend.snowball.name'), desc: t('legend.snowball.desc') },
   leeroy: { kind: 'krieger', base: 'sword', name: t('legend.leeroy.name'), desc: t('legend.leeroy.desc') },
+  sion: { kind: 'krieger', base: 'sword', name: t('legend.sion.name'), desc: t('legend.sion.desc') },
 };
 
 // Kiste: orange Waffe, mit 3 % eine Legende. Element-Legenden nur, wenn die Waffe das Element hat
@@ -137,6 +138,11 @@ const EFFECTS = {
     for (const m of mobsInRadius(player.pos, LEG.leeroy.pull, Infinity)) { m.state = 'idle'; enterCombat(m, false); }
     state.leeroyUntil = state.now + LEG.leeroy.ms;   // core.ts: +50 % Schaden
     burstFx(player.pos, 4, [EMBER, FIRE], 0xff6030);
+  },
+  // Für Noxus!: Vernichtender Hieb sofort voll geladen, mehr Schaden (realMen.ts NOXUS)
+  sion() {
+    state.noxusUntil = state.now + NOXUS.ms;
+    burstFx(player.pos, 4, [EMBER, FIRE], 0xd8121c);
   },
 };
 export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy.dmg : 1;

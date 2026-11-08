@@ -32,7 +32,7 @@ import { novaFx } from './fx/spellFx';
 import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
-import { resetRealMen, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
+import { resetRealMen, warriorRevive, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
 import { resetFigures } from './figures';
@@ -149,7 +149,7 @@ export function damagePlayer(amount, dot = false, source = '') {
     if (player.drink && !player.drink.keepOnHit) stopDrink();
     pushbackChannel();
   }
-  if (player.hp <= 0 && !phoenixRevive() && !eggRevive()) die();   // Phönix zuerst, dann Murky-Ei (legends.ts)
+  if (player.hp <= 0 && !phoenixRevive() && !eggRevive() && !warriorRevive()) die();   // Phönix zuerst, dann Murky-Ei (legends.ts), dann Ruhm im Tod (Sions Axt)
 }
 
 // Channel-Pushback: 1000, 800, 600, 400, 200, 200 ... ms (Spell::DelayedChannel)

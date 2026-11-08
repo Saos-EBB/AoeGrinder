@@ -7,7 +7,7 @@ import { COLORS } from './colors';
 // Spell-ID → Icon im Viewer (spellIcons.ts). Fest nach ID, damit Umbenennen und Übersetzen die Icons nicht verlieren
 const ICON_KEY: Record<string, string> = {
   wQ: 'schlagfolge', wE: 'bodenbrecher', wR: 'wirbelwind', wExec: 'hinrichtung', wLast: 'letzteratem', wCry: 'kampfschrei', wLeap: 'sturzsprung',
-  wCharge: 'ansturm', wClap: 'donnerknall', wShout: 'einschuechterungsruf', wBerserk: 'berserker', lLeeroy: 'ansturm', rOff: 'q_offensiv', rDef: 'q_defensiv',
+  wCharge: 'ansturm', wClap: 'donnerknall', wShout: 'einschuechterungsruf', wBerserk: 'berserker', lLeeroy: 'ansturm', sR: 'ansturm', sE: 'einschuechterungsruf', rOff: 'q_offensiv', rDef: 'q_defensiv',
   rUtil: 'q_utility', rDrink: 'q_drink', iceblock: 'eisblock', phoenix: 'phoenix', detonate: 'brandmal', gasoline: 'benzin', firetrail: 'feuerspur',
   firestorm: 'feuersbrunst', frostbolt: 'frostblitz', needle: 'gletschernadel', icebarrier: 'eisbarriere', quake: 'erdbeben', keeper: 'sturmhueter',
   staticfield: 'statikfeld', stormelem: 'sturmelementar', nova: 'frostnova', bliz: 'blizzard', coc: 'coneofcold', blink: 'blink', drink: 'q_drink',
