@@ -183,25 +183,25 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 body.mobile #menuActions { max-width: 50vw; }
 
 /* ---------- Ladebildschirm (LoadDoom.dc.html) ---------- */
-#loadModal { z-index: 30; background: radial-gradient(ellipse at 50% 60%, #3a0806 0%, #120202 45%, #050101 100%); font-family: 'Oswald', sans-serif; color: #f2e9e4; }
+#loadModal { z-index: 30; background: var(--fg-back), var(--fg-bg); font-family: var(--font-body); color: var(--fg-text); }   /* LoadDoom-Struktur, Look des UI-Flavors */
 #loadModal.show { display: block; }
 #loadModal .loadLines { position: absolute; inset: 0; width: 100%; height: 100%; }
 #loadModal .loadMid { position: absolute; left: 0; right: 0; top: 31vh; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 #loadModal .loadPre { font-size: 18px; font-weight: 500; letter-spacing: .6em; text-transform: uppercase; color: var(--fg-accent); }
-#loadModal .loadZone { font: 400 min(170px, 10.6vw) 'Anton', sans-serif; line-height: 1; letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 0 40px color-mix(in srgb, var(--fg-top) 55%, transparent); }
-#loadModal .loadBar { width: min(520px, 60vw); height: 3px; margin-top: 18px; background: #2a0a07; }
+#loadModal .loadZone { font: var(--font-title-weight) min(150px, 9.6vw) var(--font-title); color: var(--fg-title); line-height: 1; letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 0 40px color-mix(in srgb, var(--fg-top) 55%, transparent); }
+#loadModal .loadBar { width: min(520px, 60vw); height: 3px; margin-top: 18px; background: var(--fg-line); }
 #loadModal .loadBar div { height: 3px; width: 0; background: var(--fg-top); box-shadow: 0 0 10px var(--fg-top); }
 #loadModal .loadBest { position: absolute; left: 3.75vw; bottom: 6.2vh; display: flex; flex-direction: column; gap: 4px; }
 #loadModal .loadBest span { font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--fg-accent); }
-#loadModal .loadBest b { font: 400 44px 'Anton', sans-serif; }
-#loadModal .loadTip { position: absolute; left: 20vw; right: 20vw; bottom: 7.1vh; text-align: center; font-size: 22px; font-weight: 500; color: #cbb8b0; }
+#loadModal .loadBest b { font: 700 44px var(--font-num); }
+#loadModal .loadTip { position: absolute; left: 20vw; right: 20vw; bottom: 7.1vh; text-align: center; font-size: 22px; font-weight: 500; color: var(--fg-muted); }
 #loadModal .loadMods { position: absolute; right: 3.75vw; bottom: 6.2vh; display: flex; gap: 8px; }
-#loadModal .loadMods span { border: 2px solid var(--fg-border); color: #cbb8b0; font-size: 16px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; }
+#loadModal .loadMods span { border: 2px solid var(--fg-border); color: var(--fg-muted); font-size: 16px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; }
 #loadModal .loadMods span.on { border-color: var(--fg-top); color: var(--fg-accent); }
 
 /* ---------- Shop (S2.dc.html, 1280×720) ---------- */
 #shopModal { overflow: auto; }
-#shopModal #shopBox { width: min(1180px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; }
+#shopModal #shopBox { width: min(1180px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; background: none; border: 0; box-shadow: none; }   /* X?S: kein Außenrahmen, nur die Spalten als Panels */
 .shopHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
 .shopHead h1 { font-size: 38px !important; }
 #shopInfo { font: 600 18px var(--font-body); color: var(--fg-text); }
@@ -238,22 +238,26 @@ body.mobile #menuActions { max-width: 50vw; }
 body.mobile #shopCols { grid-template-columns: 1fr; }
 
 /* ---------- Run-Ende (E2.dc.html) ---------- */
-#deathModal #endBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; }
+#deathModal #endBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
 #endTitle { font-size: 46px !important; }
 #endSub { margin-top: 6px; font-size: 16px; color: var(--fg-muted); }
-.endTime { margin-top: 10px; font: 700 78px var(--font-num); line-height: 1; }
+.endTime { margin-top: 6px; font: 700 64px var(--font-num); line-height: 1; }
 .endRank { margin-top: 8px; font: 700 20px var(--font-body); }
-.endStats { display: flex; justify-content: center; gap: 0; margin: 24px 0 6px; }
+.endStats { display: flex; justify-content: center; gap: 0; margin: 14px 0 4px; }
 .endStat { width: 200px; display: flex; flex-direction: column; }
 .endStat b { font: 700 34px var(--font-num); }
 .endStat span { font-size: 14px; color: var(--fg-muted); }
 .endPoints { font-size: 13px; color: var(--fg-muted); margin-bottom: 18px; }
 .endCols { display: grid; grid-template-columns: 560fr 440fr; gap: 40px; text-align: left; }
 .endCols .gPanel { padding: 14px 20px 18px; }
-.endCols .title { font-size: 17px; margin-bottom: 12px; }
-.endBar { display: grid; grid-template-columns: 120px 1fr 50px; align-items: center; gap: 10px; height: 34px; font-size: 15px; }
+.endCols .fg-title { font-size: 17px; margin-bottom: 12px; }
+.endCols .gPanel > * { position: relative; z-index: 2; }
+.endDmgHead { display: flex; justify-content: space-between; align-items: baseline; }
+.endDmgHead b { font: 800 26px var(--font-num); color: var(--fg-text); }
+.endBar { display: grid; grid-template-columns: 110px 1fr 104px 38px; align-items: center; gap: 10px; height: 34px; font-size: 15px; }
 .endBar i { height: 14px; display: block; }
-.endBar b { text-align: right; color: var(--fg-muted); }
+.endBar b { text-align: right; font: 700 17px var(--font-num); color: var(--fg-text); }
+.endBar small { text-align: right; font-size: 12px; color: var(--fg-muted); }
 .endRow { display: flex; justify-content: space-between; font-size: 16px; color: var(--fg-muted); height: 30px; align-items: center; }
 .endRow b { color: var(--fg-text); }
 .endRow.sum span { color: var(--fg-text); font-size: 18px; }
@@ -300,54 +304,8 @@ body.mobile .endStat { width: auto; flex: 1; }
   .charCol:not(.on) { display: none; }
 }
 
-/* ---------- Inventar (InvDiablo.dc.html, Look Glut) ---------- */
-#invModal { z-index: 5; }
-#invModal #invBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; }
-.invHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
-.invHead h1 { font-size: 32px !important; }
-#invInfo { font-size: 16px; color: var(--fg-muted); }
-#invInfo b { color: var(--rar-relikt); }
-.invMain { display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
-.invFig { position: relative; padding: 18px 22px; display: grid; grid-template-columns: 1fr 92px; grid-template-rows: auto auto auto 1fr; gap: 6px 16px; }
-.invFigName { grid-column: 1 / -1; font: var(--font-title-weight) 22px var(--font-title); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-accent); }
-.invFigBody { grid-row: 2 / 4; color: color-mix(in srgb, var(--fg-text) 55%, transparent); width: 120px; justify-self: center; }
-.invSlot { --rc: var(--fg-line); width: 86px; height: 86px; box-sizing: border-box; border: 2px solid var(--rc); background: var(--fg-card); display: grid; place-items: center; position: relative; }
-.invSlot.weapon { box-shadow: 0 0 14px color-mix(in srgb, var(--rc) 50%, transparent); cursor: context-menu; }
-.invSlotLabel { grid-column: 2; font-size: 13px; color: var(--fg-muted); text-align: center; margin-top: -4px; }
-.invLocked { grid-column: 2; display: flex; flex-direction: column; gap: 8px; }
-.invSlot.locked { color: #5a4038; opacity: .7; }
-.invSlot.locked svg { width: 26px; height: 26px; }
-.invSlot.locked span { position: absolute; bottom: 4px; font-size: 11px; color: var(--fg-muted); }
-.invStats { grid-column: 1 / 2; grid-row: 4; align-self: end; font-size: 14px; display: flex; flex-direction: column; gap: 4px; color: var(--fg-muted); }
-.invWName { font: 700 15px var(--font-body); }
-.invChest { padding: 18px 22px; }
-.invGrid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; max-height: 60vh; overflow: auto; }
-.invCell { --rc: #2b2118; height: 110px; min-width: 0; box-sizing: border-box; border: 2px solid var(--rc); background: #0d0907; display: grid; place-items: center; cursor: pointer; }
-.invCell:hover { box-shadow: 0 0 16px var(--rc); }
-.invCell.equipped { background: #2a1606; }
-.invItem { width: 22px; height: 70px; color: var(--rc); display: block; }
-.invItem svg { width: 100%; height: 100%; }
-.invSlot .invItem { width: 18px; height: 60px; }
-.invFilter { display: grid; gap: 6px; margin: 0 0 12px; }
-.invFRow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
-.invFRow > span { width: 78px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); }
-.invChip { --ec: var(--fg-muted); min-width: 26px; height: 26px; padding: 0 7px; border: 1px solid var(--fg-line); background: #0d0907; color: var(--fg-text, #f4ecd8); font: 600 13px var(--font-body); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.invChip[style*="--ec"]::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--ec); box-shadow: 0 0 6px var(--ec); }
-.invChip[data-g="r"][style*="--ec"] { padding: 0 8px; }
-.invChip:hover { border-color: var(--fg-muted); }
-.invChip.on { border-color: var(--ec, #ff9a2e); background: #2a1606; }
-.invChip.invReset { margin-left: auto; color: var(--fg-muted); }
-.invCell { position: relative; }
-.invEl { position: absolute; top: 6px; right: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--ec); box-shadow: 0 0 8px var(--ec), 0 0 0 2px #0d0907; pointer-events: none; }
-.invHint { margin: 12px 0 0; font-size: 13px; color: var(--fg-muted); }
-#invClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
 .shopInvBtn { width: auto !important; margin-top: 14px !important; padding: 8px 18px !important; }
-body.mobile .invMain { grid-template-columns: 1fr; }
-
-/* Waffenbilder aus dem Modell (weaponThumb.ts) */
-.invImg { height: 100px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)); }
-.invSlot .invImg { height: 78px; }
-.invCell, .invSlot.weapon { overflow: hidden; }
+/* Waffenbild aus dem Modell (weaponThumb.ts) im Shop */
 .resIcon img { height: 140px; width: auto; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--rc) 60%, transparent)); }
 .resIcon:has(img) { width: auto; }
 

@@ -45,7 +45,7 @@ export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', '
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
 // Geparkte Arkan-Spells (maybeLater/): Blink ist der einzige Arkan-Spell, der bleibt
 const focusId = (id, w?) => { const f = w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id; return SPELLS[f] ? f : 'blink'; };
-const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
+export const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
 const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
 const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`wval.${k}`)]));   // die deutschen Schlüssel oben stehen so in gespeicherten Waffen

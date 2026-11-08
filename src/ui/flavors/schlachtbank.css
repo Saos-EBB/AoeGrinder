@@ -19,7 +19,7 @@ body[data-flavor=schlachtbank] {
 }
 
 /* Panel: Blechglanz, abgeschrägte Ecken, Nieten, Warnstreifen oben, Lüftungsschlitze, Gold-Winkel, rote Leuchtlinie unten, „SEKTOR xx“ über data-sektor */
-body[data-flavor=schlachtbank] .fg-panel::before { inset: -6px 0 0;
+body[data-flavor=schlachtbank] .fg-panel::before, body[data-flavor=schlachtbank] .fg-deco::before { inset: -6px 0 0;
   background:
     repeating-linear-gradient(-45deg, #ff3d1f 0 8px, #000 8px 16px) 28px 0 / min(160px, calc(100% - 56px)) 8px no-repeat,
     linear-gradient(135deg, #050101 50%, transparent 50%) 0 6px / 18px 18px no-repeat,
@@ -32,7 +32,7 @@ body[data-flavor=schlachtbank] .fg-panel::before { inset: -6px 0 0;
     linear-gradient(rgba(255, 61, 31, .7), rgba(255, 61, 31, .7)) right 26px top 39px / 44px 3px no-repeat,
     linear-gradient(rgba(255, 61, 31, .5), rgba(255, 61, 31, .5)) right 26px top 46px / 44px 3px no-repeat,
     linear-gradient(to bottom, rgba(255, 255, 255, .05), transparent 30%, rgba(0, 0, 0, .25)) 0 6px / 100% calc(100% - 6px) no-repeat; }
-body[data-flavor=schlachtbank] .fg-panel::after { inset: -4px; content: attr(data-sektor); display: flex; align-items: flex-end; padding: 0 0 24px 30px;
+body[data-flavor=schlachtbank] .fg-panel::after, body[data-flavor=schlachtbank] .fg-deco::after { inset: -4px; content: attr(data-sektor); display: flex; align-items: flex-end; padding: 0 0 24px 30px;
   font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #8a3a2e;
   background: url(./schlachtbank/bracket-tr.svg) right top / 26px 26px no-repeat, url(./schlachtbank/bracket-bl.svg) left bottom / 26px 26px no-repeat,
     linear-gradient(#ff3d1f, #ff3d1f) 4px calc(100% - 4px) / calc(100% - 8px) 2px no-repeat; filter: drop-shadow(0 0 4px rgba(255, 61, 31, .5)); }

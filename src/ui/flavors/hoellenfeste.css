@@ -21,9 +21,9 @@ body[data-flavor=hoellenfeste] {
 
 /* Panel: äußerer Rahmen, Gold-Ranken + rote Edelsteine an den Ecken, roter Stein oben Mitte, Goldsteg unten, innere Goldlinie, eingravierte Rauten */
 body[data-flavor=hoellenfeste] .fg-panel { outline: 2px solid #5a4424; outline-offset: 5px; }
-body[data-flavor=hoellenfeste] .fg-panel::before { inset: -9px; border: 46px solid transparent; border-image: url(./hoellenfeste/frame.svg) 46;
+body[data-flavor=hoellenfeste] .fg-panel::before, body[data-flavor=hoellenfeste] .fg-deco::before { inset: -9px; border: 46px solid transparent; border-image: url(./hoellenfeste/frame.svg) 46;
   background: url(./hoellenfeste/gem.svg) 50% 0 / 18px 18px no-repeat, linear-gradient(#c9a24a, #c9a24a) center bottom 7px / 80px 4px no-repeat; background-origin: border-box; background-clip: border-box; }
-body[data-flavor=hoellenfeste] .fg-panel::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
+body[data-flavor=hoellenfeste] .fg-panel::after, body[data-flavor=hoellenfeste] .fg-deco::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
   background: url(./hoellenfeste/rune.svg) center 5px / 26px 10px repeat-x; background-clip: content-box; padding: 0 22px; }
 
 /* Titel: zentriert zwischen Gold-Linien mit roten Rauten und Zacken-Bogen, links mit kleiner Goldraute */

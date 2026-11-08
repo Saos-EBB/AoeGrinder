@@ -48,7 +48,7 @@ export function showCards(offer?) {
     const el = document.createElement('div'), stage = cardStage(c), rep = cardReplaces(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
     const spell = SPELLS[cardSpell(c)], school = COLORS.school[spell?.school ?? spell?.cls];
     const col = relic ? RELIC_GOLD : r.color;
-    el.className = `card lvCard${relic ? ' relicCard' : ''}${stage ? ' improves' : ''}`;
+    el.className = `card lvCard${relic ? ' relicCard' : big ? ' fg-deco' : ''}${stage ? ' improves' : ''}`;   // fg-deco: Panel-Ornamente des Flavors (gen5 card_deco)
     el.style.setProperty('--rc', col);
     el.dataset.key = CARD_KEYS[i];
     const up = stage ? `<div class="lvUp">${t('cardui.up', { a: stage, b: stage + 1 })}</div>` : '';

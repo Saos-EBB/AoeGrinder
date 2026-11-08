@@ -31,7 +31,7 @@ import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
-import { openInventory } from './inventory';
+import { openWeaponMenu } from './weaponMenu';
 import { t, fmtNum, locale } from '../i18n';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
@@ -231,7 +231,7 @@ $('menuBoardTabs').addEventListener('click', e => {
 });
 // Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger: feste Waffenwahl als Liste
 $('menuWeaponsBtn').addEventListener('click', () => {
-  if (mage.weapon) openInventory(renderMenu);
+  if (mage.weapon) openWeaponMenu(renderMenu);
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
 });
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
@@ -330,9 +330,9 @@ $('pauseGiveUp').addEventListener('click', () => {
 
 // Tastatur: A/D wechselt die Figur, Q/E die Map, Enter startet (oder löst den fokussierten Knopf aus), Esc beendet das Bearbeiten
 addEventListener('keydown', e => {
-  if (e.target instanceof HTMLTextAreaElement) return;   // Spielstand-Code tippen
+  if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Waffenmenü tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
-  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal'].some(id => $(id)?.classList.contains('show'))) return;
+  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'invModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
   if (e.code === 'KeyD') cycleChar(1);
   if (e.code === 'KeyQ') cycleMap(-1);

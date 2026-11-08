@@ -55,11 +55,11 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
 function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
 
-const fmt = n => Math.round(n).toLocaleString(locale);
+const fmt = n => Math.round(n).toLocaleString('de-DE', { maximumFractionDigits: 0 });   // ganze Zahlen mit Tausenderpunkt (UI-Mix)
 
 
 // Beim Tod: speichern und Aufschlüsselung zeigen
-// Run-Ende (Mockup E2, Look Glut): Titel, Zeit groß mit Abstand zur Bestzeit und Rang, 5 Werte, Schaden nach Quelle, Staub-Rechnung
+// Run-Ende (Mockups X?E, Look des UI-Flavors): Titel, Zeit groß mit Abstand zur Bestzeit und Rang, 5 Werte, Schaden nach Quelle (ganze Zahlen, Prozent klein), Staub-Rechnung
 const fmtT = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function showRunResult() {
@@ -81,11 +81,11 @@ export function showRunResult() {
     <div class="endStats">${stat(fmt(entry.kills), t('end.kills'))}${stat(fmt(b.total), t('end.points'))}${stat(fmt(entry.bestCombo), t('end.combo'))}${stat(`×${entry.bestMulti}`, t('end.multi'))}${stat(player.won ? 0 : 1, t('end.deaths'))}</div>
     <div class="endPoints">${t('end.breakdown', { kills: fmt(b.kills), mult: fmtMult(entry.mult), pull: fmt(entry.bestPull), pullPts: fmt(b.pull), time: fmt(b.time), cause: esc(entry.cause) })}</div>
     <div class="endCols">
-      <div class="gPanel endDmg"><div class="title">${t('end.dmgBySource')}</div>${top.length ? top.map(([id, v]) => {
+      <div class="gPanel fg-panel endDmg"><div class="endDmgHead"><span class="fg-title">${t('end.dmgBySource')}</span><b>${total ? fmt(total) : '—'}</b></div>${top.length ? top.map(([id, v]) => {
         const s = SPELLS[id], c = s?.relic ? '#e3c27a' : COLORS.school[s?.school ?? s?.cls] ?? '#c4aea6', p = Math.round(v / total * 100);
-        return `<div class="endBar"><span>${esc(s?.name ?? t('cw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${p} %</b></div>`;
+        return `<div class="endBar"><span>${esc(s?.name ?? t('cw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${fmt(v)}</b><small>${p} %</small></div>`;
       }).join('') : '<p>—</p>'}</div>
-      <div class="gPanel endDust"><div class="title">${t('res.dust')}</div>
+      <div class="gPanel fg-panel endDust"><div class="fg-title">${t('res.dust')}</div>
         <div class="endRow"><span>${t('end.dustLevel', { lv: entry.level, per: META.dust.perLevel, mult: fmtMult(entry.mult) })}</span><b>${award.base}</b></div>
         <div class="endRow"><span>${t('end.dustBonus')}${award.tier ? t('shop.tier', { n: award.tier }) : ''}</span><b>+${award.bonus}</b></div>
         <i class="tSep"></i>

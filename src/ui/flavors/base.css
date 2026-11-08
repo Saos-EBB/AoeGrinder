@@ -10,7 +10,9 @@ body.font-fraktur[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-t
 
 .fg-panel { position: relative; box-sizing: border-box; background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); box-shadow: var(--fg-panel-sh);
   color: var(--fg-text); font-family: var(--font-body); }
-.fg-panel::before, .fg-panel::after { content: ''; position: absolute; pointer-events: none; box-sizing: border-box; }
+.fg-panel::before, .fg-panel::after, .fg-deco::before, .fg-deco::after { content: ''; position: absolute; pointer-events: none; box-sizing: border-box; }
+/* .fg-deco: nur die Ornamente des Panels, Hintergrund und Rahmen bleiben beim Element (Level-up-Karten, Hover-Karten) */
+.fg-deco { position: relative; }
 
 .fg-title { font-family: var(--font-title); font-weight: var(--font-title-weight); color: var(--fg-title); text-shadow: var(--fg-title-glow); letter-spacing: .04em; }
 

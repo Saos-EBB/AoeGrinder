@@ -375,21 +375,21 @@
 </div>
 
 <div id="cardModal" class="modal">
-  <h1 class="title"><span data-i18n="card.level">Stufe</span> <span id="cardLvl"></span></h1>
+  <h1 class="fg-title c"><span data-i18n="card.level">Stufe</span> <span id="cardLvl"></span></h1>
   <div id="cardHint"></div>
   <div class="cards" id="cards"></div>
 </div>
 
 <div id="deathModal" class="modal">
   <div class="frame panel" id="endBox">
-    <h1 class="title" id="endTitle"></h1>
+    <h1 class="fg-title c" id="endTitle"></h1>
     <div id="endSub"></div>
     <p id="deathStats" hidden></p>
     <div id="runResult"></div>
     <div class="endBtns">
-      <button class="btn" id="deathShopBtn" hidden data-i18n="end.toShop">Zum Shop</button>
-      <button class="smallBtn" id="restartBtn" data-i18n="end.again">Nochmal</button>
-      <button class="smallBtn" id="deathMenuBtn" data-i18n="end.menu">Hauptmenü</button>
+      <button class="btn fg-btn" id="deathShopBtn" hidden data-i18n="end.toShop">Zum Shop</button>
+      <button class="smallBtn fg-btn alt" id="restartBtn" data-i18n="end.again">Nochmal</button>
+      <button class="smallBtn fg-btn alt" id="deathMenuBtn" data-i18n="end.menu">Hauptmenü</button>
     </div>
   </div>
 </div>
@@ -409,19 +409,19 @@
 
 <div id="shopModal" class="modal" style="z-index:4">
   <div class="frame panel" id="shopBox">
-    <div class="shopHead"><h1 class="title" data-i18n="res.chest">Gruftkiste</h1><span id="shopInfo"></span></div>
+    <div class="shopHead"><h1 class="fg-title l" data-i18n="res.chest">Gruftkiste</h1><span id="shopInfo"></span></div>
     <div id="shopCols"></div>
     <div id="shopList"></div>
-    <button class="btn" id="shopClose" data-i18n="shop.close">Weiter zum Hauptmenü</button>
+    <button class="btn fg-btn" id="shopClose" data-i18n="shop.close">Weiter zum Hauptmenü</button>
   </div>
 </div>
 
 <div id="charModal" class="modal" style="z-index:4">
-  <div class="frame panel" id="charBox">
-    <div class="charHead"><h1 class="title" data-i18n="char.title">Charakter</h1><span data-i18n="char.head">X schließt · pausiert</span></div>
+  <div class="frame panel fg-panel" id="charBox">
+    <div class="charHead"><h1 class="fg-title" data-i18n="char.title">Charakter</h1><span data-i18n="char.head">X schließt · pausiert</span></div>
     <div id="charTabs"></div>
     <div id="charBody"></div>
-    <button class="smallBtn" id="charClose" data-i18n="char.close">Schließen (X)</button>
+    <button class="smallBtn fg-btn alt" id="charClose" data-i18n="char.close">Schließen (X)</button>
   </div>
 </div>
 

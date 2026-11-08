@@ -11,7 +11,7 @@ import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, dev
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
-import { openInventory } from './inventory';
+import { openWeaponMenu } from './weaponMenu';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 import { t, fmtNum } from '../i18n';
@@ -29,7 +29,7 @@ export function afterRun(completed) {
   return award;
 }
 
-// Shop (Mockup S2, Look Glut): links Kiste, Mitte Ergebnis des letzten Zugs, rechts Verschmelzen, darunter Freischaltungen und Inventar.
+// Shop (Mockups X?S, Look des UI-Flavors): links Kiste, Mitte Ergebnis des letzten Zugs, rechts Verschmelzen, darunter Freischaltungen und Inventar.
 // Kiste: kurzes Würfeln, dann liegt die Waffe im Inventar. Animation: Namen wechseln schnell und werden langsamer. // PH: Zeiten
 // Pity-Zähler, „×5 öffnen“ und Verschmelzen gibt es im Code nicht: kein Pity-Balken, kein ×5, Verschmelzen nur als Oberfläche („kommt bald“).
 const SPIN = { steps: 16, startMs: 40, growMs: 12 };
@@ -40,10 +40,10 @@ const STAFF_SVG = '<svg viewBox="0 0 12 48" fill="none" stroke="currentColor" st
 const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 
 function chestCol(resultName: HTMLElement, result: HTMLElement) {
-  const col = el('div', 'gPanel shopCol');
+  const col = el('div', 'gPanel fg-panel shopCol');
   const icon = el('div', 'shopIcon'); icon.innerHTML = CHEST_SVG;
   const price = el('div', 'shopPrice', t('shop.price', { n: ROLLS.price }));
-  const b = el('button', 'btn shopOpen', t(inventoryFull() ? 'shop.invFull' : 'shop.open')) as HTMLButtonElement;
+  const b = el('button', 'btn fg-btn shopOpen', t(inventoryFull() ? 'shop.invFull' : 'shop.open')) as HTMLButtonElement;
   b.disabled = spinning || inventoryFull() || meta.dust < ROLLS.price;
   b.dataset.nav = 'chest';
   b.addEventListener('click', () => {
@@ -101,10 +101,10 @@ function resultCol() {
     }
   } else cmp.textContent = t('shop.noneEquipped');
   const btns = el('div', 'resBtns');
-  const equipB = el('button', 'btn', t(eq === w ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
+  const equipB = el('button', 'btn fg-btn', t(eq === w ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
   equipB.disabled = eq === w;
   equipB.addEventListener('click', () => { equip(w.id); mage.refreshWeapon(); lastIsNew = false; renderShop(); });
-  const dust = el('button', 'smallBtn', t('shop.refund', { n: ROLLS.refund[w.r] })) as HTMLButtonElement;
+  const dust = el('button', 'smallBtn fg-btn alt', t('shop.refund', { n: ROLLS.refund[w.r] })) as HTMLButtonElement;
   dust.title = t('shop.salvage');
   dust.addEventListener('click', async () => {
     if (spinning || !await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name: weaponName(w), n: ROLLS.refund[w.r] }), t('shop.salvage'))) return;
@@ -117,11 +117,11 @@ function resultCol() {
 }
 
 function fuseCol() {
-  const col = el('div', 'gPanel shopCol shopFuse');
-  col.append(el('div', 'title fuseTitle', t('shop.fuse')), el('p', 'shopHint', t('shop.fuseHint')));
+  const col = el('div', 'gPanel fg-panel shopCol shopFuse');
+  col.append(el('div', 'fg-title fuseTitle', t('shop.fuse')), el('p', 'shopHint', t('shop.fuseHint')));
   const slots = el('div', 'fuseSlots');
   for (let i = 0; i < 3; i++) slots.append(el('div', 'fuseSlot'));
-  const b = el('button', 'smallBtn', t('shop.soon')) as HTMLButtonElement;
+  const b = el('button', 'smallBtn fg-btn alt', t('shop.soon')) as HTMLButtonElement;
   b.disabled = true;
   col.append(slots, el('div', 'fuseArrow', '▼'), el('div', 'fuseSlot result', '?'), b);
   return col;
@@ -150,8 +150,8 @@ function renderShop() {
       box.appendChild(b);
     }
   }
-  const inv = el('button', 'smallBtn shopInvBtn', t('shop.openInv', { a: meta.inv.length, b: ROLLS.invMax }));
-  inv.addEventListener('click', () => openInventory(renderShop));
+  const inv = el('button', 'smallBtn fg-btn alt shopInvBtn', t('shop.openInv', { a: meta.inv.length, b: ROLLS.invMax }));
+  inv.addEventListener('click', () => openWeaponMenu(renderShop));
   box.append(inv);
 }
 
