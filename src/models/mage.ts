@@ -9,6 +9,7 @@ import { buildStrichMagier } from './strichMagier';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
 import { buildEquipped } from '../weaponRolls';
+import { warLegendary } from '../realMen';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -27,6 +28,12 @@ export function onWarriorHit(fn) { hitHandlers().push(fn); }
 
 // Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
 const HERO_WEAPON = { krieger: { id: 'schlachtblech', scale: 1.25, tip: 1.9, grip: 0.2, glow: [0.1, 0.008, 0.005], rim: [0.55, 0.05, 0.03], rimPower: 2.4 } };
+// Legendäre Waffe des Strichkriegers (realMen.ts, Feld legendary) ersetzt das Schlachtblech // PH
+const LEGEND_WEAPON = {
+  leeroy: { id: 'leeroyklinge', scale: 1.25, tip: 1.85, grip: 0.2, glow: [0.03, 0.03, 0.035], rim: [0.3, 0.12, 0.05], rimPower: 3 },   // Stahl soll Stahl bleiben: wenig Rot
+  sion: { id: 'sionaxt', scale: 1.25, tip: 1.6, grip: 0.25, glow: [0.08, 0.005, 0.005], rim: [0.6, 0.04, 0.03], rimPower: 2.2 },
+};
+const heroWeaponOf = id => (id === 'krieger' && LEGEND_WEAPON[warLegendary()]) || HERO_WEAPON[id];
 // Leichter roter Schein auf der Klinge, damit sie im Dunkeln lesbar bleibt: Grundglühen plus roter Rand
 function tintWeapon(w, hw) {
   w.root.traverse(o => {
@@ -79,7 +86,7 @@ function setSkin(id) {
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers()) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
-    const hw = id === 'krieger' && warBase(warWeapon) !== 'sword' ? null : HERO_WEAPON[id];
+    const hw = id === 'krieger' && warBase(warWeapon) !== 'sword' ? null : heroWeaponOf(id);
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
@@ -104,7 +111,7 @@ const skinForRun = () => { const ids = activeModIds(); return ids.includes('fros
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
   const id = skinForRun();
-  if (id !== skin || cur.trail) setSkin(id);
+  if (id !== skin || cur.trail || (HEROES[id] && heroWeapon?.id !== heroWeaponOf(id)?.id)) setSkin(id);   // auch, wenn die legendäre Waffe gewechselt hat
 }
 // Run-Ende: Spuren raus aus der Szene
 export function endMageRun() {

@@ -461,3 +461,52 @@ def({ id: 'frostzahn', gripY: 0.12, cane: false, pitch: 0.85, name: t('wmodel.fr
     fx.emit(g, { rate: 4, max: 30, life: [2.5, 3.5], size: [.022, .016], c0: [1.8, 2.2, 2.8], c1: [.7, 1, 1.4], gravity: -.08, drag: .6, tex: 'flake',
       spawn: (R, p) => { p.set((R() - .5) * .5, 1.35 + R() * .1, (R() - .5) * .3); } });
   } });
+
+// ── Legendäre Waffen des Strichkriegers (08.11.): nicht aus dem Viewer, nicht für Magier (ROLLS.notForMages in weaponRolls.ts). Maße // PH
+// Leeroys Klinge: wildes Großschwert, goldene Parierstange, roter Wimpel, Hühnchen-Schenkel am Knauf
+def({ id: 'leeroyklinge', gripY: 0.24, cane: false, pitch: 0.75, name: t('wmodel.leeroyklinge.name'), school: 'Alle', arch: 'Großschwert eines Abenteurers, der nie wartet',
+  story: t('wmodel.leeroyklinge.story'),
+  read: 'Breite, leicht gezackte Klinge mit goldener Parierstange und einem roten Wimpel. Am Knauf baumelt ein Hühnchen-Schenkel.',
+  wear: 'Die Schneide ist schief nachgeschliffen, der Wimpel angesengt.',
+  fx: t('wmodel.leeroyklinge.fx'),
+  build(g, fx) {
+    const steel = S('metal', 0xc9ccd4, { rep: [2, 3] }), gold = S('metal', 0xe0b040), red = S('cloth', 0xc0202a, { side: THREE.DoubleSide });
+    part(g, new THREE.IcosahedronGeometry(.055, 0), gold, 0, -.04, 0);
+    part(g, cyl(.03, .034, .44, 6), S('leather', 0x6a3a22, { rep: [1, 3] }), 0, .22, 0);
+    part(g, new THREE.BoxGeometry(.52, .07, .1), gold, 0, .48, 0);
+    for (const s of [-1, 1]) part(g, new THREE.ConeGeometry(.04, .14, 5), gold, s * .3, .5, 0, 0, 0, -s * Math.PI / 2);   // Dornen an der Parierstange
+    part(g, ext(shp([[-.14, 0], [.14, 0], [.15, .3], [.12, .34], [.15, .4], [.15, .8], [.12, .85], [.15, .9], [.14, 1.2], [0, 1.42], [-.14, 1.2], [-.15, .7], [-.12, .66], [-.15, .6]]), .045), steel, 0, .515, 0);
+    part(g, new THREE.BoxGeometry(.04, .9, .05), S('metal', 0x8a8e96), 0, 1.02, 0);   // Hohlkehle
+    part(g, new THREE.PlaneGeometry(.12, .42), red, .22, .3, 0, 0, 0, .25);           // Wimpel an der Parierstange
+    part(g, new THREE.PlaneGeometry(.08, .14), red, .27, .06, 0, 0, 0, .5);
+    part(g, cyl(.008, .008, .12, 4), S('leather', 0x3a2a1a), 0, -.12, 0);             // Schnur
+    part(g, cyl(.012, .012, .09, 5), S('bone', 0xeee6d0), 0, -.22, 0);              // Hühnchen-Schenkel
+    part(g, new THREE.IcosahedronGeometry(.05, 1), S('leather', 0x9a4a1c), 0, -.3, 0);
+    fx.anchor(g, 0, 1.85, 0);
+    fx.emit(g, { burst: { every: [1, 2.5], count: 20 }, max: 60, life: [.3, .7], size: [.03, .006], c0: [4, 1.2, .5], c1: [1.4, .2, 0], gravity: -2.5, drag: .6, tex: 'spark',
+      spawn: (R, p, v) => { p.set((R() - .5) * .28, .6 + R() * 1.2, 0); v.set((R() - .5) * 1.2, .4 + R(), (R() - .5) * .6); } });
+  } });
+
+// Sions Axt: riesige Henkersaxt, rostiges Blatt mit glühenden roten Rissen, Dorn auf der Rückseite
+def({ id: 'sionaxt', gripY: 0.3, cane: false, pitch: 0.75, name: t('wmodel.sionaxt.name'), school: 'Alle', arch: 'Henkersaxt eines Kriegers, der nicht liegen bleibt',
+  story: t('wmodel.sionaxt.story'),
+  read: 'Langer dunkler Schaft, oben ein breites Halbmond-Blatt mit Dorn auf der Rückseite. Durch das Blatt laufen rot glühende Risse.',
+  wear: 'Das Blatt ist schwarz verkrustet, der Schaft mit Eisenbändern geflickt.',
+  fx: t('wmodel.sionaxt.fx'),
+  build(g, fx) {
+    const iron = S('rust', 0xffffff, { rep: [2, 2] }), band = S('iron', 0x4a4d54);
+    part(g, new THREE.IcosahedronGeometry(.06, 0), band, 0, -.03, 0);
+    part(g, cyl(.035, .04, 1.55, 7), S('wood', 0x3a2418, { rep: [1, 5] }), 0, .74, 0);
+    for (const y of [.12, .5, 1.2, 1.42]) part(g, cyl(.045, .045, .05, 7), band, 0, y, 0);
+    const blade = shp([[0, 0], [.18, -.12], [.4, -.22], [.52, -.05], [.56, .2], [.52, .45], [.4, .62], [.18, .55], [0, .42]]);   // Halbmond
+    part(g, ext(blade, .05), iron, .03, 1.18, 0);
+    part(g, ext(shp([[0, 0], [-.3, .12], [0, .26]]), .04), iron, -.03, 1.27, 0);   // Dorn hinten
+    part(g, new THREE.ConeGeometry(.04, .2, 5), band, 0, 1.62, 0);                  // Spitze oben
+    const cracks = [[.2, 1.28, .5], [.32, 1.4, -.3], [.42, 1.5, .8], [.36, 1.2, -.9]].map(([x, y, r]) =>
+      part(g, new THREE.BoxGeometry(.018, .16, .056), E(0xff2a14, 2.2), x, y, 0, 0, 0, r));
+    const base = new THREE.Color(0xff2a14);
+    fx.every((dt, tt) => cracks.forEach((c, i) => c.material.color.copy(base).multiplyScalar(1.4 + 1.2 * Math.max(0, Math.sin(tt * 2.2 + i * 1.7)))));
+    fx.anchor(g, .5, 1.4, 0);
+    fx.emit(g, { rate: 8, max: 30, life: [.6, 1.2], size: [.03, .008], c0: [3.5, .6, .3], c1: [1, .1, 0], gravity: -1.2, drag: .4, tex: 'spark',
+      spawn: (R, p, v) => { p.set(.15 + R() * .35, 1.15 + R() * .4, (R() - .5) * .05); v.set(R() * .3, .3 + R() * .5, 0); } });
+  } });
