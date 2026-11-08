@@ -805,10 +805,13 @@ const airOf = (A, t) => P(A.run(0.3), { fL: [.16, .36, .18], fR: [-.16, .26, -.2
 // Partikel pro Sekunde: Rauch beim Überhitzen, Reif bei Kälte // PH
 const STAGE_FX = { smoke: 25, frost: 30 };
 const WEL_STONE_Y = .95;   // Stein des Waffen-Elements, Höhe am Stab-Gelenk (Viewer) // PH
+const WEL_SPARK = 14;      // Funken des Waffen-Elements pro Sekunde (≈ alle 0,07 s), an Hand oder Stein-Spitze (Viewer) // PH
 const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchteile über die Frames verteilt
 
-// weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element
-export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null) {
+// weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element.
+// opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/mage.ts), sonst eine neue nach dem Skin.
+// opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
+export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
   const S = SKINS[skin];
   const U = { uTime: { value: 0 }, uM: { value: 0 }, uK: { value: 0 }, uLvl: { value: 0 } };   // pro Figur
@@ -976,7 +979,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
   }
 
-  const trail = SKIN_FX[gameSkin]?.trail ? makeTrail(SKIN_FX[gameSkin].trail) : null;
+  const trail = opts.trail ?? (SKIN_FX[gameSkin]?.trail ? makeTrail(SKIN_FX[gameSkin].trail) : null);
   const watch = stepWatcher({ root: F.root, legL: { ankle: F.legL.ft }, legR: { ankle: F.legR.ft } });
   const fl = FLOAT[skin] || 0;
   let loco = 'idle', mode = 'idle', castT = -1, castKeys = null, runT = 0, wasCast = false, chargeT = -1;
@@ -993,6 +996,13 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     // Anzeige der Figur 0 … 1: Hitze, Kälte, Ladungen/4, Batterie
     setMeter(v) { F.m = clamp(v || 0, 0, 1); },
     get meter() { return F.m; },
+    // Laufende Animation für den Neubau bei Waffenwechsel (models/mage.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
+    get animState() { return { t: F.t, m: F.m, last: F.last, blendFrom: F.blendFrom, blendT: F.blendT, freeze: F.freeze, uTime: U.uTime.value, loco, mode, castT, castKeys, runT, wasCast, chargeT }; },
+    adoptAnim(a) {
+      Object.assign(F, { t: a.t, m: a.m, last: a.last, blendFrom: a.blendFrom, blendT: a.blendT, freeze: a.freeze });
+      U.uTime.value = a.uTime;
+      ({ loco, mode, castT, castKeys, runT, wasCast, chargeT } = a);
+    },
     update(dt, anim: any = {}) {
       const s = Math.min(.1, dt > 1 ? dt / 1000 : dt);
       if (trail) trail.update(s);
@@ -1107,6 +1117,12 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
           if (a && fp.distanceTo(a) > .32) { const d = G.st.find(x => x.ph === 'wait'); if (d) Object.assign(d, { ph: 'splat', t: 1.5, p: a.clone() }); G.stick[si] = false; }
           setStrand(G, si, G.stick[si] || null, fp, .018);
         });
+      }
+      if (F.wel != null && !F.dead && Math.random() < s * WEL_SPARK) {   // Funken in Element-Farbe, steigen leicht auf
+        let p;
+        if (Math.random() < .5) p = (Math.random() < .5 ? F.armL : F.armR).hand.getWorldPosition(V());
+        else { F.staff.updateWorldMatrix(true, false); p = F.staff.localToWorld(V(0, WEL_STONE_Y, 0)); }
+        if (opts.spark) opts.spark(p, F.wel); else emit(p, 1, V(0, .5, 0), F.wel, -.3, .7, .12);
       }
       updateParts(s);
       if (trail && moving) { F.root.updateMatrixWorld(true); watch((x, y, z, a, side) => trail.add(x, y, z, a, side)); }

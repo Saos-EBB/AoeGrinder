@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(magier): Alle Strichmagier (Feuer, Frost, Blitz, Seuche, ?-Magier) tragen die Farbe des Elements ihrer ausgerüsteten Waffe, mit Funken in Element-Farbe an Hand und Stein; Waffenwechsel (Ausrüsten, Run-Start, Laden) färbt sofort um, Animation, Anzeige und Spur bleiben; Waffen ohne oder mit altem Element zeigen keine Farbe
 - feat(magier): Strichmagier-Modell kann die Farbe eines Waffen-Elements tragen: Kragen, Schärpe mit 3 Enden, Armreifen, schwebender Stein über dem Stab und leuchtende Augen (Seuchenmagier: alles leuchtend); ohne Element unverändert, kein Draw Call mehr
 - feat(waffen)!: Magier-Waffen-Elemente jetzt Frost, Feuer, Blitz, Seuche und Arkan (Arkan nur über Waffen). Blut heißt jetzt Seuche (setzt weiter 1 Seuchen-Mal, tropft grün), Dunkel fällt weg; alte Blut-Waffen werden Seuche, Dunkel-Waffen Arkan
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist

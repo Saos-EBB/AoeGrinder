@@ -8,7 +8,9 @@ import { activeModIds } from '../modifiers';
 import { buildStrichMagier } from './strichMagier';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { buildEquipped } from '../weaponRolls';
+import { buildEquipped, equipped, elementOf } from '../weaponRolls';
+import { ELEMENTS } from './weapons/baukasten';
+import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
@@ -53,10 +55,28 @@ function tintWeapon(w, hw) {
 }
 let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 
-function dispose(m) {
-  weapon?.dispose();
-  heroWeapon?.dispose();
-  weapon = heroWeapon = null;
+// Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
+const SPARK = { vy: .5, life: [.42, .84], size: .14, grav: -.3, spread: .12, bright: 1.6 };   // Werte der Viewer-Partikel, bright wie die Relikt-Aura // PH
+const sparkCol = new THREE.Color();
+function spark(p, color) {
+  sparkCol.setHex(color);
+  const j = () => (Math.random() - .5) * SPARK.spread, life = SPARK.life[0] + Math.random() * (SPARK.life[1] - SPARK.life[0]);
+  particles.spawn({ x: p.x + j(), y: p.y + j(), z: p.z + j(), vx: (Math.random() - .5) * .6, vy: SPARK.vy + (Math.random() - .5) * .4, vz: (Math.random() - .5) * .6, life, color: [sparkCol.r * SPARK.bright, sparkCol.g * SPARK.bright, sparkCol.b * SPARK.bright], size: SPARK.size, grav: SPARK.grav });
+}
+
+// Element der ausgerüsteten Waffe für die Farbe der Strichmagier. Nicht in ELEMENTS (alte Waffen, alte Elemente) = kein Element
+function weaponElement() {
+  const w = equipped(), el = w ? elementOf(w) : 'none';
+  return el !== 'none' && Object.hasOwn(ELEMENTS, el) ? el : null;
+}
+
+// rebuild: Neubau bei Waffenwechsel, Waffe und Spur bleiben
+function dispose(m, rebuild = false) {
+  if (!rebuild) {
+    weapon?.dispose();
+    heroWeapon?.dispose();
+    weapon = heroWeapon = null;
+  }
   if (m.fx.group) {                           // Krieger: Bodeneffekte und Wirbel haben eigene Texturen
     scene.remove(m.fx.group);
     m.fx.group.traverse(o => { if (o.isMesh) { o.material.map?.dispose(); o.material.dispose(); o.geometry.dispose(); } });
@@ -69,7 +89,7 @@ function dispose(m) {
     if (o.isMesh) o.geometry.dispose();
     if (o.material) o.material.dispose();     // Atlanten sind im Modell gecacht und bleiben
   });
-  if (m.trail) {
+  if (m.trail && !rebuild) {
     scene.remove(m.trail.mesh);
     m.trail.mesh.material.map.dispose();
     m.trail.mesh.material.dispose();
@@ -90,7 +110,7 @@ function setSkin(id) {
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
-  cur = buildStrichMagier(id);
+  cur = buildStrichMagier(id, weaponElement(), { spark });
   scene.add(cur.root, cur.scarf);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
@@ -98,8 +118,22 @@ function setSkin(id) {
   wield();   // Waffe aus dem Inventar, leer: Pilgerast
 }
 
+// Waffenwechsel mit anderem Element: Strichmagier neu bauen (selten), Spur, Animation, Anzeige, Lage und Waffen-Halter übernehmen
+function recolor() {
+  const el = weaponElement();
+  if (HEROES[skin] || cur.element === el) return;
+  const old = cur, st = old.animState;
+  cur = buildStrichMagier(skin, el, { trail: old.trail, spark });
+  cur.adoptAnim(st);
+  cur.root.position.copy(old.root.position); cur.root.quaternion.copy(old.root.quaternion); cur.root.scale.copy(old.root.scale);
+  cur.anchors.crystal.parent.add(mount);
+  dispose(old, true);
+  scene.add(cur.root, cur.scarf);
+}
+
 function wield() {
   if (HEROES[skin]) return;                   // Nahkämpfer tragen ihre Waffen fest
+  recolor();
   weapon?.dispose();
   weapon = buildEquipped();
   mount.add(weapon.root);
@@ -112,6 +146,7 @@ const skinForRun = () => { const ids = activeModIds(); return ids.includes('fros
 export function startMageRun() {
   const id = skinForRun();
   if (id !== skin || cur.trail || (HEROES[id] && heroWeapon?.id !== heroWeaponOf(id)?.id)) setSkin(id);   // auch, wenn die legendäre Waffe gewechselt hat
+  else recolor();                             // Waffe mit anderem Element seit dem letzten Bau
 }
 // Run-Ende: Spuren raus aus der Szene
 export function endMageRun() {
