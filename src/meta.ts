@@ -5,6 +5,7 @@ import { state, player } from './state';
 import { SPELLS } from './config';
 import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
+import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
 
 export const META = {
   store: 'frostgrind.meta.v1',
@@ -32,9 +33,25 @@ function load() {
   try { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; }
   catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 }; }
 }
-// Waffen-Elemente, die es nicht mehr gibt: v28 Gift und Void, 2026-11-08 Blut und Dunkel (Dunkel → Arkan ist Vorschlag, Kevin offen). Auch für Spielstand-Codes
+// Migration alter Baukasten-Waffen (Inventar beim Laden, Spielstand-Codes in ui/saveCode.ts, Dev-Schmied). Nie crashen: Unbekanntes fällt zurück.
+// v28: Elemente Gift → Seuche (über Blut), Void → Arkan. Rework 2026-11-08 (Toon, Köpfe je Schule): Blut → Seuche, Dunkel → Arkan (Vorschlag, Kevin entscheidet noch, Alternative none),
+// alte Köpfe nach ihrer Schule auf die neuen
 const ELEMENT_REPLACE = { gift: 'seuche', void: 'arkan', blut: 'seuche', dunkel: 'arkan' };
-export function fixWeapon(w) { if (w?.s && ELEMENT_REPLACE[w.s.element]) w.s.element = ELEMENT_REPLACE[w.s.element]; return w; }
+const HEAD_REPLACE = {
+  kristall: 'frostorb', splitter: 'frostorb', nadel: 'frostorb', siegel: 'frostorb', sichel: 'sichel',
+  kaefig: 'glutschaedel', laterne: 'glutschaedel', herz: 'glutschaedel', klaue: 'dreizack', maul: 'dreizack',
+  gabel: 'spulen', ring: 'ring', kugel: 'ring', rune: 'ring', auge: 'auge', schaedel: 'auge',
+};
+export function fixWeapon(w) {
+  const s = w?.s;
+  if (!s) return w;
+  if (!TYPES[s.type]) s.type = 'staff';
+  if (!MAKERS[s.maker]) s.maker = Object.keys(MAKERS)[0];
+  s.element = ELEMENT_REPLACE[s.element] ?? s.element;
+  if (!ELEMENTS[s.element]) s.element = 'none';
+  if (!HEADS[s.head]) s.head = HEAD_REPLACE[s.head] ?? TYPES[s.type].heads[0];
+  return w;
+}
 export const meta = load();
 meta.inv.forEach(fixWeapon);
 export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };

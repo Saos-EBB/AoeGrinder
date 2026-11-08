@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- fix(waffen): Alte Waffen im Inventar, in Spielstand-Codes und im Dev-Schmied werden umgestellt: Blut/Gift → Seuche, Dunkel/Void → Arkan, alte Köpfe nach ihrer Schule auf die neuen; Unbekanntes fällt auf den ersten Kopf bzw. kein Element zurück
 - feat(waffen): Magier-Waffen im Toon-Look (flache Grundfarbe je Material, 3 Lichtstufen, dunkler Rand), immer an, auch ohne `?toon=1`; leuchtende Edelsteine ab grün bleiben
 - feat(waffen): Jeder Waffen-Hersteller hat sein eigenes Material: Grabkammer Bronze mit Grünspan, Sternwarte Gold mit Filigran, Hexenküche Dunkelholz, Kristallgießerei Kristall, Kriegsschmiede gehämmertes Blaueisen mit Nieten (im Dev-Schmied beim Hersteller angezeigt)
 - feat(waffen)!: Neue Waffen-Köpfe, zwei je Schule und an jedem Typ: Frostkugel und Sichel (Frost), Glutschädel und Dreizack (Feuer), Wolken und Spulen (Blitz), Speischädel und Phiolen (Seuche), Ring und Augen (Arkan). Beim Buch schwebt der Kopf über dem Buch, beim Relikt sitzt er als Kern in der Fassung. Seuchen-Köpfe geben einen Seuchen-Spell als Fokus

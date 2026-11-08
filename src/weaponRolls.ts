@@ -5,7 +5,7 @@
 
 import { state, player } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, fixWeapon } from './meta';
 import { stat, tagsAllowed, applySlow, schedule } from './spells/core';
 import { boltFx } from './spells/fx';
 import * as THREE from 'three';
@@ -150,7 +150,7 @@ export function devTopUpInventory(tier = null) {
 // Dev: Waffe aus dem Baukasten (ui/devForge.ts) ins Inventar, ohne Staub und Limit
 export function devAddWeapon(w, equipIt) {
   const id = ++meta.nextWeapon;
-  meta.inv.push({ ...w, id });
+  meta.inv.push(fixWeapon({ ...w, id }));   // alte Elemente/Köpfe (void, blut, dunkel …) wie beim Laden umstellen
   if (equipIt) meta.equipped = id;
   saveMeta();
 }
