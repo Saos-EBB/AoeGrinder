@@ -9,6 +9,7 @@ import { weaponStats } from './weaponCard';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 import { LEGENDS } from '../legends';
+import { t } from '../i18n';
 
 const VALUES = Object.values(SHAFTS).flatMap((s: any) => s.values);
 const UNIQUES = WEAPONS.filter(w => !ROLLS.notForMages.includes(w.id) && w.id !== ROLLS.fallback);
@@ -33,7 +34,7 @@ sel('forgeLegend').innerHTML = opts([['', 'keine'], ...Object.entries(LEGENDS).f
 sel('forgeType').innerHTML = opts(Object.entries(TYPES).map(([k, t]: any) => [k, t.name]));
 sel('forgeValue').innerHTML = sel('forgeValue2').innerHTML = opts(VALUES.map(v => [v, v]));
 sel('forgeElement').innerHTML = opts(Object.entries(ELEMENTS).map(([k, e]: any) => [k, e.name]));
-sel('forgeMaker').innerHTML = opts(Object.entries(MAKERS).map(([k, m]: any) => [k, m.name]));
+sel('forgeMaker').innerHTML = opts(Object.entries(MAKERS).map(([k, m]: any) => [k, `${m.name} (${t(`wmat.${m.main}`)})`]));
 sel('forgeExtra').innerHTML = opts([['none', 'keiner'], ...Object.entries(EXTRAS) as [string, string][]]);
 
 // Kopf hängt am Typ, Fokus an der Schule des Kopfs: Listen neu, Wahl bleibt wenn möglich

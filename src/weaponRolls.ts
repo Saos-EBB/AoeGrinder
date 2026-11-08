@@ -5,7 +5,7 @@
 
 import { state, player } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, fixWeapon } from './meta';
 import { stat, tagsAllowed, applySlow, schedule } from './spells/core';
 import { boltFx } from './spells/fx';
 import * as THREE from 'three';
@@ -32,13 +32,14 @@ export const ROLLS = {
   elementChance: [0, 0.25, 0.5, 1, 1, 1],              // Anteil der Waffen mit Element je Seltenheit
   procChance: 0.05,                                    // Element-Effekt pro Treffer bei weiß, × Seltenheit
   element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6,
-    infectStacks: 1, darkMul: 0.3, darkHeal: 0.2 },
+    infectStacks: 1 },
   maker: { grab: { dmg: 0.1, cast: 0.1 }, stern: { crit: 0.05, critMana: 0.01 }, morra: { dur: 0.15, random: 0.05 }, vey: { cd: -0.05, mana: 0.1 }, brandt: { hp: 0.1, lifesteal: 0.02 } },
   notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt'],   // Waffen des Strichkriegers (Standard und legendär)
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
-// Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm'];
+// Die Magier-Spells für den Kopf-Fokus, je Schule (Seuche seit 2026-11-08: die Köpfe Speischädel und Phiolen brauchen Seuchen-Spells)
+export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm',
+  'sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst', 'melt'];
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes).
 // Kettenblitz und Bogenblitz sind seit v26 zurück: nur neue Waffen (s.fv) meinen sie wirklich, alte bleiben beim Ersatz
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
@@ -149,7 +150,7 @@ export function devTopUpInventory(tier = null) {
 // Dev: Waffe aus dem Baukasten (ui/devForge.ts) ins Inventar, ohne Staub und Limit
 export function devAddWeapon(w, equipIt) {
   const id = ++meta.nextWeapon;
-  meta.inv.push({ ...w, id });
+  meta.inv.push(fixWeapon({ ...w, id }));   // alte Elemente/Köpfe (void, blut, dunkel …) wie beim Laden umstellen
   if (equipIt) meta.equipped = id;
   saveMeta();
 }
@@ -230,12 +231,7 @@ function weaponHit(m, dmg, crit, api, el, chance, M) {
     const next = state.mobs.filter(o => !o.dead && o !== m && dist2d(o.pos, m.pos) <= E.chainYd).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, E.chainN);
     for (const o of next) { boltFx(m.pos, o.pos, [2.4, 2.2, 0.8]); api.burnMob(o, Math.max(1, Math.round(dmg * E.chainMul))); }
   }
-  if (el === 'blut' && !m.dead) mark(m, E.infectStacks);   // seit v31 ein Seuchen-Mal statt Infekt (plagueMarks.ts)
-  if (el === 'dunkel' && !m.dead) {
-    const extra = Math.max(1, Math.round(dmg * E.darkMul));
-    api.burnMob(m, extra);                                       // fester Schaden ohne Wurf und Rüstung wie Dunkel
-    player.hp = Math.min(maxHp(), player.hp + extra * E.darkHeal);
-  }
+  if (el === 'seuche' && !m.dead) mark(m, E.infectStacks);   // ein Seuchen-Mal (plagueMarks.ts), bis 08.11. als Element „Blut“
 }
 
 // Relikt: alle 3 s ein Puls um den Spieler, jeder Mob darin bekommt den Element-Effekt mit der Puls-Chance (einmal pro Frame aus updatePlayer)
