@@ -10,6 +10,7 @@ import { overlay, screenPos } from './hud';
 import { UI } from './uiConfig';
 import { uiSettings } from './uiSettings';
 import { activeFlavor, flavorById } from './flavors';
+import { feat, noteHurt } from './messages';
 import './numbers.css';
 
 const MEGA = 10;   // Mega-Crit ab 10× Grundschaden des Spells // PH
@@ -58,6 +59,7 @@ export function damageNumber(mob, dmg, crit, source, tick = false) {
   }
   const base = BASE_HIT(SPELLS[source]);
   const kind = crit ? (base && dmg >= base * MEGA ? 'mega' : 'crit') : tick ? 'tick' : 'hit';
+  if (kind === 'mega') feat('megaCrit', fmtInt(dmg));
   const el = spawn(mob.pos, 2, kind, dmg, sizeOf(dmg) * (tick ? 0.65 : 1));
   if (el && !crit) merging.set(mob, { el, total: dmg, n: 1, at: state.now });
 }
@@ -70,6 +72,7 @@ export function healNumber(pos, amount, height = 2.4) {
 // Schaden an dir: Treffer innerhalb von mergeMs werden zu einer Zahl
 let hurt = null;
 export function hurtNumber(pos, amount) {
+  noteHurt();   // Meldung „30 s ungetroffen“
   if (hurt && state.now - hurt.at < UI.dmg.mergeMs && hurt.el.isConnected) {
     hurt.total += amount;
     hurt.el.innerHTML = label('hurt', hurt.total);

@@ -41,7 +41,7 @@ function sortGroups() {
     ['Level', [['Level setzen', byId('devLevels')], ['Karte erzwingen', byId('devCards')], ['', byId('devComplete')]]],
     ['Spawn', [['Zone', byId('devZones')], ['Champion-Pack', parentOf('devChamp')], ['Boss', parentOf('devBoss')]]],
     ['Build', [['Krieger-Legende', byId('devLegend')], ['Meta', byId('devMeta')], ['Waffen-Baukasten', byId('devForge')]]],
-    ['Anzeige', [['', byId('devPerf')], ['', byId('devColliders')]]],
+    ['Anzeige', [['', byId('devPerf')], ['', byId('devColliders')], ['Erfolgs-Meldung', byId('devFeat')]]],
   ];
   const rest = [...body.children];
   body.innerHTML = '';

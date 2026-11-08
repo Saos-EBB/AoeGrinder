@@ -1,20 +1,19 @@
-// Punkte oben Mitte, Combo mit 4-s-Balken, MULTI-KILL. Bringt Markup und Stil selbst mit und läuft in eigener Schleife.
+// Punkte, Combo mit 4-s-Balken, Ansage neuer Mobs. Multi-Kills zeigen die Erfolgs-Meldungen (ui/messages.ts). Bringt Markup und Stil selbst mit und läuft in eigener Schleife.
 
 import { state, player } from '../state';
 import { timeLimit } from '../modifiers';
 import { die } from '../player';
 import { run, tickScore } from '../score';
 import { put } from './hud';
-import { SCORE_COMBO_WINDOW, SCORE_MULTI_BANNER, LEVEL_NEW_MOB_BANNER } from '../config';
+import { SCORE_COMBO_WINDOW, LEVEL_NEW_MOB_BANNER } from '../config';
 import { t, locale } from '../i18n';
 
 document.head.insertAdjacentHTML('beforeend', `<style>
   #scoreHud { position: fixed; top: 78px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; text-align: center; text-shadow: 0 1px 3px #000; }
-  #scoreMulti { font: 700 40px Cinzel, serif; color: #ff5ae0; margin-top: 8px; opacity: 0; transition: opacity .4s; }
   #scoreNew { font: 700 24px Cinzel, serif; color: #ffb347; opacity: 0; transition: opacity .4s; }
 </style>`);
-document.body.insertAdjacentHTML('beforeend', `<div id="scoreHud"><div id="scoreMulti"></div><div id="scoreNew"></div></div>`);
-const pts = document.getElementById('scorePts'), combo = document.getElementById('scoreCombo'), bar = document.getElementById('scoreBar'), multi = document.getElementById('scoreMulti'), newMob = document.getElementById('scoreNew');
+document.body.insertAdjacentHTML('beforeend', `<div id="scoreHud"><div id="scoreNew"></div></div>`);
+const pts = document.getElementById('scorePts'), combo = document.getElementById('scoreCombo'), bar = document.getElementById('scoreBar'), newMob = document.getElementById('scoreNew');
 
 function frame() {
   if (!state.paused) {
@@ -31,9 +30,6 @@ function frame() {
   combo.classList.toggle('idle', !live);
   bar.style.visibility = live ? 'visible' : 'hidden';
   (bar.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, left)})`;
-  const showMulti = run.lastMulti >= SCORE_MULTI_BANNER && state.now - run.multiAt < 1500;   // PH: Anzeigedauer
-  if (showMulti) multi.textContent = t('msg.multi', { n: run.lastMulti });
-  multi.style.opacity = showMulti ? '1' : '0';
   const showNew = state.newMob && state.now - state.newMob.at < LEVEL_NEW_MOB_BANNER;
   if (showNew) newMob.textContent = state.newMob.text;
   newMob.style.opacity = showNew ? '1' : '0';

@@ -112,3 +112,13 @@ body[data-flavor=schlachtbank] #fgOverlay .fx-hazard.bot { top: auto; bottom: 0;
 .ct.num.nf-schlachtbank.k-tick { color: #ff8a6a; -webkit-text-stroke: 0; }
 .ct.num.nf-schlachtbank.k-heal { color: #7cf29a; }
 .ct.num.nf-schlachtbank.k-hurt { color: #ff2a1a; -webkit-text-stroke: 0; text-shadow: 0 0 .43em #ff2a1a; }
+
+/* ---------- Erfolgs-Meldungen (gen8.py msg2): schräger roter Block + Zahl daneben, leichtes Wackeln ---------- */
+@keyframes featIn2 { 0% { opacity: 0; transform: rotate(-3deg) translateX(-30px); } 10% { opacity: 1; transform: rotate(-3deg); }
+  14%, 22%, 30% { transform: rotate(-3deg) translate(2px, -1px); } 18%, 26% { transform: rotate(-3deg) translate(-2px, 1px); } 34%, 85% { opacity: 1; transform: rotate(-3deg); } 100% { opacity: 0; transform: rotate(-3deg); } }
+.feat.ff-schlachtbank { display: flex; align-items: center; gap: calc(10 * var(--hu)); animation: featIn2 1.8s ease-out forwards; }
+.feat.ff-schlachtbank .fBlock { background: #c4120c; color: #fff; font: 400 calc(28 * var(--hu)) 'Anton', sans-serif; line-height: 1; padding: calc(6 * var(--hu)) calc(14 * var(--hu)) calc(4 * var(--hu));
+  box-shadow: 5px 5px 0 #000; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); -webkit-text-stroke: 0; }
+.feat.ff-schlachtbank .fSub { font: 400 calc(20 * var(--hu)) 'Anton', sans-serif; color: #f6eee9; -webkit-text-stroke: 4px #000; paint-order: stroke fill; text-shadow: 0 0 14px rgba(255, 61, 31, .7); }
+.feat.ff-schlachtbank.big .fBlock { font-size: calc(40 * var(--hu)); }
+.feat.ff-schlachtbank.big .fSub { font-size: calc(28 * var(--hu)); }

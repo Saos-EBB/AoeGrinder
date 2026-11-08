@@ -92,3 +92,16 @@ body[data-flavor=krypta] .hudEl[data-hud=cast] { --cw: 240; --ch: 14; }
 .ct.num.nf-krypta.k-tick { color: #e8d9a0; -webkit-text-stroke: .15em #000; }
 .ct.num.nf-krypta.k-heal { color: #3be04a; -webkit-text-stroke: .15em #000; }
 .ct.num.nf-krypta.k-hurt { color: #ff3030; -webkit-text-stroke: .15em #000; }
+
+/* ---------- Erfolgs-Meldungen (gen8.py msg3): Erfolgs-Toast mit Stern-Medaillon, stapelt bis 3 ---------- */
+@keyframes featIn3 { 0% { opacity: 0; transform: translateX(40px); } 10% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+.feat.ff-krypta { display: flex; align-items: center; gap: calc(12 * var(--hu)); padding: calc(8 * var(--hu)) calc(16 * var(--hu)) calc(8 * var(--hu)) calc(8 * var(--hu));
+  background: rgba(20, 18, 16, .95); border: 2px solid #b8963e; border-radius: 6px; box-shadow: 0 0 0 1px #000, 0 6px 14px rgba(0, 0, 0, .6); animation: featIn3 1.8s ease-out forwards; }
+.feat.ff-krypta .fMedal { width: calc(40 * var(--hu)); height: calc(40 * var(--hu)); flex: none; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 35%, #f2d58a, #7a5a1a); border: 2px solid #000; }
+.feat.ff-krypta .fMedal svg { width: calc(22 * var(--hu)); height: calc(22 * var(--hu)); }
+.feat.ff-krypta .fText { display: flex; flex-direction: column; text-align: left; }
+.feat.ff-krypta .fText b { font: 700 calc(17 * var(--hu)) 'Barlow', sans-serif; color: #ffd100; }
+.feat.ff-krypta.big .fText b { font-size: calc(20 * var(--hu)); }
+.feat.ff-krypta .fText small { font: 600 calc(13 * var(--hu)) 'Barlow', sans-serif; color: #f2ead2; }
+.feat.ff-krypta .fText b, .feat.ff-krypta .fText small { -webkit-text-stroke: 0; text-shadow: none; }

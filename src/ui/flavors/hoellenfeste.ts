@@ -26,6 +26,7 @@ export const hoellenfeste: Flavor = {
     tracker: pt('tl', 20, 120),
     unitframe: { ...pt('tl', 16, 16), hidden: true },
     micro: { ...pt('br', W - 16, H - 8), hidden: true },
+    feats: pt('t', CX, 150),
     compass: { ...pt('t', CX, 120, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
   },
@@ -34,7 +35,8 @@ export const hoellenfeste: Flavor = {
     text: (kind, n, count) => kind === 'mega' ? `✦ ${n} ✦` : kind === 'merged' ? `${n} <span class="mx">×${count}</span>` : kind === 'heal' ? `+${n}` : n,
     size: { crit: 1.56, mega: 1.44, tick: 1, heal: 1 },   // PH: Verhältnis zur Trefferzahl im Mockup (32 px)
   },
-  messages: (line, sub) => `${line} ${sub}`,
+  // gen8.py msg1: Gold-Schrift zwischen Linien und roten Rauten, Mitte oben
+  messages: (line, sub) => `<div class="fLine"><i></i><b></b><span>${line}</span><b></b><i></i></div>${sub ? `<small>${sub}</small>` : ''}`,
   overlay: '<i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>'
     + '<i class="fx-smoke"></i><i class="fx-sparks lite"></i><i class="fx-chain a"></i><i class="fx-chain b"></i><i class="fx-chain c"></i>',
 };

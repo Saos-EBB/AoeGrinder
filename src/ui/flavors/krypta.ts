@@ -26,6 +26,7 @@ export const krypta: Flavor = {
     killmeter: pt('l', CX - 88, H - 79),
     combo: pt('tr', W - 30, 270, 1, 'doom'),
     micro: pt('br', W - 16, H - 8),
+    feats: pt('tr', W - 196, 16),
     tracker: pt('tl', 16, 156),
     compass: { ...pt('t', CX, 14, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
@@ -35,6 +36,7 @@ export const krypta: Flavor = {
     text: (kind, n, count) => kind === 'merged' ? `${n} (${count})` : kind === 'heal' ? `+${n}` : kind === 'hurt' ? `-${n}` : n,
     size: { crit: 1.85, mega: 2.07 },   // PH: Verhältnis zur Trefferzahl im Mockup (28 px)
   },
-  messages: (line, sub) => `${line} ${sub}`,
+  // gen8.py msg3: Erfolgs-Toast mit Stern-Medaillon, rechts oben, stapelt bis 3
+  messages: (line, sub) => `<i class="fMedal" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#2a1a08" stroke-width="2.4" stroke-linecap="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4 1.3 6L12 16.4 6.6 19.3l1.3-6-4.5-4 6-.7z"/></svg></i><span class="fText"><b>${line}</b>${sub ? `<small>${sub}</small>` : ''}</span>`,
   overlay: '<i class="fx-vig lite"></i><i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>',
 };

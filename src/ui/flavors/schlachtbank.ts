@@ -28,6 +28,7 @@ export const schlachtbank: Flavor = {
     tracker: pt('tl', 24, 136),
     unitframe: { ...pt('tl', 16, 16), hidden: true },
     micro: { ...pt('br', W - 16, H - 8), hidden: true },
+    feats: pt('t', CX, 200),
     compass: { ...pt('t', CX, 14, 520 / 600), hidden: true },
     splits: { ...pt('tr', W - 20, 290), hidden: true },
   },
@@ -36,7 +37,8 @@ export const schlachtbank: Flavor = {
     text: (kind, n, count) => kind === 'mega' ? `${n}!!` : kind === 'merged' ? `${n} <span class="mx">×${count}</span>` : kind === 'heal' ? `+${n}` : kind === 'hurt' ? `−${n}` : n,
     size: { crit: 1.44, mega: 1.75 },   // PH: Verhältnis zur Trefferzahl im Mockup (32 px)
   },
-  messages: (line, sub) => `${line} ${sub}`,
+  // gen8.py msg2: schräger roter Block + Zahl daneben, Mitte, leichtes Wackeln
+  messages: (line, sub) => `<span class="fBlock">${line}</span>${sub ? `<span class="fSub">${sub}</span>` : ''}`,
   overlay: '<i class="fx-scan lite"></i><i class="fx-vig lite"></i><i class="fx-glitch"></i><i class="fx-hazard lite"></i>'
     + '<i class="fx-hazard bot lite hud"></i><i class="fx-corner tl lite"></i><i class="fx-corner tr lite"></i><i class="fx-corner br lite"></i><i class="fx-corner bl lite"></i>'
     + `<span class="fx-status a lite">${t('flavor.schlachtbank.status1')}</span><span class="fx-status b">${t('flavor.schlachtbank.status2')}</span><span class="fx-status c">${t('flavor.schlachtbank.status3')}</span>`,
