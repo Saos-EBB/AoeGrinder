@@ -1,0 +1,2 @@
+<!-- Bildschirm-Ecke oben links (gen5 m1_screen_front), andere Ecken per CSS gedreht -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" stroke="#c9a24a" stroke-width="1.4" stroke-linecap="round"><path d="M3 38V3h35"/><path d="M3 22c12 0 19-7 19-19"/><path d="M10 38c0-18 10-28 28-28" opacity=".5"/><circle cx="12" cy="12" r="3" fill="#c9a24a" stroke="none"/><path d="M22 3c0 8 4 12 12 12" opacity=".6"/><path d="M3 22c8 0 12 4 12 12" opacity=".6"/></svg>

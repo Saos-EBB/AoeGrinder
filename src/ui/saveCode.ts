@@ -90,7 +90,7 @@ $('codeAction').addEventListener('click', async () => {
 });
 for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCodeLoad', t('code.enter'), 'load']]) {
   const b = document.createElement('button');
-  b.className = 'smallBtn';
+  b.className = 'fg-btn alt';
   b.id = id;
   b.textContent = label;
   b.addEventListener('click', () => open(m));

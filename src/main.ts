@@ -21,6 +21,7 @@ import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/theme.css';
 import './ui/uiSettings';
+import './ui/flavors';
 import './ui/menus';
 import './mobile';
 import './ui/saveCode';

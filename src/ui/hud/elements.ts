@@ -1,4 +1,4 @@
-// HUD-Elemente, die es vor dem Preset-System nicht gab: Kompass, Splits, Spielerrahmen, Tracker, Seitenteil der MOBA-Leiste.
+// HUD-Elemente neben Leben, Mana und Leiste: Kompass, Splits, Spielerrahmen, Tracker, Mikro-Menü.
 // Alle anderen Elemente füllt ui/hud.ts. Aktualisiert wird nur, was sich ändert; Kompass und Splits höchstens 10× pro Sekunde.
 
 import { state, player } from '../../state';
@@ -7,33 +7,49 @@ import { maxHp, maxMana } from '../../formulas';
 import { cam } from '../../camera';
 import { META } from '../../meta';
 import { modeId } from '../../modifiers';
-import { currentFigure } from '../mainMenu';
+import { currentFigure, openPause } from '../mainMenu';
+import { toggleChar } from '../charWindow';
+import { openBinds } from '../menus';
+import { t } from '../../i18n';
 import { run } from '../../score';
 import { bestSplits } from '../../leaderboard';
-import { hudWrapper, placementOf } from './layout';
+import { placementOf } from './layout';
 
 const put = (el: Element, text: string) => { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } };
 const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } };
 const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
 const figureName = () => currentFigure()?.name ?? '';
 
-// ---------- Seitenteil der MOBA-Leiste (Variante panel): Portrait und Level ----------
-const side = document.createElement('div');
-side.className = 'hbSide';
-side.innerHTML = '<div class="hbPortrait"></div><b class="hbLvl"></b>';
-
 // Beim ersten Frame, wenn alle Module ihr Markup eingehängt haben: Tracker übernimmt #siegeHud (siege.ts, boss.ts schreiben hinein)
 let ready = false;
 function init() {
   ready = true;
-  hudWrapper('hotbar').prepend(side);
-  const deco = document.createElement('div');   // Eckornamente des gotischen Themes (gen.py flourish)
-  deco.id = 'hudDeco';
-  deco.innerHTML = [[0, 0, 0], [1, 0, 90], [1, 1, 180], [0, 1, 270]].map(([x, y, rot]) =>
-    `<svg viewBox="0 0 140 140" fill="none" stroke="#e3c27a" stroke-width="2" style="left:calc(${x * 100}% - 70 * var(--hu));top:calc(${y * 100}% - 70 * var(--hu));transform:rotate(${rot}deg)"><path d="M70 70 L70 130 M70 70 L130 70"/><path d="M70 90 C90 90 90 70 110 70" opacity="0.7"/><path d="M90 70 C90 90 70 90 70 110" opacity="0.7"/><circle cx="70" cy="70" r="6" fill="#e3c27a"/></svg>`).join('');
-  document.body.append(deco);
+  // Beschriftungen und Wörter für die Varianten der Flavors (hud.css: bignum, massaker)
+  ($('hudHp').querySelector('.hBar') as HTMLElement).dataset.label = t('hudEl.hp');
+  ($('hudMana').querySelector('.hBar') as HTMLElement).dataset.label = t('hudEl.mana');
+  $('scoreCombo').dataset.word = t('hudx.massacre');
+  ($('hudCombo').querySelector('.cMulti') as HTMLElement).dataset.word = t('hudx.annihilation');
   const title = $('hudTracker').querySelector('.trTitle'), siege = document.getElementById('siegeHud');
   if (siege) title.replaceWith(siege);
+}
+
+// ---------- Mikro-Menü (Krypta): Charakter, Pause, Einstellungen, Tasten; darüber 4 Taschen (nur Deko) ----------
+const MICRO: [string, string, () => void][] = [
+  ['hudx.micro.char', 'M4 20V6l8-3 8 3v14', () => toggleChar()],
+  ['hudx.micro.pause', 'M5 5h14v14H5z', () => openPause()],
+  ['hudx.micro.settings', 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3', () => { openPause(); $('pauseSettings').click(); }],
+  ['hudx.micro.binds', 'M4 4h16v4H4zM4 10h16v10H4z', () => openBinds()],
+];
+const micro = $('hudMicro');
+micro.innerHTML = `<div class="mBags" aria-hidden="true">${'<i class="mBag"></i>'.repeat(4)}</div>`;
+for (const [key, d, run] of MICRO) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.title = t(key);
+  b.setAttribute('aria-label', t(key));
+  b.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#f2d58a" stroke-width="1.8"><path d="${d}"/></svg>`;
+  b.addEventListener('click', run);
+  micro.append(b);
 }
 
 // ---------- Spielerrahmen ----------
@@ -108,7 +124,7 @@ function updateSplits() {
   }
 }
 
-// Ein Aufruf pro Frame aus updateHud; jedes Element nur, wenn es im Preset sichtbar ist
+// Ein Aufruf pro Frame aus updateHud; jedes Element nur, wenn es im Layout sichtbar ist
 export function updateHudExtras() {
   if (!ready) init();
   if (shown('unitframe')) {
@@ -120,10 +136,6 @@ export function updateHudExtras() {
     put(ufEls.hpT, `${Math.ceil(Math.max(0, player.hp))} / ${hpMax}`);
     fill(ufEls.mana, player.mana / manaMax);
     put(ufEls.manaT, player.resLabel ?? `${Math.floor(player.mana)} / ${manaMax}`);
-  }
-  if (shown('hotbar') && placementOf('hotbar').variant === 'panel') {
-    put(side.firstElementChild, figureName().charAt(0));
-    put(side.lastElementChild, String(player.level));
   }
   if (shown('compass')) updateCompass();
   if (shown('splits')) updateSplits();

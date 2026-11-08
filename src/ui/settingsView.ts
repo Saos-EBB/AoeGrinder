@@ -1,11 +1,12 @@
-// Einstellungen (Mockup Settings.dc.html, Look Glut): Tabs links, Inhalt rechts. Alles wirkt sofort und landet in frostgrind.ui.v1.
+// Einstellungen (Mockups X1O/X2O/X3O, gen9.py settings): Tabs links, Inhalt rechts, im Look des aktiven UI-Flavors.
+// Alles wirkt sofort und landet in frostgrind.ui.v1. Abbrechen stellt den Stand vom Öffnen wieder her, Übernehmen (= #settingsClose) schließt.
 
 import { $ } from '../util';
-import { uiSettings, setUi, HUD_PRESETS, NUM_STYLES, UiSettings, saveProfile, loadProfile } from './uiSettings';
+import { uiSettings, setUi, UiSettings, UI_DEFAULTS, saveProfile, loadProfile } from './uiSettings';
 import { askConfirm } from './confirm';
-import { NUM_FONTS, numFontFamily } from './numFonts';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
+import { FLAVORS, flavorById } from './flavors';
 import { t, locale, lang, LANGS, setLang, Lang } from '../i18n';
 
 let tab = 'interface';
@@ -13,44 +14,40 @@ function showTab(id) {
   tab = id;
   for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.tab === id);
   for (const s of $('settingsBox').querySelectorAll<HTMLElement>('section[data-tab]')) s.hidden = s.dataset.tab !== id;
+  $('setFootLeft').hidden = id !== 'interface';
 }
 for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.addEventListener('click', () => showTab(b.dataset.tab));
-showTab(tab);
 
-// Bausteine einer Zeile: Beschriftung links, Steuerung rechts
-function row(label, control: HTMLElement) {
-  const r = document.createElement('label');
+// ---------- Bausteine: Zeile, Schalter, Slider, Segment-Knöpfe ----------
+function row(label: string, control: HTMLElement) {
+  const r = document.createElement('div');
   r.className = 'setRow';
   r.append(Object.assign(document.createElement('span'), { textContent: label }), control);
   return r;
 }
-function select(key: keyof UiSettings, options: [string, string][]) {
-  const s = document.createElement('select');
-  s.className = 'setSelect';
-  for (const [v, name] of options) s.add(new Option(`${v} · ${name}`, v));
-  s.value = uiSettings[key] as string;
-  s.addEventListener('change', () => setUi(key, s.value as never));
-  return s;
-}
-function check(key: keyof UiSettings) {
-  const c = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!uiSettings[key] });
+function toggle(key: keyof UiSettings, label: string) {
+  const c = Object.assign(document.createElement('input'), { type: 'checkbox', className: 'fg-toggle', checked: !!uiSettings[key] });
+  c.setAttribute('aria-label', label);
   c.addEventListener('change', () => setUi(key, c.checked as never));
-  return c;
+  return row(label, c);
 }
-function slider(key: keyof UiSettings, min, max) {
+function slider(key: keyof UiSettings, label: string, min: number, max: number) {
   const box = document.createElement('div');
   box.className = 'setSlider';
-  const r = Object.assign(document.createElement('input'), { type: 'range', min, max, step: 5, value: uiSettings[key] });
-  const v = document.createElement('span');
-  const show = () => { v.textContent = `${r.value} %`; };
+  const r = Object.assign(document.createElement('input'), { type: 'range', className: 'fg-slider', min, max, step: 5, value: uiSettings[key] });
+  r.setAttribute('aria-label', label);
+  const v = document.createElement('b');
+  const show = () => { v.textContent = `${r.value} %`; r.style.setProperty('--p', `${(+r.value - min) / (max - min) * 100}%`); };
   r.addEventListener('input', () => { show(); setUi(key, +r.value as never); });
   show();
   box.append(r, v);
-  return box;
+  return row(label, box);
 }
-function segmented(key: keyof UiSettings, options: [string, string][]) {
+function segmented(key: keyof UiSettings, label: string, options: [string, string][]) {
   const box = document.createElement('div');
-  box.className = 'setSeg';
+  box.className = 'fg-seg';
+  box.setAttribute('role', 'group');
+  box.setAttribute('aria-label', label);
   const paint = () => { for (const b of box.children) b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.v === uiSettings[key])); };
   for (const [v, name] of options) {
     const b = Object.assign(document.createElement('button'), { type: 'button', textContent: name });
@@ -59,93 +56,110 @@ function segmented(key: keyof UiSettings, options: [string, string][]) {
     box.append(b);
   }
   paint();
-  return box;
+  return row(label, box);
 }
-const h2 = text => Object.assign(document.createElement('h2'), { textContent: text });
-const h3 = text => Object.assign(document.createElement('h3'), { className: 'setH3', textContent: text });
-// Kacheln mit Vorschau: jede Schrift zeigt Beispielzahlen in sich selbst
-function fontGrid() {
-  const box = document.createElement('div');
-  box.className = 'setFonts';
-  for (const [id, name] of [['', t('set.likeStyle')], ...NUM_FONTS.map(([i, n]) => [i, n])]) {
-    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'setFont' + (uiSettings.numFont === id ? ' on' : '') });
-    const sample = Object.assign(document.createElement('span'), { className: 'setFontSample', textContent: '1284 +86' });
-    if (id) sample.style.fontFamily = `'${numFontFamily(id)}', sans-serif`;
-    b.append(sample, Object.assign(document.createElement('small'), { textContent: name }));
-    b.addEventListener('click', () => { setUi('numFont', id as any); for (const x of box.children) x.classList.toggle('on', x === b); });
-    box.append(b);
-  }
-  return box;
-}
-function button(text, cls, onClick) {
+function button(text: string, cls: string, onClick: () => void) {
   const b = Object.assign(document.createElement('button'), { type: 'button', className: cls, textContent: text });
   b.addEventListener('click', onClick);
   return b;
 }
+const h2 = (text: string) => Object.assign(document.createElement('h2'), { textContent: text });
 
-// Interface-Tab; wird nach dem Laden eines eigenen UI-Stands neu gebaut, damit alle Regler den Stand zeigen
+// ---------- UI-Flavor: 3 große Karten mit Mini-Vorschau (Kugeln + Leiste in Flavor-Farben) ----------
+function flavorCards() {
+  const box = document.createElement('div');
+  box.className = 'setFlavors';
+  for (const f of FLAVORS) {
+    const on = f.id === uiSettings.flavor, k = f.tokens;
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'setFlavor' });
+    b.setAttribute('aria-pressed', String(on));
+    b.style.setProperty('--fc', k.frame);
+    b.style.background = k.bg;
+    b.innerHTML = `<span class="sfPrev" aria-hidden="true"><i style="background:${k.bar}"></i><b style="background:${k.hp}"></b><b style="background:${k.mana}"></b></span>
+      <span class="sfText"><b>${t(f.name)}</b><small>${t(f.sub)}</small></span>${on ? '<span class="sfCheck" aria-hidden="true">✔</span>' : ''}`;
+    b.addEventListener('click', () => { setUi('flavor', f.id); buildInterface(); });
+    box.append(b);
+  }
+  return box;
+}
+
+// ---------- Eigene UI-Stände (4 Plätze) ----------
 const fmtAt = iso => { const d = new Date(iso); return `${d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`; };
 function profileRows() {
   const box = document.createElement('div');
   box.className = 'setProfiles';
   uiSettings.profiles.forEach((p, i) => {
-    const row = document.createElement('div');
-    row.className = 'setProfile';
-    const info = Object.assign(document.createElement('span'), { textContent: p ? t('set.slot', { n: i + 1, preset: p.data.hudPreset, num: p.data.numStyle, at: fmtAt(p.at) }) : t('set.slotEmpty', { n: i + 1 }) });
-    const save = button(t('set.save'), 'smallBtn', async () => {
+    const r = document.createElement('div');
+    r.className = 'setProfile';
+    const name = p ? t('set.slot', { n: i + 1, at: fmtAt(p.at) }) + ` · ${t(flavorById(p.data.flavor ?? '').name)}` : t('set.slotEmpty', { n: i + 1 });
+    const save = button(t('set.save'), 'fg-btn alt', async () => {
       if (p && !await askConfirm(t('set.overTitle'), t('set.overText', { n: i + 1 }), t('set.over'))) return;
       saveProfile(i); buildInterface();
     });
-    const load = button(t('set.load'), 'smallBtn', () => { if (loadProfile(i)) buildInterface(); });
+    const load = button(t('set.load'), 'fg-btn alt', () => { if (loadProfile(i)) buildInterface(); });
     (load as HTMLButtonElement).disabled = !p;
-    row.append(info, save, load);
-    box.append(row);
+    r.append(Object.assign(document.createElement('span'), { textContent: name }), save, load);
+    box.append(r);
   });
   return box;
 }
+
+// ---------- Tab Interface; wird nach jedem Flavor-Wechsel und Laden eines UI-Stands neu gebaut ----------
+const NUM_CHOICES = (): [string, string][] => [['flavor', t('set.likeFlavor')], ...FLAVORS.map(f => [f.id, t(f.name)] as [string, string])];
 function buildInterface() {
   const ui = $('setInterface');
   ui.textContent = '';
-  const btnRow = document.createElement('div');
-  btnRow.className = 'setBtns';
-  btnRow.append(
-    button(t('set.editUi'), 'smallBtn', () => {
-      const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
-      $('settingsClose').click();
-      editHud(backdrop);
-    }),
-    button(t('set.resetLayout'), 'smallBtn', () => $('hudEditReset').click()),
-  );
   const langSel = document.createElement('select');
   langSel.className = 'setSelect';
   for (const [v, name] of LANGS) langSel.add(new Option(name, v));
   langSel.value = lang;
+  langSel.setAttribute('aria-label', t('settings.lang'));
   langSel.addEventListener('change', async () => {
     if (!await askConfirm(t('settings.lang'), t('settings.langNote'), LANGS.find(([v]) => v === langSel.value)![1])) { langSel.value = lang; return; }
     setLang(langSel.value as Lang);
   });
   ui.append(
+    h2(t('set.flavor')),
+    flavorCards(),
+    segmented('numFlavor', t('set.numFlavor'), NUM_CHOICES()),
+    slider('numSize', t('set.numSize'), 50, 200),
+    toggle('numMerge', t('set.merge')),
+    toggle('healNums', t('set.heal')),
+    toggle('messages', t('set.messages')),
+    segmented('font', t('set.font'), [['standard', t('set.standard')], ['fraktur', t('set.fraktur')]]),
+    toggle('tooltipsExt', t('set.extTips')),
+    toggle('screenFx', t('set.screenFx')),
+    slider('hudScale', t('set.hudSize'), 70, 150),
     h2(t('settings.lang')),
     row(t('settings.lang'), langSel),
     h2(t('set.ownUi')),
     profileRows(),
-    h2('HUD'),
-    row(t('set.hudLayout'), select('hudPreset', HUD_PRESETS)),
-    row(t('set.hudSize'), slider('hudScale', 70, 150)),
-    row(t('set.combo'), check('showCombo')),
-    btnRow,
-    h2(t('set.dmgNums')),
-    row(t('set.numStyle'), select('numStyle', NUM_STYLES)),
-    h3(t('set.numFont')),
-    fontGrid(),
-    row(t('set.size'), slider('numSize', 50, 200)),
-    row(t('set.merge'), check('numMerge')),
-    row(t('set.heal'), check('healNums')),
-    h2(t('set.fontTips')),
-    row(t('set.titleFont'), segmented('font', [['standard', t('set.standard')], ['fraktur', t('set.fraktur')]])),
-    row(t('set.extTips'), check('tooltipsExt')),
   );
 }
-buildInterface();
 
+// Knöpfe unten links (nur im Tab Interface)
+$('setFootLeft').append(
+  button(t('set.editUi'), 'fg-btn alt', () => {
+    const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
+    $('settingsClose').click();
+    editHud(backdrop);
+  }),
+  button(t('set.resetLayout'), 'fg-btn alt', () => $('hudEditReset').click()),
+);
+
+// Abbrechen: Stand vom Öffnen zurück. Der Stand wird gemerkt, sobald das Fenster aufgeht
+let opened: Partial<UiSettings> | null = null;
+new MutationObserver(() => {
+  const show = $('settingsModal').classList.contains('show');
+  if (show && !opened) { opened = structuredClone(uiSettings); buildInterface(); showTab(tab); }
+  if (!show) opened = null;
+}).observe($('settingsModal'), { attributes: true, attributeFilter: ['class'] });
+$('settingsCancel').addEventListener('click', () => {
+  const back = opened;
+  if (back) for (const k of Object.keys(UI_DEFAULTS) as (keyof UiSettings)[]) if (k !== 'devPanel' && k !== 'profiles' && JSON.stringify(uiSettings[k]) !== JSON.stringify(back[k])) setUi(k, back[k] as never);
+  $('settingsClose').click();
+});
+
+buildInterface();
+showTab(tab);
 $('setBinds').addEventListener('click', openBinds);

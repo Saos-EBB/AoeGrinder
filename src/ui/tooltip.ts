@@ -31,7 +31,7 @@ document.body.appendChild(box);
 
 const pair = (l: string, r: string, cls = '') => `<div class="tRow ${cls}"><span>${l}</span><span>${r}</span></div>`;
 function card(d: TipData, ext: boolean, label?: string) {
-  const out = [`<div class="tCard${d.relic ? ' relic' : ''}" style="--tc:${d.border ?? d.color}">`];
+  const out = [`<div class="tCard fg-deco${d.relic ? ' relic' : ''}" style="--tc:${d.border ?? d.color}">`];   // fg-deco: Ornamente des UI-Flavors (T1)
   if (label ?? d.label) out.push(`<span class="tLabel">${label ?? d.label}</span>`);
   out.push(`<div class="tHead">${d.icon ? `<img class="tIcon" src="${d.icon}" alt="">` : ''}<span class="tName" style="color:${d.color}">${d.title}</span>${d.right ? `<span class="tRight">${d.right}</span>` : ''}</div>`);
   if (d.sub) out.push(`<div class="tSub">${d.sub}</div>`);

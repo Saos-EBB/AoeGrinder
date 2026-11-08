@@ -1,0 +1,63 @@
+/* Gemeinsame Bausteine aller Flavors. Farben und Schriften kommen aus den Variablen des aktiven Flavors (<id>.css),
+   die Ornamente hängt jeder Flavor dort über ::before/::after und Hintergrundbilder an. Zahlen // PH */
+
+body {
+  --font-title: 'Cinzel', serif; --font-title-weight: 900; --font-body: 'Barlow', sans-serif; --font-num: 'Barlow Condensed', 'Barlow', sans-serif; --font-btn: var(--font-title);
+  --rar-grau: #9d9d9d; --rar-weiss: #e8e8e8; --rar-gruen: #2ecc40; --rar-blau: #3a8cff; --rar-lila: #b05cff; --rar-orange: #ff8a1a; --rar-relikt: #e3c27a;
+}
+/* Fraktur: nur Titel und Namen, Fließtext bleibt */
+body.font-fraktur[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-title-weight: 700; }
+
+.fg-panel { position: relative; box-sizing: border-box; background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); box-shadow: var(--fg-panel-sh);
+  color: var(--fg-text); font-family: var(--font-body); }
+.fg-panel::before, .fg-panel::after, .fg-deco::before, .fg-deco::after { content: ''; position: absolute; pointer-events: none; box-sizing: border-box; }
+/* .fg-deco: nur die Ornamente des Panels, Hintergrund und Rahmen bleiben beim Element (Level-up-Karten, Hover-Karten) */
+.fg-deco { position: relative; }
+
+.fg-title { font-family: var(--font-title); font-weight: var(--font-title-weight); color: var(--fg-title); text-shadow: var(--fg-title-glow); letter-spacing: .04em; }
+
+.fg-btn { position: relative; box-sizing: border-box; padding: 0 22px; min-height: 44px; font: 700 16px var(--font-btn); letter-spacing: .06em; cursor: pointer;
+  background: var(--fg-btn); color: var(--fg-btn-text); border: var(--fg-btn-bd); box-shadow: var(--fg-btn-sh); }
+.fg-btn.alt { font-family: var(--font-body); background: transparent; color: var(--fg-btn2-text); border: var(--fg-btn2-bd); box-shadow: none; }
+.fg-btn:hover:not(:disabled) { filter: brightness(1.18); }
+.fg-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.fg-card { box-sizing: border-box; background: var(--fg-card); border: 2px solid var(--rc, var(--fg-line)); }
+
+.fg-chip { padding: 4px 10px; font: 700 14px var(--font-body); color: var(--fg-muted); background: transparent; border: 1px solid var(--fg-line); cursor: pointer; }
+.fg-chip[aria-pressed=true], .fg-chip.on { color: var(--fg-text); border-color: var(--fg-accent); background: color-mix(in srgb, var(--fg-accent) 13%, transparent); }
+.fg-chip:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Schalter: <input type=checkbox class=fg-toggle> */
+.fg-toggle { appearance: none; position: relative; flex: none; width: 48px; height: 24px; margin: 0; border-radius: 12px; cursor: pointer;
+  background: rgba(255, 255, 255, .08); border: 1px solid var(--fg-line); box-shadow: 0 0 0 1px #000; transition: background .15s; }
+.fg-toggle::before { content: ''; position: absolute; left: 1px; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: #f2e9e4; box-shadow: 0 1px 3px #000; transition: left .15s; }
+.fg-toggle:checked { background: var(--fg-accent); }
+.fg-toggle:checked::before { left: 25px; }
+
+/* Slider: <input type=range class=fg-slider>, --p = Füllstand in % (setzt der Code) */
+.fg-slider { appearance: none; width: 300px; height: 20px; margin: 0; background: transparent; cursor: pointer; }
+.fg-slider::-webkit-slider-runnable-track { height: 4px; background: linear-gradient(to right, var(--fg-accent) var(--p, 50%), var(--fg-line) var(--p, 50%)); }
+.fg-slider::-moz-range-track { height: 4px; background: linear-gradient(to right, var(--fg-accent) var(--p, 50%), var(--fg-line) var(--p, 50%)); }
+.fg-slider::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; margin-top: -5px; background: var(--fg-accent); border: 2px solid #000; transform: rotate(45deg); }
+.fg-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 0; background: var(--fg-accent); border: 2px solid #000; transform: rotate(45deg); }
+
+/* Segment-Knöpfe: Container .fg-seg, Knöpfe mit aria-pressed */
+.fg-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.fg-seg button { min-width: 122px; height: 34px; padding: 0 12px; font: 700 14px var(--font-body); color: var(--fg-muted); background: transparent; border: 1px solid var(--fg-line); cursor: pointer; }
+.fg-seg button[aria-pressed=true] { color: var(--fg-text); border-color: var(--fg-accent); background: color-mix(in srgb, var(--fg-accent) 20%, transparent); }
+
+/* Bildschirm-Effekte: ein Overlay pro Flavor. .lite läuft auch im Spiel, der Rest nur bei offenem Menü. Aus über die Einstellung */
+#fgOverlay { position: fixed; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+#fgOverlay > * { position: absolute; pointer-events: none; }
+#fgOverlay > :not(.lite) { display: none; }
+body:has(.modal.show) #fgOverlay > * { display: block; }
+body:has(.modal.show) #fgOverlay > .hud { display: none; }   /* .hud = nur im Spiel */
+body.fgNoFx #fgOverlay, body.hudEdit #fgOverlay { display: none; }
+/* Funken: kleine Glutpunkte, die langsam steigen (eine Ebene, zwei Bilder versetzt) */
+@keyframes fgRise { from { transform: translateY(0); } to { transform: translateY(-60px); } }
+@keyframes fgFlicker { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
+
+/* Fenster-Hintergrund: Deko-Ebenen des Flavors (--fg-back) über dem Verlauf; das Hauptmenü legt sie über die echte Map (abgedunkelt) */
+.modal:not(#startModal) { background: var(--fg-back), var(--fg-bg); }
+#startModal { background: var(--fg-back), radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, .25) 0%, rgba(0, 0, 0, .55) 60%, rgba(0, 0, 0, .85) 100%); }

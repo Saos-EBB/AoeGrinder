@@ -2,6 +2,7 @@
 
 import { state, player } from '../state';
 import { $ } from '../util';
+import { fmtInt } from './dmgNumbers';
 import { CFG, SPELLS, CARDS } from '../config';
 import { maxHp, maxMana, spirit, dmgMult } from '../formulas';
 import { modFactor, modValue } from '../modifiers';
@@ -74,9 +75,9 @@ function dmgTab() {
   const top = list[0][1];
   return `<div class="title">${t('cw.dmgTitle')}</div>${list.slice(0, 8).map(([id, v]) => {
     const def = SPELLS[id], color = def?.relic ? '#e3c27a' : COLORS.school[def?.school ?? def?.cls] ?? '#fff';
-    return `<div class="cDmg"><div class="cRow"><span${def ? ` data-spell="${id}"` : ''}>${def?.name ?? t('cw.env')}</span><b>${pct(v / total)}</b></div><i style="width:${v / top * 100}%;background:${color}"></i></div>`;
+    return `<div class="cDmg"><div class="cRow"><span${def ? ` data-spell="${id}"` : ''}>${def?.name ?? t('cw.env')}</span><b>${fmtInt(v)} <small>${pct(v / total)}</small></b></div><i style="width:${v / top * 100}%;background:${color}"></i></div>`;
   }).join('')}
-    <div class="cRow cDps"><span>${t('cw.dps')}</span><b>${state.now > 1000 ? Math.round(total / (state.now / 1000)).toLocaleString(locale) : '—'}</b></div>`;
+    <div class="cRow cDps"><span>${t('cw.dps')}</span><b>${state.now > 1000 ? fmtInt(total / (state.now / 1000)) : '—'}</b></div>`;
 }
 
 function render() {

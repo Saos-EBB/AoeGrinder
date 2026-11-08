@@ -1,0 +1,130 @@
+/* Flavor 1 Höllenfeste (Diablo + Doom-Rot + WoW-Kompaktleiste). Werte aus gen4.py M1/H1, Deko aus gen5.py/gen6.py (m1*, m1x*). */
+body[data-flavor=hoellenfeste] {
+  --fg-bg: radial-gradient(ellipse at 50% 45%, #2e140d 0%, #150806 55%, #060202 100%);
+  --fg-panel: #140a07; --fg-panel-bd: 2px solid #8a6a35; --fg-panel-bt: 2px solid #8a6a35;
+  --fg-panel-sh: 0 0 0 2px #000, inset 0 0 24px rgba(255, 61, 31, .16), 0 8px 22px rgba(0, 0, 0, .6);
+  --fg-border: #8a6a35; --fg-top: #c9a24a; --fg-line: #3a2c1c; --fg-gold: #c9a24a; --fg-input: #0d0806;
+  --fg-text: #e8dcc4; --fg-muted: #b5a588; --fg-accent: #e3c27a;
+  --fg-title: #e3c27a; --fg-title-glow: 0 0 18px rgba(255, 61, 31, .45), 0 3px 0 #000; --fg-card: #120d09;
+  --fg-btn: #a3140e; --fg-btn-bd: 2px solid #e3c27a; --fg-btn-sh: 0 0 0 2px #000, 0 0 16px rgba(255, 61, 31, .4); --fg-btn-text: #fff2d6;
+  --fg-btn2-bd: 2px solid #6b5230; --fg-btn2-text: #e8dcc4;
+  --font-title: 'Cinzel', serif; --font-title-weight: 900; --font-body: 'Barlow', sans-serif;
+  /* HUD (gen4 H1 = gotisch + Rot) */
+  --h-font: 'Barlow Condensed', sans-serif; --h-title: 'Cinzel', serif;
+  --h-txt: #e8dcc4; --h-muted: #b5a588; --h-accent: #9cd8ff; --h-gold: #e3c27a;
+  --h-hp: #a3140e; --h-mana: #1f4fbf; --h-cast: #c9962e; --h-xp: #d4a63c;
+  --h-bar-bg: #0a0705; --h-bar-bd: 1px solid #6b5230; --h-bar-r: 0;
+  --h-panel-bg: #120806; --h-panel-bd: 2px solid #8a6a35; --h-panel-bt: 2px solid #8a6a35; --h-panel-r: 0; --h-panel-sh: 0 0 0 2px #000, inset 0 0 22px rgba(255, 61, 31, .18);
+  --h-slot-bg: #0f1a24; --h-slot-bd: 1px solid #b08a4a; --h-slot-r: 0; --h-slot-sh: 0 0 0 1px #000;
+  --h-map-bg: #14100b; --h-map-bd: 3px solid #8a6a35; --h-map-r: 0;
+}
+
+/* Panel: äußerer Rahmen, Gold-Ranken + rote Edelsteine an den Ecken, roter Stein oben Mitte, Goldsteg unten, innere Goldlinie, eingravierte Rauten */
+body[data-flavor=hoellenfeste] .fg-panel { outline: 2px solid #5a4424; outline-offset: 5px; }
+body[data-flavor=hoellenfeste] .fg-panel::before, body[data-flavor=hoellenfeste] .fg-deco::before { inset: -9px; border: 46px solid transparent; border-image: url(./hoellenfeste/frame.svg) 46;
+  background: url(./hoellenfeste/gem.svg) 50% 0 / 18px 18px no-repeat, linear-gradient(#c9a24a, #c9a24a) center bottom 7px / 80px 4px no-repeat; background-origin: border-box; background-clip: border-box; }
+body[data-flavor=hoellenfeste] .fg-panel::after, body[data-flavor=hoellenfeste] .fg-deco::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
+  background: url(./hoellenfeste/rune.svg) center 5px / 26px 10px repeat-x; background-clip: content-box; padding: 0 22px; }
+
+/* Titel: zentriert zwischen Gold-Linien mit roten Rauten und Zacken-Bogen, links mit kleiner Goldraute */
+body[data-flavor=hoellenfeste] .fg-title.c { position: relative; display: inline-block; }
+body[data-flavor=hoellenfeste] .fg-title.c::before { content: ''; position: absolute; left: -224px; right: -224px; top: 50%; height: 14px; margin-top: -3px; pointer-events: none;
+  background: url(./hoellenfeste/divider.svg) left center / 200px 14px no-repeat, url(./hoellenfeste/divider.svg) right center / 200px 14px no-repeat; }
+body[data-flavor=hoellenfeste] .fg-title.c::after { content: ''; position: absolute; left: -70px; right: -70px; bottom: 78%; height: .9em; pointer-events: none;
+  background: url(./hoellenfeste/arc.svg) center bottom / 100% 100% no-repeat; }
+body[data-flavor=hoellenfeste] .fg-title.l::before { content: ''; display: inline-block; width: 10px; height: 10px; margin: 0 14px 0 2px; vertical-align: middle; transform: rotate(45deg);
+  background: #c9a24a; box-shadow: 0 0 8px rgba(255, 61, 31, .7); }
+
+/* Hauptknopf: Goldrauten links und rechts */
+body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::before, body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::after { content: ''; position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px;
+  transform: rotate(45deg); background: #c9a24a; border: 1px solid #000; box-shadow: 0 0 8px rgba(255, 61, 31, .7); }
+body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::before { left: -9px; }
+body[data-flavor=hoellenfeste] .fg-btn:not(.alt)::after { right: -9px; }
+
+/* Fenster-Hintergrund: Steinsäulen links/rechts, gotischer Bogen, Mauerfugen, rote Glut unten (Hauptmenü: Phase 7) */
+body[data-flavor=hoellenfeste] {
+  --fg-back:
+    url(./hoellenfeste/arch.svg) 0 0 / 100% 100% no-repeat,
+    linear-gradient(to right, transparent 8px, rgba(201, 162, 74, .25) 8px 10px, transparent 10px 30px, rgba(201, 162, 74, .25) 30px 32px, transparent 32px) left / 40px 100% no-repeat,
+    linear-gradient(to right, transparent 8px, rgba(201, 162, 74, .25) 8px 10px, transparent 10px 30px, rgba(201, 162, 74, .25) 30px 32px, transparent 32px) right / 40px 100% no-repeat,
+    linear-gradient(to right, #0b0604, #1d130d 40%, #0b0604) left / 40px 100% no-repeat,
+    linear-gradient(to right, #0b0604, #1d130d 40%, #0b0604) right / 40px 100% no-repeat,
+    radial-gradient(ellipse at 50% 100%, rgba(255, 61, 31, .22) 0%, transparent 70%) bottom / 100% 220px no-repeat,
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .015) 0 2px, transparent 2px 46px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .18) 0 2px, transparent 2px 92px);
+}
+
+/* Bildschirm-Effekte: Goldecken (auch im Spiel), Funken (auch im Spiel), Ketten, Rauch */
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner { width: calc(110 * var(--hu)); height: calc(110 * var(--hu)); background: url(./hoellenfeste/corner.svg) 0 0 / 100% 100%; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.tl { left: 10px; top: 10px; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.tr { right: 10px; top: 10px; transform: rotate(90deg); }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.br { right: 10px; bottom: 10px; transform: rotate(180deg); }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.bl { left: 10px; bottom: 10px; transform: rotate(270deg); }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-sparks { inset: 0 0 -60px; animation: fgRise 9s linear infinite, fgFlicker 3s ease-in-out infinite;
+  background:
+    radial-gradient(circle at 59.7% 54.5%, rgba(255,179,92,0.70) 0 1.0px, rgba(255,90,31,0.24) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 99.3% 41.7%, rgba(255,179,92,0.84) 0 2.0px, rgba(255,90,31,0.29) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 24.4% 56.6%, rgba(255,179,92,0.74) 0 1.5px, rgba(255,90,31,0.26) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 90.4% 86.3%, rgba(255,179,92,0.35) 0 1.0px, rgba(255,90,31,0.12) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 43.3% 81.9%, rgba(255,179,92,0.46) 0 1.5px, rgba(255,90,31,0.16) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 0.8% 71.6%, rgba(255,179,92,0.80) 0 1.0px, rgba(255,90,31,0.28) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 55.1% 64.0%, rgba(255,179,92,0.63) 0 2.0px, rgba(255,90,31,0.22) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 80.8% 65.0%, rgba(255,179,92,0.55) 0 1.5px, rgba(255,90,31,0.19) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 81.8% 43.9%, rgba(255,179,92,0.72) 0 2.0px, rgba(255,90,31,0.25) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 63.3% 41.8%, rgba(255,179,92,0.81) 0 1.0px, rgba(255,90,31,0.28) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 61.2% 62.0%, rgba(255,179,92,0.79) 0 1.0px, rgba(255,90,31,0.28) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 14.8% 66.2%, rgba(255,179,92,0.46) 0 1.5px, rgba(255,90,31,0.16) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 16.6% 41.9%, rgba(255,179,92,0.76) 0 1.0px, rgba(255,90,31,0.27) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 23.7% 73.2%, rgba(255,179,92,0.79) 0 1.5px, rgba(255,90,31,0.28) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 64.7% 56.5%, rgba(255,179,92,0.61) 0 1.0px, rgba(255,90,31,0.21) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 27.1% 98.2%, rgba(255,179,92,0.68) 0 1.5px, rgba(255,90,31,0.24) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 59.8% 65.5%, rgba(255,179,92,0.55) 0 1.5px, rgba(255,90,31,0.19) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 73.9% 42.9%, rgba(255,179,92,0.71) 0 1.0px, rgba(255,90,31,0.25) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 77.1% 35.1%, rgba(255,179,92,0.61) 0 1.5px, rgba(255,90,31,0.21) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 26.4% 83.7%, rgba(255,179,92,0.77) 0 2.0px, rgba(255,90,31,0.27) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 32.0% 49.4%, rgba(255,179,92,0.66) 0 1.0px, rgba(255,90,31,0.23) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 98.7% 96.1%, rgba(255,179,92,0.50) 0 2.0px, rgba(255,90,31,0.18) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 37.5% 88.8%, rgba(255,179,92,0.38) 0 2.0px, rgba(255,90,31,0.13) 2.5px 6.0px, transparent 6.5px),
+    radial-gradient(circle at 32.9% 47.0%, rgba(255,179,92,0.76) 0 1.0px, rgba(255,90,31,0.27) 1.5px 3.0px, transparent 3.5px),
+    radial-gradient(circle at 99.6% 60.2%, rgba(255,179,92,0.69) 0 1.5px, rgba(255,90,31,0.24) 2.0px 4.5px, transparent 5.0px),
+    radial-gradient(circle at 13.1% 52.8%, rgba(255,179,92,0.48) 0 2.0px, rgba(255,90,31,0.17) 2.5px 6.0px, transparent 6.5px); }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-smoke { inset: 0; background: radial-gradient(ellipse 120px 60px at 98% 69%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 72% 81%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 8% 80%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 23% 70%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 73% 61%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 31% 62%, rgba(120,100,90,.10), transparent 70%); }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain { top: 0; width: 16px; background: url(./hoellenfeste/chain.svg) 0 0 / 16px 28px repeat-y; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.a { left: 34.4%; height: 84px; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.b { left: 82.2%; height: 70px; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.c { left: 78.1%; height: 42px; }
+
+/* ---------- HUD (X1H, gen4.py hud1 + gen5 m1_orb/m1_hud_extras) ---------- */
+/* Panel 580 × 92 unten Mitte mit kompakter Leiste (46 px, 2 px Abstand), Schädel mit roten Augen darüber */
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] { --slot: calc(46 * var(--hu)); width: calc(580 * var(--hu)); height: calc(92 * var(--hu)); box-sizing: border-box;
+  justify-content: center; align-items: flex-start; padding-top: calc(28 * var(--hu)); outline-offset: calc(5 * var(--hu)); }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar::before { content: ''; position: absolute; left: 50%; top: calc(-66 * var(--hu)); width: calc(44 * var(--hu)); height: calc(40 * var(--hu));
+  margin-left: calc(-22 * var(--hu)); background: url(./hoellenfeste/skull.svg) 0 0 / 100% 100%; pointer-events: none; }
+/* Kugeln 140 px mit Gold-Zackenring */
+body[data-flavor=hoellenfeste] .hudEl[data-hud=hp], body[data-flavor=hoellenfeste] .hudEl[data-hud=mana] { --orb: 140; }
+body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudHp::before, body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudMana::before { content: ''; position: absolute; z-index: 1; pointer-events: none;
+  left: calc(-12 * var(--hu)); top: calc(-12 * var(--hu)); width: calc(164 * var(--hu)); height: calc(164 * var(--hu)); background: url(./hoellenfeste/orbring.svg) 0 0 / 100% 100%; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=killmeter] { --mw: 468; --mh: 6; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=xp] { --xw: 540; --xh: 4; }
+body[data-flavor=hoellenfeste] .hudEl[data-hud=cast] { --cw: 260; --ch: 14; }
+
+/* ---------- Schadenszahlen (X1Z, gen8.py NUMS['1']); Konturen in em, Mockup-Kontur / Größe ---------- */
+.ct.num.nf-hoellenfeste { font: 900 1em 'Barlow Condensed', sans-serif; color: #fff; -webkit-text-stroke: .16em #000; }
+.ct.num.nf-hoellenfeste.k-crit { color: #ffd23f; -webkit-text-stroke: .14em #2a1300; text-shadow: 0 0 .28em rgba(255, 61, 31, .6); }
+.ct.num.nf-hoellenfeste.k-mega { font-family: 'Cinzel', serif; color: #ff8a1a; -webkit-text-stroke: .15em #000; text-shadow: 0 0 .48em rgba(255, 61, 31, .9); }
+.ct.num.nf-hoellenfeste .mx { font-size: .6em; color: #c9a24a; }
+.ct.num.nf-hoellenfeste.k-tick { font-weight: 800; color: #bdb3a3; -webkit-text-stroke: .2em #000; }
+.ct.num.nf-hoellenfeste.k-heal { color: #6ee7a0; -webkit-text-stroke: .18em #000; }
+.ct.num.nf-hoellenfeste.k-hurt { color: #ff4d4d; -webkit-text-stroke: .18em #000; }
+
+/* ---------- Erfolgs-Meldungen (gen8.py msg1): Gold-Schrift zwischen Linien und roten Rauten ---------- */
+@keyframes featIn1 { 0% { opacity: 0; transform: scale(1.25); } 12% { opacity: 1; transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
+.feat.ff-hoellenfeste { display: flex; flex-direction: column; align-items: center; gap: calc(2 * var(--hu)); animation: featIn1 1.8s ease-out forwards; }
+.feat.ff-hoellenfeste .fLine { display: flex; align-items: center; gap: calc(10 * var(--hu)); }
+.feat.ff-hoellenfeste .fLine i { width: calc(40 * var(--hu)); height: 2px; background: #c9a24a; }
+.feat.ff-hoellenfeste .fLine b { width: calc(9 * var(--hu)); height: calc(9 * var(--hu)); transform: rotate(45deg); background: #a3140e; border: 1px solid #c9a24a; }
+.feat.ff-hoellenfeste .fLine span { font: 900 calc(24 * var(--hu)) 'Cinzel', serif; color: #f0c25e; letter-spacing: .06em; -webkit-text-stroke: 5px #000; paint-order: stroke fill;
+  text-shadow: 0 0 18px rgba(255, 61, 31, .6); }
+.feat.ff-hoellenfeste.big .fLine span { font-size: calc(34 * var(--hu)); }
+.feat.ff-hoellenfeste small { font: 700 calc(15 * var(--hu)) 'Cinzel', serif; color: #e8dcc4; -webkit-text-stroke: 3px #000; paint-order: stroke fill; }
