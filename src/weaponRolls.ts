@@ -37,8 +37,9 @@ export const ROLLS = {
   notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt'],   // Waffen des Strichkriegers (Standard und legendär)
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
-// Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm'];
+// Die Magier-Spells für den Kopf-Fokus, je Schule (Seuche seit 2026-11-08: die Köpfe Speischädel und Phiolen brauchen Seuchen-Spells)
+export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm',
+  'sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst', 'melt'];
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes).
 // Kettenblitz und Bogenblitz sind seit v26 zurück: nur neue Waffen (s.fv) meinen sie wirklich, alte bleiben beim Ersatz
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
