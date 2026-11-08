@@ -13,6 +13,7 @@ import { mage } from '../models/mage';
 import { COLORS } from './colors';
 import { askConfirm } from './confirm';
 import { currentFigure } from './mainMenu';
+import { mountFigPreview } from './figPreview';
 import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
 import { t, fmtNum } from '../i18n';
@@ -31,7 +32,6 @@ const TYPE_SVG = {
 };
 const typeSvg = (type: string, color: string) => `<svg aria-hidden="true" viewBox="0 0 28 70" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TYPE_SVG[type] ?? TYPE_SVG.staff}</svg>`;
 const LOCK = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-const FIGURE = '<svg aria-hidden="true" viewBox="0 0 60 140" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="30" cy="16" r="11"/><path d="M30 27v52M30 42l-20 18M30 42l20 14M30 79l-14 52M30 79l14 52"/></svg>';
 
 // ---------- Eigenschaften einer Waffe (alte Waffen { e, r, m } haben nur Seltenheit und ggf. Element) ----------
 const isNew = w => w.v === 2;
@@ -94,7 +94,7 @@ document.body.insertAdjacentHTML('beforeend', `<div id="invModal" class="modal">
         <div class="wmFigName fg-title"></div>
         <div class="wmSlots">
           <div><div class="wmSlot weapon" id="wmWeapon"></div><span class="wmSlotLabel">${t('wm.hand')}</span></div>
-          <div class="wmFigBody">${FIGURE}</div>
+          <div class="wmFigBody" id="wmFigBody"></div>
           <div class="wmLocked">${[t('inv.ring'), t('inv.amulet')].map(n => `<div class="wmSlot locked" title="${t('inv.locked')}">${LOCK}<span>${n}</span></div>`).join('')}</div>
         </div>
         <p class="wmNote">${t('wm.handNote')}</p>
@@ -110,6 +110,8 @@ document.body.insertAdjacentHTML('beforeend', `<div id="invModal" class="modal">
     </div>
   </div>
 </div>`);
+
+mountFigPreview($('wmFigBody'));   // 3D-Ansicht der Figur, gezeichnet in main.ts
 
 let onClose: (() => void) | null = null, selected: number | null = null, seen = 0, shift = false;
 export const weaponMenuOpen = () => $('invModal').classList.contains('show');

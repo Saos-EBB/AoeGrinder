@@ -39,6 +39,7 @@ import * as supportsMod from './spells/supports';
 import * as meterMod from './schoolMeter';
 import * as buffsMod from './buffs';
 import { menuYaw, enterMenu, menuShowcase } from './ui/mainMenu';
+import { renderFigPreview } from './ui/figPreview';
 import * as menuMod from './ui/mainMenu';
 import './ui/settingsView';
 import './ui/devPanel';
@@ -153,6 +154,7 @@ function loop(t) {
   if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);
+  renderFigPreview();   // Waffenmenü: Figur in die Ecke, wird gleich übermalt
   composer.render();
   updatePerf(t);
   updateHud();

@@ -44,8 +44,8 @@
 .wmSlot.weapon svg { height: 80%; }
 .wmSlot.weapon span { color: var(--fg-muted); font-size: calc(18 * var(--hu)); }
 .wmSlotLabel { display: block; margin-top: calc(6 * var(--hu)); text-align: center; font-size: calc(12 * var(--hu)); color: var(--fg-muted); }
-.wmFigBody { height: calc(200 * var(--hu)); justify-self: center; color: var(--fg-muted); }
-.wmFigBody svg { height: 100%; }
+.wmFigBody { height: calc(240 * var(--hu)); width: 100%; min-width: calc(120 * var(--hu)); }
+.wmFig3d { display: block; width: 100%; height: 100%; border: 1px solid var(--fg-line); }
 .wmLocked { display: flex; flex-direction: column; gap: calc(12 * var(--hu)); }
 .wmSlot.locked { width: calc(64 * var(--hu)); height: calc(64 * var(--hu)); border-style: dashed; background: rgba(0, 0, 0, .3); color: var(--fg-muted); gap: 2px; align-content: center; }
 .wmSlot.locked svg { width: calc(16 * var(--hu)); }

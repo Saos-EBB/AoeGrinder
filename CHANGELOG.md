@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-09
+
+- feat(ui): Waffenmenü zeigt links die gewählte Figur als 3D-Ansicht mit der ausgerüsteten Waffe und Element-Farbe statt der Strichzeichnung; Ausrüsten wechselt sie sofort, kein eigener Renderer
+
 ## 2026-11-08
 
 - feat(magier): Alle Strichmagier (Feuer, Frost, Blitz, Seuche, ?-Magier) tragen die Farbe des Elements ihrer ausgerüsteten Waffe, mit Funken in Element-Farbe an Hand und Stein; Waffenwechsel (Ausrüsten, Run-Start, Laden) färbt sofort um, Animation, Anzeige und Spur bleiben; Waffen ohne oder mit altem Element zeigen keine Farbe
