@@ -14,7 +14,7 @@ import { binds, mouse, mouseBtn, pressSpell, pickGround } from './input';
 import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
-import { updateRealMen, realMenAnim } from './realMen';
+import { updateRealMen, realMenAnim, warTimeScale } from './realMen';
 import { updateWaves } from './waves';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
@@ -148,7 +148,7 @@ function loop(t) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();
-  const simDt = hitstopDt(dt) * bossTimeScale();   // Boss-Tod: Stopp und Zeitlupe
+  const simDt = hitstopDt(dt) * bossTimeScale() * warTimeScale();   // Boss-Tod: Stopp und Zeitlupe; Finisher-Stufe: Zeitlupe
   if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);

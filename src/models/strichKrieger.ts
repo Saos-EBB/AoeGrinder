@@ -1,6 +1,7 @@
 // Strichkrieger: Figur, Schwert, Wut-Aura, Moves und Effekte aus dem Viewer „Frost Grind – Strichkrieger“ (krieger.html), dazu Rückwärts, Sprung, Tod und Rim-Licht.
 // Vanilla-Technik: ein SkinnedMesh, Gewicht 1, Vertex-Farben, 3-Stufen-Toon. Das Modell bewegt den Spieler nicht: Sprung und Treffer macht realMen.ts über onHit.
-// anim = { state, speed, ability: null|'q0'..'q3'|'e'|'whirl'|'leap'|'exec'|'cry'|'last', seq, rate, rage (0–100), frozen }. dt > 1 gilt als ms.
+// anim = { state, speed, ability: null|'q0'..'q3'|'fs'|'fm'|'e'|'whirl'|'leap'|'exec'|'cry'|'last', seq, rate, rage (0–100), frozen }. dt > 1 gilt als ms.
+// Schlagfolge Version E (realMen.ts): 'fs' Finisher-Spin, 'fm' Sprung-Smash; anim.fin = { s: Größe, tor: Tornado }, anim.qPal = Hieb-Farbe ('staub' | 'wut' | 'donner')
 
 import * as THREE from 'three';
 import { clamp, lerpTo as lerp, inOut, outC } from '../util';
@@ -69,7 +70,7 @@ export function buildStrichKrieger({ bloom = false, weapon = 'sword' } = {}) {
     s.fragmentShader = s.fragmentShader.replace('#include <opaque_fragment>',
       `outgoingLight += vec3(${RIM.color.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM.power.toFixed(1)});\n#include <opaque_fragment>`);
   };
-  let lift = 0, spinAng = 0, rage = 0, flare = 0;
+  let lift = 0, spinAng = 0, rage = 0, flare = 0, qPal = null, fin = { s: 1, tor: 0 };
   const gy = () => root.position.y - lift;             // Boden unter der Figur
 const bones = [], parts = [];
 function B(p, x = 0, y = 0, z = 0) { const b = new THREE.Bone(); b.position.set(x, y, z); p.add(b); bones.push(b); return b; }
@@ -184,7 +185,7 @@ function maceGlowGeo() {
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
 const sword = new THREE.Group(); root.add(sword);
 const swordMesh = new THREE.Mesh(weapon === 'axe' ? axeGeo() : weapon === 'mace' ? maceGeo() : SWORD_GEO, VMAT); sword.add(swordMesh);
-let tipLen = WEAPON_SHAPE[weapon]?.tip ?? 1.95, gripLen = WEAPON_SHAPE[weapon]?.grip ?? .24;
+let tipLen = WEAPON_SHAPE[weapon]?.tip ?? 1.95, gripLen = WEAPON_SHAPE[weapon]?.grip ?? .24, baseTip = tipLen, baseGrip = gripLen;
 // Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller
 let maceGlow = null;
 if (weapon === 'mace') {
@@ -275,11 +276,11 @@ const fxMat = (color, op) => new THREE.MeshBasicMaterial({ color, transparent: t
 function holder() { const h = new THREE.Object3D(); h.position.copy(root.position); h.position.y = gy(); h.rotation.y = root.rotation.y; fxGroup.add(h); return h; }
 // Sichel im Wurzel-Raum (Spell-Viewer: Energie-Look, Wut bei viel Wut, sonst Staub)
 const _hq = new THREE.Quaternion(), _he = new THREE.Euler();
-function arc(center, euler, r, th, life = .3, red = true) {
+function arc(center, euler, r, th, life = .3, red = true, pal = null) {
   const yq = _hq.setFromAxisAngle(V(0, 1, 0), root.rotation.y).clone();
   const c = V(center[0], center[1], center[2]).applyQuaternion(yq).add(V(root.position.x, gy(), root.position.z));
   const q = yq.multiply(new THREE.Quaternion().setFromEuler(_he.set(euler[0], euler[1], euler[2])));
-  eArc(c, q, r, th, red && rage > 30 ? PAL.wut : PAL.staub, life * 1.3);
+  eArc(c, q, r, th, pal ?? (red && rage > 30 ? PAL.wut : PAL.staub), life * 1.3);
 }
 // Bodenring: helle Ringe Staub, rote Wut, eigene Palette (Donner, Furcht) über pal
 function ring(pos, color, r, life, w = .15, pal = null) {
@@ -378,9 +379,10 @@ function defQ(step, hitI = step) {
   const tHit = [.42, .42, .42, .52][step];
   const keys = [[0, from], [step === 3 ? .32 : .28, W, 'io'], [tHit, Q_END[step], 'in'], [step === 3 ? .78 : .7, P(Q_END[step], { y: Q_END[step].y - .02 })], [1, Q_END[step]]];
   const ev = [[tHit - .06, () => {
-    if (step === 0) arc([.0, 1.3, .9], [0, -.3, -.7], 2.1, 2.4);
-    if (step === 1) arc([0, 1.3, .3], [-Math.PI / 2, 0, 0], 2.3, 2.8);
-    if (step === 2) arc([-.1, 1.6, .8], [0, -Math.PI / 2, Math.PI], 1.9, 2.2);
+    const pal = qPal ? PAL[qPal] : null;
+    if (step === 0) arc([.0, 1.3, .9], [0, -.3, -.7], 2.1 * fin.s, 2.4, .3, true, pal);
+    if (step === 1) arc([0, 1.3, .3], [-Math.PI / 2, 0, 0], 2.3 * fin.s, 2.8, .3, true, pal);
+    if (step === 2) arc([-.1, 1.6, .8], [0, -Math.PI / 2, Math.PI], 1.9 * fin.s, 2.2, .3, true, pal);
   }], [tHit, () => {
     if (step === 3) { const p = tipPos(); impact(p, 4.5, 7); }
     else emit(tipPos(), 8, 3, 0x8f877a, 12, .5);
@@ -448,7 +450,27 @@ function defQ(step, hitI = step) {
       ev: [[.25, () => { const p = tipPos(); cracksStar(p, 6, 2.5); emit(p.setY(gy() + .1), 25, 3, 0x8f877a, 12, .7); }],
         [.72, () => { flare = 1.5; ring(root.position, 0xd8121c, 12, .8, .12); emit(root.position.clone().setY(gy() + .3), 60, 6, 0xe0141c, 2, 1.4); hitRoot('last'); }]] };
   }
+  // Finisher-Spin (Version E): einmal rundum, Treffer am Spieler. Größe fin.s, Tornado: Staub am Boden
+  function defFinSpin() {
+    const sp = P(IDLE, { y: .82, h: [0, 0, 0], c: [.35, 0, 0], n: [-.2, 0, 0], hR: [-.95, 1.15, .3], hL: [.6, 1.2, .2], b: [-1, .02, .15], e: [0, 0, 1], fL: [.36, .07, .2], fR: [-.36, .07, -.2] });
+    const s = fin.s, tor = fin.tor, pal = qPal ? PAL[qPal] : null;
+    return { dur: 560, keys: [[0, IDLE], [.2, sp, 'io'], [.8, sp], [1, P(sp, { y: .8 })]],
+      ev: [[.46, () => { arc([0, 1.1, 0], [-Math.PI / 2, 0, 0], 3 * s, TAU, .35, true, pal); ring(root.position, 0, 3.6 * s, .4, .15, pal); hitRoot('q', 9); }]],
+      tick(u) { spinAng = TAU * inOut(clamp((u - .2) / .6, 0, 1)); if (tor && Math.random() < .6) emit(tipPos().setY(gy() + .1), 2, 3, 0x8f877a, 8, .6); },
+      end() { spinAng = 0; } };
+  }
+  // Sprung-Smash (Version E): Hieb von oben mit Sprung, Einschlag an der Spitze
+  function defFinSmash() {
+    const d: any = defQ(3, 10), s = fin.s;
+    d.ev = [[.52, () => { const p = tipPos(); impact(p, 4.5 * s, 7); hitTip('q', 10); }]];
+    d.tick = u => { lift = 1.6 * Math.sin(Math.PI * clamp((u - .1) / .42, 0, 1)); };
+    d.end = () => { lift = 0; };
+    d.walk = false;
+    return d;
+  }
   const makeAction = ability => {
+    if (ability === 'fs') return defFinSpin();
+    if (ability === 'fm') return defFinSmash();
     if (ability === 'qs') { const d = defQ(1, 9); d.dur = W.spin ?? 420; return d; }   // Spin: Treffer-Index 9
     if (ability?.[0] === 'q') {
       const i = +ability[1], d = defQ(W.pose[i] ?? i, i);
@@ -473,6 +495,7 @@ function defQ(step, hitI = step) {
     const s = dt > 1 ? dt / 1000 : dt;
     T += s;
     const loco = anim.state || 'idle', ability = anim.ability || null;
+    qPal = anim.qPal ?? null; if (anim.fin) fin = anim.fin;
     if (loco === 'dead' && act) cancel();
     const key = ability ? `${ability}:${anim.seq ?? 0}` : '';
     if (key !== actKey) {
@@ -587,7 +610,15 @@ function defQ(step, hitI = step) {
       swordMesh.visible = false;
       w.root.scale.setScalar(scale);
       sword.add(w.root);
-      tipLen = tip * scale; gripLen = grip * scale;
+      tipLen = tip * scale; gripLen = grip * scale; baseTip = tipLen; baseGrip = gripLen;
+    },
+    // Schlagfolge Version E: Schwert wächst pro Stufe (Größe und Treffer-Spitze)
+    setBladeScale(k) { sword.scale.setScalar(k); tipLen = baseTip * k; gripLen = baseGrip * k; },
+    // Neue Stufe: goldene Kugel an der Spitze + Ring, Aura flammt auf
+    flareTip() {
+      flare = 1.5;
+      efx(.7, (k, _d, e) => { if (!e.ms.length) em(e, 'sph', PAL.donner, { sc: 3, core: .8, flow: [0, 3, 0], puff: .05 }); e.ms[0].position.copy(tipPos()); e.ms[0].scale.setScalar(.3 + 1.6 * outC(k)); setK(e.ms[0], 1 - k); });
+      ring(root.position, 0, 5, .7, .2, PAL.donner);
     },
   };
   return model;

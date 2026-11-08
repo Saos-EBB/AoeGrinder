@@ -12,7 +12,7 @@ import { DG, consumeCombo } from './dodge';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { act } from './input';
 import { pad, padBinds } from './gamepad';
-import { showError } from './ui/hud';
+import { showError, combatText } from './ui/hud';
 import { applyRoot, pullMob, knockbackMob } from './mobs';
 import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow } from './spells/core';
 import { UNIT, mods } from './config';
@@ -29,8 +29,13 @@ const REALMEN = {
   armor: 0.25,                                     // weniger Schaden: steht mitten im Pack, ohne Blink und Nova
   rage: { max: 100, perMobHit: 6, perSwingMax: 15, decayPerS: 4, idleMs: 3000, perHitTaken: 2 },
   mult: { rage: 0.6, hp: 1 },                      // Schaden ×(1 + 0,6 · Wut/100) · (1 + fehlendes Leben): volle Wut bei 10 % Leben ≈ ×3
-  // Schlagfolge (v31): startet mit 4 Schlägen, alle 25 Kills mit der Folge einer mehr, höchstens 8. Der letzte ist ein Spin in Laufrichtung, 4 yd, rundum
-  q: { dmg: [28, 24, 30], radius: [2.9, 3.2, 2.9], halfAngle: [0.9, 1.4, 0.9], comboMs: 1300, start: 4, max: 8, killsPerHit: 25, spin: { dmg: 45, radius: 3.4, yd: 4, knock: 4 }, masterRate: 0.1 },
+  // Schlagfolge Version E (08.11.): Diagonalhieb → Rückhand → Aufwärtsschnitt → Finisher. Stufe 4 bis 8, alle 25 Kills mit der Folge +1 (nur für den Run).
+  // Finisher pro Stufe in FINISHER unten. Pro Stufe über 4 Schwert und Reichweite +6 %, Hieb-Farbe nach pal. masterRate: Talent Klingenmeister pro Rang
+  q: { dmg: [28, 24, 30], radius: [2.9, 3.2, 2.9], halfAngle: [0.9, 1.4, 0.9], ms: [520, 480, 500], comboMs: 1300, start: 4, max: 8, killsPerHit: 25, masterRate: 0.1,
+    spin: { dmg: 40, radius: 3.4, knock: 4, ms: 560, firstYd: 4, tornadoYd: 2.5 },   // firstYd: erster Spin in Laufrichtung (Tryndamere E), tornadoYd: jeder Tornado-Spin wandert nach vorn
+    smash: { dmg: 55, radius: 3, knock: 6, ms: 820 },
+    growPerStage: 0.06, pal: ['staub', 'wut', 'wut', 'donner', 'donner'],
+    unlock: { slow: 0.25, ms: 900, chainDelayMs: 350 } },   // Stufen-Aufstieg: Zeitlupe, danach läuft die neue Kette einmal von selbst
   e: { dmg: 26, cd: 8000, rage: 15, waves: 5, stepYd: 1.6, stepMs: 70, width: 2.6, knock: 3.5 },
   whirl: { dmg: [18, 22], radius: 8 /* Classic */, tickMs: 500, ragePerS: 20, speedMul: 0.7, tapMs: 300, minStart: 10,
     suck: { start: 4, perS: 1, max: 12, close: 1.5, speed: 10 } },   // v31: Sog wächst mit der Wirbel-Dauer, zieht bis 1,5 yd heran
@@ -62,6 +67,14 @@ const REALMEN = {
   },
 };
 const R = REALMEN, RU = R.runes;
+// Finisher pro Stufe: Spins mit Radius-Faktor s, Tornado (tor) wandert nach vorn, am Ende Sprung-Smash // PH
+const FINISHER = {
+  4: [{ h: 'spin', s: 1 }],
+  5: [{ h: 'spin', s: 1 }, { h: 'spin', s: 1.15 }],
+  6: [{ h: 'spin', s: 1 }, { h: 'spin', s: 1.15 }, { h: 'smash', s: 1.1 }],
+  7: [{ h: 'spin', s: 1 }, { h: 'spin', s: 1.15 }, { h: 'spin', s: 1.3 }, { h: 'smash', s: 1.2 }],
+  8: [{ h: 'spin', s: 1, tor: 1 }, { h: 'spin', s: 1.15, tor: 1 }, { h: 'spin', s: 1.3, tor: 1 }, { h: 'spin', s: 1.45, tor: 1 }, { h: 'smash', s: 1.5 }],
+};
 
 const spell = (name, desc, tags, ranks, cd, mana, press, showDmg?, runes?) => ({ name, desc, showDmg, ranks, tags: ['Krieger', ...tags], cls: 'fire', school: 'warrior', fixed: true, cd, mana, press, runes });
 // Slots in Tastenreihenfolge: Q, E, R, Maus 4, Maus 5, 1, 2, 3. fixed: nie als Karte in anderen Modi
@@ -105,6 +118,8 @@ let cur = null;                 // laufender Move: { id, ability, start, ms, rat
 let seq = 0, combo = 0, comboUntil = 0, lastRageAt = 0, undyingUntil = 0;
 let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0, whirlStart = 0;
 let charge = null;   // Ansturm: { from, target, start, ctx }
+const moveLog = [];
+let stage = R.q.start, autoQ = 0, autoAt = 0, slowUntil = 0;   // Schlagfolge Version E: Stufe, Auto-Kette nach dem Aufstieg, Zeitlupe (performance.now)
 
 const gainRage = n => { player.mana = Math.min(R.rage.max, player.mana + n); };
 export function rageOnHit() { if (isWarrior()) gainRage(R.rage.perHitTaken); }
@@ -118,11 +133,12 @@ export function resetRealMen() {
   $('manaFill').style.background = on ? 'linear-gradient(#e0503c, #8a1a10)' : '';
   player.resNote = '';
   cur = null; seq = 0; combo = 0; comboUntil = 0; lastRageAt = 0; undyingUntil = 0; charge = null;
-  state.qKills = 0; player.berserkUntil = 0;
+  state.qKills = 0; player.berserkUntil = 0; stage = R.q.start; autoQ = 0; slowUntil = 0;
   whirlOn = false; whirlUntil = 0; whirlCtx = null; nextWhirlTick = 0;   // state.now startet pro Run bei 0
   state.heroWeapon = on ? WP().name : '';
   if (on) {
     player.mana = 0; clearMelee();
+    mage.hero.setBladeScale?.(1);
   }
 }
 
@@ -132,22 +148,50 @@ function startMove(id, ability, ms) {
   const rate = rateOf(id) * WP().rate * pdRateMul() * (id === 'wQ' ? 1 + R.q.masterRate * mods.bladeMaster : 1);   // Perfekter Dodge, Klingenmeister
   cur = { id, ability, start: state.now, ms: ms / rate, rate, ctx: makeCtx(id), from: { x: player.pos.x, y: player.pos.y, z: player.pos.z } };
   seq++;
+  moveLog.push(ability); if (moveLog.length > 60) moveLog.shift();   // Handtest (__krieger.log)
 }
 function pressQ() {
   if (cur) return;
   stopDrink();
   if (state.now > comboUntil) combo = 0;
-  const step = combo, n = qLength(), last = step === n - 1, k = step % 3, Q = WT().q;
+  const step = combo, n = qLength(), part = step >= 3 ? FINISHER[stage][step - 3] : null, Q = R.q;
   combo = (combo + 1) % n;
   player.lastCombat = state.now;
-  if (last && Math.hypot(player.vel.x, player.vel.z) > 0.1) player.facing = Math.atan2(player.vel.x, player.vel.z);   // Spin in Laufrichtung
-  startMove('wQ', last ? 'qs' : `q${k}`, last ? WT().spin : Q[k]);
-  cur.qStep = step; cur.spin = last;
-  if (last) cur.combo = consumeCombo('smash');   // Dodge-Kombo: auf den Spin
-  cur.walk = true;
+  if (step === 3 && Math.hypot(player.vel.x, player.vel.z) > 0.1) player.facing = Math.atan2(player.vel.x, player.vel.z);   // Finisher in Laufrichtung
+  if (!part) startMove('wQ', `q${step}`, Q.ms[step]);
+  else startMove('wQ', part.h === 'spin' ? 'fs' : 'fm', part.h === 'spin' ? Q.spin.ms : Q.smash.ms);
+  cur.qStep = step; cur.part = part;
+  cur.yd = part?.h === 'spin' ? (part.tor ? Q.spin.tornadoYd : step === 3 ? Q.spin.firstYd : 0) : 0;
+  if (step === n - 1) cur.combo = consumeCombo('smash');   // Dodge-Kombo: auf den letzten Teil
+  cur.walk = !part;
 }
-// Länge der Schlagfolge: 4, alle 25 Kills mit der Folge einer mehr, höchstens 8
-const qLength = () => Math.min(R.q.max, R.q.start + Math.floor((state.qKills ?? 0) / R.q.killsPerHit));
+// Länge der Schlagfolge = Stufe: 3 Grundschläge + Finisher-Teile
+const qLength = () => 3 + FINISHER[stage].length;
+const bladeScale = () => 1 + R.q.growPerStage * (stage - R.q.start);
+// Stufen-Aufstieg: Zeitlupe, Text, Banner, Schwert flammt auf, danach die neue Kette einmal von selbst
+function stageUp() {
+  if (stage >= R.q.max) return;
+  stage++;
+  const U = R.q.unlock;
+  slowUntil = performance.now() + U.ms;
+  combatText(player.pos, t('war.kills', { n: R.q.killsPerHit }), 'info', 2.6);
+  showBanner(t('war.finStage', { n: stage - 3 }), t(`war.fin.${stage}`));
+  mage.hero.setBladeScale?.(bladeScale());
+  mage.hero.flareTip?.();
+  combo = 0; autoQ = qLength(); autoAt = state.now + U.chainDelayMs;
+}
+export const warTimeScale = () => performance.now() < slowUntil ? R.q.unlock.slow : 1;
+const banner = document.createElement('div');
+Object.assign(banner.style, { position: 'fixed', left: '50%', top: '22%', transform: 'translateX(-50%)', zIndex: '3', pointerEvents: 'none', textAlign: 'center', display: 'none',
+  font: '700 30px Cinzel, Georgia, serif', color: '#ffd26a', textShadow: '0 2px 8px #000, 0 0 18px #ff8a1a88', letterSpacing: '.06em' });
+document.body.appendChild(banner);
+let bannerTimer = 0;
+function showBanner(head, name) {
+  banner.innerHTML = `<div>${head}</div><div style="font-size:20px;color:#f4efe4">${name}</div>`;
+  banner.style.display = 'block';
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { banner.style.display = 'none'; }, 2200) as any;
+}
 function pressMove(id, ability, ms, cost) {
   if (cur) return;
   if (!player.grounded) return showError(t('msg.notInAir'));
@@ -209,13 +253,17 @@ const smash = landed => {
 };
 function hitQ() {
   const c = cur.ctx, wide = hasRune('wQ', 'wide') ? RU.wide : 1, rageK = hasRune('wQ', 'wrath') ? RU.wrath : 1;
-  const leech = m => { if (hasRune('wQ', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RU.leech); if (m.dead) state.qKills = (state.qKills ?? 0) + 1; return m; };
-  if (cur.spin) {
-    const S = R.q.spin, r = c.radius(S.radius) * wide;
-    smash(event('wQ', c, () => S.dmg, () => mobsInRadius(player.pos, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, S.knock); }, rageK));
-    mage.hero.fx.ring(player.pos, 0xd8121c, r, 0.35, 0.1);
+  const leech = m => {
+    if (hasRune('wQ', 'leech')) player.hp = Math.min(maxHp(), player.hp + maxHp() * RU.leech);
+    if (m.dead && !m.qCounted) { m.qCounted = true; state.qKills = (state.qKills ?? 0) + 1; if (state.qKills % R.q.killsPerHit === 0) stageUp(); }   // Kills mit der Folge
+    return m;
+  };
+  const part = cur.part, reach = bladeScale() * wide;
+  if (part) {
+    const S = part.h === 'spin' ? R.q.spin : R.q.smash, r = c.radius(S.radius) * reach * part.s;
+    smash(event('wQ', c, () => S.dmg * part.s, () => mobsInRadius(player.pos, r), m => { leech(m); if (!m.dead) knockbackMob(m, player.pos, S.knock); }, rageK));
   } else {
-    const k = cur.qStep % 3, r = c.radius(R.q.radius[k]) * wide;
+    const k = cur.qStep, r = c.radius(R.q.radius[k]) * reach;
     event('wQ', c, () => R.q.dmg[k], () => inCone(player.pos, r, R.q.halfAngle[k]), leech, rageK);
   }
 }
@@ -376,13 +424,15 @@ export function updateRealMen(dt) {
   else if (now - lastRageAt > R.rage.idleMs) player.mana = Math.max(0, player.mana - R.rage.decayPerS * s);
   if (cur) {
     if (cur.id === 'wLeap') moveInWindow({ ...TIMING.leap.move, yd: R.leap.yd }, cur.start, cur.ms, dt);
+    if (cur.yd) moveInWindow({ from: 0.2, to: 0.8, yd: cur.yd }, cur.start, cur.ms, dt);   // Finisher-Spin wandert
     if (now >= cur.start + cur.ms) {
       if (cur.id === 'wQ') comboUntil = now + R.q.comboMs;
       cur = null;
     }
   }
   updateWhirl(s);
-  if (!cur && !whirlOn && player.stunUntil <= now && held('wQ')) pressQ();   // Ein Druck, ein Schlag; Halten schlägt weiter
+  if (!cur && !whirlOn && player.stunUntil <= now && autoQ > 0 && now >= autoAt) { autoQ--; pressQ(); }   // neue Kette nach dem Stufen-Aufstieg
+  else if (!cur && !whirlOn && player.stunUntil <= now && held('wQ')) pressQ();   // Ein Druck, ein Schlag; Halten schlägt weiter
   player.resNote = t('war.note', { mul: +rageMul().toFixed(2), q: qLength() }) + (undyingUntil > now ? t('war.last') : '') + (player.berserkUntil > now ? t('war.berserk') : '');
 }
 
@@ -401,8 +451,8 @@ export const rooted = () => isWarrior() && !!cur && !cur.walk;   // eigene Beweg
 // Pause mitten in einer Attacke: Pose anhalten, sonst geht der Treffer der laufenden Animation verloren
 export function realMenAnim() {
   if (!isWarrior() || player.dead) return {};
-  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
+  return { ability: cur?.ability ?? (whirlOn ? 'whirl' : null), seq, rate: cur?.rate ?? 1, rage: player.mana, qPal: R.q.pal[stage - R.q.start], fin: { s: bladeScale() * (cur?.part?.s ?? 1), tor: cur?.part?.tor ?? 0 }, berserk: berserkOn(), frozen: !!((state.paused || hitstopActive()) && (cur || whirlOn)) };
 }
 
 // Für den Handtest
-(window as any).__krieger = { get cur() { return cur; }, get combo() { return combo; }, rageMul, get undying() { return undyingUntil; }, REALMEN };
+(window as any).__krieger = { get cur() { return cur; }, get combo() { return combo; }, get stage() { return stage; }, stageUp, log: moveLog, rageMul, get undying() { return undyingUntil; }, REALMEN };

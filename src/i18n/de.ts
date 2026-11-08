@@ -645,7 +645,7 @@ export const de: Record<string, string> = {
   'spell.wLeap.runes.quake.name': "Beben",
   'spell.wLeap.runes.stun.desc': "Betäubt 2 s.",
   'spell.wLeap.runes.stun.name': "Einschlag",
-  'spell.wQ.desc': "Vier Schläge, alle 25 Kills mit der Folge einer mehr (höchstens 8). Der letzte ist ein schneller Spin in Laufrichtung. Bringt @{res.rage}.",
+  'spell.wQ.desc': "Diagonalhieb, Rückhand, Aufwärtsschnitt, dann der Finisher: erst ein Spin in Laufrichtung. Alle 25 Kills mit der Folge wächst der Finisher (Doppel-Spin, Sprung-Smash, Dreifach-Spin, Tornado), das Schwert wird größer. Bringt @{res.rage}.",
   'spell.wQ.name': "Hiebkette",
   'spell.wQ.runes.leech.desc': "Heilt 1 % Leben pro getroffenem Mob.",
   'spell.wQ.runes.leech.name': "Blutdurst",
@@ -1862,6 +1862,12 @@ export const de: Record<string, string> = {
   'src.polarity': "Polarität",
 
   'war.berserk': " · @{spell.wBerserk.name}",
+  'war.fin.5': "Doppel-Spin",
+  'war.fin.6': "+ Sprung-Smash",
+  'war.fin.7': "Dreifach-Spin",
+  'war.fin.8': "Tornado",
+  'war.finStage': "FINISHER STUFE {n}",
+  'war.kills': "{n} Kills",
   'war.last': " · @{spell.wLast.name}",
   'war.note': "Schaden ×{mul} · @{spell.wQ.name} {q}",
 

@@ -644,7 +644,7 @@ export const en: Record<string, string> = {
   'spell.wLeap.runes.quake.name': "Quake",
   'spell.wLeap.runes.stun.desc': "Stuns 2 s.",
   'spell.wLeap.runes.stun.name': "Impact",
-  'spell.wQ.desc': "Four strikes, one more in the chain every 25 kills (at most 8). The last is a fast spin in your walking direction. Builds @{res.rage}.",
+  'spell.wQ.desc': "Diagonal slash, backhand, rising cut, then the finisher: first a spin in your walking direction. Every 25 kills with the chain the finisher grows (double spin, leap smash, triple spin, tornado) and the sword gets bigger. Builds @{res.rage}.",
   'spell.wQ.name': "Hackchain",
   'spell.wQ.runes.leech.desc': "Heals 1 % health per mob hit.",
   'spell.wQ.runes.leech.name': "Bloodthirst",
@@ -1861,6 +1861,12 @@ export const en: Record<string, string> = {
   'src.polarity': "Polarity",
 
   'war.berserk': " · @{spell.wBerserk.name}",
+  'war.fin.5': "Double spin",
+  'war.fin.6': "+ Leap smash",
+  'war.fin.7': "Triple spin",
+  'war.fin.8': "Tornado",
+  'war.finStage': "FINISHER LEVEL {n}",
+  'war.kills': "{n} kills",
   'war.last': " · @{spell.wLast.name}",
   'war.note': "Damage ×{mul} · @{spell.wQ.name} {q}",
 

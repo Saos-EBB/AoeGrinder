@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(krieger): Schlagfolge Version E: Diagonalhieb, Rückhand, Aufwärtsschnitt + Finisher, der alle 25 Kills mit der Folge wächst (Spin → Doppel-Spin → + Sprung-Smash → Dreifach-Spin → Tornado); Schwert und Reichweite +6 % pro Stufe, Hiebe staub → rot → gold; Aufstieg mit Zeitlupe, Banner und aufflammendem Schwert, danach läuft die neue Kette einmal von selbst
 - feat!: Arkan (Sternmönch) und Klingenstrich (Tuschklinge) geparkt in `maybeLater/`: raus aus Charakterwahl, Modi, Spell-/Karten-Pools (auch beim ?-Magier), Rangliste-Tabs und Bossen (Verdorbener Arkanmagier, Verdorbener Klingenstrich, ihre Stile der Seele der Asche); Legenden Donnerzorn und Achtfacher Stern ebenfalls geparkt. Aktiv: Feuer, Frost, Blitz, Seuche, Strichkrieger (+ ?-Magier). Alte Waffen mit Arkan-Fokus zeigen Blink
 - feat(i18n): Alle Menüs, HUD, Tooltips, Kartentexte, Ladetipps, schwebende Texte, Boss-Leisten, Rangliste, Shop, Inventar und Spielstand-Code auf Englisch umschaltbar; Zahlen mit Komma bzw. Punkt je Sprache; Pad-Belegung zeigt die Slots (Attacke 1 …) statt alter Spell-Namen; Prüfskript `npm run check:i18n`
 - feat(i18n)!: Neue Namen laut `docs/namen-i18n.md` für Figuren, Spells, Runen, Talente, Relikte, Karten, Ressourcen, Affixe, legendäre Waffen und Bosse (z. B. Feuerball → Glutschädel, Blink → Huschen, Strichkrieger → Kohlenhüne); alle Spell-, Karten-, Modus-, Waffen-, Mob- und Boss-Texte kommen jetzt aus `src/i18n` und gibt es auf Englisch
