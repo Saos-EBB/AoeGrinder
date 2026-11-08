@@ -10,8 +10,11 @@ export const BOSSES: any[] = [
  // früh
  {id:'hogger',nr:1,name:t('boss.hogger.name'),from:t('boss.hogger.from'),tier:'frueh',desc:t('boss.hogger.desc'),
   model:{t:'biped',p:{skin:0x8a6a48,armor:0x6b4a2f,accent:0x9a3a2a,eye:0xffd060,bulk:1.25,head:'gnoll',weapon:'club',scale:1.6}},
-  attacks:[{n:t('boss.hogger.attacks.0.n'),k:'kette',p:{hits:[1.0,.75,1.25],r:4,ang:100},i:t('boss.hogger.attacks.0.i')},{n:t('boss.hogger.attacks.1.n'),k:'ansturm',p:{len:12,warn:.9},i:t('boss.hogger.attacks.1.i')}],
-  rules:[{n:t('boss.hogger.rules.0.n'),k:'enrage',p:{then:true},i:t('boss.hogger.rules.0.i')}]},
+  attacks:[{n:t('boss.hogger.attacks.0.n'),k:'kette',p:{hits:[1.0,.75,1.25],r:4,ang:100},i:t('boss.hogger.attacks.0.i')},{n:t('boss.hogger.attacks.1.n'),k:'ansturm',p:{len:12,warn:.9},i:t('boss.hogger.attacks.1.i')},
+   {n:t('boss.duriel.attacks.1.n'),k:'ansturm',p:{len:10,w:3,warn:.6,color:0x6ac8ff},i:t('boss.duriel.attacks.1.i')}],   // Durchbruch von Duriel, eisblau
+  // Hogger + Duriel (Kader 08.11.): Duriels enge Kammer und Frost-Aura, Hoggers Wut-Schrei
+  rules:[{n:t('boss.duriel.rules.0.n'),k:'arenaRadius',p:{r:10},i:t('boss.duriel.rules.0.i')},{n:t('boss.duriel.rules.1.n'),k:'slowAura',i:t('boss.duriel.rules.1.i')},
+   {n:t('boss.hogger.rules.0.n'),k:'enrage',p:{then:true},i:t('boss.hogger.rules.0.i')}]},
  {id:'sif',nr:56,name:t('boss.sif.name'),from:t('boss.sif.from'),tier:'frueh',desc:t('boss.sif.desc'),
   model:{t:'quadruped',p:{skin:0x8d8f98,eye:0xd0e0ff,metal:0xc8ccd8,swordInMouth:true,scale:1.9}},
   attacks:[{n:t('boss.sif.attacks.0.n'),k:'slam',p:{r:6,warn:1.0},i:t('boss.sif.attacks.0.i')},{n:t('boss.sif.attacks.1.n'),k:'ansturm',p:{len:14,warn:.7},i:t('boss.sif.attacks.1.i')},{n:t('boss.sif.attacks.2.n'),k:'explosion',p:{r:5,warn:.7,spin:true,color:0xffffff,fx:0xd8e0ff},i:t('boss.sif.attacks.2.i')}],
@@ -145,7 +148,7 @@ export const STYLES: any[] = [
 
 // Spielwerte der Regeln, die im Viewer nur im Text stehen (Boss-Plan). Alle PH
 const RULE_P = {
-  hogger: { enrage: { hp: .2, speed: 1.2 } },                                 // unter 20 % HP Tempo ×1,2
+  hogger: { enrage: { hp: .2, speed: 1.2 }, slowAura: { pct: .3 } },          // unter 20 % HP Tempo ×1,2; Frost-Aura wie Duriel
   flickwerk: { enrage: { after: 60, dmg: 3, speed: 1.5 } },                   // nach 60 s Schaden ×3, Tempo ×1,5
   sif: { hinken: { hp: .25, speed: .6, wind: 1.3 } },                         // unter 25 % HP Tempo ×0,6, Ausholen ×1,3
   duriel: { slowAura: { pct: .3 } },

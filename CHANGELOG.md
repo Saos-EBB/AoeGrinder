@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-08
 
+- feat(boss): Hogger übernimmt Duriel: zusätzlich der breite eisblaue Durchbruch (Linie 10 yd), enge Kammer (Arena 10 yd) und Frost-Aura (Dauer-Slow 30 %); Wut-Schrei unter 20 % bleibt. Duriel selbst ist nicht mehr im Pool
 - feat(boss): Boss-Kader neu: Bosse bei Level 15, 30, 45, 60, 75, 90 und 100 (statt 25/50/75/100); Run-Pool je Stufe genau 5 Bosse (früh: Hogger, Sif, Shazzrah, Gräfin, Lazarus · mittel: Lilith, Azmodan, Chromaggus, Wachritter, Hornet · spät: Maven, Gwyn, Lichkönig, Radahn, Vier Könige · final: Ragnaros, Malenia, Maliketh, Shaper, Seele der Asche); Flickwerk, Duriel, Gruul, Abgrundwächter, Thaddius, Ornstein & Smough, Godrick, Yogg-Saron und Atziri nur noch im Dev-Menü (Gruppe „nicht im Pool“)
 - feat(krieger): Eigene Waffen-Modelle für die legendären Waffen: Leeroys Klinge (Großschwert mit goldener Parierstange, rotem Wimpel und Hühnchen-Schenkel am Knauf) und Sions Axt (Henkersaxt mit rot glühenden Rissen); der Strichkrieger trägt sie, sobald die Legende gesetzt ist
 - feat(krieger): Sions Axt als zweite legendäre Waffe: 3 schwere Axthiebe; Vernichtender Hieb (laden bis 2 s, hochschleudern, Bodenspalte), Seelenofen (Schild, Explosion mit 2× absorbiert), Brüllen des Schlächters (Mob als Bowlingkugel), Unaufhaltsamer Ansturm (mit der Maus lenkbar) statt Hinrichtung, Letzter Atem, Donnerknall, Ansturm; Ruhm im Tod (10 s untot, nur Kette und Todesrausch, 120 s Abklingzeit), +0,1 % max. Leben pro Kill bis +50 %; Combo Für Noxus!
