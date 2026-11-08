@@ -7,19 +7,15 @@ import { COLORS } from './colors';
 // Spell-ID → Icon im Viewer (spellIcons.ts). Fest nach ID, damit Umbenennen und Übersetzen die Icons nicht verlieren
 const ICON_KEY: Record<string, string> = {
   wQ: 'schlagfolge', wE: 'bodenbrecher', wR: 'wirbelwind', wExec: 'hinrichtung', wLast: 'letzteratem', wCry: 'kampfschrei', wLeap: 'sturzsprung',
-  wCharge: 'ansturm', wClap: 'donnerknall', wShout: 'einschuechterungsruf', wBerserk: 'berserker', kQ: 'schnitt', kE: 'kreisschnitt', kR: 'blutwirbel',
-  kAder: 'aderlass', kClones: 'schattenklone', kDash: 'strichschnitt', kStorm: 'klingensturm', kKunai: 'kunai', kCounter: 'konter', kIaido: 'iaido',
-  kSmoke: 'rauchbombe', rOff: 'q_offensiv', rDef: 'q_defensiv', rUtil: 'q_utility', rDrink: 'q_drink', iceblock: 'eisblock', phoenix: 'phoenix',
-  detonate: 'brandmal', gasoline: 'benzin', firetrail: 'feuerspur', firestorm: 'feuersbrunst', frostbolt: 'frostblitz', needle: 'gletschernadel',
-  icebarrier: 'eisbarriere', barrage: 'arkanbeschuss', beam: 'arkanstrahl', arcorb: 'arkanekugel', arcstrike: 'arkanschlag', archon: 'archon',
-  timewarp: 'zeitkruemmung', archBeam: 'archon', archNova: 'archon', archPort: 'archon', quake: 'erdbeben', keeper: 'sturmhueter',
-  staticfield: 'statikfeld', stormelem: 'sturmelementar', nova: 'frostnova', ae: 'arcaneexplosion', bliz: 'blizzard', coc: 'coneofcold',
-  blink: 'blink', drink: 'q_drink', flame: 'flammenstoss', blast: 'druckwelle', hellfire: 'hoellenfeuer', frostorb: 'frostkugel',
-  voidorb: 'leerenkugel', whirl: 'wirbel', icelance: 'eislanze', fireball: 'feuerball', meteor: 'meteor', arcmissiles: 'arkanegeschosse',
-  arcmark: 'arkanesmal', chain: 'kettenblitz', arc: 'bogenblitz', strike: 'blitzschlag', ball: 'kugelblitz', discharge: 'entladung', storm: 'gewitter',
-  sludge: 'schlammwurf', slimetrap: 'schleimfalle', slimewave: 'schleimwelle', blackhole: 'schwarzesloch', poisoncloud: 'giftwolke', web: 'klebefaden',
-  contract: 'zusammenziehen', drain: 'entziehen', burst: 'platzen', melt: 'zerfliessen', pestilence: 'pestilenz', surge: 'arkanewoge',
-  gold: 'goldbecher', schnaps: 'feuerschnaps', tasse: 'heissetasse', tee: 'teeschale'
+  wCharge: 'ansturm', wClap: 'donnerknall', wShout: 'einschuechterungsruf', wBerserk: 'berserker', rOff: 'q_offensiv', rDef: 'q_defensiv',
+  rUtil: 'q_utility', rDrink: 'q_drink', iceblock: 'eisblock', phoenix: 'phoenix', detonate: 'brandmal', gasoline: 'benzin', firetrail: 'feuerspur',
+  firestorm: 'feuersbrunst', frostbolt: 'frostblitz', needle: 'gletschernadel', icebarrier: 'eisbarriere', quake: 'erdbeben', keeper: 'sturmhueter',
+  staticfield: 'statikfeld', stormelem: 'sturmelementar', nova: 'frostnova', bliz: 'blizzard', coc: 'coneofcold', blink: 'blink', drink: 'q_drink',
+  flame: 'flammenstoss', blast: 'druckwelle', hellfire: 'hoellenfeuer', frostorb: 'frostkugel', whirl: 'wirbel', icelance: 'eislanze',
+  fireball: 'feuerball', meteor: 'meteor', chain: 'kettenblitz', arc: 'bogenblitz', strike: 'blitzschlag', ball: 'kugelblitz',
+  discharge: 'entladung', storm: 'gewitter', sludge: 'schlammwurf', slimetrap: 'schleimfalle', slimewave: 'schleimwelle', blackhole: 'schwarzesloch',
+  poisoncloud: 'giftwolke', web: 'klebefaden', contract: 'zusammenziehen', drain: 'entziehen', burst: 'platzen', melt: 'zerfliessen',
+  pestilence: 'pestilenz', gold: 'goldbecher', schnaps: 'feuerschnaps', tasse: 'heissetasse', tee: 'teeschale'
 };
 
 // Klammern und Apostrophe mitkodieren: die URL steht ungequotet in url(...) und in style-Attributen

@@ -255,8 +255,7 @@ export function updateMob(mob, dt) {
   const d = dist2d(mob.pos, player.pos);
 
   if (mob.state === 'idle') {
-    if (player.smokeUntil > state.now) { /* Rauchbombe: unsichtbar */ }
-    else if (!player.dead && d < (mob.type.aggro ?? aggroRadius(mob))) enterCombat(mob, true);
+    if (!player.dead && d < (mob.type.aggro ?? aggroRadius(mob))) enterCombat(mob, true);
     else if (mob.assistAt && state.now >= mob.assistAt) enterCombat(mob, false);
   }
   else if (mob.state === 'combat') {
@@ -430,7 +429,7 @@ function bigKnock(mob, frac) {
 
 // Rückschlag im Bogen, weg vom Punkt
 export function knockbackMob(mob, center, dist, dur = 450) {
-  if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hängt im Blutwirbel (klinge.ts), noKnock: Steinhaut (champions.ts)
+  if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hing im Blutwirbel des Klingenstrichs (geparkt), noKnock: Steinhaut (champions.ts)
   dist *= zone.knockMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Eis: fliegt weiter
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);

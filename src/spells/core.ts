@@ -20,16 +20,16 @@ import { batteryHit, consumeOvercharge } from '../battery';
 import { BATTERY } from '../config';
 import { dodgeRecovery, comboReady, consumeCombo, pdDmgMul, pdRateMul } from '../dodge';
 import { berserkMul } from '../realMen';
-import { legendDmgMul, legendCastMul } from '../legends';
+import { legendDmgMul } from '../legends';
 import { loadRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
-import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast, arcDmgMul } from '../schoolMeter';
+import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
 import { t } from '../i18n';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
 export function modRule(key): any { return activeMods().find(m => m[key])?.[key]; }
-// Nur Frost, Nur Feuer und Nur Arkan lassen nur ihre Schule zu
+// Nur Frost, Nur Feuer und die anderen Figuren lassen nur ihre Schule zu
 // Fokus-Waffe: ein Spell außerhalb der Schule kommt für den Run in den Pool
 export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 // Pool der Figur (modifiers.ts pool): nur daraus kommen „Neuer Spell“-Karten. Ohne Pool gilt die Schule wie bisher
@@ -78,7 +78,7 @@ export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
 const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
-export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = (state.bonusCharges?.[id] ?? 0) + (id === 'blink' ? mods.blinkExtra : 0);   // blinkExtra: Doppelsprung
+export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = (state.bonusCharges?.[id] ?? 0);
   return bonus ? (n ?? 1) + bonus : n; };   // bonus: Buch
 export function cdEnd(id) {
   const n = chargesOf(id);
@@ -101,10 +101,6 @@ export const paysLife = id => supported('blood', id) || !!modValue('lifeCost'); 
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
-// Arkan-Treffer melden sich hier (Arkanes Mal, arcmark.ts): fn(mob, spellId, Schaden vor Wurf und Rüstung)
-// Liste an einer Funktions-Deklaration: arcmark.ts kann im Import-Kreis vor dem Rest dieser Datei laufen
-function arcaneHooks(): any[] { return (arcaneHooks as any).list ??= []; }
-export function onArcaneHit(fn) { arcaneHooks().push(fn); }
 // Feuer-Treffer (auch Brand-Ticks) melden sich hier: Benzin zündet (gasoline.ts). Liste an einer Funktion: Import-Kreis
 function fireHooks(): any[] { return (fireHooks as any).list ??= []; }
 export function onFireHit(fn) { fireHooks().push(fn); }
@@ -127,14 +123,12 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
-      if (m.cagedUntil > state.now && (id === 'voidorb' || id === 'arcmissiles')) dmg *= 1.5;   // Knochengefängnis
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune Schock
       const frozen = m.rootUntil > state.now;
       if (frozen) dmg *= 1 + (mods.coldBurn ?? 0);                         // Kältebrand
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
-      if (hasTag(id, 'Arkan')) dmg *= arcDmgMul();                          // Arkane Ladungen
       dmg *= buffDmgMul() * pdDmgMul() * berserkMul() * legendDmgMul();     // Getränke des ?-Magiers, Perfekter Dodge, Berserker, Leeroy Jenkins
       if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // weniger Leben, mehr Schaden (kein Modus nutzt es seit v31)
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
@@ -145,7 +139,6 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && hasTag(id, 'Blitz')) { batteryHit(); if (c.over && !m.dead) applyRoot(m, BATTERY.stunMs); }   // Batterie: Ladung pro Treffer, überladen betäubt
       if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
-      if (landed && !m.dead && hasTag(id, 'Arkan')) for (const fn of arcaneHooks()) fn(m, id, dmg);
       if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of fireHooks()) fn(m, id, dmg);
       if (landed) for (const fn of anyHooks()) fn(m, id, dmg, frozen);
       return landed;
@@ -230,10 +223,9 @@ export function castSpell(id, point?) {
   player.casting = null;
   player.targeting = false;
   blizCursor.visible = false;
-  // Dodge-Kombos: Normal kein Mana, Arcane only sofort, Fire only Feuerball crittet
+  // Dodge-Kombos: Normal kein Mana, Fire only Feuerball crittet
   const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
-  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul / pdRateMul() / legendCastMul();   // Perfekter Dodge, Legende Arkanbeschuss: schneller zaubern   // castMul: Waffen-Typ und Hersteller
-  if (castTime && consumeCombo('instant')) castTime = 0;
+  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul / pdRateMul();   // Perfekter Dodge: schneller zaubern   // castMul: Waffen-Typ und Hersteller
   if (!castTime) { noteCastStart(id); return release(id, point, opts); }
   player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp, opts };
   noteCastStart(id);
@@ -242,7 +234,7 @@ export function castSpell(id, point?) {
 // Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts). Liste an einer Funktion: Import-Kreis
 function castStartHooks(): any[] { return (castStartHooks as any).list ??= []; }
 export function onCastStart(fn) { castStartHooks().push(fn); }
-export function noteCastStart(id) { meterCast(SPELLS[id].tags, id); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
+export function noteCastStart(id) { meterCast(SPELLS[id].tags); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
 function release(id, point, opts: any = {}) {

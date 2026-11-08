@@ -29,7 +29,7 @@ const RANK_APPLY = {
   dmg: (s, m) => { s.dmg += CARD_RANK.dmg * m; },
   mana: (s, m) => { s.mana = manaAfter(s.mana, m); },
   radius: (s, m) => { s.radius += CARD_RANK.radius * m; },
-  tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Klingenstrich: Dauer der Aktion
+  tempo: (s, m) => { s.tempo = (s.tempo ?? 1) + CARD_RANK.tempo * m; },   // Nahkampf: Dauer der Aktion
   cd: (s, m) => { s.cd = Math.max(0.3, (s.cd ?? 1) - CARD_RANK.cd * m); },   // PH: Untergrenze
   range: (s, m) => { s.range = (s.range ?? 0) + CARD_RANK.range * m; },   // yd obendrauf
   dur: (s, m) => { s.dur = (s.dur ?? 1) + CARD_RANK.dur * m; s.radius += CARD_RANK.dur * m; },

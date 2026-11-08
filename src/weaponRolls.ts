@@ -38,11 +38,12 @@ export const ROLLS = {
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule
-export const FOCUS_SPELLS = ['nova', 'ae', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'voidorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'surge', 'arcmissiles', 'arcmark', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm'];
+export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', 'hellfire', 'frostorb', 'whirl', 'icelance', 'glacier', 'fireball', 'meteor', 'phoenix', 'detonate', 'chain', 'arc', 'strike', 'ball', 'discharge', 'storm'];
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes).
 // Kettenblitz und Bogenblitz sind seit v26 zurück: nur neue Waffen (s.fv) meinen sie wirklich, alte bleiben beim Ersatz
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
-const focusId = (id, w?) => w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id;
+// Geparkte Arkan-Spells (maybeLater/): Blink ist der einzige Arkan-Spell, der bleibt
+const focusId = (id, w?) => { const f = w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id; return SPELLS[f] ? f : 'blink'; };
 const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
 const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
@@ -93,13 +94,13 @@ export function effectRows(w) {
     if (s.element !== 'none') Object.assign(rows.element, { text: t('wrow.perHit', { name: el.name, fx: el.fx, pct: pct(ROLLS.procChance * f).slice(1) }), color: elementColor(s.element) });
     rows.maker.text = `${MAKERS[s.maker].name}: ${MAKERS[s.maker].trait}`;
     if (s.extra !== 'none') rows.extra.text = `${EXTRAS[s.extra]}: ${value(VALUE_KEY[s.value2], 0.5)}`;
-    if (s.unique) rows.unique.text = s.legend ? t('wrow.legend', { name: LEGENDS[s.legend].name, desc: LEGENDS[s.legend].desc, combo: LEG.combo.labels.join(' → ') }) : oldModelName(s.unique);
+    if (s.unique) rows.unique.text = LEGENDS[s.legend] ? t('wrow.legend', { name: LEGENDS[s.legend].name, desc: LEGENDS[s.legend].desc, combo: LEG.combo.labels.join(' → ') }) : oldModelName(s.unique);
   }
   return WEAPON_ROWS.map(([kind]) => rows[kind]);
 }
 export const effectLines = w => effectRows(w).filter(r => r.text).map(r => `${r.label}: ${r.text}`);
 export const effectText = w => effectLines(w).join(' · ');
-export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : w.s.legend ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
+export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : LEGENDS[w.s.legend] ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
 export const rarityOf = w => CARD_RARITIES[w.r];
 // Für Filter und Sortierung im Inventar: alte Waffen haben kein Element und keinen Baukasten-Typ
 export const elementOf = w => isNew(w) ? w.s.element : 'none';

@@ -11,7 +11,7 @@ export const META = {
   splits: [15, 30, 45, 60, 75, 90, 100],
   dust: { perLevel: 1, doneBonusAtTier3: 50 },         // Abschluss-Bonus wächst mit der Shop-Stufe
   price: { 'grün': 40, blau: 70, lila: 120, orange: 200, perBuy: 1.15 },
-  charMods: ['frost', 'fire', 'arcane', 'blitz', 'plague', 'realmen', 'klinge'],    // Figuren, zählen nicht als Mod
+  charMods: ['frost', 'fire', 'blitz', 'plague', 'realmen'],    // Figuren, zählen nicht als Mod
   shop: {
     packsTier: 3, packsOneModTier: 5,
     offer: { 1: 4, 2: 5, 3: 6, 4: 7, 5: 8 }, offerPerExtraTier: 2,

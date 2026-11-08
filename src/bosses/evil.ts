@@ -1,4 +1,4 @@
-// Verdorbene Figuren: das echte Spielermodell (Strichkrieger, Klingenstrich, Strichmagier) als Boss.
+// Verdorbene Figuren: das echte Spielermodell (Strichkrieger, Strichmagier) als Boss.
 // Dunkel rot-schwarz getönt, ×1.5 groß. Die Angriffe aus bosses/attacks.ts steuern die Pose über model.ctl:
 // arms fällt beim Ausholen, steigt beim Schlag. Beim Schlag spielt die Figur die passende Animation aus dem Spiel,
 // die Magier heben den Stab mit dem Ausholen (anim.cast). Welcher Angriff läuft, setzt boss.ts in ctl.atk.
@@ -6,7 +6,6 @@
 import * as THREE from 'three';
 import { scene } from '../render';
 import { buildStrichKrieger } from '../models/strichKrieger';
-import { buildKlinge } from '../models/klingeModel';
 import { buildStrichMagier } from '../models/strichMagier';
 import { buildWeapon } from '../models/weapons/index';
 
@@ -18,11 +17,10 @@ const EVIL = {
   strikeFrom: -1.8,                  // arms unter diesem Wert = ausgeholt, steigt es wieder: Schlag
 };
 // Roster-Skin → Spiel-Skin der Strichmagier
-const MAGE = { feuer: 'feuer', eis: 'frost', arkan: 'arkan' };
-const STAFF = { feuer: 'glutrute', eis: 'grenzwaechter', arkan: 'zirkelstab' };
+const MAGE = { feuer: 'feuer', eis: 'frost' };
+const STAFF = { feuer: 'glutrute', eis: 'grenzwaechter' };
 // Angriff (ATT-Schlüssel) → Animation der Figur
 const KRIEGER = { explosion: 'qs', slam: 'exec', ring: 'cry', kette: 'q1', ansturm: 'e' };
-const KLINGE = { ansturm: 'dash', sog: 'wirbel', explosion: 'e' };
 
 function tint(root) {
   const mats = [];
@@ -38,7 +36,7 @@ function tint(root) {
 
 export function buildEvil(spec) {
   const skin = spec.skin, mage = MAGE[skin];
-  const hero = mage ? buildStrichMagier(mage) : skin === 'klinge' ? buildKlinge({ bloom: true }) : buildStrichKrieger({ bloom: true, weapon: 'sword' });
+  const hero = mage ? buildStrichMagier(mage) : buildStrichKrieger({ bloom: true, weapon: 'sword' });
   const root = hero.root, extras = [hero.scarf, hero.fx?.group].filter(o => o && o !== root && o.isObject3D);
   for (const o of extras) scene.add(o);
   let staff = null, clock = 0;
@@ -52,7 +50,6 @@ export function buildEvil(spec) {
   }
   const mats = tint(root);
   root.scale.setScalar(EVIL.scale);
-  if (skin === 'klinge') hero.setStance?.(2, true);   // zwei Katanas
   const ctl: any = { arms: 0, lean: 0, atk: null };
   let prev = 0, low = 0, seq = 0, ability = null, attack = null, step = 0, dur = 0, flashOn = -1;
   // Schlag: passende Animation starten
@@ -60,11 +57,6 @@ export function buildEvil(spec) {
     seq++;
     ability = attack = null;
     if (skin === 'krieger') ability = KRIEGER[ctl.atk] ?? `q${1 + seq % 3}`;
-    else if (skin === 'klinge') {
-      ability = KLINGE[ctl.atk] ?? null;
-      if (!ability) { attack = 'q'; step = seq % 3; }
-      dur = 900;
-    }
   }
   return {
     root, ctl, parts: {}, height: 2 * EVIL.scale, evil: true,

@@ -74,18 +74,12 @@ export const BOSSES: any[] = [
  {id:'v-krieger',nr:'V',name:t('boss.v-krieger.name'),from:t('boss.v-krieger.from'),tier:'mittel',evil:true,desc:t('boss.v-krieger.desc'),
   model:evil('krieger',{weapon:'greatsword',metal:0x3a3034,weaponGlow:0x8a1010}),
   attacks:[{n:t('boss.v-krieger.attacks.0.n'),k:'explosion',p:{r:5,warn:.6,spin:true,color:0xff3030},i:t('boss.v-krieger.attacks.0.i')},{n:t('boss.v-krieger.attacks.1.n'),k:'slam',p:{r:5,warn:.9},i:t('boss.v-krieger.attacks.1.i')},{n:t('boss.v-krieger.attacks.2.n'),k:'ring',p:{r:9,color:0xffd050},i:t('boss.v-krieger.attacks.2.i')}],rules:[]},
- {id:'v-klinge',nr:'V',name:t('boss.v-klinge.name'),from:t('boss.v-klinge.from'),tier:'mittel',evil:true,desc:t('boss.v-klinge.desc'),
-  model:evil('klinge',{weapon:'katana',weapon2:'katana',weaponGlow:0xff2a3a}),
-  attacks:[{n:t('boss.v-klinge.attacks.0.n'),k:'kette',p:{hits:[.4,.4,.55],r:3.5,ang:120},i:t('boss.v-klinge.attacks.0.i')},{n:t('boss.v-klinge.attacks.1.n'),k:'ansturm',p:{len:11,w:1.4,warn:.5},i:t('boss.v-klinge.attacks.1.i')},{n:t('boss.v-klinge.attacks.2.n'),k:'sog',p:{color:0xd0203a,explode:5},i:t('boss.v-klinge.attacks.2.i')}],rules:[]},
  {id:'v-feuer',nr:'V',name:t('boss.v-feuer.name'),from:t('boss.v-feuer.from'),tier:'mittel',evil:true,desc:t('boss.v-feuer.desc'),
   model:evil('feuer',{weapon:'staff',glow:0xff6a1a,color:0x2a0e08}),
   attacks:[{n:t('boss.v-feuer.attacks.0.n'),k:'faecher',p:{n:1,speed:14,size:.5,color:0xff6a1a},i:t('boss.v-feuer.attacks.0.i')},{n:t('boss.v-feuer.attacks.1.n'),k:'meteor',p:{n:1,r:5,warn:1.3},i:t('boss.v-feuer.attacks.1.i')},{n:t('boss.v-feuer.attacks.2.n'),k:'pfuetze',p:{n:1,r:5,color:0xd8b040,label:t('boss.v-feuer.attacks.2.p.label')},i:t('boss.v-feuer.attacks.2.i')},{n:t('boss.v-feuer.attacks.3.n'),k:'explosion',p:{r:6,warn:.7,color:0xff4a1a},i:t('boss.v-feuer.attacks.3.i')}],rules:[]},
  {id:'v-eis',nr:'V',name:t('boss.v-eis.name'),from:t('boss.v-eis.from'),tier:'mittel',evil:true,desc:t('boss.v-eis.desc'),
   model:evil('eis',{weapon:'staff',glow:0x6ac8ff,color:0x0a1420}),
   attacks:[{n:t('boss.v-eis.attacks.0.n'),k:'explosion',p:{r:7,warn:.5,color:0x6ac8ff},i:t('boss.v-eis.attacks.0.i')},{n:t('boss.v-eis.attacks.1.n'),k:'meteor',p:{n:9,r:2,warn:.8,spread:5,stagger:.12,color:0x9ad8ff},i:t('boss.v-eis.attacks.1.i')},{n:t('boss.v-eis.attacks.2.n'),k:'faecher',p:{n:3,spread:24,speed:15,color:0xbfe8ff},i:t('boss.v-eis.attacks.2.i')}],rules:[]},
- {id:'v-arkan',nr:'V',name:t('boss.v-arkan.name'),from:t('boss.v-arkan.from'),tier:'mittel',evil:true,desc:t('boss.v-arkan.desc'),
-  model:evil('arkan',{weapon:'staff',glow:0xc070ff,color:0x140a20,float:true}),
-  attacks:[{n:t('boss.v-arkan.attacks.0.n'),k:'blink',p:{explode:5,warn:.5,color:0xc070ff},i:t('boss.v-arkan.attacks.0.i')},{n:t('boss.v-arkan.attacks.1.n'),k:'faecher',p:{n:5,spread:14,speed:14,color:0xc070ff},i:t('boss.v-arkan.attacks.1.i')},{n:t('boss.v-arkan.attacks.2.n'),k:'explosion',p:{r:6,warn:.55,color:0xc070ff},i:t('boss.v-arkan.attacks.2.i')}],rules:[]},
  // spät
  {id:'os',nr:55,name:t('boss.os.name'),from:t('boss.os.from'),tier:'spaet',desc:t('boss.os.desc'),
   bodies:[{m:{t:'biped',p:{skin:0x8a7a5a,armor:0xc9a24a,accent:0xe0c060,eye:0xffe070,metal:0xffe9a0,bulk:.9,head:'lion',weapon:'spear',scale:1.7}},off:[-3.5,-4]},
@@ -144,10 +138,8 @@ export const BOSSES: any[] = [
 export const STYLES: any[] = [
  {name:t('boss.styles.0.name'),model:BOSSES.find(b=>b.id==='asche').model,atk:{k:'kette',p:{hits:[.6,.6],r:5,ang:100}}},
  {name:t('boss.styles.1.name'),model:BOSSES.find(b=>b.id==='v-krieger').model,atk:{k:'explosion',p:{r:5,warn:.6,spin:true,color:0xff3030}}},
- {name:t('boss.styles.2.name'),model:BOSSES.find(b=>b.id==='v-klinge').model,atk:{k:'ansturm',p:{len:11,w:1.4,warn:.5}}},
  {name:t('boss.styles.3.name'),model:BOSSES.find(b=>b.id==='v-feuer').model,atk:{k:'meteor',p:{n:3,r:4}}},
  {name:t('boss.styles.4.name'),model:BOSSES.find(b=>b.id==='v-eis').model,atk:{k:'explosion',p:{r:7,warn:.5,color:0x6ac8ff}}},
- {name:t('boss.styles.5.name'),model:BOSSES.find(b=>b.id==='v-arkan').model,atk:{k:'blink',p:{explode:5,color:0xc070ff}}},
 ];
 
 // Spielwerte der Regeln, die im Viewer nur im Text stehen (Boss-Plan). Alle PH

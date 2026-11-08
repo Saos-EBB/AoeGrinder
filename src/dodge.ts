@@ -22,8 +22,8 @@ export const DG = {
   perfect: { hitstopMs: 80, flashMs: 220, buffMs: 3000, dmg: 0.3, rate: 0.3, maxStacks: 3 },   // v31: 3 s +30 % Schaden und Angriffstempo, bis 3×
   devMobSlow: 0.3,                                     // Dev-Schalter: Mob-Angriffe so viel langsamer, zum Testen der i-Frames            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
   // Kombo pro Modus im Fenster nach dem Dodge-Ende (ms); ein perfekter Dodge verdoppelt es
-  combo: { normal: 1500, feuer: 2000, arkan: 1500, krieger: 1000, klinge: 1000, perfectMul: 2,
-    miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6, klingeQMul: 2 },
+  combo: { normal: 1500, feuer: 2000, krieger: 1000, perfectMul: 2,
+    miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6 },
 };
 
 let dodge = null;                 // { start, dx, dz, from, to, charge, perfect }: from und to stehen beim Start fest
@@ -35,13 +35,13 @@ export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframe
 export const dodgeRecovery = () => state.now < lastEnd + DG.recoveryMs;
 const dodgeCharges = () => charges.filter(t => t <= state.now).length;
 
-// Modus für die Kombo-Regel: Normal, Fire only, Frost only, Arcane only, Strichkrieger, Klingenstrich
+// Modus für die Kombo-Regel: Normal, Fire only, Frost only, Strichkrieger
 export function dodgeMode() {
   const ids = activeModIds();
-  return ids.includes('fire') ? 'feuer' : ids.includes('frost') ? 'frost' : ids.includes('arcane') ? 'arkan' : ids.includes('realmen') ? 'krieger' : ids.includes('klinge') ? 'klinge' : 'normal';
+  return ids.includes('fire') ? 'feuer' : ids.includes('frost') ? 'frost' : ids.includes('realmen') ? 'krieger' : 'normal';
 }
 // Kombo: welche Regel gerade gilt und bis wann. consumeCombo(kind) löst sie genau einmal aus
-const KIND = { normal: 'freeMana', feuer: 'fireCrit', arkan: 'instant', krieger: 'smash', klinge: 'klingeQ' };
+const KIND = { normal: 'freeMana', feuer: 'fireCrit', krieger: 'smash' };
 let combo = null;
 const comboActive = () => !!combo && state.now < combo.until;
 export const comboReady = kind => comboActive() && combo.kind === kind;
@@ -56,7 +56,7 @@ function startCombo(perfect) {
   combo = { kind: KIND[mode], until: state.now + ms * (perfect ? DG.combo.perfectMul : 1) * (mods.comboWindow ?? 1) };   // Karte Kombo-Meister
 }
 
-// Stapel des Perfekt-Buffs (v31): Schaden in core.ts, Tempo in realMen.ts, klinge.ts und beim Zaubern
+// Stapel des Perfekt-Buffs (v31): Schaden in core.ts, Tempo in realMen.ts und beim Zaubern
 export const pdStacks = () => state.pdBuff && state.pdBuff.until > state.now ? state.pdBuff.stacks : 0;
 export const pdDmgMul = () => 1 + DG.perfect.dmg * pdStacks();
 export const pdRateMul = () => 1 + DG.perfect.rate * pdStacks();

@@ -103,7 +103,7 @@ function pickCard(card) {
 function chooseReplacement(id) {
   $('cardHint').textContent = t('card.replaceWhich', { name: SPELLS[id].name });
   $('cards').innerHTML = '';
-  // Kandidaten: Attacken-Slots ohne „fixed“. Strichkrieger und Klingenstrich haben nur fixed-Moves: dann stehen diese zur Wahl,
+  // Kandidaten: Attacken-Slots ohne „fixed“. Der Strichkrieger hat nur fixed-Moves: dann stehen diese zur Wahl,
   // sonst bliebe die Ansicht leer und der Run hinge fest. Gibt es gar keinen Slot, verfällt die Karte.
   const attacks = state.slots.map((old, slot) => ({ old, slot })).filter(x => x.slot < SLOT.attacks && x.old);
   const open = attacks.some(x => !SPELLS[x.old].fixed) ? attacks.filter(x => !SPELLS[x.old].fixed) : attacks;

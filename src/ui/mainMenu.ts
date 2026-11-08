@@ -10,7 +10,6 @@ import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta } from '../meta';
 import { WAR_WEAPON_NAMES } from '../realMen';
-import { KLINGE_WEAPON_NAMES } from '../klinge';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -33,11 +32,9 @@ const CHARS = [
   { mod: null, name: t('char.normal.name'), sub: t('char.normal.sub'), color: '#f2e9e4', stats: [3, 3, 3] },
   { mod: 'frost', name: t('char.frost.name'), sub: t('char.frost.sub'), color: '#7dd3fc', stats: [3, 5, 3] },
   { mod: 'fire', name: t('char.fire.name'), sub: t('char.fire.sub'), color: '#fb923c', stats: [5, 1, 2] },
-  { mod: 'arcane', name: t('char.arcane.name'), sub: t('char.arcane.sub'), color: '#c4b5fd', stats: [4, 3, 2] },
   { mod: 'blitz', name: t('char.blitz.name'), sub: t('char.blitz.sub'), color: '#fde047', stats: [4, 3, 2] },
   { mod: 'plague', name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
   { mod: 'realmen', name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
-  { mod: 'klinge', name: t('char.klinge.name'), sub: t('char.klinge.sub'), color: '#e5e7eb', stats: [4, 3, 3] },
 ];
 const STAT_NAMES = [t('stat.dmg'), t('stat.control'), t('stat.survive')], STAT_MAX = 5;
 let boardMode: 'time' | 'score' = 'time';
@@ -119,13 +116,11 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  const hasWeapons = !!mage.weapon || mage.skin === 'krieger' || mage.skin === 'klinge';
+  const hasWeapons = !!mage.weapon || mage.skin === 'krieger';
   $('menuWeaponsBtn').hidden = !hasWeapons;
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
   if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Strichkrieger: feste Waffe vor dem Run
     weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
-  if (mage.skin === 'klinge') for (const [id, name] of Object.entries(KLINGE_WEAPON_NAMES))   // Klingenstrich: Standard oder Thunderfury
-    weapons.appendChild(button('chip' + (id === mage.klingeWeapon ? ' selected' : ''), name, () => { mage.setKlingeWeapon(id); renderMenu(); }));
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
@@ -165,7 +160,7 @@ export const menuOpen = () => $('startModal').classList.contains('show');
 // Im Menü schaut die Figur zur Kamera; Ziehen auf der freien Fläche dreht sie, das Mausrad zoomt
 let menuTurn = 0, turning = null;
 export const menuYaw = () => menuOpen() ? Math.PI + menuTurn : 0;
-// Im Menü läuft die Figur ihre Ladungsstufen durch (Magier: Anzeige 0 … voll, Krieger: Wut, Klinge: Haltung 3 bei voll)
+// Im Menü läuft die Figur ihre Ladungsstufen durch (Magier: Anzeige 0 … voll, Krieger: Wut)
 const SHOWCASE = { stepMs: 1600, values: [0, 0.3, 0.6, 1] };   // PH
 export function menuShowcase() {
   if (!menuOpen()) return null;
@@ -176,7 +171,7 @@ $('menuBoardTabs').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
 });
-// Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger und Klingenstrich: feste Waffenwahl als Liste
+// Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger: feste Waffenwahl als Liste
 $('menuWeaponsBtn').addEventListener('click', () => {
   if (mage.weapon) openInventory(renderMenu);
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;

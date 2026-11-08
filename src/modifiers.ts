@@ -9,28 +9,22 @@ export const MODIFIERS = [
   { id: 'big', name: t('mod.big.name'), desc: t('mod.big.desc'), scoreMult: 1, excludes: [], packSize: 2 },
   { id: 'time', name: t('mod.time.name'), desc: t('mod.time.desc'), scoreMult: 1, excludes: [], timeLimit: 600000 },
   // Teil 2, ausgewertet in spells/core.ts: startKit, onlyTag, noDrink, noCards, noLuck
-  { id: 'frost', name: t('mod.frost.name'), desc: t('mod.frost.desc'), scoreMult: 1.2, excludes: ['fire', 'arcane', 'realmen', 'klinge', 'blitz', 'plague'], startKit: ['nova', 'coc', 'icelance', 'whirl', 'bliz', 'drink', 'blink', null], onlyTag: 'Frost',
+  { id: 'frost', name: t('mod.frost.name'), desc: t('mod.frost.desc'), scoreMult: 1.2, excludes: ['fire', 'realmen', 'blitz', 'plague'], startKit: ['nova', 'coc', 'icelance', 'whirl', 'bliz', 'drink', 'blink', null], onlyTag: 'Frost',
     pool: ['nova', 'whirl', 'coc', 'bliz', 'frostorb', 'icelance', 'frostbolt', 'needle', 'icebarrier'], relics: ['iceblock'],
     hitSlow: { pct: 0.2, ms: 2000 } },   // PH: jeder Frost-Treffer, stärkster Slow gilt
-  { id: 'fire', name: t('mod.fire.name'), desc: t('mod.fire.desc'), scoreMult: 1.4, excludes: ['frost', 'arcane', 'realmen', 'klinge', 'blitz', 'plague'], startKit: ['fireball', 'flame', 'blast', 'hellfire', 'gasoline', 'drink', 'blink', null], onlyTag: 'Feuer',
+  { id: 'fire', name: t('mod.fire.name'), desc: t('mod.fire.desc'), scoreMult: 1.4, excludes: ['frost', 'realmen', 'blitz', 'plague'], startKit: ['fireball', 'flame', 'blast', 'hellfire', 'gasoline', 'drink', 'blink', null], onlyTag: 'Feuer',
     pool: ['fireball', 'flame', 'blast', 'hellfire', 'meteor', 'detonate', 'firetrail', 'firestorm', 'gasoline'], relics: ['phoenix'],
     dotMul: 1.5, baseCrit: 0.15, hp: 0.9 },   // PH: Dauerschaden mit Tag Feuer, Grund-Crit, Leben
-  { id: 'arcane', name: t('mod.arcane.name'), desc: t('mod.arcane.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'klinge', 'blitz', 'plague'], startKit: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'surge', 'drink', 'blink', null], onlyTag: 'Arkan',
-    pool: ['ae', 'arcmissiles', 'barrage', 'voidorb', 'arcmark', 'beam', 'arcorb', 'surge', 'arcstrike'], relics: ['archon', 'timewarp'],
-    castWhileMoving: true, blinkCharges: 2, hp: 0.85, manaCost: 1.15 },   // PH: Zaubern und Kanäle im Laufen, Leben, Manakosten
-  { id: 'blitz', name: t('mod.blitz.name'), desc: t('mod.blitz.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'realmen', 'klinge', 'plague'], startKit: ['chain', 'arc', 'strike', 'ball', 'discharge', 'recharge', 'blink', null], onlyTag: 'Blitz',
+  { id: 'blitz', name: t('mod.blitz.name'), desc: t('mod.blitz.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'realmen', 'plague'], startKit: ['chain', 'arc', 'strike', 'ball', 'discharge', 'recharge', 'blink', null], onlyTag: 'Blitz',
     pool: ['chain', 'arc', 'strike', 'ball', 'discharge', 'storm', 'quake', 'keeper', 'staticfield'], relics: ['stormelem'], noDrink: true,
     battery: true },   // PH: Batterie in battery.ts, Zahlen in BATTERY (config.ts)
   // Seuchenmagier (v31, ersetzt den Blutmagier): Zauber kosten Leben, kein Mana, keine Regeneration, kein Trinken. Spells in spells/plague.ts
-  { id: 'plague', name: t('mod.plague.name'), desc: t('mod.plague.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'arcane', 'blitz', 'realmen', 'klinge'],
+  { id: 'plague', name: t('mod.plague.name'), desc: t('mod.plague.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'blitz', 'realmen'],
     startKit: ['sludge', 'slimewave', 'contract', 'drain', 'burst', null, 'melt', null], onlyTag: 'Seuche', noDrink: true, lifeCost: true,
     pool: ['sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst'], relics: ['pestilence'] },
   // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
-  { id: 'realmen', name: t('mod.realmen.name'), desc: t('mod.realmen.desc'), scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'klinge', 'blitz', 'plague'], startKit: ['wQ', 'wR', 'wCharge', 'wShout', 'wCry', 'wEat', 'wLeap', null], onlyTag: 'Krieger',
+  { id: 'realmen', name: t('mod.realmen.name'), desc: t('mod.realmen.desc'), scoreMult: 1, excludes: ['frost', 'fire', 'blitz', 'plague'], startKit: ['wQ', 'wR', 'wCharge', 'wShout', 'wCry', 'wEat', 'wLeap', null], onlyTag: 'Krieger',
     pool: ['wQ', 'wE', 'wR', 'wExec', 'wCry', 'wLast', 'wCharge', 'wClap', 'wShout'], relics: ['wBerserk'] },
-  // Nahkämpfer aus klinge.ts: keine Ressource, nur Abklingzeiten
-  { id: 'klinge', name: t('mod.klinge.name'), desc: t('mod.klinge.desc'), scoreMult: 1, excludes: ['frost', 'fire', 'arcane', 'realmen', 'blitz', 'plague'], startKit: ['kQ', 'kE', 'kAder', 'kR', 'kKunai', 'kEat', 'kDash', null], onlyTag: 'Klinge',
-    pool: ['kQ', 'kE', 'kR', 'kAder', 'kStorm', 'kKunai', 'kCounter', 'kIaido', 'kSmoke'], relics: ['kClones'] },
   { id: 'nodrink', name: t('mod.nodrink.name'), desc: t('mod.nodrink.desc'), scoreMult: 1.5, excludes: [], noDrink: true },
   { id: 'classic', name: t('mod.classic.name'), desc: t('mod.classic.desc'), scoreMult: 1.5, excludes: ['noluck'], noCards: true },
   { id: 'noluck', name: t('mod.noluck.name'), desc: t('mod.noluck.desc'), scoreMult: 1.2, excludes: ['classic'], noLuck: true },
@@ -42,11 +36,9 @@ export const MODES = [
   { id: 'sprint', name: t('mode.sprint.name'), mods: ['time'] },
   { id: 'frostonly', name: t('mode.frostonly.name'), mods: ['frost'] },
   { id: 'fireonly', name: t('mode.fireonly.name'), mods: ['fire'] },
-  { id: 'arcaneonly', name: t('mode.arcaneonly.name'), mods: ['arcane'] },
   { id: 'blitzonly', name: t('mode.blitzonly.name'), mods: ['blitz'] },
   { id: 'plagueonly', name: t('mode.plagueonly.name'), mods: ['plague'] },
   { id: 'realmen', name: t('mode.realmen.name'), mods: ['realmen'] },
-  { id: 'klinge', name: t('mode.klinge.name'), mods: ['klinge'] },
   { id: 'classic', name: t('mode.classic.name'), mods: ['classic'] },
   { id: 'custom', name: t('mode.custom.name'), mods: null },   // frei wählbar
 ];

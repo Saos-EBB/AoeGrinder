@@ -57,7 +57,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
   // Garantierter Drop: Magier eine Waffe ab Grün, sonst Staub ×3. Inventar voll → Staub
   loot(f, p) {
     f.hooks.onEnd.push(pos => {
-      const melee = mage.skin === 'krieger' || mage.skin === 'klinge';
+      const melee = mage.skin === 'krieger';
       boom(V(pos.x, gy(pos) + 1, pos.z), 2, PAL.slime, .8, { ground: gy(pos), n: 40 });
       addTrauma(.4);
       if (melee || inventoryFull()) {

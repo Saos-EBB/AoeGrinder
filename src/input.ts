@@ -31,7 +31,6 @@ export const ACTIONS = [
   { id: 'autorun',     label: t('bind.autorun'),           code: 'KeyR',   key: 'R' },
   { group: t('bind.group.windows') },
   { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
-  { id: 'stance', label: t('bind.stance'), code: '', key: '–' },   // nur in der Belegung des Klingenstrichs auf F
   { group: t('bind.group.spells') },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
   { id: 'nova',  label: t('bind.nova'),        code: 'Digit1', key: '1', spell: true },
@@ -45,24 +44,25 @@ export const ACTIONS = [
 ];
 const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
-// Die Nahkämpfer Klingenstrich und Strichkrieger haben eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
-const KLINGE_BIND_STORE = 'frostgrind.binds.klinge.v1';
-const KLINGE_SLOTS = { stance: ['KeyF', 'F'], nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
-let klingeBinds = false, normalBinds = binds;
-function klingeDefaults() {
-  const b = { ...normalBinds }, used = Object.values(KLINGE_SLOTS).map(s => s[0]);
+// Der Strichkrieger hat eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
+// Der Speicher-Name stammt vom Klingenstrich (geparkt in maybeLater/) und bleibt, damit gespeicherte Tasten gelten
+const MELEE_BIND_STORE = 'frostgrind.binds.klinge.v1';
+const MELEE_SLOTS = { nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
+let meleeBinds = false, normalBinds = binds;
+function meleeDefaults() {
+  const b = { ...normalBinds }, used = Object.values(MELEE_SLOTS).map(s => s[0]);
   for (const id in b) if (used.includes(b[id].code)) b[id] = { code: '', key: '–' };
-  for (const [id, [code, key]] of Object.entries(KLINGE_SLOTS)) b[id] = { code, key };
+  for (const [id, [code, key]] of Object.entries(MELEE_SLOTS)) b[id] = { code, key };
   return b;
 }
-export function useKlingeBinds(on) {
-  if (on === klingeBinds) return;
+export function useMeleeBinds(on) {
+  if (on === meleeBinds) return;
   if (on) {
     normalBinds = binds;
-    binds = klingeDefaults();
-    try { Object.assign(binds, JSON.parse(localStorage.getItem(KLINGE_BIND_STORE) || '{}')); } catch { /* kein Storage */ }
+    binds = meleeDefaults();
+    try { Object.assign(binds, JSON.parse(localStorage.getItem(MELEE_BIND_STORE) || '{}')); } catch { /* kein Storage */ }
   } else binds = normalBinds;
-  klingeBinds = on;
+  meleeBinds = on;
 }
 
 function defaultBinds() {
@@ -76,7 +76,7 @@ function loadBinds() {
   return b;
 }
 export function saveBinds() {
-  try { localStorage.setItem(klingeBinds ? KLINGE_BIND_STORE : BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
+  try { localStorage.setItem(meleeBinds ? MELEE_BIND_STORE : BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
 }
 // Tastennamen werden so gespeichert (Leertaste, Maus 4); keyText übersetzt sie nur für die Anzeige
 export const keyText = (k: string) => k === 'Leertaste' ? t('key.space') : k?.startsWith('Maus ') ? `${t('key.mouse')} ${k.slice(5) === 'Mitte' ? t('key.middle') : k.slice(5)}` : k;
@@ -154,7 +154,6 @@ function runAction(id, code = '') {
   if (id === 'charWin') toggleChar();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
-  if (id === 'stance') state.stanceKey?.();   // Klingenstrich (klinge.ts)
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;
 }
@@ -238,6 +237,6 @@ export function pickGround() {
 }
 
 export function resetBinds() {
-  if (klingeBinds) { normalBinds = defaultBinds(); binds = klingeDefaults(); }
+  if (meleeBinds) { normalBinds = defaultBinds(); binds = meleeDefaults(); }
   else binds = defaultBinds();
 }

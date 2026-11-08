@@ -1,4 +1,4 @@
-// Gemeinsame Helfer der Nahkämpfer (Real Men, Klingenstrich): Blickrichtung, Linie, Sprint nach vorn,
+// Gemeinsame Helfer der Nahkämpfer (Real Men; der Klingenstrich liegt geparkt in maybeLater/): Blickrichtung, Linie, Sprint nach vorn,
 // verzögerte Treffer. Zahlen stehen in den Configs der Modi (REALMEN, KLINGE).
 
 import { state, player } from './state';

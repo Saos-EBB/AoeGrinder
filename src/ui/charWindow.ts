@@ -11,7 +11,6 @@ import { spellValue } from '../cards';
 import { SUPPORTS } from '../spells/supports';
 import { rune, stat } from '../spells/core';
 import { moveMul } from '../realMen';
-import { klingeMoveMul } from '../klinge';
 import { syncPause } from './menus';
 import { COLORS } from './colors';
 import { ICONS } from './icons';
@@ -34,10 +33,10 @@ function statsTab() {
   const schools: any[] = [...new Set(owned.map(id => SPELLS[id].school ?? SPELLS[id].cls))].filter(s => s !== 'util');
   return `<div class="title">${t('cw.tab.stats')}</div>
     ${kv(t('cw.life'), `${Math.ceil(player.hp)} / ${maxHp()}`)}
-    ${player.resLabel ? kv(t('ci.stance'), player.resLabel) : kv(rage ? t('res.rage') : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
+    ${kv(rage ? t('res.rage') : 'Mana', `${Math.floor(player.mana)} / ${maxMana()}`)}
     ${rage || modValue('lifeCost') ? '' : kv(t('cw.regen'), t('cw.regenVal', { n: +(spirit() / 4 + 12.5).toFixed(1), s: CFG.regenTick / 1000 }))}
     ${kv('Crit', pct(modValue('baseCrit') ?? CFG.baseCrit))}
-    ${kv(t('cw.speed'), `${fmtNum(+(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul()).toFixed(1))} yd/s`)}
+    ${kv(t('cw.speed'), `${fmtNum(+(CFG.runSpeed * (mage.fx.speedMul ?? 1) * moveMul()).toFixed(1))} yd/s`)}
     ${kv(t('cw.dmgAll'), pct(dmgMult() * modFactor('dmg')))}
     ${schools.map(s => {
       const best = Math.max(...owned.filter(id => (SPELLS[id].school ?? SPELLS[id].cls) === s).map(id => spellValue(id)));

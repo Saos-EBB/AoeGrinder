@@ -4,9 +4,8 @@ import { groundAt, resolve, walkTopAt } from '../collision';
 import { CFG } from '../config';
 import { blinkFx, novaFx, iceTex } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
-import { mobsInRadius, applySlow, addField, hasRune, stat, makeCtx } from './core';
+import { mobsInRadius, applySlow, addField, hasRune, stat } from './core';
 import { mods } from '../config';
-import { ae } from './ae';
 import { batteryCharge } from '../battery';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
 import { t } from '../i18n';
@@ -72,7 +71,6 @@ export const blink = {
     player.vel.set(0, 0, 0);
     blinkFx(from, player.pos);
     if (hasRune('blink', 'target')) { coldGround(c, from); coldGround(c, player.pos.clone()); }
-    if (mods.blinkBomb) ae.effect(makeCtx('ae'));   // Blinkbombe: Arcane Explosion am Ziel
     if (mods.boltLeap) batteryCharge(mods.boltLeap);   // Blitzsprung: Kosten zurück und dazu Ladung
     if (hasRune('blink', 'nova')) {
       const r = c.radius(NOVA.radius);

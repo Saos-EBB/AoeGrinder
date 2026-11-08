@@ -1,4 +1,4 @@
-// Spielermodell: dünne Hülle um die Figuren der Viewer (strichMagier.ts, strichKrieger.ts, klingeModel.ts).
+// Spielermodell: dünne Hülle um die Figuren der Viewer (strichMagier.ts, strichKrieger.ts).
 // Der Skin kommt beim Run-Start aus dem Modus; mage bleibt dasselbe Objekt, damit Aufrufer nichts merken.
 
 import * as THREE from 'three';
@@ -6,27 +6,23 @@ import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
 import { buildStrichMagier } from './strichMagier';
-import { buildKlinge } from './klingeModel';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
 import { buildEquipped } from '../weaponRolls';
 
-// Nahkämpfer: Treffer-Moment geht an realMen.ts bzw. klinge.ts
+// Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
 const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
 const WAR_WEAPONS = ['sword', 'leeroy', 'freshmeat'];   // Axt und Kolben sind raus (v31), dazu die Legenden mit dem Riesenschwert als Basis (legends.ts)
 const warBase = w => (w === 'leeroy' || w === 'freshmeat' ? 'sword' : w);
-// Klingenstrich: Standard oder Thunderfury (legends.ts), gleiches Modell
-const KLINGE_WEAPON_STORE = 'frostgrind.klingeWeapon';
-let klingeWeapon = (() => { try { const w = localStorage.getItem(KLINGE_WEAPON_STORE); return w === 'thunderfury' ? w : 'standard'; } catch { return 'standard'; } })();
 let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
-const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon) }), klinge: () => buildKlinge({ bloom: PERF.bloom }) };
+const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon) }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 const NO_FX = {};
-// Liste an einer Funktions-Deklaration: existiert schon, wenn ein Import-Kreis klinge.ts/realMen.ts vor dieser Datei auswertet (vfx.html)
+// Liste an einer Funktions-Deklaration: existiert schon, wenn ein Import-Kreis realMen.ts vor dieser Datei auswertet (vfx.html)
 function hitHandlers(): any[] { return (hitHandlers as any).list ??= []; }
-// Treffer-Moment der Nahkampf-Animationen (realMen.ts, klinge.ts)
+// Treffer-Moment der Nahkampf-Animationen (realMen.ts)
 export function onWarriorHit(fn) { hitHandlers().push(fn); }
 
 // Feste Waffe der Nahkämpfer aus models/weapons. scale: Größe, tip/grip: Spitze und linke Hand ab dem Griff in Waffen-Maß // PH
@@ -103,7 +99,7 @@ function wield() {
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('arcane') ? 'arkan' : ids.includes('blitz') ? 'blitz' : ids.includes('plague') ? 'blut' : ids.includes('realmen') ? 'krieger' : ids.includes('klinge') ? 'klinge' : 'zufall'; };   // Zuhälter-Look 'alle' bleibt im Code, Kevins Skin
+const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('blitz') ? 'blitz' : ids.includes('plague') ? 'blut' : ids.includes('realmen') ? 'krieger' : 'zufall'; };   // Zuhälter-Look 'alle' bleibt im Code, Kevins Skin
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
@@ -123,13 +119,11 @@ export const mage = {
   get skin() { return skin; },
   get hero() { return cur; },
   get warWeapon() { return warWeapon; },
-  get klingeWeapon() { return klingeWeapon; },
-  setKlingeWeapon(id) { klingeWeapon = id; try { localStorage.setItem(KLINGE_WEAPON_STORE, id); } catch { /* egal */ } },
   setWarWeapon(id) {
     warWeapon = id;
     try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }
     if (skin === 'krieger') setSkin('krieger');
-  },                     // Klingenstrich: Effekte und Haltung des Modells
+  },
   get weapon() { return weapon; },
   setSkin,
   refreshWeapon() { wield(); },   // Wahl im Hauptmenü

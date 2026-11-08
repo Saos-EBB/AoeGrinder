@@ -72,7 +72,7 @@ export function hitstop(ms = W.hitstop.critMs) {
   lastStop = performance.now();
   stopLeft = ms;
 }
-// Läuft gerade ein Hitstop? Die Nahkampf-Figuren frieren dann mit ein (klinge.ts, realMen.ts)
+// Läuft gerade ein Hitstop? Die Nahkampf-Figuren frieren dann mit ein (realMen.ts)
 export const hitstopActive = () => stopLeft > 0;
 // Crits lösen Hitstop nur aus, wenn im Frame genau ein Treffer fiel (Einzelziel). Beim AoE-Grinden mit vielen Treffern stockt es so nicht.
 let frameHits = 0, frameCrit = false;

@@ -4,12 +4,11 @@ import { state, player } from '../state';
 import { SPELLS, SCHOOL_METER, BATTERY, PLAGUE, RANDOM_MAGE, mods } from '../config';
 import { modValue, randomMode } from '../modifiers';
 import { mage } from '../models/mage';
-import { meterSchool, meterValue, meterHeat, meterOverheated, meterDmgMul, meterFrostFull, arcCharges, arcDmgMul, arcCostMul } from '../schoolMeter';
+import { meterSchool, meterValue, meterHeat, meterOverheated, meterDmgMul, meterFrostFull } from '../schoolMeter';
 import { batteryMode, batteryMax, overcharged, batteryCost } from '../battery';
 import { shardMax } from '../figures';
 import { nextOf } from '../spells/random';
 import { warriorInfo } from '../realMen';
-import { klingeInfo } from '../klinge';
 import { COLORS } from './colors';
 import { t, fmtNum } from '../i18n';
 
@@ -41,15 +40,6 @@ function frost() {
     slow: pc(S.slow), max: pc(S.slowMax), hit: hit ? t('ci.frost.hit', { pct: pc(hit.pct), ms: sec(hit.ms) }) : '' }) };
 }
 
-function arcane() {
-  const S = SCHOOL_METER.Arkan;
-  return { name: S.name, color: S.color, rows: `
-    ${kv(t('ci.now'), `${arcCharges()} / ${S.max}`)}
-    ${kv(t('ci.arc.dmg'), plus(arcDmgMul()))}
-    ${kv(t('ci.arc.cost'), plus(arcCostMul()))}
-  `, rules: t('ci.arc.rules', { gain: S.gain.map(name).join(', '), dmg: pc(S.dmg), cost: pc(S.cost), idle: sec(S.idleMs), barrage: name('barrage') }) };
-}
-
 function battery() {
   const B = BATTERY;
   return { name: t('res.battery'), color: B.color, rows: `
@@ -76,15 +66,6 @@ function warrior() {
     armor: pc(R.armor), q: name('wQ'), start: R.q.start, kills: R.q.killsPerHit, qmax: R.q.max }) };
 }
 
-function klinge() {
-  const { stance, name: sName, bar, inStanceMs, K } = klingeInfo(), B = K.bar, two = K.stance[2], three = K.stance[3];
-  return { name: t('ci.stance'), color: COLORS.school.warrior ?? '#d8343c', rows: `
-    ${kv(t('ci.now'), `${sName} · ${Math.floor(bar)} / ${B.max}`)}
-    ${stance === 2 ? kv(t('ci.blade.toThree', { name: t('klinge.stance.3.name') }), sec(Math.max(0, B.toThreeMs - inStanceMs))) : ''}
-  `, rules: t('ci.blade.rules', { unit: B.perUnit, taken: B.perPctTaken, dmg: pc(two.dmg - 1), share: pc(K.bleed.share), ms: sec(K.bleed.ms), max: K.bleed.max,
-    min: de(B.toThreeMs / 60000), move: pc(three.move - 1), rate: three.rate, idle: sec(B.idleMs), drain: B.drainPerS }) };
-}
-
 function random() {
   const C = RANDOM_MAGE.cats;
   return { name: t('ci.dice'), color: COLORS.text, rows: `
@@ -95,13 +76,11 @@ function random() {
 // name, color: Überschrift; rows: Stand jetzt (nur im Lauf); rules: Regeln, auch fürs Hauptmenü
 function figure() {
   if (mage.skin === 'krieger') return warrior();
-  if (mage.skin === 'klinge') return klinge();
   if (batteryMode()) return battery();
   if (modValue('lifeCost')) return plague();
   const school = meterSchool();
   if (school === 'Feuer') return fire();
   if (school === 'Frost') return frost();
-  if (school === 'Arkan') return arcane();
   if (randomMode()) return random();
   return null;
 }

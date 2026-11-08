@@ -11,11 +11,11 @@ import { meta, saveMeta } from './meta';
 import { camera, scene } from './render';
 import { mage } from './models/mage';
 import { applyRoot, enterCombat, startLeap, pullMob, knockbackMob, onMobDeath } from './mobs';
-import { mobsInRadius, makeCtx, applySlow, addField, schedule } from './spells/core';
+import { mobsInRadius, makeCtx, addField } from './spells/core';
 import { runChain } from './spells/chain';
 import { igniteMob } from './spells/firestorm';
 import { blinkTo } from './spells/blink';
-import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE, SHADOW, BOLT } from './spells/fx';
+import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE } from './spells/fx';
 import { combatText, showError } from './ui/hud';
 import { forward } from './melee';
 import { t } from './i18n';
@@ -28,23 +28,19 @@ export const LEG = {
   egg: { ms: 60000, hp: 0.5 },
   pyro: { jumps: 5, range: 8, mul: 2 },
   snow: { len: 20, speed: 10, radius: 2, grow: 0.1, dmg: 1.5, upMs: 1000 },
-  barrage: { n: 8, range: 30, dmg: 1.3, hasteMs: 10000, haste: 0.25 },
   leeroy: { yd: 10, pull: 20, ms: 8000, dmg: 0.5 },
   meat: { range: 20, stunMs: 1000 },
-  thunder: { n: 10, range: 12, dmg: 1.2, slow: 0.2, slowMs: 5000 },
 };
 
-// Alle Legenden: kind 'mage' kommt aus der Kiste (element: nur mit diesem Element), 'krieger' und 'klinge' aus der Waffenwahl
+// Alle Legenden: kind 'mage' kommt aus der Kiste (element: nur mit diesem Element), 'krieger' aus der Waffenwahl. Geparkt: maybeLater/src/legends.parked.ts
 export const LEGENDS = {
   sheep: { kind: 'mage', name: t('legend.sheep.name'), desc: t('legend.sheep.desc') },
   cow: { kind: 'mage', name: t('legend.cow.name'), desc: t('legend.cow.desc') },
   murky: { kind: 'mage', name: t('legend.murky.name'), desc: t('legend.murky.desc') },
   pyroclasm: { kind: 'mage', element: 'feuer', name: t('legend.pyroclasm.name'), desc: t('legend.pyroclasm.desc') },
   snowball: { kind: 'mage', element: 'frost', name: t('legend.snowball.name'), desc: t('legend.snowball.desc') },
-  barrage: { kind: 'mage', element: 'arkan', name: t('legend.barrage.name'), desc: t('legend.barrage.desc') },
   leeroy: { kind: 'krieger', base: 'sword', name: t('legend.leeroy.name'), desc: t('legend.leeroy.desc') },
   freshmeat: { kind: 'krieger', base: 'sword', name: t('legend.freshmeat.name'), desc: t('legend.freshmeat.desc') },
-  thunderfury: { kind: 'klinge', name: t('legend.thunderfury.name'), desc: t('legend.thunderfury.desc') },
 };
 
 // Kiste: orange Waffe, mit 3 % eine Legende. Element-Legenden nur, wenn die Waffe das Element hat
@@ -57,14 +53,13 @@ export const pickLegend = element => pick(Object.keys(LEGENDS).filter(id => LEGE
 // Aktive Legende des Runs: Magier über die angelegte Waffe, Nahkampf über die Waffenwahl
 function activeLegend() {
   if (mage.skin === 'krieger') return LEGENDS[mage.warWeapon] ? mage.warWeapon : null;
-  if (mage.skin === 'klinge') return LEGENDS[mage.klingeWeapon] ? mage.klingeWeapon : null;
   const w = meta.inv.find(x => x.id === meta.equipped);
-  return w?.s?.legend ?? null;
+  return LEGENDS[w?.s?.legend] ? w.s.legend : null;   // geparkte Legende (Achtfacher Stern) zählt nicht
 }
 
 // ---------- Combo ----------
 const combo = { step: 0, until: 0, readyAt: 0 };
-export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; state.castHasteUntil = 0; egg.until = 0; egg.mesh && (egg.mesh.visible = false); }
+export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; egg.mesh && (egg.mesh.visible = false); }
 addEventListener('keydown', e => {
   if (e.repeat || state.paused || player.dead || !activeLegend()) return;
   const C = LEG.combo;
@@ -137,15 +132,6 @@ const EFFECTS = {
       },
     });
   },
-  barrage() {
-    const c = makeCtx('arcmissiles'), targets = nearest(mobsInRadius(player.pos, LEG.barrage.range, Infinity), player.pos);
-    if (!targets.length) return;
-    for (let i = 0; i < LEG.barrage.n; i++) {
-      const t = targets[i % targets.length];
-      schedule(i * 90, () => { if (t.dead) return; boltFx({ x: player.pos.x, y: player.pos.y + 1.2, z: player.pos.z }, t.pos, SHADOW, 140); c.hit(t, LEG.barrage.dmg * UNIT); });
-    }
-    state.castHasteUntil = state.now + LEG.barrage.hasteMs;   // core.ts: Zauberzeit / 1,25
-  },
   leeroy() {
     const from = player.pos.clone(), f = forward();
     blinkTo(from.x + f.x * LEG.leeroy.yd, from.z + f.z * LEG.leeroy.yd);
@@ -161,14 +147,8 @@ const EFFECTS = {
     pullMob(t, player.pos, Math.max(0, dist2d(t.pos, player.pos) - 1.5));
     applyRoot(t, LEG.meat.stunMs);
   },
-  thunderfury() {
-    const c = makeCtx('chain'), first = nearest(mobsInRadius(player.pos, LEG.thunder.range, Infinity), player.pos)[0];
-    if (!first) return;
-    runChain(c, first, { jumps: LEG.thunder.n, range: LEG.thunder.range, dmg: LEG.thunder.dmg * UNIT, boltColor: BOLT, onHit: m => { if (!m.dead) applySlow(m, LEG.thunder.slow, LEG.thunder.slowMs); } });
-  },
 };
 export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy.dmg : 1;
-export const legendCastMul = () => state.castHasteUntil > state.now ? 1 + LEG.barrage.haste : 1;
 
 // Cow Level: tote Kühe geben Staub
 onMobDeath(m => { if (m.cow) { meta.dust += LEG.cow.dust; saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } });

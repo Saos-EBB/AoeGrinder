@@ -15,7 +15,6 @@ import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorp
 import { updateAbilities } from './abilities';
 import { updateSkinFx } from './skinFx';
 import { updateRealMen, realMenAnim } from './realMen';
-import { updateKlinge, klingeAnim, updateKlingeVisuals } from './klinge';
 import { updateWaves } from './waves';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
@@ -67,7 +66,6 @@ function update(dt) {
   updateAbilities(dt);
   updateSkinFx();
   updateRealMen(dt);
-  updateKlinge(dt);
   updateZoneEvent(dt);
   updateFigures();
   updateLegends();
@@ -102,9 +100,8 @@ function updateVisuals(dt) {
   mage.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
-    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: show ? show.stage : meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...klingeAnim(), ...(show ? { rage: show.meter * (player.rageMax > 1 ? player.rageMax : 100), berserk: show.stage === 3, h3: show.stage === 3 } : {}),
+    channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: show ? show.stage : meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), ...realMenAnim(), ...(show ? { rage: show.meter * (player.rageMax > 1 ? player.rageMax : 100), berserk: show.stage === 3, h3: show.stage === 3 } : {}),
   });
-  updateKlingeVisuals();
   dodgeVisual(mage.root);
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht

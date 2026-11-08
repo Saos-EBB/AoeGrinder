@@ -234,7 +234,6 @@ function updateMeterBar() {
   }
   const full = v >= 1;
   if (meterKey !== school) { meterKey = school; el.style.setProperty('--meter', M.color); $('meterFill').style.background = `linear-gradient(${M.color}, ${M.color}88)`; }
-  if (school === 'Arkan') { fillTo($('meterFill'), v); $('meterText').textContent = `${M.name} ${Math.round(v * M.max)} / ${M.max}`; el.classList.toggle('full', full); return; }
   fillTo($('meterFill'), v);
   $('meterText').textContent = full ? M.full : t('meter.pct', { name: M.name, n: Math.floor(v * 100) });
   el.classList.toggle('full', full);
@@ -251,8 +250,8 @@ export function updateHud() {
   put($q('#hpText .cur'), String(Math.ceil(Math.max(0, player.hp))));
   put($q('#hpText .max'), ` / ${hpMax}`);
   fillTo($('manaFill'), clamp(player.mana / manaMax, 0, 1));
-  put($q('#manaText .cur'), player.resLabel ?? String(Math.floor(player.mana)));   // resLabel: Haltung des Klingenstrichs
-  put($q('#manaText .max'), player.resLabel ? '' : ` / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`);   // resNote: z. B. Blutrausch-Stapel
+  put($q('#manaText .cur'), String(Math.floor(player.mana)));
+  put($q('#manaText .max'), ` / ${manaMax}${player.resNote ? ` · ${player.resNote}` : ''}`);   // resNote: z. B. Blutrausch-Stapel
   updateMeterBar();
   const bat = batteryMode();               // Blitz only: Batterie gelb im Mana-Balken, überladen pulsiert er
   if (bat !== manaBattery) { manaBattery = bat; $('manaFill').style.background = bat ? `linear-gradient(${BATTERY.color}, #b89a10)` : ''; }
@@ -302,7 +301,7 @@ export function updateHud() {
     sl.charges.textContent = maxCharges > 1 ? (player.charges[id] ?? []).filter(t => t <= state.now).length || (player.charges[id] ? 0 : maxCharges) : '';
     if (sl.next) showNext(sl, SPELLS[id].preview());
     sl.el.classList.toggle('nomana', !paysLife(id) && player.mana < manaCost(id));
-    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || ((id === 'drink' || id === 'kEat' || id === 'rDrink') && !!dr));
+    sl.el.classList.toggle('active', player.targeting === id || ch?.id === id || ct?.id === id || ((id === 'drink' || id === 'rDrink') && !!dr));
   }
 
   // Nameplates

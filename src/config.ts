@@ -92,23 +92,21 @@ export const FIG_RELIC = { tier: 3, level: 10 };
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
 export function resetMods() {
-  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, aeCost: 1, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
+  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
     fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
     iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
-    splinterSwarm: 0, blinkBomb: 0, blinkExtra: 0,   // Arkan-Talente (v31)
     condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
     toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0,   // Seuchen-Talente (v31)
-    annihilator: 0, bladeMaster: 0,   // Krieger-Talente (v31)
-    deepWounds: 0, flicker: 0, shadowPact: 0 });   // Klingen-Talente (v31)
+    annihilator: 0, bladeMaster: 0 });   // Krieger-Talente (v31)
 }
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Seuchen-Spells kosten hier Mana statt Leben (ihr mana-Wert). Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
 export const RANDOM_MAGE = {
   kit: ['rOff', 'rDef', 'rUtil', 'rDrink', null, null, 'blink', null],   // v31: Blink auf der Bewegungs-Taste, die 4 Kategorien bleiben auf 1–4
   cats: {
-    rOff: { name: t('spell.rOff.name'), cd: 1000, pool: ['ae', 'surge', 'arcmissiles', 'fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'sludge', 'drain', 'burst', 'staticfield', 'quake'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
+    rOff: { name: t('spell.rOff.name'), cd: 1000, pool: ['fireball', 'flame', 'meteor', 'detonate', 'frostorb', 'icelance', 'bliz', 'strike', 'ball', 'discharge', 'storm', 'chain', 'arc', 'sludge', 'drain', 'burst', 'staticfield', 'quake'] },   // „nur GCD“: einen GCD gibt es seit v22 nicht, 1 s
     rDef: { name: t('spell.rDef.name'), cd: 6000, pool: ['nova', 'iceblock', 'blast', 'coc', 'whirl', 'glacier', 'hellfire', 'slimewave', 'slimetrap', 'contract', 'web'] },
-    rUtil: { name: t('spell.rUtil.name'), cd: 5000, pool: ['blink', 'voidorb', 'arcmark', 'blackhole', 'poisoncloud', 'keeper'] },
+    rUtil: { name: t('spell.rUtil.name'), cd: 5000, pool: ['blink', 'blackhole', 'poisoncloud', 'keeper'] },
     rDrink: { name: t('spell.rDrink.name'), cd: 30000, pool: ['gold', 'schnaps', 'tasse', 'tee'] },
   },
   sitMs: 2000,
@@ -148,8 +146,6 @@ export const SCHOOL_METER = {
     dmgPerHeat: 0.004, burnPerHeat: 0.008, overheatSelfPctPerS: 0.03, overheatUntil: 50, selfTickMs: 500,
     overDmg: 0.25, killHeal: 0.005 },   // v31: überhitzt +25 % Schaden, jeder Kill heilt 0,5 % Leben (Feuer-Figur)
   Frost: { name: t('meter.Frost.name'), color: '#7fd0ff', full: t('meter.Frost.full'), slow: 0.35, slowMax: 0.8 },
-  // Arkan (v31): Arkane Ladungen statt Fokus. Pro Ladung +15 % Schaden und +25 % Kosten auf Arkan-Spells, verfallen nach idleMs ohne Arkan-Zauber
-  Arkan: { name: t('meter.Arkan.name'), color: '#c573ff', full: t('meter.Arkan.full'), max: 4, dmg: 0.15, cost: 0.25, idleMs: 10000, gain: ['ae', 'arcmissiles', 'arcstrike'] },
 };
 
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
@@ -186,7 +182,7 @@ export const CARDS = [
     desc: (r, m) => t('card.might.desc', { n: Math.round(12 * m) }), apply: (r, m) => { mods.dmg += 0.12 * m; } },
   { id: 'tough', name: t('card.tough.name'), always: true, max: 3,
     desc: (r, m) => t('card.tough.desc', { n: Math.round(15 * m) }), apply: (r, m) => { mods.hpMult += 0.15 * m; } },
-  { id: 'wisdom', name: t('card.wisdom.name'), always: true, notOnly: ['Krieger', 'Klinge', 'Blitz', 'Seuche'], max: 3,
+  { id: 'wisdom', name: t('card.wisdom.name'), always: true, notOnly: ['Krieger', 'Blitz', 'Seuche'], max: 3,
     desc: (r, m) => t('card.wisdom.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.manaMult += 0.10 * m; } },
   { id: 'ibliz', name: t('card.ibliz.name'), tags: ['Frost'], needs: 'bliz', max: 2,   // Rang-Werte belegt (Wowhead) bei ×1
     desc: (r, m) => t('card.ibliz.desc', { n: Math.round(Math.min(0.9, [0.3, 0.5][r] * m) * 100) }),
@@ -225,13 +221,6 @@ export const CARDS = [
     desc: () => t('card.frosteye.desc'), apply: () => { mods.frostEye = 1; } },
   { id: 'shardhail', name: t('card.shardhail.name'), only: ['Frost'], max: 5,
     desc: (r, m) => t('card.shardhail.desc', { n: Math.max(1, Math.round(m)) }), apply: (r, m) => { mods.shardMax += Math.max(1, Math.round(m)); } },
-  // Arkan (v31)
-  { id: 'splinterswarm', name: t('card.splinterswarm.name'), only: ['Arkan'], needs: 'arcmissiles', max: 3,
-    desc: (r, m) => t('card.splinterswarm.desc', { n: Math.round(10 * m) }), apply: (r, m) => { mods.splinterSwarm += 0.10 * m; } },
-  { id: 'blinkbomb', name: t('card.blinkbomb.name'), only: ['Arkan'], max: 1,
-    desc: () => t('card.blinkbomb.desc'), apply: () => { mods.blinkBomb = 1; } },
-  { id: 'doublejump', name: t('card.doublejump.name'), only: ['Arkan'], max: 1,
-    desc: () => t('card.doublejump.desc'), apply: () => { mods.blinkExtra += 1; } },
   // Blitz (v31)
   { id: 'condenser', name: t('card.condenser.name'), only: ['Blitz'], max: 1,
     desc: () => t('card.condenser.desc'), apply: () => { mods.condenser = 30; } },
@@ -253,13 +242,6 @@ export const CARDS = [
     desc: () => t('card.blademaster.desc'), apply: () => { mods.bladeMaster += 1; } },
   { id: 'abyss', name: t('card.abyss.name'), only: ['Krieger'], max: 3,
     desc: () => t('card.abyss.desc'), apply: () => { mods.dodgeCharges += 1; } },
-  // Klingenstrich (v31)
-  { id: 'deepwounds', name: t('card.deepwounds.name'), only: ['Klinge'], max: 3,
-    desc: () => t('card.deepwounds.desc'), apply: () => { mods.deepWounds += 1; } },
-  { id: 'flicker', name: t('card.flicker.name'), only: ['Klinge'], needs: 'kDash', max: 1,
-    desc: () => t('card.flicker.desc'), apply: () => { mods.flicker = 1; } },
-  { id: 'shadowpact', name: t('card.shadowpact.name'), only: ['Klinge'], needs: 'kClones', max: 3,
-    desc: () => t('card.shadowpact.desc'), apply: () => { mods.shadowPact += 1; } },
   // Dodge (dodge.ts), in allen Modi. always: unabhängig von der Schule. Tag Bewegung, ein Support dafür gibt es noch nicht
   { id: 'dodgeCharge', name: t('card.dodgeCharge.name'), always: true, tags: ['Bewegung'], max: 1,
     desc: () => t('card.dodgeCharge.desc'), apply: () => { mods.dodgeCharges += 1; } },

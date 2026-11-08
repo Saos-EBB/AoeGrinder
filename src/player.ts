@@ -11,7 +11,7 @@ import { device } from './device';
 import { combatText, fmtTime } from './ui/hud';
 import { showCards, levelRefill } from './ui/menus';
 import { rankAllSpells } from './cards';
-import { mouseBtn, act } from './input';
+import { mouseBtn, act, useMeleeBinds } from './input';
 import { fillPacks, removeMob, announceNewMobs, burnMob, pullMob } from './mobs';
 import { clearAbilities } from './abilities';
 import { resetScore } from './score';
@@ -41,7 +41,6 @@ import { resetBuffs, buffSpeedMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
-import { resetKlinge, klingeMoveMul, klingeRooted, klingeUntouchable, klingeHurt } from './klinge';
 import { t } from './i18n';
 
 export function resetGame() {
@@ -76,7 +75,7 @@ export function resetGame() {
   resetLegends();
   player.shield = 0;
   resetBuffs();
-  resetKlinge();
+  useMeleeBinds(mage.skin === 'krieger');
   resetBattery();
   resetPlague();
   resetWaves();
@@ -126,11 +125,9 @@ export function setLevel(level) {
 }
 
 export function damagePlayer(amount, dot = false, source = '') {
-  if (player.dead || klingeUntouchable() || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
-  if (!dot && dodgeIframes()) { perfectDodge(); return; }
-  if (!dot && player.parryUntil > state.now) { player.onParry?.(); return; }   // Konter des Klingenstrichs   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
+  if (player.dead || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
+  if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
-  klingeHurt(amount / maxHp());   // Haltungs-Leiste: erlittener Schaden
   if (player.shield > 0 && player.shieldUntil > state.now) {   // Eisbarriere (spells/icebarrier.ts)
     const a = Math.min(player.shield, amount);
     player.shield -= a; amount -= a;
@@ -277,7 +274,7 @@ export function updatePlayer(dt) {
   const locked = !!state.bossLock;                 // Boss-Lock-on (boss.ts): Blick hält boss.ts, A/D laufen seitwärts
   if (!mouseBtn.right && !locked) player.facing += turn * CFG.turnSpeed * s;
 
-  const stunned = player.stunUntil > state.now || rooted() || klingeRooted() || iceBlocked() || plagueRooted();
+  const stunned = player.stunUntil > state.now || rooted() || iceBlocked() || plagueRooted();
   if (stunned) state.jumpQueued = false;
   let fwd = (act('forward') || state.autorun || (mouseBtn.left && mouseBtn.right)) ? 1 : 0;
   if (act('back')) fwd -= 1;
@@ -302,7 +299,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * klingeMoveMul() * mods.moveMul * buffSpeedMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * mods.moveMul * buffSpeedMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
     const slowed = player.slowUntil > state.now && !(player.berserkUntil > state.now) ? speed * (1 - CFG.curseSlow) : speed;   // Berserker: kein Slow
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

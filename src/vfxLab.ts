@@ -94,7 +94,7 @@ $('runeSel').addEventListener('change', e => {
   castLab(selected);
 });
 
-const KIT = ['nova', 'ae', 'bliz', 'coc', 'blink', 'drink'];
+const KIT = ['nova', 'bliz', 'coc', 'blink', 'drink'];
 for (const [id, s] of Object.entries<any>(SPELLS)) {
   const b = document.createElement('button');
   b.textContent = s.name;
