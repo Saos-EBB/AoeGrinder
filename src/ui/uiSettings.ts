@@ -4,6 +4,8 @@
 const STORE = 'frostgrind.ui.v1';
 
 export const UI_DEFAULTS = {
+  flavor: 'hoellenfeste',  // UI-Flavor (ui/flavors): hoellenfeste, schlachtbank, krypta
+  screenFx: true,         // Bildschirm-Effekte des Flavors
   font: 'standard' as 'standard' | 'fraktur',
   hudOverrides: {} as Record<string, Record<string, any>>,   // eigene Lage pro Layout (ui/hud/layout.ts)
   hudScale: 100,          // % (70–150)

@@ -92,7 +92,7 @@ function render() {
   const ws = $('invWeapon').cloneNode(false) as HTMLElement;   // frisches Element: keine doppelten Hover-Listener
   $('invWeapon').replaceWith(ws);
   ws.innerHTML = eq ? slotHtml(eq) : '';
-  ws.style.setProperty('--rc', eq ? rarityOf(eq).color : 'var(--glut-line)');
+  ws.style.setProperty('--rc', eq ? rarityOf(eq).color : 'var(--fg-line)');
   ws.oncontextmenu = e => { e.preventDefault(); if (eq) { equip(null); mage.refreshWeapon(); render(); } };
   if (eq) attachWeaponCard(ws, eq);
   const stats = eq ? effectRows(eq).filter(r => r.text && r.kind !== 'type') : [];

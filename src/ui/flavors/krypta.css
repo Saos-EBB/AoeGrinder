@@ -1,0 +1,71 @@
+/* Flavor 3 Kompakt-Krypta (WoW-Kompakt + Diablo-Stein/Gold + Doom-Combo). Werte aus gen4.py M3/H3, Deko aus gen5.py/gen6.py (m3*, m3x*). */
+body[data-flavor=krypta] {
+  --fg-bg: radial-gradient(ellipse at 50% 45%, #26201a 0%, #13100c 55%, #070605 100%);
+  --fg-panel: #1c1915; --fg-panel-bd: 1px solid #b8963e; --fg-panel-bt: 1px solid #b8963e; --fg-panel-sh: 0 0 0 1px #000, inset 0 0 14px #000, 0 6px 16px rgba(0, 0, 0, .55);
+  --fg-border: #b8963e; --fg-top: #d9b44a; --fg-line: #3a3226; --fg-gold: #d9b44a; --fg-input: #12100d;
+  --fg-text: #e8dcc4; --fg-muted: #b5a588; --fg-accent: #ff5a3c;
+  --fg-title: #f2d58a; --fg-title-glow: 0 3px 0 #000; --fg-card: #141210;
+  --fg-btn: #c4120c; --fg-btn-bd: 1px solid #f2d58a; --fg-btn-sh: 0 0 0 1px #000, inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -2px 0 rgba(0, 0, 0, .4); --fg-btn-text: #fff;
+  --fg-btn2-bd: 1px solid #8a7440; --fg-btn2-text: #f2ead2;
+  --font-title: 'Cinzel', serif; --font-title-weight: 700; --font-body: 'Barlow', sans-serif;
+  /* HUD (gen4 H3 = WoW + Gold) */
+  --h-font: 'Barlow Condensed', sans-serif; --h-title: 'Barlow Condensed', sans-serif;
+  --h-txt: #f2ead2; --h-muted: #c2b48f; --h-accent: #7dd3fc; --h-gold: #c9a24a;
+  --h-hp: #c0262d; --h-mana: #1f5bd6; --h-cast: #e8c547; --h-xp: #8a3ec9;
+  --h-bar-bg: #111; --h-bar-bd: 1px solid #6e5a2a; --h-bar-r: 2px;
+  --h-panel-bg: #1c1915; --h-panel-bd: 1px solid #b8963e; --h-panel-bt: 1px solid #b8963e; --h-panel-r: 0; --h-panel-sh: 0 0 0 1px #000, inset 0 0 14px #000;
+  --h-slot-bg: #141210; --h-slot-bd: 1px solid #8a7440; --h-slot-r: 0; --h-slot-sh: 0 0 0 1px #000;
+  --h-map-bg: #1d2a1c; --h-map-bd: 4px solid #b8963e; --h-map-r: 0;
+}
+
+/* Panel: Wappen oben Mitte, Gold-Endkappen, Goldperlen oben, blaue Edelsteine an den Ecken; dazu äußerer Rahmen, Goldnieten und feine Goldkanten */
+body[data-flavor=krypta] .fg-panel::before { inset: -13px -10px -7px;
+  background:
+    url(./krypta/crest.svg) 50% 0 / 68px 24px no-repeat,
+    linear-gradient(to bottom, #f2d58a, #8a6a2a) left center / 16px 32px no-repeat,
+    linear-gradient(to bottom, #f2d58a, #8a6a2a) right center / 16px 32px no-repeat,
+    url(./krypta/bead.svg) center 7px / 28px 10px repeat-x,
+    radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) 2px 5px / 16px 16px no-repeat,
+    radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) right 2px top 5px / 16px 16px no-repeat,
+    radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) left 2px bottom -1px / 16px 16px no-repeat,
+    radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) right 2px bottom -1px / 16px 16px no-repeat;
+  background-clip: border-box; }
+body[data-flavor=krypta] .fg-panel::after { inset: -4px; border: 2px solid #5a4a2a; box-shadow: 0 0 0 1px #000;
+  background:
+    radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) 9px 9px / 8px 8px no-repeat,
+    radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) right 9px top 9px / 8px 8px no-repeat,
+    radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) left 9px bottom 9px / 8px 8px no-repeat,
+    radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) right 9px bottom 9px / 8px 8px no-repeat,
+    linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px 5px / calc(100% - 12px) 1px no-repeat,
+    linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px calc(100% - 6px) / calc(100% - 12px) 1px no-repeat; }
+
+/* Titel auf rotem Banner, zentriert mit roten Rauten an den Enden */
+body[data-flavor=krypta] .fg-title.c, body[data-flavor=krypta] .fg-title.l { position: relative; display: inline-block; padding: .12em 1.6em .32em;
+  background: url(./krypta/title.svg) center / 100% 100% no-repeat; }
+body[data-flavor=krypta] .fg-title.c::before, body[data-flavor=krypta] .fg-title.c::after { content: ''; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px;
+  transform: rotate(45deg); background: #8f1d14; border: 1px solid #d9b44a; }
+body[data-flavor=krypta] .fg-title.c::before { left: -22px; }
+body[data-flavor=krypta] .fg-title.c::after { right: -22px; }
+
+/* Knöpfe mit Glanz und leichter Rundung */
+body[data-flavor=krypta] .fg-btn { border-radius: 4px; background-image: linear-gradient(to bottom, rgba(255, 255, 255, .18), rgba(0, 0, 0, .25)); }
+body[data-flavor=krypta] .fg-btn.alt { background-image: linear-gradient(to bottom, rgba(255, 255, 255, .06), rgba(0, 0, 0, .2)); }
+
+/* Fenster-Hintergrund: Leder-/Steintextur, zwei hängende Banner, Goldperlen unten */
+body[data-flavor=krypta] .modal:not(#startModal) {
+  background:
+    url(./krypta/banner.svg) 11.7% 0 / 70px 170px no-repeat,
+    url(./krypta/banner.svg) 82.8% 0 / 70px 170px no-repeat,
+    url(./krypta/bead.svg) center bottom 1px / 32px 12px repeat-x,
+    repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .012) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 64px),
+    var(--fg-bg);
+}
+
+/* Bildschirm-Effekte: Vignette und Goldschnörkel-Ecken (auch im Spiel) */
+body[data-flavor=krypta] #fgOverlay .fx-vig { inset: 0; box-shadow: inset 0 0 120px rgba(0, 0, 0, .7); }
+body[data-flavor=krypta] #fgOverlay .fx-corner { width: calc(56 * var(--hu)); height: calc(56 * var(--hu)); background: url(./krypta/corner.svg) 0 0 / 100% 100%; }
+body[data-flavor=krypta] #fgOverlay .fx-corner.tl { left: 12px; top: 12px; }
+body[data-flavor=krypta] #fgOverlay .fx-corner.tr { right: 12px; top: 12px; transform: rotate(90deg); }
+body[data-flavor=krypta] #fgOverlay .fx-corner.br { right: 12px; bottom: 12px; transform: rotate(180deg); }
+body[data-flavor=krypta] #fgOverlay .fx-corner.bl { left: 12px; bottom: 12px; transform: rotate(270deg); }

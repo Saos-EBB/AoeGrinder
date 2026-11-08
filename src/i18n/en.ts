@@ -1923,4 +1923,15 @@ export const en: Record<string, string> = {
   'zone.tanaris.name': "Tanaris",
   'zone.tirisfal.name': "Tirisfal",
   'zone.winterquell.name': "Winterspring",
+
+  // ---------- UI-Mix (Branch ui-mix): Flavors, Einstellungen, Meldungen, Hauptmenü ----------
+  'flavor.hoellenfeste.name': "Hellkeep",
+  'flavor.hoellenfeste.sub': "Diablo · Doom red",
+  'flavor.krypta.name': "Compact Crypt",
+  'flavor.krypta.sub': "WoW · stone + gold",
+  'flavor.schlachtbank.name': "Slaughterhouse",
+  'flavor.schlachtbank.status1': "■ HELL ACTIVE",
+  'flavor.schlachtbank.status2': "TEMP 666° ■",
+  'flavor.schlachtbank.status3': "■ SYS OK",
+  'flavor.schlachtbank.sub': "Doom · WoW map",
 };

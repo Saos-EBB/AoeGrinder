@@ -1,0 +1,91 @@
+/* Flavor 2 Schlachtbank (Doom + WoW-Rundkarte + Diablo-Gold). Werte aus gen4.py M2/H2 (Glut-Farben), Deko aus gen5.py/gen6.py (m2*, m2x*). */
+body[data-flavor=schlachtbank] {
+  --fg-bg: radial-gradient(ellipse at 50% 60%, #33070a 0%, #120203 50%, #050101 100%);
+  --fg-panel: rgba(14, 4, 3, .88); --fg-panel-bd: 1px solid #5a1e18; --fg-panel-bt: 2px solid #ff3d1f; --fg-panel-sh: 0 10px 40px #000c;
+  --fg-border: #5a1e18; --fg-top: #ff3d1f; --fg-line: #3a1410; --fg-gold: #c9a24a; --fg-input: #0a0202;
+  --fg-text: #f2e9e4; --fg-muted: #c4aea6; --fg-accent: #ff5a3c;
+  --fg-title: #f6eee9; --fg-title-glow: 0 0 24px rgba(255, 61, 31, .55); --fg-card: #0e0302;
+  --fg-btn: #c4120c; --fg-btn-bd: 0; --fg-btn-sh: inset 0 -4px 0 rgba(0, 0, 0, .35); --fg-btn-text: #fff;
+  --fg-btn2-bd: 1px solid #ff3d1f; --fg-btn2-text: #ffb3a3;
+  --font-title: 'Anton', sans-serif; --font-title-weight: 400; --font-body: 'Oswald', sans-serif;
+  /* HUD (gen4 H2 = Doom + Gold) */
+  --h-font: 'Oswald', sans-serif; --h-title: 'Anton', sans-serif;
+  --h-txt: #f2e9e4; --h-muted: #cbb8b0; --h-accent: #ff5a3c; --h-gold: #c9a24a;
+  --h-hp: #e01e1e; --h-mana: #ff8a3c; --h-cast: #ff5a3c; --h-xp: #ff3d1f;
+  --h-bar-bg: #1a0505; --h-bar-bd: 1px solid #5a1e18; --h-bar-r: 0;
+  --h-panel-bg: rgba(10, 2, 2, .7); --h-panel-bd: 0; --h-panel-bt: 2px solid #ff3d1f; --h-panel-r: 0; --h-panel-sh: none;
+  --h-slot-bg: #140404; --h-slot-bd: 1px solid #ff3d1f; --h-slot-r: 0; --h-slot-sh: 0 0 0 1px #000;
+  --h-map-bg: #120303; --h-map-bd: 2px solid #ff3d1f; --h-map-r: 0;
+}
+
+/* Panel: Blechglanz, abgeschrägte Ecken, Nieten, Warnstreifen oben, Lüftungsschlitze, Gold-Winkel, rote Leuchtlinie unten, „SEKTOR xx“ über data-sektor */
+body[data-flavor=schlachtbank] .fg-panel::before { inset: -6px 0 0;
+  background:
+    repeating-linear-gradient(-45deg, #ff3d1f 0 8px, #000 8px 16px) 28px 0 / min(160px, calc(100% - 56px)) 8px no-repeat,
+    linear-gradient(135deg, #050101 50%, transparent 50%) 0 6px / 18px 18px no-repeat,
+    linear-gradient(315deg, #050101 50%, transparent 50%) right bottom / 18px 18px no-repeat,
+    radial-gradient(circle at 35% 35%, #8a7a70, #2a1a16 3px, #000 4px, transparent 4.5px) 8px 16px / 8px 8px no-repeat,
+    radial-gradient(circle at 35% 35%, #8a7a70, #2a1a16 3px, #000 4px, transparent 4.5px) right 8px top 16px / 8px 8px no-repeat,
+    radial-gradient(circle at 35% 35%, #8a7a70, #2a1a16 3px, #000 4px, transparent 4.5px) left 8px bottom 8px / 8px 8px no-repeat,
+    radial-gradient(circle at 35% 35%, #8a7a70, #2a1a16 3px, #000 4px, transparent 4.5px) right 8px bottom 8px / 8px 8px no-repeat,
+    linear-gradient(#ff3d1f, #ff3d1f) right 26px top 32px / 44px 3px no-repeat,
+    linear-gradient(rgba(255, 61, 31, .7), rgba(255, 61, 31, .7)) right 26px top 39px / 44px 3px no-repeat,
+    linear-gradient(rgba(255, 61, 31, .5), rgba(255, 61, 31, .5)) right 26px top 46px / 44px 3px no-repeat,
+    linear-gradient(to bottom, rgba(255, 255, 255, .05), transparent 30%, rgba(0, 0, 0, .25)) 0 6px / 100% calc(100% - 6px) no-repeat; }
+body[data-flavor=schlachtbank] .fg-panel::after { inset: -4px; content: attr(data-sektor); display: flex; align-items: flex-end; padding: 0 0 24px 30px;
+  font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #8a3a2e;
+  background: url(./schlachtbank/bracket-tr.svg) right top / 26px 26px no-repeat, url(./schlachtbank/bracket-bl.svg) left bottom / 26px 26px no-repeat,
+    linear-gradient(#ff3d1f, #ff3d1f) 4px calc(100% - 4px) / calc(100% - 8px) 2px no-repeat; filter: drop-shadow(0 0 4px rgba(255, 61, 31, .5)); }
+
+/* Titel: zentriert mit rotem Glühen, schrägen Balken und ▼▼▼, links mit roter Leuchtlinie darunter */
+body[data-flavor=schlachtbank] .fg-title { text-transform: none; }
+body[data-flavor=schlachtbank] .fg-title.c { position: relative; display: inline-block;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255, 61, 31, .35), transparent 70%); }
+body[data-flavor=schlachtbank] .fg-title.c::before { content: ''; position: absolute; left: -110px; right: -110px; top: 35%; height: 50%; pointer-events: none;
+  background:
+    linear-gradient(#ff3d1f, #ff3d1f) left 74px top 0 / 14px 100% no-repeat, linear-gradient(#5a1e18, #5a1e18) left 52px top 0 / 14px 100% no-repeat, linear-gradient(#5a1e18, #5a1e18) left 30px top 0 / 14px 100% no-repeat,
+    linear-gradient(#ff3d1f, #ff3d1f) right 74px top 0 / 14px 100% no-repeat, linear-gradient(#5a1e18, #5a1e18) right 52px top 0 / 14px 100% no-repeat, linear-gradient(#5a1e18, #5a1e18) right 30px top 0 / 14px 100% no-repeat;
+  transform: skewX(-20deg); }
+body[data-flavor=schlachtbank] .fg-title.c::after { content: '▼▼▼'; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); font: 16px 'Anton', sans-serif; letter-spacing: .3em;
+  color: #ff3d1f; text-shadow: none; }
+body[data-flavor=schlachtbank] .fg-title.l { border-bottom: 4px solid #ff3d1f; box-shadow: 0 8px 12px -8px #ff3d1f; display: inline-block; padding-bottom: 2px; }
+
+/* Knöpfe: Ecken abgeschnitten, Großbuchstaben */
+body[data-flavor=schlachtbank] .fg-btn { clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); text-transform: uppercase; letter-spacing: .14em; }
+
+/* Fenster-Hintergrund: feine Diagonalen, Runenring, Risse */
+body[data-flavor=schlachtbank] .modal:not(#startModal) {
+  background: url(./schlachtbank/ring.svg) center / 100% 100% no-repeat, repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 3px, transparent 3px 9px), var(--fg-bg);
+}
+
+/* Bildschirm-Effekte: Scanlines, Vignette, Warnstreifen oben, rote Winkel, Statuszeilen (auch im Spiel), Glitch-Streifen (nur Menü) */
+body[data-flavor=schlachtbank] #fgOverlay .fx-scan { inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-scan.lite { opacity: .5; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-vig { inset: 0; box-shadow: inset 0 0 160px rgba(0, 0, 0, .85), inset 0 0 40px rgba(255, 61, 31, .15); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-hazard { left: 0; right: 0; top: 0; height: 6px; opacity: .85; background: repeating-linear-gradient(-45deg, #ff3d1f 0 10px, #000 10px 20px); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner { width: calc(46 * var(--hu)); height: calc(46 * var(--hu)); background: url(./schlachtbank/corner.svg) 0 0 / 100% 100%; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner.tl { left: 16px; top: 16px; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner.tr { right: 16px; top: 16px; transform: rotate(90deg); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner.br { right: 16px; bottom: 16px; transform: rotate(180deg); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner.bl { left: 16px; bottom: 16px; transform: rotate(270deg); }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status { font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #a3382a; white-space: nowrap; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.a { left: 70px; top: 24px; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.b { right: 60px; bottom: 16px; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.c { left: 70px; bottom: 16px; }
+@keyframes fgGlitch { 0%, 88%, 100% { opacity: 1; transform: none; } 90% { opacity: .3; transform: translateX(6px); } 94% { opacity: .8; transform: translateX(-4px); } }
+body[data-flavor=schlachtbank] #fgOverlay .fx-glitch { inset: 0; animation: fgGlitch 4s steps(1) infinite;
+  background:
+    linear-gradient(rgba(255,61,31,0.26), rgba(255,61,31,0.26)) 55.1% 38.2% / 9.1% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.39), rgba(255,61,31,0.39)) 61.0% 82.8% / 11.1% 3px no-repeat,
+    linear-gradient(rgba(255,61,31,0.26), rgba(255,61,31,0.26)) 15.3% 3.0% / 8.7% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.21), rgba(255,61,31,0.21)) 83.8% 54.4% / 4.9% 3px no-repeat,
+    linear-gradient(rgba(255,61,31,0.16), rgba(255,61,31,0.16)) 67.3% 17.1% / 17.6% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.42), rgba(255,61,31,0.42)) 67.4% 26.3% / 8.8% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.42), rgba(255,61,31,0.42)) 7.6% 74.3% / 5.2% 2px no-repeat,
+    linear-gradient(rgba(255,61,31,0.34), rgba(255,61,31,0.34)) 70.6% 13.0% / 19.2% 2px no-repeat,
+    linear-gradient(rgba(255,61,31,0.28), rgba(255,61,31,0.28)) 34.6% 4.9% / 4.1% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.25), rgba(255,61,31,0.25)) 41.7% 85.7% / 10.4% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.30), rgba(255,61,31,0.30)) 41.0% 34.0% / 6.3% 1px no-repeat,
+    linear-gradient(rgba(255,61,31,0.20), rgba(255,61,31,0.20)) 62.0% 38.2% / 18.8% 3px no-repeat,
+    linear-gradient(rgba(255,61,31,0.24), rgba(255,61,31,0.24)) 69.5% 34.4% / 10.6% 2px no-repeat,
+    linear-gradient(rgba(255,61,31,0.43), rgba(255,61,31,0.43)) 23.7% 56.5% / 17.6% 1px no-repeat; }
