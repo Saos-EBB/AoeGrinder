@@ -105,6 +105,7 @@ export interface Layout {
   deco: Deco[];
   lights: Spot[];                       // Kerzen/Lichtinseln
   paths?: [number, number][][];
+  loop?: Spot[];                        // Kanäle: Mittellinie des Haupt-Rings
   height?: (x: number, z: number) => number;
 }
 

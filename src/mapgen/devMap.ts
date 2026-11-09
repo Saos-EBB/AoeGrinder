@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { zone, zoneId } from '../world';
 import { mapSeed, setMapSeed, rerollSeed } from './rng';
-import { scene, renderer } from '../render';
+import { scene, renderer, camera } from '../render';
 import { GEN_ZONES, zoneIdOf } from './registry';
 import { generate } from './genZone';
 
@@ -51,5 +51,5 @@ function envCalls() {
 (window as any).__mapgen = {
   zones: GEN_ZONES, generate, setSeed: setMapSeed, seed: mapSeed,
   get zone() { return zone; }, get layout() { return zone.layout; },
-  topShot, envCalls,
+  topShot, envCalls, scene, camera,
 };
