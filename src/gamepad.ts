@@ -189,7 +189,7 @@ function menuButtons() {
     if (pressed(5)) cycleChar(1);
     if (pressed(6)) cycleMap(-1);                 // L2, R2 wechseln die Map (Tastatur Q / E)
     if (pressed(7)) cycleMap(1);
-    const b = moveSelection([...document.querySelectorAll('#startModal button:not(:disabled)')], step.x || step.y, 'navSel');
+    const b = moveSelection([...document.querySelectorAll<HTMLElement>('#startModal button:not(:disabled)')].filter(el => el.offsetParent), step.x || step.y, 'navSel');   // nur sichtbare (zugeklapptes „Mehr“, Ausrüstung nur Magier)
     if (pressed(CONFIRM_BTN)) (b as any)?.click();
   }
 }

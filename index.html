@@ -284,12 +284,19 @@
   <div id="menuMods" class="chipRow" role="group" aria-label="Mods" data-i18n-aria="menu.mods"></div>
   <div id="menuWeaponBox" class="gPanel fg-panel" hidden><div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
   <div id="menuActions">
-    <span id="menuDust"></span>
-    <button class="fg-btn alt" id="menuShop" data-i18n="menu.shop">Shop</button>
-    <button class="fg-btn alt" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
-    <button class="fg-btn alt" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
-    <button class="fg-btn alt" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
-    <button class="fg-btn alt" id="menuPanBtn" aria-pressed="true"></button>
+    <div class="maRow">
+      <span id="menuDust"></span>
+      <button class="fg-btn alt" id="menuShop" data-i18n="menu.shop">Shop</button>
+      <button class="fg-btn alt" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
+    </div>
+    <div class="maRow">
+      <button class="fg-btn alt" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
+      <button class="fg-btn alt" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
+      <span id="menuMoreWrap">
+        <button class="fg-btn alt" id="menuMore" aria-haspopup="true" aria-expanded="false" aria-controls="menuMoreList" data-i18n="menux.more">Mehr ▾</button>
+        <span id="menuMoreList" class="gPanel" hidden><button class="fg-btn alt" id="menuPanBtn" aria-pressed="true"></button></span>
+      </span>
+    </div>
   </div>
   <i id="menuRing" aria-hidden="true"></i>
   <div id="menuSkin" class="gPanel">
@@ -304,7 +311,7 @@
   </div>
   <div id="menuGo">
     <button class="fg-btn" id="startBtn" data-i18n="menu.start">Run starten</button>
-    <button class="fg-btn alt" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button>
+    <div id="menuGoSide"><button class="fg-btn alt" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button></div>
   </div>
 </div>
 

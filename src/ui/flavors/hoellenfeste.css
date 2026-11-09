@@ -30,6 +30,8 @@ body[data-flavor=hoellenfeste] .fg-panel::after, body[data-flavor=hoellenfeste] 
 body[data-flavor=hoellenfeste] .fg-title.c { position: relative; display: inline-block; }
 body[data-flavor=hoellenfeste] .fg-title.c::before { content: ''; position: absolute; left: -224px; right: -224px; top: 50%; height: 14px; margin-top: -3px; pointer-events: none;
   background: url(./hoellenfeste/divider.svg) left center / 200px 14px no-repeat, url(./hoellenfeste/divider.svg) right center / 200px 14px no-repeat; }
+/* Hauptmenü: Linien in --hu, sonst laufen sie bei kleinen Auflösungen in Map-Wechsler und Knochenstaub */
+body[data-flavor=hoellenfeste] #menuTop .fg-title.c::before { left: calc(-110 * var(--hu)); right: calc(-110 * var(--hu)); background-size: calc(96 * var(--hu)) 14px, calc(96 * var(--hu)) 14px; }
 body[data-flavor=hoellenfeste] .fg-title.c::after { content: ''; position: absolute; left: -70px; right: -70px; bottom: 78%; height: .9em; pointer-events: none;
   background: url(./hoellenfeste/arc.svg) center bottom / 100% 100% no-repeat; }
 body[data-flavor=hoellenfeste] .fg-title.l::before { content: ''; display: inline-block; width: 10px; height: 10px; margin: 0 14px 0 2px; vertical-align: middle; transform: rotate(45deg);
@@ -87,9 +89,12 @@ body[data-flavor=hoellenfeste] #fgOverlay .fx-sparks { inset: 0 0 -60px; animati
     radial-gradient(circle at 13.1% 52.8%, rgba(255,179,92,0.48) 0 2.0px, rgba(255,90,31,0.17) 2.5px 6.0px, transparent 6.5px); }
 body[data-flavor=hoellenfeste] #fgOverlay .fx-smoke { inset: 0; background: radial-gradient(ellipse 120px 60px at 98% 69%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 72% 81%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 8% 80%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 23% 70%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 73% 61%, rgba(120,100,90,.10), transparent 70%), radial-gradient(ellipse 120px 60px at 31% 62%, rgba(120,100,90,.10), transparent 70%); }
 body[data-flavor=hoellenfeste] #fgOverlay .fx-chain { top: 0; width: 16px; background: url(./hoellenfeste/chain.svg) 0 0 / 16px 28px repeat-y; }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.a { left: 34.4%; height: 84px; }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.b { left: 82.2%; height: 70px; }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.c { left: 78.1%; height: 42px; }
+/* Ketten hängen im Hauptmenü in den Lücken zwischen Map-Wechsler, Titel und Knopfleiste (Lage in --hu ab der Mitte wie das Menü), in allen anderen
+   Fenstern lägen sie über Titel und Kopfzeile: dort aus (Ladebildschirm hat oben nichts) */
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.a { left: calc(50% - 150 * var(--hu)); height: 84px; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.b { left: calc(50% + 134 * var(--hu)); height: 70px; }
+body[data-flavor=hoellenfeste] #fgOverlay .fx-chain.c { left: calc(50% + 160 * var(--hu)); height: 42px; }
+body:has(.modal.show:not(#startModal):not(#loadModal)) #fgOverlay .fx-chain { display: none; }
 
 /* ---------- HUD (X1H, gen4.py hud1 + gen5 m1_orb/m1_hud_extras) ---------- */
 /* Panel 580 × 92 unten Mitte mit kompakter Leiste (46 px, 2 px Abstand), Schädel mit roten Augen darüber */

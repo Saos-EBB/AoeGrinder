@@ -37,7 +37,6 @@
 #gmGrid .wmCell .gmCellName { position: absolute; inset: auto 4px 4px 4px; font: 700 calc(11 * var(--hu)) var(--font-body); color: var(--rc); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 #gmGrid .wmCell .gmTag { position: absolute; top: 4px; right: 4px; }
 .gmDetail .wmDBtns .fg-btn { min-height: 44px; }
-#menuGearBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
 body.mobile #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
 /* Handy: für einen Abstand zum Zierrahmen ist kein Platz, der Rahmen (Ecken, Ketten, Funken) liegt hinter dem Fenster statt über dem Text (Rückfragen z-index 6 bleiben oben) */
 body.mobile:has(#gearModal.show) #fgOverlay { z-index: 4; }

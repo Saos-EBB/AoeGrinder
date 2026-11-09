@@ -1990,6 +1990,7 @@ export const en: Record<string, string> = {
   'feat.untouched.schlachtbank': "NOT A SCRATCH",
   'hudEl.feats': "Feat messages",
   'menux.hint': "A / D choose · Q / E map · Enter starts",
+  'menux.more': "More ▾",
   'menux.panOn': "Pan: on",
   'menux.panOff': "Pan: off",
   'menux.mapInfo': "Q / E · Map {i} / {n} · Best {best}",

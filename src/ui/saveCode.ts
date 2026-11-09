@@ -100,6 +100,6 @@ for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCo
   b.id = id;
   b.textContent = label;
   b.addEventListener('click', () => open(m));
-  $('menuActions').appendChild(b);
+  $('menuMoreList').appendChild(b);   // seltene Einträge im „Mehr“-Menü oben rechts (mainMenu.ts)
 }
 (window as any).__save = { exportCode, importCode };

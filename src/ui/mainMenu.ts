@@ -248,6 +248,22 @@ function paintPanBtn() {
 $('menuPanBtn').addEventListener('click', () => { setUi('menuPan', !uiSettings.menuPan); paintPanBtn(); });
 paintPanBtn();
 
+// „Mehr“ oben rechts: seltene Einträge (Schwenk, Spielstand-Code aus saveCode.ts) als Aufklappliste, damit die Leiste zwischen Titel und Zierrahmen passt.
+// Schließt nach einer Wahl, bei Klick daneben und mit Esc
+const moreList = $('menuMoreList');
+function showMore(open: boolean) {
+  moreList.hidden = !open;
+  $('menuMore').setAttribute('aria-expanded', String(open));
+}
+$('menuMore').addEventListener('click', () => showMore(!!moreList.hidden));
+moreList.addEventListener('click', e => { if ((e.target as HTMLElement).closest('button')) showMore(false); });
+addEventListener('pointerdown', e => { if (!moreList.hidden && !(e.target as HTMLElement).closest('#menuMoreWrap')) showMore(false); }, true);
+addEventListener('keydown', e => {
+  if (e.code !== 'Escape' || moreList.hidden) return;
+  e.stopImmediatePropagation();
+  showMore(false);
+}, true);
+
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
 export const menuOpen = () => $('startModal').classList.contains('show');
