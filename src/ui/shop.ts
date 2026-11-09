@@ -15,6 +15,7 @@ import { openWeaponMenu } from './weaponMenu';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 import { t, fmtNum } from '../i18n';
+import { BOX, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
@@ -79,6 +80,7 @@ function resultCol() {
     col.append(el('div', 'resIcon'), name, el('div', 'resSub', t('shop.openLeft')));
     return { col, name };
   }
+  if (lastPull.gear) return gearResult(col, name);
   const w = lastPull, rar = rarityOf(w), rows = effectRows(w);
   col.style.setProperty('--rc', rar.color);
   if (lastIsNew) col.append(el('span', 'resNew', t('shop.new')));
@@ -116,6 +118,69 @@ function resultCol() {
   return { col, name };
 }
 
+// Ergebnis der Gear-Box: Teil mit Werten; unter Blau wurde es schon zu Staub (gear.ts takeGear)
+function gearResult(col: HTMLElement, name: HTMLElement) {
+  const { g, res } = lastPull, rar = gearRarity(g);
+  col.style.setProperty('--rc', rar.color);
+  if (lastIsNew) col.append(el('span', 'resNew', t('shop.new')));
+  const icon = el('div', 'resIcon');
+  icon.innerHTML = CHEST_SVG;
+  name.textContent = gearName(g);
+  col.append(icon, name, el('div', 'resSub', `${rar.name} · ${slotName(g.slot)}${g.s.setId ? ' · SET' : ''}`));
+  const lines = el('div', 'resLines');
+  for (const r of gearRows(g)) lines.append(el('div', r.kind === 'element' ? 'tAffix' : '', r.text));
+  col.append(lines, el('i', 'tSep'));
+  if (!res.kept) { col.append(el('div', 'resCmp', t('box.toDust', { n: res.dust }))); return { col, name }; }
+  const on = worn(g.slot) === g, b = el('button', 'btn fg-btn', t(on ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
+  b.disabled = on;
+  b.addEventListener('click', () => { wearGear(g.slot, g.id); mage.refreshLook(); lastIsNew = false; renderShop(); });
+  const btns = el('div', 'resBtns');
+  btns.append(b);
+  col.append(el('div', 'resCmp', res.over ? t('box.over') : t('box.kept', { slot: slotName(g.slot) })), btns);
+  return { col, name };
+}
+
+// Gear-Box und Kosmetik-Box unter den drei Spalten (Handoff items.md Schritt 3). Nur Magier: der Strichkrieger trägt kein Gear
+function boxRow(resultName: HTMLElement, result: HTMLElement) {
+  const row = el('div', '');
+  row.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:40px';
+  const box = (title: string, price: number, label: string, disabled: boolean, hint: string, onBuy: () => void) => {
+    const col = el('div', 'gPanel fg-panel shopCol');
+    col.style.minHeight = '0';
+    const b = el('button', 'btn fg-btn shopOpen', label) as HTMLButtonElement;
+    b.disabled = disabled;
+    b.style.height = '52px';
+    b.addEventListener('click', onBuy);
+    col.append(el('div', 'fg-title fuseTitle', title), el('div', 'shopPrice', t('shop.price', { n: price })), el('div', 'shopHint', hint), b);
+    return col;
+  };
+  const mageNow = isMagierSkin(mage.skin), full = anySlotFull();
+  const gearHint = !mageNow ? t('box.mageOnly') : full ? t('box.full') : meta.dust < BOX.gear ? t('shop.noDust') : t('box.gearHint');
+  row.append(box(t('box.gear'), BOX.gear, t(full ? 'shop.invFull' : 'shop.open'), spinning || !mageNow || full || meta.dust < BOX.gear, gearHint, () => {
+    const got = buyGearBox(mage.skin);
+    if (!got) return;
+    spinning = true;
+    result.classList.add('spinning');
+    let i = 0;
+    const step = () => {
+      const show = i < SPIN.steps ? { ...rollDrop(mage.skin), r: pick([0, 1, 2, 3, 4, 5]) } : got.g;
+      resultName.textContent = gearName(show);
+      result.style.setProperty('--rc', gearRarity(show).color);
+      if (i++ < SPIN.steps) { setTimeout(step, SPIN.startMs + SPIN.growMs * i); return; }
+      spinning = false;
+      lastPull = { gear: true, ...got };
+      lastIsNew = true;
+      setTimeout(renderShop, 900);
+    };
+    step();
+  }));
+  const soon = !lookBoxLeft().length;   // Pool leer oder alles besessen
+  row.append(box(t('box.look'), BOX.look, t(soon ? 'box.soon' : 'shop.open'), soon || meta.dust < BOX.look, t(soon ? 'box.lookSoon' : 'box.lookHint'), () => {
+    if (buyLookBox()) renderShop();
+  }));
+  return row;
+}
+
 function fuseCol() {
   const col = el('div', 'gPanel fg-panel shopCol shopFuse');
   col.append(el('div', 'fg-title fuseTitle', t('shop.fuse')), el('p', 'shopHint', t('shop.fuseHint')));
@@ -132,7 +197,7 @@ function renderShop() {
   const cols = $('shopCols');
   cols.textContent = '';
   const res = resultCol();
-  cols.append(chestCol(res.name, res.col), res.col, fuseCol());
+  cols.append(chestCol(res.name, res.col), res.col, fuseCol(), boxRow(res.name, res.col));
   const box = $('shopList');
   box.textContent = '';
   box.append(el('h3', '', t('shop.unlocks')));

@@ -84,6 +84,31 @@ export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = nu
 // Drop im Run und Gear-Box: zufälliger Slot
 export const rollDrop = (skin: string | null) => rollGear(pick([...SLOTS]), null, skin);
 
+// ---------- Boxen im Shop (Grundregel: nur erspielter Staub) ----------
+export const BOX = { gear: 120, look: 120 };   // PH
+// Kosmetik-Pool der Kosmetik-Box: leer, bis es Inhalte gibt (TODO Kosmetik-Inhalte, Plan Nr. 21). Haarspray + Feuerzeug kommt nur über Glutprophet 5/5
+export const KOSMETIK_POOL: string[] = [];
+export const anySlotFull = () => SLOTS.some(slotFull);
+// Gear-Box: zufälliger Slot, gleiche Regeln wie ein Drop. Gesperrt, solange ein Slot-Tab voll ist (sonst müsste der Shop nach dem Behalten fragen)
+export function buyGearBox(skin: string | null) {
+  if (anySlotFull() || meta.dust < BOX.gear) return null;
+  meta.dust -= BOX.gear;
+  const g = rollDrop(skin);
+  return { g, res: takeGear(g) };
+}
+const looksOwned = (): string[] => { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; };
+export const lookBoxLeft = () => KOSMETIK_POOL.filter(id => !looksOwned().includes(id));
+// Kosmetik-Box: nie Duplikate
+export function buyLookBox() {
+  const left = lookBoxLeft();
+  if (!left.length || meta.dust < BOX.look) return null;
+  meta.dust -= BOX.look;
+  const id = pick(left);
+  looksOwned().push(id);
+  saveMeta();
+  return id;
+}
+
 // Neues Teil (Drop, Gear-Box): Grau → Staub, Weiß/Grün → Staub bis es Kosmetik gibt, Blau und besser ins Inventar
 // (Slot voll: in gearOver, das Run-Ende fragt, was bleibt). Gibt zurück, was passiert ist.
 export function takeGear(g: GearItem): { kept: boolean; dust: number; over: boolean } {
