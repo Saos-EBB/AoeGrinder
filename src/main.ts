@@ -57,11 +57,13 @@ import { poisoned } from './plagueMarks';
 import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
 import { updateLoot } from './loot';
+import { updatePortal, connectPortal } from './portal';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
-import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
+import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
+connectPortal({ switchZone, bossActive });
 
 function update(dt) {
   updatePadCamera(dt);
@@ -74,6 +76,7 @@ function update(dt) {
   updateZoneEvent(dt);
   updateFigures();
   updateLoot();   // Gear-Drops: Lichtsäulen, Aufheben
+  updatePortal(); // Portale im Run (Level 25/50/75, Wellen: nach dem Boss)
   updateLegends();
   updateBoss(dt);
 

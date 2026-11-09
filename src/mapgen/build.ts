@@ -157,7 +157,7 @@ export function buildLayout(ctx: Ctx, l: Layout, look: Look, rng: Rng, heightAt)
   addCircle(l.landmark.x, l.landmark.z, lm.r);
   const at = [{ x: l.landmark.x, z: l.landmark.z, ry: l.landmark.ry }];
   keep(instanced(ctx, lm.body, toonMat({ vertexColors: true, fog: false } as any), at, heightAt));
-  if (lm.glow) keep(instanced(ctx, lm.glow, glowMat(look.glow), at, heightAt));
+  if (lm.glow) { const g = instanced(ctx, lm.glow, glowMat(look.glow), at, heightAt); if (g) g.userData.landmarkGlow = true; keep(g); }   // portal.ts lässt sie leuchten
   return out;
 }
 

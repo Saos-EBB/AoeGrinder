@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(maps): Portale im Run auf den generierten Maps: bei Level 25, 50 und 75 öffnet sich ein Portal (meist bei der Landmarke, die dann pulsierend leuchtet; violette Säule, Symbol auf der Minimap, am Rand als Richtungszeiger), im Wellen-Modus nach jedem Boss. Durchgehen = kurze Blende, gleiches Theme mit neuer Map und neuen Packs; Level, Karten und Ausrüstung bleiben, liegengebliebene Gear-Drops werden mitgenommen. Lässt man das Portal 2 min liegen, gibt es 25 % weniger XP pro Kill, bis man durchgeht. Während eines Bosskampfs ist das Portal zu. Dev → Map-Objekte: Portal öffnen, hin + durch, 2 min vorspulen
 - feat(ui): Taste I öffnet und schließt im Hauptmenü das Ausrüstungsfenster (nur Magier, wie der Knopf „Ausrüstung“), belegbar unter Tastenbelegung → Fenster; X bleibt das Charakterfenster
 - feat(settings): Regler „Helligkeit“ unter Einstellungen → Grafik (0–100 %, gespeichert, Abbrechen setzt zurück): hebt Umgebungslicht und Lichtkegel an und dünnt den schwarzen Nebel aus, ohne Selbstleuchtendes zu verstärken; Standard 50 % ist heller als bisher, damit Wände, Flügel und kleine Mobs (Moosling, Wichtel) erkennbar sind, 0 % entspricht dem alten Look
 - feat(maps): Jede generierte Map ist jetzt bei jedem Betreten und jedem neuen Run anders (neuer Seed bei Map-Wechsel, „Neuer Run“ und Zurück ins Hauptmenü); mit `?seed=` in der URL oder „Seed setzen“ im Dev-Fenster bleibt der Seed fest

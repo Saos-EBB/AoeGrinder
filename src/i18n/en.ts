@@ -2219,4 +2219,7 @@ export const en: Record<string, string> = {
   'gear.waiting': "{n} found items are waiting for your choice",
   'gear.info': "<b>{dust}</b> @{res.dust}",
   'gear.buildSet': "Set {name} 5/5",
+  'portal.open': "A portal has opened – it leads to a new map",
+  'portal.through': "New map · portal {n}",
+  'portal.lazy': "Portal open: XP −25%",
 };

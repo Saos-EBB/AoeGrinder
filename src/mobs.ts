@@ -29,6 +29,7 @@ import { damageNumber } from './ui/dmgNumbers';
 import { meterKill, meterKillHeal } from './schoolMeter';
 import { buffCrit } from './buffs';
 import { t } from './i18n';
+import { xpBonusMul } from './xpBonus';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
 export const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
@@ -420,7 +421,7 @@ function killMob(mob) {
   state.packDeaths[mob.packId] = (state.packDeaths[mob.packId] || 0) + 1;
   if (mob.champion) championDied(mob, damagePlayer);
   if (mob.type.noXp) return;
-  const xp = Math.round(xpForKill(mob.level) * xpMul * paceXpMul());
+  const xp = Math.round(xpForKill(mob.level) * xpMul * paceXpMul() * xpBonusMul());   // xpBonusMul: Portal-Druck, Schreine (xpBonus.ts)
   if (xp > 0 && player.level < LEVEL_MAX) { combatText(mob.pos, t('msg.xp', { n: xp }), 'xp', 2); gainXp(xp); }
 }
 

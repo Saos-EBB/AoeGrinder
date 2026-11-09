@@ -7,11 +7,13 @@ import { CFG } from '../config';
 import { cam } from '../camera';
 import { placementOf } from './hud/layout';
 import { zone } from '../world';
+import { portalPos } from '../portal';
 
 const MINIMAP = {
   px: 150,               // Kantenlänge in CSS-Pixeln, die Größe im Spiel kommt aus dem HUD-Layout (Mausrad)
   yd: 55,                // Radius der Karte in yd
   everyMs: 100,          // Neu zeichnen 10× pro Sekunde
+  portal: '#d68bff',
   mob: '#c8322a', fight: '#ff6a4a', champ: '#f59e0b', boss: '#a78bfa', edge: '#efe0b8', player: '#ffffff',
 };
 
@@ -95,6 +97,16 @@ export function updateMinimap() {
     if (round ? Math.hypot(x - r, y - r) > r : x < 0 || y < 0 || x > size || y > size) continue;
     c.fillStyle = m.boss ? MINIMAP.boss : m.champion ? MINIMAP.champ : m.state === 'combat' ? MINIMAP.fight : MINIMAP.mob;
     c.beginPath(); c.arc(x, y, (m.boss ? 4.5 : m.champion ? 3.2 : 2.3) * dot, 0, Math.PI * 2); c.fill();
+  }
+  // Portal: violetter Ring, außerhalb der Karte am Rand festgehalten (zeigt die Richtung)
+  const pp = portalPos();
+  if (pp) {
+    let [x, y] = toMap(pp.x, pp.z);
+    const dx = x - r, dy = y - r, d = Math.hypot(dx, dy), lim = r - 7 * dot;
+    if (round ? d > lim : Math.max(Math.abs(dx), Math.abs(dy)) > lim) { const f = lim / (round ? d : Math.max(Math.abs(dx), Math.abs(dy))); x = r + dx * f; y = r + dy * f; }
+    const pulse = 1 + 0.25 * Math.sin(now / 200);
+    c.strokeStyle = MINIMAP.portal; c.lineWidth = 2.2 * dot; c.fillStyle = '#2a0b3a';
+    c.beginPath(); c.arc(x, y, 4.5 * dot * pulse, 0, Math.PI * 2); c.fill(); c.stroke();
   }
   // Spieler: Pfeil in Laufrichtung, relativ zur Kamera
   c.translate(r, r); c.rotate(cam.offset);

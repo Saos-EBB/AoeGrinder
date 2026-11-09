@@ -43,6 +43,7 @@ import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
 import { t } from './i18n';
 import { resetLoot } from './loot';
+import { resetPortal } from './portal';
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
@@ -83,6 +84,7 @@ export function resetGame() {
   resetBattery();
   resetPlague();
   resetLoot();
+  resetPortal();
   resetWaves();
   resetSplits();
   state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)

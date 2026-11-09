@@ -61,11 +61,19 @@ export function updateLoot() {
       particles.spawn({ x: d.pos.x + rand(-0.08, 0.08), y: d.pos.y + 0.1, z: d.pos.z + rand(-0.08, 0.08), vy: B.vy, life: B.life, color: d.color, size: B.size });
     }
     if (player.dead || dist2d(player.pos, d.pos) > DROP.pickR) return true;
-    const res = takeGear(d.item);
-    (state.finds ??= []).push({ item: d.item, dust: res.dust, over: res.over });
-    combatText(player.pos, res.kept ? gearName(d.item) : t('loot.dust', { name: gearName(d.item), n: res.dust }), 'info', 2.6, gearRarity(d.item).color);
+    pickUp(d);
     return false;
   });
+}
+function pickUp(d: Drop) {
+  const res = takeGear(d.item);
+  (state.finds ??= []).push({ item: d.item, dust: res.dust, over: res.over });
+  combatText(player.pos, res.kept ? gearName(d.item) : t('loot.dust', { name: gearName(d.item), n: res.dust }), 'info', 2.6, gearRarity(d.item).color);
+}
+// Portal (portal.ts): liegengebliebene Drops kommen mit, statt auf der alten Map zu verfallen
+export function collectAll() {
+  for (const d of drops) pickUp(d);
+  drops = [];
 }
 
 // Run-Start (resetGame): Boden leer, Fundliste leer
