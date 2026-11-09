@@ -248,6 +248,13 @@ $('shopClose').addEventListener('click', () => {
   toMainMenu();
 });
 
+// Esc schließt den Shop wie der Knopf (nicht, solange Waffenmenü oder Rückfrage darüber liegen)
+addEventListener('keydown', e => {
+  if (e.code !== 'Escape' || !$('shopModal').classList.contains('show') || document.querySelector('#invModal.show, .modal.show:has(#askTitle)')) return;
+  e.stopImmediatePropagation();
+  $('shopClose').click();
+}, true);
+
 // Dev
 const refresh = () => { renderMenu(); };
 $('devDust').addEventListener('click', () => { devSetDust(meta.dust + 500); refresh(); });
