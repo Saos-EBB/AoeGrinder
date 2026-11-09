@@ -1,6 +1,7 @@
 /* Ausrüstungsfenster (Handoff items.md Schritt 5, Vorlage docs/ref/items-mockup.dc.html): nur Anordnung, Farben und Schriften aus dem UI-Flavor (--fg-*), Größen in --hu wie das Waffenmenü */
-#gearModal { z-index: 5; }
-#gmBox { width: calc(1240 * var(--hu)); max-height: 96vh; overflow: auto; display: flex; flex-direction: column; gap: calc(12 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+#gearModal { z-index: 5; --gmSafe: max(calc(14px + 110 * var(--hu)), 88px); }   /* am Modal berechnet: #gmBox setzt auf dem Handy --hu: 1px */
+/* Zierrahmen (#fgOverlay, über dem Fenster): das Fenster bleibt senkrecht zwischen den Ecken (größte Ecke Höllenfeste 10 px + 110 hu) und unter den Ketten (84 px), sonst verdecken sie Titel, Staub, Schließen und Tabs */
+#gmBox { width: calc(1240 * var(--hu)); max-height: calc(100vh - 2 * var(--gmSafe)); margin: auto 0; overflow: auto; display: flex; flex-direction: column; gap: calc(12 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
 #gmBox .wmHead { flex-wrap: wrap; }
 #gmBox .wmHead h1 { margin: 0; font-size: calc(34 * var(--hu)); }
 #gmInfo { margin-left: auto; font: 600 calc(17 * var(--hu)) var(--font-body); }
@@ -38,11 +39,14 @@
 .gmDetail .wmDBtns .fg-btn { min-height: 44px; }
 #menuGearBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
 body.mobile #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
+/* Handy: für einen Abstand zum Zierrahmen ist kein Platz, der Rahmen (Ecken, Ketten, Funken) liegt hinter dem Fenster statt über dem Text (Rückfragen z-index 6 bleiben oben) */
+body.mobile:has(#gearModal.show) #fgOverlay { z-index: 4; }
 body.mobile .gmCols, body.mobile .gmInv { grid-template-columns: 1fr; }
 body.mobile .gmFig { min-height: 260px; }
 body.mobile .gmRow, body.mobile .gmTabs .fg-chip, body.mobile #gmBox .fg-btn, body.mobile #menuGearBtn { min-height: 44px; }
 body.mobile #gmGrid { grid-template-columns: repeat(5, 1fr); grid-auto-rows: 64px; }
 @media (max-width: 760px) {
+  body:has(#gearModal.show) #fgOverlay { z-index: 4; }
   #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }
   .gmCols, .gmInv { grid-template-columns: 1fr; }
   .gmFig { min-height: 260px; }
