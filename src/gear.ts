@@ -32,12 +32,15 @@ export const GEAR = {
 // perfect: [Wirkung, Wert] je Slot, Wirkungen in PERFECT unten. Alle Werte PH
 export const SETS: Record<string, { school: string; color: string; perfect: Record<Slot, [string, number]> }> = {
   glut: { school: 'feuer', color: '#ff7a22', perfect: { kopf: ['crit', 0.15], hals: ['fbExtra', 1], ruecken: ['fbCast', 0.1], arme: ['fbExtra', 1], koerper: ['fbCast', 0.1] } },
+  blitz: { school: 'blitz', color: '#ffe866', perfect: { kopf: ['chainJumps', 1], hals: ['chainKill', 0.005], ruecken: ['chainJumps', 1], arme: ['chainJumps', 1], koerper: ['chainCost', 0.15] } },
   frost14: { school: 'frost', color: '#9fe4ff', perfect: { kopf: ['shardMax', 5], hals: ['shardMax', 5], ruecken: ['needleShard', 0.1], arme: ['needleShard', 0.1], koerper: ['frozenDmg', 0.15] } },
 };
 // Riesen-Feuerball (Glutprophet): jeder every-te Feuerball, size × Größe und Radius, dmg × Schaden
 export const GIANT_FB = { every: 10, size: 3, dmg: 3 };
 // Splitterkönig: Gletschernadel länger, am Endpunkt eine Frost Nova (spells/needle.ts)
 export const SHARD_NEEDLE = { len: 1.5 };
+// Hochspannung: jeder Sprung des Kettenblitzes gabelt sich mit fork in 2 Ketten; cap: höchstens so viele Sprünge pro Wurf, alle Äste zusammen (spells/chain.ts)
+export const HV_FORK = { fork: 0.2, cap: 400 };
 const stat = (id: string) => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };   // wie spells/core.ts stat, ohne Import-Kreis
 const PERFECT: Record<string, (v: number) => void> = {
   crit: v => { mods.crit += v; },
@@ -46,6 +49,9 @@ const PERFECT: Record<string, (v: number) => void> = {
   shardMax: v => { mods.shardMax += v; },
   needleShard: v => { mods.needleShard += v; },
   frozenDmg: v => { mods.frozenDmg += v; },
+  chainJumps: v => { mods.chainJumps += v; },
+  chainKill: v => { mods.chainKill += v; },
+  chainCost: v => { stat('chain').mana -= v; },
 };
 export const setOfSchool = (skin: string | null) => Object.keys(SETS).find(id => SETS[id].school === skin) ?? null;
 export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;

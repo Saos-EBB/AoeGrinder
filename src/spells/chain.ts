@@ -10,6 +10,7 @@ import { tempestLook } from '../vfx/boltLook';
 const TEMPEST = { every: 6, radius: 8, angle: Math.PI, dmg: 5, stunMs: 1000 }, KEEPER_MUL = 2, KILL_DMG = 0.005;
 import { boltFx } from './fx';
 import { t } from '../i18n';
+import { HV_FORK } from '../gear';
 
 const STEP_DELAY = 45, MORE = 40, KILL = 10;   // MORE: Rune Überschlag, KILL: Rune Entladung (v30 verdoppelt)   // PH: ms je Sprung, damit man die Kette sieht
 
@@ -17,10 +18,11 @@ const nearestFirst = (list, pos) => list.sort((a, b) => dist2d(a.pos, pos) - dis
 
 // Kette von Ziel zu Ziel, auch für Bogenblitz und Frostschlag. Alle Äste teilen sich dasselbe Budget an Sprüngen.
 // killDmg: jeder Kill in der Kette macht die restlichen Sprünge um diesen Anteil stärker. from: Startpunkt des ersten Blitzes (sonst der Spieler)
-export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = false, killBonus = 0, killDmg = 0, forkEvery = 0, overCorpses = false, onHit = null, boltColor = undefined, from = null }) {
+// forkChance: jeder Sprung gabelt sich mit dieser Chance in 2 (Set Hochspannung), cap: Obergrenze aller Sprünge des Wurfs
+export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = false, killBonus = 0, killDmg = 0, forkEvery = 0, forkChance = 0, cap = Infinity, overCorpses = false, onHit = null, boltColor = undefined, from = null }) {
   const run = { left: jumps, count: 0, seen: new Set() };
   const jump = (from, mob, amount) => {
-    if (run.left <= 0) return;
+    if (run.left <= 0 || run.count >= cap) return;
     run.left--;
     run.count++;
     run.seen.add(mob);
@@ -30,7 +32,7 @@ export function runChain(c, first, { jumps, range, dmg, falloff = 1, repeat = fa
       if (mob.dead) { run.left += killBonus; amount *= 1 + killDmg; }
     }
     const pool = nearestFirst(state.mobs.filter(o => o !== mob && (!o.dead || overCorpses) && dist2d(o.pos, mob.pos) <= range && (repeat || !run.seen.has(o))), mob.pos);
-    const branches = forkEvery && run.count % forkEvery === 0 ? 2 : 1;
+    const branches = (forkEvery && run.count % forkEvery === 0) || (forkChance && Math.random() < forkChance) ? 2 : 1;
     for (const next of pool.slice(0, branches)) {
       run.seen.add(next);   // sonst nehmen beide Äste dasselbe Ziel
       schedule(STEP_DELAY, () => jump(mob.pos, next, amount * falloff));
@@ -67,7 +69,9 @@ export const chain = {
       }
       return tempestLook(r, TEMPEST.angle);
     }
-    runChain(c, first, { jumps: (chain.jumps + mods.chainJumps + (hasRune('chain', 'more') ? MORE : 0)) * mods.jumpMul, range: chain.jumpRange, dmg: chain.dmg * k, killDmg: KILL_DMG,
+    const hv = state.gearSet === 'blitz';   // Hochspannung 5/5 (gear.ts): Gabelung mit 20 % pro Sprung, Obergrenze HV_FORK.cap
+    runChain(c, first, { jumps: (chain.jumps + mods.chainJumps + (hasRune('chain', 'more') ? MORE : 0)) * mods.jumpMul, range: chain.jumpRange, dmg: chain.dmg * k, killDmg: KILL_DMG + (mods.chainKill ?? 0),
+      forkChance: hv ? HV_FORK.fork : 0, cap: hv ? HV_FORK.cap : Infinity,
       repeat: hasRune('chain', 'repeat'), killBonus: hasRune('chain', 'kill') ? KILL : 0, forkEvery: hasRune('chain', 'fork') ? 10 : 0 });
   },
 };
