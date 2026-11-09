@@ -62,9 +62,9 @@ function mobMat(soft: boolean, opacity = 1) {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         diffuseColor.rgb = mix(diffuseColor.rgb, uTint.rgb, uTint.a * (1. - vGlow));
         totalEmissiveRadiance += vGlow * uGlowK * diffuseColor.rgb; diffuseColor.rgb *= 1. - vGlow;`)
-      .replace('#include <opaque_fragment>', `outgoingLight += (1. - vGlow) * vec3(${RIM.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM_POW.toFixed(1)});\n#include <opaque_fragment>`);
+      .replace('#include <opaque_fragment>', soft ? '#include <opaque_fragment>' : `outgoingLight += (1. - vGlow) * vec3(${RIM.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM_POW.toFixed(1)});\n#include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'strichMob';
+  m.customProgramCacheKey = () => soft ? 'strichMobSoft' : 'strichMob';   // Häute ohne Lichtrand: flach von der Seite gesehen wären sie sonst weiß
   m.U = U;
   return m;
 }

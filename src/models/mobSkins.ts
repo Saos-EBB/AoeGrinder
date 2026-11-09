@@ -40,4 +40,27 @@ export const SKINS: Record<string, Record<string, SkinDef>> = {
     gross:    ['h', { scale: 2.5, ink: 0x5a4630, ac: 0xc8a060, gl: 0xffe0a0, fat: 1.4, weapon: 'club', cracks: true, crackC: 0xffd080 }],   // Sandriese
     lauerer:  null,
   },
+  kanaele: {
+    normal:   ['q', { ink: 0x2a2622, ac: 0xc08a80, gl: 0xff3030, small: true }],                                           // Kanalratte
+    schnell:  ['q', { ink: 0x1e2a24, ac: 0x4a7a5e, gl: 0xe0ff60, low: true, long: true, spikes: true }],                    // Rohrkriecher
+    stark:    ['h', { ink: 0x2a301a, ac: 0x6a7a24, gl: 0xd0ff40, fat: 1.6, drip: true, weapon: 'cleaver' }],                // Schlammschlurfer
+    aoe:      ['h', { scale: 1.25, ink: 0x262a1a, ac: 0x6a7a24, gl: 0xd0ff40, fat: 1.5, drip: true, weapon: 'flail' }],     // Kloakenkoloss
+    zauberer: ['h', { ink: 0x1e2a1e, ac: 0x3e5a34, gl: 0x80ff40, robe: true, hood: true, weapon: 'orb' }],                  // Kloakenhexer
+    werfer:   ['h', { ink: 0x2a2a1c, ac: 0x6a7a24, gl: 0xd0ff40, hunch: .4, weapon: 'blob' }],                             // Unratwerfer
+    hexer:    ['h', { ink: 0x1a2622, ac: 0x34524a, gl: 0x80ff60, robe: true, hood: true, hunch: .45, weapon: 'lantern' }],  // Brackhexer
+    gross:    ['h', { scale: 2.3, ink: 0x2a2c1a, ac: 0x6a7a24, gl: 0xffd040, fat: 1.8, drip: true, weapon: 'cleaver' }],    // Kloakenoger
+    lauerer:  ['h', { ink: 0x8a9488, ac: 0x5a6458, thin: .6, armLen: 1.8, legLen: 1.35, faceless: true, hunch: .25, jerky: true }],   // Schachtlauerer
+  },
+  // Horror-Look (Berserk/Silent Hill): zu lange Glieder, Gesichter ohne Augen, ruckartig
+  kathedrale: {
+    normal:   ['h', { ink: 0xd8ceb0, ac: 0x2e2628, gl: 0xff3020, bones: true, robe: true, hood: true }],                    // Knochen-Novize
+    schnell:  ['b', { ink: 0x55524e, ac: 0x3a3836, gl: 0xff6030, horns: true }],                                            // Wasserspeier
+    stark:    ['h', { scale: 1.3, ink: 0x2a2224, ac: 0x1a1214, fat: 1.3, hood: 'point', faceless: true, weapon: 'axe', bigWeapon: true }],   // Henker
+    aoe:      ['h', { ink: 0xc8b8a8, ac: 0x4a3a34, thin: .75, hunch: .3, armLen: 1.25, faceless: true, jerky: true, weapon: 'whip' }],     // Geißler
+    zauberer: ['h', { ink: 0xd8dcf0, ac: 0xb8bce0, gl: 0x9fb0ff, robe: true, float: true, ghost: true, mouth: true, faceless: true }],   // Chorgeist
+    werfer:   ['h', { ink: 0xd8ceb0, ac: 0x8a7e64, gl: 0xff3020, bones: true, weapon: 'bone' }],                            // Knochenwerfer
+    hexer:    ['h', { ink: 0x1e1e2a, ac: 0x3a3a52, gl: 0x9fb0ff, robe: true, hood: true, weapon: 'censer' }],               // Bußhexer
+    gross:    ['h', { scale: 2.5, ink: 0x2a2220, ac: 0x9a7a3a, armLen: 1.35, bell: true, jerky: true, weapon: 'hammer' }],  // Glockenriese
+    lauerer:  ['h', { ink: 0x141416, ac: 0xe8e0d8, thin: .6, armLen: 1.7, legLen: 1.4, faceless: true, paleHead: true, robe: true, jerky: true }],   // Ohnegesicht
+  },
 };
