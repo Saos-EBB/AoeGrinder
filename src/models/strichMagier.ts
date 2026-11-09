@@ -1285,8 +1285,8 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       const m = F.dead ? 0 : F.m;
       if (F.flames) {
         updateFlames(F, m, F.t);
-        U.uK.value = clamp((m - .5) / .5, 0, 1); F.shell.visible = m > .5;
-        F.mat.emissive.setRGB(.5 * Math.max(0, m - .6), .12 * Math.max(0, m - .6), 0);
+        U.uK.value = clamp((m - .5) / .5, 0, 1); F.shell.visible = m > .5 && !LK;   // Skin (z. B. Glutprophet): keine Flammen-Hülle und kein Glühen über dem Körper, die Hitze zeigt der Skin selbst (Augen-Feuer)
+        if (!LK) F.mat.emissive.setRGB(.5 * Math.max(0, m - .6), .12 * Math.max(0, m - .6), 0);
         if ((m >= .98 || anim.smoke) && !F.dead) { const n = rate(STAGE_FX.smoke * s); for (let i = 0; i < n; i++) emit(F.chest.getWorldPosition(V()).add(V(0, .7, 0)), 1, V(rnd(-.2, .2), 1.2, rnd(-.2, .2)), Math.random() < .5 ? 0x3a3330 : 0x5a504a, -.3, 1.4, .4); }
         if (Math.random() < s * 14 && !F.dead) emit(F.head.getWorldPosition(V()).add(V(0, .4, 0)), 1, V(0, 1.4, 0), Math.random() < .5 ? 0xff7a1a : 0xffd04a, -.5, .7, .2);
       }
