@@ -2257,4 +2257,11 @@ export const de: Record<string, string> = {
   'thief.name': "Schatzdieb",
   'thief.spotted': "Schatzdieb!",
   'thief.gone': "Entkommen …",
+  'tobj.useFlood': "Schleuse öffnen",
+  'tobj.useLava': "Lava-Rinne öffnen",
+  'tobj.useBell': "Glocke läuten",
+  'tobj.flood': "Die Schleuse flutet den Platz!",
+  'tobj.lava': "Lava strömt in die Rinne!",
+  'tobj.bell': "Die Glocke ruft {n} Gegner",
+  'tobj.bees': "Bienen!",
 };

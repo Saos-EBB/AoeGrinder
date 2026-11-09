@@ -118,6 +118,7 @@ let tickEnd = 0;      // Ende der Fläche oder des Kanals, der gerade tickt
 const BURN_STICK = 3000;   // PH
 export const burnLeft = m => m.burn && m.burn.until > state.now ? m.burn.dps * (m.burn.until - state.now) / 1000 : 0;
 let castCounter = 0;
+export const WET_BLITZ = 1.5;   // PH: Blitz-Schaden auf nasse Mobs
 export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
   areaSpell = id;
   const c: any = {
@@ -129,6 +130,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune Schock
+      if (m.wetUntil > state.now && hasTag(id, 'Blitz')) dmg *= WET_BLITZ;   // nass (Schleuse der Kanäle, objects/themeObjects.ts)
       const frozen = m.rootUntil > state.now;
       if (frozen) dmg *= 1 + (mods.coldBurn ?? 0) + (mods.frozenDmg ?? 0);   // Kältebrand, Set Splitterkönig
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen

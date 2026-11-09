@@ -4,9 +4,11 @@ import './shrines';
 import './chests';
 import './barrels';
 import { updateThief } from './thief';
+import { updateThemeObjects } from './themeObjects';
 
 export { syncObjects };
 export function updateObjects(dt: number) {
   updateAll(dt);
   updateThief();
+  updateThemeObjects();
 }

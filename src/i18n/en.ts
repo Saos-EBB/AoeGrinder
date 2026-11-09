@@ -2256,4 +2256,11 @@ export const en: Record<string, string> = {
   'thief.name': "Treasure Thief",
   'thief.spotted': "Treasure thief!",
   'thief.gone': "Escaped …",
+  'tobj.useFlood': "Open the sluice",
+  'tobj.useLava': "Open the lava channel",
+  'tobj.useBell': "Ring the bell",
+  'tobj.flood': "The sluice floods the square!",
+  'tobj.lava': "Lava pours into the channel!",
+  'tobj.bell': "The bell calls {n} enemies",
+  'tobj.bees': "Bees!",
 };
