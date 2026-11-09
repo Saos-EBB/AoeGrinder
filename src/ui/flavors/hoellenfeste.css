@@ -55,11 +55,8 @@ body[data-flavor=hoellenfeste] {
 }
 
 /* Bildschirm-Effekte: Goldecken (auch im Spiel), Funken (auch im Spiel), Ketten, Rauch */
-body[data-flavor=hoellenfeste] #fgOverlay .fx-corner { width: calc(110 * var(--hu)); height: calc(110 * var(--hu)); background: url(./hoellenfeste/corner.svg) 0 0 / 100% 100%; }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.tl { left: 10px; top: 10px; }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.tr { right: 10px; top: 10px; transform: rotate(90deg); }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.br { right: 10px; bottom: 10px; transform: rotate(180deg); }
-body[data-flavor=hoellenfeste] #fgOverlay .fx-corner.bl { left: 10px; bottom: 10px; transform: rotate(270deg); }
+body[data-flavor=hoellenfeste] { --fg-corner: calc(110 * var(--hu)); --fg-corner-off: 10px; }   /* Ecken-Maße → --fg-safe (base.css) */
+body[data-flavor=hoellenfeste] #fgOverlay .fx-corner { background: url(./hoellenfeste/corner.svg) 0 0 / 100% 100%; }
 body[data-flavor=hoellenfeste] #fgOverlay .fx-sparks { inset: 0 0 -60px; animation: fgRise 9s linear infinite, fgFlicker 3s ease-in-out infinite;
   background:
     radial-gradient(circle at 59.7% 54.5%, rgba(255,179,92,0.70) 0 1.0px, rgba(255,90,31,0.24) 1.5px 3.0px, transparent 3.5px),

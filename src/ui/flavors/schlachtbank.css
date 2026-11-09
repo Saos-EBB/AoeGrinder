@@ -64,15 +64,13 @@ body[data-flavor=schlachtbank] #fgOverlay .fx-scan { inset: 0; background: repea
 body[data-flavor=schlachtbank] #fgOverlay .fx-scan.lite { opacity: .5; }
 body[data-flavor=schlachtbank] #fgOverlay .fx-vig { inset: 0; box-shadow: inset 0 0 160px rgba(0, 0, 0, .85), inset 0 0 40px rgba(255, 61, 31, .15); }
 body[data-flavor=schlachtbank] #fgOverlay .fx-hazard { left: 0; right: 0; top: 0; height: 6px; opacity: .85; background: repeating-linear-gradient(-45deg, #ff3d1f 0 10px, #000 10px 20px); }
-body[data-flavor=schlachtbank] #fgOverlay .fx-corner { width: calc(46 * var(--hu)); height: calc(46 * var(--hu)); background: url(./schlachtbank/corner.svg) 0 0 / 100% 100%; }
-body[data-flavor=schlachtbank] #fgOverlay .fx-corner.tl { left: 16px; top: 16px; }
-body[data-flavor=schlachtbank] #fgOverlay .fx-corner.tr { right: 16px; top: 16px; transform: rotate(90deg); }
-body[data-flavor=schlachtbank] #fgOverlay .fx-corner.br { right: 16px; bottom: 16px; transform: rotate(180deg); }
-body[data-flavor=schlachtbank] #fgOverlay .fx-corner.bl { left: 16px; bottom: 16px; transform: rotate(270deg); }
+body[data-flavor=schlachtbank] { --fg-corner: calc(46 * var(--hu)); --fg-corner-off: 16px; }   /* Ecken-Maße → --fg-safe (base.css) */
+body[data-flavor=schlachtbank] #fgOverlay .fx-corner { background: url(./schlachtbank/corner.svg) 0 0 / 100% 100%; }
 body[data-flavor=schlachtbank] #fgOverlay .fx-status { font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #a3382a; white-space: nowrap; }
-body[data-flavor=schlachtbank] #fgOverlay .fx-status.a { left: 70px; top: 24px; }
-body[data-flavor=schlachtbank] #fgOverlay .fx-status.b { right: 60px; bottom: 16px; }
-body[data-flavor=schlachtbank] #fgOverlay .fx-status.c { left: 70px; bottom: 16px; }
+/* Statuszeilen am Rand neben den Ecken, außerhalb von Menü und HUD (die halten --fg-safe bzw. 24 hu Abstand zum Rand) */
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.a { left: var(--fg-safe); top: 8px; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.b { right: var(--fg-safe); top: 8px; }
+body[data-flavor=schlachtbank] #fgOverlay .fx-status.c { left: var(--fg-safe); bottom: 12px; }
 @keyframes fgGlitch { 0%, 88%, 100% { opacity: 1; transform: none; } 90% { opacity: .3; transform: translateX(6px); } 94% { opacity: .8; transform: translateX(-4px); } }
 body[data-flavor=schlachtbank] #fgOverlay .fx-glitch { inset: 0; animation: fgGlitch 4s steps(1) infinite;
   background:

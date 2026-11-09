@@ -12,20 +12,20 @@ export const krypta: Flavor = {
   // gen4.py hud3: Spielerrahmen oben links (Portrait + Level-Abzeichen), Buffs darunter, Rundkarte mit Zonenname oben rechts, Zeit darunter,
   // Leiste 40 px im Steinpanel unten Mitte, XP darunter, Castbar + Kill-Anzeige darüber, Mikro-Menü + Taschen unten rechts, Doom-Combo rechts
   hud: {
-    unitframe: pt('tl', 16, 16, 1, 'panel badge'),
-    hp: pt('tl', 104, 104, 1, 'dotsonly'),
-    mana: { ...pt('tl', 104, 116), hidden: true },
+    unitframe: pt('tl', 80, 16, 1, 'panel badge'),   // rechts neben der Zierrahmen-Ecke (--fg-safe), Punkte darunter mit
+    hp: pt('tl', 168, 104, 1, 'dotsonly'),
+    mana: { ...pt('tl', 168, 116), hidden: true },
     buffs: pt('tl', 16, 116),
-    minimap: pt('tr', W - 26, 40, 140 / MAP, 'circle nametop'),
-    timer: pt('t', W - 96, 192, 20 / 26),
-    runinfo: pt('t', W - 96, 216),
-    relics: pt('tl', W - 256, 44, 34 / 40, 'diamond'),
+    minimap: pt('tr', W - 80, 40, 140 / MAP, 'circle nametop'),   // links der Ecke, Zeit und Run-Info mittig darunter
+    timer: pt('t', W - 150, 192, 20 / 26),
+    runinfo: pt('t', W - 150, 216),
+    relics: pt('tl', W - 330, 44, 34 / 40, 'diamond'),
     hotbar: pt('b', CX, H - 8, 1, 'panel'),
     xp: pt('t', CX, H - 7),
     cast: pt('t', CX, H - 110),
     killmeter: pt('l', CX - 88, H - 79),
     combo: pt('tr', W - 30, 270, 1, 'doom'),
-    micro: pt('br', W - 16, H - 8),
+    micro: pt('br', W - 80, H - 8),
     feats: pt('tr', W - 196, 16),
     tracker: pt('tl', 16, 156),
     compass: { ...pt('t', CX, 14, 520 / 600), hidden: true },

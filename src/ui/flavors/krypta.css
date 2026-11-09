@@ -63,11 +63,8 @@ body[data-flavor=krypta] {
 
 /* Bildschirm-Effekte: Vignette und Goldschnörkel-Ecken (auch im Spiel) */
 body[data-flavor=krypta] #fgOverlay .fx-vig { inset: 0; box-shadow: inset 0 0 120px rgba(0, 0, 0, .7); }
-body[data-flavor=krypta] #fgOverlay .fx-corner { width: calc(56 * var(--hu)); height: calc(56 * var(--hu)); background: url(./krypta/corner.svg) 0 0 / 100% 100%; }
-body[data-flavor=krypta] #fgOverlay .fx-corner.tl { left: 12px; top: 12px; }
-body[data-flavor=krypta] #fgOverlay .fx-corner.tr { right: 12px; top: 12px; transform: rotate(90deg); }
-body[data-flavor=krypta] #fgOverlay .fx-corner.br { right: 12px; bottom: 12px; transform: rotate(180deg); }
-body[data-flavor=krypta] #fgOverlay .fx-corner.bl { left: 12px; bottom: 12px; transform: rotate(270deg); }
+body[data-flavor=krypta] { --fg-corner: calc(56 * var(--hu)); --fg-corner-off: 12px; }   /* Ecken-Maße → --fg-safe (base.css) */
+body[data-flavor=krypta] #fgOverlay .fx-corner { background: url(./krypta/corner.svg) 0 0 / 100% 100%; }
 
 /* ---------- HUD (X3H, gen4.py hud3 + gen5 m3_hud_extras) ---------- */
 /* Steinpanel 400 × 54 mit Leiste (40 px), Gold-Flügel an beiden Enden */

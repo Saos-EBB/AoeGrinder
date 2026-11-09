@@ -1,6 +1,6 @@
 /* Ausrüstungsfenster (Handoff items.md Schritt 5, Vorlage docs/ref/items-mockup.dc.html): nur Anordnung, Farben und Schriften aus dem UI-Flavor (--fg-*), Größen in --hu wie das Waffenmenü */
-#gearModal { z-index: 5; --gmSafe: max(calc(14px + 110 * var(--hu)), 88px); }   /* am Modal berechnet: #gmBox setzt auf dem Handy --hu: 1px */
-/* Zierrahmen (#fgOverlay, über dem Fenster): das Fenster bleibt senkrecht zwischen den Ecken (größte Ecke Höllenfeste 10 px + 110 hu) und unter den Ketten (84 px), sonst verdecken sie Titel, Staub, Schließen und Tabs */
+#gearModal { z-index: 5; --gmSafe: var(--fg-safe); }   /* --fg-safe ist am body aufgelöst: #gmBox setzt auf dem Handy --hu: 1px */
+/* Zierrahmen (#fgOverlay, über dem Fenster): das Fenster bleibt senkrecht zwischen den Ecken (--fg-safe, base.css), sonst verdecken sie Titel, Staub, Schließen und Tabs. Ketten sind in Fenstern aus */
 #gmBox { width: calc(1240 * var(--hu)); max-height: calc(100vh - 2 * var(--gmSafe)); margin: auto 0; overflow: auto; display: flex; flex-direction: column; gap: calc(12 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
 #gmBox .wmHead { flex-wrap: wrap; }
 #gmBox .wmHead h1 { margin: 0; font-size: calc(34 * var(--hu)); }

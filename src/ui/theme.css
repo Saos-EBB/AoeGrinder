@@ -17,7 +17,8 @@
 .modal .smallBtn:hover { background: color-mix(in srgb, var(--fg-top) 15%, transparent); }
 
 /* Einstellungen (X?O, gen9.py settings: Board 1280×720, Tabs 230 × 580, Inhalt 940 × 580, Zeilen 38 px, Steuerung ab 230 px) */
-#settingsModal #settingsBox { width: min(1200px, 94vw); height: min(652px, 92vh); display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--fg-text); font-family: var(--font-body); }
+#settingsModal #settingsBox { width: min(1200px, 94vw, 100vw - 2 * var(--fg-safe));   /* breite Fenster bleiben waagrecht zwischen den Zierrahmen-Ecken (base.css) */
+  height: min(652px, 92vh); display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--fg-text); font-family: var(--font-body); }
 .setHead { flex: none; position: relative; height: 54px; display: flex; align-items: center; justify-content: center; }
 .setHead h1 { margin: 0; font-size: 34px; }
 .setHead > span { position: absolute; right: 0; top: 12px; font-size: 13px; font-weight: 500; color: var(--fg-muted); }
@@ -43,7 +44,7 @@
 .setFoot { flex: none; display: flex; align-items: center; gap: 14px; padding: 16px 30px 0 0; position: relative; z-index: 2; }
 #setFootLeft { display: flex; gap: 14px; margin-right: auto; }
 #setFootLeft[hidden] { display: none; }
-.setFoot .fg-btn { min-width: 150px; height: 46px; font-size: 15px; }
+.setFoot .fg-btn { min-width: 130px; height: 46px; padding: 0 16px; font-size: 15px; white-space: nowrap; }
 #settingsCancel { margin-left: auto; }
 /* UI-Flavor-Karten mit Mini-Vorschau */
 .setFlavors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
@@ -204,7 +205,7 @@ body.mobile #menuActions { max-width: 50vw; }
 
 /* ---------- Shop (S2.dc.html, 1280×720) ---------- */
 #shopModal { overflow: auto; }
-#shopModal #shopBox { width: min(1180px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; background: none; border: 0; box-shadow: none; }   /* X?S: kein Außenrahmen, nur die Spalten als Panels */
+#shopModal #shopBox { width: min(1180px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; background: none; border: 0; box-shadow: none; }   /* X?S: kein Außenrahmen, nur die Spalten als Panels */
 .shopHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
 .shopHead h1 { font-size: 38px !important; }
 #shopInfo { font: 600 18px var(--font-body); color: var(--fg-text); }
@@ -241,7 +242,7 @@ body.mobile #menuActions { max-width: 50vw; }
 body.mobile #shopCols { grid-template-columns: 1fr; }
 
 /* ---------- Run-Ende (E2.dc.html) ---------- */
-#deathModal #endBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
+#deathModal #endBox { width: min(1100px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
 #endTitle { font-size: 46px !important; }
 #endSub { margin-top: 6px; font-size: 16px; color: var(--fg-muted); }
 .endTime { margin-top: 6px; font: 700 64px var(--font-num); line-height: 1; }
@@ -273,7 +274,7 @@ body.mobile .endCols { grid-template-columns: 1fr; }
 body.mobile .endStat { width: auto; flex: 1; }
 
 /* ---------- Charakterfenster (C2.dc.html) ---------- */
-#charModal #charBox { width: min(1200px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 20px 30px; text-align: left; }
+#charModal #charBox { width: min(1200px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 20px 30px; text-align: left; }
 .charHead { display: flex; justify-content: center; align-items: baseline; position: relative; }
 .charHead h1 { font-size: 34px !important; }
 .charHead span { position: absolute; right: 0; font-size: 14px; color: var(--fg-muted); }

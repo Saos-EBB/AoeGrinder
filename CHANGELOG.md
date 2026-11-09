@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(ui): Nichts liegt mehr unter den Zierrahmen-Ecken: zentraler Sicherheitsabstand `--fg-safe` aus den Ecken-Maßen jedes UI-Flavors; HUD-Elemente rücken automatisch aus den Ecken (auch eigene Layouts), Minimap, Zeit, Buffs, Relikte, Tracker und Spielerrahmen sitzen in allen drei Flavors neben bzw. unter den Ecken; Waffenmenü, Einstellungen, Shop, Charakterfenster und Run-Ende bleiben waagrecht zwischen den Ecken; Schlachtbank-Statuszeilen liegen am Rand statt über Menü und Zeit; Einstellungen-Fußzeile bricht nicht mehr um
 - feat(ui): Handy-Modus vorerst abgekoppelt, bis Desktop fertig ist: Auf dem Startbildschirm ist „Handy“ ausgegraut mit Banner „In Arbeit – derzeit nicht spielbar“; auf Touch-Geräten erscheint statt der Frage nur dieser Hinweis („Bitte am PC spielen“), ein Start ist dort nicht möglich (Dev-Weg `?mobile=1` bleibt)
 - feat(ui): Taste I öffnet und schließt im Hauptmenü das Ausrüstungsfenster (nur Magier, wie der Knopf „Ausrüstung“), belegbar unter Tastenbelegung → Fenster; X bleibt das Charakterfenster
 - feat(settings): Regler „Helligkeit“ unter Einstellungen → Grafik (0–100 %, gespeichert, Abbrechen setzt zurück): hebt Umgebungslicht und Lichtkegel an und dünnt den schwarzen Nebel aus, ohne Selbstleuchtendes zu verstärken; Standard 50 % ist heller als bisher, damit Wände, Flügel und kleine Mobs (Moosling, Wichtel) erkennbar sind, 0 % entspricht dem alten Look

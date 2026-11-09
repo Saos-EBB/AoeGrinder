@@ -52,6 +52,7 @@ export function registerHudElement(id: HudElementId, inner: HTMLElement) {
   inner.replaceWith(w);
   w.append(inner);
   wrappers.set(id, w);
+  sizeWatch.observe(w);
   bindEdit(id, w);
   place(id);
   return w;
@@ -71,8 +72,35 @@ function place(id: HudElementId) {
 }
 export function applyLayout() {
   for (const id of wrappers.keys()) place(id);
+  keepOutOfCorners();
 }
 addEventListener('uisettings', applyLayout);
+
+// Zierrahmen-Ecken (#fgOverlay, über dem HUD): kein Element im Quadrat --fg-safe einer Bildschirmecke (base.css). Ein Element, das hineinragt,
+// rückt um den kürzeren Weg heraus (waagrecht oder senkrecht) – zusätzlich zur gespeicherten Lage über `translate`, Layout und Overrides bleiben unverändert.
+// Gilt für Standard-Layouts wie eigene Änderungen; neu bei Größe, Fenster, Flavor und Inhalt (Buffs, Tracker)
+const safeProbe = document.createElement('div');
+safeProbe.style.cssText = 'position:fixed;left:0;top:0;width:var(--fg-safe);height:0;visibility:hidden;pointer-events:none';
+document.body.append(safeProbe);
+function keepOutOfCorners() {
+  const s = safeProbe.getBoundingClientRect().width, W = innerWidth, H = innerHeight;
+  for (const w of wrappers.values()) w.style.translate = '';
+  const rects = [...wrappers.values()].map(w => w.getBoundingClientRect());   // erst alle messen, dann schieben (ein Layout-Durchlauf)
+  [...wrappers.values()].forEach((w, i) => {
+    const r = rects[i];
+    if (!r.width || !r.height) return;
+    let dx = 0, dy = 0;
+    for (const [left, top] of [[true, true], [false, true], [true, false], [false, false]]) {
+      const inX = left ? r.left + dx < s : r.right + dx > W - s, inY = top ? r.top + dy < s : r.bottom + dy > H - s;
+      if (!inX || !inY) continue;
+      const mx = left ? s - (r.left + dx) : W - s - (r.right + dx), my = top ? s - (r.top + dy) : H - s - (r.bottom + dy);
+      if (Math.abs(mx) <= Math.abs(my)) dx += mx; else dy += my;
+    }
+    if (dx || dy) w.style.translate = `${Math.round(dx)}px ${Math.round(dy)}px`;
+  });
+}
+addEventListener('resize', keepOutOfCorners);
+const sizeWatch = new ResizeObserver(() => keepOutOfCorners());
 
 // ---------- Bearbeiten-Modus ----------
 let onDone: (() => void) | null = null, drag = null, hover: HudElementId | null = null;
