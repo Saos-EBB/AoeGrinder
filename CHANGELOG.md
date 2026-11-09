@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(skins): Magier-Skin Splitterkönig: Anzug im Facetten-Muster, Schnitt „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe, Augen in Eis- oder Waffen-Farbe. Die Eissplitter kreisen um die Figur (5 kleine → 1 großer, 5 große → 1 leuchtender). Kein Draw Call mehr
 - feat(skins): Magier-Skin Pestbringer: verwester Anzug in Dunkellila/Grün/Gold mit ausgefranstem Schoß, Pestmaske mit Schnabel, Gold-Brille (Gläser in Schleim- oder Waffen-Farbe) und Hut, Phiolen-Kette, Umhangrest, tropfende Manschetten, Dampf und Fliegen, Müllbeutel in der freien Hand, der mit der Zahl markierter Mobs wächst. Kein Draw Call mehr
 - feat(skins): Magier-Skin Hochspannung: Trainingsanzug mit Zickzack-Streifen, Sonnenbrille (Gläser leuchten in der Waffen-Farbe), Kupferkette, Isolierband-Bündchen, Sneaker, Glasflasche auf dem Rücken, deren Strom-Pegel der Anzeige der Figur folgt (Blitz: Batterie), Funken am Korken und bei voller Flasche zu den Händen. Kein Draw Call mehr
 - feat(ui): Skin-Wechsler unter der Figur in der Charakterwahl (◀ Name ▶, Vorschau ist die Menü-Figur): Magier Standard, Hochspannung, Pestbringer, Splitterkönig; Strichkrieger Standard plus Ausbrecher (nur Grabplatte/Riesenschwert), Classic-Krieger 55 (nur Leeroys Klinge), Holzfäller (nur Sions Axt). Alle frei, Wahl pro Figur gespeichert und im Spielstand-Code; noch sehen alle Skins wie Standard aus. Mods stehen jetzt in einer Reihe darunter

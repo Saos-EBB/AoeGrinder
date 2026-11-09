@@ -73,11 +73,11 @@ const SKINS = {
 // Skins (src/skins.ts, Viewer docs/ref/set-skins-magier.html): Farben des Grundkörpers, Teile baut buildStrichMagier im Block `look`.
 // top Brust, sleeve Arme, pants Hüfte und Beine, shoe Füße, skin Hals und Hände, head Kopf, collar Kragen-Schal, ankle: Knöchel frei
 const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Viewer: Lampe und Rand-Licht heben sie sonst über die Bloom-Schwelle // PH
-const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiplyScalar(.8)) };   // Muster Facette, dunkler als im Viewer wegen der Lampe über der Figur // PH
+const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiplyScalar(.45)) };   // Muster Facette, dunkler als im Viewer wegen der Lampe über der Figur // PH
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
   seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
-  frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.8), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
+  frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.45), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
 };
 
 // ───────────────────────── Körper-Shader: Glühen (aGlow), Eiszapfen wachsen nach uM (icT ≥ 0), Requisite (icT = -2), Rand-Licht
@@ -518,6 +518,7 @@ const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pt
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
 const SK = {   // Optik-Zahlen der Skins // PH
   blitz: { lvlMin: .08, lvlRate: 4, drip: 6, full: .98, arcs: 24 },   // Pegel: mindestens 8 %, folgt der Anzeige mit 4/s; Funken pro Sekunde am Korken (+ drip × Pegel) und bei voller Flasche zu den Händen
+  frost14: { slots: [2, 4, 4], r: .72, y: 1.35, spin: .8, sparkle: 6 },   // Splitter: Plätze für leuchtende (je 25), große (je 5), kleine; Bahn-Radius und Höhe; Umläufe; Glitzern pro Sekunde je leuchtendem
   seuche: { perMark: .06, cap: 20, every: .25, grow: 3, steam: 8, flies: 6, drip: .7 },   // Müllbeutel +6 % pro markiertem Mob, höchstens 20 zählen (× 2,2), gezählt alle 0,25 s; Dampf pro Sekunde; Fliegen; Tropfen pro Sekunde an den Manschetten
 };
 function buildLook(F, look, { part, glow, B, M }) {
@@ -584,11 +585,52 @@ function buildLook(F, look, { part, glow, B, M }) {
       F.parts.push({ bone: f, geo: new THREE.SphereGeometry(.02, 5, 4), color: col(0x0b0a0e), m: new THREE.Matrix4(), noShell: true });
     }
   }
+  if (look === 'frost14') {   // Splitterkönig: Muster Facette, Schnitt 14 „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe
+    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiplyScalar(.45), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
+    FACET++; part(chest, new THREE.CylinderGeometry(.095, .1, .1, 10), FACETTE, [0, .63, 0], [0, 0, 0], [1, 1, .9]);   // Stehkragen
+    for (let k = 0; k < 5; k++) part(chest, new THREE.SphereGeometry(.012, 5, 4), PEARL, [0, .44 - k * .085, .108 - k * .006]);   // Knopfleiste
+    part(chest, new THREE.ConeGeometry(.07, .2, 3), LIGHT, [0, .5, .1], [Math.PI, 0, 0], [1, 1, .25]);   // Hemd im Westen-Ausschnitt
+    FACET++; part(hips, new THREE.CylinderGeometry(.17, .2, .2, 10, 1, true), FACETTE, [0, -.05, 0], [0, 0, 0], [1, 1, .74]);   // Westen-Saum über der Hüfte
+    for (const a of arms) glow(a.fa, new THREE.OctahedronGeometry(.02, 0), CRY, [0, -A2 * .9, .055]);   // Eis-Manschetten
+    [[0, .1, 0, .32], [-.05, .08, .04, -.2], [.04, .07, -.04, .6], [-.02, .05, .05, 1]].forEach(([x, h, z, r]) =>   // Eis-Schulter links
+      part(chest, new THREE.ConeGeometry(.036, (.12 + h) * 1.2, 5), ICE, [.25 - x, .56 + h * .6, z - .02], [r * .3, 0, -(.5 + r * .4)]));
+    part(chest, new THREE.TorusGeometry(.07, .005, 3, 16), PEARL, [0, .57, .05], [1.3, 0, 0]);   // Kette
+    glow(chest, new THREE.OctahedronGeometry(.022, 0), CRY, [0, .5, .125]);                      // Kristall
+    for (const l of legs) part(l.ft, new THREE.BoxGeometry(.08, .06, .1), LK_SHOE, [0, -.05, -.02]);   // Absatz zum spitzen Lackschuh
+    // Platin-Perücke: Kappe nach hinten gekippt, hohe Welle, Spitze nach hinten, Spiral-Locke an der Schläfe
+    part(head, new THREE.SphereGeometry(.19, 12, 8, 0, TAU, 0, Math.PI * .6), PLAT, [0, .17, -.03], [-.45, 0, 0], [.97, 1.1, 1.02]);
+    part(head, new THREE.SphereGeometry(1, 10, 6), PLAT, [.03, .385, .045], [-.5, 0, -.15], [.15, .11, .22]);
+    part(head, new THREE.ConeGeometry(.075, .3, 6), PLAT, [.045, .415, -.18], [-2.1, 0, .1]);
+    const coil = []; for (let i = 0; i <= 30; i++) { const a = i / 30 * Math.PI * 4; coil.push(V(-.17 + Math.cos(a) * .04, .19 - i / 30 * .18, .06 + Math.sin(a) * .04)); }
+    part(head, tubeGeo(coil, .018), PLAT);
+    for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(1, 8, 6), eye(0x7cc8ff), [sx * .063, .15, .172], [0, 0, 0], [.017, .026, .012]);   // Augen
+    // Splitter (figures.ts: state.shards): 5 klein → 1 groß, 5 groß → 1 leuchtend, kreisen um die Figur. Je Platz ein Bone, leer = versteckt
+    const SH = [[new THREE.OctahedronGeometry(.085, 0), col(0xe9fbff), 1], [new THREE.OctahedronGeometry(.06, 0), col(0x7cc8ff), 0], [new THREE.OctahedronGeometry(.026, 0), col(0xf2fbff), 1]] as const;
+    L.shards = SK.frost14.slots.map((n, kind) => Array.from({ length: n }, () => {
+      const b = B(F.root), [geo, c, g] = SH[kind];
+      (g ? F.glow : F.parts).push({ bone: b, geo: geo.clone(), color: c, m: new THREE.Matrix4(), noShell: true });
+      return b;
+    }));
+    L.shown = 0;
+  }
+
 }
 // Gags: liest nur Anzeige und Spielstand, ändert nichts. sp(p, color) = Funken ins Partikel-System
 const _lp = V(), _lq = V(), _lqa = new THREE.Quaternion(), _lqb = new THREE.Quaternion();
 function updateLook(F, s, sp) {
   const L = F.lk;
+  if (L.look === 'frost14') {
+    const k = SK.frost14, n = F.dead ? 0 : Math.max(0, Math.floor(state.shards ?? 0));
+    const want = [Math.min(k.slots[0], Math.floor(n / 25)), Math.min(k.slots[1], Math.floor(n % 25 / 5)), Math.min(k.slots[2], n % 5)];
+    const total = want[0] + want[1] + want[2]; let i = 0;
+    L.shown = total;
+    L.shards.forEach((list, kind) => list.forEach((b, j) => {
+      if (j >= want[kind]) { b.scale.setScalar(1e-4); return; }
+      const a = i++ / total * TAU + F.t * k.spin;
+      b.position.set(Math.cos(a) * k.r, k.y + Math.sin(a * 2 + F.t) * .14, Math.sin(a) * k.r); b.rotation.y = F.t * 2; b.scale.setScalar(1);
+      if (kind === 0 && Math.random() < s * k.sparkle) sp(F.root.localToWorld(_lp.copy(b.position)), 0x7cd8ff);
+    }));
+  }
   if (L.look === 'seuche') {
     const k = SK.seuche;
     if ((L.markT -= s) <= 0) {   // markierte Mobs zählen (plagueMarks.ts), nur lesen
@@ -1084,6 +1126,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   if (skin === 'arcane') { F.orbs = makeChargeOrbs(); world.add(F.orbs); }
   if (skin === 'blitz') { F.bolts = makeBolts(); world.add(F.bolts.mesh); }
   if (skin === 'plague') { F.goo = makeGoo(F); world.add(F.goo.drops, F.goo.strands); }
+  if (F.lk?.shards) for (const b of F.lk.shards.flat()) b.scale.setScalar(1e-4);   // Splitter erst nach dem Binden verstecken (Bind-Pose mit Größe 1)
 
   // Partikel in Weltkoordinaten
   const PN = 400, pGeo = new THREE.BufferGeometry();
