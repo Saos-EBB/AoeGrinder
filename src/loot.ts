@@ -79,6 +79,10 @@ onMobDeath(m => {
   if (Math.random() < DROP.kill) spawnDrop(m.pos);
   if (lastChamp && Math.random() < DROP.champ) spawnDrop(m.pos);
 });
+// Gear-Teil auf den Boden (Truhen, objects/chests.ts), nur Magier wie alle Gear-Drops
+export function dropGear(at: THREE.Vector3) {
+  if (canDrop()) spawnDrop(at);
+}
 // boss.ts endBoss
 export function bossDrops(pos: THREE.Vector3) {
   if (!canDrop()) return;
