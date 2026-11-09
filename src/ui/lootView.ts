@@ -9,6 +9,19 @@ import { meta, saveMeta } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 import type { Find } from '../loot';
+import { SETS, devWearSet } from '../gear';
+import { mage } from '../models/mage';
+import { renderMenu } from './mainMenu';
+
+// Dev: Set 5/5 oder 4/5 anlegen (Einstellungen → Dev)
+document.getElementById('devZones')?.insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin:10px 0 6px">Dev: Gear-Sets</div>
+  <div><select class="bindBtn" id="devGearSet">${Object.keys(SETS).map(id => `<option value="${id}">${t(`look.magier.${id}.name`)}</option>`).join('')}</select>
+  <button class="bindBtn" id="devGearSet5">5/5 anlegen</button><button class="bindBtn" id="devGearSet4">4/5 anlegen</button></div>`);
+for (const n of [5, 4] as number[]) document.getElementById(`devGearSet${n}`)?.addEventListener('click', () => {
+  devWearSet((document.getElementById('devGearSet') as HTMLSelectElement).value, n);
+  mage.refreshLook();
+  renderMenu();
+});
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 

@@ -20,7 +20,7 @@ import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
-import { applyRunGear } from '../gear';
+import { applyRunGear, forcedLook } from '../gear';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -183,9 +183,9 @@ export function renderMenu() {
 // ---------- Skin-Wechsler unter der Figur (skins.ts): nur Skins, die zur Waffe passen; Vorschau ist die Menü-Figur selbst ----------
 const skinChoice = () => { const list = skinsFor(figurOf(mage.skin), mage.lookWeapon); return { list, i: Math.max(0, list.findIndex(s => s.id === mage.look)) }; };
 function renderSkin() {
-  const { list, i } = skinChoice();
-  $('skinName').textContent = t(list[i].name);
-  for (const id of ['skinPrev', 'skinNext']) ($(id) as HTMLButtonElement).disabled = list.length < 2;
+  const { list, i } = skinChoice(), forced = forcedLook(mage.skin);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear.ts)
+  $('skinName').textContent = forced ? t('gear.skinForced', { name: t(`look.magier.${forced}.name`) }) : t(list[i].name);
+  for (const id of ['skinPrev', 'skinNext']) ($(id) as HTMLButtonElement).disabled = list.length < 2 || !!forced;
 }
 function cycleSkin(step: number) {
   const { list, i } = skinChoice();

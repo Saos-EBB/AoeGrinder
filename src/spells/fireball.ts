@@ -5,6 +5,8 @@ import { mobsInRadius, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { fireballLook } from '../vfx/fireLook';
 import { t } from '../i18n';
+import { state } from '../state';
+import { GIANT_FB } from '../gear';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
@@ -21,7 +23,10 @@ export const fireball = {
   effect(c) {
     const target = nearestTarget(fireball.range);
     if (!target) return;
-    const k = hasRune('fireball', 'swift') ? SWIFT_DMG : 1, r = c.radius(fireball.radius) * (hasRune('fireball', 'big') ? BIG : 1);
+    // Glutprophet 5/5 (gear.ts): jeder 10. Feuerball ist ein Riesen-Feuerball, alle Runen und Talente wirken mit
+    const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;
+    const giant = state.gearSet === 'glut' && n % GIANT_FB.every === 0, size = giant ? GIANT_FB.size : 1;
+    const k = (hasRune('fireball', 'swift') ? SWIFT_DMG : 1) * (giant ? GIANT_FB.dmg : 1), r = c.radius(fireball.radius) * (hasRune('fireball', 'big') ? BIG : 1) * size;
     // Projektile: das Hauptziel, Wahnsinn +1 pro Rang mit vollem Schaden, Splitterball +2 mit 70 %. Weitere gehen auf die nächsten Ziele, gibt es zu wenige, wieder aufs Hauptziel
     const shots = [1, ...Array(mods.fbExtra).fill(1), ...(hasRune('fireball', 'split') ? Array(SPLIT.n).fill(SPLIT.k) : [])];
     const others = mobsInRadius(player.pos, fireball.range, Infinity).filter(m => m !== target).sort((a, b) => dist2d(a.pos, player.pos) - dist2d(b.pos, player.pos));
@@ -31,10 +36,9 @@ export const fireball = {
       const at = t.pos.clone();
       c.hitProjectile(t, rand(fireball.min, fireball.max) * k * mul);
       for (const m of mobsInRadius(at, r)) if (m !== t) c.hit(m, rand(fireball.min, fireball.max) * k * mul * SPLASH_MUL);
-      fireballLook(at, r, mul < 1 ? .7 : 1);
+      fireballLook(at, r, (mul < 1 ? .7 : 1) * size);
     });
     // Dauerfeuer: jeder 3. oder 4. Feuerball gibt sein Mana zurück
-    const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;
     if (mods.fbFreeEvery && n % mods.fbFreeEvery === 0) player.mana += c.cost ?? 0;
   },
 };

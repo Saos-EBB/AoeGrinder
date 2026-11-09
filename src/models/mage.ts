@@ -14,6 +14,7 @@ import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { figurOf, STANDARD } from '../skins';
+import { forcedLook } from '../gear';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -59,7 +60,7 @@ let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clo
 // look: Skin aus skins.ts (Standard, Hochspannung, Ausbrecher …), getrennt vom Schul-Look skin. Krieger-Skins hängen an der Waffe (legendär oder Basis)
 let look = STANDARD;
 const lookWeapon = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : id);   // Magier: Skins hängen an der Schule (= Skin-ID)
-const lookOf = id => skinOf(figurOf(id), lookWeapon(id));
+const lookOf = id => forcedLook(id) ?? skinOf(figurOf(id), lookWeapon(id));   // Set 5/5 angelegt: Set-Skin erzwungen (gear.ts), die Wahl bleibt gespeichert
 
 // Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
 const SPARK = { vy: .5, life: [.42, .84], size: .14, grav: -.3, spread: .12, bright: 1.6 };   // Werte der Viewer-Partikel, bright wie die Relikt-Aura // PH

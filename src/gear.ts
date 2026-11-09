@@ -5,7 +5,7 @@
 // Fehlt ein Feld (alter Stand), gilt der Standardwert; nichts crasht.
 
 import { state } from './state';
-import { SPELLS, CARD_RARITIES } from './config';
+import { SPELLS, CARD_RARITIES, mods } from './config';
 import { meta, saveMeta } from './meta';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
 import { ELEMENTS, elementColor } from './models/weapons/baukasten';
@@ -23,7 +23,31 @@ export const GEAR = {
   focusShare: 0.5,     // Hälfte der Teile mit Fokus, der Rest mit 1 Wert
   keepFrom: 3,         // ab Blau ins Inventar; Grau wird Staub, Weiß/Grün gehen später in die Kosmetik-Sammlung (bis dahin Staub)
   baseNames: 3,        // Grundnamen je Slot (gear.base.<slot>.<n>)
+  setChance: 0.15,     // Anteil der Set-Teile an den Drops ab Blau, nur für den gespielten Magier
 };
+
+// ---------- Sets (1 pro Magier) ----------
+// setId = Skin-ID des Set-Skins (skins.ts SKIN_LIST), school = mage.skin. Mit 1–4 Teilen gelten die eigenen Rolls, ohne Teilbonus.
+// Mit 5/5 angelegt (und der passenden Schule): jeder Teil-Roll wird durch den Perfekt-Wert ersetzt, die Mechanik läuft (state.gearSet), der Set-Skin wird erzwungen.
+// perfect: [Wirkung, Wert] je Slot, Wirkungen in PERFECT unten. Alle Werte PH
+export const SETS: Record<string, { school: string; color: string; perfect: Record<Slot, [string, number]> }> = {
+  glut: { school: 'feuer', color: '#ff7a22', perfect: { kopf: ['crit', 0.15], hals: ['fbExtra', 1], ruecken: ['fbCast', 0.1], arme: ['fbExtra', 1], koerper: ['fbCast', 0.1] } },
+};
+// Riesen-Feuerball (Glutprophet): jeder every-te Feuerball, size × Größe und Radius, dmg × Schaden
+export const GIANT_FB = { every: 10, size: 3, dmg: 3 };
+const stat = (id: string) => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };   // wie spells/core.ts stat, ohne Import-Kreis
+const PERFECT: Record<string, (v: number) => void> = {
+  crit: v => { mods.crit += v; },
+  fbExtra: v => { mods.fbExtra += v; },
+  fbCast: v => { const s = stat('fireball'); s.cast = (s.cast ?? 1) - v; },
+};
+export const setOfSchool = (skin: string | null) => Object.keys(SETS).find(id => SETS[id].school === skin) ?? null;
+export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;
+// Aktives Set des gespielten Magiers: alle 5 Teile angelegt und die Schule passt
+export const fullSet = (skin: string | null) => { const id = setOfSchool(skin); return id && setCount(id) === SLOTS.length ? id : null; };
+// Set-Skin, solange 5/5 angelegt ist (mage.ts). Die gespeicherte Skin-Wahl bleibt
+export const forcedLook = (skin: string | null) => fullSet(skin);
+export const perfectText = (setId: string, slot: Slot) => { const [k, v] = SETS[setId].perfect[slot]; return t(`gear.perfect.${k}`, { n: Math.round(v * (v < 1 ? 1000 : 10)) / 10 }); };
 const NO_MAKER = {};   // weaponHit erwartet einen Hersteller; Gear hat keinen
 
 // Schule des gespielten Magiers (mage.skin) → Tag der Spells für den Fokus. ?-Magier: alle Schulen
@@ -62,6 +86,7 @@ export function cleanGear(m: any) {
 }
 function fixItem(g) {
   if (!Number.isInteger(g.id)) g.id = 0;
+  if (g.s.setId != null && !SETS[g.s.setId]) delete g.s.setId;
   g.v = 1;
   if (!(g.s.element in ELEMENTS)) g.s.element = 'none';
   return g;
@@ -82,7 +107,11 @@ export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = nu
 }
 
 // Drop im Run und Gear-Box: zufälliger Slot
-export const rollDrop = (skin: string | null) => rollGear(pick([...SLOTS]), null, skin);
+export function rollDrop(skin: string | null) {
+  const g = rollGear(pick([...SLOTS]), null, skin), set = setOfSchool(skin);
+  if (set && g.r >= GEAR.keepFrom && Math.random() < GEAR.setChance) g.s.setId = set;
+  return g;
+}
 
 // ---------- Boxen im Shop (Grundregel: nur erspielter Staub) ----------
 export const BOX = { gear: 120, look: 120 };   // PH
@@ -140,7 +169,7 @@ export function deleteGear(slot: Slot, id: number) {
 
 // ---------- Text ----------
 const valueKey = (g: GearItem) => VALUE_KEY[g.s.value];
-export const gearName = (g: GearItem) => t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
+export const gearName = (g: GearItem) => g.s.setId ? t(`gear.set.${g.s.setId}.${g.slot}`) : t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
 export const slotName = (slot: string) => t(`gear.slot.${slot}`);
 export const gearRarity = (g: GearItem) => CARD_RARITIES[g.r];
 // Werte-Zeilen wie effectLines bei der Waffe: Fokus oder Wert, dazu das Element
@@ -156,11 +185,14 @@ export const gearLines = (g: GearItem) => gearRows(g).map(r => r.text);
 // ---------- Wirkung ----------
 // Run-Start nach applyRunWeapon (mods frisch aus resetMods, spellStats aus resetSpells): Werte über mods/stat, Element-Proc über den Treffer-Hook
 export function applyRunGear(skin: string | null) {
+  state.gearSet = null;
   if (!isMagierSkin(skin)) return;
-  const procs: [string, number][] = [];
+  const procs: [string, number][] = [], set = fullSet(skin);
+  state.gearSet = set;
   for (const slot of SLOTS) {
     const g = worn(slot);
     if (!g) continue;
+    if (set) { const [k, v] = SETS[set].perfect[slot]; PERFECT[k](v); continue; }   // 5/5: Perfekt-Wert statt eigenem Roll
     const f = factor(g.r) * GEAR.mul;
     if (g.s.focus) applyFocus(g.s.focus, f, { s: { fv: 1 } });
     else applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f);
@@ -174,5 +206,17 @@ export function applyRunGear(skin: string | null) {
   };
 }
 
+// Dev: Set des Schul-Magiers anlegen (n Teile, Rest leer), ohne Staub und Limit. Seltenheit lila
+export function devWearSet(setId: string, n: number = SLOTS.length) {
+  SLOTS.forEach((slot, i) => {
+    if (i >= n) { wearMap()[slot] = null; return; }
+    const g = rollGear(slot, 4, SETS[setId].school);
+    g.s.setId = setId;
+    gearInv(slot).push(g);
+    wearMap()[slot] = g.id;
+  });
+  saveMeta();
+}
+
 // Dev / Tests
-(window as any).__gear = { SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
