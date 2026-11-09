@@ -5,14 +5,17 @@ import { rand, clamp } from './util';
 import { WORLD_K } from './config';
 import { particles } from './fx/particles';
 import { ZONES } from './zones';
+import { DEFAULT_ZONE } from './mapgen/registry';
 import { makeCtx } from './props';
 import { clearColliders, colliders, groundAt } from './collision';
 import { TOON, toonMat } from './toon';
 
-export let zone = ZONES.tirisfal;
+export let zone = ZONES[DEFAULT_ZONE];
 const lambertGround = new THREE.MeshLambertMaterial({ vertexColors: true }), toonGround = toonMat({ vertexColors: true, rim: false });
-export let zoneId = new URLSearchParams(location.search).get('zone') ?? 'tirisfal';   // ?zone=winterquell zum Testen
-if (!ZONES[zoneId]) zoneId = 'tirisfal';
+// Start: ?zone=<id> (alte Zonen, map-<theme>, arena), ?theme=<id> (generierte Map), sonst Wald (mapgen)
+const query = new URLSearchParams(location.search);
+export let zoneId = query.get('zone') ?? (query.get('theme') ? `map-${query.get('theme')}` : DEFAULT_ZONE);
+if (!ZONES[zoneId]) zoneId = DEFAULT_ZONE;
 let nextStorm = 0, stormEnd = 0;
 
 export function heightAt(x, z) {

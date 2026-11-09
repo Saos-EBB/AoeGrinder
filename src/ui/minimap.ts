@@ -82,7 +82,7 @@ export function updateMinimap() {
     // Kartenrand: Kreis um den Ursprung
     const [ox, oy] = toMap(0, 0);
     c.strokeStyle = MINIMAP.edge; c.globalAlpha = 0.5; c.lineWidth = 2 * size / MINIMAP.px;
-    c.beginPath(); c.arc(ox, oy, CFG.playRadius * k, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.arc(ox, oy, (zone.rimR ?? CFG.playRadius) * k, 0, Math.PI * 2); c.stroke();   // rimR: Arena
     c.globalAlpha = 1;
   }
   // Mobs: erst normale, dann Kampf und Champions obendrauf

@@ -9,6 +9,7 @@ import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
 import { zone, zoneId } from '../world';
 import { ZONES } from '../zones';
+import { THEME_ZONES } from '../mapgen/registry';
 import { switchZone } from '../player';
 import { uiSettings, setUi } from './uiSettings';
 import { fmtInt } from './dmgNumbers';
@@ -195,7 +196,7 @@ $('skinPrev').addEventListener('click', () => cycleSkin(-1));
 $('skinNext').addEventListener('click', () => cycleSkin(1));
 
 // ---------- Map-Wechsler (gen7.py map_selector): alle Maps aus zones.ts, Vorschau aus den Farben der Map, Bestzeit für Figur + Mods + Map ----------
-const MAPS = Object.keys(ZONES).filter(id => ZONES[id].name);
+const MAPS = THEME_ZONES.filter(id => ZONES[id]);   // generierte Maps (mapgen); alte Zonen nur noch über Dev → Zone und ?zone=
 const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
 function mapThumb(id: string) {
   const e = ZONES[id].env ?? {};
@@ -221,7 +222,7 @@ export function cycleMap(step: number) {
   renderMenu();
 }
 // Beim ersten Öffnen die zuletzt gewählte Map aufbauen (?zone=… zum Testen hat Vorrang)
-let savedMapShown = new URLSearchParams(location.search).has('zone');
+let savedMapShown = /[?&](zone|theme)=/.test(location.search);
 $('mapPrev').addEventListener('click', () => cycleMap(-1));
 $('mapNext').addEventListener('click', () => cycleMap(1));
 
@@ -279,7 +280,7 @@ $('startModal').addEventListener('wheel', e => {
   cam.dist = Math.min(maxDist, Math.max(minDist, cam.dist + Math.sign(e.deltaY) * zoomStep));
 }, { passive: true });
 export function enterMenu() {
-  if (!savedMapShown) { savedMapShown = true; if (ZONES[uiSettings.menuZone] && uiSettings.menuZone !== zoneId) showMap(uiSettings.menuZone); }
+  if (!savedMapShown) { savedMapShown = true; if (MAPS.includes(uiSettings.menuZone) && uiSettings.menuZone !== zoneId) showMap(uiSettings.menuZone); }
   camSaved ??= { dist: cam.dist, pitch: cam.pitch, offset: cam.offset };
   Object.assign(cam, { dist: UI.menuCam.dist, pitch: UI.menuCam.pitch, offset: 0 });
   menuTurn = 0;

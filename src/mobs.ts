@@ -17,6 +17,7 @@ import { W, addTrauma, bigHit } from './wucht';
 import { mobAttackSlow } from './dodge';
 import { spawnPack as spawnThemePack } from './mapgen/spawnPackOld';   // Schnittstelle zu den neuen Mob-Kategorien: ein Aufruf pro Pack
 import type { PackSpot } from './mapgen/types';
+import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
@@ -47,7 +48,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
-  if (mobMode === 'waves') return;
+  if (mobMode === 'waves' || zone.noPacks) return;   // noPacks: Arena (mapgen/arena.ts)
   while (liveMobs().length < mobTarget()) spawnPack();
   respawn.pending = 0;
   respawn.packs = livePackCount();
@@ -79,7 +80,7 @@ function replaceStalePack() {
 }
 
 export function updateRespawn() {
-  if (mobMode === 'waves') return;
+  if (mobMode === 'waves' || zone.noPacks) return;
   dropFarPack();
   replaceStalePack();
   const packs = livePackCount();
@@ -174,11 +175,11 @@ export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
   plate.className = 'plate';
   plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
   overlay.appendChild(plate);
-  const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1));
+  const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1) * hpMulOf(zone.theme));   // hpMulOf: Theme-Schwierigkeit (mapgen/difficulty.ts)
   const mob = {
     type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
     pos: model.root.position, home: pos.clone(), packId,
-    level, hp, maxHp: hp, speedMul: type.speedMul ?? 1,
+    level, hp, maxHp: hp, speedMul: type.speedMul ?? 1, dmgMulT: dmgMulOf(zone.theme),
     state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
     fleeRolled: false, fleeTarget: null, fleeUntil: 0, dead: false, deathAt: 0, moving: false, leap: null, hidden: false,
   };
@@ -246,7 +247,7 @@ export function faceMob(mob, target) {
 // Mob trifft den Spieler, von Nahkampf und Fähigkeiten genutzt
 export function hitPlayer(mob, mul = 1) {
   mob.attackAt = state.now;
-  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * mul);
+  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * (mob.dmgMulT ?? 1) * mul);   // dmgMulT: Theme-Schwierigkeit
   damagePlayer(dmg);
   if (mob.champion) championHitPlayer(mob);
   mob.ability?.onHit?.(mob, dmg);
