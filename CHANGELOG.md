@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(mobs): Auf den generierten Maps flieht neben dem Hexer jetzt auch der Zauberer, wenn du ihm zu nahe kommst (gleiche Regeln: Teleport 8 yd weg höchstens alle 6 s, sonst Weglaufen mit 60 % Tempo, einholbar)
 - fix(mobs): Ein vom Schild-Zusatz abgefangener Treffer zeigt „Absorbiert“ statt „Immun“
 - fix(skins): Sprechblasen von Ausbrecher und Classic-Krieger 55 erscheinen nur noch im Run, nicht mehr im Hauptmenü (das Namensschild bleibt)
 - fix(boss): Arena mit `#boss` startet pro Run nur noch einen Boss; nach dem Sieg geht der Run normal weiter statt nach 3 s den nächsten Boss zu rufen (neuer Run = wieder ein Boss, Dev → „Boss jetzt“ unverändert)

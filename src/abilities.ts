@@ -300,7 +300,7 @@ const K = {
   stark: { windMs: 800 },
   aoe: { r: 5, warnMs: 700, cd: 5500, start: 4 },
   caster: { zauberer: [12, 2800, 20, 1, 500], werfer: [15, 2200, 30, 1, 0], hexer: [12, 3200, 20, 1, 500] },   // Abstand, Abklingzeit, Geschoss-Tempo, Schaden, Cast ms
-  hexer: { near: 6, portCd: 6000, port: 8, run: 0.6 },
+  hexer: { near: 6, portCd: 6000, port: 8, run: 0.6 },   // Flucht (flee), gilt für alle Kategorien mit KINDS.flee
   gross: { r: 6, warnMs: 1000, cd: 8000, start: 5, push: 3 },
   lurk: { cos: Math.cos(75 * Math.PI / 180) },   // Blick: vor dir (von der Kamera aus) und auf dem Bild
 };
@@ -335,6 +335,26 @@ export function inView(mob) {
   if (ml > 0.5 && (fx * mx + fz * mz) / (fl * ml) < K.lurk.cos) return false;
   vv.set(mob.pos.x, mob.pos.y + 1, mob.pos.z).project(camera);
   return Math.abs(vv.x) < 1 && Math.abs(vv.y) < 1 && vv.z < 1;
+}
+
+// Flucht (Kategorien mit KINDS.flee, mob.kindFlee aus mobKinds.ts): Teleport 8 yd weg höchstens alle 6 s, sonst Weglaufen mit 60 % Tempo (einholbar)
+function flee(mob, dt) {
+  if (!mob.kindFlee || mob.castAt || mob.rootUntil > state.now || dist2d(mob.pos, player.pos) >= K.hexer.near) return false;
+  if (ready(mob, 'nextPort', K.hexer.portCd)) {
+    const a = Math.atan2(mob.pos.z - player.pos.z, mob.pos.x - player.pos.x) + rand(-0.6, 0.6);
+    const to = new THREE.Vector3(mob.pos.x + Math.cos(a) * K.hexer.port, mob.pos.y, mob.pos.z + Math.sin(a) * K.hexer.port);
+    resolve(to, 0.7);
+    to.y = groundAt(to.x, to.z, mob.pos.y);
+    emit(mob, 2000, 16, mob.kindColor ?? SHADOW);
+    mob.pos.copy(to);
+    emit(mob, 2000, 16, mob.kindColor ?? SHADOW);
+    mob.portedAt = state.now;
+    return true;
+  }
+  const away = mob.pos.clone().multiplyScalar(2).sub(player.pos);
+  moveMob(mob, away, dt, K.hexer.run);
+  faceMob(mob, away);
+  return true;
 }
 
 Object.assign(ABILITIES, {
@@ -377,33 +397,10 @@ Object.assign(ABILITIES, {
       return false;
     },
   },
-  k_zauberer: { onUpdate(mob, dt) { caster(mob, dt, 'zauberer'); return true; } },
+  k_zauberer: { onUpdate(mob, dt) { if (!flee(mob, dt)) caster(mob, dt, 'zauberer'); return true; } },
   k_werfer: { onUpdate(mob, dt) { caster(mob, dt, 'werfer'); return true; } },
-  // Hexer: wie Zauberer; als einziger flieht er: Teleport 8 yd weg höchstens alle 6 s, sonst Weglaufen mit 60 % Tempo
-  k_hexer: {
-    onUpdate(mob, dt) {
-      const d = dist2d(mob.pos, player.pos);
-      if (d < K.hexer.near && mob.rootUntil <= state.now && !mob.castAt) {
-        if (ready(mob, 'nextPort', K.hexer.portCd)) {
-          const a = Math.atan2(mob.pos.z - player.pos.z, mob.pos.x - player.pos.x) + rand(-0.6, 0.6);
-          const to = new THREE.Vector3(mob.pos.x + Math.cos(a) * K.hexer.port, mob.pos.y, mob.pos.z + Math.sin(a) * K.hexer.port);
-          resolve(to, 0.7);
-          to.y = groundAt(to.x, to.z, mob.pos.y);
-          emit(mob, 2000, 16, mob.kindColor ?? SHADOW);
-          mob.pos.copy(to);
-          emit(mob, 2000, 16, mob.kindColor ?? SHADOW);
-          mob.portedAt = state.now;
-          return true;
-        }
-        const away = mob.pos.clone().multiplyScalar(2).sub(player.pos);
-        moveMob(mob, away, dt, K.hexer.run);
-        faceMob(mob, away);
-        return true;
-      }
-      caster(mob, dt, 'hexer');
-      return true;
-    },
-  },
+  // Hexer: wie Zauberer, mit eigenem Geschoss-Takt; flieht wie der Zauberer (KINDS.flee in mobKinds.ts)
+  k_hexer: { onUpdate(mob, dt) { if (!flee(mob, dt)) caster(mob, dt, 'hexer'); return true; } },
   // Groß: Stampfen 6 yd mit 1 s Ansage (Rückstoß auf ihn halb: mob.knockMul in mobKinds.ts)
   k_gross: {
     onUpdate(mob) {

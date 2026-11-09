@@ -20,13 +20,13 @@ import { SKINS, TEST_SKINS } from './models/mobSkins';
 import { t } from './i18n';
 import type { PackSpot, ThemeId, ThemeInfo } from './mapgen/types';
 
-// Kategorien relativ zu Normal: Leben, Schaden, Tempo, XP, Fähigkeit (abilities.ts). flee: nur der Hexer flieht
+// Kategorien relativ zu Normal: Leben, Schaden, Tempo, XP, Fähigkeit (abilities.ts). flee: Hexer und Zauberer fliehen (abilities.ts flee)
 export const KINDS: Record<string, { hp: number; dmg: number; spd: number; xp: number; ability: string | null; flee?: boolean }> = {
   normal:   { hp: 1,   dmg: 1,   spd: 1,   xp: 1,   ability: null },
   schnell:  { hp: 0.6, dmg: 0.7, spd: 1.4, xp: 0.8, ability: 'k_schnell' },
   stark:    { hp: 1.8, dmg: 1.6, spd: 0.8, xp: 1.8, ability: 'k_stark' },
   aoe:      { hp: 1.3, dmg: 1.2, spd: 0.9, xp: 1.5, ability: 'k_aoe' },
-  zauberer: { hp: 0.7, dmg: 1.1, spd: 1,   xp: 1.2, ability: 'k_zauberer' },
+  zauberer: { hp: 0.7, dmg: 1.1, spd: 1,   xp: 1.2, ability: 'k_zauberer', flee: true },
   werfer:   { hp: 0.8, dmg: 0.8, spd: 1,   xp: 1,   ability: 'k_werfer' },
   hexer:    { hp: 0.7, dmg: 1.1, spd: 1,   xp: 1.3, ability: 'k_hexer', flee: true },
   gross:    { hp: 5,   dmg: 2.5, spd: 0.7, xp: 8,   ability: 'k_gross' },
@@ -81,7 +81,7 @@ function kindType(theme: string, cat: string, zus: string, size = 1) {
     name: SKINS[theme] ? t(`mob.${theme}_${cat}.name`) : t(`kind.${cat}.name`),
     build: strichMob(def[0], def[1], zus, size), ability: composite(cat, zus),
     hpMul: K.hp * (zus !== 'none' ? P.zusatzHp : 1), dmgMul: K.dmg, speedMul: K.spd,
-    rootImmune: zus === 'fliegt', fleeChance: 0,   // keine Panik-Flucht bei wenig Leben; der Hexer flieht über k_hexer (KINDS.flee)
+    rootImmune: zus === 'fliegt', fleeChance: 0,   // keine Panik-Flucht bei wenig Leben; Hexer/Zauberer fliehen über KINDS.flee (mob.kindFlee)
     gl: def[1].gl,
   };
   types.set(id, type);
@@ -95,6 +95,7 @@ export function spawnKind(theme: string, cat: string, zus: string, pos, level: n
   const m: any = spawnMob(`${theme}_${cat}`, pos, level, packId, type);
   m.kind = { theme, cat, zus };
   m.xpMul = KINDS[cat].xp * (size < 1 ? P.split.xp : 1);
+  m.kindFlee = !!KINDS[cat].flee;
   m.kindColor = type.gl != null ? hex3(type.gl) : null;
   if (cat === 'gross') m.knockMul = 0.5;
   if (zus === 'fliegt') { m.slowK = 2; m.flies = true; }   // flies: ignoriert Wände (mobs.ts/collision.ts) und Lava
