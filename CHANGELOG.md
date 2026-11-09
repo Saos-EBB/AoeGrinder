@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(ui): Ausrüstungsfenster im Run nur zum Ansehen: Taste I oder „Ausrüstung“ im Pause-Menü (nur Magier) zeigt angelegte Teile, Set-Fortschritt, Werte und die Gear-Funde dieses Runs; Anlegen, Ablegen, Löschen, Kosmetik und Waffenwechsel sind aus („Nur im Hauptmenü“). Das Spiel pausiert, solange das Fenster offen ist; im Hauptmenü bleibt alles wie bisher
 - fix(skins): Splitterkönig etwas heller (Lampen-Ausgleich der Facetten +20 %), das Hellblau bleibt erkennbar und kippt nicht ins Cremeweiß
 - feat(skins): Magier-Skins (Hochspannung, Pestbringer, Splitterkönig, Glutprophet) gibt es nur noch über das volle Set: Wer das Set einmal 5/5 anlegt, bekommt den Erfolg (Einblendung „Erfolg: Set … vollständig – Skin … freigeschaltet“) und den Skin dauerhaft, wählbar bei seiner Schule auch ohne Set (dann nur Look, Set-Boni nur mit getragenem 5/5; mit 5/5 ist der Skin wie bisher automatisch an). Gesperrte Skins stehen mit Schloss und Hinweis „Set … 5/5 anlegen“ im Skin-Wähler; ein gewählter, aber gesperrter Skin fällt auf Standard zurück. Erfolge im Charakterfenster (Werte) und im Spielstand-Code (alte Codes laden weiter, ein angelegtes 5/5 wird nachgetragen); Dev: „Skin frei“ / „Skin sperren“ je Set. Krieger-Skins unverändert
 - fix(ui): Esc schließt den Shop (wie „Zurück“)

@@ -37,6 +37,13 @@
 #gmGrid .wmCell .gmCellName { position: absolute; inset: auto 4px 4px 4px; font: 700 calc(11 * var(--hu)) var(--font-body); color: var(--rc); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 #gmGrid .wmCell .gmTag { position: absolute; top: 4px; right: 4px; }
 .gmDetail .wmDBtns .fg-btn { min-height: 44px; }
+/* Im Run nur Ansicht (gearWindow.ts viewOnly): Funde dieses Runs oben, Klick-Hinweis aus, gesperrte Zeilen ohne Hand-Zeiger */
+.gmFinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(6 * var(--hu)) calc(14 * var(--hu)); padding: calc(8 * var(--hu)) calc(14 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(14 * var(--hu)); }
+.gmFinds .fg-title { font-size: calc(16 * var(--hu)); }
+.gmFind { font-weight: 700; }
+.gmFinds .gmOnly { margin-left: auto; }
+#gearModal.viewOnly .wmHint { display: none; }
+#gearModal.viewOnly .gmRow:disabled { cursor: default; }
 body.mobile #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
 /* Handy: für einen Abstand zum Zierrahmen ist kein Platz, der Rahmen (Ecken, Ketten, Funken) liegt hinter dem Fenster statt über dem Text (Rückfragen z-index 6 bleiben oben) */
 body.mobile:has(#gearModal.show) #fgOverlay { z-index: 4; }

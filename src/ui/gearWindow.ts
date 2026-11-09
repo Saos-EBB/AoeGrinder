@@ -2,8 +2,12 @@
 // aus dem Waffenmenü (wmHead, wmCell, wmRows). Links Gear-Spalte (5 Slots + Waffe, SET-Marke, Set-Fortschritt), Mitte die Menü-Figur (figPreview),
 // rechts Kosmetik-Spalte (Regel: Look vor Gear, Klick auf einen belegten Slot leert ihn). Darunter das Inventar mit Tabs je Slot (25 Plätze):
 // Klick legt an, ✕ löscht nach Rückfrage. Handy: Spalten untereinander, Knöpfe ab 44 px.
+// Im Run (Taste I, Pause-Menü) nur zum Ansehen: angelegte Teile, Set-Fortschritt, Werte, Funde dieses Runs; Anlegen, Ablegen, Löschen, Kosmetik und
+// Waffenwechsel sind aus („Nur im Hauptmenü“), das Gear wirkt ohnehin erst ab dem nächsten Run (applyRunGear). Das Spiel pausiert (menus.ts BLOCKING).
 
 import { $ } from '../util';
+import { state } from '../state';
+import type { Find } from '../loot';
 import { meta } from '../meta';
 import { mage } from '../models/mage';
 import { ROLLS, equipped, weaponName, rarityOf, effectRows } from '../weaponRolls';
@@ -37,6 +41,8 @@ document.body.insertAdjacentHTML('beforeend', `<div id="gearModal" class="modal"
 </div>`);
 
 let tab: Slot = 'kopf', selected: number | null = null, onClose: (() => void) | null = null;
+// Im Run: nur ansehen (Hauptmenü zu = Run läuft)
+const viewOnly = () => !$('startModal').classList.contains('show');
 export const gearWindowOpen = () => $('gearModal').classList.contains('show');
 export function openGearWindow(done?: () => void) {
   onClose = done ?? null;
@@ -80,7 +86,8 @@ function renderGear() {
     box.append(b);
   }
   const w = equipped(), wb = row('waffe', w ? weaponName(w) : t('menu.noWeapon'), w ? rarityOf(w).color : 'var(--fg-muted)', w ? effectRows(w).find(r => r.kind === 'value')?.text ?? '' : '—');
-  wb.addEventListener('click', () => { closeGearWindow(); openWeaponMenu(); });
+  if (viewOnly()) { wb.disabled = true; wb.title = t('gear.menuOnly'); }
+  else wb.addEventListener('click', () => { closeGearWindow(); openWeaponMenu(); });
   box.append(wb);
 }
 
@@ -114,7 +121,7 @@ function renderLooks() {
     else if (free.length) sub = t('gear.freeClick', { name: gearShown });
     else if (locked.length) { name = t('gear.locked'); sub = t('gear.lockedSpray'); }
     const b = row(slot, name, on ? 'var(--fg-text)' : 'var(--fg-muted)', sub, '', `look${on ? ' on' : ''}`);
-    b.disabled = !on && !free.length;
+    b.disabled = viewOnly() || (!on && !free.length);
     b.addEventListener('click', () => { wearLook(slot, on ? null : free[0]); changed(); });   // belegt: leeren, sonst den freien Look anlegen
     box.append(b);
   }
@@ -143,7 +150,7 @@ function renderInv() {
       if (g === on) cell.append(el('b', 'wmE', 'E'));
       cell.title = `${gearName(g)} · ${gearRarity(g).name} · ${gearLines(g).join(' · ')}`;
       cell.setAttribute('aria-label', cell.title);
-      cell.addEventListener('click', () => { selected = g.id; wearGear(tab, g.id); changed(); });   // Klick legt an
+      cell.addEventListener('click', () => { selected = g.id; if (viewOnly()) render(); else { wearGear(tab, g.id); changed(); } });   // Klick legt an, im Run nur ansehen
     } else cell.disabled = true;
     grid.append(cell);
   }
@@ -161,6 +168,7 @@ function renderDetail(g: GearItem | null) {
   for (const l of gearLines(g)) rows.append(el('div', '', `◆ ${l}`));
   if (g.s.setId) rows.append(el('div', 'gmMuted', `5/5: ${perfectText(g.s.setId, g.slot)}`));
   box.append(rows);
+  if (viewOnly()) { box.append(el('p', 'gmMuted', t('gear.menuOnly'))); return; }
   const btns = el('div', 'wmDBtns'), isOn = worn(g.slot) === g;
   const eq = el('button', 'fg-btn', t(isOn ? 'gear.unwear' : 'gear.wear')) as HTMLButtonElement;
   eq.type = 'button';
@@ -179,11 +187,29 @@ function renderDetail(g: GearItem | null) {
   box.append(btns);
 }
 
+// Im Run: Funde dieses Runs (loot.ts state.finds), behaltene in Seltenheitsfarbe, Staub-Funde gezählt
+function renderFinds(box: HTMLElement) {
+  const finds: Find[] = state.finds ?? [], kept = finds.filter(f => !f.dust), dust = finds.length - kept.length;
+  const p = el('div', 'gmFinds');
+  p.append(el('b', 'fg-title', t('loot.title', { n: finds.length })));
+  if (!finds.length) p.append(el('span', 'gmMuted', t('gear.noFinds')));
+  for (const f of kept) {
+    const c = el('span', 'gmFind', `${gearName(f.item)}${f.item.s.setId ? ' · SET' : ''} (${slotName(f.item.slot)})`);
+    c.style.color = gearRarity(f.item).color;
+    p.append(c);
+  }
+  if (dust) p.append(el('span', 'gmMuted', t('gear.findsDust', { n: dust })));
+  p.append(el('span', 'gmMuted gmOnly', t('gear.menuOnly')));
+  box.append(p);
+}
+
 function render() {
   $('gmInfo').innerHTML = t('gear.info', { dust: fmtInt(meta.dust) });
   const wait = $('gmWait');
   wait.textContent = '';
-  if (overflow().length) {
+  $('gearModal').classList.toggle('viewOnly', viewOnly());
+  if (viewOnly()) renderFinds(wait);
+  else if (overflow().length) {
     const b = el('button', 'fg-btn', t('gear.waiting', { n: overflow().length })) as HTMLButtonElement;
     b.type = 'button';
     b.addEventListener('click', () => openKeepChooser(render));
@@ -201,15 +227,20 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeGearWindow(); }
 }, true);
 
-// Taste (input.ts, Aktion gearWin): schließt das offene Fenster, öffnet es sonst wie der Knopf – nur im Hauptmenü ohne anderes Fenster
-// darüber und nur, wenn der Knopf da ist (Magier). Im Run nicht: das Gear wirkt erst ab dem nächsten Run (applyRunGear)
+// Taste (input.ts, Aktion gearWin): schließt das offene Fenster, öffnet es sonst wie der Knopf – nur Magier, ohne anderes Fenster darüber.
+// Hauptmenü: wie der Knopf. Im Run (auch aus dem Pause-Menü): nur zum Ansehen (viewOnly), nicht während Kartenwahl, Tod oder anderen Fenstern
 export function toggleGearWindow() {
   if (gearWindowOpen()) {
-    if (!document.querySelector('.modal.show:not(#gearModal):not(#startModal)')) closeGearWindow();
+    if (!document.querySelector('.modal.show:not(#gearModal):not(#startModal):not(#pauseModal)')) closeGearWindow();
     return;
   }
-  if (btn.hidden || !$('startModal').classList.contains('show') || document.querySelector('.modal.show:not(#startModal)')) return;
-  btn.click();
+  if (!isMagierSkin(mage.skin)) return;
+  if ($('startModal').classList.contains('show')) {
+    if (!btn.hidden && !document.querySelector('.modal.show:not(#startModal)')) btn.click();
+    return;
+  }
+  if (document.querySelector('.modal.show:not(#pauseModal)') || (state.paused && !$('pauseModal').classList.contains('show'))) return;
+  openGearWindow();
 }
 
 // Knopf im Hauptmenü neben „Waffen“, nur für Magier (mainMenu.ts renderMenu blendet ihn)

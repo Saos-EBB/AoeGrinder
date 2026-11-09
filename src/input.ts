@@ -32,7 +32,7 @@ export const ACTIONS = [
   { id: 'autorun',     label: t('bind.autorun'),           code: 'KeyR',   key: 'R' },
   { group: t('bind.group.windows') },
   { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
-  { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // Ausrüstungsfenster (ui/gearWindow.ts), nur im Hauptmenü; X ist das Charakterfenster
+  { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // Ausrüstungsfenster (ui/gearWindow.ts), im Run nur zum Ansehen; X ist das Charakterfenster
   { group: t('bind.group.spells') },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
   { id: 'nova',  label: t('bind.nova'),        code: 'Digit1', key: '1', spell: true },

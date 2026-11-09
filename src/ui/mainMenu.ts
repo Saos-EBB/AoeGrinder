@@ -21,7 +21,7 @@ import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { applyRunGear, forcedLook, isMagierSkin } from '../gear';
-import { openGearWindow, gearBtn } from './gearWindow';
+import { openGearWindow, gearBtn, toggleGearWindow } from './gearWindow';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -379,6 +379,7 @@ export const pauseOpen = () => $('pauseModal').classList.contains('show');
 export function openPause() {
   if (state.paused || player.dead) return;
   renderKit($('pauseKit'), currentKit());   // aktuelle Slots mit Runen und Rängen
+  $('pauseGear').hidden = !isMagierSkin(mage.skin);   // Ausrüstung im Run nur zum Ansehen (gearWindow.ts), nur Magier
   $('pauseModal').classList.add('show');
   syncPause();
 }
@@ -388,6 +389,7 @@ export function closePause() {
 }
 $('pauseResume').addEventListener('click', closePause);
 $('pauseChar').addEventListener('click', () => toggleChar());
+$('pauseGear').addEventListener('click', toggleGearWindow);
 $('pauseEdit').addEventListener('click', () => editHud('pauseModal'));
 $('pauseBinds').addEventListener('click', openBinds);
 $('pauseGiveUp').addEventListener('click', () => {
