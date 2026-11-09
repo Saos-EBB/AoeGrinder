@@ -83,7 +83,8 @@ export const de: Record<string, string> = {
 
   'device.ask': "Womit spielst du?",
   'device.mobile': "Handy",
-  'device.mobileNote': "Handy: Vollbild, quer, Touch-Steuerung",
+  'device.wip': "In Arbeit – derzeit nicht spielbar",
+  'device.usePc': "Bitte am PC spielen.",
 
   'hud.bar': "Leiste {n}: {name}",
   'hud.barEmpty': "Leiste {n}: leer",

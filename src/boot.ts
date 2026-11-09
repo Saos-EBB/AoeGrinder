@@ -1,7 +1,7 @@
 // Startbildschirm: Desktop oder Handy. Erst danach lädt das Spiel, damit Layout und Steuerung von Anfang an passen.
 
 import { device, detectedMobile, goFullscreen, updateRotation } from './device';
-import { translateDom } from './i18n';
+import { translateDom, t } from './i18n';
 
 translateDom();   // statisches HTML in index.html, vor allem anderen
 
@@ -17,8 +17,12 @@ const pick = async (mobile: boolean) => {
   }
   await import('./main');
 };
+// Handy ist abgekoppelt, bis Desktop fertig ist: Knopf sichtbar, aber aus (index.html). Der Handy-Code bleibt, erreichbar nur über ?mobile=1 (Dev/Tests).
+// Auf einem Touch-Gerät statt der Frage ein Hinweis, kein Start. Eine gespeicherte Handy-Wahl gibt es nicht, Desktop startet immer als Desktop.
 document.getElementById('pickDesktop')!.addEventListener('click', () => pick(false));
-document.getElementById('pickMobile')!.addEventListener('click', () => pick(true));
-const auto = /[?&]mobile=([01])/.exec(location.search);   // ?mobile=1 oder 0 überspringt die Frage (Tests)
+const auto = /[?&]mobile=([01])/.exec(location.search);   // ?mobile=1 oder 0 überspringt die Frage (Tests, Dev-Weg zum Handy-Modus)
 if (auto) pick(auto[1] === '1');
-else document.getElementById(detectedMobile() ? 'pickMobile' : 'pickDesktop')!.classList.add('navSel');
+else if (detectedMobile()) {
+  box.querySelector('.row2')!.remove();
+  box.querySelector('p')!.replaceWith(...[t('device.wip'), t('device.usePc')].map(text => Object.assign(document.createElement('p'), { className: 'wipNote', textContent: text })));
+} else document.getElementById('pickDesktop')!.classList.add('navSel');

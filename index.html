@@ -162,6 +162,12 @@
   .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
   .pauseBox .smallBtn { margin: 0; }
   .row2 { display: flex; gap: 10px; justify-content: center; }
+  /* Handy ist abgekoppelt, bis Desktop fertig ist (boot.ts): Knopf sichtbar, aber aus, Banner darunter */
+  #deviceModal .row2 { align-items: flex-start; }
+  .wipPick { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  #pickMobile:disabled { opacity: .45; filter: grayscale(1); cursor: not-allowed; }
+  #mobileWip { padding: 2px 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #1a0d00; background: #c9a24a; }
+  #deviceModal .wipNote { margin: 0; max-width: 90vw; text-align: center; font-size: 18px; color: #e8dcc4; }
 
   /* Handy (body.mobile, src/mobile.ts): Touch-Steuerung, eigenes Layout, Menüs im Vollbild */
   #touchLayer { position: fixed; inset: 0; z-index: 2; touch-action: none; }
@@ -447,9 +453,8 @@
   <p style="margin:0" data-i18n="device.ask">Womit spielst du?</p>
   <div class="row2">
     <button class="btn" id="pickDesktop">Desktop</button>
-    <button class="btn" id="pickMobile" data-i18n="device.mobile">Handy</button>
+    <span class="wipPick"><button class="btn" id="pickMobile" disabled aria-describedby="mobileWip" data-i18n="device.mobile">Handy</button><small id="mobileWip" data-i18n="device.wip">In Arbeit – derzeit nicht spielbar</small></span>
   </div>
-  <p style="margin:0;font-size:13px;color:#c9b88a" data-i18n="device.mobileNote">Handy: Vollbild, quer, Touch-Steuerung</p>
 </div>
 
 <script type="module" src="/src/boot.ts"></script>
