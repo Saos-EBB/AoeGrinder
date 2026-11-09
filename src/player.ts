@@ -42,6 +42,7 @@ import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
 import { t } from './i18n';
+import { resetLoot } from './loot';
 
 export function resetGame() {
   startMageRun();
@@ -78,6 +79,7 @@ export function resetGame() {
   useMeleeBinds(mage.skin === 'krieger');
   resetBattery();
   resetPlague();
+  resetLoot();
   resetWaves();
   resetSplits();
   state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)

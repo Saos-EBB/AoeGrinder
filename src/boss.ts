@@ -34,6 +34,7 @@ import { ATT, RANGE } from './bosses/attacks';
 import { ruleOf } from './bosses/rules';
 import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo as yawOf, BK } from './bosses/core';
 import { t } from './i18n';
+import { bossDrops } from './loot';
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
 export const B = {
@@ -485,6 +486,7 @@ function endBoss() {
   saveMeta();
   combatText(m.pos, t('msg.dust', { n: B.dust }), 'xp', 4);
   for (const fn of boss.hooks.onEnd) fn(m.pos);
+  bossDrops(m.pos);   // 2 Gear-Teile sicher (loot.ts)
   const final = def.tier === 'final';
   cleanup();
   barName.textContent = t('boss.defeated', { name: def.name });

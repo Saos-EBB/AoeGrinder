@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(items): Gear-Drops im Run (nur Magier): jeder Boss 2 Teile sicher, jedes Champion-Pack 1 Teil mit 50 %, normale Kills 0,05 % (Schnitt ~26 Drops bis Level 100); Lichtsäule in Seltenheitsfarbe aus Partikeln (kein Draw Call extra), Aufheben beim Drüberlaufen. Funde bleiben auch beim Tod; das Run-Ende listet sie, bei vollem Slot-Tab wählst du, was bleibt (der Rest wird Staub, vorher Rückfrage, „Später“ hebt die Auswahl auf)
 - feat(items): Gear neben der Waffe (nur Magier): 5 Slots Kopf, Hals, Rücken, Arme, Körper; jedes Teil würfelt Seltenheit wie die Waffen-Kiste, zur Hälfte einen Fokus-Spell der Schule, sonst einen Wert, dazu evtl. ein Element; wirkt halb so stark wie die Waffe. Grau, Weiß und Grün werden Staub, ab Blau ins Inventar. Inventar 25 je Slot, Waffen ebenfalls 15 → 25
 - fix(maps): Auf den generierten Maps erscheint ein nachspawnendes Pack nie näher als 50 yd und nie auf einem belegten Platz – nach einem Kill steht kein neues Pack mehr direkt neben dir
 - feat(licht): Lichtkegel um die Figur größer (Radius 13 → 22 yd) mit weicherem, längerem Ausblenden am Rand; etwas heller, damit die Mitte nicht absäuft; Mobs werfen bis 24 yd Schatten (vorher 18)

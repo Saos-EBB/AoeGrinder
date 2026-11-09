@@ -56,6 +56,7 @@ import { updateMobStatus } from './vfx/mobStatus';
 import { poisoned } from './plagueMarks';
 import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
+import { updateLoot } from './loot';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
@@ -72,6 +73,7 @@ function update(dt) {
   updateRealMen(dt);
   updateZoneEvent(dt);
   updateFigures();
+  updateLoot();   // Gear-Drops: Lichtsäulen, Aufheben
   updateLegends();
   updateBoss(dt);
 

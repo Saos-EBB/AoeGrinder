@@ -81,6 +81,9 @@ export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = nu
   return { id: ++meta.nextGear, v: 1, slot, r, s };
 }
 
+// Drop im Run und Gear-Box: zufälliger Slot
+export const rollDrop = (skin: string | null) => rollGear(pick([...SLOTS]), null, skin);
+
 // Neues Teil (Drop, Gear-Box): Grau → Staub, Weiß/Grün → Staub bis es Kosmetik gibt, Blau und besser ins Inventar
 // (Slot voll: in gearOver, das Run-Ende fragt, was bleibt). Gibt zurück, was passiert ist.
 export function takeGear(g: GearItem): { kept: boolean; dust: number; over: boolean } {

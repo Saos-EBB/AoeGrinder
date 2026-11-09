@@ -40,7 +40,7 @@ export function screenPos(pos, height) {
   return { x: (p.x + 1) / 2 * viewW(), y: (1 - p.y) / 2 * viewH() };
 }
 
-export function combatText(pos, text, cls, height = 2) {
+export function combatText(pos, text, cls, height = 2, color?: string) {   // color: eigene Farbe (Gear-Funde in Seltenheitsfarbe)
   if (cls === 'crit') onCrit();
   if (cls === 'heal' && /^\+\d+$/.test(text)) return healNumber(pos, +text.slice(1), height);   // Heilzahl im Zahlen-Stil, Texte wie „Phönix!“ bleiben
   const p = screenPos(pos, height);
@@ -48,6 +48,7 @@ export function combatText(pos, text, cls, height = 2) {
   const el = document.createElement('div');
   el.className = `ct ${cls}`;
   el.textContent = text;
+  if (color) el.style.color = color;
   el.style.left = `${p.x + rand(-18, 18)}px`;
   el.style.top = `${p.y}px`;
   overlay.appendChild(el);

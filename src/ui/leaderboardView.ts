@@ -13,6 +13,7 @@ import { player } from '../state';
 import { showColliders } from '../world';
 import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns } from '../leaderboard';
 import { t, fmtNum, locale } from '../i18n';
+import { findsHtml, bindFinds } from './lootView';
 
 const fmtMult = v => `×${fmtNum(Math.round(v * 100) / 100)}`;
 const $ = id => document.getElementById(id);
@@ -92,7 +93,10 @@ export function showRunResult() {
         <div class="endRow sum"><span>${t('end.dustTotal', { n: meta.dust })}</span><b>+${award.dust}</b></div>
       </div>
     </div>
+    <div id="runFinds">${findsHtml()}</div>
     <input id="runNote" maxlength="120" placeholder="${t('end.note')}">`;
+  const finds = () => bindFinds(() => { $('runFinds').innerHTML = findsHtml(); finds(); });   // Gear-Funde, Auswahl bei vollem Slot (lootView.ts)
+  finds();
   const note = $('runNote') as HTMLInputElement;
   ownKeys(note);
   note.addEventListener('change', () => setNote(entry.date, note.value));
