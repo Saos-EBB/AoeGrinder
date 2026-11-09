@@ -14,6 +14,7 @@ import { isGround } from './spells/core';
 import { spellAtAction, modeAt } from './hotbar';
 import { refreshKeyLabels } from './ui/hud';
 import { charOpen, toggleChar } from './ui/charWindow';
+import { toggleGearWindow } from './ui/gearWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';
 import { t } from './i18n';
@@ -31,6 +32,7 @@ export const ACTIONS = [
   { id: 'autorun',     label: t('bind.autorun'),           code: 'KeyR',   key: 'R' },
   { group: t('bind.group.windows') },
   { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
+  { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // Ausrüstungsfenster (ui/gearWindow.ts), nur im Hauptmenü; X ist das Charakterfenster
   { group: t('bind.group.spells') },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
   { id: 'nova',  label: t('bind.nova'),        code: 'Digit1', key: '1', spell: true },
@@ -152,6 +154,7 @@ function runAction(id, code = '') {
   if (SPELL_ACTIONS.includes(id)) spellDown(id, code);
   else if (SPELLS[id]) pressSpell(id);
   if (id === 'charWin') toggleChar();
+  if (id === 'gearWin') toggleGearWindow();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
   if (id === 'autorun') state.autorun = !state.autorun;

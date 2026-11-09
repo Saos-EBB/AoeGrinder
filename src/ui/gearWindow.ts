@@ -201,6 +201,17 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeGearWindow(); }
 }, true);
 
+// Taste (input.ts, Aktion gearWin): schließt das offene Fenster, öffnet es sonst wie der Knopf – nur im Hauptmenü ohne anderes Fenster
+// darüber und nur, wenn der Knopf da ist (Magier). Im Run nicht: das Gear wirkt erst ab dem nächsten Run (applyRunGear)
+export function toggleGearWindow() {
+  if (gearWindowOpen()) {
+    if (!document.querySelector('.modal.show:not(#gearModal):not(#startModal)')) closeGearWindow();
+    return;
+  }
+  if (btn.hidden || !$('startModal').classList.contains('show') || document.querySelector('.modal.show:not(#startModal)')) return;
+  btn.click();
+}
+
 // Knopf im Hauptmenü neben „Waffen“, nur für Magier (mainMenu.ts renderMenu blendet ihn)
 const btn = el('button', 'fg-btn alt', t('gear.btn')) as HTMLButtonElement;
 btn.id = 'menuGearBtn';

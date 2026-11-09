@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(ui): Taste I öffnet und schließt im Hauptmenü das Ausrüstungsfenster (nur Magier, wie der Knopf „Ausrüstung“), belegbar unter Tastenbelegung → Fenster; X bleibt das Charakterfenster
 - feat(settings): Regler „Helligkeit“ unter Einstellungen → Grafik (0–100 %, gespeichert, Abbrechen setzt zurück): hebt Umgebungslicht und Lichtkegel an und dünnt den schwarzen Nebel aus, ohne Selbstleuchtendes zu verstärken; Standard 50 % ist heller als bisher, damit Wände, Flügel und kleine Mobs (Moosling, Wichtel) erkennbar sind, 0 % entspricht dem alten Look
 - feat(maps): Jede generierte Map ist jetzt bei jedem Betreten und jedem neuen Run anders (neuer Seed bei Map-Wechsel, „Neuer Run“ und Zurück ins Hauptmenü); mit `?seed=` in der URL oder „Seed setzen“ im Dev-Fenster bleibt der Seed fest
 - feat(mobs): Auf den generierten Maps flieht neben dem Hexer jetzt auch der Zauberer, wenn du ihm zu nahe kommst (gleiche Regeln: Teleport 8 yd weg höchstens alle 6 s, sonst Weglaufen mit 60 % Tempo, einholbar)

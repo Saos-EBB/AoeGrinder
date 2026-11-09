@@ -140,6 +140,7 @@ export const de: Record<string, string> = {
   'bind.bliz': "Attacke 3",
   'bind.camBehind': "Kamera hinter Figur",
   'bind.charWin': "Charakterfenster",
+  'bind.gearWin': "Ausrüstungsfenster",
   'bind.coc': "Attacke 4",
   'bind.dodge': "Ausweichen",
   'bind.drink': "Trinken / Essen",
