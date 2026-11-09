@@ -1,6 +1,7 @@
 /* Waffenmenü (X?W, gen10.py; Board 1280 × 720 in --hu): Kopf, Filterleiste, links Figur, Mitte Raster 5 × 3, rechts Detail. Farben aus dem UI-Flavor. */
 #invModal { z-index: 5; }
-#wmBox { width: calc(1200 * var(--hu)); height: calc(680 * var(--hu)); display: flex; flex-direction: column; gap: calc(14 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+/* Das Fenster füllt fast das ganze Board: --hu so klein, dass es waagrecht zwischen die Zierrahmen-Ecken passt (--fg-safe, base.css) */
+#wmBox { --hu: min(calc(100vw / 1280), calc(100vh / 720), calc((100vw - 2 * var(--fg-safe)) / 1200)); width: calc(1200 * var(--hu)); height: calc(680 * var(--hu)); display: flex; flex-direction: column; gap: calc(14 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
 .wmHead { display: flex; align-items: center; gap: calc(16 * var(--hu)); }
 .wmHead h1 { margin: 0; font-size: calc(34 * var(--hu)); }
 #wmInfo { margin-left: auto; font: 600 calc(17 * var(--hu)) var(--font-body); }

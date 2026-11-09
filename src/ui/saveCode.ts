@@ -2,9 +2,8 @@
 // Kein Schutz gegen Cheaten, Einzelspieler. Eingabe ersetzt den Spielstand nach Rückfrage.
 
 import { $ } from '../util';
-import { meta, saveMeta, fixWeapon } from '../meta';
-import { cleanSkins } from '../skins';
-import { cleanGear } from '../gear';
+import { meta, saveMeta, fixWeapon, cleanSkinState } from '../meta';
+import { cleanGear, checkUnlocks } from '../gear';
 import { cleanMaps } from '../mapgen/progress';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
@@ -22,7 +21,7 @@ const loadRunsRaw = () => { try { return JSON.parse(localStorage.getItem(SAVE_CO
 function exportCode() {
   const data = { v: SAVE_CODE.version, d: meta.dust, u: meta.unlocked, b: meta.bought, t: meta.bestTier, o: meta.offer,
     i: meta.inv.map(w => w.v === 2 ? { r: w.r, s: w.s } : [w.e, w.r, w.m]), q: meta.inv.findIndex(w => w.id === meta.equipped), k: meta.skins, r: loadRunsRaw(),   // k: Skins pro Figur, fehlt in alten Codes
-    g: meta.gear, w: meta.wear, go: meta.gearOver, ng: meta.nextGear, lk: meta.looks, lw: meta.lookWear, mp: meta.maps };   // mp: offene Themes der Weltkarte (mapgen/progress.ts), fehlt in alten Codes → nur Wald   // Gear, angelegt, wartende Funde, Zähler, Kosmetik: fehlen in alten Codes, alter Code überliest sie (bleibt Version 1)
+    g: meta.gear, w: meta.wear, go: meta.gearOver, ng: meta.nextGear, lk: meta.looks, lw: meta.lookWear, ac: meta.achievements, mp: meta.maps };   // Gear, angelegt, wartende Funde, Zähler, Kosmetik, Erfolge: fehlen in alten Codes, alter Code überliest sie (bleibt Version 1); mp: offene Themes der Weltkarte (mapgen/progress.ts), fehlt in alten Codes → nur Wald
   const b64 = toB64(JSON.stringify(data));
   return b64 + check(b64);
 }
@@ -40,9 +39,12 @@ function importCode(code, replace = true) {
   // Alte Waffen als [Effekt, Seltenheit, Modell], Baukasten-Waffen als { r, s }
   const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : fixWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
-    equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length, skins: cleanSkins(data.k),
+    equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length, skins: data.k, achievements: data.ac,
     gear: data.g, wear: data.w, gearOver: data.go, nextGear: data.ng, looks: data.lk, lookWear: data.lw, maps: cleanMaps(data.mp) });
   cleanGear(meta);   // fehlende oder kaputte Gear-Felder → Standard
+  meta.achievements = Array.isArray(meta.achievements) ? meta.achievements : [];
+  checkUnlocks(true);   // alter Code ohne Erfolge, aber mit angelegtem 5/5: Erfolg nachtragen
+  cleanSkinState(meta);   // gewählter, aber gesperrter Magier-Skin → Standard
   saveMeta();
   try { localStorage.setItem(SAVE_CODE.runsStore, JSON.stringify(data.r ?? [])); } catch { /* kein Storage */ }
   return null;
@@ -101,6 +103,6 @@ for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCo
   b.id = id;
   b.textContent = label;
   b.addEventListener('click', () => open(m));
-  $('menuActions').appendChild(b);
+  $('menuMoreList').appendChild(b);   // seltene Einträge im „Mehr“-Menü oben rechts (mainMenu.ts)
 }
 (window as any).__save = { exportCode, importCode };

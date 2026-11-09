@@ -54,6 +54,15 @@ body.font-fraktur[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-t
 body:has(.modal.show) #fgOverlay > * { display: block; }
 body:has(.modal.show) #fgOverlay > .hud { display: none; }   /* .hud = nur im Spiel */
 body.fgNoFx #fgOverlay, body.hudEdit #fgOverlay { display: none; }
+/* Zierrahmen-Ecken: Maße setzt jeder Flavor (--fg-corner Kantenlänge, --fg-corner-off Abstand zum Rand). Daraus --fg-safe = Sicherheitsabstand:
+   kein Fenster, Menü- oder HUD-Element liegt im Quadrat --fg-safe × --fg-safe einer Bildschirmecke (Menüs per CSS, HUD per ui/hud/layout.ts) */
+body { --fg-corner: 0px; --fg-corner-off: 0px; --fg-safe: calc(var(--fg-corner-off) + var(--fg-corner) + 8px); }
+body.fgNoFx[data-flavor] { --fg-corner: 0px; --fg-corner-off: 0px; }   /* Effekte aus: keine Ecken, nur der Grundabstand */
+#fgOverlay .fx-corner { width: var(--fg-corner); height: var(--fg-corner); }
+#fgOverlay .fx-corner.tl { left: var(--fg-corner-off); top: var(--fg-corner-off); }
+#fgOverlay .fx-corner.tr { right: var(--fg-corner-off); top: var(--fg-corner-off); transform: rotate(90deg); }
+#fgOverlay .fx-corner.br { right: var(--fg-corner-off); bottom: var(--fg-corner-off); transform: rotate(180deg); }
+#fgOverlay .fx-corner.bl { left: var(--fg-corner-off); bottom: var(--fg-corner-off); transform: rotate(270deg); }
 /* Funken: kleine Glutpunkte, die langsam steigen (eine Ebene, zwei Bilder versetzt) */
 @keyframes fgRise { from { transform: translateY(0); } to { transform: translateY(-60px); } }
 @keyframes fgFlicker { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }

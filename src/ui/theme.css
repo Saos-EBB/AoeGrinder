@@ -17,7 +17,8 @@
 .modal .smallBtn:hover { background: color-mix(in srgb, var(--fg-top) 15%, transparent); }
 
 /* Einstellungen (X?O, gen9.py settings: Board 1280×720, Tabs 230 × 580, Inhalt 940 × 580, Zeilen 38 px, Steuerung ab 230 px) */
-#settingsModal #settingsBox { width: min(1200px, 94vw); height: min(652px, 92vh); display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--fg-text); font-family: var(--font-body); }
+#settingsModal #settingsBox { width: min(1200px, 94vw, 100vw - 2 * var(--fg-safe));   /* breite Fenster bleiben waagrecht zwischen den Zierrahmen-Ecken (base.css) */
+  height: min(652px, 92vh); display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--fg-text); font-family: var(--font-body); }
 .setHead { flex: none; position: relative; height: 54px; display: flex; align-items: center; justify-content: center; }
 .setHead h1 { margin: 0; font-size: 34px; }
 .setHead > span { position: absolute; right: 0; top: 12px; font-size: 13px; font-weight: 500; color: var(--fg-muted); }
@@ -43,7 +44,7 @@
 .setFoot { flex: none; display: flex; align-items: center; gap: 14px; padding: 16px 30px 0 0; position: relative; z-index: 2; }
 #setFootLeft { display: flex; gap: 14px; margin-right: auto; }
 #setFootLeft[hidden] { display: none; }
-.setFoot .fg-btn { min-width: 150px; height: 46px; font-size: 15px; }
+.setFoot .fg-btn { min-width: 130px; height: 46px; padding: 0 16px; font-size: 15px; white-space: nowrap; }
 #settingsCancel { margin-left: auto; }
 /* UI-Flavor-Karten mit Mini-Vorschau */
 .setFlavors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
@@ -109,14 +110,15 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #hudEditBar .btn { font-size: 15px; padding: 8px 20px; }
 
 /* ---------- Hauptmenü = Charakterwahl (X?M, gen4.py charsel + gen7.py, Board 1280×720 in --hu) ---------- */
-#startModal { font-family: var(--font-body); color: var(--fg-text); }
+/* Zierrahmen: was in einer Bildschirmecke liegt, hält --fg-safe ein (base.css). Panels links/rechts: oben unter der Ecke, unten über den Mods (596 hu) */
+#startModal { font-family: var(--font-body); color: var(--fg-text); --mTop: max(calc(110 * var(--hu)), var(--fg-safe)); --mBot: calc(586 * var(--hu)); }
 .gPanel { background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); box-shadow: var(--fg-panel-sh); box-sizing: border-box; }
 #startModal .fg-panel > *, #menuMap > * { position: relative; z-index: 2; }
 #menuTop { position: absolute; left: 0; right: 0; top: calc(16 * var(--hu)); display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--hu)); pointer-events: none; }
 #menuTop .menuGame { margin: 0; font-size: calc(30 * var(--hu)); }
 #menuTop .menuPick { font: 500 calc(14 * var(--hu)) var(--font-body); color: var(--fg-muted); }
 /* Map-Wechsler oben links */
-#menuMap { position: absolute; left: calc(40 * var(--hu)); top: calc(24 * var(--hu)); width: calc(340 * var(--hu)); height: calc(70 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); padding: 0 calc(10 * var(--hu)); }
+#menuMap { position: absolute; left: max(calc(40 * var(--hu)), var(--fg-safe)); top: calc(24 * var(--hu)); width: calc(340 * var(--hu)); height: calc(70 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); padding: 0 calc(10 * var(--hu)); }
 #menuMap .mapArrow, #menuSkin .mapArrow { flex: none; width: calc(36 * var(--hu)); min-height: 0; height: calc(36 * var(--hu)); padding: 0; font-size: calc(16 * var(--hu)); }
 #mapThumb { flex: none; width: calc(64 * var(--hu)); height: calc(44 * var(--hu)); box-shadow: 0 0 0 1px #000; }
 #mapThumb svg { width: 100%; height: 100%; display: block; }
@@ -124,12 +126,13 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #mapName { font-size: calc(22 * var(--hu)); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #mapInfo { font: 600 calc(13 * var(--hu)) var(--font-body); color: var(--fg-muted); white-space: nowrap; }
 /* Figur links */
-#menuLeft { position: absolute; left: calc(40 * var(--hu)); top: calc(110 * var(--hu)); width: calc(360 * var(--hu)); height: calc(420 * var(--hu)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));
-  display: flex; flex-direction: column; gap: calc(8 * var(--hu)); overflow: hidden auto; }
-#menuTitle { font-size: calc(34 * var(--hu)); line-height: 1.1; }
-#menuRole { font: 700 calc(14 * var(--hu)) var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); }
+#menuLeft .menuHead { margin-top: 0; }
+#menuLeft { position: absolute; left: calc(40 * var(--hu)); top: var(--mTop); width: calc(400 * var(--hu)); height: calc(var(--mBot) - var(--mTop)); padding: calc(18 * var(--hu)) calc(24 * var(--hu));
+  display: flex; flex-direction: column; gap: calc(6 * var(--hu)); overflow: hidden auto; }   /* Inhalt der längsten Figur passt bei 16:9 ohne Scrollen */
+#menuTitle { font-size: calc(30 * var(--hu)); line-height: 1.1; }
+#menuRole { font: 700 calc(14 * var(--hu)) var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-accent); }
 #menuRules .menuHead { display: none; }
-#menuRules p { margin: 0; font-size: calc(15 * var(--hu)); line-height: 1.45; color: var(--fg-text); }
+#menuRules p { margin: 0; font-size: calc(14 * var(--hu)); line-height: 1.35; color: var(--fg-text); }
 .menuStat { display: flex; align-items: center; gap: calc(12 * var(--hu)); font: 600 calc(15 * var(--hu)) var(--font-body); }
 .menuStat span { width: calc(106 * var(--hu)); color: var(--fg-muted); }
 .menuStat b { flex: 1; height: calc(8 * var(--hu)); background: #0a0505; border: 1px solid var(--fg-line); }
@@ -137,9 +140,13 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 .menuHead { margin-top: calc(4 * var(--hu)); font: 600 calc(14 * var(--hu)) var(--font-body); color: var(--fg-muted); }
 #menuWeaponName { font: 700 calc(18 * var(--hu)) var(--font-body); color: var(--fg-text); }
 #menuKit { justify-content: flex-start; }
+/* Start-Kit und „Rangliste“-Knopf wachsen mit dem Bildschirm-Maß (sonst bei 2560 × 1440 winzig), nie kleiner als bisher. Der Knopf bringt Inline-Stil mit (leaderboardView.ts) */
+#menuKit { gap: max(5px, calc(4 * var(--hu))); }
+#menuKit .kitSlot { width: max(40px, calc(32 * var(--hu))); height: max(40px, calc(32 * var(--hu))); font-size: max(8px, calc(6.4 * var(--hu))); }
+#menuBoardBtn > button { font-size: max(12px, calc(12 * var(--hu))) !important; padding: max(6px, calc(5 * var(--hu))) max(14px, calc(12 * var(--hu))) !important; margin-top: max(10px, calc(8 * var(--hu))) !important; }
 #menuInfo { margin: 0; font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
 /* Rangliste rechts */
-#menuRight { position: absolute; right: calc(40 * var(--hu)); top: calc(110 * var(--hu)); width: calc(320 * var(--hu)); height: calc(420 * var(--hu)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));
+#menuRight { position: absolute; right: calc(40 * var(--hu)); top: var(--mTop); width: calc(320 * var(--hu)); height: calc(var(--mBot) - var(--mTop)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));
   display: flex; flex-direction: column; gap: calc(8 * var(--hu)); overflow: hidden auto; }
 .menuBoardHead { display: flex; justify-content: space-between; align-items: baseline; }
 .menuBoardHead .fg-title { font-size: calc(22 * var(--hu)); }
@@ -162,9 +169,13 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 #menuMods .chip { min-width: calc(112 * var(--hu)); height: calc(34 * var(--hu)); font-size: calc(14 * var(--hu)); }
 #menuWeaponBox { position: absolute; left: 50%; bottom: 20vh; transform: translateX(-50%); width: min(720px, 70vw); max-height: 40vh; overflow: auto; padding: 16px 20px; z-index: 2; }
 #menuWeaponBox[hidden] { display: none; }
-/* Knöpfe und Staub oben rechts */
-#menuActions { position: absolute; right: calc(40 * var(--hu)); top: calc(24 * var(--hu)); max-width: calc(420 * var(--hu)); display: flex; gap: calc(6 * var(--hu)); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-#menuActions .fg-btn { min-height: 0; height: calc(30 * var(--hu)); padding: 0 calc(10 * var(--hu)); font-size: calc(13 * var(--hu)); }
+/* Knöpfe und Staub oben rechts: zwei rechtsbündige Reihen links der Ecke, Seltenes unter „Mehr“ (mainMenu.ts) */
+#menuActions { position: absolute; right: max(calc(40 * var(--hu)), var(--fg-safe)); top: calc(24 * var(--hu)); display: flex; flex-direction: column; align-items: flex-end; gap: calc(6 * var(--hu)); }
+.maRow { display: flex; gap: calc(6 * var(--hu)); justify-content: flex-end; align-items: center; }
+#menuActions .fg-btn { min-height: 0; height: calc(30 * var(--hu)); padding: 0 calc(10 * var(--hu)); font-size: calc(13 * var(--hu)); white-space: nowrap; }
+#menuMoreWrap { position: relative; }
+#menuMoreList { position: absolute; right: 0; top: calc(100% + 6 * var(--hu)); z-index: 4; display: flex; flex-direction: column; align-items: stretch; gap: calc(6 * var(--hu)); padding: calc(8 * var(--hu)); }
+#menuMoreList[hidden] { display: none; }
 #menuDust { font: 700 calc(15 * var(--hu)) var(--font-num); color: var(--rar-relikt); margin-right: calc(6 * var(--hu)); }
 /* Ring unter der Figur in Figurenfarbe */
 #menuRing { position: absolute; left: calc(50% - 170 * var(--hu)); top: calc(520 * var(--hu)); width: calc(340 * var(--hu)); height: calc(70 * var(--hu)); border-radius: 50%; pointer-events: none;
@@ -172,6 +183,10 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 /* Skin-Wechsler unter der Figur, Aufbau wie der Map-Wechsler */
 #menuSkin { position: absolute; left: 50%; top: calc(542 * var(--hu)); transform: translateX(-50%); height: calc(44 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); padding: 0 calc(5 * var(--hu)); }
 #skinName { min-width: calc(190 * var(--hu)); text-align: center; font-size: calc(20 * var(--hu)); line-height: 1.1; white-space: nowrap; }
+#skinName.locked { opacity: .6; }
+/* Hinweis über einem gesperrten Skin (darunter liegen die Mod-Chips) (mainMenu.ts renderSkin) */
+#menuSkin > #skinHint { position: absolute; left: 50%; bottom: calc(100% + 8 * var(--hu)); transform: translateX(-50%); white-space: nowrap; font: 600 calc(15 * var(--hu)) var(--font-body); color: var(--fg-muted); text-shadow: 0 1px 2px #000; }
+#menuSkin > #skinHint[hidden] { display: none; }
 /* Figurenleiste unten, Run starten + Waffen rechts davon */
 #menuBottom { position: absolute; right: calc(50% - 116 * var(--hu)); bottom: calc(18 * var(--hu)); display: flex; align-items: center; gap: calc(12 * var(--hu)); }
 .menuKey { font: 700 calc(12 * var(--hu)) var(--font-num); letter-spacing: .1em; color: var(--fg-muted); white-space: nowrap; }
@@ -180,9 +195,12 @@ body.hudEdit .hudEl > * { pointer-events: none; }
   display: grid; place-items: center; cursor: pointer; }
 .charTab svg { width: 50%; height: 50%; }
 .charTab.selected { width: calc(74 * var(--hu)); height: calc(74 * var(--hu)); border: 3px solid var(--fc); box-shadow: 0 0 0 2px #000, 0 0 20px var(--fc); }
-#menuGo { position: absolute; left: calc(50% + 150 * var(--hu)); bottom: calc(18 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); }
+/* Waffen und Ausrüstung (gearWindow.ts, nur Magier) übereinander, sonst laufen sie rechts in die Ecke */
+#menuGo { position: absolute; left: calc(50% + 140 * var(--hu)); bottom: calc(18 * var(--hu)); display: flex; align-items: center; gap: calc(10 * var(--hu)); }
 #startBtn { width: calc(240 * var(--hu)); height: calc(62 * var(--hu)); font-size: calc(22 * var(--hu)); }
-#menuWeaponsBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
+#menuGoSide { display: flex; flex-direction: column; gap: calc(6 * var(--hu)); }
+#menuGoSide .fg-btn { width: calc(116 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); padding: 0 calc(6 * var(--hu)); font-size: calc(15 * var(--hu)); white-space: nowrap; }
+#menuGoSide:has(> :nth-child(2):not([hidden])) .fg-btn { height: calc(28 * var(--hu)); font-size: calc(14 * var(--hu)); }
 body.mobile #menuActions { max-width: 50vw; }
 
 /* ---------- Ladebildschirm (LoadDoom.dc.html) ---------- */
@@ -204,7 +222,7 @@ body.mobile #menuActions { max-width: 50vw; }
 
 /* ---------- Shop (S2.dc.html, 1280×720) ---------- */
 #shopModal { overflow: auto; }
-#shopModal #shopBox { width: min(1180px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; background: none; border: 0; box-shadow: none; }   /* X?S: kein Außenrahmen, nur die Spalten als Panels */
+#shopModal #shopBox { width: min(1180px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 22px 30px; text-align: left; background: none; border: 0; box-shadow: none; }   /* X?S: kein Außenrahmen, nur die Spalten als Panels */
 .shopHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
 .shopHead h1 { font-size: 38px !important; }
 #shopInfo { font: 600 18px var(--font-body); color: var(--fg-text); }
@@ -241,7 +259,7 @@ body.mobile #menuActions { max-width: 50vw; }
 body.mobile #shopCols { grid-template-columns: 1fr; }
 
 /* ---------- Run-Ende (E2.dc.html) ---------- */
-#deathModal #endBox { width: min(1100px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
+#deathModal #endBox { width: min(1100px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
 #endTitle { font-size: 46px !important; }
 #endSub { margin-top: 6px; font-size: 16px; color: var(--fg-muted); }
 .endTime { margin-top: 6px; font: 700 64px var(--font-num); line-height: 1; }
@@ -273,7 +291,7 @@ body.mobile .endCols { grid-template-columns: 1fr; }
 body.mobile .endStat { width: auto; flex: 1; }
 
 /* ---------- Charakterfenster (C2.dc.html) ---------- */
-#charModal #charBox { width: min(1200px, 96vw); max-width: none; max-height: 96vh; overflow: auto; padding: 20px 30px; text-align: left; }
+#charModal #charBox { width: min(1200px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 20px 30px; text-align: left; }
 .charHead { display: flex; justify-content: center; align-items: baseline; position: relative; }
 .charHead h1 { font-size: 34px !important; }
 .charHead span { position: absolute; right: 0; font-size: 14px; color: var(--fg-muted); }

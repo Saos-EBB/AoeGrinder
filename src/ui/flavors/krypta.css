@@ -38,6 +38,10 @@ body[data-flavor=krypta] .fg-panel::after, body[data-flavor=krypta] .fg-deco::af
     radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) right 9px bottom 9px / 8px 8px no-repeat,
     linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px 5px / calc(100% - 12px) 1px no-repeat,
     linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px calc(100% - 6px) / calc(100% - 12px) 1px no-repeat; }
+/* Panels, die scrollen (Hauptmenü links/rechts, Waffenmenü, Inventar im Ausrüstungsfenster): Deko unten bündig mit der Box, sonst 7 px
+   Scroll-Überstand; die unteren Edelsteine sitzen dafür auf der Unterkante statt darunter (oben und seitlich ragt die Deko weiter hinaus: oben scrollt nicht, waagrecht ist overflow-x hidden) */
+body[data-flavor=krypta] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::before { inset: -13px -10px 0; }
+body[data-flavor=krypta] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::after { inset: -4px -4px 0; }
 
 /* Titel auf rotem Banner, zentriert mit roten Rauten an den Enden */
 body[data-flavor=krypta] .fg-title.c, body[data-flavor=krypta] .fg-title.l { position: relative; display: inline-block; padding: .12em 1.6em .32em;
@@ -60,14 +64,22 @@ body[data-flavor=krypta] {
     repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .012) 0 2px, transparent 2px 7px),
     repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 64px);
 }
+/* Hauptmenü: die Banner hängen in den Lücken zwischen Map-Wechsler, Titel (311 hu + Rauten 28 px) und Knopfleiste (272 hu) statt dahinter (theme.css #menuMap, #menuActions) */
+body[data-flavor=krypta] #startModal {
+  --kb-w: calc(32 * var(--hu)); --kb-edge: max(calc(40 * var(--hu)), var(--fg-safe));
+  background:
+    url(./krypta/banner.svg) left calc((var(--kb-edge) + 340 * var(--hu) + 50vw - 155 * var(--hu) - 28px) / 2 - var(--kb-w) / 2) top 0 / var(--kb-w) calc(78 * var(--hu)) no-repeat,
+    url(./krypta/banner.svg) right calc((50vw - 155 * var(--hu) - 28px + var(--kb-edge) + 272 * var(--hu)) / 2 - var(--kb-w) / 2) top 0 / var(--kb-w) calc(78 * var(--hu)) no-repeat,
+    url(./krypta/bead.svg) center bottom 1px / 32px 12px repeat-x,
+    repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .012) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 64px),
+    radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, .25) 0%, rgba(0, 0, 0, .55) 60%, rgba(0, 0, 0, .85) 100%);
+}
 
 /* Bildschirm-Effekte: Vignette und Goldschnörkel-Ecken (auch im Spiel) */
 body[data-flavor=krypta] #fgOverlay .fx-vig { inset: 0; box-shadow: inset 0 0 120px rgba(0, 0, 0, .7); }
-body[data-flavor=krypta] #fgOverlay .fx-corner { width: calc(56 * var(--hu)); height: calc(56 * var(--hu)); background: url(./krypta/corner.svg) 0 0 / 100% 100%; }
-body[data-flavor=krypta] #fgOverlay .fx-corner.tl { left: 12px; top: 12px; }
-body[data-flavor=krypta] #fgOverlay .fx-corner.tr { right: 12px; top: 12px; transform: rotate(90deg); }
-body[data-flavor=krypta] #fgOverlay .fx-corner.br { right: 12px; bottom: 12px; transform: rotate(180deg); }
-body[data-flavor=krypta] #fgOverlay .fx-corner.bl { left: 12px; bottom: 12px; transform: rotate(270deg); }
+body[data-flavor=krypta] { --fg-corner: calc(56 * var(--hu)); --fg-corner-off: 12px; }   /* Ecken-Maße → --fg-safe (base.css) */
+body[data-flavor=krypta] #fgOverlay .fx-corner { background: url(./krypta/corner.svg) 0 0 / 100% 100%; }
 
 /* ---------- HUD (X3H, gen4.py hud3 + gen5 m3_hud_extras) ---------- */
 /* Steinpanel 400 × 54 mit Leiste (40 px), Gold-Flügel an beiden Enden */

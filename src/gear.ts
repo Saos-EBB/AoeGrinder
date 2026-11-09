@@ -6,7 +6,8 @@
 
 import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, grantAch } from './meta';
+import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
 import { ELEMENTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
@@ -117,6 +118,8 @@ function fixItem(g) {
   return g;
 }
 cleanGear(meta);
+// Alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
+checkUnlocks(true);
 // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
 { const seen = new Set(); for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); } }
 
@@ -183,9 +186,11 @@ export function wearGear(slot: Slot, id: number | null) {
   checkUnlocks();
   saveMeta();
 }
-// Kosmetik freischalten: Set mit allen 5 Teilen angelegt (unabhängig von der Schule, die gerade gespielt wird)
-function checkUnlocks() {
+// Freischalten, sobald ein Set mit allen 5 Teilen angelegt ist (unabhängig von der Schule, die gerade gespielt wird): Kosmetik und der Erfolg
+// „Set <Name> 5/5“, der den Set-Skin dauerhaft frei macht (skins.ts skinLock). Neuer Erfolg → Ereignis fg:ach (ui/achievements.ts blendet ein). quiet: ohne Einblendung
+export function checkUnlocks(quiet = false) {
   for (const [id, L] of Object.entries(LOOKS)) if (L.unlock && setCount(L.unlock) === SLOTS.length && !looksOwned().includes(id)) looksOwned().push(id);
+  for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: setAch(id) }));
 }
 const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
 export const hasLook = (id: string) => looksOwned().includes(id);
@@ -259,5 +264,13 @@ export function devWearSet(setId: string, n: number = SLOTS.length) {
   saveMeta();
 }
 
+// Dev: Set-Erfolg (= Set-Skin frei) setzen oder entfernen, ohne Gear
+export function devSetAch(setId: string, on: boolean) {
+  const a = setAch(setId);
+  meta.achievements = meta.achievements.filter(x => x !== a);
+  if (on) meta.achievements.push(a);
+  saveMeta();
+}
+
 // Dev / Tests
-(window as any).__gear = { wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };

@@ -19,6 +19,7 @@ import { attachSpellCard } from './spellCard';
 import { attachWeaponCard } from './weaponCard';
 import { equipped, rarityOf, weaponName } from '../weaponRolls';
 import { figureInfo } from './charInfo';
+import { achListHtml } from './achievements';
 import { t, fmtNum, locale } from '../i18n';
 
 const TABS = { stats: t('cw.tab.stats'), build: t('cw.tab.build'), dmg: t('cw.tab.dmg') };
@@ -44,7 +45,8 @@ function statsTab() {
       return kv(`<span style="color:${COLORS.school[s]}">${SCHOOLS[s] ?? t('school.warrior')}</span>`, best ? t('cw.upTo', { n: best }) : '—');
     }).join('')}
     ${player.luck ? kv(t('cw.luck'), player.luck) : ''}
-    ${figureInfo()}`;
+    ${figureInfo()}
+    ${achListHtml()}`;
 }
 
 // Build: Spells mit Rang und Rune, Talente, Supports, Relikt, Waffe. Seltenheit der gewählten Karten speichert das Spiel nicht: Rahmen = Schule bzw. Typ

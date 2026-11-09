@@ -1,54 +1,84 @@
 /* Ausrüstungsfenster (Handoff items.md Schritt 5, Vorlage docs/ref/items-mockup.dc.html): nur Anordnung, Farben und Schriften aus dem UI-Flavor (--fg-*), Größen in --hu wie das Waffenmenü */
-#gearModal { z-index: 5; --gmSafe: max(calc(14px + 110 * var(--hu)), 88px); }   /* am Modal berechnet: #gmBox setzt auf dem Handy --hu: 1px */
-/* Zierrahmen (#fgOverlay, über dem Fenster): das Fenster bleibt senkrecht zwischen den Ecken (größte Ecke Höllenfeste 10 px + 110 hu) und unter den Ketten (84 px), sonst verdecken sie Titel, Staub, Schließen und Tabs */
-#gmBox { width: calc(1240 * var(--hu)); max-height: calc(100vh - 2 * var(--gmSafe)); margin: auto 0; overflow: auto; display: flex; flex-direction: column; gap: calc(12 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
-#gmBox .wmHead { flex-wrap: wrap; }
-#gmBox .wmHead h1 { margin: 0; font-size: calc(34 * var(--hu)); }
+#gearModal { z-index: 5; --gmSafe: var(--fg-safe); }   /* --fg-safe ist am body aufgelöst: #gmBox setzt auf dem Handy --hu: 1px */
+/* Zierrahmen (#fgOverlay, über dem Fenster): das Fenster bleibt senkrecht zwischen den Ecken (--fg-safe, base.css), sonst verdecken sie Titel, Staub, Schließen und Tabs. Ketten sind in Fenstern aus */
+/* Board 1200 × 680 in --hu wie das Waffenmenü (#wmBox): waagrecht zwischen den Zierrahmen-Ecken (--fg-safe, base.css), senkrecht fast volle Höhe,
+   so passt alles ohne Scrollen (1280 × 720 bis 2560 × 1440). Ketten sind in Fenstern aus. Reicht der Platz doch nicht, scrollt das Board mit sichtbarer Leiste */
+#gmBox { --hu: min(calc(100vw / 1280), calc(100vh / 720), calc((100vw - 2 * var(--gmSafe)) / 1200)); width: calc(1200 * var(--hu)); height: calc(680 * var(--hu)); max-height: 100vh;
+  box-sizing: border-box; overflow: hidden auto; scrollbar-color: var(--fg-accent) transparent; display: flex; flex-direction: column; gap: calc(10 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+#gmBox .wmHead { flex-wrap: wrap; padding: 0 calc(6 * var(--hu)); }
+#gmBox .wmHead h1 { margin: 0; font-size: calc(32 * var(--hu)); }
 #gmInfo { margin-left: auto; font: 600 calc(17 * var(--hu)) var(--font-body); }
 #gmInfo b { color: var(--fg-accent); }
-#gmBox .wmHead .fg-btn { min-height: 44px; }
-.gmCols { display: grid; grid-template-columns: calc(400 * var(--hu)) 1fr calc(400 * var(--hu)); gap: calc(20 * var(--hu)); }
-.gmCol { display: flex; flex-direction: column; gap: calc(8 * var(--hu)); }
+#gmBox .wmHead .fg-btn { min-height: 0; height: calc(34 * var(--hu)); font-size: calc(14 * var(--hu)); }
+#gmWait:empty { display: none; }
+#gmWait .fg-btn { min-height: 0; height: calc(34 * var(--hu)); font-size: calc(14 * var(--hu)); }
+.gmCols { flex: 1; min-height: 0; display: grid; grid-template-columns: calc(380 * var(--hu)) 1fr calc(420 * var(--hu)); gap: calc(18 * var(--hu)); }
+.gmCol { display: flex; flex-direction: column; gap: calc(6 * var(--hu)); min-height: 0; }
 .gmColHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.gmColHead h2 { margin: 0; font-size: calc(16 * var(--hu)); letter-spacing: .1em; text-transform: uppercase; }
+.gmColHead h2 { margin: 0; font-size: calc(15 * var(--hu)); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
 .gmColHead span, .gmMuted { font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
-.gmRow { --rc: var(--fg-line); display: flex; align-items: center; gap: calc(12 * var(--hu)); width: 100%; min-height: 52px; box-sizing: border-box; padding: calc(8 * var(--hu)) calc(12 * var(--hu));
+.gmColHead span { text-align: right; }
+.gmRow { --rc: var(--fg-line); display: flex; align-items: center; gap: calc(10 * var(--hu)); width: 100%; min-height: calc(50 * var(--hu)); box-sizing: border-box; padding: calc(5 * var(--hu)) calc(10 * var(--hu));
   background: var(--fg-card); border: 1px solid var(--fg-line); color: var(--fg-text); font: inherit; text-align: left; cursor: pointer; }
 .gmRow.set { border-color: color-mix(in srgb, var(--rar-gruen) 45%, var(--fg-line)); }
 .gmRow.look { background: transparent; border-style: dashed; }
 .gmRow.look.on { background: var(--fg-card); border-style: solid; border-color: var(--fg-accent); }
 .gmRow.sel { box-shadow: 0 0 0 1px var(--fg-accent); }
-.gmSlot { width: calc(64 * var(--hu)); flex: none; font-size: calc(12 * var(--hu)); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
-.gmTxt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.gmSlot { width: calc(58 * var(--hu)); flex: none; font-size: calc(11 * var(--hu)); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.gmTxt { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .gmTxt b { font-size: calc(15 * var(--hu)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gmTxt small { font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
+/* Werte höchstens 2 Zeilen, ganz im Tooltip und im Detail rechts */
+.gmTxt small { font-size: calc(13 * var(--hu)); line-height: 1.25; color: var(--fg-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .gmTag { flex: none; padding: 2px 6px; font: 700 calc(11 * var(--hu)) var(--font-body); letter-spacing: .08em; color: #000; background: var(--rar-gruen); }
-.gmSet { display: flex; flex-direction: column; gap: calc(6 * var(--hu)); padding: calc(10 * var(--hu)) calc(14 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(13 * var(--hu)); line-height: 1.45; }
+.gmSet { display: flex; flex-direction: column; gap: calc(4 * var(--hu)); padding: calc(8 * var(--hu)) calc(12 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(13 * var(--hu)); line-height: 1.35; }
+.gmSet .fg-title { font-size: calc(16 * var(--hu)); }
 .gmSet.off { opacity: .6; }
 .gmSet .gmBar { height: 6px; background: var(--fg-line); overflow: hidden; }
 .gmSet .gmBar i { display: block; height: 100%; }
-.gmFig { position: relative; min-height: calc(420 * var(--hu)); }
+/* Mitte: Figur füllt den Rest über der Kosmetik */
+.gmFig { position: relative; flex: 1; min-height: calc(180 * var(--hu)); }
 .gmFig .wmFig3d { position: absolute; inset: 0; width: 100%; height: 100%; }
-.gmFig .gmMuted { position: absolute; left: 12px; bottom: 10px; pointer-events: none; }
-.gmTabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.gmTabs .fg-chip { min-height: 44px; }
-.gmInv { display: grid; grid-template-columns: 1fr calc(380 * var(--hu)); gap: calc(20 * var(--hu)); }
-#gmGrid { grid-template-columns: repeat(5, calc(76 * var(--hu))); grid-auto-rows: calc(76 * var(--hu)); max-height: none; justify-content: start; }
-#gmGrid .wmCell .gmCellName { position: absolute; inset: auto 4px 4px 4px; font: 700 calc(11 * var(--hu)) var(--font-body); color: var(--rc); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-#gmGrid .wmCell .gmTag { position: absolute; top: 4px; right: 4px; }
-.gmDetail .wmDBtns .fg-btn { min-height: 44px; }
-#menuGearBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
-body.mobile #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
+.gmFig .gmMuted { position: absolute; left: 12px; bottom: 10px; pointer-events: none; z-index: 2; }
+.gmMid > .gmColHead { margin-top: calc(10 * var(--hu)); }   /* Abstand zur Rahmen-Deko der Figur */
+#gmLooks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(6 * var(--hu)); }
+#gmLooks .gmRow { flex-direction: column; align-items: stretch; gap: 1px; min-height: calc(62 * var(--hu)); padding: calc(5 * var(--hu)) calc(8 * var(--hu)); }
+#gmLooks .gmSlot { width: auto; }
+#gmLooks .gmTxt b { font-size: calc(13 * var(--hu)); }
+#gmLooks .gmTxt small { font-size: calc(11 * var(--hu)); -webkit-line-clamp: 1; }
+/* Rechts: Inventar, Raster oben, Detail darunter */
+.gmInvPanel { display: flex; flex-direction: column; gap: calc(8 * var(--hu)); padding: calc(12 * var(--hu)) calc(16 * var(--hu)); min-height: 0; overflow: hidden; }
+.gmInvPanel > * { position: relative; z-index: 2; }
+.gmTabs { display: flex; gap: calc(4 * var(--hu)); }
+.gmTabs .fg-chip { flex: 1; min-height: 0; height: calc(32 * var(--hu)); padding: 0 calc(4 * var(--hu)); font-size: calc(12 * var(--hu)); white-space: nowrap; }
+#gmGrid { grid-template-columns: repeat(5, calc(64 * var(--hu))); grid-auto-rows: calc(52 * var(--hu)); gap: calc(6 * var(--hu)); max-height: none; justify-content: center; }
+#gmGrid .wmCell .gmCellName { position: absolute; inset: auto 3px 3px 3px; font: 700 calc(11 * var(--hu)) var(--font-body); color: var(--rc); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#gmGrid .wmCell .gmTag { position: absolute; top: 3px; right: 3px; padding: 1px 4px; font-size: calc(9 * var(--hu)); }
+#gmGrid .wmCell .wmE { position: absolute; top: 3px; left: 3px; }
+.gmInvPanel .wmHint { margin: 0; text-align: center; font-size: calc(12 * var(--hu)); }
+.gmDetail { flex: 1; min-height: 0; border-top: 1px solid var(--fg-line); padding-top: calc(8 * var(--hu)); }
+.gmDetail .wmName { font-size: calc(20 * var(--hu)); }
+.gmDetail .wmSub { font-size: calc(13 * var(--hu)); }
+.gmDetail .wmRows { font-size: calc(13 * var(--hu)); gap: calc(3 * var(--hu)); margin: calc(6 * var(--hu)) 0; }
+.gmDetail .wmDBtns { margin-top: calc(6 * var(--hu)); }
+.gmDetail .wmDBtns .fg-btn { min-height: 0; height: calc(36 * var(--hu)); font-size: calc(14 * var(--hu)); }
+/* Im Run nur Ansicht (gearWindow.ts viewOnly): Funde dieses Runs oben, Klick-Hinweis aus, gesperrte Zeilen ohne Hand-Zeiger */
+.gmFinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(4 * var(--hu)) calc(14 * var(--hu)); padding: calc(5 * var(--hu)) calc(12 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(14 * var(--hu)); }
+.gmFinds .fg-title { font-size: calc(16 * var(--hu)); }
+.gmFind { font-weight: 700; }
+.gmFinds .gmOnly { margin-left: auto; }
+#gearModal.viewOnly .wmHint { display: none; }
+#gearModal.viewOnly .gmRow:disabled { cursor: default; }
+body.mobile #gmBox { --hu: 1px; width: 100vw; height: auto; max-height: 100vh; padding: 8px; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
 /* Handy: für einen Abstand zum Zierrahmen ist kein Platz, der Rahmen (Ecken, Ketten, Funken) liegt hinter dem Fenster statt über dem Text (Rückfragen z-index 6 bleiben oben) */
 body.mobile:has(#gearModal.show) #fgOverlay { z-index: 4; }
-body.mobile .gmCols, body.mobile .gmInv { grid-template-columns: 1fr; }
+body.mobile .gmCols { grid-template-columns: 1fr; }
 body.mobile .gmFig { min-height: 260px; }
 body.mobile .gmRow, body.mobile .gmTabs .fg-chip, body.mobile #gmBox .fg-btn, body.mobile #menuGearBtn { min-height: 44px; }
 body.mobile #gmGrid { grid-template-columns: repeat(5, 1fr); grid-auto-rows: 64px; }
 @media (max-width: 760px) {
   body:has(#gearModal.show) #fgOverlay { z-index: 4; }
-  #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }
-  .gmCols, .gmInv { grid-template-columns: 1fr; }
+  #gmBox { --hu: 1px; width: 100vw; height: auto; max-height: 100vh; padding: 8px; }
+  .gmCols { grid-template-columns: 1fr; }
   .gmFig { min-height: 260px; }
   .gmRow, .gmTabs .fg-chip, #gmBox .fg-btn { min-height: 44px; }
   #gmGrid { grid-template-columns: repeat(5, 1fr); grid-auto-rows: 64px; }

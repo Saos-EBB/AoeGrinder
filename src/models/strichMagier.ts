@@ -73,7 +73,7 @@ const SKINS = {
 // Skins (src/skins.ts, Viewer docs/ref/set-skins-magier.html): Farben des Grundkörpers, Teile baut buildStrichMagier im Block `look`.
 // top Brust, sleeve Arme, pants Hüfte und Beine, shoe Füße, skin Hals und Hände, head Kopf, collar Kragen-Schal, ankle: Knöchel frei
 const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Viewer: Lampe und Rand-Licht heben sie sonst über die Bloom-Schwelle // PH
-const LAMP_COMP = new THREE.Color(.3, .38, .52);   // Hellblau unter der warmen Lampe (dunkel.ts, 0xffc48a): dunkler und Richtung Blau, sonst wird es cremeweiß und brennt im Bloom aus // PH
+const LAMP_COMP = new THREE.Color(.36, .46, .64);   // Hellblau unter der warmen Lampe (dunkel.ts, 0xffc48a): dunkler und Richtung Blau, sonst wird es cremeweiß und brennt im Bloom aus; Blau-Anteil bleibt deutlich vorn, sonst kippt es wieder ins Creme // PH
 const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiply(LAMP_COMP)) };   // Muster Facette (Splitterkönig) // PH
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },

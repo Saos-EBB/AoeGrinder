@@ -162,6 +162,12 @@
   .pauseBox { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 300px; }
   .pauseBox .smallBtn { margin: 0; }
   .row2 { display: flex; gap: 10px; justify-content: center; }
+  /* Handy ist abgekoppelt, bis Desktop fertig ist (boot.ts): Knopf sichtbar, aber aus, Banner darunter */
+  #deviceModal .row2 { align-items: flex-start; }
+  .wipPick { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  #pickMobile:disabled { opacity: .45; filter: grayscale(1); cursor: not-allowed; }
+  #mobileWip { padding: 2px 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #1a0d00; background: #c9a24a; }
+  #deviceModal .wipNote { margin: 0; max-width: 90vw; text-align: center; font-size: 18px; color: #e8dcc4; }
 
   /* Handy (body.mobile, src/mobile.ts): Touch-Steuerung, eigenes Layout, Menüs im Vollbild */
   #touchLayer { position: fixed; inset: 0; z-index: 2; touch-action: none; }
@@ -278,18 +284,26 @@
   <div id="menuMods" class="chipRow" role="group" aria-label="Mods" data-i18n-aria="menu.mods"></div>
   <div id="menuWeaponBox" class="gPanel fg-panel" hidden><div class="menuHead" data-i18n="menu.weapon">Waffe</div><div id="menuWeapons" class="chipRow"></div></div>
   <div id="menuActions">
-    <span id="menuDust"></span>
-    <button class="fg-btn alt" id="menuShop" data-i18n="menu.shop">Shop</button>
-    <button class="fg-btn alt" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
-    <button class="fg-btn alt" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
-    <button class="fg-btn alt" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
-    <button class="fg-btn alt" id="menuPanBtn" aria-pressed="true"></button>
+    <div class="maRow">
+      <span id="menuDust"></span>
+      <button class="fg-btn alt" id="menuShop" data-i18n="menu.shop">Shop</button>
+      <button class="fg-btn alt" id="menuSettings" data-i18n="menu.settings">Einstellungen</button>
+    </div>
+    <div class="maRow">
+      <button class="fg-btn alt" id="menuBinds" data-i18n="menu.binds">Keybinds</button>
+      <button class="fg-btn alt" id="menuEdit" data-i18n="menu.editUi">UI bearbeiten</button>
+      <span id="menuMoreWrap">
+        <button class="fg-btn alt" id="menuMore" aria-haspopup="true" aria-expanded="false" aria-controls="menuMoreList" data-i18n="menux.more">Mehr ▾</button>
+        <span id="menuMoreList" class="gPanel" hidden><button class="fg-btn alt" id="menuPanBtn" aria-pressed="true"></button></span>
+      </span>
+    </div>
   </div>
   <i id="menuRing" aria-hidden="true"></i>
   <div id="menuSkin" class="gPanel">
     <button type="button" class="fg-btn alt mapArrow" id="skinPrev" aria-label="Vorheriger Skin" data-i18n-aria="look.prev">◀</button>
     <b id="skinName" class="fg-title"></b>
     <button type="button" class="fg-btn alt mapArrow" id="skinNext" aria-label="Nächster Skin" data-i18n-aria="look.next">▶</button>
+    <small id="skinHint" hidden></small>
   </div>
   <div id="menuBottom">
     <span class="menuKey">A / LB</span>
@@ -298,7 +312,7 @@
   </div>
   <div id="menuGo">
     <button class="fg-btn" id="startBtn" data-i18n="menu.start">Run starten</button>
-    <button class="fg-btn alt" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button>
+    <div id="menuGoSide"><button class="fg-btn alt" id="menuWeaponsBtn" data-i18n="menu.weaponsBtn">Waffen</button></div>
   </div>
 </div>
 
@@ -307,6 +321,7 @@
     <h1 class="title" style="font-size:28px">Pause</h1>
     <button class="btn" id="pauseResume" data-i18n="pause.resume">Weiter</button>
     <button class="smallBtn" id="pauseChar" data-i18n="pause.char">Charakterfenster</button>
+    <button class="smallBtn" id="pauseGear" data-i18n="gear.btn">Ausrüstung</button>
     <button class="smallBtn" id="pauseSettings" data-i18n="menu.settings">Einstellungen</button>
     <button class="smallBtn" id="pauseEdit" data-i18n="menu.editUi">UI bearbeiten</button>
     <button class="smallBtn" id="pauseBinds" data-i18n="menu.binds">Keybinds</button>
@@ -447,9 +462,8 @@
   <p style="margin:0" data-i18n="device.ask">Womit spielst du?</p>
   <div class="row2">
     <button class="btn" id="pickDesktop">Desktop</button>
-    <button class="btn" id="pickMobile" data-i18n="device.mobile">Handy</button>
+    <span class="wipPick"><button class="btn" id="pickMobile" disabled aria-describedby="mobileWip" data-i18n="device.mobile">Handy</button><small id="mobileWip" data-i18n="device.wip">In Arbeit – derzeit nicht spielbar</small></span>
   </div>
-  <p style="margin:0;font-size:13px;color:#c9b88a" data-i18n="device.mobileNote">Handy: Vollbild, quer, Touch-Steuerung</p>
 </div>
 
 <script type="module" src="/src/boot.ts"></script>
