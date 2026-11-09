@@ -11,7 +11,7 @@ import { camera } from './render';
 import { spawnMob, enterCombat, onMobDeath, removeMob, damageMob, hitPlayer, rollPackSize } from './mobs';
 import { zone } from './world';
 import { ABILITIES, ZUSATZ, breakShield, telegraph } from './abilities';
-import { rollChampionPack, makeChampion } from './champions';
+import { rollChampionPack, makeChampion, rollAffixes } from './champions';
 import { schedule } from './spells/core';
 import { burstFx } from './spells/fx';
 import { addEffect } from './fx/spellFx';
@@ -169,6 +169,14 @@ export function spawnPack(spot: PackSpot, theme: ThemeInfo, level: number): void
   const cats = rollPackCats(level);
   history.push('pack'); if (history.length > 100) history.shift();
   placeGroup(spot, theme.id, level, cats, rollZusatz(cats), champ);
+}
+
+// Monster-Schrein (objects/shrines.ts): Champion-Pack des Themes an spot, sofort im Kampf
+export function spawnChampionKindPack(spot: PackSpot, theme: ThemeInfo, level: number) {
+  const cats = rollPackCats(level, Math.max(3, packSize()));
+  const out = placeGroup(spot, theme.id, level, cats, rollZusatz(cats), rollAffixes());
+  for (const m of out) enterCombat(m, false);
+  return out;
 }
 
 // Lauerer: höchstens 1, 10 % pro Minute, erst ab Schwierigkeit 3. Die Uhr läuft zwischen zwei Pack-Spawns

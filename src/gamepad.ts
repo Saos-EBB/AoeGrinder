@@ -17,6 +17,7 @@ import { pressSpell } from './input';
 import { closeBinds, renderBinds } from './ui/menus';
 import { touch, updateTouch } from './mobile';
 import { t } from './i18n';
+import { doUse } from './useKey';
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -43,6 +44,7 @@ export const PAD_ACTIONS = [
   { id: 'drink',     label: t('bind.drink'),             btn: 14 },
   { id: 'slot7',     label: t('bind.slot7'),              btn: 7 },
   { id: 'slot8',     label: t('bind.slot8'),              btn: 15 },
+  { id: 'use',       label: t('bind.use'),                btn: -1 },   // alle 16 Standard-Knöpfe sind belegt: frei, belegbar unter Tastenbelegung → Pad
 ];
 const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
 const PAD_STORE = 'frostgrind.padbinds.v1';
@@ -68,6 +70,7 @@ const pressed = i => pad.down[i] && !pad.prev[i];   // Flanke: ein Druck löst g
 const PAD_EFFECTS = {
   jump() { state.jumpQueued = true; },
   dodge() { startDodge(); },
+  use() { doUse(); },
   autorun() { state.autorun = !state.autorun; },
   charWin() { toggleChar(); },
   camBehind() { cam.offset = 0; },

@@ -119,10 +119,12 @@ const BURN_STICK = 3000;   // PH
 export const burnLeft = m => m.burn && m.burn.until > state.now ? m.burn.dps * (m.burn.until - state.now) / 1000 : 0;
 let castCounter = 0;
 export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter) {
+  areaSpell = id;
   const c: any = {
     id,
     castKey,
     hit(m, amount) {
+      areaSpell = id;
       let dmg = amount * stat(id).dmg * scale * damageMult(id);
       if (inTick && state.supports.potency) dmg *= 1.2;
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
@@ -173,7 +175,13 @@ export function bounceShot(target) {
 
 // Flächen treffen nur nahe der Wirkfläche: der Boden unter center, damit ein Sprung die Fläche nicht mit anhebt.
 // height = Infinity für Zielzauber, die nur ein Ziel im Umkreis suchen.
+// Map-Objekte (objects/): jede Wirkfläche (endliche Höhe = Schaden, Infinity = nur Zielsuche) meldet sich mit dem Spell, der gerade wirkt.
+// areaSpell: zuletzt erzeugter oder treffender Kontext bzw. tickende Fläche; Kegel zählen als Kreis. Liste an einer Funktion: Import-Kreis
+function areaHooks(): any[] { return (areaHooks as any).list ??= []; }
+export function onSpellArea(fn: (center, r: number, spellId: string | null) => void) { areaHooks().push(fn); }
+let areaSpell: string | null = null;
 export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
+  if (height !== Infinity) for (const fn of areaHooks()) fn(center, r, areaSpell);
   const y = groundAt(center.x, center.z, center.y);
   return state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r && Math.abs(m.pos.y - y) < height);
 }
@@ -300,6 +308,7 @@ function updateFields(dt) {
     f.pos.y = groundAt(f.pos.x, f.pos.z, f.pos.y);   // wandernde Flächen bleiben am Boden
     inTick = true;
     tickEnd = f.end;
+    areaSpell = f.c?.id ?? areaSpell;
     while (f.nextTick <= state.now && f.nextTick <= f.end) { f.nextTick += f.tickMs; f.onTick?.(f); }
     inTick = false;
     if (state.now >= f.end) {

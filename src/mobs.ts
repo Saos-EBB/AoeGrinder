@@ -61,7 +61,7 @@ const respawn = { pending: 0, packs: 0 };
 const PACK_NEAR = 40, PACK_FAR = 100, PACK_DROP = 150;   // PH: Packs entstehen im Ring um den Spieler, unberührte weit hinten verschwinden
 
 function dropFarPack() {
-  const far = liveMobs().find(m => m.state === 'idle' && dist2d(m.pos, player.pos) > PACK_DROP);
+  const far = liveMobs().find(m => m.state === 'idle' && !m.keep && dist2d(m.pos, player.pos) > PACK_DROP);   // keep: Schatzdieb (objects/thief.ts)
   if (!far) return;
   const pack = state.mobs.filter(m => m.packId === far.packId);
   if (!pack.every(m => !m.dead && m.state === 'idle')) return;
@@ -71,7 +71,7 @@ function dropFarPack() {
 
 // Unberührte Packs, die durch deinen Levelaufstieg zu niedrig sind, weichen einem aktuellen Pack an derselben Stelle. Einer pro Frame.
 function replaceStalePack() {
-  const stale = liveMobs().find(m => m.state === 'idle' && !m.assistAt && m.level <= player.level - PACK_STALE_LEVELS && dist2d(m.home, player.pos) > PACK_STALE_DIST);
+  const stale = liveMobs().find(m => m.state === 'idle' && !m.keep && !m.assistAt && m.level <= player.level - PACK_STALE_LEVELS && dist2d(m.home, player.pos) > PACK_STALE_DIST);
   if (!stale) return;
   const pack = state.mobs.filter(m => m.packId === stale.packId);
   if (!pack.every(m => !m.dead && m.state === 'idle' && !m.assistAt && dist2d(m.pos, player.pos) > PACK_STALE_DIST)) return;

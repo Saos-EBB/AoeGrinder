@@ -202,14 +202,14 @@ let chipKey = '', relicKey = '';
 function updateBuildChips() {
   const chips = [];
   if (player.poison) chips.push([t('fx.poison'), player.poison.stacks]);
-  for (const b of buffs()) chips.push([b.name, Math.ceil((b.until - state.now) / 1000)]);   // Getränke des ?-Magiers, Zahl = Sekunden
+  for (const b of buffs()) chips.push([b.name, Math.ceil((b.until - state.now) / 1000), b.color]);   // Getränke des ?-Magiers, Schreine (Farbe), Zahl = Sekunden
   for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
   for (const id of Object.keys(state.supports ?? {})) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
   for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
   const key = JSON.stringify(chips);
   if (key !== chipKey) {
     chipKey = key;
-    $('hudEffects').innerHTML = chips.map(([name, n]) => `<span class="fxChip">${name}${n ? `<b>${n}</b>` : ''}</span>`).join('');
+    $('hudEffects').innerHTML = chips.map(([name, n, color]) => `<span class="fxChip"${color ? ` style="border-color:${color};color:${color}"` : ''}>${name}${n ? `<b>${n}</b>` : ''}</span>`).join('');
   }
   const relics = state.slots.filter(id => id && SPELLS[id].relic), rk = relics.join();
   if (rk !== relicKey) {

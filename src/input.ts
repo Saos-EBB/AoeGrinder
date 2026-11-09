@@ -18,6 +18,7 @@ import { toggleGearWindow } from './ui/gearWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';
 import { t } from './i18n';
+import { doUse } from './useKey';
 
 export const ACTIONS = [
   { group: t('bind.group.move') },
@@ -30,6 +31,7 @@ export const ACTIONS = [
   { id: 'jump',        label: t('bind.jump'),          code: 'Space',  key: 'Leertaste' },
   { id: 'dodge',       label: t('bind.dodge'),        code: 'ShiftLeft', key: 'Shift' },
   { id: 'autorun',     label: t('bind.autorun'),           code: 'KeyR',   key: 'R' },
+  { id: 'use',         label: t('bind.use'),           code: 'KeyG',   key: 'G' },   // Truhen, Schreine, Hebel, Waffen am Boden (useKey.ts); F ist Spell-Slot 5
   { group: t('bind.group.windows') },
   { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
   { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // Ausrüstungsfenster (ui/gearWindow.ts), nur im Hauptmenü; X ist das Charakterfenster
@@ -157,6 +159,7 @@ function runAction(id, code = '') {
   if (id === 'gearWin') toggleGearWindow();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
+  if (id === 'use' && !state.paused) doUse();
   if (id === 'autorun') state.autorun = !state.autorun;
   if (id === 'back' || id === 'forward') state.autorun = false;
 }

@@ -37,7 +37,7 @@ import { phoenixRevive } from './spells/phoenix';
 import { resetMeter, updateMeter } from './schoolMeter';
 import { resetFigures } from './figures';
 import { resetLegends, eggRevive } from './legends';
-import { resetBuffs, buffSpeedMul } from './buffs';
+import { resetBuffs, buffSpeedMul, buffRegenMul } from './buffs';
 import { resetBattery, updateBattery } from './battery';
 import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
@@ -58,6 +58,7 @@ export function resetGame() {
   state.cardRanks = {};
   state.cardPicks = {};
   state.now = 0;
+  state.runNo = (state.runNo ?? 0) + 1;   // objects/: neuer Run = Objekte neu
   state.pendingLevelUps = 0;
   heldXp = 0;
   state.nextCardAt = 0;
@@ -180,6 +181,7 @@ function regenerate(dt) {
     player.nextRegen += CFG.regenTick;
     let mana = spirit() / 4 + 12.5;
     if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
+    mana *= buffRegenMul();   // Schrein des Manas (objects/shrines.ts)
     if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
     if (state.now - player.lastCombat > 5000 && !modValue('lifeCost')) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH; Blutmagier heilt nur über Infekt, Saugen, Lachen
   }

@@ -60,6 +60,7 @@ import { updateLoot } from './loot';
 import { updatePortal, connectPortal } from './portal';
 import { updateMapProgress } from './mapgen/progress';
 import './ui/worldMap';
+import { syncObjects, updateObjects } from './objects';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
@@ -80,6 +81,7 @@ function update(dt) {
   updateLoot();   // Gear-Drops: Lichtsäulen, Aufheben
   updatePortal(); // Portale im Run (Level 25/50/75, Wellen: nach dem Boss)
   updateMapProgress();   // Weltkarte: Level 100 öffnet das nächste Theme
+  updateObjects(dt);     // Map-Objekte: Schreine, Truhen, Fässer, Schatzdieb (objects/)
   updateLegends();
   updateBoss(dt);
 
@@ -94,6 +96,7 @@ function update(dt) {
 }
 
 function updateVisuals(dt) {
+  syncObjects();   // neue Map / neuer Run: Objekte neu setzen (auch im Hauptmenü)
   updateAutoCam(dt, mouseBtn.left);
   updateDunkel(dt);
   updateCamera();
