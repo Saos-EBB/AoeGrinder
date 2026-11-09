@@ -2081,4 +2081,13 @@ export const en: Record<string, string> = {
   'mob.kathedrale_hexer.name': "Penitent Hexer",
   'mob.kathedrale_gross.name': "Bell Giant",
   'mob.kathedrale_lauerer.name': "Faceless",
+  'mob.hoelle_normal.name': "Imp",
+  'mob.hoelle_schnell.name': "Hellhound",
+  'mob.hoelle_stark.name': "Flayer",
+  'mob.hoelle_aoe.name': "Blade Demon",
+  'mob.hoelle_zauberer.name': "Ember Conjurer",
+  'mob.hoelle_werfer.name': "Ash Slinger",
+  'mob.hoelle_hexer.name': "Sin Hexer",
+  'mob.hoelle_gross.name': "Archdemon",
+  'mob.hoelle_lauerer.name': "Flesh Shade",
 };

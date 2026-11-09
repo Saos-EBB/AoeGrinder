@@ -2082,4 +2082,13 @@ export const de: Record<string, string> = {
   'mob.kathedrale_hexer.name': "Bußhexer",
   'mob.kathedrale_gross.name': "Glockenriese",
   'mob.kathedrale_lauerer.name': "Ohnegesicht",
+  'mob.hoelle_normal.name': "Wichtel",
+  'mob.hoelle_schnell.name': "Höllenhund",
+  'mob.hoelle_stark.name': "Schinder",
+  'mob.hoelle_aoe.name': "Klingendämon",
+  'mob.hoelle_zauberer.name': "Glutbeschwörer",
+  'mob.hoelle_werfer.name': "Ascheschleuderer",
+  'mob.hoelle_hexer.name': "Sündenhexer",
+  'mob.hoelle_gross.name': "Erzdämon",
+  'mob.hoelle_lauerer.name': "Fleischschatten",
 };

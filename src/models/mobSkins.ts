@@ -63,4 +63,15 @@ export const SKINS: Record<string, Record<string, SkinDef>> = {
     gross:    ['h', { scale: 2.5, ink: 0x2a2220, ac: 0x9a7a3a, armLen: 1.35, bell: true, jerky: true, weapon: 'hammer' }],  // Glockenriese
     lauerer:  ['h', { ink: 0x141416, ac: 0xe8e0d8, thin: .6, armLen: 1.7, legLen: 1.4, faceless: true, paleHead: true, robe: true, jerky: true }],   // Ohnegesicht
   },
+  hoelle: {
+    normal:   ['h', { scale: .7, ink: 0x5a140c, ac: 0x2a1008, gl: 0xffd040, head: 1.3, horns: true, tail: true }],           // Wichtel
+    schnell:  ['q', { ink: 0x1e100c, ac: 0x2a1008, gl: 0xffa020, lean: true, cracks: true }],                               // Höllenhund
+    stark:    ['h', { scale: 1.2, ink: 0x6a2a20, ac: 0x3a1410, fat: 1.3, faceless: true, mouth: true, jerky: true, weapon: 'hooks' }],   // Schinder
+    aoe:      ['h', { ink: 0x2e100c, ac: 0x1a0806, gl: 0xff4020, thin: .8, armLen: 1.5, horns: true, fourArms: true, weapon: 'blades' }],   // Klingendämon
+    zauberer: ['h', { ink: 0x2a0c08, ac: 0x5a140c, gl: 0xff7020, robe: true, horns: true, weapon: 'orb' }],                 // Glutbeschwörer
+    werfer:   ['h', { ink: 0x2e2a28, ac: 0x4a4440, gl: 0xff7020, cracks: true, weapon: 'ember' }],                          // Ascheschleuderer
+    hexer:    ['h', { ink: 0x1a0606, ac: 0x3a0c0c, gl: 0xff2020, robe: true, hood: true, faceless: true, weapon: 'staff' }], // Sündenhexer
+    gross:    ['h', { scale: 2.6, ink: 0x3a0c08, ac: 0x1a0806, gl: 0xffd040, fat: 1.3, horns: true, bigHorns: true, wings: true, cracks: true, weapon: 'sword', bigWeapon: true }],   // Erzdämon
+    lauerer:  ['h', { ink: 0x5a2220, ac: 0x3a1412, thin: .65, armLen: 1.8, legLen: 1.3, faceless: true, hunch: .55, jerky: true, mouth: true }],   // Fleischschatten
+  },
 };

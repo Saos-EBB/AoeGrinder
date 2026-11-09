@@ -234,4 +234,4 @@ export function devSpawn(theme: string, cat: string, zus: string, n = 1, spot = 
   return placeGroup(spot, theme, player.level, cats, z);
 }
 $('devKSpawn').addEventListener('click', () => devSpawn(val('devKTheme'), val('devKCat'), val('devKZus'), +val('devKN')));
-(window as any).__kinds = { removeMob, damageMob, enterCombat, camera, spawnPack, spawnKind, spawnLurker, devSpawn, devSpot, rollPackCats, rollZusatz, KINDS, big, P, CFG };
+(window as any).__kinds = { spawnMob, removeMob, damageMob, enterCombat, camera, spawnPack, spawnKind, spawnLurker, devSpawn, devSpot, rollPackCats, rollZusatz, KINDS, big, P, CFG };
