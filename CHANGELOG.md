@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(skins): Hochspannung und Splitterkönig bleiben bei voller Anzeige erkennbar: mit Skin leuchtet der Körper nicht mehr blau (Blitz) bzw. weiß (Frost-Aufleuchten beim Zaubern) auf, Splitterkönig bekommt keine Eiszapfen und keine Eisschicht mehr (die Kälte zeigen seine Splitter); das Hellblau seiner Facetten ist an die warme Lampe angepasst und wird nicht mehr cremeweiß
 - fix(ui): Im Ausrüstungsfenster verdeckt der Zierrahmen keinen Text mehr (Titel, Knochenstaub, Schließen, Inventar-Tabs): am Desktop liegt das Fenster zwischen den Rahmen-Ecken und scrollt dort, auf dem Handy liegt der Rahmen hinter dem Fenster
 - fix(skins): Glutprophet ist bei hoher Hitze nicht mehr komplett von der Flammen-Hülle der Feuerschule verdeckt und grellgelb – mit Skin bleiben Hülle und Körper-Glühen aus, die Hitze zeigt das Augen-Feuer (Hauptmenü, Ausrüstungsfenster, Waffenmenü und im Run)
 - feat(items): Spielstand-Code enthält Gear, angelegte Teile, wartende Funde und Kosmetik (bleibt Version 1: alte Codes ohne die Felder laden mit leerem Gear, alter Code überliest sie); Rangliste v34, im Feld Build steht das angelegte Set 5/5; alle Gear-, Set-, Box- und Fenster-Texte auf Deutsch und Englisch

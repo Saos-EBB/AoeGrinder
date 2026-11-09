@@ -73,12 +73,13 @@ const SKINS = {
 // Skins (src/skins.ts, Viewer docs/ref/set-skins-magier.html): Farben des Grundkörpers, Teile baut buildStrichMagier im Block `look`.
 // top Brust, sleeve Arme, pants Hüfte und Beine, shoe Füße, skin Hals und Hände, head Kopf, collar Kragen-Schal, ankle: Knöchel frei
 const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Viewer: Lampe und Rand-Licht heben sie sonst über die Bloom-Schwelle // PH
-const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiplyScalar(.45)) };   // Muster Facette, dunkler als im Viewer wegen der Lampe über der Figur // PH
+const LAMP_COMP = new THREE.Color(.3, .38, .52);   // Hellblau unter der warmen Lampe (dunkel.ts, 0xffc48a): dunkler und Richtung Blau, sonst wird es cremeweiß und brennt im Bloom aus // PH
+const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiply(LAMP_COMP)) };   // Muster Facette (Splitterkönig) // PH
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
   seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
   glut: { top: col(0x1a1a1e), sleeve: col(0x1a1a1e), pants: col(0x9cc7ea).multiplyScalar(.5), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: col(0x1a1a1e), collar: col(0x1a1a1e), eyes: true },
-  frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.45), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
+  frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiply(LAMP_COMP), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
 };
 
 // ───────────────────────── Körper-Shader: Glühen (aGlow), Eiszapfen wachsen nach uM (icT ≥ 0), Requisite (icT = -2), Rand-Licht
@@ -630,7 +631,7 @@ function buildLook(F, look, { part, glow, B, M }) {
   }
 
   if (look === 'frost14') {   // Splitterkönig: Muster Facette, Schnitt 14 „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe
-    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiplyScalar(.45), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
+    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiply(LAMP_COMP), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
     FACET++; part(chest, new THREE.CylinderGeometry(.095, .1, .1, 10), FACETTE, [0, .63, 0], [0, 0, 0], [1, 1, .9]);   // Stehkragen
     for (let k = 0; k < 5; k++) part(chest, new THREE.SphereGeometry(.012, 5, 4), PEARL, [0, .44 - k * .085, .108 - k * .006]);   // Knopfleiste
     part(chest, new THREE.ConeGeometry(.07, .2, 3), LIGHT, [0, .5, .1], [Math.PI, 0, 0], [1, 1, .25]);   // Hemd im Westen-Ausschnitt
@@ -1098,7 +1099,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     glow(chest, new THREE.OctahedronGeometry(.03, 0), col(0xfff3b0), [0, .25, .15]);
   }
   if (skin === 'fire' && !LK) part(head, new THREE.IcosahedronGeometry(.185, 1), S.ink, [0, .14, 0], [0, 0, 0], [.9, .7, .95]);   // verkohlter Kiefer
-  if (skin === 'ice') F.ice = makeIcicles(F);
+  if (skin === 'ice' && !LK) F.ice = makeIcicles(F);   // Skin (Splitterkönig): keine Eiszapfen und keine Eisschicht, die Kälte zeigen seine Splitter
   if (skin === 'arcane') { glow(head, new THREE.OctahedronGeometry(.035, 0), S.orb, [0, .2, .17], [0, 0, 0], [1, 1.5, .5]); F.runeParts = bodyRunes(F); }   // drittes Auge
   if (skin === 'blitz' && !LK) for (let i = 0; i < 7; i++) { const a = (i / 7 - .5) * 2.4; part(head, new THREE.ConeGeometry(.04, .17, 4), S.ink, [Math.sin(a) * .12, .3 - Math.abs(a) * .03, Math.cos(a) * .05 - .06], [-.5 + Math.abs(a) * .1, 0, -a * .55]); }   // Haar-Zacken
   if (skin === 'plague' && !LK) {
@@ -1169,7 +1170,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   });
   F.body.customDepthMaterial = depthMat(U);
   if (F.runeParts) F.runeMesh = build(F.runeParts, runeMat(U));
-  if (skin === 'ice') F.iceShell = makeIceShell(F, U);
+  if (skin === 'ice' && !LK) F.iceShell = makeIceShell(F, U);
   if (skin === 'fire') { F.flames = makeFlames(F, U); world.add(F.flames); F.shell = makeFireShell(F, U); }
   if (skin === 'arcane') { F.orbs = makeChargeOrbs(); world.add(F.orbs); }
   if (skin === 'blitz') { F.bolts = makeBolts(); world.add(F.bolts.mesh); }
@@ -1296,7 +1297,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
         let target = mode === 'chan' ? .35 : 0;
         if (castU > fr[0] && castU < fr[1]) target = 1;
         F.freeze = lerp(F.freeze, target, Math.min(1, s * (target > F.freeze ? 10 : 4)));
-        F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);
+        if (!LK) F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);   // Skin: kein Eis-Aufleuchten über dem ganzen Körper
         if (castU > fr[1] && castU < fr[1] + .05) emit(F.chest.getWorldPosition(V()).add(V(0, .3, 0)), 25, V(0, 1, 0), 0xdff6ff, 4, .6, .6);
         if (F.freeze > .5 && Math.random() < s * 30) emit(F.chest.getWorldPosition(V()).add(V(0, .2, .1)), 1, V(0, .3, 0), 0xe8f8ff, -.2, .9, .8);
         if (m > .5) { const n = rate(STAGE_FX.frost * (m - .5) * s); for (let i = 0; i < n; i++) emit(pickBone(F).getWorldPosition(V()), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18); }
@@ -1328,7 +1329,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
           }
         }
         updateBolts(F, mm, s);
-        const k = m * m, f = m >= .98 ? .08 * Math.random() : 0; F.mat.emissive.setRGB(.12 * k + f, .42 * k + f, .75 * k + f);
+        const k = m * m, f = m >= .98 ? .08 * Math.random() : 0; if (!LK) F.mat.emissive.setRGB(.12 * k + f, .42 * k + f, .75 * k + f);   // Skin (Hochspannung): Körper bleibt in seinen Farben, die Ladung zeigen Blitze und Flasche
       }
       if (F.goo) {
         F.melt = F.root.scale.y < .9 ? 1 + (1 - F.root.scale.y) : 1;   // Zerfließen (main.ts skaliert die Figur): Pfütze wächst
