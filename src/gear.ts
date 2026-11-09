@@ -32,14 +32,20 @@ export const GEAR = {
 // perfect: [Wirkung, Wert] je Slot, Wirkungen in PERFECT unten. Alle Werte PH
 export const SETS: Record<string, { school: string; color: string; perfect: Record<Slot, [string, number]> }> = {
   glut: { school: 'feuer', color: '#ff7a22', perfect: { kopf: ['crit', 0.15], hals: ['fbExtra', 1], ruecken: ['fbCast', 0.1], arme: ['fbExtra', 1], koerper: ['fbCast', 0.1] } },
+  frost14: { school: 'frost', color: '#9fe4ff', perfect: { kopf: ['shardMax', 5], hals: ['shardMax', 5], ruecken: ['needleShard', 0.1], arme: ['needleShard', 0.1], koerper: ['frozenDmg', 0.15] } },
 };
 // Riesen-Feuerball (Glutprophet): jeder every-te Feuerball, size × Größe und Radius, dmg × Schaden
 export const GIANT_FB = { every: 10, size: 3, dmg: 3 };
+// Splitterkönig: Gletschernadel länger, am Endpunkt eine Frost Nova (spells/needle.ts)
+export const SHARD_NEEDLE = { len: 1.5 };
 const stat = (id: string) => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };   // wie spells/core.ts stat, ohne Import-Kreis
 const PERFECT: Record<string, (v: number) => void> = {
   crit: v => { mods.crit += v; },
   fbExtra: v => { mods.fbExtra += v; },
   fbCast: v => { const s = stat('fireball'); s.cast = (s.cast ?? 1) - v; },
+  shardMax: v => { mods.shardMax += v; },
+  needleShard: v => { mods.needleShard += v; },
+  frozenDmg: v => { mods.frozenDmg += v; },
 };
 export const setOfSchool = (skin: string | null) => Object.keys(SETS).find(id => SETS[id].school === skin) ?? null;
 export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;

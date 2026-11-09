@@ -19,8 +19,9 @@ export const nova = {
     { id: 'charges', name: t('spell.nova.runes.charges.name'), desc: t('spell.nova.runes.charges.desc'), charges: 2 },
   ],
   effect(c) {
-    const r = c.radius(nova.radius) * (iceAge() ? AGE.radius : 1), targets = mobsInRadius(player.pos, r);
-    if (iceAge()) addField(c, { pos: player.pos, radius: r, dur: AGE.groundMs, tickMs: 250, visual: iceGroundField(), onTick: frozenGroundTick });
+    const at = c.at ?? player.pos;   // c.at: Nova an anderer Stelle (Set Splitterkönig, needle.ts)
+    const r = c.radius(nova.radius) * (iceAge() ? AGE.radius : 1), targets = mobsInRadius(at, r);
+    if (iceAge()) addField(c, { pos: at, radius: r, dur: AGE.groundMs, tickMs: 250, visual: iceGroundField(), onTick: frozenGroundTick });
     const burst = (m, dmg, root) => { if (dmg ? c.hit(m, dmg) && !m.dead : true) applyRoot(m, root, 'ice'); };
     if (hasRune('nova', 'deep')) {
       for (const m of targets) { enterCombat(m, true); burst(m, 0, nova.root * 2); }
@@ -34,6 +35,6 @@ export const nova = {
         }
       });
     }
-    novaFx(player.pos, r);
+    novaFx(at, r);
   },
 };

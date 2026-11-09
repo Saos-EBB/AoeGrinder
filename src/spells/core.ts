@@ -128,7 +128,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (supported('boneChill', id) && m.slowUntil > state.now) dmg *= 1.15;
       if (m.shockUntil > state.now) dmg *= 1.1;   // Bogenblitz-Rune Schock
       const frozen = m.rootUntil > state.now;
-      if (frozen) dmg *= 1 + (mods.coldBurn ?? 0);                         // Kältebrand
+      if (frozen) dmg *= 1 + (mods.coldBurn ?? 0) + (mods.frozenDmg ?? 0);   // Kältebrand, Set Splitterkönig
       if (inTick && hasTag(id, 'Feuer')) dmg *= modValue('dotMul') ?? 1;   // Fire only: Brand und Flächen
       if (player.rebornUntil > state.now) dmg *= player.rebornMul;         // Phönix-Rune Wiedergeburt
       if (hasTag(id, 'Feuer')) dmg *= meterDmgMul(inTick);                  // Hitze: Treffer und Brand stärker
