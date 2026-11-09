@@ -1,6 +1,6 @@
 // Skins (nur Look) pro Figur, Vorlage docs/ref/set-skins-*.html, Handoff docs/handoffs/skins.md. Alle frei, kein Shop, keine Freischaltung.
 // Neuer Skin: Eintrag in SKIN_LIST (Krieger mit Waffe, Magier mit Schule) + i18n-Key look.<figur>.<id>.name (de/en), Optik als `if (look === '<id>')` im Modell
-// (buildStrichMagier: opts.look, buildStrichKrieger: { look }). Noch nicht gebaut = sieht aus wie 'standard'.
+// (buildStrichMagier: opts.look, buildStrichKrieger: { look }).
 // Gewählt wird in meta.skins ({ figur: skinId }), Auflösen über skinOf in meta.ts.
 
 export type Figur = 'magier' | 'krieger';
