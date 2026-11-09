@@ -363,7 +363,7 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
   amount *= modFactor('dmg') * (mob.takenMul ?? 1);   // takenMul: Champion „Steinhaut“
   if (mob.ability?.onDamaged) {
     amount = mob.ability.onDamaged(mob, amount, source);
-    if (amount <= 0) { combatText(mob.pos, t('msg.immune'), 'miss'); return true; }
+    if (amount <= 0) { combatText(mob.pos, t(mob.absorbed ? 'msg.absorbed' : 'msg.immune'), 'miss'); mob.absorbed = false; return true; }
   }
 
   const frozen = mob.rootUntil > state.now;

@@ -62,7 +62,7 @@ function composite(cat: string, zus: string) {
     onUpdate(m, dt) { Z.onUpdate?.(m, dt); return A.onUpdate?.(m, dt) ?? false; },
     onHit(m, dmg) { A.onHit?.(m, dmg); },
     onDamaged(m, amount, source) {
-      if (m.kindShield) { breakShield(m); return 0; }   // Schild hält genau 1 Treffer
+      if (m.kindShield) { breakShield(m); m.absorbed = true; return 0; }   // Schild hält genau 1 Treffer; absorbed: Kampftext „Absorbiert“ statt „Immun“ (mobs.ts damageMob)
       if (Z.onDamaged) amount = Z.onDamaged(m, amount, source);
       return A.onDamaged ? A.onDamaged(m, amount, source) : amount;
     },
