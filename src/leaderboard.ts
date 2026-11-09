@@ -10,6 +10,7 @@ import { run, scoreBreakdown } from './score';
 import { zone, zoneId } from './world';
 import { ZONES } from './zones';
 import { t } from './i18n';
+import { mapSeed, seedPinned } from './mapgen/rng';
 
 const STORE = 'frostgrind.runs.v1';
 
@@ -25,17 +26,20 @@ function saveRuns(list) {
 
 export const byScore = list => [...list].sort((a, b) => b.score - a.score);
 
+// Gleiche Rangliste: Modus, Mob-Modus, Belagerungsziel und Map (pro Theme getrennt; das Layout zählt nicht, jeder Seed gilt)
+export const sameBoard = (r, e) => r.mode === e.mode && (r.mobMode ?? 'packs') === e.mobMode && (r.siegeGoal ?? 0) === e.siegeGoal && runZone(r) === e.zoneId;
+
 // Platz im eigenen Modus, 1 = Rekord
 export function recordRun() {
   const b = scoreBreakdown();
   const entry = {
     date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'waves' ? ` · ${t('board.waves')}` : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(), wave: run.wave ?? 0,
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
-    zone: zone.name, zoneId, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: state.gearSet ? t('gear.buildSet', { name: t(`look.magier.${state.gearSet}.name`) }) : '',   // build: angelegtes Set 5/5 (gear.ts)
+    zone: zone.name, zoneId, seed: zone.gen ? mapSeed() : null, seedFixed: zone.gen ? seedPinned() : false, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: state.gearSet ? t('gear.buildSet', { name: t(`look.magier.${state.gearSet}.name`) }) : '',   // build: angelegtes Set 5/5 (gear.ts)
   };
   const list = [...loadRuns(), entry];
   saveRuns(list);
-  const rank = byScore(list.filter(r => r.mode === entry.mode && (r.mobMode ?? 'packs') === entry.mobMode && (r.siegeGoal ?? 0) === entry.siegeGoal)).indexOf(entry) + 1;
+  const rank = byScore(list.filter(r => sameBoard(r, entry))).indexOf(entry) + 1;
   return { entry, rank };
 }
 

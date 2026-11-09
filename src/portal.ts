@@ -1,6 +1,6 @@
 // Portale im Run (map-umbau-2 Phase 1). Nur auf generierten Maps (zone.gen).
 // Packs: bei Level 25 / 50 / 75 öffnet sich ein Portal auf einem portalSpot des Layouts (Index 0 liegt bei der Landmarke).
-// Wellen: nach jedem Boss. Betreten = gleiches Theme, neue Map mit neuem Seed (rng.ts nextMapSeed, fest mit ?seed=),
+// Wellen: nach jedem Boss. Betreten = gleiches Theme, neue Map, Seed aus dem Start-Seed abgeleitet (rng.ts portalMapSeed),
 // Mobs neu gewürfelt; Level, Karten, Ausrüstung bleiben (player.ts switchZone). Kurze Blende, kein Ladebildschirm.
 // Wer das Portal liegen lässt: nach 2 min sinkt die XP pro Kill um 25 %, bis man durchgeht. Alle Zahlen // PH
 
@@ -13,6 +13,7 @@ import { mobMode } from './modifiers';
 import { collectAll } from './loot';
 import { addXpMul } from './xpBonus';
 import { t } from './i18n';
+import { portalMapSeed } from './mapgen/rng';
 
 export const PORTAL = {
   levels: [25, 50, 75],       // PH: Packs
@@ -93,7 +94,8 @@ function enter() {
   window.setTimeout(() => {
     collectAll();          // Boden-Drops kommen mit (loot.ts)
     closePortal();
-    api.switchZone(zoneId);    // gleiches Theme, neue Map (neuer Seed), Packs neu
+    portalMapSeed();       // Seed der nächsten Map folgt aus dem Start-Seed des Runs (mapgen/rng.ts)
+    api.switchZone(zoneId);    // gleiches Theme, neue Map, Packs neu
     player.invulnUntil = state.now + PORTAL.safeMs;
     taken++;
     state.newMob = { text: t('portal.through', { n: taken }), at: state.now };

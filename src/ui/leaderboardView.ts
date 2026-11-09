@@ -11,7 +11,11 @@ import { setLevel } from '../player';
 import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
 import { showColliders } from '../world';
-import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns } from '../leaderboard';
+import { recordRun, setNote, loadRuns, byScore, exportRuns, importRuns, sameBoard, runZone } from '../leaderboard';
+import { ZONES } from '../zones';
+import { THEME_ZONES } from '../mapgen/registry';
+import { zoneId } from '../world';
+import { copySeed } from './worldMap';
 import { t, fmtNum, locale } from '../i18n';
 import { findsHtml, bindFinds } from './lootView';
 
@@ -38,7 +42,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #boardModal .panel { width: min(760px, 96vw); max-width: none; max-height: 94vh; overflow: auto; text-align: left; }
   #boardTabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
   #boardBar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; color: #c9b88a; }
-  #boardVersion { font: 13px system-ui, sans-serif; background: #000a; color: #fff; border: 1px solid #6b5426; }
+  #boardVersion, #boardMap { font: 13px system-ui, sans-serif; background: #000a; color: #fff; border: 1px solid #6b5426; }
   #boardTable { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
   #boardTable th { text-align: right; color: #f2c94c; font-weight: 600; padding: 3px 6px; }
   #boardTable td { text-align: right; padding: 3px 6px; border-top: 1px solid #b8913f33; color: #eee; }
@@ -65,7 +69,7 @@ const fmtT = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 6
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function showRunResult() {
   const { entry, rank } = recordRun(), b = entry.breakdown;
-  const same = loadRuns().filter(r => r.mode === entry.mode && (r.mobMode ?? 'packs') === entry.mobMode && (r.siegeGoal ?? 0) === entry.siegeGoal);
+  const same = loadRuns().filter(r => sameBoard(r, entry));   // pro Map getrennt (leaderboard.ts)
   const best = same.filter(r => r !== entry && r.date !== entry.date && typeof r.timeTo100 === 'number').reduce((m, r) => Math.min(m, r.timeTo100), Infinity);
   $('endTitle').textContent = player.won && player.level >= 100 ? t('end.lv100') : player.won ? t('end.done') : player.lastHitBy === t('mod.time.name') ? t('end.timeUp', { n: player.level }) : t('end.fell', { n: player.level });
   const fig = currentFigure()?.name;
@@ -94,7 +98,9 @@ export function showRunResult() {
       </div>
     </div>
     <div id="runFinds">${findsHtml()}</div>
+    ${entry.seed ? `<div class="seedLine"><span id="endSeed">${t(entry.seedFixed ? 'world.seedNowFixed' : 'world.seedNow', { n: entry.seed })}</span><button class="smallBtn" id="endSeedCopy">${t('world.seedCopy')}</button></div>` : ''}
     <input id="runNote" maxlength="120" placeholder="${t('end.note')}">`;
+  $('endSeedCopy')?.addEventListener('click', () => copySeed($('endSeed')));
   const finds = () => bindFinds(() => { $('runFinds').innerHTML = findsHtml(); finds(); });   // Gear-Funde, Auswahl bei vollem Slot (lootView.ts)
   finds();
   const note = $('runNote') as HTMLInputElement;
@@ -105,12 +111,12 @@ export function showRunResult() {
 // ---------- Ranglisten-Ansicht ----------
 const TABS = [...MODES.map(m => ({ id: m.id, name: m.id === 'custom' ? t('board.custom') : m.name })), { id: 'waves', name: t('board.waves') }, { id: 'all', name: t('board.all') }];
 const TOP = 10;
-let tab = 'normal', versionFilter = '', openDate = null;
+let tab = 'normal', versionFilter = '', mapFilter: string | null = null, openDate = null;   // mapFilter: null = aktuelle Map, '' = alle
 
 document.body.insertAdjacentHTML('beforeend', `<div id="boardModal" class="modal"><div class="frame panel">
   <h1 class="title" style="font-size:26px">${t('board.title')}</h1>
   <div id="boardTabs"></div>
-  <div id="boardBar"><label for="boardVersion">${t('board.version')}</label><select id="boardVersion"></select></div>
+  <div id="boardBar"><label for="boardMap">${t('board.map')}</label><select id="boardMap"></select><label for="boardVersion">${t('board.version')}</label><select id="boardVersion"></select></div>
   <div id="boardList"></div>
   <div id="boardDetailBox"></div>
   <textarea id="boardIo" placeholder="${t('board.io')}"></textarea>
@@ -148,7 +154,14 @@ function renderBoard() {
   if (!versions.includes(versionFilter)) versionFilter = '';
   sel.value = versionFilter;
 
-  const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'waves' ? r.mobMode === 'waves' : r.mode === tab && (r.mobMode ?? 'packs') === 'packs')) && (!versionFilter || r.version === versionFilter))).slice(0, TOP);
+  // Map: Rangliste pro Theme getrennt, Standard = die gewählte Map; „Alle“ zeigt alles wie früher
+  const maps = [...new Set([...THEME_ZONES.filter(id => ZONES[id]), ...all.map(runZone)])];
+  const mapSel = $('boardMap') as HTMLSelectElement;
+  mapSel.innerHTML = '';
+  for (const id of ['', ...maps]) mapSel.add(new Option(id ? ZONES[id]?.name ?? id : t('board.all'), id));
+  mapSel.value = mapFilter ?? (maps.includes(zoneId) ? zoneId : '');
+  const mapNow = mapSel.value;
+  const rows = byScore(all.filter(r => (tab === 'all' || (tab === 'waves' ? r.mobMode === 'waves' : r.mode === tab && (r.mobMode ?? 'packs') === 'packs')) && (!versionFilter || r.version === versionFilter) && (!mapNow || runZone(r) === mapNow))).slice(0, TOP);
   const list = $('boardList');
   list.innerHTML = '';
   if (!rows.length) { list.innerHTML = `<div id="boardEmpty">${t('board.empty')}</div>`; $('boardDetailBox').innerHTML = ''; return; }
@@ -161,6 +174,7 @@ function renderBoard() {
     tr.className = (i === 0 ? 'best ' : '') + (r.date === openDate ? 'open' : '');
     cell(tr, i === 0 ? '★' : String(i + 1));
     cell(tr, MODES.find(m => m.id === r.mode) ? MODES.find(m => m.id === r.mode).name + (r.mobMode === 'waves' ? ` · ${t('board.waves')}` : '') : r.modeName ?? r.mode);   // Name aus der aktuellen Sprache, alte Einträge tragen ihn als Text
+    if (r.seedFixed) tr.cells[1].textContent += ` · ${t('board.fixedSeed')}`;   // fester Seed (Speedrun), sonst zufällig
     cell(tr, num(r.score)); cell(tr, num(r.level)); cell(tr, num(r.kills));
     cell(tr, typeof r.time === 'number' ? fmtTime(r.time) : '–');
     cell(tr, fmtDate(r.date));
@@ -189,6 +203,7 @@ function renderDetail(r) {
   add(t('board.d.combo'), r.bestCombo);
   add(t('board.d.multi'), r.bestMulti);
   add(t('board.d.zone'), r.zone);
+  add(t('board.d.seed'), typeof r.seed === 'number' ? `${r.seed}${r.seedFixed ? ` (${t('board.fixedSeed')})` : ''}` : '–');
   add(t('board.d.cause'), r.cause);
   add(t('board.d.version'), r.version);
   add(t('board.d.build'), r.build || '–');   // Spells, Runen, Supports, Relikt und Waffe des Runs
@@ -201,6 +216,7 @@ function openBoard() { $('boardMsg').textContent = ''; renderBoard(); $('boardMo
 function closeBoard() { $('boardModal').classList.remove('show'); }
 
 $('boardClose').addEventListener('click', closeBoard);
+$('boardMap').addEventListener('change', e => { mapFilter = (e.target as HTMLSelectElement).value; openDate = null; renderBoard(); });
 $('boardVersion').addEventListener('change', e => { versionFilter = (e.target as HTMLSelectElement).value; openDate = null; renderBoard(); });
 $('boardExport').addEventListener('click', async () => {
   const json = exportRuns();

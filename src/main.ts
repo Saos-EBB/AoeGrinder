@@ -58,6 +58,8 @@ import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
 import { updateLoot } from './loot';
 import { updatePortal, connectPortal } from './portal';
+import { updateMapProgress } from './mapgen/progress';
+import './ui/worldMap';
 import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
@@ -77,6 +79,7 @@ function update(dt) {
   updateFigures();
   updateLoot();   // Gear-Drops: Lichtsäulen, Aufheben
   updatePortal(); // Portale im Run (Level 25/50/75, Wellen: nach dem Boss)
+  updateMapProgress();   // Weltkarte: Level 100 öffnet das nächste Theme
   updateLegends();
   updateBoss(dt);
 

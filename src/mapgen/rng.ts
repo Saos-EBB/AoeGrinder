@@ -31,14 +31,26 @@ export function mixSeed(...parts: (string | number)[]): number {
   return h >>> 0;
 }
 
-// Seed der generierten Maps: jedes Betreten einer Map (buildWorld → prepare) würfelt neu, damit jede Map anders ist.
-// Fest bleibt er mit ?seed=<n> in der URL oder nach „Seed setzen“ im Dev-Fenster (reproduzierbare Tests).
+// Seed der generierten Maps. Ein Run hat einen Start-Seed (runSeed); die Maps hinter Portalen (portal.ts) leiten sich daraus ab
+// (Map n = mixSeed(runSeed, 'portal', n)), gleicher Start-Seed → gleiche Maps, auch nach Portalen.
+// Jedes Betreten einer Map von außen (Map-Wechsel, neuer Run, Zurück ins Hauptmenü → buildWorld → prepare) würfelt einen neuen Start-Seed.
+// Fest bleibt er mit ?seed=<n>, „Seed setzen“ im Dev-Fenster oder dem Seed-Feld der Weltkarte (Speedrun: alle spielen dieselben Maps).
 const fromUrl = Number(new URLSearchParams(location.search).get('seed'));
 let pinned = Number.isFinite(fromUrl) && fromUrl > 0;
 let seed = pinned ? Math.floor(fromUrl) : 1 + Math.floor(Math.random() * 999999);
-let keep = true;   // den aktuellen Seed beim nächsten Bau einmal benutzen (Start, „Neu würfeln“)
+let keep = true;    // beim nächsten Bau keinen neuen Start-Seed würfeln (Start, „Neu würfeln“, Portal)
+let portalN = 0;    // wie viele Portale im Run genommen: 0 = Start-Map
 const roll = () => 1 + Math.floor(Math.random() * 999999);
-export const mapSeed = () => seed;
-export function nextMapSeed() { if (!pinned && !keep) seed = roll(); keep = false; return seed; }
-export function setMapSeed(n: number) { seed = Math.max(1, Math.floor(n) || 1); pinned = true; }
-export function rerollSeed() { seed = roll(); keep = true; return seed; }
+const seedOf = (n: number) => n === 0 ? seed : 1 + (mixSeed(seed, 'portal', n) % 999999);
+export const mapSeed = () => seed;              // Start-Seed des Runs
+export const seedPinned = () => pinned;         // fester Seed (Rangliste kennzeichnet das)
+export function nextMapSeed() {
+  if (!keep) { if (!pinned) seed = roll(); portalN = 0; }
+  keep = false;
+  return seedOf(portalN);
+}
+// Portal: nächste Map des Runs, Seed aus dem Start-Seed abgeleitet
+export function portalMapSeed() { portalN++; keep = true; }
+export function setMapSeed(n: number) { seed = Math.max(1, Math.floor(n) || 1); pinned = true; keep = true; portalN = 0; }
+export function unpinSeed() { pinned = false; seed = roll(); keep = true; portalN = 0; }
+export function rerollSeed() { seed = roll(); keep = true; portalN = 0; return seed; }
