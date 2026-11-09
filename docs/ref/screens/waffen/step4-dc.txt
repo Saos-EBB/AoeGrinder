@@ -1,0 +1,13 @@
+staff/r1   {"min":4,"max":11,"avg":7.6}
+staff/r3   {"min":4,"max":19,"avg":12.5}
+staff/r5   {"min":24,"max":39,"avg":32.5}
+wand/r1    {"min":5,"max":14,"avg":9.3}
+wand/r3    {"min":5,"max":22,"avg":14.2}
+wand/r5    {"min":25,"max":42,"avg":34.2}
+book/r1    {"min":5,"max":14,"avg":9.3}
+book/r3    {"min":5,"max":22,"avg":14.1}
+book/r5    {"min":25,"max":42,"avg":34.1}
+relic/r1   {"min":3,"max":12,"avg":7.3}
+relic/r3   {"min":3,"max":20,"avg":12.2}
+relic/r5   {"min":23,"max":40,"avg":32.1}
+errors []

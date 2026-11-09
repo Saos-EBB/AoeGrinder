@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frost Grind – Mob-Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#e3c27a; --red:#a3140e; --panel:rgba(14,6,4,.88); --line:#8a6a35; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:#060202; color:#eadfca; font-family:Barlow,sans-serif; overflow:hidden; }
+  #view { position:fixed; inset:0; }
+  .bar { position:fixed; left:0; right:0; top:0; display:flex; gap:6px; align-items:center; padding:10px 14px; background:linear-gradient(#0b0403,rgba(11,4,3,0)); z-index:3; flex-wrap:wrap; }
+  .bar h1 { font-family:Cinzel,serif; font-size:18px; color:var(--gold); margin:0 14px 0 0; text-shadow:0 0 8px #a3140e; }
+  button { font:600 14px Barlow,sans-serif; color:#eadfca; background:#1d0d09; border:1px solid var(--line); padding:7px 12px; cursor:pointer; }
+  button:hover { border-color:var(--gold); }
+  button.on { background:var(--red); color:#fff; border-color:var(--gold); }
+  .side { position:fixed; right:14px; top:64px; width:320px; background:var(--panel); border:1px solid var(--line); padding:14px 16px; z-index:3; box-shadow:inset 0 0 18px rgba(163,20,14,.25); }
+  .side h2 { font-family:Cinzel,serif; color:var(--gold); margin:0 0 2px; font-size:20px; }
+  .side .cat { color:#ff8a5c; font-weight:600; margin-bottom:10px; }
+  .side table { width:100%; border-collapse:collapse; font-size:14px; margin:8px 0; }
+  .side td { padding:3px 0; border-bottom:1px solid rgba(138,106,53,.3); }
+  .side td:last-child { text-align:right; color:var(--gold); font-weight:600; }
+  .side p { font-size:14px; line-height:1.4; margin:6px 0; }
+  .zus { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .zus button { padding:5px 8px; font-size:13px; }
+  .lbl { position:fixed; transform:translate(-50%,-100%); font-size:13px; font-weight:600; color:#eadfca; text-shadow:0 1px 3px #000,0 0 6px #000; pointer-events:none; white-space:nowrap; z-index:2; text-align:center; }
+  .lbl small { display:block; color:#ff8a5c; font-size:11px; }
+  .lbl.sel { color:var(--gold); font-size:15px; }
+  .hint { position:fixed; left:14px; bottom:12px; font-size:13px; color:#a89878; z-index:3; }
+  @media (max-width:760px) { .side { top:auto; bottom:0; right:0; left:0; width:auto; max-height:45vh; overflow:auto; } .hint { display:none; } }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+</head>
+<body>
+<div id="view"></div>
+<div class="bar"><h1>Mob-Viewer</h1><span id="tabs"></span><span style="flex:1"></span><button id="all">Alle zeigen</button> <button id="anim">Angriff zeigen</button></div>
+<div class="side" id="side"></div>
+<div class="hint">Klick auf einen Mob = Details · Ziehen = drehen · Mausrad = Zoom · Zusatz unten rechts</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------- Daten (aus claude/mob-kategorien.md, alles PH) ----------
+const CATS = {
+  normal:   { name:'Normal',   hp:'1×',   dmg:'1×',   spd:'1×',   xp:'1×',   text:'Läuft hin und schlägt. Masse im Pack.' },
+  schnell:  { name:'Schnell',  hp:'0,6×', dmg:'0,7×', spd:'1,4×', xp:'0,8×', text:'Sprung aus 8 yd, wenig Leben.' },
+  stark:    { name:'Stark',    hp:'1,8×', dmg:'1,6×', spd:'0,8×', xp:'1,8×', text:'Holt 0,8 s sichtbar aus, dann harter Schlag.' },
+  aoe:      { name:'AoE',      hp:'1,3×', dmg:'1,2×', spd:'0,9×', xp:'1,5×', text:'Wirbel oder Bodenschlag 5 yd, Ring 0,7 s vorher am Boden.' },
+  zauberer: { name:'Zauberer', hp:'0,7×', dmg:'1,1×', spd:'1×',   xp:'1,2×', text:'Läuft auf 12 yd ran, bleibt stehen und castet. Geschoss fliegt gerade, ausweichbar.' },
+  werfer:   { name:'Werfer',   hp:'0,8×', dmg:'0,8×', spd:'1×',   xp:'1×',   text:'Wie Zauberer, 15 yd, schnelleres schwächeres Geschoss.' },
+  hexer:    { name:'Hexer',    hp:'0,7×', dmg:'1,1×', spd:'1×',   xp:'1,3×', text:'Wie Zauberer. Einziger, der flieht: Teleport höchstens alle 6 s, Weglaufen mit 60 % Tempo.' },
+  gross:    { name:'Groß',     hp:'5×',   dmg:'2,5×', spd:'0,7×', xp:'8×',   text:'1 pro 3–4 Packs. Stampfen 6 yd mit 1 s Ansage. Sicherer Drop, Lichtsäule beim Tod.' },
+  lauerer:  { name:'Lauerer',  hp:'1×',   dmg:'1,5×', spd:'1,2×', xp:'3×',   text:'Taucht hinter dir auf, erstarrt, solange du ihn ansiehst. Max. 1, ab Theme 3.' },
+};
+const ZUS = {
+  none:   { name:'kein',   text:'Standard, ~85 % der Mobs.' },
+  heal:   { name:'Heilen', text:'Heilt einen Mob in 10 yd um 5 % alle 3 s. Cast 1 s sichtbar, Treffer unterbricht.' },
+  shield: { name:'Schild', text:'Schild auf einen Mob in 10 yd, hält 1 Treffer, alle 6 s.' },
+  haste:  { name:'Tempo',  text:'Aura: Mobs in 10 yd +20 % Tempo, stapelt nicht.' },
+  fliegt: { name:'Fliegt', text:'Schwebt, immun gegen Root. Slow wirkt doppelt.' },
+  platzt: { name:'Platzt', text:'Beim Tod Explosion 4 yd, Ring 0,5 s vorher.' },
+  teilt:  { name:'Teilt',  text:'Beim Tod 2 kleine mit 20 % Leben, je 0,3× XP.' },
+};
+const THEMES = {
+  wald:       { name:'Wald',       diff:1, bg:0x8fae7e, ground:0x3f6e22, hemi:[0xd8f0c0,0x3a4a20,1.5], sun:0xfff0d0, fogN:30, fogF:90 },
+  wueste:     { name:'Wüste',      diff:2, bg:0xe2c28c, ground:0xc49a5e, hemi:[0xfff0d0,0x8a6030,1.6], sun:0xffe0a0, fogN:30, fogF:95 },
+  kanaele:    { name:'Kanäle',     diff:3, bg:0x16201b, ground:0x2c3a30, hemi:[0xb8d0bc,0x303a30,2.0], sun:0xa8c8a0, fogN:22, fogF:70 },
+  kathedrale: { name:'Kathedrale', diff:4, bg:0x100e14, ground:0x34303a, hemi:[0xc8cce8,0x3a3440,2.1], sun:0xc8c0e0, fogN:22, fogF:70 },
+  hoelle:     { name:'Hölle',      diff:5, bg:0x2a0806, ground:0x2a0d08, hemi:[0xffb090,0x502018,2.0], sun:0xff7040, fogN:24, fogF:75 },
+};
+const ORDER = ['normal','schnell','stark','aoe','zauberer','werfer','hexer','gross','lauerer'];
+
+// Skins im Strich-Stil: ink = Körper (dunkel), ac = Kleidung/Merkmal, gl = Leuchten (Augen, Magie). h = Mensch, q = Vierbeiner, b = Flieger, k = Käfer
+const SKINS = {
+  wald: {
+    normal:   ['Moosling', 'h', { scale:.7, ink:0x2c3a22, ac:0x5f9a30, gl:0xffe060, head:1.4, tufts:true }],
+    schnell:  ['Dornwolf', 'q', { ink:0x2e2a22, ac:0x4f8a2a, gl:0x9cff60, lean:true, spikes:true }],
+    stark:    ['Hauerbulle', 'q', { ink:0x33241a, ac:0xeee2c8, gl:0xff5030, heavy:true, tusks:true }],
+    aoe:      ['Wirbelschrat', 'h', { ink:0x3a2c1e, ac:0x4f8a2a, gl:0xb0ff60, armLen:1.5, legLen:1.1, claws:true, leaves:true }],
+    zauberer: ['Irrlichtrufer', 'h', { ink:0x22302a, ac:0x3f6a52, gl:0x60fff0, robe:true, hood:true, weapon:'orb' }],
+    werfer:   ['Wurzelschleuderer', 'h', { ink:0x3a2c1e, ac:0x6a5236, gl:0xd0ff60, weapon:'rock' }],
+    hexer:    ['Waldhexe', 'h', { ink:0x2a2230, ac:0x5a3f72, gl:0xc070ff, robe:true, hat:'point', hunch:.35, weapon:'staff' }],
+    gross:    ['Moos-Oger', 'h', { scale:2.3, ink:0x2f3a24, ac:0x5f9a30, gl:0xffd040, fat:1.7, weapon:'club', tufts:true }],
+    lauerer:  null,
+  },
+  wueste: {
+    normal:   ['Sandschlurfer', 'k', { ink:0x4a3820, ac:0xc8a060, gl:0xffd080 }],
+    schnell:  ['Wüstenräuber', 'h', { ink:0x3a2a1c, ac:0xe2d4b0, gl:0xffd080, thin:.85, wrap:true, weapon:'sword' }],
+    stark:    ['Grabwächter', 'h', { ink:0x5a5040, ac:0xe2d8b8, gl:0x60a0ff, bandage:true, weapon:'axe', legLen:1.1 }],
+    aoe:      ['Sandwirbler', 'h', { ink:0x3a2a1c, ac:0xc87a4a, gl:0xffc040, robe:true, wrap:true, armLen:1.3, weapon:'blades' }],
+    zauberer: ['Sandpriester', 'h', { ink:0x3a2418, ac:0x9a3b2a, gl:0xffa030, robe:true, hat:'tall', hatC:0xe2b13c, weapon:'staff' }],
+    werfer:   ['Speerwerfer', 'h', { ink:0x3a2a1c, ac:0xd8c090, gl:0xffd080, thin:.9, wrap:true, weapon:'spear' }],
+    hexer:    ['Grabhexer', 'h', { ink:0x1e1a14, ac:0xe2b13c, gl:0x60ffb0, robe:true, snout:true, ears:true, weapon:'staff' }],
+    gross:    ['Sandriese', 'h', { scale:2.5, ink:0x5a4630, ac:0xc8a060, gl:0xffe0a0, fat:1.4, weapon:'club', cracks:true, crackC:0xffd080 }],
+    lauerer:  null,
+  },
+  kanaele: {
+    normal:   ['Kanalratte', 'q', { ink:0x2a2622, ac:0xc08a80, gl:0xff3030, small:true }],
+    schnell:  ['Rohrkriecher', 'q', { ink:0x1e2a24, ac:0x4a7a5e, gl:0xe0ff60, low:true, long:true, spikes:true }],
+    stark:    ['Schlammschlurfer', 'h', { ink:0x2a301a, ac:0x6a7a24, gl:0xd0ff40, fat:1.6, drip:true, weapon:'cleaver' }],
+    aoe:      ['Kloakenkoloss', 'h', { scale:1.25, ink:0x262a1a, ac:0x6a7a24, gl:0xd0ff40, fat:1.5, drip:true, weapon:'flail' }],
+    zauberer: ['Kloakenhexer', 'h', { ink:0x1e2a1e, ac:0x3e5a34, gl:0x80ff40, robe:true, hood:true, weapon:'orb' }],
+    werfer:   ['Unratwerfer', 'h', { ink:0x2a2a1c, ac:0x6a7a24, gl:0xd0ff40, hunch:.4, weapon:'blob' }],
+    hexer:    ['Brackhexer', 'h', { ink:0x1a2622, ac:0x34524a, gl:0x80ff60, robe:true, hood:true, hunch:.45, weapon:'lantern' }],
+    gross:    ['Kloakenoger', 'h', { scale:2.3, ink:0x2a2c1a, ac:0x6a7a24, gl:0xffd040, fat:1.8, drip:true, weapon:'cleaver' }],
+    lauerer:  ['Schachtlauerer', 'h', { ink:0x8a9488, ac:0x5a6458, thin:.6, armLen:1.8, legLen:1.35, faceless:true, hunch:.25, jerky:true }],
+  },
+  kathedrale: {
+    normal:   ['Knochen-Novize', 'h', { ink:0xd8ceb0, ac:0x2e2628, gl:0xff3020, bones:true, robe:true, hood:true }],
+    schnell:  ['Wasserspeier', 'b', { ink:0x55524e, ac:0x3a3836, gl:0xff6030, horns:true }],
+    stark:    ['Henker', 'h', { scale:1.3, ink:0x2a2224, ac:0x1a1214, fat:1.3, hood:'point', faceless:true, weapon:'axe', bigWeapon:true }],
+    aoe:      ['Geißler', 'h', { ink:0xc8b8a8, ac:0x4a3a34, thin:.75, hunch:.3, armLen:1.25, faceless:true, jerky:true, weapon:'whip' }],
+    zauberer: ['Chorgeist', 'h', { ink:0xd8dcf0, ac:0xb8bce0, gl:0x9fb0ff, robe:true, float:true, ghost:true, mouth:true, faceless:true }],
+    werfer:   ['Knochenwerfer', 'h', { ink:0xd8ceb0, ac:0x8a7e64, gl:0xff3020, bones:true, weapon:'bone' }],
+    hexer:    ['Bußhexer', 'h', { ink:0x1e1e2a, ac:0x3a3a52, gl:0x9fb0ff, robe:true, hood:true, weapon:'censer' }],
+    gross:    ['Glockenriese', 'h', { scale:2.5, ink:0x2a2220, ac:0x9a7a3a, armLen:1.35, bell:true, jerky:true, weapon:'hammer' }],
+    lauerer:  ['Ohnegesicht', 'h', { ink:0x141416, ac:0xe8e0d8, thin:.6, armLen:1.7, legLen:1.4, faceless:true, paleHead:true, robe:true, jerky:true }],
+  },
+  hoelle: {
+    normal:   ['Wichtel', 'h', { scale:.7, ink:0x5a140c, ac:0x2a1008, gl:0xffd040, head:1.3, horns:true, tail:true }],
+    schnell:  ['Höllenhund', 'q', { ink:0x1e100c, ac:0x2a1008, gl:0xffa020, lean:true, cracks:true }],
+    stark:    ['Schinder', 'h', { scale:1.2, ink:0x6a2a20, ac:0x3a1410, fat:1.3, faceless:true, mouth:true, jerky:true, weapon:'hooks' }],
+    aoe:      ['Klingendämon', 'h', { ink:0x2e100c, ac:0x1a0806, gl:0xff4020, thin:.8, armLen:1.5, horns:true, fourArms:true, weapon:'blades' }],
+    zauberer: ['Glutbeschwörer', 'h', { ink:0x2a0c08, ac:0x5a140c, gl:0xff7020, robe:true, horns:true, weapon:'orb' }],
+    werfer:   ['Ascheschleuderer', 'h', { ink:0x2e2a28, ac:0x4a4440, gl:0xff7020, cracks:true, weapon:'ember' }],
+    hexer:    ['Sündenhexer', 'h', { ink:0x1a0606, ac:0x3a0c0c, gl:0xff2020, robe:true, hood:true, faceless:true, weapon:'staff' }],
+    gross:    ['Erzdämon', 'h', { scale:2.6, ink:0x3a0c08, ac:0x1a0806, gl:0xffd040, fat:1.3, horns:true, bigHorns:true, wings:true, cracks:true, weapon:'sword', bigWeapon:true }],
+    lauerer:  ['Fleischschatten', 'h', { ink:0x5a2220, ac:0x3a1412, thin:.65, armLen:1.8, legLen:1.3, faceless:true, hunch:.55, jerky:true, mouth:true }],
+  },
+};
+
+// ---------- Szene ----------
+const view = document.getElementById('view');
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+camera.position.set(0, 9, 30);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2, 0); controls.enableDamping = true; controls.maxPolarAngle = 1.45;
+const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(8, 14, 10); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.CircleGeometry(400, 48).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color:0x333333 }));
+scene.add(ground);
+
+// ---------- Material im Strich-Stil: Toon mit 3 Stufen + Lichtrand (wie strichMagier.ts) ----------
+const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
+grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const RIM = '0.5, 0.55, 0.65';
+const mats = new Map();
+function mat(c, o = {}) {
+  const k = c + JSON.stringify(o);
+  if (mats.has(k)) return mats.get(k);
+  let m;
+  if (o.glow) m = new THREE.MeshBasicMaterial({ color:c, transparent:!!o.op, opacity:o.op ?? 1, side:o.side ?? THREE.FrontSide });
+  else {
+    m = new THREE.MeshToonMaterial({ color:c, gradientMap:grad, transparent:!!o.op, opacity:o.op ?? 1, side:o.side ?? THREE.FrontSide, depthWrite:!o.op });
+    m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>',
+      `outgoingLight += vec3(${RIM}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), 2.6);\n#include <opaque_fragment>`); };
+  }
+  mats.set(k, m); return m;
+}
+const M = (geo, m) => new THREE.Mesh(geo, m);
+const at = (o, x, y, z, rx = 0, ry = 0, rz = 0, s) => { o.position.set(x, y, z); o.rotation.set(rx, ry, rz); if (s) o.scale.set(...s); return o; };
+const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
+const ico = (r, d = 0) => new THREE.IcosahedronGeometry(r, d);
+const lathe = (pts, seg = 8) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg);
+const cone = (r, h, seg = 5) => new THREE.ConeGeometry(r, h, seg);
+const G = (x = 0, y = 0, z = 0) => { const g = new THREE.Group(); g.position.set(x, y, z); return g; };
+// Zwei-Glied-Arm/Bein wie beim Strichmagier: oben, unten, Ende
+function joint(parent, x, y, z, r1, l1, r2, l2, m) {
+  const up = G(x, y, z); parent.add(up); up.add(M(capDown(r1, l1), m));
+  const lo = G(0, -l1, 0); up.add(lo); lo.add(M(capDown(r2, l2), m));
+  const end = G(0, -l2, 0); lo.add(end);
+  return { up, lo, end };
+}
+
+// ---------- Waffen (schlank, Metall hell, Holz dunkel) ----------
+function weapon(kind, o) {
+  const g = G(), wood = mat(0x4a3424), iron = mat(0xa8adb5), big = o.bigWeapon ? 1.7 : 1, glow = mat(o.gl ?? 0xffffff, { glow:true });
+  const add = (geo, m, ...p) => g.add(at(M(geo, m), ...p));
+  switch (kind) {
+    case 'sword':   add(new THREE.BoxGeometry(.05, 1.2 * big, .14 * big), iron, 0, -.65 * big, .08); add(new THREE.BoxGeometry(.28, .04, .07), wood, 0, -.05, .08); break;
+    case 'axe':     add(capDown(.025, 1.3 * big), wood, 0, .3, .05); add(new THREE.CylinderGeometry(.32 * big, .32 * big, .04, 10, 1, false, 0, Math.PI), iron, 0, -.85 * big, .1, 0, 0, Math.PI / 2); break;
+    case 'club':    add(lathe([[0, 0], [.05, 0], [.07, -.5], [.14, -.9], [.1, -1.05], [0, -1.08]]), wood, 0, 0, .05); break;
+    case 'hammer':  add(capDown(.03, 1.2), wood, 0, .2, .05); add(new THREE.BoxGeometry(.5, .3, .3), iron, 0, -1, .05); break;
+    case 'cleaver': add(new THREE.BoxGeometry(.04, .6 * big, .34 * big), iron, 0, -.4, .18); break;
+    case 'staff':   add(capDown(.025, 1.8), wood, 0, .8, .05); add(ico(.09), glow, 0, .9, .05); break;
+    case 'spear':   add(capDown(.022, 2), wood, 0, .9, .05); add(cone(.05, .3, 4), iron, 0, 1.0, .05); break;
+    case 'orb':     add(ico(.13, 1), glow, 0, -.05, .2); break;
+    case 'rock':    add(new THREE.DodecahedronGeometry(.17), mat(0x6a6458), 0, -.05, .15); break;
+    case 'blob':    add(ico(.15, 1), mat(0x6a7a24), 0, -.05, .15); break;
+    case 'bone':    add(capDown(.03, .6), mat(0xd8ceb0), 0, .2, .1, 1.2); break;
+    case 'ember':   add(ico(.12, 1), mat(0xff7020, { glow:true }), 0, -.05, .15); break;
+    case 'lantern': add(capDown(.012, .4), iron, 0, 0, .05); add(new THREE.BoxGeometry(.14, .2, .14), mat(o.gl, { glow:true, op:.9 }), 0, -.5, .05); break;
+    case 'censer':  add(capDown(.008, .5), iron, 0, 0, .05); add(ico(.1, 1), mat(0x7a6a3a), 0, -.58, .05); add(ico(.05), glow, 0, -.5, .05); break;
+    case 'whip':    for (let i = -1; i <= 1; i++) add(capDown(.012, 1), mat(0x3a2a20), i * .05, 0, .05, 0, 0, i * .25); break;
+    case 'blades':  add(new THREE.BoxGeometry(.03, 1, .1), iron, 0, -.5, .05, .25); break;
+    case 'hooks':   add(new THREE.TorusGeometry(.15, .022, 5, 12, Math.PI * 1.3), iron, 0, -.15, .1); break;
+    case 'flail':   add(capDown(.02, .6), wood, 0, 0, .05); add(capDown(.008, .4), iron, 0, -.6, .05); add(ico(.18, 0), iron, 0, -1.1, .05); break;
+  }
+  return g;
+}
+
+// ---------- Mensch (Strichfigur) ----------
+function humanoid(o) {
+  const root = G(), g = G(); root.add(g);
+  const op = o.ghost ? { op:.6 } : {};
+  const ink = mat(o.ink, op), ac = mat(o.ac ?? o.ink, op), glow = o.gl ? mat(o.gl, { glow:true }) : null;
+  const fat = o.fat ?? 1, thin = o.thin ?? 1, W = fat * thin, aL = o.armLen ?? 1, lL = o.legLen ?? 1;
+  const L1 = .46 * lL, L2 = .46 * lL, A1 = .31 * aL, A2 = .29 * aL, rk = Math.sqrt(fat) * thin;
+  const P = { root, kind:'h', o };
+  const hipY = o.float ? 1.0 : L1 + L2;
+  const hips = G(0, hipY, 0); g.add(hips);
+  hips.add(at(M(new THREE.SphereGeometry(.14, 7, 4), ink), 0, 0, 0, 0, 0, 0, [1.25 * W, .8, .9 * W]));
+  if (!o.float) {
+    for (const s of [1, -1]) {
+      const l = joint(hips, s * .11 * W, -.05, 0, .08 * rk, L1, .064 * rk, L2, ink);
+      l.end.add(at(M(cone(.065 * rk, .26), ink), 0, -.02, .08, Math.PI / 2, 0, 0, [1, 1, .7]));
+      if (s === 1) P.legL = l.up; else P.legR = l.up;
+    }
+  }
+  if (o.robe) {
+    const h = o.float ? 1.0 : hipY - .02;
+    hips.add(M(lathe(o.float ? [[0, -h - .1], [.08 * W, -h * .6], [.2 * W, -.2], [.16 * W, .1]] : [[.32 * W, -h], [.27 * W, -h * .6], [.2 * W, -.15], [.15 * W, .1]]), ac));
+  }
+  const chest = G(0, .05, 0); hips.add(chest); chest.rotation.x = o.hunch ?? 0; P.spine = chest;
+  chest.add(at(M(lathe([[0, -.04], [.1, -.02], [.11, .1], [.15, .33], [.18, .47], [.15, .56], [.08, .61], [0, .62]]), ink), 0, 0, 0, 0, Math.PI / 8, 0, [1.1 * W, 1, .64 * W]));
+  if (!o.hood && !o.bones) chest.add(at(M(new THREE.TorusGeometry(.13, .04, 3, 10), ac), 0, .56, 0, Math.PI / 2, 0, 0, [W, W, .8]));
+  if (o.bones) for (let i = 0; i < 4; i++) chest.add(at(M(new THREE.TorusGeometry(.13 * W, .018, 3, 10), ac), 0, .18 + i * .1, 0, Math.PI / 2, 0, 0, [1.05, .75, 1]));
+  if (o.bandage) for (let i = 0; i < 5; i++) chest.add(at(M(new THREE.TorusGeometry(.15 * W, .022, 3, 10), ac), 0, .08 + i * .11, 0, Math.PI / 2 + (i % 2 - .5) * .25, 0, 0, [1.05, .7, 1]));
+  if (o.cracks) for (let i = -1; i <= 1; i++) chest.add(at(M(new THREE.BoxGeometry(.02, .26, .02), mat(o.crackC ?? 0xff6020, { glow:true })), i * .07 * W, .32, .1 * W, 0, 0, i * .45));
+  if (o.drip) for (let i = 0; i < 5; i++) chest.add(at(M(cone(.035, .2), ac), Math.cos(i * 1.3) * .14 * W, .02, Math.sin(i * 1.3) * .09 * W, Math.PI));
+  if (o.wings) for (const s of [-1, 1]) {
+    const wg = G(s * .08, .45, -.08); chest.add(wg);
+    wg.add(at(M(capDown(.025, .9), ink), 0, 0, 0, 0, 0, -s * 2.1));
+    wg.add(at(M(capDown(.018, .7), ink), s * .78, .42, 0, 0, 0, -s * 2.8));
+    const sh = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(.8, .45), new THREE.Vector2(1.3, .25), new THREE.Vector2(1.0, -.25), new THREE.Vector2(.5, -.35)]);
+    const mem = M(new THREE.ShapeGeometry(sh), mat(o.ac, { op:.85, side:THREE.DoubleSide })); mem.scale.x = s; wg.add(mem);
+  }
+  // Arme
+  const arms = [];
+  for (const s of [1, -1]) {
+    const a = joint(chest, s * .23 * W, .49, 0, .058 * rk, A1, .052 * rk, A2, ink);
+    a.up.rotation.z = s * .1;
+    a.end.add(M(ico(.07 * rk), ink));
+    if (o.claws) for (let i = -1; i <= 1; i++) a.end.add(at(M(cone(.02, .25, 4), ac), i * .04, -.12, .03, Math.PI));
+    arms.push(a);
+  }
+  P.armL = arms[0].up; P.armR = arms[1].up; P.faR = arms[1].lo;
+  if (o.fourArms) {
+    for (const s of [1, -1]) {
+      const a = joint(chest, s * .2 * W, .32, 0, .045, A1 * .9, .04, A2 * .9, ink); a.up.rotation.z = s * .55;
+      a.end.add(weapon('blades', o)); if (s === 1) P.armL2 = a.up; else P.armR2 = a.up;
+    }
+  }
+  const wk = o.weapon;
+  if (wk) { arms[1].end.add(weapon(wk, o)); if (wk === 'blades') arms[0].end.add(weapon('blades', o)); }
+  if (o.tufts) for (const s of [-1, 1]) chest.add(at(M(ico(.09), ac), s * .23 * W, .55, 0));
+  // Kopf
+  const neck = G(0, .6, 0); chest.add(neck); neck.add(at(M(new THREE.CylinderGeometry(.04, .05, .12, 5), ink), 0, .05, 0));
+  const head = G(0, .1, 0); neck.add(head); P.head = head;
+  const hs = o.head ?? 1, hm = o.paleHead ? ac : ink;
+  if (o.bell) {
+    head.add(at(M(lathe([[0, .42], [.06, .42], [.12, .36], [.15, .18], [.2, .02], [.26, -.04], [0, -.04]], 12), ac), 0, 0, 0));
+    head.add(at(M(ico(.05), ac), 0, .45, 0));
+  } else {
+    head.add(at(M(ico(.18 * hs, 1), hm), 0, .16 * hs, 0, 0, 0, 0, [.95, 1.05, 1]));
+    if (o.snout) head.add(at(M(cone(.08, .3, 5), hm), 0, .14, .22, Math.PI / 2));
+    if (o.ears) for (const s of [-1, 1]) head.add(at(M(cone(.045, .28, 4), hm), s * .09, .42, -.02));
+    if (glow && !o.faceless) for (const s of [-1, 1]) head.add(at(M(new THREE.OctahedronGeometry(.028 * hs, 0), glow), s * .065 * hs, .19 * hs, .16 * hs, 0, 0, 0, [1, .8, .5]));
+    if (o.mouth) head.add(at(M(new THREE.CircleGeometry(.055 * hs, 10), mat(0x050202, { glow:true })), 0, .1 * hs, .175 * hs));
+    if (o.wrap) head.add(at(M(new THREE.TorusGeometry(.17, .045, 3, 10), ac), 0, .12, 0, Math.PI / 2 + .1, 0, 0, [1, 1, 1.3]));
+    if (o.hood === 'point') head.add(at(M(cone(.24, .7, 4), ac), 0, .3, -.02, 0, Math.PI / 4));
+    else if (o.hood) head.add(at(M(lathe([[0, .38], [.15, .34], [.23, .18], [.23, -.02], [.18, -.1]]), ac), 0, .02, -.03, -.15));
+    if (o.hat === 'point') { head.add(at(M(cone(.18, .65, 6), ac), 0, .55, -.03, -.25)); head.add(at(M(new THREE.CylinderGeometry(.34, .34, .02, 10), ac), 0, .3, 0)); }
+    if (o.hat === 'tall') head.add(at(M(new THREE.CylinderGeometry(.16, .13, .4, 8), mat(o.hatC)), 0, .45, 0));
+    if (o.horns) { const hr = o.bigHorns ? 2 : 1; for (const s of [-1, 1]) head.add(at(M(cone(.035 * hr, .26 * hr, 5), ac), s * .12, .32 + .05 * hr, 0, 0, 0, -s * .45)); }
+    if (o.leaves) for (let i = 0; i < 6; i++) head.add(at(M(cone(.06, .25, 4), ac), Math.cos(i) * .1, .36, Math.sin(i) * .1, Math.cos(i) * .5, 0, Math.sin(i) * .5));
+    if (o.tufts) head.add(at(M(ico(.1), ac), 0, .32 * hs, 0));
+  }
+  if (o.tail) { const t = joint(hips, 0, 0, -.12, .03, .4, .022, .35, ink); t.up.rotation.x = -2.1; t.lo.rotation.x = .5; t.end.add(at(M(cone(.06, .12, 4), ink), 0, -.04, 0, Math.PI)); }
+  g.scale.setScalar(o.scale ?? 1);
+  P.height = (hipY + .82 + .36 * hs) * (o.scale ?? 1);
+  P.width = Math.max(1.2, (.5 * W + A1 * .6 + (wk ? .5 : 0)) * (o.scale ?? 1) * 1.7);
+  P.inner = g;
+  return P;
+}
+
+// ---------- Vierbeiner (Strich) ----------
+function quadruped(o) {
+  const root = G(), g = G(); root.add(g);
+  const ink = mat(o.ink), ac = mat(o.ac ?? o.ink), glow = o.gl ? mat(o.gl, { glow:true }) : null;
+  const s = o.small ? .55 : o.heavy ? 1.35 : 1, len = o.long ? 1.0 : .7, legH = o.low ? .22 : .32;
+  const r = o.lean ? .13 : o.heavy ? .26 : .16, by = legH * 2 + r;
+  const P = { root, kind:'q', o, legs:[] };
+  g.add(at(M(new THREE.CapsuleGeometry(r, len, 2, 8), ink), 0, by, 0, Math.PI / 2));
+  for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {
+    const l = joint(g, x * r * .7, by - r * .3, z * len * .45, .045 * (o.heavy ? 1.5 : 1), legH, .038 * (o.heavy ? 1.5 : 1), legH, ink);
+    l.lo.rotation.x = z > 0 ? .25 : -.25; l.up.rotation.x = z > 0 ? -.15 : .15;
+    l.end.add(at(M(ico(.045), ink), 0, 0, .02));
+    P.legs.push(l.up);
+  }
+  const neck = G(0, by + r * .3, len * .55 + r * .6); g.add(neck); P.head = neck;
+  neck.add(at(M(capDown(.06, .25), ink), 0, 0, 0, -2.3));
+  neck.add(at(M(ico(.14, 1), ink), 0, .14, .16, 0, 0, 0, [.9, .85, 1.25]));
+  neck.add(at(M(cone(.07, .2, 5), ink), 0, .12, .34, Math.PI / 2));
+  for (const sx of [-1, 1]) neck.add(at(M(cone(.035, .14, 4), ink), sx * .07, .28, .1, -.2));
+  if (glow) for (const sx of [-1, 1]) neck.add(at(M(new THREE.OctahedronGeometry(.025, 0), glow), sx * .07, .19, .27));
+  if (o.tusks) for (const sx of [-1, 1]) neck.add(at(M(cone(.025, .2, 4), ac), sx * .07, .08, .38, -1.1));
+  if (o.spikes) for (let i = 0; i < 5; i++) g.add(at(M(cone(.035, .2, 4), ac), 0, by + r * .95, len * (.4 - i * .2), -.4));
+  if (o.cracks) for (let i = 0; i < 4; i++) g.add(at(M(new THREE.BoxGeometry(r * 2.05, .02, .03), mat(0xff6020, { glow:true })), 0, by + (i % 2) * .05, len * (.35 - i * .22), 0, 0, (i % 2 - .5) * .5));
+  const tail = joint(g, 0, by + .02, -len * .5 - r * .6, .025, o.small ? .5 : .3, .018, o.small ? .4 : .25, o.small ? ac : ink);
+  tail.up.rotation.x = -2.0; P.tail = tail.up;
+  g.scale.setScalar(s);
+  P.height = (by + .55) * s; P.width = Math.max(1.2, (len + .9) * 1.3 * s); P.inner = g;
+  root.rotation.y = -.6;
+  return P;
+}
+
+// ---------- Flieger (Wasserspeier) ----------
+function bat(o) {
+  const root = G(), g = G(); root.add(g);
+  const ink = mat(o.ink), ac = mat(o.ac ?? o.ink), glow = o.gl ? mat(o.gl, { glow:true }) : null;
+  const P = { root, kind:'b', o };
+  g.add(at(M(new THREE.CapsuleGeometry(.14, .3, 2, 8), ink), 0, 0, 0));
+  const head = G(0, .35, .04); g.add(head); P.head = head;
+  head.add(M(ico(.15, 1), ink));
+  if (o.horns) for (const s of [-1, 1]) head.add(at(M(cone(.03, .24, 4), ac), s * .09, .15, -.04, -.4, 0, -s * .4));
+  if (glow) for (const s of [-1, 1]) head.add(at(M(new THREE.OctahedronGeometry(.025, 0), glow), s * .055, .02, .13));
+  P.wings = [];
+  for (const s of [-1, 1]) {
+    const pv = G(s * .1, .15, 0); g.add(pv);
+    pv.add(at(M(capDown(.022, .7), ink), 0, 0, 0, 0, 0, -s * 2.0));
+    pv.add(at(M(capDown(.016, .6), ink), s * .63, .3, 0, 0, 0, -s * 2.7));
+    const sh = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(.65, .3), new THREE.Vector2(1.15, .1), new THREE.Vector2(.85, -.2), new THREE.Vector2(.5, -.12), new THREE.Vector2(.25, -.3)]);
+    const mem = M(new THREE.ShapeGeometry(sh), mat(o.ac, { op:.85, side:THREE.DoubleSide })); mem.scale.x = s; pv.add(mem);
+    P.wings.push(pv);
+  }
+  for (const s of [-1, 1]) { const l = joint(g, s * .07, -.25, 0, .03, .25, .025, .22, ink); l.lo.rotation.x = .6; }
+  g.position.y = 2.0; P.height = 2.6; P.width = 2.8; P.inner = g;
+  return P;
+}
+
+// ---------- Käfer (Strich) ----------
+function bug(o) {
+  const root = G(), g = G(); root.add(g);
+  const ink = mat(o.ink), ac = mat(o.ac ?? o.ink), glow = o.gl ? mat(o.gl, { glow:true }) : null;
+  const P = { root, kind:'k', o, legs:[] };
+  g.add(at(M(ico(.34, 1), ac), 0, .42, -.35, 0, 0, 0, [1, .6, 1.25]));
+  g.add(at(M(ico(.17, 1), ink), 0, .42, .08));
+  g.add(at(M(ico(.15, 1), ink), 0, .44, .32, 0, 0, 0, [1, .85, 1.1]));
+  for (let i = 0; i < 3; i++) for (const s of [-1, 1]) {
+    const l = joint(g, s * .14, .42, -.1 + i * .15, .025, .3, .02, .38, ink);
+    l.up.rotation.z = s * 1.9; l.lo.rotation.z = -s * 1.5; P.legs.push(l.up);
+  }
+  for (const s of [-1, 1]) g.add(at(M(cone(.025, .2, 4), ink), s * .06, .38, .5, Math.PI / 2, 0, s * .4));
+  if (glow) for (const s of [-1, 1]) g.add(at(M(new THREE.OctahedronGeometry(.025, 0), glow), s * .07, .5, .44));
+  g.scale.setScalar(1.3); P.head = g; P.height = 1.0; P.width = 1.6; P.inner = g;
+  root.rotation.y = -.6;
+  return P;
+}
+const BUILD = { h:humanoid, q:quadruped, b:bat, k:bug };
+
+const bx = (w, h, d, m) => M(new THREE.BoxGeometry(w, h, d), m), bl = (r, m, seg = 12) => M(new THREE.SphereGeometry(r, seg, Math.max(6, seg - 4)), m), cn = (r, h, m, seg = 8) => M(cone(r, h, seg), m);
+
+// ---------- Zusatz-Effekte ----------
+function addZusatz(P, z) {
+  const fx = new THREE.Group(); P.root.add(fx); P.fx = fx; P.zus = z; P.copies = [];
+  const ring = (c, r) => at(new THREE.Mesh(new THREE.RingGeometry(r - .08, r, 40).rotateX(-Math.PI / 2), mat(c, { glow:true, op:.8 })), 0, .03, 0);
+  const top = P.height + .5;
+  if (z === 'heal') { fx.add(ring(0x60ff70, P.width * .5)); const c = new THREE.Group(); c.add(bx(.12, .45, .12, mat(0x60ff70, { glow:true })), bx(.45, .12, .12, mat(0x60ff70, { glow:true }))); fx.add(at(c, 0, top, 0)); P.spin = c; }
+  if (z === 'shield') { const sp = new THREE.Mesh(new THREE.SphereGeometry(Math.max(P.height, P.width) * .6, 20, 14), mat(0x6aa8ff, { glow:true, op:.22 })); fx.add(at(sp, 0, P.height * .5, 0)); P.pulse = sp; }
+  if (z === 'haste') { const r = ring(0xffd040, 3.5); fx.add(r); P.pulse = r; fx.add(at(cn(.18, .4, mat(0xffd040, { glow:true }), 3), 0, top, 0, Math.PI)); }
+  if (z === 'fliegt') { P.lift = P.kind === 'b' ? 0 : 1.4; fx.add(at(new THREE.Mesh(new THREE.CircleGeometry(P.width * .35, 24).rotateX(-Math.PI / 2), mat(0x000000, { glow:true, op:.35 })), 0, .02, 0)); }
+  if (z === 'platzt') { const r = ring(0xff3020, 4); fx.add(r); P.pulse = r; fx.add(at(bl(.14, mat(0xff3020, { glow:true }), 8), 0, top, 0)); }
+  if (z === 'teilt') {
+    for (const s of [-1, 1]) { const [, k, o] = P.skinDef; const c = BUILD[k]({ ...o, scale:(o.scale ?? 1) * .45 }); c.root.position.set(s * P.width * .55, 0, 1.2); P.root.add(c.root); P.copies.push(c); }
+    fx.add(at(cn(.14, .35, mat(0xc070ff, { glow:true }), 4), 0, top, 0, Math.PI));
+  }
+}
+
+// ---------- Animation ----------
+let attackT = -9;
+function animate(P, t, sel) {
+  const o = P.o, j = o.jerky ? (x) => Math.round(x * 3) / 3 : (x) => x;
+  const a = sel && t - attackT < 1.2 ? Math.sin(Math.min(1, (t - attackT) / 1.2) * Math.PI) : 0;
+  if (P.kind === 'h') {
+    const sw = j(Math.sin(t * 2 + P.phase)) * .12;
+    P.armL.rotation.x = sw; P.armR.rotation.x = -sw - a * 2.4; if (P.faR) P.faR.rotation.x = -.25 - a * .6;
+    if (P.armL2) { P.armL2.rotation.x = -sw * 2 - a * 1.6; P.armR2.rotation.x = sw * 2 - a * 1.6; }
+    if (P.legL) { P.legL.rotation.x = -sw * .4; P.legR.rotation.x = sw * .4; }
+    P.spine.rotation.x = (o.hunch ?? 0) + j(Math.sin(t * 1.3 + P.phase)) * .03 + a * .25;
+    if (o.jerky) P.head.rotation.z = Math.sin(t * 7 + P.phase) > .85 ? .45 : Math.sin(t * .8) * .1;
+    if (o.float) P.inner.position.y = Math.sin(t * 1.5 + P.phase) * .2 + .3;
+    if (o.weapon === 'blades' || (P.o.fourArms && a)) P.inner.rotation.y = a * Math.PI * 2;
+  } else if (P.kind === 'q') {
+    P.legs.forEach((l, i) => l.rotation.x = Math.sin(t * 2 + i * 1.6 + P.phase) * .08);
+    P.tail.rotation.z = Math.sin(t * 3 + P.phase) * .3;
+    P.head.rotation.x = Math.sin(t * 1.5 + P.phase) * .06 - a * .5;
+    P.inner.position.z = a * 1.2; P.inner.position.y = a * .6;
+  } else if (P.kind === 'b') {
+    P.wings[0].rotation.y = .3 + Math.sin(t * 8 + P.phase) * .6; P.wings[1].rotation.y = -.3 - Math.sin(t * 8 + P.phase) * .6;
+    P.inner.position.y = 2.2 + Math.sin(t * 2 + P.phase) * .2 - a * 1.2;
+  } else {
+    P.legs.forEach((l, i) => l.rotation.y = Math.sin(t * 6 + i) * .2);
+    P.inner.position.z = a * .8;
+  }
+  if (P.lift !== undefined) P.root.children[0].position.y = P.lift + Math.sin(t * 1.6) * .15;
+  if (P.spin) P.spin.rotation.y = t * 2;
+  if (P.pulse) { const k = 1 + Math.sin(t * 4) * .06; P.pulse.scale.set(k, k, k); }
+  for (const c of P.copies ?? []) animate(c, t + 1, false);
+}
+
+// ---------- Aufbau pro Theme ----------
+let mobs = [], selected = 0, theme = 'wald';
+const zusBy = {};   // gewählter Zusatz pro Theme+Kategorie
+const labels = [];
+function clearLabels() { labels.forEach(l => l.remove()); labels.length = 0; }
+
+function showTheme(id) {
+  theme = id; const T = THEMES[id];
+  mobs.forEach(m => scene.remove(m.root)); mobs = []; clearLabels();
+  scene.background = new THREE.Color(T.bg); scene.fog = new THREE.Fog(T.bg, T.fogN, T.fogF);
+  ground.material.color.setHex(T.ground);
+  hemi.color.setHex(T.hemi[0]); hemi.groundColor.setHex(T.hemi[1]); hemi.intensity = T.hemi[2]; sun.color.setHex(T.sun);
+  let x = 0;
+  const list = ORDER.filter(c => SKINS[id][c]);
+  for (const cat of list) {
+    const def = SKINS[id][cat], P = BUILD[def[1]](def[2]);
+    P.cat = cat; P.name = def[0]; P.skinDef = def; P.phase = Math.random() * 6;
+    const z = zusBy[id + cat] ?? 'none'; if (z !== 'none') addZusatz(P, z);
+    x += P.width / 2 + .3; P.root.position.x = x; x += P.width / 2 + .3;
+    scene.add(P.root); mobs.push(P);
+    const l = document.createElement('div'); l.className = 'lbl'; l.innerHTML = `${def[0]}<small>${CATS[cat].name}</small>`; document.body.appendChild(l); labels.push(l);
+  }
+  const off = x / 2; mobs.forEach(m => m.root.position.x -= off);
+  rowW = x;
+  if (selected >= mobs.length) selected = 0;
+  fitAll();
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  renderSide();
+}
+
+function renderSide() {
+  const P = mobs[selected]; if (!P) return;
+  const C = CATS[P.cat], T = THEMES[theme], z = zusBy[theme + P.cat] ?? 'none';
+  document.getElementById('side').innerHTML = `
+    <h2>${P.name}</h2><div class="cat">${C.name} · ${T.name} (Schwierigkeit ${T.diff})</div>
+    <table><tr><td>Leben</td><td>${C.hp}</td></tr><tr><td>Schaden</td><td>${C.dmg}</td></tr><tr><td>Tempo</td><td>${C.spd}</td></tr><tr><td>XP</td><td>${C.xp}</td></tr></table>
+    <p>${C.text}</p>
+    <div class="cat" style="margin:10px 0 0">Zusatz: ${ZUS[z].name}</div><p>${ZUS[z].text}</p>
+    <div class="zus">${Object.entries(ZUS).map(([k, v]) => `<button data-z="${k}" class="${k === z ? 'on' : ''}">${v.name}</button>`).join('')}</div>`;
+  document.querySelectorAll('.zus button').forEach(b => b.onclick = () => { zusBy[theme + P.cat] = b.dataset.z; showTheme(theme); focus(mobs[selected]); });
+}
+let rowW = 30;
+// ganze Reihe zeigen, etwas nach links, weil rechts das Panel liegt
+function fitAll() {
+  const w = Math.max(rowW, 12), narrow = innerWidth < 760, d = w * (narrow ? 2.1 : 1.0) + 2, shift = narrow ? 0 : d * .11;
+  controls.target.set(shift, 1.6, 0); camera.position.set(shift, d * .16 + 2, d);
+}
+// an den gewählten Mob heranfahren
+function focus(P) { const p = P.root.position, h = Math.max(P.height, 2); controls.target.set(p.x, h * .5, 0); camera.position.set(p.x + h * .6, h * .7 + 1.5, h * 1.8 + 4); }
+
+document.getElementById('tabs').innerHTML = Object.entries(THEMES).map(([k, v]) => `<button data-id="${k}">${v.name} ${'☠'.repeat(v.diff)}</button>`).join(' ');
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { selected = 0; showTheme(b.dataset.id); });
+document.getElementById('all').onclick = () => fitAll();
+document.getElementById('anim').onclick = () => attackT = clock.getElapsedTime();
+
+// Klick-Auswahl
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  mouse.set(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1); ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(mobs.map(m => m.root), true)[0]; if (!hit) return;
+  const i = mobs.findIndex(m => { let o = hit.object; while (o) { if (o === m.root) return true; o = o.parent; } return false; });
+  if (i >= 0) { selected = i; renderSide(); focus(mobs[i]); }
+});
+
+function resize() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', () => { resize(); fitAll(); }); resize();
+
+const clock = new THREE.Clock(), v = new THREE.Vector3();
+function loop() {
+  const t = clock.getElapsedTime();
+  mobs.forEach((m, i) => {
+    animate(m, t, i === selected);
+    v.set(m.root.position.x, m.height + (m.lift ?? 0) + .3 + (i % 2) * .7, m.root.position.z).project(camera);
+    const l = labels[i]; l.style.left = (v.x * .5 + .5) * innerWidth + 'px'; l.style.top = (-v.y * .5 + .5) * innerHeight + 'px';
+    l.style.display = v.z < 1 ? '' : 'none'; l.classList.toggle('sel', i === selected);
+  });
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
+}
+showTheme('wald'); loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set-Skins Viewer</title>
+<style>
+  :root { --bg: #0f0d13; --panel: #17141c; --line: #2a2533; --text: #ece8f2; --mute: #a49cb3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 Inter, system-ui, sans-serif; overflow: hidden; }
+  #c { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+  #bar { position: fixed; top: 0; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; background: linear-gradient(#0f0d13ee, #0f0d1300); }
+  #bar h1 { margin: 0 12px 0 0; font-size: 20px; letter-spacing: .5px; }
+  .grp { display: flex; gap: 6px; flex-wrap: wrap; }
+  select { min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; }
+  button { min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--acc, #e8b23a); color: #0f0d13; border-color: var(--acc, #e8b23a); }
+  #info { position: fixed; left: 16px; bottom: 16px; width: min(420px, calc(100vw - 32px)); padding: 14px 16px; background: #17141ce6; border: 1px solid var(--line); border-radius: 12px; }
+  #info h2 { margin: 0 0 4px; font-size: 18px; }
+  #info p { margin: 6px 0 0; font-size: 13.5px; color: #d9d2e4; }
+  #info .mute { color: var(--mute); font-size: 12.5px; }
+  #sliders { position: fixed; right: 16px; bottom: 16px; padding: 12px 14px; background: #17141ce6; border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 240px; }
+  #sliders label { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--mute); }
+  #sliders input { width: 100%; }
+  #bMore, #bInfo { display: none; }
+  @media (max-width: 760px) {
+    #bar { flex-wrap: nowrap; overflow-x: auto; padding: 8px; gap: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none; background: #0f0d13f2; }
+    #bar::-webkit-scrollbar { display: none; }
+    #bar h1 { display: none; }
+    .grp { flex-wrap: nowrap; }
+    button, select, #bar a { min-height: 40px; font-size: 13px; white-space: nowrap; flex: none; }
+    #bMore, #bInfo { display: inline-block; }
+    #info { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 34vh; overflow: auto; padding: 10px 12px; }
+    #info p { font-size: 13px; }
+    #sliders { left: 8px; right: 8px; bottom: 8px; min-width: 0; }
+    body:not(.showInfo) #info { display: none; }
+    body:not(.showMore) #sliders { display: none; }
+  }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  #labels div { position: absolute; transform: translate(-50%, 0); font-weight: 700; font-size: 14px; text-shadow: 0 1px 3px #000; white-space: nowrap; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="labels"></div>
+<div id="bar">
+  <h1>Set-Skins</h1>
+  <button id="bInfo" aria-pressed="false">Info</button>
+  <button id="bMore" aria-pressed="false">Regler</button>
+  <div class="grp" id="sets"></div>
+  <div class="grp">
+    <button id="bFull" aria-pressed="true">Set 5/5</button>
+    <button id="bHat" aria-pressed="false">Kosmetik: Zipfelmütze</button>
+    <button id="bSpray" aria-pressed="true">Waffen-Look: Haarspray</button>
+  </div>
+  <div class="grp" id="fvGrp"></div>
+  <div class="grp">
+    <button id="bAll" aria-pressed="false">Alle 4</button>
+    <button id="bSpin" aria-pressed="true">Drehen</button>
+    <a href="krieger.html" style="min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:600 14px Inter,system-ui,sans-serif;display:inline-flex;align-items:center;text-decoration:none">Krieger-Skins →</a>
+  </div>
+</div>
+<div id="info"></div>
+<div id="sliders">
+  <label>Splitter (Frost) <span id="vSp">37</span></label>
+  <input id="sSp" type="range" min="0" max="60" value="37" aria-label="Splitter">
+  <label>Verseuchte Gegner (Seuche) <span id="vInf">12</span></label>
+  <input id="sInf" type="range" min="0" max="30" value="12" aria-label="Verseuchte Gegner">
+  <label>Kette (Blitz-Flasche) <span id="vCh">60 %</span></label>
+  <input id="sCh" type="range" min="0" max="100" value="60" aria-label="Kettenfüllung">
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------------- Daten (aus claude/items-plan.md, Zahlen PH) ----------------
+const SETS = {
+  feuer:  { tab: 'Feuer',  name: 'Glutprophet',   build: 'Feuerball-Maniac', col: 0xff7a22, css: '#ff7a22',
+    mech: 'Jeder 10. Feuerball ist ein Riesen-Feuerball (3× Größe, 300 % Schaden), alle Feuerball-Runen und Talente wirken mit.',
+    look: 'Streetwear: schwarzer Hoodie, hellblaue Baggy, weiße Sneaker, schwarze Sturmhaube, schmale scharfe Augen mit Hitzekern, Flammenzungen in der Spell-Palette (rot → orange → gelb), Bauchtasche quer über die Brust, Schlüssel am Karabiner, 3 Skulls am Bund. 5/5: Augen-Feuer lodert lang. Gag: Haarspray + Feuerzeug als Waffen-Look.' },
+  frost:  { tab: 'Frost',  name: 'Splitterkönig', build: 'Shatter / Splitter', col: 0x9fe4ff, css: '#9fe4ff',
+    mech: 'Gletschernadel +50 % Reichweite, durchschlägt alles, am Endpunkt eine Frost Nova (skaliert mit den Nova-Karten).',
+    look: 'Avantgarde: heller Anzug im Facette-Muster, 15 Schnitte zur Wahl (Menü), Knöchel frei, spitze Lackschuhe, skulptierte Platin-Perücke, Eis-Schulter links. Splitter kreisen (5 klein → 1 groß, 5 groß → 1 leuchtend). 5/5: Pose mit ゴゴゴ.' },
+  blitz:  { tab: 'Blitz',  name: 'Hochspannung',  build: 'Ketten', col: 0xffe866, css: '#ffe866',
+    mech: 'Jeder Sprung gabelt sich mit 20 % in 2 Ketten.',
+    look: 'Trainingsanzug mit eigenem Zickzack-Blitzstreifen, Sonnenbrille. Gag: Flasche auf dem Rücken, Strom als Flüssigkeit, Pegel steigt mit der Kette. 5/5: Funken.' },
+  seuche: { tab: 'Seuche', name: 'Pestbringer',   build: 'Seuche / Platzen', col: 0x7dff3a, css: '#7dff3a',
+    mech: 'Jedes Mal auf einem Mob kann 2× gepoppt werden statt 1×.',
+    look: 'Verwester Anzug in Dunkellila/Grün/Gold, Pestmaske, Dampf-Aura, Fliegen. Gag: Müllbeutel in der Hand wächst mit den Verseuchten.' },
+};
+const IDS = Object.keys(SETS);
+const S = { gal: false, cut: 0, set: 'feuer', full: true, hat: false, spray: true, all: false, spin: true, splitter: 37, inf: 12, chain: 0.6 };
+
+// ---------------- Szene ----------------
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f0d13);
+const cam = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+const ctl = new OrbitControls(cam, canvas); ctl.target.set(0, 1.05, 0); ctl.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xcfd8ff, 0x2a2030, 1.4));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(2.5, 4, 3); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshToonMaterial({ color: 0x1d1924 }));
+floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+// ---------------- Material ----------------
+const ramp = (() => { const d = new Uint8Array([70, 70, 70, 255, 160, 160, 160, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+const cache = {};
+const toon = (c, o = {}) => { const k = c + JSON.stringify(o); return cache[k] ||= new THREE.MeshToonMaterial({ color: c, gradientMap: ramp, ...o }); };
+const glow = c => cache['g' + c] ||= new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(1.3) });
+const glass = cache.glass = new THREE.MeshToonMaterial({ color: 0xcfe6f0, gradientMap: ramp, transparent: true, opacity: 0.35, depthWrite: false });
+const outlineMat = new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide });
+outlineMat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normal * 0.012;'); };
+function addOutlines(root) {
+  const list = []; root.traverse(o => { if (o.isMesh && o.material.isMeshToonMaterial && !o.material.transparent && !o.userData.noOutline) list.push(o); });
+  for (const m of list) { const o = new THREE.Mesh(m.geometry, outlineMat); m.add(o); }
+}
+// Sprite-Texturen aus Canvas
+function canvasTex(draw, w = 64, h = 64) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const dotTex = canvasTex((g, w) => { const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); r.addColorStop(0, '#fff'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, w, w); });
+const goTex = canvasTex((g, w, h) => { g.font = '900 200px "Hiragino Sans","Noto Sans JP",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 18; g.strokeStyle = '#1a0a24'; g.strokeText('ゴ', w / 2, h / 2 + 10); g.fillStyle = '#b46bff'; g.fillText('ゴ', w / 2, h / 2 + 10); }, 256, 256);
+const sprite = (tex, col, size, add = true) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: col, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); s.scale.setScalar(size); return s; };
+
+// ---------------- Geometrie-Helfer ----------------
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function mesh(geo, mat, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; }
+function limb(a, b, r, mat, parent) {   // Kapsel von a nach b
+  const d = b.clone().sub(a), len = d.length();
+  const m = mesh(new THREE.CapsuleGeometry(r, Math.max(0.001, len - r * 2 + r * 2 * 0.6), 4, 10), mat, parent);
+  m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); return m;
+}
+function tube(pts, r, mat, parent, closed = false) { return mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, closed), 48, r, 6, closed), mat, parent); }
+const zig = (x0, y0, y1, z, amp, n) => { const p = []; for (let i = 0; i <= n; i++) p.push(V(x0 + (i % 2 ? amp : -amp), y0 + (y1 - y0) * i / n, z)); return p; };
+
+// ---------------- Figur ----------------
+// Proportionen nach Manga-Faustregeln: Mann ca. 7,5 Köpfe hoch, Beine ca. halbe Höhe, Schultern ca. 2 Köpfe breit,
+// V-Torso (Schultern breiter als Hüfte), Arme ca. 3 Köpfe. Kopf = 0,24 m, Figur = 1,8 m.
+// Wenige, große, klare Formen; Kleidung ist direkt der Körper (keine Haut darunter), Gesicht nur 2 Augen.
+const P = {
+  head: V(0, 1.67, 0), neck: V(0, 1.5, 0),
+  shL: V(-0.19, 1.44, 0), elL: V(-0.24, 1.14, -0.01), wrL: V(-0.26, 0.88, 0.02), haL: V(-0.265, 0.83, 0.02),
+  shR: V(0.19, 1.44, 0), elR: V(0.24, 1.14, 0.0), wrR: V(0.26, 0.9, 0.06), haR: V(0.265, 0.85, 0.07),
+  hipL: V(-0.09, 0.9, 0), knL: V(-0.1, 0.49, 0.01), anL: V(-0.105, 0.08, 0),
+  hipR: V(0.09, 0.9, 0), knR: V(0.1, 0.49, 0.01), anR: V(0.105, 0.08, 0),
+};
+// Segment mit Verjüngung: r1 bei a, r2 bei b, Kugel im Gelenk a
+function seg(a, b, r1, r2, mat, parent, joint = true) {
+  const d = b.clone().sub(a), len = d.length();
+  const m = mesh(new THREE.CylinderGeometry(r2, r1, len, 14), mat, parent);
+  m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize());
+  if (joint) mesh(new THREE.SphereGeometry(r1, 14, 10), mat, parent).position.copy(a);
+  return m;
+}
+// Torso: oben breit, Taille schmal, flach in z
+function torso(parent, mat, yTop, yBot, rTop, rBot, depth = 0.62) {
+  const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, 20), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
+  const cap = mesh(new THREE.SphereGeometry(rTop, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), mat, parent, 0, yTop, 0); cap.scale.set(1, 0.35, depth);
+  return m;
+}
+const stripeTex = (base, line, every = 10) => { const t = canvasTex((g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h); g.fillStyle = line; for (let x = 0; x < w; x += every) g.fillRect(x, 0, 1.5, h); }, 128, 64); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 2); return t; };
+
+// Frost-Anzug: 4 Versionen (Haute-Couture-Ideen: Craquelé, Eisblume, gespleißt, Facetten)
+const rnd = (a, b) => a + Math.random() * (b - a);
+const fill = (g, w, h, c) => { g.fillStyle = c; g.fillRect(0, 0, w, h); };
+const vgrad = (g, w, h, a, b) => { const r = g.createLinearGradient(0, 0, 0, h); r.addColorStop(0, a); r.addColorStop(1, b); g.fillStyle = r; g.fillRect(0, 0, w, h); };
+// Frost-Anzüge: Name, Muster (Canvas 256²), Wiederholung, Schnitt-Extra. Nr. 4 (Facette) ist gewählt, 5–19 sind neue Entwürfe
+// Frost-Anzug: Muster Facette (gewählt 09.11.), dazu 15 Schnitte (CUTS)
+const FROST_V = [
+  { n: 'Facette', x: 'collar', d(g, w, h) { const cols = ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'], n = 5, sx = w / n, sy = h / n;
+      const P = []; for (let j = 0; j <= n; j++) { P.push([]); for (let i = 0; i <= n; i++) P[j].push([i * sx + (i % n ? rnd(-sx * 0.3, sx * 0.3) : 0), j * sy + (j % n ? rnd(-sy * 0.3, sy * 0.3) : 0)]); }
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) for (const tri of [[P[j][i], P[j][i + 1], P[j + 1][i]], [P[j][i + 1], P[j + 1][i + 1], P[j + 1][i]]]) {
+        g.fillStyle = cols[(Math.random() * cols.length) | 0]; g.strokeStyle = '#ffffff'; g.lineWidth = 3; g.beginPath(); g.moveTo(...tri[0]); g.lineTo(...tri[1]); g.lineTo(...tri[2]); g.closePath(); g.fill(); g.stroke(); } } },
+];
+function patTex(kind) {
+  const V0 = FROST_V[kind], t = canvasTex((g, w, h) => V0.d(g, w, h), 256, 256);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...(V0.r || [1, 1])); return t;
+}
+const patCache = {};
+// 15 Schnitte: Schulter (pad), Kragen (col), Länge (len), Zweireiher (db), Cape, Weste, Box, Ärmel/Hosen-Weite
+const CUTS = [
+  { n: 'Klassik slim', pad: 'box', col: 'notch', len: 'hip' },
+  { n: 'Breites Spitz-Revers', pad: 'box', col: 'peak', len: 'hip', db: true },
+  { n: 'Schalkragen', pad: 'none', col: 'shawl', len: 'hip' },
+  { n: 'Stehkragen', pad: 'box', col: 'stand', len: 'hip' },
+  { n: 'Trichterkragen bis zum Kinn', pad: 'none', col: 'funnel', len: 'knee' },
+  { n: 'Power-Schultern', pad: 'power', col: 'notch', len: 'hip', sh: 1.25 },
+  { n: 'Pagoden-Schultern', pad: 'pagoda', col: 'stand', len: 'hip' },
+  { n: 'Kimono (weiche Schulter)', pad: 'drop', col: 'wrap', len: 'hip', sleeve: 'bell' },
+  { n: 'Spencer kurz, Zweireiher', pad: 'box', col: 'peak', len: 'crop', db: true },
+  { n: 'Frack mit langen Schößen', pad: 'box', col: 'peak', len: 'tail' },
+  { n: 'Gehrock knielang', pad: 'box', col: 'notch', len: 'knee', db: true },
+  { n: 'Asymmetrisch gewickelt', pad: 'power', col: 'wrap', len: 'hip', sh: 1.15 },
+  { n: 'Cape-Sakko', pad: 'none', col: 'notch', len: 'hip', cape: true },
+  { n: 'Weste mit Stehkragen', pad: 'none', col: 'stand', len: 'hip', vest: true },
+  { n: 'Oversize-Box', pad: 'drop', col: 'none', len: 'hip', box: true, sleeve: 'wide' },
+];
+let curFv = 0;
+const pin = (side = THREE.FrontSide) => new THREE.MeshToonMaterial({ map: patCache[curFv] ||= patTex(curFv), gradientMap: ramp, side });
+
+function buildFigure(id, opt) {
+  curFv = 0; const C = CUTS[opt.cut ?? 0];
+  const F = new THREE.Group(); F.userData = { id, fx: [] };
+  const fx = fn => F.userData.fx.push(fn);
+  const body = new THREE.Group(); F.add(body);
+  const armL = new THREE.Group(), armR = new THREE.Group(); body.add(armL, armR);
+  const head = new THREE.Group(); head.position.copy(P.head); body.add(head);
+  const skin = toon(0xf1dcc6);
+  const setBody = opt.full;   // 4/5: Körper-Slot trägt fremde Wollrobe
+
+  // ---- Grundkörper aus Palette ----
+  const pal = {
+    feuer:  { top: toon(0x1a1a1e), sleeve: toon(0x1a1a1e), pants: toon(0x9cc7ea), shoe: toon(0xf4f4f4), legR: [0.095, 0.09, 0.085, 0.1] },
+    frost:  { top: pin(), sleeve: null, pants: null, shoe: toon(0x15151a), legR: C.box ? [0.09, 0.085, 0.082, 0.085] : [0.068, 0.056, 0.05, 0.04] },
+    blitz:  { top: toon(0x1f2a5c), sleeve: toon(0x1f2a5c), pants: toon(0x1f2a5c), shoe: toon(0xf4f4f4), legR: [0.08, 0.068, 0.062, 0.058] },
+    seuche: { top: toon(0x3b1f46, { side: THREE.DoubleSide }), sleeve: toon(0x2e1838), pants: toon(0x2e1838), shoe: toon(0x1a1018), legR: [0.072, 0.06, 0.055, 0.05] },
+  }[id];
+  if (id === 'frost') pal.sleeve = pal.pants = pal.top;
+  const plain = toon(0x6b6678), plainDark = toon(0x403c4a);
+  const top = setBody ? pal.top : plain, sleeve = setBody ? pal.sleeve : plain, pants = setBody ? pal.pants : plainDark;
+  const lr = setBody ? pal.legR : [0.075, 0.062, 0.056, 0.05];
+
+  // Hals + Torso + Becken
+  seg(V(0, 1.47, 0), V(0, 1.58, 0), 0.05, 0.045, skin, body, false);
+  if (setBody && id === 'feuer') torso(body, top, 1.46, 0.86, 0.215, 0.18, 0.66);          // Hoodie: gerade, lang
+  else if (setBody && id === 'frost') torso(body, top, 1.46, C.len === 'crop' ? 1.12 : 1.0, C.box ? 0.23 : C.vest ? 0.19 : 0.225 * Math.min(C.sh || 1, 1.1), C.box ? 0.21 : 0.13, C.box ? 0.7 : 0.58);        // Sakko: scharfe Schultern, enge Taille
+  else torso(body, top, 1.46, 0.98, 0.205, 0.145, 0.62);
+  const pelvis = mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.16, 18), pants, body, 0, 0.92, 0); pelvis.scale.z = 0.7;
+  // Arme
+  for (const [arm, sh, el, wr, ha] of [[armL, P.shL, P.elL, P.wrL, P.haL], [armR, P.shR, P.elR, P.wrR, P.haR]]) {
+    mesh(new THREE.SphereGeometry(0.068, 14, 10), sleeve, arm).position.copy(sh);
+    seg(sh, el, 0.058, 0.048, sleeve, arm, false); seg(el, wr, 0.048, 0.04, sleeve, arm);
+    const h = mesh(new THREE.SphereGeometry(1, 12, 8), skin, arm); h.position.copy(ha); h.scale.set(0.038, 0.055, 0.03);
+  }
+  // Beine + Schuhe
+  for (const [hip, kn, an, s] of [[P.hipL, P.knL, P.anL, -1], [P.hipR, P.knR, P.anR, 1]]) {
+    seg(hip, kn, lr[0], lr[1], pants, body); seg(kn, an, lr[2], lr[3], pants, body);
+    if (setBody && id === 'feuer') { const c = mesh(new THREE.TorusGeometry(0.095, 0.035, 8, 16), pants, body, an.x, an.y + 0.05, an.z); c.rotation.x = Math.PI / 2; }   // gestauchter Saum
+    if (setBody && id === 'frost') seg(V(an.x, 0.17, 0), V(an.x, 0.08, 0), 0.034, 0.032, skin, body, false);   // Knöchel frei
+    const shoeM = setBody ? pal.shoe : plainDark;
+    if (setBody && id === 'frost') { const sh = mesh(new THREE.BoxGeometry(0.08, 0.06, 0.2), shoeM, body, an.x, 0.035, 0.04); const tip = mesh(new THREE.ConeGeometry(0.04, 0.1, 8), shoeM, sh, 0, -0.005, 0.14); tip.rotation.x = Math.PI / 2; tip.scale.y = 1; }
+    else if (setBody && (id === 'feuer' || id === 'blitz')) { mesh(new THREE.BoxGeometry(0.125, 0.085, 0.27), shoeM, body, an.x, 0.045, 0.05); mesh(new THREE.BoxGeometry(0.13, 0.025, 0.28), toon(0xb8b8c0), body, an.x, 0.012, 0.05); }
+    else mesh(new THREE.BoxGeometry(0.1, 0.07, 0.24), shoeM, body, an.x, 0.035, 0.05);
+  }
+  // Kopf: Ei-Form, Gesicht nur 2 Augen (Manga: wenige Striche)
+  const skull = mesh(new THREE.SphereGeometry(0.12, 22, 16), skin, head); skull.scale.set(0.9, 1.1, 0.95);
+  const eyes = (c, w = 0.026, h = 0.04) => { for (const x of [-0.042, 0.042]) { const e = mesh(new THREE.SphereGeometry(1, 10, 8), c, head, x, -0.005, 0.104); e.scale.set(w / 2, h / 2, 0.01); } };
+
+  // ---- Waffe rechte Hand ----
+  const weapon = new THREE.Group(); weapon.position.copy(P.haR); armR.add(weapon);
+  const spray = id === 'feuer' && opt.full && opt.spray;
+  if (!spray) {
+    mesh(new THREE.CylinderGeometry(0.02, 0.024, 1.55, 8), toon(0x5a3420), weapon, 0, 0.08, 0);
+    const tp = new THREE.Group(); tp.position.set(0, 0.92, 0); weapon.add(tp);
+    if (id === 'feuer') { mesh(new THREE.SphereGeometry(0.07, 14, 10), toon(0xe8dcc0), tp); for (const x of [-0.026, 0.026]) mesh(new THREE.SphereGeometry(0.016, 8, 6), glow(0xff7a22), tp, x, 0.01, 0.06); const f = sprite(dotTex, 0xff6a1a, 0.4); tp.add(f); fx(t => f.scale.setScalar(0.36 + Math.sin(t * 9) * 0.04)); }
+    if (id === 'frost') { mesh(new THREE.SphereGeometry(0.075, 16, 12), toon(0xbfe9ff, { transparent: true, opacity: 0.85 }), tp); mesh(new THREE.SphereGeometry(0.036, 10, 8), glow(0x9fe4ff), tp); tp.add(sprite(dotTex, 0x7cc8ff, 0.38)); }
+    if (id === 'blitz') { for (let i = 0; i < 4; i++) mesh(new THREE.TorusGeometry(0.055, 0.011, 6, 16), toon(0xc97a3a), tp, 0, -0.06 + i * 0.04, 0).rotation.x = Math.PI / 2; mesh(new THREE.SphereGeometry(0.032, 10, 8), glow(0xffe866), tp, 0, 0.1, 0); tp.add(sprite(dotTex, 0xffe866, 0.33)); }
+    if (id === 'seuche') { mesh(new THREE.CylinderGeometry(0.048, 0.056, 0.12, 12), glass, tp); const l = mesh(new THREE.CylinderGeometry(0.042, 0.05, 0.08, 12), glow(0x7dff3a), tp, 0, -0.02, 0); l.userData.noOutline = true; mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.05, 8), toon(0x8a6a3a), tp, 0, 0.085, 0); tp.add(sprite(dotTex, 0x7dff3a, 0.3)); }
+  } else {   // Waffen-Look Haarspray + Feuerzeug
+    mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.2, 14), toon(0xe04a8a), weapon, 0, 0.1, 0);
+    mesh(new THREE.CylinderGeometry(0.024, 0.033, 0.035, 10), toon(0xf2f2f2), weapon, 0, 0.215, 0);
+    mesh(new THREE.BoxGeometry(0.035, 0.07, 0.022), toon(0x3a8cff), weapon, 0.06, 0.19, 0.06);
+    const flame = new THREE.Group(); flame.position.set(0.03, 0.24, 0.1); weapon.add(flame);
+    for (let i = 0; i < 6; i++) { const f = sprite(dotTex, i < 2 ? 0xffe0a0 : 0xff6a1a, 0.1 + i * 0.045); f.position.set(0, 0, i * 0.07); flame.add(f); }
+    fx(t => flame.children.forEach((f, i) => { f.position.z = i * 0.07 + (t * 0.6) % 0.07; f.material.opacity = 0.7 + Math.sin(t * 20 + i) * 0.3; }));
+  }
+
+  // ---------- FEUER: Glutprophet (Streetwear) ----------
+  if (id === 'feuer') {
+    const black = toon(0x1a1a1e), dark = toon(0x101013);
+    if (setBody) {
+      const hood = mesh(new THREE.SphereGeometry(0.15, 16, 10), black, body, 0, 1.5, -0.11); hood.scale.set(1.05, 0.55, 0.75);   // Kapuze hängt im Nacken
+      const pocket = mesh(new THREE.BoxGeometry(0.26, 0.13, 0.02), dark, body, 0, 0.97, 0.115); pocket.rotation.x = -0.12;     // Bauchtasche des Hoodies
+      for (const x of [-0.04, 0.04]) seg(V(x, 1.47, 0.11), V(x, 1.33, 0.13), 0.006, 0.006, toon(0xf2f2f2), body, false);   // Kordeln
+      for (const [arm, wr] of [[armL, P.wrL], [armR, P.wrR]]) { const c = mesh(new THREE.TorusGeometry(0.042, 0.014, 6, 14), dark, arm); c.position.copy(wr); c.rotation.x = Math.PI / 2; }
+      mesh(new THREE.TorusGeometry(0.15, 0.016, 6, 24), toon(0x2a2a2e), body, 0, 1.0, 0).rotation.x = Math.PI / 2;   // Gürtel am Bund
+      // 3 Skulls am Bund
+      [-0.14, -0.09, -0.04].forEach((x, i) => { const g = new THREE.Group(); g.position.set(x, 0.99, 0.11); body.add(g);
+        seg(V(0, 0, 0), V(0, -0.05, 0), 0.004, 0.004, toon(0xb0b0b8), g, false);
+        mesh(new THREE.SphereGeometry(0.026, 12, 8), toon(0xece4d0), g, 0, -0.075, 0);
+        for (const ex of [-0.009, 0.009]) mesh(new THREE.SphereGeometry(0.006, 6, 4), toon(0x101013), g, ex, -0.073, 0.022);
+        fx(t => { g.rotation.z = Math.sin(t * 3 + i) * 0.15; }); });
+      // Schlüssel am Karabiner, seitlich an der Hose
+      const key = new THREE.Group(); key.position.set(0.165, 0.97, 0.03); body.add(key);
+      mesh(new THREE.TorusGeometry(0.022, 0.005, 6, 12), toon(0xb0b0b8), key, 0, -0.02, 0).rotation.y = Math.PI / 2;
+      for (const [x, r] of [[-0.006, 0.2], [0.008, -0.25]]) { const k = mesh(new THREE.BoxGeometry(0.01, 0.055, 0.004), toon(0xd8b04a), key, x, -0.065, 0); k.rotation.z = r; }
+      fx(t => { key.rotation.x = Math.sin(t * 2.4) * 0.2; });
+    }
+    // Bauchtasche quer über die Brust (eigener Slot)
+    seg(V(-0.18, 1.45, 0.06), V(0.17, 1.05, 0.12), 0.012, 0.012, dark, body, false);
+    seg(V(-0.18, 1.45, -0.06), V(0.17, 1.05, -0.11), 0.012, 0.012, dark, body, false);
+    const bag = mesh(new THREE.CapsuleGeometry(0.045, 0.15, 4, 12), toon(0x24242a), body, -0.01, 1.27, 0.15); bag.rotation.z = Math.PI / 2 + 0.75;
+    const zip = mesh(new THREE.BoxGeometry(0.16, 0.008, 0.01), glow(0xff7a22), bag, 0, 0, 0.045); zip.rotation.z = Math.PI / 2; zip.userData.noOutline = true;
+    // Sturmhaube: schwarz, Augenschlitz, Feuer aus den Augen
+    if (!opt.hat) {
+      skull.material = black;
+      const slit = mesh(new THREE.BoxGeometry(0.17, 0.04, 0.02), toon(0x3a2a24), head, 0, 0.0, 0.103); slit.userData.noOutline = true;   // dunkle, verrußte Haut im Schlitz
+      // Augen: schmal, scharf, schräg (äußere Ecke hoch), heller Hitzekern, schwerer Lidschatten oben
+      for (const s of [-1, 1]) {
+        const e = mesh(new THREE.SphereGeometry(1, 12, 8), glow(0xffe9a0), head, s * 0.043, -0.002, 0.113); e.scale.set(0.026, 0.0055, 0.006); e.rotation.z = s * 0.28; e.userData.noOutline = true;
+        const ir = mesh(new THREE.SphereGeometry(0.005, 8, 6), glow(0xff7a0d), head, s * 0.04, -0.002, 0.118); ir.userData.noOutline = true;
+        const lid = mesh(new THREE.BoxGeometry(0.056, 0.008, 0.008), toon(0x0b0809), head, s * 0.043, 0.011, 0.116); lid.rotation.z = s * 0.32; lid.userData.noOutline = true;
+      }
+      // Flammen aus den Augen: Zungen (Kegel) in der Feuer-Palette der Spells: rot außen → orange → gelber Kern
+      const tongue = (c, op) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false });
+      const pal5 = [0xd11d0a, 0xff7a0d, 0xffd23a];
+      const fl = new THREE.Group(); head.add(fl);
+      const nT = opt.full ? 4 : 2, H = opt.full ? 0.34 : 0.13;
+      for (const s of [-1, 1]) for (let i = 0; i < nT; i++) for (let k = 0; k < 3; k++) {
+        const c = new THREE.Mesh(new THREE.ConeGeometry(0.022 - k * 0.006, 1, 8, 1, true), tongue(pal5[k], k === 2 ? 0.95 : 0.7));
+        c.geometry.translate(0, 0.5, 0); c.userData = { s, i, k, ph: Math.random() * 9 }; fl.add(c);
+      }
+      fx(t => fl.children.forEach(c => { const u = c.userData;
+        c.position.set(u.s * (0.05 + u.i * 0.008), 0.004, 0.11);
+        c.rotation.set(-0.5 - u.i * 0.12, 0, -u.s * (0.25 + u.i * 0.18) + Math.sin(t * 7 + u.ph) * 0.12);
+        const h = H * (1 - u.k * 0.25) * (0.75 + 0.25 * Math.sin(t * 11 + u.ph + u.i)) * (1 - u.i * 0.15);
+        c.scale.set(1, h, 1); }));
+      const glowEye = sprite(dotTex, 0xff7a0d, opt.full ? 0.32 : 0.18); glowEye.position.set(0, 0.0, 0.12); glowEye.material.opacity = 0.55; head.add(glowEye);
+    } else eyes(toon(0x15121a));
+  }
+
+  // ---------- FROST: Splitterkönig (Avantgarde, Nadelstreifen) ----------
+  if (id === 'frost') {
+    const ice = toon(0xbfe9ff, { transparent: true, opacity: 0.8 }), shirt = toon(0x9fd8ff), platinum = toon(0xe8eef6);
+    if (setBody) {
+      const shirt = toon(0x1a4f8f), lapM = toon(0x3f97e8), dbl = THREE.DoubleSide, light = toon(0xeaf3fb);
+      // Schultern
+      const shw = C.sh || 1;
+      if (C.pad === 'box') for (const s of [-1, 1]) { const p = mesh(new THREE.BoxGeometry(0.15, 0.035, 0.13), top, body, s * 0.2, 1.47, 0); p.rotation.z = -s * 0.18; }
+      if (C.pad === 'power') for (const s of [-1, 1]) { const p = mesh(new THREE.BoxGeometry(0.2 * shw, 0.05, 0.15), top, body, s * 0.22 * shw, 1.49, 0); p.rotation.z = -s * 0.08; }
+      if (C.pad === 'pagoda') for (const s of [-1, 1]) { const p = mesh(new THREE.BoxGeometry(0.15, 0.035, 0.13), top, body, s * 0.2, 1.47, 0); p.rotation.z = -s * 0.18;
+        const tip = mesh(new THREE.ConeGeometry(0.04, 0.12, 4), top, body, s * 0.29, 1.53, 0); tip.rotation.z = -s * 0.9; }
+      if (C.pad === 'drop') for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.09, 14, 10), top, body, s * 0.2, 1.38, 0);
+      // Ärmel-Varianten
+      if (C.vest) for (const arm of [armL, armR]) arm.traverse(o => { if (o.isMesh && o.material === top) o.material = light; });
+      if (C.sleeve === 'bell' || C.sleeve === 'wide') for (const [arm, el, wr] of [[armL, P.elL, P.wrL], [armR, P.elR, P.wrR]]) {
+        const bell = mesh(new THREE.CylinderGeometry(C.sleeve === 'bell' ? 0.11 : 0.075, 0.06, 0.26, 14, 1, true), pin(dbl), arm); bell.position.copy(el).lerp(wr, 0.55);
+        bell.quaternion.setFromUnitVectors(V(0, -1, 0), wr.clone().sub(el).normalize()); }
+      // Kragen / Revers
+      if (C.col === 'notch' || C.col === 'peak' || C.col === 'shawl' || C.col === 'wrap') {
+        const v = mesh(new THREE.ConeGeometry(0.075, 0.24, 3), shirt, body, 0, 1.36, 0.105); v.rotation.set(Math.PI, 0, 0); v.scale.z = 0.25;
+      }
+      if (C.col === 'notch') for (const s of [-1, 1]) { const l = mesh(new THREE.BoxGeometry(0.035, 0.26, 0.012), lapM, body, s * 0.07, 1.34, 0.11); l.rotation.z = s * 0.35; }
+      if (C.col === 'peak') for (const s of [-1, 1]) { const l = mesh(new THREE.BoxGeometry(0.075, 0.28, 0.012), lapM, body, s * 0.085, 1.33, 0.11); l.rotation.z = s * 0.42;
+        const tip = mesh(new THREE.ConeGeometry(0.03, 0.08, 3), lapM, body, s * 0.15, 1.44, 0.11); tip.rotation.z = -s * 0.9; tip.scale.z = 0.3; }
+      if (C.col === 'shawl') { const sh = mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 24, Math.PI), lapM, body, 0, 1.33, 0.1); sh.rotation.z = Math.PI; sh.scale.set(0.7, 1.15, 0.5); }
+      if (C.col === 'wrap') { const w = mesh(new THREE.BoxGeometry(0.11, 0.5, 0.014), lapM, body, 0.03, 1.22, 0.115); w.rotation.z = -0.55;
+        const t2 = mesh(new THREE.BoxGeometry(0.04, 0.2, 0.012), lapM, body, 0.08, 1.38, 0.11); t2.rotation.z = 0.35; }
+      if (C.col === 'stand') { const c = mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.08, 16, 1, true), pin(dbl), body, 0, 1.52, 0); c.scale.z = 0.9;
+        for (let k = 0; k < 5; k++) mesh(new THREE.SphereGeometry(0.01, 6, 4), toon(0xd8e4f0), body, 0, 1.4 - k * 0.08, 0.13); }
+      if (C.col === 'funnel') { const c = mesh(new THREE.CylinderGeometry(0.12, 0.085, 0.13, 18, 1, true), pin(dbl), body, 0, 1.52, 0.0); c.scale.z = 0.95; c.rotation.x = 0.12; }
+      if (C.col === 'none') { const c = mesh(new THREE.TorusGeometry(0.07, 0.012, 6, 18), lapM, body, 0, 1.47, 0.02); c.rotation.x = Math.PI / 2 - 0.2; }
+      if (C.db) for (const y of [1.26, 1.17, 1.08]) for (const x of [-0.05, 0.05]) mesh(new THREE.SphereGeometry(0.012, 8, 6), toon(0xd8e4f0), body, x, y + (C.len === 'crop' ? 0.03 : 0), 0.13);
+      // Länge
+      if (C.len === 'hip') { const k = mesh(new THREE.CylinderGeometry(C.box ? 0.2 : 0.135, C.box ? 0.21 : 0.165, 0.16, 18, 1, true), pin(dbl), body, 0, 0.92, 0); k.scale.z = 0.72; }
+      if (C.len === 'crop') { const b = mesh(new THREE.CylinderGeometry(0.135, 0.14, 0.13, 18), light, body, 0, 1.06, 0); b.scale.z = 0.62; }
+      if (C.len === 'knee') { const k = mesh(new THREE.CylinderGeometry(0.135, 0.24, 0.55, 18, 1, true), pin(dbl), body, 0, 0.73, 0); k.scale.z = 0.72; }
+      if (C.len === 'tail') { const k = mesh(new THREE.CylinderGeometry(0.135, 0.15, 0.08, 18, 1, true), pin(dbl), body, 0, 0.96, 0); k.scale.z = 0.72;
+        for (const s of [-1, 1]) { const t = mesh(new THREE.BoxGeometry(0.11, 0.55, 0.015), top, body, s * 0.06, 0.66, -0.11); t.rotation.set(0.1, 0, s * 0.06); } }
+      if (C.cape) { const cp = mesh(new THREE.CylinderGeometry(0.2, 0.34, 0.32, 20, 1, true), pin(dbl), body, 0, 1.33, -0.01); cp.scale.z = 0.75; }
+      if (C.vest) { const v2 = mesh(new THREE.ConeGeometry(0.06, 0.16, 3), light, body, 0, 1.4, 0.11); v2.rotation.x = Math.PI; v2.scale.z = 0.25; }
+      for (const [arm, wr] of [[armL, P.wrL], [armR, P.wrR]]) { const c = mesh(new THREE.OctahedronGeometry(0.014), glow(0x9fe4ff), arm); c.position.copy(wr).add(V(0, 0.02, 0.04)); }
+    }
+    // Rücken: asymmetrische Eis-Schulter links
+    [[0, 0.1, 0, 0.32], [-0.05, 0.08, 0.04, -0.2], [0.04, 0.07, -0.04, 0.6], [-0.02, 0.05, 0.05, 1.0]].forEach(([x, h, z, r], i) => {
+      const c = mesh(new THREE.ConeGeometry(0.03, 0.12 + h, 5), ice, body, -0.22 + x, 1.5 + h * 0.5, z - 0.02); c.rotation.z = 0.5 + r * 0.4; c.rotation.x = r * 0.3; });
+    // Hals: feine Kette + Kristall
+    mesh(new THREE.TorusGeometry(0.06, 0.004, 4, 20), toon(0xd8e4f0), body, 0, 1.47, 0.04).rotation.x = 1.3;
+    mesh(new THREE.OctahedronGeometry(0.018), glow(0x9fe4ff), body, 0, 1.4, 0.1);
+    // Kopf: skulptierte Perücke in großen Klumpen (eigene Form)
+    if (!opt.hat) {
+      eyes(glow(0x7cc8ff), 0.022, 0.034);
+      const cap = mesh(new THREE.SphereGeometry(0.128, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.6), platinum, head, 0, 0.012, -0.008); cap.scale.set(0.95, 1.1, 1);
+      const wave = mesh(new THREE.SphereGeometry(1, 16, 10), platinum, head, 0.02, 0.15, 0.03); wave.scale.set(0.1, 0.075, 0.15); wave.rotation.set(-0.5, 0, -0.15);   // hohe Welle nach hinten
+      const blade = mesh(new THREE.ConeGeometry(0.05, 0.2, 6), platinum, head, 0.03, 0.17, -0.12); blade.rotation.set(-2.1, 0, 0.1);                              // Spitze nach hinten
+      const coil = []; for (let i = 0; i <= 30; i++) { const a = i / 30 * Math.PI * 4; coil.push(V(-0.115 + Math.cos(a) * 0.026, 0.02 - i / 30 * 0.12, 0.04 + Math.sin(a) * 0.026)); }
+      tube(coil, 0.012, platinum, head);                                                                                                                             // eine Spiral-Locke an der Schläfe
+    } else eyes(toon(0x15121a));
+    // Splitter: 5 klein → 1 groß, 5 groß → 1 leuchtend
+    const orbit = new THREE.Group(); orbit.position.set(0, 1.15, 0); F.add(orbit);
+    const n = opt.gal ? 0 : opt.splitter, list = [];
+    for (let k = 0; k < Math.floor(n / 25); k++) list.push('glow');
+    for (let k = 0; k < Math.floor((n % 25) / 5); k++) list.push('big');
+    for (let k = 0; k < n % 5; k++) list.push('small');
+    list.forEach((t, k) => { const g = new THREE.Group(); orbit.add(g); g.userData.a = k / Math.max(1, list.length) * Math.PI * 2;
+      if (t === 'small') mesh(new THREE.OctahedronGeometry(0.022), glow(0xf2fbff), g);
+      if (t === 'big') mesh(new THREE.OctahedronGeometry(0.05), toon(0x7cc8ff), g);
+      if (t === 'glow') { mesh(new THREE.OctahedronGeometry(0.07), glow(0xe9fbff), g); g.add(sprite(dotTex, 0x7cd8ff, 0.45)); } });
+    fx(t => orbit.children.forEach(g => { const a = g.userData.a + t * 0.8; g.position.set(Math.cos(a) * 0.6, Math.sin(a * 2 + t) * 0.12, Math.sin(a) * 0.6); g.rotation.y = t * 2; }));
+    if (opt.full && !opt.gal) {   // Pose + ゴゴゴ
+      body.rotation.z = 0.07; head.rotation.set(-0.15, 0.2, -0.18);
+      const gs = new THREE.Group(); F.add(gs);
+      [[-0.75, 1.8, 0.5], [-0.62, 1.3, 0.38], [0.72, 1.68, 0.45], [0.66, 1.15, 0.36]].forEach(([x, y, s]) => { const g = sprite(goTex, 0xffffff, s, false); g.position.set(x, y, 0.1); gs.add(g); });
+      fx(t => gs.children.forEach((g, i) => { g.material.rotation = Math.sin(t * 2 + i) * 0.15; }));
+    }
+  }
+
+  // ---------- BLITZ: Hochspannung ----------
+  if (id === 'blitz') {
+    const yel = glow(0xffe866), copper = toon(0xc97a3a);
+    if (setBody) {
+      mesh(new THREE.TorusGeometry(0.075, 0.025, 6, 16), top, body, 0, 1.48, 0.01).rotation.x = Math.PI / 2;   // Kragen
+      mesh(new THREE.BoxGeometry(0.012, 0.44, 0.01), toon(0xd8d8d8), body, 0, 1.22, 0.135);                    // Reißverschluss
+      for (const [a, b] of [[P.shL, P.wrL], [P.shR, P.wrR]]) { const p = []; for (let i = 0; i <= 10; i++) { const q = a.clone().lerp(b, i / 10); q.x += Math.sign(a.x) * 0.05; q.z += (i % 2 ? 0.02 : -0.02); p.push(q); } tube(p, 0.009, yel, body); }
+      for (const [a, b, c] of [[P.hipL, P.knL, P.anL], [P.hipR, P.knR, P.anR]]) { const p = []; for (let i = 0; i <= 14; i++) { const t = i / 14, q = t < 0.5 ? a.clone().lerp(b, t * 2) : b.clone().lerp(c, t * 2 - 1); q.x += Math.sign(a.x) * 0.08; q.z += (i % 2 ? 0.022 : -0.022); p.push(q); } tube(p, 0.009, yel, body); }
+      for (const [arm, wr] of [[armL, P.wrL], [armR, P.wrR]]) { const c = mesh(new THREE.TorusGeometry(0.043, 0.013, 6, 14), toon(0xf2f2f2), arm); c.position.copy(wr); c.rotation.x = Math.PI / 2; }
+    }
+    mesh(new THREE.TorusGeometry(0.075, 0.01, 6, 20), copper, body, 0, 1.43, 0.06).rotation.x = 1.2;
+    if (!opt.hat) {
+      const hair = mesh(new THREE.SphereGeometry(0.125, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), toon(0x2a221c), head, 0, 0.02, -0.01); hair.scale.set(0.93, 1.1, 1);
+      for (const x of [-0.045, 0.045]) mesh(new THREE.BoxGeometry(0.07, 0.035, 0.02), toon(0x0b0b0b), head, x, 0.0, 0.106);
+      mesh(new THREE.BoxGeometry(0.18, 0.01, 0.012), toon(0x0b0b0b), head, 0, 0.012, 0.106);
+    } else eyes(toon(0x15121a));
+    const bot = new THREE.Group(); bot.position.set(0.1, 1.3, -0.2); bot.rotation.z = 0.25; bot.scale.setScalar(1.2); body.add(bot);
+    mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.4, 16), glass, bot);
+    mesh(new THREE.CylinderGeometry(0.045, 0.1, 0.09, 12), glass, bot, 0, 0.245, 0);
+    mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.05, 10), toon(0x8a6a3a), bot, 0, 0.31, 0);
+    const liq = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.38, 16), yel, bot); liq.userData.noOutline = true;
+    const lvl = Math.max(0.02, opt.chain); liq.scale.y = lvl; liq.position.y = -0.19 + 0.19 * lvl;
+    const stream = new THREE.Group(); bot.add(stream);
+    const curve = new THREE.CatmullRomCurve3([V(0, 0.34, 0), V(0.1, 0.62, -0.05), V(0.32, 0.76, 0.1), V(0.55, 0.9, 0.2)]);
+    for (let i = 0; i < 12; i++) { const d = sprite(dotTex, 0xffe866, 0.065); d.userData.p = i / 12; stream.add(d); }
+    fx(t => stream.children.forEach(d => { d.position.copy(curve.getPoint(1 - ((d.userData.p + t * 0.5) % 1))); }));
+    if (opt.full) {
+      const sparks = new THREE.Group(); F.add(sparks);
+      for (let i = 0; i < 4; i++) sparks.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(), V(), V(), V(), V()]), new THREE.LineBasicMaterial({ color: 0xfff6b0 })));
+      fx(t => sparks.children.forEach((l, i) => { const on = Math.sin(t * 13 + i * 2.1) > 0.3; l.visible = on; if (!on) return;
+        const a = V(0.1, 1.35, -0.2), b = (i % 2 ? P.haL : P.haR).clone(), arr = l.geometry.attributes.position;
+        for (let k = 0; k < 5; k++) { const p = a.clone().lerp(b, k / 4); if (k && k < 4) p.add(V((Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.12)); arr.setXYZ(k, p.x, p.y, p.z); }
+        arr.needsUpdate = true; }));
+    }
+  }
+
+  // ---------- SEUCHE: Pestbringer ----------
+  if (id === 'seuche') {
+    const purple = pal.top, purple2 = toon(0x2e1838), gold = toon(0xc9a640), bone = toon(0xd8cfb0), slime = glow(0x7dff3a);
+    if (setBody) {
+      const coat = mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.3, 10, 1, true), purple, body, 0, 0.88, 0); coat.scale.z = 0.72;   // Schoß mit ausgefranstem Saum
+      const pos = coat.geometry.attributes.position; for (let i = 0; i < pos.count; i++) if (pos.getY(i) < 0) pos.setY(i, pos.getY(i) - (i % 2) * 0.07);
+      for (let k = 0; k < 3; k++) mesh(new THREE.SphereGeometry(0.013, 8, 6), gold, body, 0, 1.33 - k * 0.11, 0.13);
+      for (const [x, y] of [[-0.08, 1.1], [0.1, 1.25], [-0.04, 0.4]]) mesh(new THREE.SphereGeometry(0.02, 8, 6), slime, body, x, y, x === -0.04 ? 0.065 : 0.13);
+    }
+    for (const [arm, el, wr, s] of [[armL, P.elL, P.wrL, -1], [armR, P.elR, P.wrR, 1]]) {
+      const c = mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.06, 10), toon(0x5a2a66), arm); c.position.copy(wr); c.quaternion.setFromUnitVectors(V(0, 1, 0), wr.clone().sub(el).normalize());
+      const drop = mesh(new THREE.SphereGeometry(0.017, 8, 6), slime, arm); const base = wr.clone();
+      fx(t => { const p = (t * 0.7 + s * 0.3 + 1) % 1; drop.position.set(base.x, base.y - p * 0.5, base.z); drop.scale.setScalar(1 - p * 0.6); });
+    }
+    for (const s of [-1, 1]) { const rag = mesh(new THREE.PlaneGeometry(0.16, 0.62, 1, 4), purple, body, s * 0.08, 1.12, -0.11); rag.rotation.set(0.08, 0, s * 0.08); }
+    for (let k = 0; k < 3; k++) mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.05, 8), glow(k === 1 ? 0xb46bff : 0x7dff3a), body, (k - 1) * 0.05, 1.41, 0.1);
+    if (!opt.hat) {
+      skull.material = bone;
+      const beak = mesh(new THREE.ConeGeometry(0.05, 0.2, 10), bone, head, 0, -0.045, 0.18); beak.rotation.x = Math.PI / 2 + 0.45;
+      for (const x of [-0.045, 0.045]) { mesh(new THREE.TorusGeometry(0.027, 0.007, 6, 12), gold, head, x, 0.015, 0.106); mesh(new THREE.SphereGeometry(0.021, 8, 6), slime, head, x, 0.015, 0.1); }
+      mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.018, 20), purple2, head, 0, 0.115, 0);
+      mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.15, 16), purple2, head, 0, 0.19, 0);
+      mesh(new THREE.TorusGeometry(0.115, 0.01, 6, 18), gold, head, 0, 0.13, 0).rotation.x = Math.PI / 2;
+    } else eyes(glow(0x7dff3a));
+    const bag = new THREE.Group(); bag.position.copy(P.haL); armL.add(bag);
+    const s = 0.07 + opt.inf * 0.011;
+    const sack = mesh(new THREE.SphereGeometry(1, 14, 10), toon(0x1c1a20), bag, 0, -s * 1.1, 0); sack.scale.set(s, s * 1.2, s);
+    mesh(new THREE.ConeGeometry(0.026, 0.06, 6), toon(0x1c1a20), bag, 0, -0.01, 0).rotation.x = Math.PI;
+    fx(t => { sack.rotation.z = Math.sin(t * 2) * 0.06; });
+    const steam = new THREE.Group(); F.add(steam);
+    for (let i = 0; i < (opt.full ? 26 : 10); i++) { const p = sprite(dotTex, i % 2 ? 0x7dff3a : 0xb46bff, 0.3); p.userData = { p: Math.random(), a: Math.random() * 6.28 }; steam.add(p); }
+    fx(t => steam.children.forEach(p => { const k = (p.userData.p + t * 0.18) % 1, r = 0.35 + k * 0.15; p.position.set(Math.cos(p.userData.a + k) * r, 0.2 + k * 1.9, Math.sin(p.userData.a + k) * r); p.material.opacity = 0.4 * Math.sin(k * Math.PI); p.scale.setScalar(0.25 + k * 0.35); }));
+    const flies = new THREE.Group(); F.add(flies);
+    for (let i = 0; i < 9; i++) { const f = mesh(new THREE.SphereGeometry(0.013, 6, 4), toon(0x0b0a0e), flies); f.userData = { a: Math.random() * 6.28, r: 0.4 + Math.random() * 0.3, y: 1.3 + Math.random() * 0.6, s: 1.5 + Math.random() * 2 }; }
+    fx(t => flies.children.forEach(f => { const u = f.userData, a = u.a + t * u.s; f.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 7 + u.a) * 0.08, Math.sin(a * 1.3) * u.r); }));
+  }
+
+  // Kosmetik-Slot Kopf: Zipfelmütze überschreibt das Kopfteil
+  if (opt.hat) {
+    const hat = new THREE.Group(); hat.position.set(0, 0.09, 0); head.add(hat);
+    const cone = mesh(new THREE.ConeGeometry(0.135, 0.4, 16), toon(0xd9372b), hat, 0.04, 0.19, 0); cone.rotation.z = -0.35;
+    mesh(new THREE.TorusGeometry(0.13, 0.032, 8, 20), toon(0xf2f2f2), hat).rotation.x = Math.PI / 2;
+    mesh(new THREE.SphereGeometry(0.045, 10, 8), toon(0xf2f2f2), hat, 0.17, 0.36, 0);
+  }
+
+  addOutlines(F);
+  F.userData.body = body;
+  return F;
+}
+
+// ---------------- Aufbau + UI ----------------
+let figs = [];
+function rebuild() {
+  figs.forEach(f => { scene.remove(f); });
+  figs = [];
+  if (S.gal) {   // Frost-Galerie: alle Anzüge in 4 Reihen
+    CUTS.forEach((v, i) => { const f = buildFigure('frost', { cut: i, gal: true, full: true, hat: false, splitter: 0 }); f.userData.label = portrait() ? String(i + 1) : (i + 1) + ' ' + v.n;
+      const cols = portrait() ? 3 : 5, rows = Math.ceil(CUTS.length / cols);
+      f.position.set(((i % cols) - (cols - 1) / 2) * 1.7, ((rows - 1) / 2 - Math.floor(i / cols)) * 2.35, 0); scene.add(f); figs.push(f); });
+    floor.visible = false; const z = portrait() ? 14.5 / Math.max(0.42, cam.aspect) * 0.62 : 14.5; cam.position.set(0, 0.9, z); ctl.target.set(0, 0.9, 0); ui(); return;
+  }
+  floor.visible = true;
+  const ids = S.all ? IDS : [S.set];
+  ids.forEach((id, i) => {
+    const f = buildFigure(id, { cut: S.cut, full: S.full, hat: S.hat, spray: S.spray, splitter: S.splitter, inf: S.inf, chain: S.chain });
+    f.userData.label = SETS[id].name; f.position.x = S.all ? (i - 1.5) * 1.7 : 0;
+    if (S.all && portrait()) { f.position.set((i % 2 - 0.5) * 1.8, (i < 2 ? 1 : -1) * 1.25, 0); floor.visible = false; }
+    scene.add(f); figs.push(f);
+  });
+  const k = portrait() ? Math.min(2.4, 1 / Math.max(0.42, cam.aspect)) * (S.all ? 0.85 : 0.72) : 1;
+  const p2 = S.all && portrait();
+  cam.position.set(S.all ? 0 : 2.4 * k, p2 ? 0.9 : S.all ? 2.2 : 1.4, (S.all ? 9.5 : 4.6) * k); ctl.target.set(0, p2 ? 0.9 : S.all ? 1.05 : 0.95, 0);
+  ui();
+}
+const $ = id => document.getElementById(id);
+const setsEl = $('sets');
+IDS.forEach(id => { const b = document.createElement('button'); b.textContent = SETS[id].tab; b.dataset.id = id; b.style.setProperty('--acc', SETS[id].css); b.onclick = () => { S.set = id; S.all = false; S.gal = false; rebuild(); }; setsEl.append(b); });
+$('bFull').onclick = () => { S.full = !S.full; rebuild(); };
+$('bHat').onclick = () => { S.hat = !S.hat; rebuild(); };
+$('bSpray').onclick = () => { S.spray = !S.spray; rebuild(); };
+$('bAll').onclick = () => { S.all = !S.all; S.gal = false; rebuild(); };
+{ const sel = document.createElement('select'); sel.id = 'fvSel'; sel.setAttribute('aria-label', 'Frost-Schnitt');
+  CUTS.forEach((v, i) => { const o = document.createElement('option'); o.value = i; o.textContent = 'Schnitt ' + (i + 1) + ': ' + v.n; sel.append(o); });
+  sel.onchange = e => { S.cut = +e.target.value; S.gal = false; S.set = 'frost'; S.all = false; rebuild(); };
+  const g = document.createElement('button'); g.id = 'bGal'; g.textContent = 'Schnitt-Galerie'; g.style.setProperty('--acc', '#9fe4ff'); g.onclick = () => { S.gal = !S.gal; rebuild(); };
+  $('fvGrp').append(sel, g); }
+$('bSpin').onclick = () => { S.spin = !S.spin; ui(); };
+$('sSp').oninput = e => { S.splitter = +e.target.value; rebuild(); };
+$('sInf').oninput = e => { S.inf = +e.target.value; rebuild(); };
+$('sCh').oninput = e => { S.chain = +e.target.value / 100; rebuild(); };
+function ui() {
+  setsEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(!S.all && b.dataset.id === S.set)));
+  $('bFull').textContent = S.full ? 'Set 5/5' : 'Set 4/5'; $('bFull').setAttribute('aria-pressed', String(S.full));
+  $('bHat').setAttribute('aria-pressed', String(S.hat)); $('bSpray').setAttribute('aria-pressed', String(S.spray));
+  $('bSpray').disabled = !(S.full && (S.all || S.set === 'feuer')); $('bSpray').style.opacity = $('bSpray').disabled ? 0.45 : 1;
+  $('fvGrp').style.display = (S.gal || S.all || S.set === 'frost') ? 'flex' : 'none'; $('fvSel').value = S.cut; $('bGal').setAttribute('aria-pressed', String(!!S.gal));
+  $('bAll').setAttribute('aria-pressed', String(S.all)); $('bSpin').setAttribute('aria-pressed', String(S.spin));
+  $('vSp').textContent = S.splitter; $('vInf').textContent = S.inf; $('vCh').textContent = Math.round(S.chain * 100) + ' %';
+  const s = SETS[S.set];
+  $('info').innerHTML = S.gal ? '<h2 style="color:#9fe4ff">Frost: 15 Schnitte</h2><p>Alle im Facette-Muster. Unterschied nur in Schultern, Kragen, Revers, Länge und Weite. Auswahl im Menü zeigt einen groß.</p><p class="mute">' + CUTS.map((c, i) => (i + 1) + ' ' + c.n).join(' · ') + '</p>' : S.all
+    ? '<h2>Alle 4 Start-Sets</h2><p class="mute">' + (S.full ? '5/5: Perfekt-Werte, Mechanik und Look aktiv.' : '4/5: Körper-Slot trägt eine fremde Wollrobe, kein Set-Bonus.') + '</p>'
+    : '<h2 style="color:' + s.css + '">' + s.name + ' ' + (S.full ? '5/5' : '4/5') + '</h2><div class="mute">' + s.build + '</div><p><b>Look:</b> ' + s.look + '</p><p><b>5/5 Mechanik:</b> ' + s.mech + '</p>' + (S.full ? '' : '<p class="mute">4/5: Körper ist die Wollrobe, Bonus inaktiv.</p>');
+}
+const labels = $('labels');
+function drawLabels() {
+  labels.innerHTML = '';
+  if (!S.all && !S.gal) return;
+  figs.forEach(f => { const p = f.position.clone().add(V(0, 2.05, 0)).project(cam); const d = document.createElement('div'); d.textContent = f.userData.label; d.style.color = SETS[f.userData.id].css; if (S.gal) d.style.fontSize = '11px'; d.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; d.style.top = ((1 - p.y) / 2 * innerHeight) + 'px'; labels.append(d); });
+}
+function portrait() { return innerWidth < innerHeight; }
+let wasPortrait = null;
+function resize() { renderer.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix();
+  if (wasPortrait !== null && wasPortrait !== portrait()) rebuild(); wasPortrait = portrait(); }
+$('bInfo').onclick = () => { document.body.classList.toggle('showInfo'); document.body.classList.remove('showMore'); $('bInfo').setAttribute('aria-pressed', String(document.body.classList.contains('showInfo'))); $('bMore').setAttribute('aria-pressed', 'false'); };
+$('bMore').onclick = () => { document.body.classList.toggle('showMore'); document.body.classList.remove('showInfo'); $('bMore').setAttribute('aria-pressed', String(document.body.classList.contains('showMore'))); $('bInfo').setAttribute('aria-pressed', 'false'); };
+addEventListener('resize', resize); resize();
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  figs.forEach(f => {
+    if (S.spin && !S.gal) f.rotation.y = Math.sin(t * 0.35) * 0.9;
+    f.userData.body.position.y = Math.sin(t * 2) * 0.006;
+    f.userData.fx.forEach(fn => fn(t));
+  });
+  ctl.update(); renderer.render(scene, cam); drawLabels();
+});
+window.__dbg = { cam, ctl };
+window.__set = o => { Object.assign(S, o); rebuild(); };
+rebuild();
+</script>
+</body>
+</html>

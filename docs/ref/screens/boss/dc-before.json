@@ -1,0 +1,142 @@
+{
+ "hogger": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 33
+ },
+ "sif": {
+  "ok": true,
+  "meshes": 2,
+  "mats": 2,
+  "bodies": 1,
+  "frameCalls": 31
+ },
+ "shazzrah": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "graefin": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "lazarus": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "lilith": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "azmodan": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "chromaggus": {
+  "ok": true,
+  "meshes": 2,
+  "mats": 2,
+  "bodies": 1,
+  "frameCalls": 32
+ },
+ "wachritter": {
+  "ok": true,
+  "meshes": 18,
+  "mats": 3,
+  "bodies": 6,
+  "frameCalls": 59
+ },
+ "hornet": {
+  "ok": true,
+  "meshes": 2,
+  "mats": 2,
+  "bodies": 1,
+  "frameCalls": 33
+ },
+ "maven": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "gwyn": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "lich": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "radahn": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "koenige": {
+  "ok": true,
+  "meshes": 16,
+  "mats": 4,
+  "bodies": 4,
+  "frameCalls": 34
+ },
+ "ragnaros": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "malenia": {
+  "ok": true,
+  "meshes": 3,
+  "mats": 3,
+  "bodies": 1,
+  "frameCalls": 34
+ },
+ "maliketh": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "shaper": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ },
+ "asche": {
+  "ok": true,
+  "meshes": 4,
+  "mats": 4,
+  "bodies": 1,
+  "frameCalls": 35
+ }
+}
