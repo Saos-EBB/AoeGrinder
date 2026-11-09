@@ -2216,4 +2216,5 @@ export const en: Record<string, string> = {
   'gear.hint': "Click to equip · ✕ deletes",
   'gear.waiting': "{n} found items are waiting for your choice",
   'gear.info': "<b>{dust}</b> @{res.dust}",
+  'gear.buildSet': "Set {name} 5/5",
 };

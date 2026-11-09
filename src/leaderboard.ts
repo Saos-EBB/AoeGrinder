@@ -31,7 +31,7 @@ export function recordRun() {
   const entry = {
     date: new Date().toISOString(), mode: modeId, modeName: MODES.find(m => m.id === modeId).name + (mobMode === 'waves' ? ` · ${t('board.waves')}` : ''), mobMode, siegeGoal, completed: !!player.won, splits: { ...run.splits }, timeTo100: run.splits[100] ?? null, peakMobs: run.peakMobs ?? 0, peakFps: run.peakFps ?? 0, mods: [...activeModIds()], mult: scoreMult(), wave: run.wave ?? 0,
     score: b.total, breakdown: b, level: player.level, kills: run.kills, time: state.now, bestPull: run.bestPull, bestCombo: run.bestCombo, bestMulti: run.bestMulti,
-    zone: zone.name, zoneId, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: '',
+    zone: zone.name, zoneId, cause: player.lastHitBy ?? t('cause.unknown'), version: SCORE_VERSION, note: '', build: state.gearSet ? t('gear.buildSet', { name: t(`look.magier.${state.gearSet}.name`) }) : '',   // build: angelegtes Set 5/5 (gear.ts)
   };
   const list = [...loadRuns(), entry];
   saveRuns(list);

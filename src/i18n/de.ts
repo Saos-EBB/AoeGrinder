@@ -2217,4 +2217,5 @@ export const de: Record<string, string> = {
   'gear.hint': "Klick legt an · ✕ löscht",
   'gear.waiting': "{n} Funde warten auf deine Auswahl",
   'gear.info': "<b>{dust}</b> @{res.dust}",
+  'gear.buildSet': "Set {name} 5/5",
 };
