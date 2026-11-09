@@ -110,7 +110,7 @@ export interface Layout {
 }
 
 // Prüfungen nach jeder Erzeugung. Gibt den Grund zurück oder null, wenn alles passt.
-export const RULES = { packFromSpawn: 30, portalFromSpawn: 60 };   // PH
+export const RULES = { packFromSpawn: 30, portalFromSpawn: 60, packGap: 32 };   // PH; packGap: Packs untereinander, > Aggro-Radius (18) + Pack-Breite, sonst ziehst du das Nachbarpack mit
 export function check(l: Layout): string | null {
   const g = l.grid, si = g.ci(l.spawn.x), sj = g.cj(l.spawn.z);
   for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) if (!g.walk(si + di, sj + dj)) return 'spawn 3×3 nicht frei';
@@ -121,10 +121,10 @@ export function check(l: Layout): string | null {
   return null;
 }
 
-// Pflicht-Abstände durchsetzen (Packs ≥ 30 yd, Portale ≥ 60 yd vom Spawn) und Plätze auf Wände prüfen
+// Pflicht-Abstände durchsetzen (Packs ≥ 30 yd, Portale ≥ 60 yd vom Spawn, Packs untereinander ≥ packGap) und Plätze auf Wände prüfen
 export function tidy(l: Layout) {
   const far = (p: Spot, d: number) => Math.hypot(p.x - l.spawn.x, p.z - l.spawn.z) >= d;
-  l.packSpots = l.packSpots.filter(p => far(p, RULES.packFromSpawn) && l.grid.walkAt(p.x, p.z));
+  l.packSpots = spaced(l.packSpots.filter(p => far(p, RULES.packFromSpawn) && l.grid.walkAt(p.x, p.z)), RULES.packGap);
   l.portalSpots = l.portalSpots.filter(p => far(p, RULES.portalFromSpawn) && l.grid.walkAt(p.x, p.z));
   l.objectSpots = l.objectSpots.filter(p => l.grid.walkAt(p.x, p.z));
 }

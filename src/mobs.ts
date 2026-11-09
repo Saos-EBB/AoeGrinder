@@ -49,7 +49,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
   if (mobMode === 'waves' || zone.noPacks) return;   // noPacks: Arena (mapgen/arena.ts)
-  while (liveMobs().length < mobTarget()) spawnPack();
+  while (liveMobs().length < mobTarget()) if (spawnPack() === false) break;   // generierte Map: alle Pack-Plätze belegt
   respawn.pending = 0;
   respawn.packs = livePackCount();
 }
@@ -98,7 +98,7 @@ export function pickMobType() {
 }
 
 function spawnPack(at = null) {
-  if (zone.packSpots) return spawnOnSpot(at);          // generierte Map (src/mapgen): nur auf Pack-Plätzen des Layouts
+  if (zone.packSpots) return spawnOnSpot(at);          // generierte Map (src/mapgen): nur auf Pack-Plätzen des Layouts, false = kein Platz frei
   let center = at;
   for (let tries = 0; !at && tries < 40; tries++) {
     // Rund um den Spieler, sonst verdünnt die große Karte die Dichte. // PH
@@ -129,18 +129,21 @@ export function rollPackSize() {
 }
 
 // Generierte Map: freien Pack-Platz wählen, bevorzugt im Ring PACK_NEAR … PACK_FAR um den Spieler. at: Ersatz für ein veraltetes Pack (nächster Platz)
-const spotTaken = (s: PackSpot) => state.mobs.some(m => !m.dead && dist2d(m.home, s) < s.r + 6);   // PH
+// Nachspawn nie näher als SPOT_MIN_PLAYER (Lichtkreis 22 + Aggro 18 + Luft) und nie auf einen belegten Platz; gibt es keinen, wartet er (false).
+const SPOT_MIN_PLAYER = 50;   // PH
+const spotTaken = (s: PackSpot) => state.mobs.some(m => !m.dead && dist2d(m.home, s) < s.r + 12);   // PH
 function spawnOnSpot(at) {
   const spots: PackSpot[] = zone.packSpots, d = (s: PackSpot) => dist2d(s, player.pos);
   let spot: PackSpot = null;
   if (at) spot = spots.reduce((a, b) => dist2d(a, at) <= dist2d(b, at) ? a : b);
   else {
-    const free = spots.filter(s => !spotTaken(s));
-    const ring = free.filter(s => d(s) >= PACK_NEAR && d(s) <= PACK_FAR), away = free.filter(s => d(s) >= 30);   // PH: 30 yd, außer Sicht im Nebel
-    spot = ring.length ? pick(ring) : away.length ? pick(away) : free.length ? pick(free)
-      : spots.reduce((a, b) => d(a) >= d(b) ? a : b);   // alle belegt: der fernste Platz bekommt noch eins
+    const free = spots.filter(s => !spotTaken(s) && d(s) >= SPOT_MIN_PLAYER);
+    const ring = free.filter(s => d(s) <= PACK_FAR);
+    spot = ring.length ? pick(ring) : free.length ? pick(free) : null;
   }
+  if (!spot) return false;
   spawnThemePack(spot, zone.theme, player.level);
+  return true;
 }
 // Champion-Pack: C.size Mobs gleichen Typs an einer Stelle, alle mit denselben Affixen (champions.ts)
 export function spawnChampionPack(x, z, affixes) {

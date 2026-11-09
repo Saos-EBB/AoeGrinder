@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(maps): Packs stehen auf den generierten Maps weiter auseinander (Pack-Plätze ≥ 32 yd statt 16–18, über dem Aggro-Radius), und ein nachspawnendes Pack erscheint nie näher als 50 yd und nie auf einem belegten Platz – kein Nachbar-Pull und kein Pack mehr direkt neben dir nach einem Kill
 - feat(licht): Lichtkegel um die Figur größer (Radius 13 → 22 yd) mit weicherem, längerem Ausblenden am Rand; etwas heller, damit die Mitte nicht absäuft; Mobs werfen bis 24 yd Schatten (vorher 18)
 - feat(mobs): Die generierten Maps (Wald, Wüste, Kanäle, Kathedrale, Hölle) spawnen jetzt die neuen Mob-Kategorien mit den Skins ihres Themes statt der alten Mobs: Packgröße wie bisher, Groß alle 3–4 Packs, Lauerer ab Kanäle; Mobs nur auf freiem Boden, „fliegt“ schwebt über Wände und Lava, Explosion von „Platzt“ zählt zur Theme-Schwierigkeit. Alte Zonen behalten ihre Mobs
 - feat(mobs): Mob-Skins für die Hölle im Horror-Look (Wichtel, Höllenhund, Schinder, Klingendämon, Glutbeschwörer, Ascheschleuderer, Sündenhexer, Erzdämon, Fleischschatten), Namen DE/EN; damit haben alle 5 Themes ihre Skins
