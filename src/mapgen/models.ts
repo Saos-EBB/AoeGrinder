@@ -35,6 +35,8 @@ export const oak = (): Prop => ({ r: 0.8, geo: colored([[cyl(0.4, 0.65, 3.4, 0, 
 export const rock = (hex = 0x7d766a): Prop => ({ r: 1.1, h: 1.2, geo: colored([[dodeca(1.2, 0, 0.5, 0, 1, 0.7, 1), hex], [dodeca(0.6, 0.9, 0.3, 0.5, 1, 0.8, 1), hex]]) });
 export const boulder = (hex = 0x8a6a48): Prop => ({ r: 2.2, geo: colored([[dodeca(2.4, 0, 1.6, 0, 1, 1.1, 1), hex], [dodeca(1.4, 1.6, 0.8, 1.1), hex]]) });
 export const cactus = (): Prop => ({ r: 0.5, geo: colored([[cyl(0.35, 0.4, 3.2, 0, 1.6, 0), 0x4a7a3a], [cyl(0.22, 0.25, 1.4, 0.7, 2.2, 0, 0, 0, -0.9), 0x4a7a3a], [cyl(0.2, 0.22, 1, -0.6, 1.8, 0, 0, 0, 0.9), 0x447034]]) });
+// Feigenkaktus: flache Scheiben
+export const cactus2 = (): Prop => ({ r: 0.9, geo: colored([[ball(0.7, 0, 0.6, 0, 1, 1, 0.3), 0x5a8a3a], [ball(0.55, 0.6, 1.4, 0, 1, 1, 0.3), 0x4e7e34], [ball(0.5, -0.5, 1.5, 0.1, 1, 1, 0.3), 0x5a8a3a], [ball(0.12, 0.6, 2.0, 0), 0xd84a6a]]) });
 export const bones = (): Prop => ({ r: 0.9, h: 1, geo: colored([[cyl(0.12, 0.12, 2.4, 0, 0.2, 0, 0, 0, Math.PI / 2), 0xd8ccb0], ...[-0.8, -0.3, 0.2, 0.7].map(x => [cyl(0.07, 0.07, 1.2, x, 0.5, 0, 0.3, 0, 0), 0xc8bc9c] as [THREE.BufferGeometry, number]), [ball(0.35, 1.4, 0.3, 0), 0xd8ccb0]]) });
 export const pillar = (stone = 0x787c88, base = 0x5a5e6a, h = 9): Prop => ({ r: 1, geo: colored([[box(2, 0.8, 2, 0, 0.4, 0), base], [cyl(0.7, 0.8, h, 0, h / 2 + 0.7, 0, 0, 0, 0, 10), stone], [box(2.2, 0.9, 2.2, 0, h + 1.1, 0), base]]) });
 export const bench = (): Prop => ({ w: 4, d: 0.9, h: 1.2, geo: colored([[box(4, 0.15, 0.8, 0, 0.6, 0), 0x5a3a26], [box(4, 0.9, 0.12, 0, 1.0, 0.4), 0x4a2e1e], [box(0.15, 0.6, 0.7, -1.8, 0.3, 0), 0x3a2418], [box(0.15, 0.6, 0.7, 1.8, 0.3, 0), 0x3a2418]]) });

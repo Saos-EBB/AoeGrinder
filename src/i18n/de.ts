@@ -2044,5 +2044,4 @@ export const de: Record<string, string> = {
   'zone.kathedrale2.name': "Kathedrale",
   'zone.hoelle.name': "Hölle",
   'zone.arena.name': "Arena",
-  'zone.probe.name': "Generator-Test",
 };

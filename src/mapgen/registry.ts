@@ -1,14 +1,13 @@
 // Generierte Zonen für ZONES (zones.ts): ein Eintrag pro Theme mit fertigem Layout, Zonen-ID map-<theme>.
 
-import { t } from '../i18n';
 import { genZone, type GenDef } from './genZone';
 import { THEMES } from './themes';
-import { probe } from './layouts/probe';
+import { offen } from './layouts/offen';
 import type { Layout } from './grid';
 import type { Rng } from './rng';
 import type { LayoutId, ThemeId } from './types';
 
-const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = {};
+const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = { offen };
 
 export const zoneIdOf = (theme: ThemeId) => `map-${theme}`;
 
@@ -19,4 +18,3 @@ function defOf(id: ThemeId, layout: (rng: Rng) => Layout, zoneId = zoneIdOf(id),
 
 export const GEN_ZONES: Record<string, any> = {};
 for (const th of Object.values(THEMES)) if (LAYOUTS[th.layout]) GEN_ZONES[zoneIdOf(th.id)] = genZone(defOf(th.id, LAYOUTS[th.layout]!));
-GEN_ZONES['map-probe'] = genZone(defOf('wald', probe, 'map-probe', t('zone.probe.name')));   // Phase 1: Test des Kerns
