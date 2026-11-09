@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(mobs): Knochenwirker und Axtwerfer laufen nicht mehr weg: sie kommen auf 12 bzw. 15 yd ran und bleiben stehen; ihre Geschosse fliegen gerade auf die Stelle, an der du beim Abschuss standest, treffen nur in 1,2 yd und lassen sich seitlich ausweichen; Geschoss etwas größer und heller
 - feat(ui): Strichkrieger-Skin Holzfäller (Sions Axt): rotes Karohemd mit hochgekrempelten Ärmeln, Hosenträger, Jeans mit Umschlag, Arbeitsstiefel, Strickmütze mit Bommel, Vollbart, Fällaxt als Waffen-Look. Jeder Kill im Run schnitzt eine Kerbe in den Stiel (bis 40), ab 100 Kills goldener Stiel, ab 500 ein Sprössling, alle 20 Kills ein Scheit auf der Kraxe am Rücken (bis 15). Keine Draw Calls extra
 - feat(ui): Strichkrieger-Skin Classic-Krieger 55 (Leeroys Klinge): „Clownsuit“ in Low-Poly – rote Dorn-Schultern, lila Brustplatte, gelbe Stulpen mit pinkem Saum, Riesenschnalle, grüne Beine, blaue Klotz-Stiefel, türkiser Umhang, Topfhelm mit Bronze-Hörnern; klobiger Zweihänder mit rotem Verzauberungs-Glühen und Funken; ruft alle paar Sekunden Leeroy-Sprüche, Namensschild „Stufe 55 · Krieger“ (DE/EN). Keine Draw Calls extra
 - feat(ui): Strichkrieger-Skin Ausbrecher (Grabplatte): Zwangsjacke mit Gurten und aufgerissenem Ärmel, Krankenhaus-Hose, Schlappen, wirre Haare, Pflaster, Glubschaugen, zuckender Kopf, Brechstange als Waffen-Look; flüstert alle paar Sekunden (Blasen um den Kopf, DE/EN). Keine Draw Calls extra

@@ -30,11 +30,15 @@ function emit(mob, rate, dt, color) {
   }
 }
 
-// Geschoss als Partikelspur, fliegt auf den Spieler zu und trifft immer
+// Geschoss als Partikelspur: fliegt gerade auf die Stelle, an der der Spieler beim Abschuss stand.
+// Trifft nur, wenn es unterwegs näher als SHOT.hitR am Spieler vorbeikommt, sonst verfällt es am Ziel (seitlich laufen weicht aus).
+export const SHOT = { hitR: 1.2, size: 0.5, glow: 1.35, trail: 4 };   // PH
 const projectiles = [];
-function shoot(mob, color, speed, onArrive) {
+export function shoot(mob, color, speed, onHit, size = SHOT.size) {
   mob.attackAt = state.now;
-  projectiles.push({ x: mob.pos.x, y: mob.pos.y + 1.6, z: mob.pos.z, color, speed, onArrive });
+  const x = mob.pos.x, y = mob.pos.y + 1.6, z = mob.pos.z;
+  const tx = player.pos.x, ty = player.pos.y + 1.2, tz = player.pos.z, len = Math.hypot(tx - x, ty - y, tz - z) || 1;
+  projectiles.push({ x, y, z, dx: (tx - x) / len, dy: (ty - y) / len, dz: (tz - z) / len, left: len, color: color.map(c => c * SHOT.glow), size, speed, onHit });
 }
 // Schadenszonen: Lava der Zone und Lavaflächen, ticken einmal pro Sekunde
 const pools = [];
@@ -69,12 +73,11 @@ export function updateAbilities(dt) {
   updateHazards(dt);
   const s = dt / 1000;
   for (let i = projectiles.length - 1; i >= 0; i--) {
-    const p = projectiles[i];
-    const dx = player.pos.x - p.x, dy = player.pos.y + 1.2 - p.y, dz = player.pos.z - p.z, d = Math.hypot(dx, dy, dz);
-    const step = p.speed * s;
-    if (d <= step) { projectiles.splice(i, 1); p.onArrive(); continue; }
-    p.x += dx / d * step; p.y += dy / d * step; p.z += dz / d * step;
-    for (let k = 0; k < 3; k++) particles.spawn({ x: p.x, y: p.y, z: p.z, life: 0.25, color: p.color, size: 0.35 });
+    const p = projectiles[i], step = Math.min(p.left, p.speed * s);
+    p.x += p.dx * step; p.y += p.dy * step; p.z += p.dz * step; p.left -= step;
+    if (!player.dead && Math.hypot(player.pos.x - p.x, player.pos.z - p.z) < SHOT.hitR && Math.abs(player.pos.y + 1.2 - p.y) < 2) { projectiles.splice(i, 1); p.onHit(); continue; }
+    if (p.left <= 0) { projectiles.splice(i, 1); continue; }
+    for (let k = 0; k < SHOT.trail; k++) particles.spawn({ x: p.x - p.dx * k * 0.15, y: p.y - p.dy * k * 0.15, z: p.z - p.dz * k * 0.15, life: 0.25, color: p.color, size: p.size * (1 - k * 0.15) });
   }
 }
 export function clearAbilities() {
@@ -82,11 +85,10 @@ export function clearAbilities() {
   while (pools.length) removePool(0);
 }
 
-// Hält Abstand: näher ran über max, zurück unter min
-function holdRange(mob, dt, min, max) {
+// Fernkämpfer: über max ranlaufen, sonst stehen bleiben und zum Spieler drehen. Kein Weglaufen mehr (Fairness, map-umbau Phase 0b)
+export function holdRange(mob, dt, max) {
   const d = dist2d(mob.pos, player.pos);
   if (d > max) moveMob(mob, player.pos, dt);
-  else if (d < min) moveMob(mob, mob.pos.clone().multiplyScalar(2).sub(player.pos), dt);
   faceMob(mob, player.pos);
   return d;
 }
@@ -113,11 +115,11 @@ export const ABILITIES: any = {
       return true;
     },
   },
-  // Bleibt auf 20 yd und schießt Schattenblitze
+  // Kommt auf 12 yd ran und schießt Schattenblitze
   shadowCaster: {
     onUpdate(mob, dt) {
-      const d = holdRange(mob, dt, 18, 20);                     // PH
-      if (d <= 24 && ready(mob, 'nextBolt', 2800)) shoot(mob, SHADOW, 22, () => hitPlayer(mob, 0.8));  // PH
+      const d = holdRange(mob, dt, 12);                         // PH
+      if (d <= 14 && ready(mob, 'nextBolt', 2800)) shoot(mob, SHADOW, 22, () => hitPlayer(mob, 0.8));  // PH
       return true;
     },
   },
@@ -135,11 +137,11 @@ export const ABILITIES: any = {
       return false;
     },
   },
-  // Wirft aus 25 yd, weicht unter 10 yd zurück
+  // Kommt auf 15 yd ran und wirft
   axeThrower: {
     onUpdate(mob, dt) {
-      const d = holdRange(mob, dt, 10, 25);                     // PH
-      if (d <= 26 && ready(mob, 'nextAxe', 2600)) shoot(mob, AXE, 26, () => hitPlayer(mob, 0.9));   // PH
+      const d = holdRange(mob, dt, 15);                         // PH
+      if (d <= 17 && ready(mob, 'nextAxe', 2600)) shoot(mob, AXE, 26, () => hitPlayer(mob, 0.9));   // PH
       return true;
     },
   },
