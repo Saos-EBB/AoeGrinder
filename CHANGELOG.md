@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(ui): Charakterwahl: Knopf „Schwenk: an / aus“ oben rechts stoppt den langsamen Kameraschwenk um die Figur, die Wahl bleibt gespeichert
 - feat(ui): Waffenmenü: angeklickte Waffe trägt die Figur links zur Probe (mit Element-Farbe), ohne sie auszurüsten; Figur per Maus-Ziehen drehbar
 - feat(ui): Waffenmenü zeigt links die gewählte Figur als 3D-Ansicht mit der ausgerüsteten Waffe und Element-Farbe statt der Strichzeichnung; Ausrüsten wechselt sie sofort, kein eigener Renderer
 

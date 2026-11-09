@@ -1988,6 +1988,8 @@ export const de: Record<string, string> = {
   'feat.untouched.schlachtbank': "KEIN KRATZER",
   'hudEl.feats': "Erfolgs-Meldungen",
   'menux.hint': "A / D wählen · Q / E Map · Enter startet",
+  'menux.panOn': "Schwenk: an",
+  'menux.panOff': "Schwenk: aus",
   'menux.mapInfo': "Q / E · Map {i} / {n} · Best {best}",
   'menux.mapNext': "Nächste Map",
   'menux.mapPrev': "Vorherige Map",

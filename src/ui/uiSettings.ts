@@ -8,6 +8,7 @@ export const UI_DEFAULTS = {
   screenFx: true,         // Bildschirm-Effekte des Flavors
   font: 'standard' as 'standard' | 'fraktur',
   menuZone: '',
+  menuPan: true,          // langsamer Kameraschwenk in der Charakterwahl (ui/mainMenu.ts)
   weaponFilter: {} as Record<string, any>,   // Filter im Waffenmenü (ui/weaponMenu.ts), fehlende Felder = Standard
   weaponSeen: 0,          // höchste Waffen-ID beim letzten Schließen des Waffenmenüs: alles darüber ist NEU           // zuletzt gewählte Map im Hauptmenü (zones.ts), leer = Tirisfal
   hudOverrides: {} as Record<string, Record<string, any>>,   // eigene Lage pro Layout (ui/hud/layout.ts)

@@ -206,11 +206,19 @@ const MENU_PAN = 0.06;   // rad/s // PH
 let panAt = performance.now();
 function pan() {
   const now = performance.now();
-  if (menuOpen() && turning === null) cam.offset += (now - panAt) / 1000 * MENU_PAN;
+  if (menuOpen() && turning === null && uiSettings.menuPan) cam.offset += (now - panAt) / 1000 * MENU_PAN;
   panAt = now;
   requestAnimationFrame(pan);
 }
 requestAnimationFrame(pan);
+// Knopf oben rechts schaltet den Schwenk an und aus (gemerkt)
+function paintPanBtn() {
+  const b = $('menuPanBtn');
+  b.textContent = t(uiSettings.menuPan ? 'menux.panOn' : 'menux.panOff');
+  b.setAttribute('aria-pressed', String(uiSettings.menuPan));
+}
+$('menuPanBtn').addEventListener('click', () => { setUi('menuPan', !uiSettings.menuPan); paintPanBtn(); });
+paintPanBtn();
 
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
