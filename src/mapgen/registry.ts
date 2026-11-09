@@ -5,11 +5,12 @@ import { THEMES } from './themes';
 import { offen } from './layouts/offen';
 import { kanaele } from './layouts/kanaele';
 import { raeume } from './layouts/raeume';
+import { hallen } from './layouts/hallen';
 import type { Layout } from './grid';
 import type { Rng } from './rng';
 import type { LayoutId, ThemeId } from './types';
 
-const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = { offen, kanaele, raeume };
+const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = { offen, kanaele, raeume, hallen };
 
 export const zoneIdOf = (theme: ThemeId) => `map-${theme}`;
 

@@ -38,6 +38,7 @@ export interface Look {
 }
 
 type Ctx = { add: (m: THREE.Object3D) => THREE.Object3D };
+const LIGHT_R = 6;   // PH: Radius der Lichtinsel in yd
 const glowMat = (c: THREE.Color) => new THREE.MeshBasicMaterial({ color: c, fog: false });
 const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
 
@@ -136,6 +137,13 @@ export function buildLayout(ctx: Ctx, l: Layout, look: Look, rng: Rng, heightAt)
     const p = prop(kind);
     keep(instanced(ctx, p.geo, mat, list, heightAt));
     if (p.glow) keep(instanced(ctx, p.glow, glowMat(look.glow), list, heightAt));
+  }
+
+  // Lichtinseln: warmer Schein am Boden um Kerzen und Glutschalen (ein Mesh, additiv)
+  if (l.lights.length) {
+    const disc = new THREE.CircleGeometry(LIGHT_R, 20).rotateX(-Math.PI / 2).translate(0, 0.08, 0);
+    const pool = new THREE.MeshBasicMaterial({ color: look.glow.clone().multiplyScalar(0.05), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false });
+    keep(instanced(ctx, disc, pool, l.lights.map(p => ({ ...p, s: rng.range(0.85, 1.15) })), heightAt));
   }
 
   // Wasser und Lava

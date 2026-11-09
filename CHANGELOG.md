@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(mapgen): Layout „Hallen“ mit Theme Kathedrale (`?zone=map-kathedrale`): Langschiff mit Säulenreihen und Bänken, Seitenschiffe, Querschiff, Apsis mit Kerzenbogen und Glockenturm dahinter; zufällig Länge, 2–6 Seitenkapellen, eingestürzte Wände mit Schutt, Löcher im Boden, spiegelsymmetrisch ja/nein. Kerzen und Glutschalen werfen Lichtinseln auf den Boden (auch in der Hölle)
 - feat(mapgen): Layout „Räume“ mit Theme Hölle (`?zone=map-hoelle`): 8–12 Räume, verbunden per Spannbaum plus 2 Schleifen, 16 yd breite Gänge, Lava-Ränder in etwa 30 % der Räume (Schaden wie in Blackrock Depths, nie im Spawn-Raum), Glutschalen und Stacheln, Höllenschlund-Tor mit Portal-Platz im entferntesten Raum
 - feat(mapgen): Layout „Kanäle“ (`?zone=map-kanaele`): Haupt-Ring zum Kiten (teils mit Ausbuchtung) + 2–4 Querkanäle, 16 yd breite Gänge mit 4-yd-Wasserrinne in der Mitte (bremst Spieler und Mobs um 20 %), Stege darüber, trockene Kreuzungen als Kampfplätze, 1–2 Sackgassen, Schleusentor in einer Nische weit vom Spawn, dichter Nebel
 - feat(mapgen): Layout „Offen“ mit den Themes Wald und Wüste (`?zone=map-wald`, `?zone=map-wueste`): unregelmäßiger Rand aus Bäumen/Felsen, 3–5 Lichtungen mit Pfaden, Baum-/Felsgruppen, Landmarke (alter Riesenbaum, Obelisk mit Grabmal) auf der fernsten Lichtung, leuchtet aus dem Dunkel. Wüste mit Sandsturm; Test-Map „Generator-Test“ entfernt
