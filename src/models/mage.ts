@@ -58,7 +58,7 @@ function tintWeapon(w, hw) {
 let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 // look: Skin aus skins.ts (Standard, Hochspannung, Ausbrecher …), getrennt vom Schul-Look skin. Krieger-Skins hängen an der Waffe (legendär oder Basis)
 let look = STANDARD;
-const lookWeapon = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : null);
+const lookWeapon = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : id);   // Magier: Skins hängen an der Schule (= Skin-ID)
 const lookOf = id => skinOf(figurOf(id), lookWeapon(id));
 
 // Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
@@ -170,7 +170,7 @@ export const mage = {
   get fx() { return HEROES[skin] ? NO_FX : cur.fx; },   // bei Nahkämpfern ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
   get look() { return look; },
-  get lookWeapon() { return lookWeapon(skin); },   // Waffe, an der die Krieger-Skins hängen (Magier: null)
+  get lookWeapon() { return lookWeapon(skin); },   // Waffe, an der die Krieger-Skins hängen (Magier: die Schule)
   refreshLook() { if (lookOf(skin) !== look) setSkin(skin); },   // Skin-Wahl im Hauptmenü, Spielstand-Code
   get hero() { return cur; },
   get warWeapon() { return warWeapon; },

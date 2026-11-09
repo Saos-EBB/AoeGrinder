@@ -11,6 +11,8 @@ import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 import { eMat, PAL } from '../vfx/energy';
 import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
+import { state } from '../state';
+import { markStacks } from '../plagueMarks';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -44,13 +46,16 @@ function prep(geo, color, m?, flick = false) {
   const col = new Float32Array(n * 3);
   const c2 = flick && color.tip ? color.tip : null;
   for (let i = 0; i < n; i++) {
-    const c = c2 ? color.base.clone().lerp(c2, g.attributes.flick.array[i]) : (color.base || color);
+    const c = c2 ? color.base.clone().lerp(c2, g.attributes.flick.array[i]) : color.pal ? color.pal[Math.floor(facetPick(i / 3 | 0, n) * color.pal.length)] : (color.base || color);
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   if (!g.attributes.flick) g.setAttribute('flick', new THREE.BufferAttribute(new Float32Array(n), 1));
   return g;
 }
+// Facetten-Muster (Skin Splitterkönig): jedes Dreieck eine Farbe aus color.pal, fest gestreut
+let FACET = 1;
+const facetPick = (tri, salt) => { const x = Math.sin((tri + 1) * 12.9898 + salt * 78.233 + FACET * 3.7) * 43758.5453; return x - Math.floor(x); };
 const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
 const col = h => new THREE.Color(h);
 
@@ -63,6 +68,17 @@ const SKINS = {
   blitz: { name: t('skin.blitz.name'), ink: col(0x1b2336), accent: col(0x3a5f9e), orb: col(0xbff4ff) },
   plague: { name: t('skin.plague.name'), ink: col(0xffffff), accent: col(0xb9a3c9), orb: col(0x9cff5a) },
   qm: { name: t('skin.qm.name'), ink: col(0x141418), accent: col(0x2a2a32), orb: col(0xffd23a) },
+};
+
+// Skins (src/skins.ts, Viewer docs/ref/set-skins-magier.html): Farben des Grundkörpers, Teile baut buildStrichMagier im Block `look`.
+// top Brust, sleeve Arme, pants Hüfte und Beine, shoe Füße, skin Hals und Hände, head Kopf, collar Kragen-Schal, ankle: Knöchel frei
+const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Viewer: Lampe und Rand-Licht heben sie sonst über die Bloom-Schwelle // PH
+const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiplyScalar(.45)) };   // Muster Facette, dunkler als im Viewer wegen der Lampe über der Figur // PH
+const LOOKS = {
+  blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
+  seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
+  glut: { top: col(0x1a1a1e), sleeve: col(0x1a1a1e), pants: col(0x9cc7ea).multiplyScalar(.5), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: col(0x1a1a1e), collar: col(0x1a1a1e), eyes: true },
+  frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.45), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
 };
 
 // ───────────────────────── Körper-Shader: Glühen (aGlow), Eiszapfen wachsen nach uM (icT ≥ 0), Requisite (icT = -2), Rand-Licht
@@ -498,6 +514,206 @@ const qGeo = () => mergeGeometries([
   new THREE.IcosahedronGeometry(.17, 0).translate(0, -.55, 0)
 ].map(g => { g.deleteAttribute('uv'); return g.index ? g.toNonIndexed() : g; }));
 
+// ───────────────────────── Skins (src/skins.ts): Teile an Bones ins Körper-Mesh, Leuchtteile ins Glühen, Gag-Teile auf eigenen Bones
+const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4);
+const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
+const SK = {   // Optik-Zahlen der Skins // PH
+  blitz: { lvlMin: .08, lvlRate: 4, drip: 6, full: .98, arcs: 24 },   // Pegel: mindestens 8 %, folgt der Anzeige mit 4/s; Funken pro Sekunde am Korken (+ drip × Pegel) und bei voller Flasche zu den Händen
+  glut: { flame: [.45, .8], flick: 9 },   // Augen-Feuer: Länge 45 % ohne Hitze bis 125 % bei voller Hitze, Flackern pro Sekunde
+  frost14: { slots: [2, 4, 4], r: .72, y: 1.35, spin: .8, sparkle: 6 },   // Splitter: Plätze für leuchtende (je 25), große (je 5), kleine; Bahn-Radius und Höhe; Umläufe; Glitzern pro Sekunde je leuchtendem
+  seuche: { perMark: .06, cap: 20, every: .25, grow: 3, steam: 8, flies: 6, drip: .7 },   // Müllbeutel +6 % pro markiertem Mob, höchstens 20 zählen (× 2,2), gezählt alle 0,25 s; Dampf pro Sekunde; Fliegen; Tropfen pro Sekunde an den Manschetten
+};
+function buildLook(F, look, { part, glow, B, M }) {
+  const { chest, hips, head } = F, arms = [F.armL, F.armR], legs = [F.legL, F.legR];
+  const L: any = F.lk = { look, lvl: SK.blitz.lvlMin };
+  const at = (list, bone, base, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => list.push({ bone, geo, color, m: base.clone().multiply(M(pos, rot, scl)) });
+  const eye = d => (F.wel != null ? col(F.wel) : col(d));   // Augen in der Farbe des Waffen-Elements, sonst die des Skins
+  const sneakers = () => { for (const l of legs) { part(l.ft, new THREE.BoxGeometry(.14, .1, .3), col(0xe8e8e8), [0, -.02, .07]); part(l.ft, new THREE.BoxGeometry(.15, .03, .31), col(0xb8b8c0), [0, -.07, .07]); } };   // weiße Sneaker mit grauer Sohle
+
+  if (look === 'blitz') {   // Hochspannung: Trainingsanzug mit eigenem Zickzack-Streifen, Sonnenbrille, Kupferkette, Isolierband-Bündchen, Flasche mit Strom auf dem Rücken
+    const YEL = col(0xffe866), WHITE = col(0xe8e8e8), COPPER = col(0xc97a3a), BLACK = col(0x0b0b0b);
+    part(chest, new THREE.BoxGeometry(.014, .42, .012), col(0xd8d8d8), [0, .33, .112], [.12, 0, 0]);   // Reißverschluss
+    for (const a of arms) { glow(a.ua, tubeGeo(zigPts(a.side * .06, -.02, -A1, .02, 6), .009), YEL); glow(a.fa, tubeGeo(zigPts(a.side * .054, 0, -A2 * .9, .02, 6), .009), YEL); }   // Zickzack-Streifen außen
+    for (const l of legs) { glow(l.th, tubeGeo(zigPts(l.side * .083, -.04, -L1, .024, 7), .01), YEL); glow(l.sh, tubeGeo(zigPts(l.side * .067, 0, -L2 * .92, .024, 7), .01), YEL); }
+    for (const a of arms) part(a.fa, new THREE.TorusGeometry(.056, .017, 4, 12), WHITE, [0, -A2 * .97, 0], [Math.PI / 2, 0, 0]);   // Isolierband-Bündchen
+    part(chest, new THREE.TorusGeometry(.12, .012, 4, 20), COPPER, [0, .52, .03], [1.2, 0, 0], [1, 1, .8]);   // Kupferkette
+    sneakers();
+    part(head, new THREE.SphereGeometry(.19, 12, 6, 0, TAU, 0, Math.PI * .45), col(0x2a221c), [0, .16, -.02], [-.4, 0, 0], [.97, 1.1, 1.02]);   // Haar, nach hinten gekippt
+    const lens = F.wel != null ? glow : part, LC = F.wel != null ? eye(0) : BLACK;   // Sonnenbrille: mit Waffen-Element leuchten die Gläser
+    for (const sx of [-1, 1]) lens(head, new THREE.BoxGeometry(.1, .05, .025), LC, [sx * .068, .17, .165], [0, sx * .35, 0]);
+    part(head, new THREE.BoxGeometry(.26, .014, .02), BLACK, [0, .188, .168]);
+    // Flasche auf dem Rücken: Glas (undurchsichtig, blass), Strom als Flüssigkeit etwas dicker als das Glas, Pegel über die Bone-Skalierung
+    const Mb = M([-.1, .36, -.25], [0, 0, -.25]);
+    at(F.parts, chest, Mb, new THREE.CylinderGeometry(.12, .12, .44, 12), col(0x8fb0c4).multiplyScalar(.5));
+    at(F.parts, chest, Mb, new THREE.CylinderGeometry(.05, .12, .1, 12), col(0x8fb0c4).multiplyScalar(.5), [0, .27, 0]);
+    at(F.parts, chest, Mb, new THREE.CylinderGeometry(.045, .045, .06, 8), col(0x8a6a3a), [0, .35, 0]);
+    for (const y of [-.22, .2]) at(F.parts, chest, Mb, new THREE.TorusGeometry(.124, .012, 4, 14), COPPER, [0, y, 0], [Math.PI / 2, 0, 0]);
+    const bot = V(0, -.21, 0).applyMatrix4(Mb);
+    const lq = L.liquid = B(chest, bot.x, bot.y, bot.z); lq.rotation.z = -.25;
+    F.glow.push({ bone: lq, geo: new THREE.CylinderGeometry(.126, .126, .42, 12).translate(0, .21, 0), color: YEL, m: new THREE.Matrix4(), noShell: true });
+    L.cork = new THREE.Object3D(); L.cork.position.copy(V(0, .38, 0).applyMatrix4(Mb)); chest.add(L.cork);
+  }
+
+  if (look === 'seuche') {   // Pestbringer: verwester Anzug Dunkellila/Grün/Gold, Pestmaske mit Hut, Phiolen-Kette, Umhangrest, tropfende Manschetten, Dampf, Fliegen, Müllbeutel in der freien Hand
+    const PURPLE = col(0x3b1f46), GOLD = col(0xc9a640), BONE = col(0xd8cfb0).multiplyScalar(.5), SLIME = col(0x7dff3a), HAT = col(0x2e1838);
+    const skirt = new THREE.CylinderGeometry(.19, .25, .38, 10, 1, true), sp = skirt.attributes.position;   // Schoß mit ausgefranstem Saum
+    for (let i = 0; i < sp.count; i++) if (sp.getY(i) < 0) sp.setY(i, sp.getY(i) - (i % 2) * .08);
+    part(hips, skirt, PURPLE, [0, -.15, 0], [0, 0, 0], [1, 1, .74]);
+    for (let k = 0; k < 3; k++) part(chest, new THREE.SphereGeometry(.016, 6, 4), GOLD, [0, .42 - k * .12, .1 - k * .01]);   // Knöpfe
+    for (const [b, p] of [[chest, [-.08, .16, .085]], [chest, [.1, .36, .1]], [F.legL.th, [0, -.3, .075]]] as any) glow(b, new THREE.SphereGeometry(.024, 6, 4), SLIME, p);   // Schleim-Flecken
+    for (const sx of [-1, 1]) part(chest, new THREE.BoxGeometry(.19, .7, .014), PURPLE, [sx * .1, .17, -.125], [.1, 0, sx * .08]);   // Umhangrest
+    part(chest, new THREE.TorusGeometry(.1, .006, 3, 16), GOLD, [0, .53, .04], [1.25, 0, 0]);   // Phiolen-Kette
+    for (let k = 0; k < 3; k++) glow(chest, new THREE.CylinderGeometry(.018, .018, .06, 6), col(k === 1 ? 0xb46bff : 0x7dff3a), [(k - 1) * .06, .48, .11]);
+    for (const a of arms) {   // Manschetten, je ein Tropfen auf eigenem Bone
+      part(a.fa, new THREE.CylinderGeometry(.066, .072, .07, 8), col(0x5a2a66), [0, -A2 * .93, 0]);
+      const d = B(a.fa, 0, -A2 * .97, 0); (L.drops ??= []).push(d);
+      F.glow.push({ bone: d, geo: new THREE.SphereGeometry(.022, 6, 4), color: SLIME, m: new THREE.Matrix4(), noShell: true });
+    }
+    // Pestmaske: Schnabel, Gold-Brille (Gläser leuchten in Schleim- oder Waffen-Farbe), Hut
+    part(head, new THREE.ConeGeometry(.075, .3, 8), BONE, [0, .09, .26], [Math.PI / 2 + .45, 0, 0]);
+    for (const sx of [-1, 1]) {
+      part(head, new THREE.TorusGeometry(.042, .01, 4, 10), GOLD, [sx * .068, .19, .165], [0, sx * .35, 0]);
+      glow(head, new THREE.SphereGeometry(.032, 8, 6), eye(0x7dff3a), [sx * .068, .19, .16], [0, sx * .35, 0], [1, 1, .5]);
+    }
+    part(head, new THREE.CylinderGeometry(.24, .24, .022, 16), HAT, [0, .32, -.02], [-.12, 0, 0]);   // Krempe, nach hinten gekippt: das Gesicht bleibt sichtbar
+    part(head, new THREE.CylinderGeometry(.12, .145, .18, 12), HAT, [0, .42, -.03], [-.12, 0, 0]);
+    part(head, new THREE.TorusGeometry(.142, .011, 4, 16), GOLD, [0, .345, -.02], [Math.PI / 2 - .12, 0, 0]);
+    // Müllbeutel: eigener Bone an der linken Hand (dort sitzt auch die Trink-Requisite), wächst mit den markierten Mobs
+    const bag = L.bag = B(F.armL.hand, 0, -.02, 0), BAG = col(0x1c1a20), r0 = .13;
+    F.parts.push({ bone: bag, geo: new THREE.SphereGeometry(1, 10, 8), color: BAG, m: M([0, -r0 * 1.1, 0], [0, 0, 0], [r0, r0 * 1.2, r0]), noShell: true });
+    F.parts.push({ bone: bag, geo: new THREE.ConeGeometry(.03, .07, 6), color: BAG, m: M([0, -.01, 0], [Math.PI, 0, 0]), noShell: true });
+    L.marks = 0; L.markT = 0; L.size = 1;
+    if (F.skin !== 'plague') for (let i = 0; i < SK.seuche.flies; i++) {   // Fliegen (die Seuchen-Schule hat eigene)
+      const f = B(F.root); (L.flies ??= []).push({ b: f, a: i * 1.7, r: .45 + (i % 3) * .12, y: (i % 4) * .15 - .2, s: 1.5 + (i % 5) * .45 });
+      F.parts.push({ bone: f, geo: new THREE.SphereGeometry(.02, 5, 4), color: col(0x0b0a0e), m: new THREE.Matrix4(), noShell: true });
+    }
+  }
+  if (look === 'glut') {   // Glutprophet: Streetwear, schwarzer Hoodie, hellblaue Baggy, weiße Sneaker, Sturmhaube, scharfe Augen mit Hitzekern und Flammenzungen, Bauchtasche quer, Skulls und Schlüssel am Bund
+    const BLACK = col(0x1a1a1e), DARK = col(0x101013), WHITE = col(0xd8d8d8), BONE = col(0xece4d0).multiplyScalar(.55), STEEL = col(0xb0b0b8).multiplyScalar(.7), PANTS = LOOKS.glut.pants;
+    part(chest, new THREE.SphereGeometry(.2, 10, 6), BLACK, [0, .58, -.13], [0, 0, 0], [1.05, .55, .75]);   // Kapuze im Nacken
+    part(chest, new THREE.BoxGeometry(.3, .15, .02), DARK, [0, .13, .085], [-.12, 0, 0]);                 // Bauchtasche des Hoodies
+    for (const x of [-.05, .05]) part(chest, new THREE.CylinderGeometry(.007, .007, .17, 4), WHITE, [x, .5, .115], [.15, 0, 0]);   // Kordeln
+    for (const a of arms) part(a.fa, new THREE.TorusGeometry(.055, .017, 4, 12), DARK, [0, -A2 * .97, 0], [Math.PI / 2, 0, 0]);   // Bündchen
+    part(hips, new THREE.TorusGeometry(.18, .018, 4, 16), col(0x2a2a2e), [0, .05, 0], [Math.PI / 2, 0, 0], [1.05, 1, .8]);   // Gürtel
+    [.17, .11, .05].forEach(x => {   // 3 Skulls am Bund
+      part(hips, new THREE.CylinderGeometry(.005, .005, .06, 3), STEEL, [x, .02, .13]);
+      part(hips, new THREE.SphereGeometry(.032, 7, 5), BONE, [x, -.04, .135]);
+      for (const ex of [-.011, .011]) part(hips, new THREE.SphereGeometry(.008, 4, 3), DARK, [x + ex, -.038, .162]);
+    });
+    part(hips, new THREE.TorusGeometry(.026, .006, 3, 8), STEEL, [-.2, .0, .04], [0, Math.PI / 2, 0]);   // Schlüssel am Karabiner
+    for (const [x, r] of [[-.007, .2], [.009, -.25]]) part(hips, new THREE.BoxGeometry(.012, .065, .005), col(0xd8b04a).multiplyScalar(.7), [-.2 + x, -.06, .04], [0, 0, r]);
+    for (const l of legs) part(l.sh, new THREE.TorusGeometry(.085, .035, 4, 10), PANTS, [0, -L2 * .9, 0], [Math.PI / 2, 0, 0]);   // gestauchter Saum der Baggy
+    sneakers();
+    // Bauchtasche quer über die Brust: Gurte vorn und hinten, Tasche mit leuchtendem Reißverschluss
+    part(chest, tubeGeo([V(.2, .56, .07), V(.05, .36, .12), V(-.17, .1, .09)], .013), DARK);
+    part(chest, tubeGeo([V(.2, .56, -.07), V(.02, .34, -.13), V(-.17, .1, -.09)], .013), DARK);
+    part(chest, new THREE.CapsuleGeometry(.055, .18, 2, 8), col(0x24242a), [-.01, .34, .14], [0, 0, Math.PI / 2 - .75]);
+    glow(chest, new THREE.BoxGeometry(.19, .01, .012), col(0xff7a22), [-.01, .34, .195], [0, 0, -.75]);
+    // Sturmhaube (Kopf schwarz): Augenschlitz, schmale schräge Augen mit Hitzekern, Lidschatten
+    part(head, new THREE.BoxGeometry(.26, .06, .03), col(0x3a2a24).multiplyScalar(.6), [0, .15, .165]);
+    for (const sx of [-1, 1]) {
+      glow(head, new THREE.SphereGeometry(1, 8, 5), col(0xffe9a0), [sx * .065, .15, .177], [0, 0, sx * .28], [.039, .008, .009]);
+      glow(head, new THREE.SphereGeometry(.0075, 5, 4), eye(0xff7a0d), [sx * .06, .15, .184]);
+      part(head, new THREE.BoxGeometry(.084, .012, .012), col(0x0b0809), [sx * .065, .17, .182], [0, 0, sx * .32]);
+    }
+    // Flammenzungen aus den Augen (Feuer-Palette rot → orange → gelb), je Auge ein Bone: Länge folgt der Hitze, das Glühen flackert im Shader
+    const PAL5 = [0xd11d0a, 0xff7a0d, 0xffd23a];
+    L.eyeFl = [-1, 1].map(sx => {
+      const b = B(head, sx * .075, .15, .17);
+      for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) {
+        const g = new THREE.ConeGeometry(.033 - k * .009, .5 * (1 - k * .25) * (1 - i * .15), 6, 1, true).translate(0, .25 * (1 - k * .25) * (1 - i * .15), 0);
+        F.glow.push({ bone: b, geo: g, color: { base: col(PAL5[k]), tip: col(PAL5[Math.max(0, k - 1)]) }, flick: true, noShell: true,
+          m: M([sx * i * .012, 0, -k * .004], [-.5 - i * .12, 0, -sx * (.25 + i * .18)]) });
+      }
+      return b;
+    });
+  }
+
+  if (look === 'frost14') {   // Splitterkönig: Muster Facette, Schnitt 14 „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe
+    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiplyScalar(.45), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
+    FACET++; part(chest, new THREE.CylinderGeometry(.095, .1, .1, 10), FACETTE, [0, .63, 0], [0, 0, 0], [1, 1, .9]);   // Stehkragen
+    for (let k = 0; k < 5; k++) part(chest, new THREE.SphereGeometry(.012, 5, 4), PEARL, [0, .44 - k * .085, .108 - k * .006]);   // Knopfleiste
+    part(chest, new THREE.ConeGeometry(.07, .2, 3), LIGHT, [0, .5, .1], [Math.PI, 0, 0], [1, 1, .25]);   // Hemd im Westen-Ausschnitt
+    FACET++; part(hips, new THREE.CylinderGeometry(.17, .2, .2, 10, 1, true), FACETTE, [0, -.05, 0], [0, 0, 0], [1, 1, .74]);   // Westen-Saum über der Hüfte
+    for (const a of arms) glow(a.fa, new THREE.OctahedronGeometry(.02, 0), CRY, [0, -A2 * .9, .055]);   // Eis-Manschetten
+    [[0, .1, 0, .32], [-.05, .08, .04, -.2], [.04, .07, -.04, .6], [-.02, .05, .05, 1]].forEach(([x, h, z, r]) =>   // Eis-Schulter links
+      part(chest, new THREE.ConeGeometry(.036, (.12 + h) * 1.2, 5), ICE, [.25 - x, .56 + h * .6, z - .02], [r * .3, 0, -(.5 + r * .4)]));
+    part(chest, new THREE.TorusGeometry(.07, .005, 3, 16), PEARL, [0, .57, .05], [1.3, 0, 0]);   // Kette
+    glow(chest, new THREE.OctahedronGeometry(.022, 0), CRY, [0, .5, .125]);                      // Kristall
+    for (const l of legs) part(l.ft, new THREE.BoxGeometry(.08, .06, .1), LK_SHOE, [0, -.05, -.02]);   // Absatz zum spitzen Lackschuh
+    // Platin-Perücke: Kappe nach hinten gekippt, hohe Welle, Spitze nach hinten, Spiral-Locke an der Schläfe
+    part(head, new THREE.SphereGeometry(.19, 12, 8, 0, TAU, 0, Math.PI * .6), PLAT, [0, .17, -.03], [-.45, 0, 0], [.97, 1.1, 1.02]);
+    part(head, new THREE.SphereGeometry(1, 10, 6), PLAT, [.03, .385, .045], [-.5, 0, -.15], [.15, .11, .22]);
+    part(head, new THREE.ConeGeometry(.075, .3, 6), PLAT, [.045, .415, -.18], [-2.1, 0, .1]);
+    const coil = []; for (let i = 0; i <= 30; i++) { const a = i / 30 * Math.PI * 4; coil.push(V(-.17 + Math.cos(a) * .04, .19 - i / 30 * .18, .06 + Math.sin(a) * .04)); }
+    part(head, tubeGeo(coil, .018), PLAT);
+    for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(1, 8, 6), eye(0x7cc8ff), [sx * .063, .15, .172], [0, 0, 0], [.017, .026, .012]);   // Augen
+    // Splitter (figures.ts: state.shards): 5 klein → 1 groß, 5 groß → 1 leuchtend, kreisen um die Figur. Je Platz ein Bone, leer = versteckt
+    const SH = [[new THREE.OctahedronGeometry(.085, 0), col(0xe9fbff), 1], [new THREE.OctahedronGeometry(.06, 0), col(0x7cc8ff), 0], [new THREE.OctahedronGeometry(.026, 0), col(0xf2fbff), 1]] as const;
+    L.shards = SK.frost14.slots.map((n, kind) => Array.from({ length: n }, () => {
+      const b = B(F.root), [geo, c, g] = SH[kind];
+      (g ? F.glow : F.parts).push({ bone: b, geo: geo.clone(), color: c, m: new THREE.Matrix4(), noShell: true });
+      return b;
+    }));
+    L.shown = 0;
+  }
+
+}
+// Gags: liest nur Anzeige und Spielstand, ändert nichts. sp(p, color) = Funken ins Partikel-System
+const _lp = V(), _lq = V(), _lqa = new THREE.Quaternion(), _lqb = new THREE.Quaternion();
+function updateLook(F, s, sp) {
+  const L = F.lk;
+  if (L.look === 'glut') {   // Augen-Feuer: lodert mit der Hitze (Anzeige der Figur)
+    const k = SK.glut, len = F.dead ? 1e-4 : (k.flame[0] + k.flame[1] * F.m) * (1 + .08 * Math.sin(F.t * k.flick));
+    for (const b of L.eyeFl) b.scale.set(1, len, 1);
+  }
+  if (L.look === 'frost14') {
+    const k = SK.frost14, n = F.dead ? 0 : Math.max(0, Math.floor(state.shards ?? 0));
+    const want = [Math.min(k.slots[0], Math.floor(n / 25)), Math.min(k.slots[1], Math.floor(n % 25 / 5)), Math.min(k.slots[2], n % 5)];
+    const total = want[0] + want[1] + want[2]; let i = 0;
+    L.shown = total;
+    L.shards.forEach((list, kind) => list.forEach((b, j) => {
+      if (j >= want[kind]) { b.scale.setScalar(1e-4); return; }
+      const a = i++ / total * TAU + F.t * k.spin;
+      b.position.set(Math.cos(a) * k.r, k.y + Math.sin(a * 2 + F.t) * .14, Math.sin(a) * k.r); b.rotation.y = F.t * 2; b.scale.setScalar(1);
+      if (kind === 0 && Math.random() < s * k.sparkle) sp(F.root.localToWorld(_lp.copy(b.position)), 0x7cd8ff);
+    }));
+  }
+  if (L.look === 'seuche') {
+    const k = SK.seuche;
+    if ((L.markT -= s) <= 0) {   // markierte Mobs zählen (plagueMarks.ts), nur lesen
+      L.markT = k.every; let n = 0;
+      for (const m of state.mobs) if (!m.dead && markStacks(m) > 0) n++;
+      L.marks = n;
+    }
+    L.size = lerp(L.size, 1 + Math.min(k.cap, L.marks) * k.perMark, Math.min(1, s * k.grow));
+    // Beutel hängt immer nach unten (gegen die Drehung der Hand), schwingt leicht; beim Trinken weg
+    F.armL.hand.getWorldQuaternion(_lqa).invert(); F.root.getWorldQuaternion(_lqb);
+    L.bag.quaternion.copy(_lqa.multiply(_lqb)); L.bag.rotateZ(Math.sin(F.t * 2) * .06);
+    L.bag.scale.setScalar(F.dead || (F.last?.ps ?? 0) > .02 ? 1e-4 : L.size);
+    L.drops.forEach((d, i) => { const u = (F.t * k.drip + i * .5) % 1; d.position.y = -A2 * .97 - u * .35; d.scale.setScalar(F.dead ? 1e-4 : 1 - u * .6); });
+    if (L.flies) {
+      F.root.worldToLocal(F.head.getWorldPosition(_lq));
+      for (const f of L.flies) { const a = f.a + F.t * f.s; f.b.position.set(_lq.x + Math.cos(a) * f.r, _lq.y + f.y + Math.sin(F.t * 7 + f.a) * .08, _lq.z + Math.sin(a * 1.3) * f.r); f.b.scale.setScalar(F.dead ? 1e-4 : 1); }
+    }
+    if (F.dead) return;
+    for (let n = rate(s * k.steam); n > 0; n--) {   // Dampf rund um die Figur
+      const a = Math.random() * TAU, r = .3 + Math.random() * .2;
+      F.root.localToWorld(_lp.set(Math.cos(a) * r, .2 + Math.random() * 1.6, Math.sin(a) * r));
+      sp(_lp, Math.random() < .5 ? 0x7dff3a : 0xb46bff);
+    }
+  }
+  if (L.look === 'blitz') {   // Pegel = Anzeige der Figur (Blitz: Batterie)
+    const k = SK.blitz;
+    L.lvl = lerp(L.lvl, F.dead ? k.lvlMin : Math.max(k.lvlMin, F.m), Math.min(1, s * k.lvlRate));
+    L.liquid.scale.set(1, L.lvl, 1);
+    if (F.dead) return;
+    L.cork.getWorldPosition(_lp);
+    for (let n = rate(s * (1 + k.drip * L.lvl)); n > 0; n--) sp(_lp, 0xffe866);
+    if (L.lvl >= k.full) for (let n = rate(s * k.arcs); n > 0; n--) { (Math.random() < .5 ? F.armL : F.armR).hand.getWorldPosition(_lq); sp(_lq.lerp(_lp, Math.random()), 0xfff6b0); }
+  }
+}
+
 // ───────────────────────── IK
 const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = V(0, -1, 0);
 function ik(upper, lower, l1, l2, targetW, poleW) {
@@ -811,11 +1027,14 @@ const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchtei
 // weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element.
 // opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/mage.ts), sonst eine neue nach dem Skin.
 // opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
-// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
+// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14, glut), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
 export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
   const look: string = opts.look ?? 'standard';
   const S = SKINS[skin];
+  const LK = LOOKS[look] ?? null;   // null = Standard: Schul-Look wie bisher
+  const ink = k => LK?.[k] ?? S.ink;
+  FACET = 1;
   const U = { uTime: { value: 0 }, uM: { value: 0 }, uK: { value: 0 }, uLvl: { value: 0 } };   // pro Figur
   const F: any = { skin, look, S, bones: [], parts: [], glow: [], t: 0, last: null, blendFrom: null, blendT: 0, freeze: 0, m: 0, props: {}, groundY: 0, groundPos: V() };
   F.root = new THREE.Group();
@@ -826,25 +1045,27 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   const glow = (bone, geo, color, pos?, rot?, scl?) => F.glow.push({ bone, geo, color, m: M(pos, rot, scl) });
 
   const hips = F.hips = B(F.root, 0, 1, 0);
-  part(hips, new THREE.SphereGeometry(.14, 7, 4), S.ink, [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
+  part(hips, new THREE.SphereGeometry(.14, 7, 4), ink('pants'), [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
   const chest = F.chest = B(hips, 0, .05, 0);
   part(chest, new THREE.LatheGeometry([[0, -.04], [.1, -.02], [.11, .1], [.15, .33], [.18, .47], [.15, .56], [.08, .61], [0, .62]]
-    .map(([a, b]) => new THREE.Vector2(a, b)), 8), S.ink, [0, 0, 0], [0, Math.PI / 8, 0], [1.1, 1, .64]);
-  part(chest, new THREE.TorusGeometry(.13, .04, 3, 10), S.accent, [0, .56, 0], [Math.PI / 2, 0, 0], [1, 1, .8]);   // Kragen-Schal
+    .map(([a, b]) => new THREE.Vector2(a, b)), 8), ink('top'), [0, 0, 0], [0, Math.PI / 8, 0], [1.1, 1, .64]);
+  part(chest, new THREE.TorusGeometry(.13, .04, 3, 10), LK?.collar ?? S.accent, [0, .56, 0], [Math.PI / 2, 0, 0], [1, 1, .8]);   // Kragen-Schal
   const neck = F.neck = B(chest, 0, .6, 0);
-  part(neck, new THREE.CylinderGeometry(.04, .05, .12, 5), S.ink, [0, .05, 0]);
+  part(neck, new THREE.CylinderGeometry(.04, .05, .12, 5), ink('skin'), [0, .05, 0]);
   const head = F.head = B(neck, 0, .1, 0);
-  part(head, new THREE.IcosahedronGeometry(.18, 1), S.ink, [0, .16, 0], [0, 0, 0], [.95, 1.05, 1]);
+  part(head, new THREE.IcosahedronGeometry(.18, 1), ink('head'), [0, .16, 0], [0, 0, 0], [.95, 1.05, 1]);
   const arm = side => {
-    const ua = B(chest, side * .23, .49, 0); part(ua, capDown(.058, A1), S.ink);
-    const fa = B(ua, 0, -A1, 0); part(fa, capDown(.052, A2), S.ink);
-    const hand = B(fa, 0, -A2, 0); part(hand, new THREE.IcosahedronGeometry(.07, 0), S.ink);
+    const ua = B(chest, side * .23, .49, 0); part(ua, capDown(.058, A1), ink('sleeve'));
+    const fa = B(ua, 0, -A1, 0); part(fa, capDown(.052, A2), ink('sleeve'));
+    const hand = B(fa, 0, -A2, 0); part(hand, new THREE.IcosahedronGeometry(.07, 0), ink('skin'));
     return { ua, fa, hand, side };
   };
   const leg = side => {
-    const th = B(hips, side * .11, -.05, 0); part(th, capDown(.08, L1), S.ink);
-    const sh = B(th, 0, -L1, 0); part(sh, capDown(.064, L2), S.ink);
-    const ft = B(sh, 0, -L2, 0); part(ft, new THREE.ConeGeometry(.065, .26, 5), S.ink, [0, -.02, .08], [Math.PI / 2, 0, 0], [1, 1, .7]);
+    const th = B(hips, side * .11, -.05, 0); part(th, capDown(.08, L1), ink('pants'));
+    const sh = B(th, 0, -L1, 0);
+    if (LK?.ankle) { part(sh, capDown(.064, L2 * .8), ink('pants')); part(sh, capDown(.036, L2 * .2), ink('skin'), [0, -L2 * .8, 0]); }   // Knöchel frei
+    else part(sh, capDown(.064, L2), ink('pants'));
+    const ft = B(sh, 0, -L2, 0); part(ft, new THREE.ConeGeometry(.065, .26, 5), ink('shoe'), [0, -.02, .08], [Math.PI / 2, 0, 0], [1, 1, .7]);
     return { th, sh, ft, side };
   };
   F.armL = arm(1); F.armR = arm(-1); F.legL = leg(1); F.legR = leg(-1);
@@ -853,7 +1074,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   // Der eingebaute Stab des Viewers weicht den Waffen: nur das Gelenk bleibt, models/mage.ts hängt die Waffe daran
   F.crystal = new THREE.Object3D(); F.crystal.position.set(0, .79, 0); staff.add(F.crystal);
 
-  if (skin === 'base') {
+  if (skin === 'base' && !LK) {
     // 90er-Zuhälter-Look: pinker Pelzmantel, weißer Fedora, dicke Goldkette
     const PINK = col(0xff5fb0), FUR = col(0xffa8d4), GOLD = col(0xe2b13c), HAT = col(0xf2ede4), BAND = col(0x1d1b18);
     part(chest, new THREE.LatheGeometry([[0, -.06], [.12, -.04], [.13, .1], [.17, .33], [.2, .47], [.17, .57], [0, .6]]
@@ -876,11 +1097,11 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     part(head, new THREE.CylinderGeometry(.172, .172, .04, 8), BAND, [.004, .33, 0], [-.08, 0, .1], [1, 1, .85]);
     glow(chest, new THREE.OctahedronGeometry(.03, 0), col(0xfff3b0), [0, .25, .15]);
   }
-  if (skin === 'fire') part(head, new THREE.IcosahedronGeometry(.185, 1), S.ink, [0, .14, 0], [0, 0, 0], [.9, .7, .95]);   // verkohlter Kiefer
+  if (skin === 'fire' && !LK) part(head, new THREE.IcosahedronGeometry(.185, 1), S.ink, [0, .14, 0], [0, 0, 0], [.9, .7, .95]);   // verkohlter Kiefer
   if (skin === 'ice') F.ice = makeIcicles(F);
   if (skin === 'arcane') { glow(head, new THREE.OctahedronGeometry(.035, 0), S.orb, [0, .2, .17], [0, 0, 0], [1, 1.5, .5]); F.runeParts = bodyRunes(F); }   // drittes Auge
-  if (skin === 'blitz') for (let i = 0; i < 7; i++) { const a = (i / 7 - .5) * 2.4; part(head, new THREE.ConeGeometry(.04, .17, 4), S.ink, [Math.sin(a) * .12, .3 - Math.abs(a) * .03, Math.cos(a) * .05 - .06], [-.5 + Math.abs(a) * .1, 0, -a * .55]); }   // Haar-Zacken
-  if (skin === 'plague') {
+  if (skin === 'blitz' && !LK) for (let i = 0; i < 7; i++) { const a = (i / 7 - .5) * 2.4; part(head, new THREE.ConeGeometry(.04, .17, 4), S.ink, [Math.sin(a) * .12, .3 - Math.abs(a) * .03, Math.cos(a) * .05 - .06], [-.5 + Math.abs(a) * .1, 0, -a * .55]); }   // Haar-Zacken
+  if (skin === 'plague' && !LK) {
     // Kapuzen-Klumpen und hängende Fäden: zerläuft nach unten
     for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; part(head, new THREE.ConeGeometry(.035, .14, 5), S.ink, [Math.sin(a) * .12, .02, Math.cos(a) * .1], [Math.PI, 0, 0]); }
     for (const a of [F.armL, F.armR]) part(a.hand, new THREE.ConeGeometry(.04, .16, 5), S.ink, [0, -.06, 0], [Math.PI, 0, 0]);
@@ -892,21 +1113,22 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     const deco: any[] = [[chest, [0, .32, .15], .1, Y], [chest, [-.1, .18, .14], .06, W], [chest, [.11, .45, .12], .05, W], [chest, [0, .32, -.15], .1, Y], [chest, [.08, .12, -.14], .06, W],
       [hips, [.1, -.02, .12], .06, W], [hips, [-.09, -.05, -.12], .06, Y], [F.armL.ua, [0, -.12, .06], .05, Y], [F.armR.ua, [0, -.14, .06], .05, W], [F.armL.fa, [0, -.1, .05], .045, W], [F.armR.fa, [0, -.1, .05], .045, Y],
       [F.legL.th, [0, -.2, .08], .055, W], [F.legR.th, [0, -.15, .08], .055, Y], [head, [0, .2, .17], .05, Y]];
-    for (const [b, p, sc, c] of deco) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
+    if (!LK) for (const [b, p, sc, c] of deco) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
     for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; glow(head, qGeo(), Y, [Math.sin(a) * .36, .52 + .06 * i, Math.cos(a) * .36], [0, a, 0], [.14, .14, .07]); }
   }
-  // Skins (src/skins.ts): Teile an Bones wie oben, `if (look === 'blitz') { … }` usw. Noch keiner gebaut, alle sehen aus wie Standard
+  F.wel = weaponElement && weaponElement !== 'none' && ELEMENTS[weaponElement] ? ELEMENTS[weaponElement].color : null;
+  // Skins (src/skins.ts): Teile an Bones wie oben, ersetzen die Kostüm-Teile der Schule (Stufen-Effekte bleiben). Gag-Teile auf eigenen Bones, Größe 1e-4 = versteckt
+  if (LK) buildLook(F, look, { part, glow, B, M });
   // Element der Waffe (Spell-Viewer, Block WEL): Kragen, Schärpe, Armreifen, schwebender Stein über dem Stab, Augen in der Element-Farbe.
   // Alles hängt an Bones im Körper-Mesh, kein Draw Call mehr. Ohne Element bleibt die Figur wie bisher.
-  F.wel = weaponElement && weaponElement !== 'none' && ELEMENTS[weaponElement] ? ELEMENTS[weaponElement].color : null;
   if (F.wel != null) {
-    const E = col(F.wel), add = skin === 'plague' ? glow : part;   // auf Schleim leuchten, sonst geht die Farbe im Muster unter
+    const E = col(F.wel), add = skin === 'plague' && !LK ? glow : part;   // auf Schleim leuchten, sonst geht die Farbe im Muster unter
     add(chest, new THREE.TorusGeometry(.14, .045, 4, 12), E, [0, .555, 0], [Math.PI / 2, 0, 0], [1.05, 1, .85]);   // Kragen // PH
     add(hips, new THREE.TorusGeometry(.16, .035, 4, 12), E, [0, .03, 0], [Math.PI / 2, 0, 0], [1.2, 1, .95]);       // Schärpe // PH
     for (let i = 0; i < 3; i++) add(hips, new THREE.ConeGeometry(.03, .22, 4).translate(0, -.11, 0), E, [.12 - i * .03, .02, .13 - i * .02], [0, 0, .15 * i]);   // Schärpen-Enden // PH
     for (const a of [F.armL, F.armR]) add(a.fa, new THREE.TorusGeometry(.06, .022, 3, 8), E, [0, -A2 * .82, 0], [Math.PI / 2, 0, 0]);   // Armreifen // PH
     glow(staff, new THREE.OctahedronGeometry(.055, 0), E, [0, WEL_STONE_Y, 0], [0, 0, 0], [1, 1.5, 1]);   // Stein über dem Knauf
-    for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH
+    if (!LK?.eyes) for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH (Skins tragen sie in Brille/Maske/Blick)
   }
   // Trink-Requisiten: je ein Bone, der ?-Magier hat alle 4 Getränke (anim.drinkSkin wählt)
   for (const k of skin === 'qm' ? ['base', 'fire', 'ice', 'arcane'] : [skin]) {
@@ -936,13 +1158,13 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   F.mat = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad, emissive: 0x000000 });
   F.mat.onBeforeCompile = bodyHook(U);
   F.mat.customProgramCacheKey = () => 'strichBody';
-  if (skin === 'plague') plagueShader(F.mat, U);
+  if (skin === 'plague' && !LK) plagueShader(F.mat, U);   // mit Skin bleibt der Anzug sichtbar, Tropfen und Fliegen laufen weiter
   // alles in einem Mesh: Körper + Glühen + Eiszapfen + Requisite → 1 Draw Call
   F.body = build([...F.parts, ...F.glow.map(g => ({ ...g, glow: 1 })), ...(F.ice || [])], F.mat, (p, g, mw) => {
     const n = g.attributes.position.count, b = V().applyMatrix4(mw), base = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) base.set([b.x, b.y, b.z], i * 3);
     g.setAttribute('icB', new THREE.BufferAttribute(base, 3));
-    g.setAttribute('icT', new THREE.BufferAttribute(new Float32Array(n).fill(p.prop ? -2 : p.t ?? -1), 1));
+    g.setAttribute('icT', new THREE.BufferAttribute(new Float32Array(n).fill(p.prop || p.noShell ? -2 : p.t ?? -1), 1));
     g.setAttribute('aGlow', new THREE.BufferAttribute(new Float32Array(n).fill(p.glow || 0), 1));
   });
   F.body.customDepthMaterial = depthMat(U);
@@ -952,6 +1174,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   if (skin === 'arcane') { F.orbs = makeChargeOrbs(); world.add(F.orbs); }
   if (skin === 'blitz') { F.bolts = makeBolts(); world.add(F.bolts.mesh); }
   if (skin === 'plague') { F.goo = makeGoo(F); world.add(F.goo.drops, F.goo.strands); }
+  if (F.lk?.shards) for (const b of F.lk.shards.flat()) b.scale.setScalar(1e-4);   // Splitter erst nach dem Binden verstecken (Bind-Pose mit Größe 1)
 
   // Partikel in Weltkoordinaten
   const PN = 400, pGeo = new THREE.BufferGeometry();
@@ -1000,6 +1223,8 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     // Anzeige der Figur 0 … 1: Hitze, Kälte, Ladungen/4, Batterie
     setMeter(v) { F.m = clamp(v || 0, 0, 1); },
     get meter() { return F.m; },
+    // Gag-Werte des Skins (Tests): Pegel der Flasche, Größe des Müllbeutels, sichtbare Splitter
+    get lookState() { const L = F.lk; return L ? { look: L.look, lvl: L.lvl, bag: L.bag?.scale.x, marks: L.marks, shards: L.shown } : null; },
     // Laufende Animation für den Neubau bei Waffenwechsel (models/mage.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
     get animState() { return { t: F.t, m: F.m, last: F.last, blendFrom: F.blendFrom, blendT: F.blendT, freeze: F.freeze, uTime: U.uTime.value, loco, mode, castT, castKeys, runT, wasCast, chargeT }; },
     adoptAnim(a) {
@@ -1054,6 +1279,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       if (fl && mode !== 'dead') F.root.position.y += fl + .07 * Math.sin(F.t * 1.3);
       applyPose(F, p);
       F.root.getWorldPosition(F.groundPos); F.groundY = F.groundPos.y - (fl && mode !== 'dead' ? fl + .07 * Math.sin(F.t * 1.3) : 0);
+      if (F.lk) updateLook(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
 
       // Stufen-Effekte nach der Anzeige m
       const m = F.dead ? 0 : F.m;

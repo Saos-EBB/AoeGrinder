@@ -16,7 +16,8 @@ import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
 import { meta, pickSkin } from '../meta';
 import { figurOf, skinsFor } from '../skins';
-import { WAR_WEAPON_NAMES } from '../realMen';
+import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
+import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
@@ -130,8 +131,13 @@ export function renderMenu() {
   const hasWeapons = !!mage.weapon || mage.skin === 'krieger';
   $('menuWeaponsBtn').hidden = !hasWeapons;
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
-  if (mage.skin === 'krieger') for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))   // Strichkrieger: feste Waffe vor dem Run
-    weapons.appendChild(button('chip' + (id === mage.warWeapon ? ' selected' : ''), name, () => { mage.setWarWeapon(id); applySelection(); }));
+  if (mage.skin === 'krieger') {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
+    const pickWar = (id, leg) => { setWarLegendary(leg); mage.setWarWeapon(id); applySelection(); };
+    for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))
+      weapons.appendChild(button('chip' + (id === mage.warWeapon && !warLegendary() ? ' selected' : ''), name, () => pickWar(id, null)));
+    for (const id of WAR_LEGENDARIES)
+      weapons.appendChild(button('chip' + (id === warLegendary() ? ' selected' : ''), LEGENDS[id]?.name ?? id, () => pickWar(mage.warWeapon, id), LEGENDS[id]?.desc ?? ''));
+  }
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
   if (mage.weapon) {
     const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
@@ -157,7 +163,7 @@ export function renderMenu() {
   $('menuRole').textContent = fig.sub;
   $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b><i style="width:${fig.stats[i] / STAT_MAX * 100}%;background:${fig.color}"></i></b></div>`).join('');
   const w = equipped(), wn = $('menuWeaponName');   // Waffe der Figur: Magier aus dem Inventar, Strichkrieger feste Wahl
-  wn.textContent = mage.skin === 'krieger' ? WAR_WEAPON_NAMES[mage.warWeapon] ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
+  wn.textContent = mage.skin === 'krieger' ? (warLegendary() ? LEGENDS[warLegendary()]?.name : WAR_WEAPON_NAMES[mage.warWeapon]) ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
   wn.style.color = mage.skin !== 'krieger' && w ? rarityOf(w).color : '';
   $('startModal').style.setProperty('--fc', fig.color);
   renderMap();

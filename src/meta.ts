@@ -59,10 +59,10 @@ meta.inv.forEach(fixWeapon);
 export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
 
 // ---------- Skins ----------
-// Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe passt (Krieger), sonst Standard
-export function skinOf(figur: Figur, weapon?: string | null): SkinId {
+// Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe (Krieger) bzw. Schule (Magier) passt, sonst Standard
+export function skinOf(figur: Figur, need?: string | null): SkinId {
   const id = meta.skins?.[figur];
-  return skinsFor(figur, weapon).some(s => s.id === id) ? id : STANDARD;
+  return skinsFor(figur, need).some(s => s.id === id) ? id : STANDARD;
 }
 export function pickSkin(figur: Figur, id: SkinId) { meta.skins = cleanSkins({ ...meta.skins, [figur]: id }); saveMeta(); }
 

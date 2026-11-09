@@ -2021,6 +2021,7 @@ export const en: Record<string, string> = {
   'look.magier.blitz.name': "High Voltage",
   'look.magier.seuche.name': "Plaguebringer",
   'look.magier.frost14.name': "Shard King",
+  'look.magier.glut.name': "Ember Prophet",
   'look.krieger.klapse.name': "Escapee",
   'look.krieger.classic.name': "Classic Warrior 55",
   'look.krieger.holz.name': "Lumberjack",
