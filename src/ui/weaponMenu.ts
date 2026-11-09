@@ -127,6 +127,7 @@ export function openWeaponMenu(done?: () => void) {
 export function closeWeaponMenu() {
   closeLists();
   $('invModal').classList.remove('show');
+  mage.previewWeapon(null);
   setUi('weaponSeen', Math.max(uiSettings.weaponSeen, ...meta.inv.map(w => w.id)));   // ab jetzt nicht mehr NEU
   syncPause();
   const done = onClose;
@@ -227,6 +228,7 @@ async function salvage(w) {
 
 function renderDetail(eq) {
   const box = $('wmDetail'), w = shift && eq ? eq : meta.inv.find(x => x.id === selected) ?? eq;
+  mage.previewWeapon(w && w !== eq ? w : null);   // Figur links trägt die gezeigte Waffe zur Probe
   box.textContent = '';
   if (!w) { box.innerHTML = `<p class="wmEmpty">${t('wm.empty')}</p>`; return; }
   const rar = rarityOf(w), rows = effectRows(w), main = pctOf(valueRow(w)), s = w.s;

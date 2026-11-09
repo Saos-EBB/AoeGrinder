@@ -8,7 +8,7 @@ import { activeModIds } from '../modifiers';
 import { buildStrichMagier } from './strichMagier';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { buildEquipped, equipped, elementOf } from '../weaponRolls';
+import { buildWeaponOf, equipped, elementOf } from '../weaponRolls';
 import { ELEMENTS } from './weapons/baukasten';
 import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
@@ -65,8 +65,11 @@ function spark(p, color) {
 }
 
 // Element der ausgerüsteten Waffe für die Farbe der Strichmagier. Nicht in ELEMENTS (alte Waffen, alte Elemente) = kein Element
+// Waffenmenü: gewählte Waffe zur Probe in der Hand, ohne sie auszurüsten (null = ausgerüstete)
+let preview = null;
+const shownWeapon = () => preview ?? equipped();
 function weaponElement() {
-  const w = equipped(), el = w ? elementOf(w) : 'none';
+  const w = shownWeapon(), el = w ? elementOf(w) : 'none';
   return el !== 'none' && Object.hasOwn(ELEMENTS, el) ? el : null;
 }
 
@@ -135,7 +138,7 @@ function wield() {
   if (HEROES[skin]) return;                   // Nahkämpfer tragen ihre Waffen fest
   recolor();
   weapon?.dispose();
-  weapon = buildEquipped();
+  weapon = buildWeaponOf(shownWeapon());
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
@@ -169,6 +172,7 @@ export const mage = {
   get weapon() { return weapon; },
   setSkin,
   refreshWeapon() { wield(); },   // Wahl im Hauptmenü
+  previewWeapon(w) { if (preview === w) return; preview = w; wield(); },   // Waffenmenü: Probe tragen, null = zurück zur ausgerüsteten
   // Anzeige 0 … 1 für die Stufen-Effekte der Strichmagier (Hitze, Kälte, Ladungen, Batterie)
   setMeter(v) { cur.setMeter?.(v); },
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.
