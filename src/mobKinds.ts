@@ -6,14 +6,12 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, rand, randInt, pick, clamp, dist2d } from './util';
-import { CFG, LEVEL_UNLOCKS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL } from './config';
-import { mobHitDmg } from './formulas';
-import { modFactor } from './modifiers';
+import { CFG, LEVEL_UNLOCKS, LEVEL_PACK_SPREAD } from './config';
 import { camera } from './render';
-import { spawnMob, enterCombat, onMobDeath, removeMob, damageMob } from './mobs';
+import { spawnMob, enterCombat, onMobDeath, removeMob, damageMob, hitPlayer, rollPackSize } from './mobs';
+import { zone } from './world';
 import { ABILITIES, ZUSATZ, breakShield, telegraph } from './abilities';
 import { rollChampionPack, makeChampion } from './champions';
-import { damagePlayer } from './player';
 import { schedule } from './spells/core';
 import { burstFx } from './spells/fx';
 import { addEffect } from './fx/spellFx';
@@ -99,17 +97,15 @@ export function spawnKind(theme: string, cat: string, zus: string, pos, level: n
   m.xpMul = KINDS[cat].xp * (size < 1 ? P.split.xp : 1);
   m.kindColor = type.gl != null ? hex3(type.gl) : null;
   if (cat === 'gross') m.knockMul = 0.5;
-  if (zus === 'fliegt') m.slowK = 2;
+  if (zus === 'fliegt') { m.slowK = 2; m.flies = true; }   // flies: ignoriert Wände (mobs.ts/collision.ts) und Lava
   return m;
 }
 
 // Pack-Zusammensetzung: Normal + 1–2 andere freigeschaltete Kategorien
 const unlockedKinds = level => UNLOCK_ORDER.slice(0, 3 + LEVEL_UNLOCKS.filter(l => level >= l).length);
-function packSize(level: number) {
-  const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(3 + Math.floor((level - 20) / 2) + randInt(-1, 1), 2, 10));
-  return Math.max(2, Math.round(base * PACK_SIZE_MUL * modFactor('packSize')));
-}
-export function rollPackCats(level: number, size = packSize(level)) {
+// Packgröße wie bei den alten Packs (mobs.ts rollPackSize: Level, Zonen-Bonus, Modifikatoren)
+const packSize = () => Math.max(2, Math.round(rollPackSize()));
+export function rollPackCats(level: number, size = packSize()) {
   const others = unlockedKinds(level).slice(1), chosen: string[] = [];
   const nCats = Math.min(others.length, randInt(1, 2));
   while (chosen.length < nCats) { const c = pick(others); if (!chosen.includes(c)) chosen.push(c); }
@@ -132,8 +128,11 @@ function placeGroup(spot: PackSpot, theme: string, level: number, cats: string[]
   const packId = ++state.packCounter, spread = Math.min(Math.max(spot.r, 2), Math.max(LEVEL_PACK_SPREAD, Math.sqrt(cats.length) * 1.5));
   const out = [];
   cats.forEach((cat, i) => {
-    const a = rand(0, Math.PI * 2), r = Math.sqrt(Math.random()) * spread;
-    const pos = new THREE.Vector3(spot.x + Math.cos(a) * r, 0, spot.z + Math.sin(a) * r);
+    const pos = new THREE.Vector3(spot.x, 0, spot.z);
+    for (let tries = 0; tries < 6; tries++) {         // nur auf freiem Boden (zone.spawnOk), sonst Mitte des Platzes
+      const a = rand(0, Math.PI * 2), r = Math.sqrt(Math.random()) * spread, x = spot.x + Math.cos(a) * r, z = spot.z + Math.sin(a) * r;
+      if (zone.spawnOk?.(x, z) ?? true) { pos.set(x, 0, z); break; }
+    }
     const lvl = Math.max(1, level + [-1, 0, 0, 1, 1, 2][randInt(0, 5)]);
     const m = spawnKind(theme, cat, zus[i] ?? 'none', pos, lvl, packId);
     if (!m) return;
@@ -145,7 +144,8 @@ function placeGroup(spot: PackSpot, theme: string, level: number, cats: string[]
 
 // Groß-Zähler und Lauerer-Uhr laufen über alle Packs
 const big = { count: 0, next: randInt(P.big[0], P.big[1]) };
-const lurk = { last: -1 };
+const lurk = { last: null as number | null };
+const history: string[] = [];   // letzte Packs (Dev/Tests): 'gross' oder 'pack'
 
 export function spawnPack(spot: PackSpot, theme: ThemeInfo, level: number): void {
   rollLurker(theme, level);
@@ -153,16 +153,18 @@ export function spawnPack(spot: PackSpot, theme: ThemeInfo, level: number): void
   if (++big.count >= big.next) {
     big.count = 0; big.next = randInt(P.big[0], P.big[1]);
     const cats = Math.random() < P.bigEscort ? ['gross', 'normal', 'normal'] : ['gross'];
+    history.push('gross'); if (history.length > 100) history.shift();
     placeGroup(spot, theme.id, level, cats, rollZusatz(cats), champ);
     return;
   }
   const cats = rollPackCats(level);
+  history.push('pack'); if (history.length > 100) history.shift();
   placeGroup(spot, theme.id, level, cats, rollZusatz(cats), champ);
 }
 
 // Lauerer: höchstens 1, 10 % pro Minute, erst ab Schwierigkeit 3. Die Uhr läuft zwischen zwei Pack-Spawns
 function rollLurker(theme: ThemeInfo, level: number) {
-  if (lurk.last < 0 || state.now < lurk.last) lurk.last = state.now;
+  if (lurk.last == null || state.now < lurk.last - 3600000) lurk.last = state.now;   // neuer Run: Uhr neu
   const min = (state.now - lurk.last) / 60000;
   lurk.last = state.now;
   if (theme.difficulty < P.lurkDiff || !skinOf(theme.id, 'lauerer')) return;
@@ -185,11 +187,11 @@ onMobDeath(m => {
   if (m.kindShield) breakShield(m);
   m.healCast = null;
   if (zus === 'platzt') {
-    const B = P.burst, dmg = Math.round(mobHitDmg(m.level) * (m.type.dmgMul ?? 1) * B.dmg);
+    const B = P.burst;
     telegraph(pos, B.r, [2.4, 0.3, 0.15], B.warnMs);
     schedule(B.warnMs, () => {
       burstFx(pos, B.r, [[2.4, 0.5, 0.15], [1.6, 0.25, 0.1]], 0xff5a30);
-      if (!player.dead && dist2d(player.pos, pos) <= B.r) damagePlayer(dmg);
+      if (!player.dead && dist2d(player.pos, pos) <= B.r) hitPlayer(m, B.dmg);   // über hitPlayer: Theme-Schwierigkeit (dmgMulT) gilt
     });
   }
   if (zus === 'teilt') schedule(150, () => {
@@ -234,4 +236,4 @@ export function devSpawn(theme: string, cat: string, zus: string, n = 1, spot = 
   return placeGroup(spot, theme, player.level, cats, z);
 }
 $('devKSpawn').addEventListener('click', () => devSpawn(val('devKTheme'), val('devKCat'), val('devKZus'), +val('devKN')));
-(window as any).__kinds = { spawnMob, removeMob, damageMob, enterCombat, camera, spawnPack, spawnKind, spawnLurker, devSpawn, devSpot, rollPackCats, rollZusatz, KINDS, big, P, CFG };
+(window as any).__kinds = { spawnMob, removeMob, damageMob, enterCombat, camera, spawnPack, spawnKind, spawnLurker, devSpawn, devSpot, rollPackCats, rollZusatz, KINDS, big, lurk, history, P, CFG };

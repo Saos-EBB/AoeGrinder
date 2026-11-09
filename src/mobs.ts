@@ -15,7 +15,7 @@ import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
 import { mobAttackSlow } from './dodge';
-import { spawnPack as spawnThemePack } from './mapgen/spawnPackOld';   // Schnittstelle zu den neuen Mob-Kategorien: ein Aufruf pro Pack
+import { spawnPack as spawnThemePack } from './mobKinds';   // neue Mob-Kategorien (Phase 7): ein Aufruf pro Pack, Packgröße und Champion würfelt mobKinds.ts
 import type { PackSpot } from './mapgen/types';
 import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
@@ -122,7 +122,7 @@ function spawnPack(at = null) {
   }
 }
 
-// Packgröße mit Zufall und Modifikatoren (auch für mapgen/spawnPackOld.ts)
+// Packgröße mit Zufall und Modifikatoren (auch für mobKinds.ts)
 export function rollPackSize() {
   const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
   return base * PACK_SIZE_MUL * modFactor('packSize');

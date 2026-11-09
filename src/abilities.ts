@@ -54,7 +54,7 @@ function updateHazards(dt) {
   hazardClock -= 1000;
   // Lava trifft Mobs wie den Spieler (PH); Lavaflächen des Abgesandten nur den Spieler
   if (zone.hazard) for (const m of [...state.mobs]) {
-    if (m.dead || m.leap || m.state === 'evade') continue;
+    if (m.dead || m.leap || m.flies || m.state === 'evade') continue;   // flies: Zusatz „fliegt“ schwebt über der Lava
     const lava = zone.hazard(m.pos.x, m.pos.z);
     if (lava > 0) burnMob(m, lava);
   }
