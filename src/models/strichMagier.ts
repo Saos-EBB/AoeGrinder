@@ -11,6 +11,8 @@ import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 import { eMat, PAL } from '../vfx/energy';
 import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
+import { state } from '../state';
+import { markStacks } from '../plagueMarks';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -74,7 +76,7 @@ const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Vi
 const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiplyScalar(.8)) };   // Muster Facette, dunkler als im Viewer wegen der Lampe über der Figur // PH
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
-  seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0), collar: col(0x2e1838), eyes: true },
+  seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
   frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.8), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
 };
 
@@ -516,6 +518,7 @@ const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pt
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
 const SK = {   // Optik-Zahlen der Skins // PH
   blitz: { lvlMin: .08, lvlRate: 4, drip: 6, full: .98, arcs: 24 },   // Pegel: mindestens 8 %, folgt der Anzeige mit 4/s; Funken pro Sekunde am Korken (+ drip × Pegel) und bei voller Flasche zu den Händen
+  seuche: { perMark: .06, cap: 20, every: .25, grow: 3, steam: 8, flies: 6, drip: .7 },   // Müllbeutel +6 % pro markiertem Mob, höchstens 20 zählen (× 2,2), gezählt alle 0,25 s; Dampf pro Sekunde; Fliegen; Tropfen pro Sekunde an den Manschetten
 };
 function buildLook(F, look, { part, glow, B, M }) {
   const { chest, hips, head } = F, arms = [F.armL, F.armR], legs = [F.legL, F.legR];
@@ -546,11 +549,70 @@ function buildLook(F, look, { part, glow, B, M }) {
     F.glow.push({ bone: lq, geo: new THREE.CylinderGeometry(.126, .126, .42, 12).translate(0, .21, 0), color: YEL, m: new THREE.Matrix4(), noShell: true });
     L.cork = new THREE.Object3D(); L.cork.position.copy(V(0, .38, 0).applyMatrix4(Mb)); chest.add(L.cork);
   }
+
+  if (look === 'seuche') {   // Pestbringer: verwester Anzug Dunkellila/Grün/Gold, Pestmaske mit Hut, Phiolen-Kette, Umhangrest, tropfende Manschetten, Dampf, Fliegen, Müllbeutel in der freien Hand
+    const PURPLE = col(0x3b1f46), GOLD = col(0xc9a640), BONE = col(0xd8cfb0).multiplyScalar(.5), SLIME = col(0x7dff3a), HAT = col(0x2e1838);
+    const skirt = new THREE.CylinderGeometry(.19, .25, .38, 10, 1, true), sp = skirt.attributes.position;   // Schoß mit ausgefranstem Saum
+    for (let i = 0; i < sp.count; i++) if (sp.getY(i) < 0) sp.setY(i, sp.getY(i) - (i % 2) * .08);
+    part(hips, skirt, PURPLE, [0, -.15, 0], [0, 0, 0], [1, 1, .74]);
+    for (let k = 0; k < 3; k++) part(chest, new THREE.SphereGeometry(.016, 6, 4), GOLD, [0, .42 - k * .12, .1 - k * .01]);   // Knöpfe
+    for (const [b, p] of [[chest, [-.08, .16, .085]], [chest, [.1, .36, .1]], [F.legL.th, [0, -.3, .075]]] as any) glow(b, new THREE.SphereGeometry(.024, 6, 4), SLIME, p);   // Schleim-Flecken
+    for (const sx of [-1, 1]) part(chest, new THREE.BoxGeometry(.19, .7, .014), PURPLE, [sx * .1, .17, -.125], [.1, 0, sx * .08]);   // Umhangrest
+    part(chest, new THREE.TorusGeometry(.1, .006, 3, 16), GOLD, [0, .53, .04], [1.25, 0, 0]);   // Phiolen-Kette
+    for (let k = 0; k < 3; k++) glow(chest, new THREE.CylinderGeometry(.018, .018, .06, 6), col(k === 1 ? 0xb46bff : 0x7dff3a), [(k - 1) * .06, .48, .11]);
+    for (const a of arms) {   // Manschetten, je ein Tropfen auf eigenem Bone
+      part(a.fa, new THREE.CylinderGeometry(.066, .072, .07, 8), col(0x5a2a66), [0, -A2 * .93, 0]);
+      const d = B(a.fa, 0, -A2 * .97, 0); (L.drops ??= []).push(d);
+      F.glow.push({ bone: d, geo: new THREE.SphereGeometry(.022, 6, 4), color: SLIME, m: new THREE.Matrix4(), noShell: true });
+    }
+    // Pestmaske: Schnabel, Gold-Brille (Gläser leuchten in Schleim- oder Waffen-Farbe), Hut
+    part(head, new THREE.ConeGeometry(.075, .3, 8), BONE, [0, .09, .26], [Math.PI / 2 + .45, 0, 0]);
+    for (const sx of [-1, 1]) {
+      part(head, new THREE.TorusGeometry(.042, .01, 4, 10), GOLD, [sx * .068, .19, .165], [0, sx * .35, 0]);
+      glow(head, new THREE.SphereGeometry(.032, 8, 6), eye(0x7dff3a), [sx * .068, .19, .16], [0, sx * .35, 0], [1, 1, .5]);
+    }
+    part(head, new THREE.CylinderGeometry(.24, .24, .022, 16), HAT, [0, .32, -.02], [-.12, 0, 0]);   // Krempe, nach hinten gekippt: das Gesicht bleibt sichtbar
+    part(head, new THREE.CylinderGeometry(.12, .145, .18, 12), HAT, [0, .42, -.03], [-.12, 0, 0]);
+    part(head, new THREE.TorusGeometry(.142, .011, 4, 16), GOLD, [0, .345, -.02], [Math.PI / 2 - .12, 0, 0]);
+    // Müllbeutel: eigener Bone an der linken Hand (dort sitzt auch die Trink-Requisite), wächst mit den markierten Mobs
+    const bag = L.bag = B(F.armL.hand, 0, -.02, 0), BAG = col(0x1c1a20), r0 = .13;
+    F.parts.push({ bone: bag, geo: new THREE.SphereGeometry(1, 10, 8), color: BAG, m: M([0, -r0 * 1.1, 0], [0, 0, 0], [r0, r0 * 1.2, r0]), noShell: true });
+    F.parts.push({ bone: bag, geo: new THREE.ConeGeometry(.03, .07, 6), color: BAG, m: M([0, -.01, 0], [Math.PI, 0, 0]), noShell: true });
+    L.marks = 0; L.markT = 0; L.size = 1;
+    if (F.skin !== 'plague') for (let i = 0; i < SK.seuche.flies; i++) {   // Fliegen (die Seuchen-Schule hat eigene)
+      const f = B(F.root); (L.flies ??= []).push({ b: f, a: i * 1.7, r: .45 + (i % 3) * .12, y: (i % 4) * .15 - .2, s: 1.5 + (i % 5) * .45 });
+      F.parts.push({ bone: f, geo: new THREE.SphereGeometry(.02, 5, 4), color: col(0x0b0a0e), m: new THREE.Matrix4(), noShell: true });
+    }
+  }
 }
 // Gags: liest nur Anzeige und Spielstand, ändert nichts. sp(p, color) = Funken ins Partikel-System
-const _lp = V(), _lq = V();
+const _lp = V(), _lq = V(), _lqa = new THREE.Quaternion(), _lqb = new THREE.Quaternion();
 function updateLook(F, s, sp) {
   const L = F.lk;
+  if (L.look === 'seuche') {
+    const k = SK.seuche;
+    if ((L.markT -= s) <= 0) {   // markierte Mobs zählen (plagueMarks.ts), nur lesen
+      L.markT = k.every; let n = 0;
+      for (const m of state.mobs) if (!m.dead && markStacks(m) > 0) n++;
+      L.marks = n;
+    }
+    L.size = lerp(L.size, 1 + Math.min(k.cap, L.marks) * k.perMark, Math.min(1, s * k.grow));
+    // Beutel hängt immer nach unten (gegen die Drehung der Hand), schwingt leicht; beim Trinken weg
+    F.armL.hand.getWorldQuaternion(_lqa).invert(); F.root.getWorldQuaternion(_lqb);
+    L.bag.quaternion.copy(_lqa.multiply(_lqb)); L.bag.rotateZ(Math.sin(F.t * 2) * .06);
+    L.bag.scale.setScalar(F.dead || (F.last?.ps ?? 0) > .02 ? 1e-4 : L.size);
+    L.drops.forEach((d, i) => { const u = (F.t * k.drip + i * .5) % 1; d.position.y = -A2 * .97 - u * .35; d.scale.setScalar(F.dead ? 1e-4 : 1 - u * .6); });
+    if (L.flies) {
+      F.root.worldToLocal(F.head.getWorldPosition(_lq));
+      for (const f of L.flies) { const a = f.a + F.t * f.s; f.b.position.set(_lq.x + Math.cos(a) * f.r, _lq.y + f.y + Math.sin(F.t * 7 + f.a) * .08, _lq.z + Math.sin(a * 1.3) * f.r); f.b.scale.setScalar(F.dead ? 1e-4 : 1); }
+    }
+    if (F.dead) return;
+    for (let n = rate(s * k.steam); n > 0; n--) {   // Dampf rund um die Figur
+      const a = Math.random() * TAU, r = .3 + Math.random() * .2;
+      F.root.localToWorld(_lp.set(Math.cos(a) * r, .2 + Math.random() * 1.6, Math.sin(a) * r));
+      sp(_lp, Math.random() < .5 ? 0x7dff3a : 0xb46bff);
+    }
+  }
   if (L.look === 'blitz') {   // Pegel = Anzeige der Figur (Blitz: Batterie)
     const k = SK.blitz;
     L.lvl = lerp(L.lvl, F.dead ? k.lvlMin : Math.max(k.lvlMin, F.m), Math.min(1, s * k.lvlRate));
