@@ -141,6 +141,8 @@ function rod(bone, a, b, r, c, r2 = r, seg = 5) {
 const band = (bone, pos, r, t, c, scl = [1, 1, 1], seg = 12) => part(bone, new THREE.TorusGeometry(r, t, 4, seg), c, pos, [Math.PI / 2, 0, 0], scl);
 const ext = (pts, depth) => new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y))), { depth, bevelEnabled: false }).translate(0, 0, -depth / 2);
 const tube = (pts, r, seg = 12, rs = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => V(...p))), seg, r, rs);
+// Holzfäller-Gags: Kerben = Kills im Run (höchstens notches sichtbar), ab gold goldener Stiel, ab sprout ein Sprössling, alle perLog Kills ein Scheit
+const HOLZ = { notches: 40, gold: 100, sprout: 500, perLog: 20, logs: 15 };   // PH
 let cloth0 = { color: 0xa3151b, w: 1 };   // Stoffbahn hinten: Farbe, Breite
 const TALK: any = {};                      // Sprechblasen (ui/skinTalk.ts): kind, keys, plate
 if (look === 'klapse') {
@@ -221,6 +223,39 @@ if (look === 'classic') {
   cloth0 = { color: 0x2a9a9a, w: 2.3 };
   chest.add(clothAnchor); clothAnchor.position.set(0, .52, -.28);
   Object.assign(TALK, { kind: 'shout', keys: [1, 2, 3, 4].map(i => `look.krieger.classic.say${i}`), plate: 'look.krieger.classic.plate' });
+}
+if (look === 'holz') {
+  // Holzfäller: kariertes Hemd (Karo als dunkle Streifen, Vertex-Farben statt Textur), Ärmel hochgekrempelt, Hosenträger, Jeans mit Umschlag,
+  // Arbeitsstiefel, Strickmütze mit Bommel, Vollbart, Kraxe mit Holzstapel auf dem Rücken
+  const plaid = col(0xb8241c), dark = col(0x1a1214), jeans = col(0x3a5a8a), skin = col(0xe8bc98), boot = col(0x6a4022), beard = col(0x7a3a1a), wood = col(0x5a3a20);
+  drop(armL.plate);
+  paint(plaid, pChest, armL.pu, armR.pu); paint(skin, pNeck, pHead, armL.pf, armR.pf, armL.ph, armR.ph);
+  paint(jeans, pHips, legL.pt, legL.ps, legR.pt, legR.ps); paint(boot, legL.pf, legR.pf); paint(col(0x3a2414), pBelt);
+  for (const [y, r] of [[.48, .29], [.32, .23], [.16, .17]]) band(chest, [0, y, 0], r, .016, dark, [1.15, .68, 1], 16);   // Karo quer
+  for (const a of [armL, armR]) {
+    for (const y of [-.1, -.24]) band(a.ua, [0, y, 0], .1, .014, dark, [1, 1, 1], 8);
+    band(a.fa, [0, -.03, 0], .1, .032, plaid, [1, 1, 1], 8);   // hochgekrempelt
+  }
+  for (const x of [-.11, .11]) { rod(chest, [x, -.02, .1], [x * 1.1, .55, .2], .016, col(0x8a2a1a)); rod(chest, [x, -.02, -.1], [x * 1.1, .55, -.19], .016, col(0x8a2a1a)); }   // Hosenträger
+  for (const l of [legL, legR]) { band(l.sh, [0, -.4, 0], .1, .028, col(0x6a8ab0), [1, 1, 1], 10); part(l.ft, new THREE.CylinderGeometry(.1, .095, .14, 8), boot, [0, .03, .01]); }   // Umschlag, Stiefelschaft
+  // Strickmütze mit Bommel
+  const hat = col(0x2a4a3a);
+  part(head, new THREE.SphereGeometry(.17, 10, 6, 0, TAU, 0, Math.PI * .55), hat, [0, .19, 0], [0, 0, 0], [1, 1.15, 1.04]);
+  band(head, [0, .19, 0], .155, .033, hat, [1, 1.04, 1], 14);
+  part(head, new THREE.SphereGeometry(.06, 7, 5), col(0xf2ece0), [0, .4, 0]);
+  // Augen, Brauen, Vollbart, Schnauzer
+  for (const x of [-.055, .055]) { part(head, new THREE.SphereGeometry(.018, 6, 4), col(0x15121a), [x, .135, .15], [0, 0, 0], [1, 1.1, .5]); part(head, new THREE.BoxGeometry(.065, .016, .014), col(0x6a3a1a), [x, .165, .152], [0, 0, x > 0 ? .35 : -.35]); }
+  part(head, new THREE.SphereGeometry(.143, 9, 6), beard, [0, .0, .062], [0, 0, 0], [1, .7, .85]);
+  part(head, new THREE.BoxGeometry(.13, .026, .026), beard, [0, .085, .152]);
+  // Kraxe auf dem Rücken: Gestell fest, Scheite einzeln markiert (tag) und je nach Kills eingeblendet (lookTick)
+  const kz = -.22, ky = .28;
+  for (const x of [-.17, .17]) rod(chest, [x, ky - .3, kz - .02], [x, ky + .45, kz - .02], .014, wood);
+  part(chest, new THREE.BoxGeometry(.38, .03, .18), wood, [0, ky - .3, kz - .1]);
+  for (let i = 0; i < HOLZ.logs; i++) {
+    const row = Math.floor(i / 3), c = i % 3, z = kz - .06 - c * .1 + (row % 2) * .03, y = ky - .24 + row * .1;
+    part(chest, new THREE.CylinderGeometry(.055, .055, .4, 7), col(0x8a5a32), [0, y, z], [0, 0, Math.PI / 2]).tag = `log${i}`;
+    for (const sx of [-1, 1]) part(chest, new THREE.CircleGeometry(.05, 7), col(0xe8c890), [sx * .201, y, z], [0, sx * Math.PI / 2, 0]).tag = `log${i}`;
+  }
 }
 root.updateMatrixWorld(true);
 // Ränge je tag (Vertex-Anfang, Anzahl) im gemergten Mesh: Skins blenden Teile aus (zusammenfallen lassen) oder färben sie um, ohne Draw Call
@@ -339,6 +374,19 @@ if (look === 'classic') {
   for (const z of [.06, -.06]) wg(new THREE.OctahedronGeometry(.06), glowRed, [0, .25, z]);
   for (const z of [.04, -.04]) wg(new THREE.BoxGeometry(.016, 1.3, .006), new THREE.Color(0xff3a2a), [0, 1.0, z]);
   LW.top = 1.98;
+}
+if (look === 'holz') {
+  // saubere Fällaxt: heller Holzstiel, Stahl-Keilkopf, polierte Schneide, roter Nacken-Streifen. Kerben, Gold und Sprössling sind markiert (tag)
+  const wood = col(0xd8a868);
+  wp(tube([[0, -.45, 0], [.03, .2, 0], [-.02, .9, 0], [.02, 1.3, 0]], .036, 16, 7), wood, [0, 0, 0], [0, 0, 0], [1, 1, 1], 'wood');
+  wp(new THREE.SphereGeometry(.05, 8, 6), wood, [0, -.46, 0], [0, 0, 0], [1, .6, 1], 'wood');
+  wp(ext([[-.12, 1.18], [.08, 1.2], [.36, 1.08], [.38, 1.4], [.08, 1.33], [-.12, 1.34]], .08), col(0x8a929c));
+  wp(ext([[.33, 1.08], [.38, 1.06], [.4, 1.42], [.35, 1.4]], .084), col(0xf2f6fa));
+  wp(new THREE.BoxGeometry(.06, .04, .085), col(0xd9372b), [-.1, 1.26, 0]);
+  for (let i = 0; i < HOLZ.notches; i++) wp(new THREE.TorusGeometry(.038, .007, 3, 8), col(0x3a2414), [.008, -.34 + i * .026, 0], [Math.PI / 2, 0, 0], [1, 1, 1], `n${i}`);
+  wp(new THREE.CylinderGeometry(.006, .008, .17, 4), col(0x3a7a2a), [.01, 1.4, 0], [0, 0, .12], [1, 1, 1], 'sprout');
+  for (const sx of [-1, 1]) wp(new THREE.SphereGeometry(.04, 6, 4), col(0x5ab83a), [sx * .04, 1.46, 0], [0, 0, sx * .4], [1, .4, .6], 'sprout');
+  LW.top = 1.42;
 }
 const lookW = LW.list.length ? mergeTagged(LW.list) : null;
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
@@ -761,8 +809,18 @@ function defQ(step, hitI = step) {
     updateFx(s); updateParts(s);
   }
   // Skin-Gags pro Frame (nur Optik)
+  let kills = -1;
   function lookTick(s, anim) {
     if (look === 'klapse') head.rotation.z = Math.sin(T * 7) * .04 + (Math.sin(T * .9) > .85 ? .25 : 0);   // ruckartiges Kopf-Zucken // PH
+    // Holzfäller: Kerben, goldener Stiel, Sprössling, Scheite nach Kills im Run (anim.kills), nur bei Änderung
+    if (look === 'holz' && (anim.kills ?? 0) !== kills) {
+      kills = anim.kills ?? 0;
+      for (let i = 0; i < HOLZ.notches; i++) showTag(lookW, `n${i}`, i < kills);
+      tintTag(lookW, 'wood', col(kills >= HOLZ.gold ? 0xe8b23a : 0xd8a868));
+      showTag(lookW, 'sprout', kills >= HOLZ.sprout);
+      const logs = Math.min(HOLZ.logs, Math.floor(kills / HOLZ.perLog));
+      for (let i = 0; i < HOLZ.logs; i++) showTag(bodyT, `log${i}`, i < logs);
+    }
     // Classic: roter Verzauberungs-Schein an der Klinge, über die Partikel der Figur (0 Draw Calls extra)
     if (look === 'classic' && swordMesh.visible && Math.random() < s * 18) emit(swordMesh.localToWorld(V((Math.random() - .5) * .22, .35 + Math.random() * 1.5, 0)), 1, .15, 0xff3a2a, -.6, .55);   // PH
   }
