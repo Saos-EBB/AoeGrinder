@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(skins): Splitterkönig etwas heller (Lampen-Ausgleich der Facetten +20 %), das Hellblau bleibt erkennbar und kippt nicht ins Cremeweiß
 - feat(skins): Magier-Skins (Hochspannung, Pestbringer, Splitterkönig, Glutprophet) gibt es nur noch über das volle Set: Wer das Set einmal 5/5 anlegt, bekommt den Erfolg (Einblendung „Erfolg: Set … vollständig – Skin … freigeschaltet“) und den Skin dauerhaft, wählbar bei seiner Schule auch ohne Set (dann nur Look, Set-Boni nur mit getragenem 5/5; mit 5/5 ist der Skin wie bisher automatisch an). Gesperrte Skins stehen mit Schloss und Hinweis „Set … 5/5 anlegen“ im Skin-Wähler; ein gewählter, aber gesperrter Skin fällt auf Standard zurück. Erfolge im Charakterfenster (Werte) und im Spielstand-Code (alte Codes laden weiter, ein angelegtes 5/5 wird nachgetragen); Dev: „Skin frei“ / „Skin sperren“ je Set. Krieger-Skins unverändert
 - fix(ui): Esc schließt den Shop (wie „Zurück“)
 - fix(ui): Hauptmenü passt in den Zierrahmen: Map-Wechsler und Knopfleiste rechts/links neben den Ecken, Knopfleiste oben rechts in zwei sauberen Reihen, Schwenk und Spielstand-Code unter „Mehr ▾“; „Waffen“ und „Ausrüstung“ übereinander neben „Run starten“ statt aus dem Bild; Info- und Ranglisten-Panel unter der Ecke und so hoch, dass auch die längste Figur ohne Abschneiden passt; Ketten hängen in den Lücken und nur noch im Hauptmenü
