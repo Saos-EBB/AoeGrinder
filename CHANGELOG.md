@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(skins): Sprechblasen von Ausbrecher und Classic-Krieger 55 erscheinen nur noch im Run, nicht mehr im Hauptmenü (das Namensschild bleibt)
 - fix(boss): Arena mit `#boss` startet pro Run nur noch einen Boss; nach dem Sieg geht der Run normal weiter statt nach 3 s den nächsten Boss zu rufen (neuer Run = wieder ein Boss, Dev → „Boss jetzt“ unverändert)
 - fix(mobs): Auf den generierten Maps nennt die Einblendung „Neuer Gegner“ die frisch freigeschalteten Theme-Mobs (z. B. Schinder in der Hölle) und Boss-Adds sind Theme-Mobs der nächsten Freischalt-Stufe statt der alten Mob-Liste; alte Zonen und Arena unverändert
 - fix(relikte): Frostatem (Relikt mit Sichtlinie) trifft auf den generierten Maps keine Mobs mehr hinter Wänden – die Wände des Zellrasters versperren jetzt die Sicht (Löcher nicht)

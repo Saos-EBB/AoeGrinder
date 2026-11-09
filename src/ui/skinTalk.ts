@@ -1,6 +1,6 @@
 // Sprechblasen und Namensschild der Krieger-Skins als DOM-Overlay (wie die Nameplates), nicht als 3D: kein Draw Call.
 // Das Modell meldet mage.hero.talk = { kind: 'whisper' | 'shout', keys, plate?, anchor (Kopf-Bone), on }; Texte über i18n.
-// Ausbrecher flüstert (Blasen tauchen um den Kopf auf), Classic-Krieger 55 ruft der Reihe nach und trägt ein Namensschild.
+// Ausbrecher flüstert (Blasen tauchen um den Kopf auf), Classic-Krieger 55 ruft der Reihe nach und trägt ein Namensschild. Blasen nur im Run, nicht im Hauptmenü.
 
 import * as THREE from 'three';
 import { mage } from '../models/mage';
@@ -41,7 +41,10 @@ export function updateSkinTalk(dt: number) {
     d.style.opacity = String(op);
     d.style.transform = sc === 1 ? '' : `translate(-50%, -100%) scale(${sc})`;
   };
-  if (talk.kind === 'whisper') {
+  if (document.body.classList.contains('menu')) {   // Hauptmenü (Figur-Vorschau): keine Sprechblasen, nur im Run; das Namensschild bleibt
+    for (const w of whispers) { w.t = -1; w.d.style.display = 'none'; }
+    shout.t = -1; shout.d.style.display = 'none'; next = clock + 1;
+  } else if (talk.kind === 'whisper') {
     if (clock >= next) {
       next = clock + WHISPER.every * (.7 + Math.random() * .6);
       const w = whispers.find(x => x.t < 0);
