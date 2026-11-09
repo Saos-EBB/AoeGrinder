@@ -1,7 +1,6 @@
 import { rand } from '../util';
 import { state, player } from '../state';
-import { groundAt, resolve, walkTopAt } from '../collision';
-import { CFG } from '../config';
+import { groundAt, resolve, walkTopAt, clampToMap } from '../collision';
 import { blinkFx, novaFx, iceTex } from '../fx/spellFx';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune, stat } from './core';
@@ -18,8 +17,8 @@ const BODY_RADIUS = 0.45, SWEEP_STEP = 0.25, SWEEP_MARGIN = 0.05;   // PH: Rand,
 // Läuft die Strecke ab und bleibt vor dem ersten Hindernis stehen. Über Stufen und Rampen geht es mit nach oben, die Höhe sinkt erst beim Landen.
 // Liegt das Ziel auf einer begehbaren Fläche, zählt deren Seite nicht als Wand: Die Figur landet oben. Massive Objekte stoppen immer.
 export function blinkTo(endX, endZ) {
-  const start = player.pos, limit = Math.min(1, CFG.playRadius / (Math.hypot(endX, endZ) || 1));
-  endX *= limit; endZ *= limit;
+  const start = player.pos, end = clampToMap({ x: endX, z: endZ });   // Kartenrand: Kreis oder Rechteck der generierten Map
+  endX = end.x; endZ = end.z;
   const len = Math.hypot(endX - start.x, endZ - start.z), steps = Math.max(1, Math.ceil(len / SWEEP_STEP));
   const walkTop = walkTopAt(endX, endZ);
   const at = { x: start.x, y: start.y, z: start.z }, probe = { x: 0, y: 0, z: 0 };

@@ -19,6 +19,7 @@ import { applyRunWeapon } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
+import { renderDevMapGen } from '../mapgen/devMap';
 import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 import { t, fmtNum } from '../i18n';
@@ -203,6 +204,7 @@ export function renderDevZones() {
     b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); switchZone(id); $('settingsClose').click(); });
     box.appendChild(b);
   }
+  renderDevMapGen(box, id => { stopChannel(true); clearSpellEffects(); switchZone(id); renderDevZones(); });   // Seed der generierten Maps (mapgen/devMap.ts)
 }
 
 // Dev: Karte erzwingen, Glück

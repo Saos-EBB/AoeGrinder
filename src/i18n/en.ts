@@ -2090,4 +2090,10 @@ export const en: Record<string, string> = {
   'mob.hoelle_hexer.name': "Sin Hexer",
   'mob.hoelle_gross.name': "Archdemon",
   'mob.hoelle_lauerer.name': "Flesh Shade",
+  'zone.wald.name': "Forest",
+  'zone.wueste.name': "Desert",
+  'zone.kanaele.name': "Canals",
+  'zone.kathedrale2.name': "Cathedral",
+  'zone.hoelle.name': "Hell",
+  'zone.arena.name': "Arena",
 };

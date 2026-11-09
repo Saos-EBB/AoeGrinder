@@ -15,6 +15,9 @@ import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
 import { mobAttackSlow } from './dodge';
+import { spawnPack as spawnThemePack } from './mapgen/spawnPackOld';   // Schnittstelle zu den neuen Mob-Kategorien: ein Aufruf pro Pack
+import type { PackSpot } from './mapgen/types';
+import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
@@ -28,7 +31,7 @@ import { buffCrit } from './buffs';
 import { t } from './i18n';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
-const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+export const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
 
 // Einblendung, wenn der Sprung von fromLevel neue Mobs freigeschaltet hat. Die Anzeige steckt in ui/scoreHud.ts.
 export function announceNewMobs(fromLevel) {
@@ -45,7 +48,7 @@ const mobTarget = () => Math.max(LEVEL_MIN_MOBS, zone.packs.count * levelPackSiz
 
 // Beim Aufbau der Welt: Karte füllen
 export function fillPacks() {
-  if (mobMode === 'waves') return;
+  if (mobMode === 'waves' || zone.noPacks) return;   // noPacks: Arena (mapgen/arena.ts)
   while (liveMobs().length < mobTarget()) spawnPack();
   respawn.pending = 0;
   respawn.packs = livePackCount();
@@ -77,7 +80,7 @@ function replaceStalePack() {
 }
 
 export function updateRespawn() {
-  if (mobMode === 'waves') return;
+  if (mobMode === 'waves' || zone.noPacks) return;
   dropFarPack();
   replaceStalePack();
   const packs = livePackCount();
@@ -95,6 +98,7 @@ export function pickMobType() {
 }
 
 function spawnPack(at = null) {
+  if (zone.packSpots) return spawnOnSpot(at);          // generierte Map (src/mapgen): nur auf Pack-Plätzen des Layouts
   let center = at;
   for (let tries = 0; !at && tries < 40; tries++) {
     // Rund um den Spieler, sonst verdünnt die große Karte die Dichte. // PH
@@ -106,8 +110,7 @@ function spawnPack(at = null) {
   }
   const champ = rollChampionPack();                    // Champion-Pack statt normalem Pack
   if (champ) return spawnChampionPack(center.x, center.z, champ);
-  const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
-  const size = base * PACK_SIZE_MUL * modFactor('packSize');
+  const size = rollPackSize();
   const spread = Math.max(LEVEL_PACK_SPREAD, Math.sqrt(size) * 1.5);   // große Packs brauchen mehr Platz
   const packId = ++state.packCounter;
   const unlocked = unlockedMobs(player.level), special = unlocked.slice(1);
@@ -119,8 +122,28 @@ function spawnPack(at = null) {
   }
 }
 
+// Packgröße mit Zufall und Modifikatoren (auch für mapgen/spawnPackOld.ts)
+export function rollPackSize() {
+  const base = Math.max(randInt(LEVEL_PACK_MIN, LEVEL_PACK_MAX), clamp(levelPackSize() + randInt(-1, 1), 2, 10));
+  return base * PACK_SIZE_MUL * modFactor('packSize');
+}
+
+// Generierte Map: freien Pack-Platz wählen, bevorzugt im Ring PACK_NEAR … PACK_FAR um den Spieler. at: Ersatz für ein veraltetes Pack (nächster Platz)
+const spotTaken = (s: PackSpot) => state.mobs.some(m => !m.dead && dist2d(m.home, s) < s.r + 6);   // PH
+function spawnOnSpot(at) {
+  const spots: PackSpot[] = zone.packSpots, d = (s: PackSpot) => dist2d(s, player.pos);
+  let spot: PackSpot = null;
+  if (at) spot = spots.reduce((a, b) => dist2d(a, at) <= dist2d(b, at) ? a : b);
+  else {
+    const free = spots.filter(s => !spotTaken(s));
+    const ring = free.filter(s => d(s) >= PACK_NEAR && d(s) <= PACK_FAR), away = free.filter(s => d(s) >= 30);   // PH: 30 yd, außer Sicht im Nebel
+    spot = ring.length ? pick(ring) : away.length ? pick(away) : free.length ? pick(free)
+      : spots.reduce((a, b) => d(a) >= d(b) ? a : b);   // alle belegt: der fernste Platz bekommt noch eins
+  }
+  spawnThemePack(spot, zone.theme, player.level);
+}
 // Champion-Pack: C.size Mobs gleichen Typs an einer Stelle, alle mit denselben Affixen (champions.ts)
-function spawnChampionPack(x, z, affixes) {
+export function spawnChampionPack(x, z, affixes) {
   const packId = ++state.packCounter, unlocked = unlockedMobs(player.level), typeId = pick(unlocked);
   for (let i = 0; i < C.size; i++) {
     const level = Math.max(1, player.level + randInt(0, 1));
@@ -152,11 +175,11 @@ export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
   plate.className = 'plate';
   plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
   overlay.appendChild(plate);
-  const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1));
+  const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1) * hpMulOf(zone.theme));   // hpMulOf: Theme-Schwierigkeit (mapgen/difficulty.ts)
   const mob = {
     type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
     pos: model.root.position, home: pos.clone(), packId,
-    level, hp, maxHp: hp, speedMul: type.speedMul ?? 1,
+    level, hp, maxHp: hp, speedMul: type.speedMul ?? 1, dmgMulT: dmgMulOf(zone.theme),
     state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
     fleeRolled: false, fleeTarget: null, fleeUntil: 0, dead: false, deathAt: 0, moving: false, leap: null, hidden: false,
   };
@@ -202,12 +225,13 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - Math.min(0.9, mob.slowPct * (mob.slowK ?? 1));   // slowK: Zusatz „fliegt“, Slow doppelt (mobKinds.ts)
   if (mob.hasteUntil > state.now) speed *= 1.2;   // Zusatz „Tempo“ (mobKinds.ts), stapelt nicht // PH
+  if (!mob.flies) speed *= zone.moveMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Wasserrinne der Kanäle (mapgen); flies: Zusatz „fliegt“
   target = climbTarget(mob.pos, target);
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.01) return;
   const step = Math.min(d, speed * dt / 1000);
-  const dir = steer(mob, dx / d, dz / d, 0.7);
+  const dir = mob.flies ? { x: dx / d, z: dz / d } : steer(mob, dx / d, dz / d, 0.7);   // flies: ignoriert Wände, nur der Kartenrand hält (settle)
   mob.moving = true;
   if (zone.iceAt?.(mob.pos.x, mob.pos.z)) { mob.iceWant = { x: dir.x * speed, z: dir.z * speed }; mob.speed = speed; return; }   // Eis (Winterquell): zone.slide gleitet
   mob.pos.x += dir.x * step;
@@ -224,7 +248,7 @@ export function faceMob(mob, target) {
 // Mob trifft den Spieler, von Nahkampf und Fähigkeiten genutzt
 export function hitPlayer(mob, mul = 1) {
   mob.attackAt = state.now;
-  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * mul);
+  const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * (mob.dmgMulT ?? 1) * mul);   // dmgMulT: Theme-Schwierigkeit
   damagePlayer(dmg);
   if (mob.champion) championHitPlayer(mob);
   mob.ability?.onHit?.(mob, dmg);

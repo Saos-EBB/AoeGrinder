@@ -2091,4 +2091,10 @@ export const de: Record<string, string> = {
   'mob.hoelle_hexer.name': "Sündenhexer",
   'mob.hoelle_gross.name': "Erzdämon",
   'mob.hoelle_lauerer.name': "Fleischschatten",
+  'zone.wald.name': "Wald",
+  'zone.wueste.name': "Wüste",
+  'zone.kanaele.name': "Kanäle",
+  'zone.kathedrale2.name': "Kathedrale",
+  'zone.hoelle.name': "Hölle",
+  'zone.arena.name': "Arena",
 };

@@ -15,8 +15,26 @@ let terrain = (x, z) => 0;
 let stamp = 0;
 const found = [];
 
+// Kartenrand: generierte Maps (src/mapgen) setzen ein Rechteck, alte Zonen behalten den Kreis CFG.playRadius
+let bounds: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
+export function setBounds(b) { bounds = b; }
+export const mapBounds = () => bounds;
+// Punkt in die Karte holen: Rechteck der generierten Map, sonst Kreis
+export function clampToMap(pos) {
+  if (bounds) {
+    const m = 0.5;
+    pos.x = clamp(pos.x, bounds.minX + m, bounds.maxX - m);
+    pos.z = clamp(pos.z, bounds.minZ + m, bounds.maxZ - m);
+    return pos;
+  }
+  const r = Math.hypot(pos.x, pos.z);
+  if (r > CFG.playRadius) { pos.x *= CFG.playRadius / r; pos.z *= CFG.playRadius / r; }
+  return pos;
+}
+
 export function clearColliders(terrainHeight) {
   terrain = terrainHeight;
+  bounds = null;
   colliders.length = 0;
   routes.length = 0;
   grid.clear();
@@ -136,8 +154,7 @@ export function resolve(pos, radius, height = BODY_HEIGHT) {
     }
     if (!moved) break;
   }
-  const r = Math.hypot(pos.x, pos.z);
-  if (r > CFG.playRadius) { pos.x *= CFG.playRadius / r; pos.z *= CFG.playRadius / r; }
+  clampToMap(pos);
   return hit;
 }
 
@@ -211,9 +228,10 @@ export function climbTarget(pos, target) {
 }
 
 // Boden und Schwerkraft für Körper ohne eigenen Sprung (Mobs): body.vy, body.falling
+// body.flies (Zusatz „fliegt“, Standard false): keine Collider, nur der Kartenrand
 export function settle(body, radius, dt) {
   const pos = body.pos;
-  resolve(pos, radius);
+  if (body.flies) clampToMap(pos); else resolve(pos, radius);
   const ground = groundAt(pos.x, pos.z, pos.y);
   if (!body.falling && pos.y - ground > STEP) { body.falling = true; body.vy = 0; }
   if (!body.falling) { pos.y = ground; return; }

@@ -11,6 +11,7 @@ import { kristallhoehlen } from './kristallhoehlen';
 import { kathedrale } from './kathedrale';
 import { forestProps, lambert, box, cyl, cone, ball, prefab, scatter, grass, rocks } from './props';
 import { t } from './i18n';
+import { GEN_ZONES } from './mapgen/registry';
 
 const near = (x, z, cx, cz, r) => Math.hypot(x - cx, z - cz) < r;
 // Abstand zum Polygonzug, für Wege und Flüsse
@@ -495,4 +496,5 @@ export const ZONES: any = {
   mondsee,
   kristallhoehlen,
   kathedrale,
+  ...GEN_ZONES,   // generierte Maps (src/mapgen), Zonen-ID map-<theme>
 };
