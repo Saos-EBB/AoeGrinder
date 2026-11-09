@@ -68,7 +68,7 @@ export function offen(rng: Rng): Layout {
   // Landmarke: Lichtung am weitesten vom Spawn, hinten auf der Lichtung
   const far = clear.slice(1).sort((a, b) => dist(b, spawn) - dist(a, spawn))[0] ?? clear[0];
   const back = Math.atan2(far.z - spawn.z, far.x - spawn.x);
-  const landmark = { x: far.x + Math.cos(back) * far.r * 0.45, z: far.z + Math.sin(back) * far.r * 0.45, ry: -back + Math.PI / 2 };
+  const landmark = { x: far.x + Math.cos(back) * far.r * 0.45, z: far.z + Math.sin(back) * far.r * 0.45, ry: Math.atan2(-Math.cos(back), -Math.sin(back)) };   // Vorderseite zum Spawn
 
   // Baum- und Felsgruppen außerhalb von Lichtungen und Pfaden
   const deco: Deco[] = [], clusters: (Spot & { r: number })[] = [];

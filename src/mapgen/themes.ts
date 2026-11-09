@@ -85,7 +85,7 @@ export const THEMES: Record<ThemeId, Theme> = {
       ground: { a: 0x34302f, b: 0x4a3230, path: 0x5a2a1a, wall: 0x120807 },
       wall: M.hellWall,
       lava: 0xff5a14,
-      glow: glow(3, 0.9, 0.2),
+      glow: glow(2.2, 0.6, 0.12),
       props: { spikes: M.spikes, brazier: M.brazier, bones: M.bones, rock: () => M.rock(0x3a2a26), pillar: () => M.pillar(0x3a2220, 0x2a1614, 7) },
       landmark: M.hellgate,
     },

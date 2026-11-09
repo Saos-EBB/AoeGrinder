@@ -4,11 +4,12 @@ import { genZone, type GenDef } from './genZone';
 import { THEMES } from './themes';
 import { offen } from './layouts/offen';
 import { kanaele } from './layouts/kanaele';
+import { raeume } from './layouts/raeume';
 import type { Layout } from './grid';
 import type { Rng } from './rng';
 import type { LayoutId, ThemeId } from './types';
 
-const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = { offen, kanaele };
+const LAYOUTS: Partial<Record<LayoutId, (rng: Rng) => Layout>> = { offen, kanaele, raeume };
 
 export const zoneIdOf = (theme: ThemeId) => `map-${theme}`;
 

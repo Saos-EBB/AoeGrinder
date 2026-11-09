@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(mapgen): Layout „Räume“ mit Theme Hölle (`?zone=map-hoelle`): 8–12 Räume, verbunden per Spannbaum plus 2 Schleifen, 16 yd breite Gänge, Lava-Ränder in etwa 30 % der Räume (Schaden wie in Blackrock Depths, nie im Spawn-Raum), Glutschalen und Stacheln, Höllenschlund-Tor mit Portal-Platz im entferntesten Raum
 - feat(mapgen): Layout „Kanäle“ (`?zone=map-kanaele`): Haupt-Ring zum Kiten (teils mit Ausbuchtung) + 2–4 Querkanäle, 16 yd breite Gänge mit 4-yd-Wasserrinne in der Mitte (bremst Spieler und Mobs um 20 %), Stege darüber, trockene Kreuzungen als Kampfplätze, 1–2 Sackgassen, Schleusentor in einer Nische weit vom Spawn, dichter Nebel
 - feat(mapgen): Layout „Offen“ mit den Themes Wald und Wüste (`?zone=map-wald`, `?zone=map-wueste`): unregelmäßiger Rand aus Bäumen/Felsen, 3–5 Lichtungen mit Pfaden, Baum-/Felsgruppen, Landmarke (alter Riesenbaum, Obelisk mit Grabmal) auf der fernsten Lichtung, leuchtet aus dem Dunkel. Wüste mit Sandsturm; Test-Map „Generator-Test“ entfernt
 - feat(mapgen): Generator-Kern für Maps aus Regeln (`src/mapgen/`): Seed-RNG (`?seed=`, Anzeige und Neu würfeln im Dev-Fenster unter Zone), Raster 26 × 26 Zellen à 8 yd, Wände als zusammengefasste Kollisions-Boxen, Rechteck-Kartenrand statt Kreis (Laufen, Blink, Minimap zeigt Wände), Packs nur auf Pack-Plätzen, Wellen an Rand-Bodenzellen; Test-Map „Generator-Test“ (`?zone=map-probe`). Alte Zonen unverändert
