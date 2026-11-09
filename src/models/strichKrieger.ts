@@ -171,6 +171,57 @@ if (look === 'klapse') {
   part(head, new THREE.TorusGeometry(.055, .011, 3, 10, Math.PI), ink, [0, .065, .142], [0, 0, Math.PI + .15]);
   Object.assign(TALK, { kind: 'whisper', keys: [1, 2, 3, 4, 5, 6, 7].map(i => `look.krieger.klapse.say${i}`) });
 }
+if (look === 'classic') {
+  // Classic-Krieger 55, „Clownsuit“: jedes Teil aus einem anderen Dungeon. Low-Poly mit harten Kanten (flat)
+  const purple = col(0x5a3a8a), purple2 = col(0x7a5ab0), red = col(0xa8231c), gold = col(0xc9a640), steel = col(0x8a929c),
+    green = col(0x5a7a3a), yel = col(0xd8e03a), pink = col(0xff5ab0), brown = col(0x6a4022), navy = col(0x2a3a6a), skin = col(0xe0b898), ink = col(0x15121a);
+  const n0 = parts.length;
+  drop(armL.plate, pHead);
+  paint(purple, pChest); paint(skin, pNeck); paint(col(0x3a3a46), armL.pu, armR.pu);
+  paint(yel, armL.pf, armR.pf, armL.ph, armR.ph); paint(green, pHips, legL.pt, legL.ps, legR.pt, legR.ps); paint(navy, legL.pf, legR.pf);
+  paint(brown, pBelt);
+  // Brustplatte: zwei Wölbungen, Goldgrat, Goldring unten
+  for (const x of [-.11, .11]) part(chest, new THREE.SphereGeometry(.14, 7, 5), purple2, [x, .33, .1], [0, 0, 0], [1, .75, .55]);
+  part(chest, new THREE.BoxGeometry(.06, .42, .06), gold, [0, .25, .17]);
+  band(chest, [0, .06, 0], .155, .02, gold, [1.15, .7, 1], 8);
+  // riesige rote Dorn-Schultern, zweilagig, Goldrand (beide Seiten, am Oberarm wie die Schulterplatte des Standards)
+  for (const a of [armL, armR]) {
+    const s = a.side, g = M4([s * .04, .05, 0], [0, 0, -s * .25]);
+    part(a.ua, new THREE.SphereGeometry(.24, 8, 5, 0, TAU, 0, Math.PI / 2), red, [0, 0, 0], [0, 0, 0], [1.15, .8, 1], g);
+    part(a.ua, new THREE.SphereGeometry(.2, 8, 4, 0, TAU, 0, Math.PI / 2), red, [s * .05, -.1, 0], [0, 0, 0], [1.2, .7, 1.05], g);
+    part(a.ua, new THREE.TorusGeometry(.27, .02, 4, 10), gold, [0, 0, 0], [Math.PI / 2, 0, 0], [1, 1, 1], g);
+    for (let i = 0; i < 3; i++) part(a.ua, new THREE.ConeGeometry(.05, .28 - i * .05, 5), steel, [s * (.02 + i * .07), .16 - i * .03, (i - 1) * .1], [0, 0, -s * (.25 + i * .25)], [1, 1, 1], g);
+    // knallgelbe Stulpen mit pinkem Saum
+    part(a.fa, new THREE.CylinderGeometry(.115, .095, .2, 6), yel, [0, -.23, 0]);
+    part(a.fa, new THREE.TorusGeometry(.115, .024, 4, 8), pink, [0, -.13, 0], [Math.PI / 2, 0, 0]);
+  }
+  // Riesenschnalle mit grünem Stein (Stein im Körper-Mesh, leuchtet nicht: Körper hat kein Glüh-Mesh)
+  part(hips, new THREE.BoxGeometry(.16, .13, .05), gold, [0, .06, .22]);
+  part(hips, new THREE.OctahedronGeometry(.035), col(0xb4ff9a), [0, .06, .25]);
+  // Kniebuckel mit Dorn, klobige blaue Stiefel mit hochgezogener Spitze
+  for (const l of [legL, legR]) {
+    part(l.sh, new THREE.SphereGeometry(.11, 6, 4), steel, [0, 0, .05], [0, 0, 0], [1, 1, .7]);
+    part(l.sh, new THREE.ConeGeometry(.03, .12, 4), steel, [0, 0, .15], [Math.PI / 2, 0, 0]);
+    part(l.ft, new THREE.CylinderGeometry(.1, .115, .2, 6), navy, [0, .05, .01]);
+    part(l.ft, new THREE.ConeGeometry(.065, .14, 4), navy, [0, -.02, .26], [Math.PI / 2 - .5, 0, 0]);
+  }
+  // Helm: grauer Topf mit T-Schlitz, Goldkamm, Bronze-Stierhörner
+  part(head, new THREE.IcosahedronGeometry(.15, 1), steel, [0, .13, 0], [0, 0, 0], [1.08, 1.14, 1.1]);
+  part(head, new THREE.BoxGeometry(.22, .032, .03), ink, [0, .145, .16]);
+  part(head, new THREE.BoxGeometry(.04, .13, .03), ink, [0, .08, .155]);
+  part(head, new THREE.BoxGeometry(.04, .1, .34), gold, [0, .29, 0]);
+  for (const s of [-1, 1]) {
+    const pts = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => { const t = i / 8; return hp(s * (.1 + t * .2), .03 + Math.pow(t, 2.5) * .22, -t * .04); });
+    part(head, tube(pts, .06, 10, 6), col(0xa8783a));
+    const e = pts[8]; part(head, new THREE.ConeGeometry(.06, .13, 6), col(0xe8dcc0), [e[0], e[1] + .05, e[2]], [0, 0, -s * .2]);
+  }
+  for (let i = n0; i < parts.length; i++) parts[i].flat = true;
+  for (const e of [pChest, pHips, armL.pu, armR.pu, armL.pf, armR.pf, legL.pt, legL.ps, legR.pt, legR.ps, legL.pf, legR.pf]) e.flat = true;
+  // Umhang (passt natürlich auch nicht): türkis, ab den Schultern
+  cloth0 = { color: 0x2a9a9a, w: 2.3 };
+  chest.add(clothAnchor); clothAnchor.position.set(0, .52, -.28);
+  Object.assign(TALK, { kind: 'shout', keys: [1, 2, 3, 4].map(i => `look.krieger.classic.say${i}`), plate: 'look.krieger.classic.plate' });
+}
 root.updateMatrixWorld(true);
 // Ränge je tag (Vertex-Anfang, Anzahl) im gemergten Mesh: Skins blenden Teile aus (zusammenfallen lassen) oder färben sie um, ohne Draw Call
 function mergeTagged(list) {
@@ -258,10 +309,12 @@ function maceGlowGeo() {
   return mergeGeometries([0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.012, .26, .02).translate(0, 1.6, .2).rotateY(i / 6 * Math.PI * 2), blue)));
 }
 // Waffen-Look der Skins: reiner Look über dem Waffen-Modell (Treffer, Spitze, Griff bleiben die der Waffe). Viewer-Maße, Griff im Ursprung, Klinge +y, Schneide +x.
-// top: oberes Ende, wird auf die Treffer-Spitze der Waffe skaliert. glow: Teile fürs Glüh-Mesh. Teile mit tag blendet der Skin im Spiel ein und aus
-const LW: any = { list: [], glow: [], top: 0 };
+// top: oberes Ende, wird auf die Treffer-Spitze der Waffe skaliert. Teile mit tag blendet der Skin im Spiel ein und aus.
+// Leuchtteile (wg): der Krieger hat ohne Kolben kein Glüh-Mesh, darum im Waffen-Mesh mit überhellen Farben, die Bloom aufgreift (0 Draw Calls extra)
+const LW: any = { list: [], top: 0 };
+const GLOW_K = bloom ? 3 : 1.6;   // PH
 const wp = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1], tag = null, flat = false) => LW.list.push({ g: prep(geo, c, M4(pos, rot, scl), flat), tag });
-const wg = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => LW.glow.push(prep(geo, c, M4(pos, rot, scl)));
+const wg = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => LW.list.push({ g: prep(geo, c.clone().multiplyScalar(GLOW_K), M4(pos, rot, scl)) });
 if (look === 'klapse') {
   // Brechstange statt Schwert: so lang wie die Klinge (Viewer 0,84 m wäre neben den Treffern zu kurz), Haken oben, Rost, Tape am Griff
   const steel = col(0x3a3e46);
@@ -273,20 +326,34 @@ if (look === 'klapse') {
   wp(new THREE.BoxGeometry(.078, .26, .078), col(0xf2ece0), [0, .02, 0]);
   LW.top = 1.87;
 }
+if (look === 'classic') {
+  // klobiger Zweihänder, Low-Poly, rotes Verzauberungs-Glühen: Stein und Runenstrich im Glüh-Mesh, der rote Schein als Partikel (lookTick)
+  const lo = (geo, c, pos?, rot?, scl?) => wp(geo, col(c), pos, rot, scl, null, true);
+  lo(new THREE.CylinderGeometry(.04, .04, .5, 6), 0x4a2a1a, [0, -.05, 0]);
+  for (let i = 0; i < 4; i++) lo(new THREE.CylinderGeometry(.046, .046, .025, 6), 0xb08a3a, [0, -.25 + i * .13, 0]);
+  lo(new THREE.OctahedronGeometry(.085), 0xb08a3a, [0, -.34, 0]);
+  lo(ext([[-.34, .2], [-.24, .32], [0, .26], [.24, .32], [.34, .2], [0, .17]], .1), 0x6a6e78);
+  lo(ext([[.13, .28], [.15, .7], [.12, .75], [.14, 1.35], [.1, 1.42], [.11, 1.75], [0, 1.98], [-.11, 1.75], [-.1, 1.42], [-.14, 1.35], [-.12, .75], [-.15, .7], [-.13, .28]], .06), 0xa8b0bc);
+  lo(new THREE.BoxGeometry(.035, 1.45, .066), 0x6a7280, [0, 1.0, 0]);
+  const glowRed = new THREE.Color(0xd9372b);
+  for (const z of [.06, -.06]) wg(new THREE.OctahedronGeometry(.06), glowRed, [0, .25, z]);
+  for (const z of [.04, -.04]) wg(new THREE.BoxGeometry(.016, 1.3, .006), new THREE.Color(0xff3a2a), [0, 1.0, z]);
+  LW.top = 1.98;
+}
 const lookW = LW.list.length ? mergeTagged(LW.list) : null;
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
 const sword = new THREE.Group(); root.add(sword);
 const swordMesh = new THREE.Mesh(lookW ? lookW.geo : weapon === 'axe' ? axeGeo() : weapon === 'mace' ? maceGeo() : SWORD_GEO, VMAT); sword.add(swordMesh);
 let tipLen = WEAPON_SHAPE[weapon]?.tip ?? 1.95, gripLen = WEAPON_SHAPE[weapon]?.grip ?? .24, baseTip = tipLen, baseGrip = gripLen;
-// Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller. Skins: Leuchtteile der Waffe im selben Glüh-Mesh
+// Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller
 let maceGlow = null;
-if (weapon === 'mace' || LW.glow.length) {
-  maceGlow = new THREE.Mesh(lookW ? mergeGeometries(LW.glow) : maceGlowGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }));
+if (weapon === 'mace' && !lookW) {
+  maceGlow = new THREE.Mesh(maceGlowGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }));
   if (bloom) maceGlow.material.color.setScalar(2.2);
   sword.add(maceGlow);
 }
 // Look-Waffe auf die Spitze der Waffe skalieren (k = Waffen-Maß × Skalierung)
-const fitLook = (tip) => { if (!lookW) return; const k = tip / LW.top; swordMesh.scale.setScalar(k); maceGlow?.scale.setScalar(k); };
+const fitLook = (tip) => { if (lookW) swordMesh.scale.setScalar(tip / LW.top); };
 fitLook(tipLen);
   // Fleischkeule zum Essen: Knochen + Fleisch, Griff im Ursprung, Fleisch nach +y
   const meat = new THREE.Mesh(mergeGeometries([
@@ -696,6 +763,8 @@ function defQ(step, hitI = step) {
   // Skin-Gags pro Frame (nur Optik)
   function lookTick(s, anim) {
     if (look === 'klapse') head.rotation.z = Math.sin(T * 7) * .04 + (Math.sin(T * .9) > .85 ? .25 : 0);   // ruckartiges Kopf-Zucken // PH
+    // Classic: roter Verzauberungs-Schein an der Klinge, über die Partikel der Figur (0 Draw Calls extra)
+    if (look === 'classic' && swordMesh.visible && Math.random() < s * 18) emit(swordMesh.localToWorld(V((Math.random() - .5) * .22, .35 + Math.random() * 1.5, 0)), 1, .15, 0xff3a2a, -.6, .55);   // PH
   }
   // Risse von Bodenbrecher: das Spiel meldet jede Welle
   const crackAt = (x, z, dx, dz) => { const q = V(x, 0, z); crack(q, V(dx, 0, dz).applyAxisAngle(V(0, 1, 0), (Math.random() - .5) * .5), 1.9, 1.4); emit(V(x, gy() + .1, z), 8, 3, 0x8f877a, 12, .7); };

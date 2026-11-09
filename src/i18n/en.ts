@@ -2031,4 +2031,9 @@ export const en: Record<string, string> = {
   'look.krieger.klapse.say5': "not THAT one…",
   'look.krieger.klapse.say6': "now!",
   'look.krieger.klapse.say7': "they know…",
+  'look.krieger.classic.say1': "LEEEROOOY…",
+  'look.krieger.classic.say2': "…JENKINS!",
+  'look.krieger.classic.say3': "At least I have chicken!",
+  'look.krieger.classic.say4': "Okay, let's do this!",
+  'look.krieger.classic.plate': "Level 55 · Warrior",
 };

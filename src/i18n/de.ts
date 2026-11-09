@@ -2032,4 +2032,9 @@ export const de: Record<string, string> = {
   'look.krieger.klapse.say5': "nicht DER…",
   'look.krieger.klapse.say6': "jetzt!",
   'look.krieger.klapse.say7': "sie wissen es…",
+  'look.krieger.classic.say1': "LEEEROOOY…",
+  'look.krieger.classic.say2': "…JENKINS!",
+  'look.krieger.classic.say3': "At least I have chicken!",
+  'look.krieger.classic.say4': "Okay, let's do this!",
+  'look.krieger.classic.plate': "Stufe 55 · Krieger",
 };
