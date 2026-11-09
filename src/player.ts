@@ -300,7 +300,7 @@ export function updatePlayer(dt) {
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
     const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * mods.moveMul * buffSpeedMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
-    const slowed = player.slowUntil > state.now && !(player.berserkUntil > state.now) ? speed * (1 - CFG.curseSlow) : speed;   // Berserker: kein Slow
+    const slowed = (player.slowUntil > state.now && !(player.berserkUntil > state.now) ? speed * (1 - CFG.curseSlow) : speed) * (zone.moveMul?.(player.pos.x, player.pos.z) ?? 1);   // Berserker: kein Slow; moveMul: Wasserrinne (mapgen)
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;
     player.moveState = len ? (fwd < 0 ? 'back' : 'run') : 'idle';

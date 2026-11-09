@@ -6,6 +6,7 @@ import { $ } from '../util';
 import { CFG } from '../config';
 import { cam } from '../camera';
 import { placementOf } from './hud/layout';
+import { zone } from '../world';
 
 const MINIMAP = {
   px: 150,               // Kantenlänge in CSS-Pixeln, die Größe im Spiel kommt aus dem HUD-Layout (Mausrad)
@@ -19,6 +20,30 @@ const canvas = document.createElement('canvas');
 box.prepend(canvas);
 const ctx = canvas.getContext('2d');
 let size = 0, last = -1e9;
+
+// Raster der generierten Map als Bild: Rand-Wände hell, Wasser blau, Lava orange. WALL_PX Pixel pro Zelle
+const WALL_PX = 8, WATER_C = '#3a8ac8', LAVA_C = '#ff7a2a';
+let wallFor = null, wallCanvas: HTMLCanvasElement = null;
+function wallImage(l) {
+  if (wallFor === l) return wallCanvas;
+  const g = l.grid, cv = wallCanvas ??= document.createElement('canvas'), x = cv.getContext('2d'), f = WALL_PX / 4;
+  cv.width = cv.height = g.n * WALL_PX;
+  x.clearRect(0, 0, cv.width, cv.height);
+  for (let j = 0; j < g.n; j++) for (let i = 0; i < g.n; i++) {
+    if (!g.edgeWall(i, j)) continue;
+    x.fillStyle = MINIMAP.edge;
+    x.fillRect(i * WALL_PX, j * WALL_PX, WALL_PX, WALL_PX);
+  }
+  const m = g.n * 4;
+  for (let fj = 0; fj < m; fj++) for (let fi = 0; fi < m; fi++) {
+    const v = g.fine[fj * m + fi];
+    if (!v) continue;
+    x.fillStyle = v === 1 ? WATER_C : LAVA_C;
+    x.fillRect(fi * f, fj * f, f, f);
+  }
+  wallFor = l;
+  return cv;
+}
 
 function fit() {
   const px = Math.round(MINIMAP.px * Math.min(2, devicePixelRatio || 1));
@@ -44,11 +69,22 @@ export function updateMinimap() {
   // Ringe alle 20 yd
   c.strokeStyle = '#efe0b81a'; c.lineWidth = 1;
   for (let yd = 20; yd < MINIMAP.yd; yd += 20) { c.beginPath(); c.arc(r, r, yd * k, 0, Math.PI * 2); c.stroke(); }
-  // Kartenrand: Kreis um den Ursprung
-  const [ox, oy] = toMap(0, 0);
-  c.strokeStyle = MINIMAP.edge; c.globalAlpha = 0.5; c.lineWidth = 2 * size / MINIMAP.px;
-  c.beginPath(); c.arc(ox, oy, CFG.playRadius * k, 0, Math.PI * 2); c.stroke();
-  c.globalAlpha = 1;
+  const l = zone.layout;
+  if (l) {
+    // Generierte Map: Wände, Wasser, Lava aus dem Raster (einmal pro Layout vorgerendert), gedreht wie die Karte
+    const img = wallImage(l), s = WALL_PX / 8, x0 = l.grid.x0, z0 = l.grid.z0;
+    c.save();
+    c.setTransform(-k * cos / s, -k * sin / s, k * sin / s, -k * cos / s, r + k * (-cos * (x0 - px) + sin * (z0 - pz)), r + k * (-sin * (x0 - px) - cos * (z0 - pz)));
+    c.globalAlpha = 0.55;
+    c.drawImage(img, 0, 0);
+    c.restore();
+  } else {
+    // Kartenrand: Kreis um den Ursprung
+    const [ox, oy] = toMap(0, 0);
+    c.strokeStyle = MINIMAP.edge; c.globalAlpha = 0.5; c.lineWidth = 2 * size / MINIMAP.px;
+    c.beginPath(); c.arc(ox, oy, CFG.playRadius * k, 0, Math.PI * 2); c.stroke();
+    c.globalAlpha = 1;
+  }
   // Mobs: erst normale, dann Kampf und Champions obendrauf
   const dot = size / MINIMAP.px;
   for (const pass of [0, 1]) for (const m of state.mobs) {

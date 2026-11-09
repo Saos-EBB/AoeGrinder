@@ -2038,4 +2038,11 @@ export const de: Record<string, string> = {
   'look.krieger.classic.say3': "At least I have chicken!",
   'look.krieger.classic.say4': "Okay, let's do this!",
   'look.krieger.classic.plate': "Stufe 55 · Krieger",
+  'zone.wald.name': "Wald",
+  'zone.wueste.name': "Wüste",
+  'zone.kanaele.name': "Kanäle",
+  'zone.kathedrale2.name': "Kathedrale",
+  'zone.hoelle.name': "Hölle",
+  'zone.arena.name': "Arena",
+  'zone.probe.name': "Generator-Test",
 };

@@ -33,7 +33,8 @@ const waveLeft = () => state.mobs.filter(m => !m.dead && m.wave === run.wave).le
 
 function spawnFromEdge() {
   for (let tries = 0; tries < 20; tries++) {
-    const a = rand(0, Math.PI * 2), r = zone.edgeR ?? WAVES.edgeR, x = Math.cos(a) * r, z = Math.sin(a) * r;   // edgeR: Zone mit Wand (Kathedrale)
+    const a = rand(0, Math.PI * 2), r = zone.edgeR ?? WAVES.edgeR;   // edgeR: Zone mit Wand (Kathedrale)
+    const edge = zone.edgeSpot?.(player.pos), x = edge?.x ?? Math.cos(a) * r, z = edge?.z ?? Math.sin(a) * r;   // generierte Map: Rand-Bodenzelle (mapgen)
     if (!(zone.spawnOk?.(x, z) ?? true)) continue;
     const level = Math.max(1, player.level + [-1, 0, 0, 1, 1, 2][Math.floor(rand(0, 6))]);
     const m: any = spawnMob(pickMobType(), new THREE.Vector3(x, 0, z), level, ++state.packCounter);

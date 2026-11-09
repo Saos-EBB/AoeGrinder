@@ -42,6 +42,7 @@ export function buildWorld(id) {
   zone.leave?.();   // Zonen mit eigenem Zustand (Mondsee: Phase) räumen auf
   zoneId = id;
   zone = ZONES[id];
+  zone.prepare?.();   // generierte Map (src/mapgen): Layout mit dem aktuellen Seed würfeln, bevor Gelände und Farben gebaut werden
   setEnv(zone.env);
   terrain.material = TOON || zone.toon ? toonGround : lambertGround;   // Anime-Maps (toon.ts)
   state.stormK = 0;
