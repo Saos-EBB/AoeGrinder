@@ -1,6 +1,6 @@
 // Ausrüstungsfenster im Hauptmenü (Handoff items.md Schritt 5, Vorlage docs/ref/items-mockup.dc.html), nur Magier. Look des UI-Flavors, Bausteine
-// aus dem Waffenmenü (wmHead, wmCell, wmRows). Links Gear-Spalte (5 Slots + Waffe, SET-Marke, Set-Fortschritt), Mitte die Menü-Figur (figPreview),
-// rechts Kosmetik-Spalte (Regel: Look vor Gear, Klick auf einen belegten Slot leert ihn). Darunter das Inventar mit Tabs je Slot (25 Plätze):
+// aus dem Waffenmenü (wmHead, wmCell, wmRows). Links Gear-Spalte (5 Slots + Waffe, SET-Marke, Set-Fortschritt), Mitte die Menü-Figur (figPreview)
+// und darunter Kosmetik (Regel: Look vor Gear, Klick auf einen belegten Slot leert ihn). Rechts das Inventar mit Tabs je Slot (25 Plätze):
 // Klick legt an, ✕ löscht nach Rückfrage. Handy: Spalten untereinander, Knöpfe ab 44 px.
 // Im Run (Taste I, Pause-Menü) nur zum Ansehen: angelegte Teile, Set-Fortschritt, Werte, Funde dieses Runs; Anlegen, Ablegen, Löschen, Kosmetik und
 // Waffenwechsel sind aus („Nur im Hauptmenü“), das Gear wirkt ohnehin erst ab dem nächsten Run (applyRunGear). Das Spiel pausiert (menus.ts BLOCKING).
@@ -23,19 +23,23 @@ import { t } from '../i18n';
 import './gearWindow.css';
 
 const el = (tag: string, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
+// Board 1200 × 680 --hu wie das Waffenmenü, passt ohne Scrollen: links Gear + Set, Mitte Figur + Kosmetik (3 × 2 Kacheln), rechts Inventar (Raster + Detail)
 document.body.insertAdjacentHTML('beforeend', `<div id="gearModal" class="modal" role="dialog" aria-labelledby="gmTitle">
   <div id="gmBox">
     <div class="wmHead"><h1 class="fg-title l" id="gmTitle">${t('gear.title')}</h1><span id="gmInfo"></span><button type="button" class="fg-btn alt" id="gmClose">${t('ui.close')}</button></div>
     <div id="gmWait"></div>
     <div class="gmCols">
       <div class="gmCol"><div class="gmColHead"><h2 class="fg-title">${t('gear.colGear')}</h2><span>${t('gear.invNote', { n: GEAR.invMax })}</span></div><div id="gmGear" class="gmCol"></div><div id="gmSet"></div></div>
-      <div class="fg-panel gmFig"><div id="gmFigBody" style="position:absolute;inset:0"></div><span class="gmMuted">${t('gear.figHint')}</span></div>
-      <div class="gmCol"><div class="gmColHead"><h2 class="fg-title">${t('gear.colLook')}</h2><span>${t('gear.lookNote')}</span></div><div id="gmLooks" class="gmCol"></div><p class="gmMuted">${t('gear.lookRule')}</p></div>
-    </div>
-    <div class="fg-panel" style="padding:calc(14 * var(--hu)) calc(18 * var(--hu))">
-      <div class="gmColHead" style="position:relative;z-index:2"><h2 class="fg-title">${t('gear.inv')}</h2><span id="gmCount"></span></div>
-      <div class="gmTabs" id="gmTabs" style="position:relative;z-index:2;margin:8px 0"></div>
-      <div class="gmInv" style="position:relative;z-index:2"><div><div class="wmGrid" id="gmGrid"></div><p class="wmHint">${t('gear.hint')}</p></div><div class="gmDetail" id="gmDetail"></div></div>
+      <div class="gmCol gmMid">
+        <div class="fg-panel gmFig"><div id="gmFigBody" style="position:absolute;inset:0"></div><span class="gmMuted">${t('gear.figHint')}</span></div>
+        <div class="gmColHead" title="${t('gear.lookRule')}"><h2 class="fg-title">${t('gear.colLook')}</h2><span>${t('gear.lookNote')}</span></div><div id="gmLooks"></div>
+      </div>
+      <div class="fg-panel gmInvPanel">
+        <div class="gmColHead"><h2 class="fg-title">${t('gear.inv')}</h2><span id="gmCount"></span></div>
+        <div class="gmTabs" id="gmTabs"></div>
+        <div class="wmGrid" id="gmGrid"></div><p class="wmHint">${t('gear.hint')}</p>
+        <div class="gmDetail" id="gmDetail"></div>
+      </div>
     </div>
   </div>
 </div>`);
@@ -70,6 +74,7 @@ function row(slot: string, name: string, color: string, sub: string, tag = '', c
   n.style.color = color;
   txt.append(n, s);
   b.append(el('span', 'gmSlot', slotName(slot)), txt);
+  b.title = sub ? `${name} · ${sub}` : name;
   if (tag) b.append(el('span', 'gmTag', tag));
   return b;
 }

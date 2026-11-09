@@ -140,6 +140,10 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 .menuHead { margin-top: calc(4 * var(--hu)); font: 600 calc(14 * var(--hu)) var(--font-body); color: var(--fg-muted); }
 #menuWeaponName { font: 700 calc(18 * var(--hu)) var(--font-body); color: var(--fg-text); }
 #menuKit { justify-content: flex-start; }
+/* Start-Kit und „Rangliste“-Knopf wachsen mit dem Bildschirm-Maß (sonst bei 2560 × 1440 winzig), nie kleiner als bisher. Der Knopf bringt Inline-Stil mit (leaderboardView.ts) */
+#menuKit { gap: max(5px, calc(4 * var(--hu))); }
+#menuKit .kitSlot { width: max(40px, calc(32 * var(--hu))); height: max(40px, calc(32 * var(--hu))); font-size: max(8px, calc(6.4 * var(--hu))); }
+#menuBoardBtn > button { font-size: max(12px, calc(12 * var(--hu))) !important; padding: max(6px, calc(5 * var(--hu))) max(14px, calc(12 * var(--hu))) !important; margin-top: max(10px, calc(8 * var(--hu))) !important; }
 #menuInfo { margin: 0; font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
 /* Rangliste rechts */
 #menuRight { position: absolute; right: calc(40 * var(--hu)); top: var(--mTop); width: calc(320 * var(--hu)); height: calc(var(--mBot) - var(--mTop)); padding: calc(22 * var(--hu)) calc(24 * var(--hu));

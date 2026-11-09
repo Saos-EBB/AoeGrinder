@@ -36,6 +36,13 @@ body[data-flavor=schlachtbank] .fg-panel::after, body[data-flavor=schlachtbank] 
   font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #8a3a2e;
   background: url(./schlachtbank/bracket-tr.svg) right top / 26px 26px no-repeat, url(./schlachtbank/bracket-bl.svg) left bottom / 26px 26px no-repeat,
     linear-gradient(#ff3d1f, #ff3d1f) 4px calc(100% - 4px) / calc(100% - 8px) 2px no-repeat; filter: drop-shadow(0 0 4px rgba(255, 61, 31, .5)); }
+/* Panels, die scrollen (Hauptmenü links/rechts, Waffenmenü, Inventar im Ausrüstungsfenster): Rahmen unten bündig, sonst 4 px Scroll-Überstand */
+body[data-flavor=schlachtbank] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::after { inset: -4px -4px 0; }
+/* Lüftungsschlitze (oben rechts, 26–70 px vom rechten Rand, 26–43 px unter der Oberkante, feste px): Kopfzeilen mit Text rechts oben halten Abstand,
+   sonst liegen die Striche über „Zeit · Punkte“ (Rangliste) bzw. „7 von 25“ und den Inventar-Tabs (Ausrüstungsfenster) */
+body[data-flavor=schlachtbank] .menuBoardHead { padding-right: max(0px, calc(76px - 24 * var(--hu))); }
+body[data-flavor=schlachtbank] .gmInvPanel > .gmColHead { padding-right: max(0px, calc(76px - 16 * var(--hu))); }
+body[data-flavor=schlachtbank] .gmInvPanel { padding-top: max(calc(12 * var(--hu)), calc(50px - 28 * var(--hu))); }
 
 /* Titel: zentriert mit rotem Glühen, schrägen Balken und ▼▼▼, links mit roter Leuchtlinie darunter */
 body[data-flavor=schlachtbank] .fg-title { text-transform: none; }

@@ -3,7 +3,8 @@
 #cardModal h1 { font-size: calc(46 * var(--hu)); }
 #cardHint { font: 600 calc(15 * var(--hu)) var(--font-body); color: var(--fg-muted); letter-spacing: .04em; }
 .cards { display: flex; justify-content: center; gap: calc(40 * var(--hu)); padding: calc(16 * var(--hu)); max-width: 98vw; max-height: 82vh; overflow: auto; }
-.cards.l2 { display: grid; grid-template-columns: repeat(5, calc(206 * var(--hu))); gap: calc(22 * var(--hu)) calc(18 * var(--hu)); }
+/* L2: höchstens 5 je Reihe, jede Reihe mittig (auch 4 Karten oder eine halbe zweite Reihe); 1102 = 5 × 206 + 4 × 18 */
+.cards.l2 { display: flex; flex-wrap: wrap; justify-content: center; max-width: calc(1102 * var(--hu)); gap: calc(22 * var(--hu)) calc(18 * var(--hu)); }
 .lvCard { position: relative; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center;
   background: var(--fg-card); border: 3px solid var(--rc); border-radius: 10px; box-shadow: 0 0 0 2px #000, 0 0 16px color-mix(in srgb, var(--rc) 27%, transparent);
   font-family: var(--font-body); color: var(--fg-text); transition: transform .1s, box-shadow .1s; }
@@ -35,7 +36,7 @@
 .lvKey { position: absolute; left: 50%; bottom: calc(-12 * var(--hu)); transform: translateX(-50%); padding: 0 calc(8 * var(--hu)); background: #000; border: 1px solid var(--rc);
   font: 800 calc(16 * var(--hu)) var(--font-num); color: #fff; }
 .cards.l2 .lvKey { position: static; transform: none; }
-.cards.l2 .lvText { margin: calc(4 * var(--hu)) calc(12 * var(--hu)) 0; font-size: calc(13.5 * var(--hu)); line-height: 1.35; flex: 0 1 auto; overflow: hidden;
+.cards.l2 .lvText { margin: calc(4 * var(--hu)) calc(12 * var(--hu)) 0; font-size: calc(13.5 * var(--hu)); line-height: 1.35; flex: 0 0 auto; overflow: hidden;
   display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; }
 .cards.l2 .lvRep { margin: calc(4 * var(--hu)) calc(10 * var(--hu)) 0; font-size: calc(11 * var(--hu)); }
 .lvPrev { margin: calc(4 * var(--hu)) calc(10 * var(--hu)) 0; font: 700 calc(13 * var(--hu)) var(--font-num); color: #6ee7a0; }
