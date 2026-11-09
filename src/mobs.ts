@@ -224,13 +224,13 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
   let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
-  speed *= zone.moveMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Wasserrinne der Kanäle (mapgen)
+  if (!mob.flies) speed *= zone.moveMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Wasserrinne der Kanäle (mapgen); flies: Zusatz „fliegt“
   target = climbTarget(mob.pos, target);
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.01) return;
   const step = Math.min(d, speed * dt / 1000);
-  const dir = steer(mob, dx / d, dz / d, 0.7);
+  const dir = mob.flies ? { x: dx / d, z: dz / d } : steer(mob, dx / d, dz / d, 0.7);   // flies: ignoriert Wände, nur der Kartenrand hält (settle)
   mob.moving = true;
   if (zone.iceAt?.(mob.pos.x, mob.pos.z)) { mob.iceWant = { x: dir.x * speed, z: dir.z * speed }; mob.speed = speed; return; }   // Eis (Winterquell): zone.slide gleitet
   mob.pos.x += dir.x * step;

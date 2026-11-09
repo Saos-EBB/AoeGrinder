@@ -228,9 +228,10 @@ export function climbTarget(pos, target) {
 }
 
 // Boden und Schwerkraft für Körper ohne eigenen Sprung (Mobs): body.vy, body.falling
+// body.flies (Zusatz „fliegt“, Standard false): keine Collider, nur der Kartenrand
 export function settle(body, radius, dt) {
   const pos = body.pos;
-  resolve(pos, radius);
+  if (body.flies) clampToMap(pos); else resolve(pos, radius);
   const ground = groundAt(pos.x, pos.z, pos.y);
   if (!body.falling && pos.y - ground > STEP) { body.falling = true; body.vy = 0; }
   if (!body.falling) { pos.y = ground; return; }
