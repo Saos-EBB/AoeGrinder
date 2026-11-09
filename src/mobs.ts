@@ -15,7 +15,7 @@ import { hitSparkFx } from './fx/spellFx';
 import { noteHit } from './fx/impact';
 import { W, addTrauma, bigHit } from './wucht';
 import { mobAttackSlow } from './dodge';
-import { spawnPack as spawnThemePack } from './mobKinds';   // neue Mob-Kategorien (Phase 7): ein Aufruf pro Pack, Packgröße und Champion würfelt mobKinds.ts
+import { spawnPack as spawnThemePack, newKindNames } from './mobKinds';   // neue Mob-Kategorien (Phase 7): ein Aufruf pro Pack, Packgröße und Champion würfelt mobKinds.ts
 import type { PackSpot } from './mapgen/types';
 import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
@@ -35,7 +35,8 @@ export const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter
 
 // Einblendung, wenn der Sprung von fromLevel neue Mobs freigeschaltet hat. Die Anzeige steckt in ui/scoreHud.ts.
 export function announceNewMobs(fromLevel) {
-  const names = unlockedMobs(player.level).slice(unlockedMobs(fromLevel).length).map(id => MOB_TYPES[id].name);
+  const names = zone.theme ? newKindNames(zone.theme.id, fromLevel, player.level)   // generierte Map: Theme-Mobs (mobKinds.ts), alte Zonen: zone.mobs
+    : unlockedMobs(player.level).slice(unlockedMobs(fromLevel).length).map(id => MOB_TYPES[id].name);
   if (names.length) state.newMob = { text: t('msg.newMob', { names: names.join(', ') }), at: state.now };
 }
 

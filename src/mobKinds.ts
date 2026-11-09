@@ -102,7 +102,15 @@ export function spawnKind(theme: string, cat: string, zus: string, pos, level: n
 }
 
 // Pack-Zusammensetzung: Normal + 1–2 andere freigeschaltete Kategorien
-const unlockedKinds = level => UNLOCK_ORDER.slice(0, 3 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+export const unlockedKinds = (level: number) => UNLOCK_ORDER.slice(0, 3 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+// Einblendung „Neuer Gegner“ (mobs.ts announceNewMobs) auf generierten Maps: Namen der Kategorien, die zwischen fromLevel und level frei wurden (nur mit Skin im Theme)
+export function newKindNames(theme: string, fromLevel: number, level: number) {
+  return unlockedKinds(level).slice(unlockedKinds(fromLevel).length).filter(c => skinOf(theme, c)).map(c => kindType(theme, c, 'none').name);
+}
+// Boss-Adds (boss.ts) auf generierten Maps: die Kategorie, die als nächste frei wird (wie zoneTypeId bei den alten Zonen), am Ende die letzte
+export function addKind(level: number) {
+  return UNLOCK_ORDER[Math.min(unlockedKinds(level).length, UNLOCK_ORDER.length - 1)];
+}
 // Packgröße wie bei den alten Packs (mobs.ts rollPackSize: Level, Zonen-Bonus, Modifikatoren)
 const packSize = () => Math.max(2, Math.round(rollPackSize()));
 export function rollPackCats(level: number, size = packSize()) {

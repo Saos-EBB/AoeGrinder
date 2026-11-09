@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- fix(mobs): Auf den generierten Maps nennt die Einblendung „Neuer Gegner“ die frisch freigeschalteten Theme-Mobs (z. B. Schinder in der Hölle) und Boss-Adds sind Theme-Mobs der nächsten Freischalt-Stufe statt der alten Mob-Liste; alte Zonen und Arena unverändert
 - fix(relikte): Frostatem (Relikt mit Sichtlinie) trifft auf den generierten Maps keine Mobs mehr hinter Wänden – die Wände des Zellrasters versperren jetzt die Sicht (Löcher nicht)
 - fix(skins): Hochspannung und Splitterkönig bleiben bei voller Anzeige erkennbar: mit Skin leuchtet der Körper nicht mehr blau (Blitz) bzw. weiß (Frost-Aufleuchten beim Zaubern) auf, Splitterkönig bekommt keine Eiszapfen und keine Eisschicht mehr (die Kälte zeigen seine Splitter); das Hellblau seiner Facetten ist an die warme Lampe angepasst und wird nicht mehr cremeweiß
 - fix(ui): Im Ausrüstungsfenster verdeckt der Zierrahmen keinen Text mehr (Titel, Knochenstaub, Schließen, Inventar-Tabs): am Desktop liegt das Fenster zwischen den Rahmen-Ecken und scrollt dort, auf dem Handy liegt der Rahmen hinter dem Fenster

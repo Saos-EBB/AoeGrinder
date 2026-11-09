@@ -17,6 +17,7 @@ import { zone } from './world';
 import { groundAt, resolve } from './collision';
 import { MOB_TYPES } from './mobTypes';
 import { spawnMob, removeMob, enterCombat, damageMob } from './mobs';
+import { spawnKind, addKind } from './mobKinds';
 import { mobMode, scoreMult } from './modifiers';
 import { C } from './champions';
 import { run } from './score';
@@ -275,7 +276,11 @@ export function startBoss(id?: string, tier?: string) {
     bodies: [], hooks: { tick: [], onPlayerHit: [], onDodged: [], dmgTaken: [], onBodyDeath: [], onEnd: [], bar: [], cleanup: [] }, stats: { hits: 0, perfect0: state.dodgeStats?.perfect ?? 0 }, totalHp: total };
   boss.hp = bossHp;
   boss.awaken = b => awaken(b);
-  boss.spawnAdd = (pos, tint = 'boss2') => { const m: any = spawnMob(zoneTypeId(), pos.clone(), level, ++state.packCounter); m.bossTint = tint; enterCombat(m, false); return m; };
+  boss.spawnAdd = (pos, tint = 'boss2') => {   // generierte Map: Theme-Mob (mobKinds.ts), alte Zonen und Arena: zone.mobs
+    const packId = ++state.packCounter;
+    const m: any = (zone.theme && spawnKind(zone.theme.id, addKind(level), 'none', pos.clone(), level, packId)) || spawnMob(zoneTypeId(), pos.clone(), level, packId);
+    m.bossTint = tint; enterCombat(m, false); return m;
+  };
   boss.attack = (b, k, p) => runAttack(b, { k, p });
   boss.swapModel = (b, spec) => swapModel(b, spec);
   boss.spawnCopy = (b, pos) => spawnCopy(b, pos);
