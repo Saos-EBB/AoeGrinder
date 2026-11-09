@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Ausrüstungsfenster</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0a0e}
+a{color:#e8b23a}a:hover{color:#ffd27a}
+button{font-family:Inter,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 1280px; height: 780px; box-sizing: border-box; padding: 24px 28px; background: #0f0d13; color: #ece8f2; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 18px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+    <div style="display: flex; align-items: baseline; gap: 14px">
+      <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: 0.5px">Ausrüstung</h1>
+      <span style="font-size: 14px; color: #a49cb3">Taste X · pausiert</span>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+        <button type="button" onClick="{{tab.pick}}" style="{{tab.style}}">{{tab.label}}</button>
+      </sc-for>
+    </div>
+    <button type="button" onClick="{{toggleFull}}" style="{{fullBtnStyle}}">{{fullLabel}}</button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 400px 1fr 400px; gap: 20px; flex-grow: 1; min-height: 0">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; letter-spacing: 1.5px; color: #c9c2d6">GEAR · WERTE</h2>
+        <span style="font-size: 13px; color: #a49cb3">Inventar 25 je Slot</span>
+      </div>
+      <sc-for list="{{gear}}" as="g" hint-placeholder-count="6">
+        <div style="{{g.rowStyle}}">
+          <div style="width: 64px; font-size: 12px; color: #a49cb3; text-transform: uppercase; letter-spacing: 1px">{{g.slot}}</div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <div style="{{g.nameStyle}}">{{g.name}}</div>
+            <div style="font-size: 13px; color: #cfc8db">{{g.val}}</div>
+          </div>
+          <div style="{{g.tagStyle}}">{{g.tag}}</div>
+        </div>
+      </sc-for>
+      <div style="{{bonusStyle}}">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; color: {{set.col}}">{{set.name}} {{progress}}</div>
+          <div style="font-size: 12px; color: #a49cb3">{{set.build}}</div>
+        </div>
+        <div style="height: 6px; background: #2a2533; border-radius: 3px; overflow: hidden"><div style="{{barStyle}}"></div></div>
+        <div style="font-size: 13px; line-height: 1.45; color: #ddd6e8"><strong style="color: #ffffff">5/5 Mechanik:</strong> {{set.mech}}</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #ddd6e8"><strong style="color: #ffffff">5/5 Look:</strong> {{set.look5}}</div>
+        <div style="font-size: 12px; color: #a49cb3">{{bonusHint}}</div>
+      </div>
+    </div>
+
+    <div style="position: relative; background: #151219; border: 1px solid #2a2533; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+      <div style="{{auraStyle}}"></div>
+      <svg viewBox="0 0 300 440" width="330" height="484" role="img" aria-label="{{figLabel}}" style="position: relative">
+        <g stroke="#120f16" stroke-width="3" stroke-linejoin="round">
+          <polygon display="{{v.feuerCape}}" points="125,125 175,125 198,335 102,335" fill="#6e1a14"></polygon>
+          <polygon display="{{v.frostWings}}" points="140,135 60,95 78,150 40,170 92,190 70,230 135,200" fill="#bfe9ff"></polygon>
+          <polygon display="{{v.frostWings}}" points="160,135 240,95 222,150 260,170 208,190 230,230 165,200" fill="#bfe9ff"></polygon>
+          <g display="{{v.blitzBottle}}">
+            <rect x="96" y="112" width="40" height="120" rx="12" fill="#cfe6f0" fill-opacity="0.55"></rect>
+            <rect x="108" y="98" width="16" height="18" rx="3" fill="#8a7a5a"></rect>
+            <rect x="99" y="{{bottle.y}}" width="34" height="{{bottle.h}}" rx="9" fill="#ffe866" stroke="none"></rect>
+            <path d="M116 98 C 118 70, 150 72, 140 50" fill="none" stroke="#ffe866" stroke-width="4" stroke-dasharray="6 4"></path>
+          </g>
+          <polygon display="{{v.seucheCape}}" points="128,125 172,125 186,300 176,288 166,304 154,290 144,306 132,290 120,302" fill="#2a1830"></polygon>
+
+          <polygon display="{{v.bodyFeuer}}" points="118,125 182,125 206,395 94,395" fill="#b3261e"></polygon>
+          <polygon display="{{v.bodyFeuer}}" points="146,125 154,125 158,395 142,395" fill="#e8b23a" stroke="none"></polygon>
+          <polygon display="{{v.bodyFrost}}" points="125,122 175,122 192,335 108,335" fill="#f3f7fb"></polygon>
+          <line display="{{v.bodyFrost}}" x1="150" y1="124" x2="150" y2="333" stroke="#7cc8ff" stroke-width="3"></line>
+          <g display="{{v.bodyBlitz}}">
+            <rect x="122" y="122" width="56" height="134" rx="8" fill="#1f2a5c"></rect>
+            <polygon points="124,254 176,254 186,392 158,392 150,300 142,392 114,392" fill="#1f2a5c"></polygon>
+            <polyline points="124,130 130,150 122,170 130,190 122,210 130,230" fill="none" stroke="#ffe866" stroke-width="4"></polyline>
+            <polyline points="176,130 170,150 178,170 170,190 178,210 170,230" fill="none" stroke="#ffe866" stroke-width="4"></polyline>
+            <polyline points="118,280 124,305 116,330 124,355 116,380" fill="none" stroke="#ffe866" stroke-width="4"></polyline>
+            <polyline points="182,280 176,305 184,330 176,355 184,380" fill="none" stroke="#ffe866" stroke-width="4"></polyline>
+          </g>
+          <g display="{{v.bodySeuche}}">
+            <polygon points="124,122 176,122 182,262 170,256 160,266 150,256 140,266 130,256 118,262" fill="#3b1f46"></polygon>
+            <polygon points="128,258 172,258 180,392 156,392 150,300 144,392 120,392" fill="#2e1838"></polygon>
+            <line x1="150" y1="124" x2="150" y2="250" stroke="#c9a640" stroke-width="2"></line>
+            <circle cx="138" cy="190" r="5" fill="#7dff3a" stroke="none"></circle>
+          </g>
+          <polygon display="{{v.bodyPlain}}" points="122,125 178,125 196,392 104,392" fill="#6b6678"></polygon>
+
+          <ellipse display="{{v.feuerShoulders}}" cx="114" cy="130" rx="30" ry="17" fill="#e8b23a"></ellipse>
+          <ellipse display="{{v.feuerShoulders}}" cx="186" cy="130" rx="30" ry="17" fill="#e8b23a"></ellipse>
+        </g>
+
+        <g stroke="#120f16" stroke-width="10" stroke-linecap="round" fill="none">
+          <polyline points="140,130 104,196 90,252"></polyline>
+          <polyline points="160,130 198,196 214,250"></polyline>
+          <polyline display="{{v.legs}}" points="140,250 128,330 122,402"></polyline>
+          <polyline display="{{v.legs}}" points="160,250 172,330 178,402"></polyline>
+          <line x1="150" y1="116" x2="150" y2="250"></line>
+        </g>
+
+        <g stroke="#120f16" stroke-width="3">
+          <circle display="{{v.feuerNeck}}" cx="138" cy="122" r="6" fill="#ff7a22"></circle>
+          <circle display="{{v.feuerNeck}}" cx="150" cy="126" r="6" fill="#ff7a22"></circle>
+          <circle display="{{v.feuerNeck}}" cx="162" cy="122" r="6" fill="#ff7a22"></circle>
+          <rect display="{{v.frostNeck}}" x="134" y="118" width="10" height="10" fill="#bfe9ff"></rect>
+          <rect display="{{v.frostNeck}}" x="145" y="122" width="10" height="10" fill="#bfe9ff"></rect>
+          <rect display="{{v.frostNeck}}" x="156" y="118" width="10" height="10" fill="#bfe9ff"></rect>
+          <polyline display="{{v.blitzNeck}}" points="134,118 150,134 166,118" fill="none" stroke="#c97a3a" stroke-width="4"></polyline>
+          <rect display="{{v.seucheNeck}}" x="136" y="120" width="7" height="14" rx="2" fill="#7dff3a"></rect>
+          <rect display="{{v.seucheNeck}}" x="147" y="124" width="7" height="14" rx="2" fill="#b46bff"></rect>
+          <rect display="{{v.seucheNeck}}" x="158" y="120" width="7" height="14" rx="2" fill="#7dff3a"></rect>
+
+          <circle display="{{v.feuerArms}}" cx="98" cy="226" r="8" fill="#e8b23a"></circle>
+          <circle display="{{v.feuerArms}}" cx="207" cy="226" r="8" fill="#e8b23a"></circle>
+          <rect display="{{v.frostArms}}" x="88" y="216" width="18" height="16" rx="3" fill="#9fe4ff" transform="rotate(-20 97 224)"></rect>
+          <rect display="{{v.frostArms}}" x="198" y="216" width="18" height="16" rx="3" fill="#9fe4ff" transform="rotate(20 207 224)"></rect>
+          <rect display="{{v.blitzArms}}" x="88" y="218" width="18" height="12" rx="3" fill="#f2f2f2" transform="rotate(-20 97 224)"></rect>
+          <rect display="{{v.blitzArms}}" x="198" y="218" width="18" height="12" rx="3" fill="#f2f2f2" transform="rotate(20 207 224)"></rect>
+          <rect display="{{v.seucheArms}}" x="88" y="216" width="18" height="16" rx="3" fill="#5a2a66" transform="rotate(-20 97 224)"></rect>
+          <rect display="{{v.seucheArms}}" x="198" y="216" width="18" height="16" rx="3" fill="#5a2a66" transform="rotate(20 207 224)"></rect>
+          <circle display="{{v.seucheArms}}" cx="100" cy="238" r="3" fill="#7dff3a" stroke="none"></circle>
+
+          <circle cx="150" cy="90" r="26" fill="#f1e6d6"></circle>
+          <polygon display="{{v.feuerCrown}}" points="128,72 134,52 142,66 150,46 158,66 166,52 172,72" fill="#e8b23a"></polygon>
+          <path display="{{v.frostHair}}" d="M124 86 C 124 58, 176 58, 176 86 L 168 76 L 132 76 Z" fill="#20283a"></path>
+          <polygon display="{{v.frostHair}}" points="168,70 174,64 180,70 174,76" fill="#7cc8ff"></polygon>
+          <rect display="{{v.blitzGlasses}}" x="130" y="82" width="18" height="11" rx="3" fill="#0b0b0b"></rect>
+          <rect display="{{v.blitzGlasses}}" x="152" y="82" width="18" height="11" rx="3" fill="#0b0b0b"></rect>
+          <g display="{{v.seucheMask}}">
+            <ellipse cx="150" cy="66" rx="40" ry="8" fill="#2a1830"></ellipse>
+            <rect x="130" y="42" width="40" height="24" rx="4" fill="#2a1830"></rect>
+            <polygon points="158,90 206,108 158,104" fill="#d8cfb0"></polygon>
+            <circle cx="140" cy="88" r="6" fill="#7dff3a"></circle>
+            <circle cx="158" cy="86" r="6" fill="#7dff3a"></circle>
+          </g>
+          <g display="{{v.hatLook}}">
+            <polygon points="124,80 176,80 214,26" fill="#d9372b"></polygon>
+            <rect x="122" y="74" width="56" height="10" rx="5" fill="#f2f2f2"></rect>
+            <circle cx="214" cy="26" r="9" fill="#f2f2f2"></circle>
+          </g>
+          <path display="{{v.headFlame}}" d="M132 70 C 128 46, 142 44, 140 26 C 152 40, 156 30, 154 14 C 172 34, 172 52, 168 70 Z" fill="#ff7a22"></path>
+
+          <g display="{{v.staff}}">
+            <line x1="214" y1="150" x2="214" y2="404" stroke="#5a3420" stroke-width="7"></line>
+            <circle cx="214" cy="140" r="14" fill="{{set.col}}"></circle>
+            <circle cx="214" cy="140" r="22" fill="{{set.col}}" fill-opacity="0.25" stroke="none"></circle>
+          </g>
+          <g display="{{v.spray}}">
+            <rect x="204" y="226" width="22" height="50" rx="5" fill="#e04a8a"></rect>
+            <rect x="209" y="216" width="12" height="12" rx="2" fill="#f2f2f2"></rect>
+            <rect x="228" y="236" width="10" height="20" rx="2" fill="#3a8cff"></rect>
+            <path d="M226 222 C 246 214, 252 196, 272 200 C 258 206, 262 218, 278 214 C 262 230, 240 230, 226 228 Z" fill="#ff7a22"></path>
+          </g>
+
+          <g display="{{v.trash}}">
+            <ellipse cx="86" cy="{{bag.cy}}" rx="{{bag.r}}" ry="{{bag.ry}}" fill="#1c1a20"></ellipse>
+            <path d="M80 254 L 92 254 L 88 266 L 84 266 Z" fill="#1c1a20"></path>
+          </g>
+        </g>
+      </svg>
+      <sc-for list="{{fx}}" as="p" hint-placeholder-count="0">
+        <div aria-hidden="true" style="{{p.style}}">{{p.txt}}</div>
+      </sc-for>
+      <div style="position: absolute; left: 16px; bottom: 14px; font-size: 12px; color: #a49cb3">{{figHint}}</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; letter-spacing: 1.5px; color: #c9c2d6">KOSMETIK · LOOK</h2>
+        <span style="font-size: 13px; color: #a49cb3">belegt = wird gezeigt</span>
+      </div>
+      <sc-for list="{{looks}}" as="l" hint-placeholder-count="6">
+        <button type="button" onClick="{{l.toggle}}" style="{{l.rowStyle}}">
+          <span style="width: 64px; font-size: 12px; color: #a49cb3; text-transform: uppercase; letter-spacing: 1px; text-align: left">{{l.slot}}</span>
+          <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; text-align: left">
+            <span style="{{l.nameStyle}}">{{l.name}}</span>
+            <span style="font-size: 13px; color: #a49cb3">{{l.sub}}</span>
+          </span>
+        </button>
+      </sc-for>
+      <div style="margin-top: 4px; padding: 12px 14px; border: 1px dashed #3a3346; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #c9c2d6">
+        Regel: <strong style="color: #ffffff">Look ?? Gear-Modell</strong>. Klick auf einen belegten Kosmetik-Slot leert ihn, dann zeigt die Figur wieder das Gear. Werte kommen immer aus der linken Spalte.
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"splitter":{"editor":"range","min":0,"max":60,"step":1,"default":37,"section":"Frost"},"verseucht":{"editor":"range","min":0,"max":30,"step":1,"default":12,"section":"Seuche"},"$preview":{"width":1280,"height":780}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { set: 'feuer', full: true, hat: true, weap: true }; }
+  renderVals() {
+    const R = { blau: '#5aa2ff', lila: '#bf86ff', orange: '#ff9a3c', weiss: '#f2f2f2', set: '#7dffb0' };
+    const S = {
+      feuer: { name: 'Glutprophet', build: 'Feuerball-Maniac', col: '#ff7a22', tab: 'Feuer',
+        mech: 'Jeder 10. Feuerball ist ein Riesen-Feuerball (3× Größe, 300 % Schaden). Alle Feuerball-Runen und -Talente wirken mit.',
+        look5: 'Kopf brennt, Flammen-Fußspuren doppelt so groß. Schaltet den Waffen-Look Haarspray + Feuerzeug frei.',
+        weapon: ['Glutschädel-Stab', 'lila', 'Feuerball-Fokus +40 %'],
+        items: [['Kopf', 'Glutkrone', 'lila', '+6 % Crit', '+15 % Crit'], ['Hals', 'Feuerball-Murmeln', 'blau', '+30 Mana', '+1 Projektil'], ['Rücken', 'Prinzenumhang', 'blau', 'Brand 30 % / 3 s', '−10 % Wurfzeit Feuerball'], ['Arme', 'Goldreifen', 'orange', '+4 % Tempo', '+1 Projektil'], ['Körper', 'Robe der Erhabenheit', 'lila', '+10 % Leben', '−10 % Wurfzeit Feuerball']] },
+      frost: { name: 'Splitterkönig', build: 'Shatter / Splitter', col: '#9fe4ff', tab: 'Frost',
+        mech: 'Gletschernadel +50 % Reichweite, durchschlägt alles, am Endpunkt eine Frost Nova (skaliert mit allen Nova-Karten).',
+        look5: 'Splitter kreisen sichtbar: 5 kleine → 1 großer, 5 große → 1 leuchtender. Im Stand: Pose mit ゴゴゴ-Schrift.',
+        weapon: ['Frostkugel-Stab', 'lila', 'Gletschernadel-Fokus +40 %'],
+        items: [['Kopf', 'Eis-Haarspange', 'blau', '+20 Mana', 'Splitter-Max +5'], ['Hals', 'Eiswürfel-Kette', 'lila', '+8 % Leben', 'Splitter-Max +5'], ['Rücken', 'Eiszapfen-Flügel', 'orange', 'Slow 20 % / 2 s', 'Gletschernadel +10 % pro Splitter'], ['Arme', 'Kristall-Manschetten', 'blau', '+5 % Crit', 'Gletschernadel +10 % pro Splitter'], ['Körper', 'Weißer Anzug-Mantel', 'lila', '+12 % Leben', '+15 % Schaden auf Eingefrorene']] },
+      blitz: { name: 'Hochspannung', build: 'Ketten', col: '#ffe866', tab: 'Blitz',
+        mech: 'Jeder Sprung gabelt sich mit 20 % in 2 Ketten.',
+        look5: 'Funken springen zwischen Flasche und Armen, die Sonnenbrille spiegelt die Blitze. Flasche voll.',
+        weapon: ['Spulen-Stab', 'lila', 'Kettenblitz-Fokus +40 %'],
+        items: [['Kopf', 'Sonnenbrille', 'blau', '+5 % Crit', '+1 Sprung'], ['Hals', 'Kupferkette', 'lila', '+25 Mana', '+0,5 % Schaden pro Kill in der Kette'], ['Rücken', 'Stromflasche', 'orange', 'Kette 40 % auf 3', '+1 Sprung'], ['Arme', 'Isolierband-Bündchen', 'blau', '+4 % Tempo', '+1 Sprung'], ['Körper', 'Trainingsanzug', 'lila', '+10 % Leben', 'Kettenblitz −15 % Kosten']] },
+      seuche: { name: 'Pestbringer', build: 'Seuche / Platzen', col: '#7dff3a', tab: 'Seuche',
+        mech: 'Jedes Mal auf einem Mob kann 2× gepoppt werden statt 1×.',
+        look5: 'Grün-lila Dampf steigt auf, Fliegenschwarm. Der Müllbeutel in der Hand wächst mit den verseuchten Gegnern.',
+        weapon: ['Phiolen-Stab', 'lila', 'Platzen-Fokus +40 %'],
+        items: [['Kopf', 'Pestmaske', 'lila', '+6 % Crit', 'Platzen +15 % Schaden'], ['Hals', 'Phiolen-Kette', 'blau', '+8 % Leben', 'Ansteckung +1 Mob'], ['Rücken', 'Zerfetzter Umhang', 'blau', '1 Seuchen-Mal', 'Ansteckung +1 Mob'], ['Arme', 'Tropfende Manschetten', 'orange', '+4 % Tempo', 'Platzen-Gift tickt 25 % schneller'], ['Körper', 'Verwester Anzug', 'lila', '+12 % Leben', 'Platzen +15 % Schaden']] },
+    };
+    const id = this.state.set, s = S[id], full = this.state.full;
+    const on = b => (b ? 'inline' : 'none');
+    const rowBase = 'display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #17141c; border-radius: 10px; min-height: 52px; box-sizing: border-box;';
+    const gear = s.items.map((it, i) => {
+      const isSet = full || i < 4;
+      const name = isSet ? it[1] : 'Wollrobe';
+      const rar = isSet ? it[2] : 'blau';
+      const val = !isSet ? '+8 % Leben' : full ? it[4] : it[3];
+      return { slot: it[0], name, val,
+        tag: isSet ? 'SET' : '',
+        rowStyle: rowBase + ' border: 1px solid ' + (isSet ? '#2f4a3a' : '#2a2533') + ';',
+        nameStyle: 'font-size: 15px; font-weight: 600; color: ' + R[rar] + '; white-space: nowrap; overflow: hidden; text-overflow: ellipsis',
+        tagStyle: 'font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #0f0d13; background: ' + (isSet ? R.set : 'transparent') + '; border-radius: 4px; padding: 2px 6px' };
+    });
+    gear.push({ slot: 'Waffe', name: s.weapon[0], val: s.weapon[2], tag: '',
+      rowStyle: rowBase + ' border: 1px solid #2a2533;',
+      nameStyle: 'font-size: 15px; font-weight: 600; color: ' + R[s.weapon[1]],
+      tagStyle: 'display: none' });
+
+    const hatOn = this.state.hat;
+    const sprayUnlocked = id === 'feuer' && full;
+    const sprayOn = sprayUnlocked && this.state.weap;
+    const lookRow = (filled) => 'display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; min-height: 52px; box-sizing: border-box; cursor: pointer; font: inherit; color: inherit; width: 100%; ' +
+      (filled ? 'background: #1d1826; border: 1px solid #6a4fa0;' : 'background: transparent; border: 1px dashed #3a3346;');
+    const gearName = i => gear[i].name;
+    const looks = [
+      { slot: 'Kopf', filled: hatOn, name: hatOn ? 'Zipfelmütze' : 'leer', sub: hatOn ? 'weiß · Gimmick, wächst mit dem Level' : 'zeigt Gear: ' + gearName(0), toggle: () => this.setState({ hat: !hatOn }) },
+      { slot: 'Hals', filled: false, name: 'leer', sub: 'zeigt Gear: ' + gearName(1) },
+      { slot: 'Rücken', filled: false, name: 'leer', sub: 'zeigt Gear: ' + gearName(2) },
+      { slot: 'Arme', filled: false, name: 'leer', sub: 'zeigt Gear: ' + gearName(3) },
+      { slot: 'Körper', filled: false, name: 'leer', sub: 'zeigt Gear: ' + gearName(4) },
+      { slot: 'Waffe', filled: sprayOn,
+        name: sprayOn ? 'Haarspray + Feuerzeug' : (id === 'feuer' && !full ? 'gesperrt' : 'leer'),
+        sub: sprayOn ? 'Ultra-Kosmetik · nur die Wurf-Animation ändert sich' : (id === 'feuer' && !full ? 'frei bei Glutprophet 5/5' : (sprayUnlocked ? 'frei, Klick legt an · zeigt Gear: ' + s.weapon[0] : 'zeigt Gear: ' + s.weapon[0])),
+        toggle: () => { if (sprayUnlocked) this.setState({ weap: !this.state.weap }); } },
+    ].map(l => ({ ...l, toggle: l.toggle || (() => {}), rowStyle: lookRow(l.filled),
+      nameStyle: 'font-size: 15px; font-weight: 600; color: ' + (l.filled ? '#ffffff' : '#8f879d') }));
+
+    const body = full || false;
+    const v = {
+      feuerCape: on(id === 'feuer'), frostWings: on(id === 'frost'), blitzBottle: on(id === 'blitz'), seucheCape: on(id === 'seuche'),
+      bodyFeuer: on(id === 'feuer' && body), bodyFrost: on(id === 'frost' && body), bodyBlitz: on(id === 'blitz' && body), bodySeuche: on(id === 'seuche' && body), bodyPlain: on(!body),
+      legs: on(!(id === 'feuer' && body)),
+      feuerShoulders: on(id === 'feuer' && body),
+      feuerNeck: on(id === 'feuer'), frostNeck: on(id === 'frost'), blitzNeck: on(id === 'blitz'), seucheNeck: on(id === 'seuche'),
+      feuerArms: on(id === 'feuer'), frostArms: on(id === 'frost'), blitzArms: on(id === 'blitz'), seucheArms: on(id === 'seuche'),
+      feuerCrown: on(id === 'feuer' && !hatOn), frostHair: on(id === 'frost' && !hatOn), blitzGlasses: on(id === 'blitz' && !hatOn), seucheMask: on(id === 'seuche' && !hatOn),
+      hatLook: on(hatOn), headFlame: on(id === 'feuer' && full && !hatOn),
+      staff: on(!sprayOn), spray: on(sprayOn), trash: on(id === 'seuche' && full),
+    };
+    const level = full ? 0.85 : 0.45;
+    const bottle = { h: Math.round(112 * level), y: Math.round(228 - 112 * level) };
+    const inf = Math.max(0, Math.min(30, this.props.verseucht ?? 12));
+    const br = 8 + inf * 0.9;
+    const bag = { r: Math.round(br), ry: Math.round(br * 1.15), cy: Math.round(262 + br) };
+
+    const fx = [];
+    const px = (x, y) => 'position: absolute; left: calc(50% + ' + x + 'px); top: calc(50% + ' + y + 'px); transform: translate(-50%, -50%); pointer-events: none;';
+    if (id === 'frost') {
+      const n = Math.max(0, Math.min(60, this.props.splitter ?? 37));
+      const glow = Math.floor(n / 25), big = Math.floor((n % 25) / 5), small = n % 5;
+      const parts = [];
+      for (let k = 0; k < glow; k++) parts.push('glow');
+      for (let k = 0; k < big; k++) parts.push('big');
+      for (let k = 0; k < small; k++) parts.push('small');
+      parts.forEach((t, k) => {
+        const a = -Math.PI / 2 + k / Math.max(parts.length, 1) * Math.PI * 2;
+        const x = Math.round(Math.cos(a) * 150), y = Math.round(Math.sin(a) * 120 - 20);
+        const st = t === 'glow' ? 'width: 26px; height: 26px; background: #e9fbff; box-shadow: 0 0 18px 6px #7cd8ff;' : t === 'big' ? 'width: 18px; height: 18px; background: #7cc8ff;' : 'width: 9px; height: 9px; background: #f2fbff;';
+        fx.push({ txt: '', style: px(x, y) + st + ' border-radius: 50%;' });
+      });
+      if (full) {
+        fx.push({ txt: 'ゴ', style: px(-170, -150) + 'font-family: \'Space Grotesk\', sans-serif; font-weight: 700; font-size: 54px; color: #b46bff; transform: translate(-50%, -50%) rotate(-12deg);' });
+        fx.push({ txt: 'ゴ', style: px(-150, -70) + 'font-weight: 700; font-size: 42px; color: #b46bff; transform: translate(-50%, -50%) rotate(8deg);' });
+        fx.push({ txt: 'ゴ', style: px(165, -120) + 'font-weight: 700; font-size: 50px; color: #b46bff; transform: translate(-50%, -50%) rotate(10deg);' });
+        fx.push({ txt: 'ゴ', style: px(150, -40) + 'font-weight: 700; font-size: 38px; color: #b46bff; transform: translate(-50%, -50%) rotate(-6deg);' });
+      }
+    }
+    if (id === 'seuche') {
+      [[-60, -170], [70, -150], [-110, -60], [110, -80], [-30, -210], [40, -200], [-130, 30], [120, 10]].forEach(([x, y]) =>
+        fx.push({ txt: '', style: px(x, y) + 'width: 5px; height: 5px; background: #0b0a0e; border-radius: 50%; box-shadow: 0 0 0 1px #7dff3a;' }));
+    }
+    if (id === 'blitz' && full) {
+      [[-95, -40], [80, 10], [-60, 40], [100, -30]].forEach(([x, y]) =>
+        fx.push({ txt: 'ϟ', style: px(x, y) + 'font-size: 26px; color: #ffe866; text-shadow: 0 0 8px #ffe866;' }));
+    }
+    const auraCol = id === 'seuche' ? (full ? 'rgba(125,255,58,0.18)' : 'rgba(125,255,58,0.06)') : id === 'frost' ? 'rgba(159,228,255,0.10)' : id === 'blitz' ? 'rgba(255,232,102,0.08)' : 'rgba(255,122,34,0.12)';
+    const auraStyle = 'position: absolute; left: 50%; top: 50%; width: 420px; height: 560px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, ' + auraCol + ', transparent);' + (id === 'seuche' && full ? ' box-shadow: 0 -60px 120px -40px rgba(180,107,255,0.25) inset;' : '');
+
+    const tabs = Object.keys(S).map(k => ({ label: S[k].tab, pick: () => this.setState({ set: k }),
+      style: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; ' +
+        (k === id ? 'background: ' + S[k].col + '; color: #0f0d13; border: 1px solid ' + S[k].col + ';' : 'background: #17141c; color: #ece8f2; border: 1px solid #2a2533;') }));
+    return {
+      set: s, tabs, gear, looks, v, bottle, bag, fx, auraStyle,
+      progress: full ? '5/5' : '4/5',
+      barStyle: 'height: 100%; width: ' + (full ? '100%' : '80%') + '; background: ' + s.col + ';',
+      bonusStyle: 'margin-top: 4px; padding: 12px 14px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; background: #17141c; border: 1px solid ' + (full ? s.col : '#2a2533') + '; opacity: ' + (full ? '1' : '0.6') + ';',
+      bonusHint: full ? 'Aktiv: die Rolls sind durch die Perfekt-Werte ersetzt.' : 'Inaktiv: Mit 1–4 Teilen gelten die eigenen Rolls, es gibt keinen Teilbonus.',
+      fullLabel: full ? 'Set 5/5 → 4/5' : 'Set 4/5 → 5/5',
+      fullBtnStyle: 'min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; background: transparent; color: #ece8f2; border: 1px solid #6a4fa0;',
+      toggleFull: () => this.setState({ full: !full }),
+      figLabel: 'Magier mit Set ' + s.name + (full ? ', vollständig' : ', 4 von 5'),
+      figHint: id === 'frost' ? 'Tweak „splitter“ ändert die Anzahl der Splitter' : id === 'seuche' ? 'Tweak „verseucht“ lässt den Müllbeutel wachsen' : id === 'blitz' ? 'Der Flaschen-Pegel steigt mit der Kette' : 'Zipfelmütze rechts weg-klicken zeigt die Krone',
+    };
+  }
+}
+</script>
+</body>
+</html>
