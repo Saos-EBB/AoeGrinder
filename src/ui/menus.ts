@@ -12,7 +12,7 @@ import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, keyText, actionForCode, resetBinds } from '../input';
-import { resetGame, switchZone } from '../player';
+import { resetGame, switchZone, newRunMap } from '../player';
 import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
 import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';
@@ -259,6 +259,7 @@ export function ding() {
 $('restartBtn').addEventListener('click', () => {
   $('deathModal').classList.remove('show');
   stopChannel(true);
+  newRunMap();   // jeder Run eine neue Map (Seed, mapgen/rng.ts)
   resetGame();
   resetSpells();
   applyRunWeapon(!!mage.weapon);

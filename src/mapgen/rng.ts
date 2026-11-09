@@ -31,8 +31,14 @@ export function mixSeed(...parts: (string | number)[]): number {
   return h >>> 0;
 }
 
+// Seed der generierten Maps: jedes Betreten einer Map (buildWorld → prepare) würfelt neu, damit jede Map anders ist.
+// Fest bleibt er mit ?seed=<n> in der URL oder nach „Seed setzen“ im Dev-Fenster (reproduzierbare Tests).
 const fromUrl = Number(new URLSearchParams(location.search).get('seed'));
-let seed = Number.isFinite(fromUrl) && fromUrl > 0 ? Math.floor(fromUrl) : 1 + Math.floor(Math.random() * 999999);
+let pinned = Number.isFinite(fromUrl) && fromUrl > 0;
+let seed = pinned ? Math.floor(fromUrl) : 1 + Math.floor(Math.random() * 999999);
+let keep = true;   // den aktuellen Seed beim nächsten Bau einmal benutzen (Start, „Neu würfeln“)
+const roll = () => 1 + Math.floor(Math.random() * 999999);
 export const mapSeed = () => seed;
-export function setMapSeed(n: number) { seed = Math.max(1, Math.floor(n) || 1); }
-export function rerollSeed() { seed = 1 + Math.floor(Math.random() * 999999); return seed; }
+export function nextMapSeed() { if (!pinned && !keep) seed = roll(); keep = false; return seed; }
+export function setMapSeed(n: number) { seed = Math.max(1, Math.floor(n) || 1); pinned = true; }
+export function rerollSeed() { seed = roll(); keep = true; return seed; }

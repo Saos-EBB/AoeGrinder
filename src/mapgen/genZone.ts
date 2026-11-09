@@ -1,8 +1,8 @@
 // Generierte Zone: hat dieselbe Schnittstelle wie die Zonen in zones.ts (height, ground, props, env, mobs, packs, spawn, spawnOk, …),
-// dazu packSpots, theme, bounds, layout. prepare() würfelt das Layout mit dem aktuellen Seed, bevor world.ts das Gelände baut.
+// dazu packSpots, theme, bounds, layout. prepare() würfelt das Layout mit einem neuen Seed (fest mit ?seed=, mapgen/rng.ts), bevor world.ts das Gelände baut.
 
 import type * as THREE from 'three';
-import { makeRng, mixSeed, mapSeed, type Rng } from './rng';
+import { makeRng, mixSeed, nextMapSeed, type Rng } from './rng';
 import { check, tidy, CELL, WATER, LAVA, type Layout } from './grid';
 import { buildLayout, groundColor, type Look } from './build';
 import type { ThemeInfo, PackSpot, Spot } from './types';
@@ -56,7 +56,7 @@ export function genZone(def: GenDef) {
     gen: true, id: def.id, name: def.name, theme: def.theme, env: def.env, toon: true, mobs: def.mobs, packs: def.packs, storm: def.storm,
     seed: 0, tries: 0, layout: null as Layout, packSpots: [] as PackSpot[], spawn: { x: 0, z: 0 }, bounds: null, meshes: [] as THREE.Object3D[],
     prepare() {
-      const seed = mapSeed(), r = generate(def, seed), l = r.layout;
+      const seed = nextMapSeed(), r = generate(def, seed), l = r.layout;
       Object.assign(zone, { seed, tries: r.tries, problem: r.problem, layout: l, packSpots: l.packSpots, spawn: l.spawn, bounds: l.bounds });
       pathDist = pathDistOf(l.paths);
       ground = groundColor(l, def.look, pathDist);

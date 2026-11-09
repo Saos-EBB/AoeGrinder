@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(maps): Jede generierte Map ist jetzt bei jedem Betreten und jedem neuen Run anders (neuer Seed bei Map-Wechsel, „Neuer Run“ und Zurück ins Hauptmenü); mit `?seed=` in der URL oder „Seed setzen“ im Dev-Fenster bleibt der Seed fest
 - feat(mobs): Auf den generierten Maps flieht neben dem Hexer jetzt auch der Zauberer, wenn du ihm zu nahe kommst (gleiche Regeln: Teleport 8 yd weg höchstens alle 6 s, sonst Weglaufen mit 60 % Tempo, einholbar)
 - fix(mobs): Ein vom Schild-Zusatz abgefangener Treffer zeigt „Absorbiert“ statt „Immun“
 - fix(skins): Sprechblasen von Ausbrecher und Classic-Krieger 55 erscheinen nur noch im Run, nicht mehr im Hauptmenü (das Namensschild bleibt)

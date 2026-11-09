@@ -44,6 +44,9 @@ import { updateRandomMage } from './spells/random';
 import { t } from './i18n';
 import { resetLoot } from './loot';
 
+// Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
+export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
+
 export function resetGame() {
   startMageRun();
   for (const m of state.mobs) removeMob(m);

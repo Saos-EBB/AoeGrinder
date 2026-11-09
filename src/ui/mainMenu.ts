@@ -25,7 +25,7 @@ import { openGearWindow, gearBtn } from './gearWindow';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
-import { resetGame, die } from '../player';
+import { resetGame, die, newRunMap } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
 import { startHudEdit, hudEditing, stopHudEdit } from './hud/layout';
@@ -339,6 +339,7 @@ $('menuEdit').addEventListener('click', () => editHud('startModal'));
 export function toMainMenu() {
   $('deathModal').classList.remove('show');
   stopChannel(true);
+  newRunMap();   // der nächste Run bekommt eine neue Map, das Menü zeigt sie schon
   resetGame();
   enterMenu();
 }
