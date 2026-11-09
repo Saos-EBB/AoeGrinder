@@ -6,6 +6,7 @@ import { SPELLS } from './config';
 import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
+import { STANDARD, cleanSkins, skinsFor, type Figur, type SkinId } from './skins';
 
 export const META = {
   store: 'frostgrind.meta.v1',
@@ -29,9 +30,10 @@ export const META = {
 const RANK = ['grün', 'blau', 'lila', 'orange'];
 const FREE = ['grün'];
 
+// skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard
 function load() {
-  try { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; }
-  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 }; }
+  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; m.skins = cleanSkins(m.skins); return m; }
+  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {} }; }
 }
 // Migration alter Baukasten-Waffen (Inventar beim Laden, Spielstand-Codes in ui/saveCode.ts, Dev-Schmied). Nie crashen: Unbekanntes fällt zurück.
 // v28: Elemente Gift → Seuche (über Blut), Void → Arkan. Rework 2026-11-08 (Toon, Köpfe je Schule): Blut → Seuche, Dunkel → Arkan (Vorschlag, Kevin entscheidet noch, Alternative none),
@@ -55,6 +57,14 @@ export function fixWeapon(w) {
 export const meta = load();
 meta.inv.forEach(fixWeapon);
 export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
+
+// ---------- Skins ----------
+// Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe passt (Krieger), sonst Standard
+export function skinOf(figur: Figur, weapon?: string | null): SkinId {
+  const id = meta.skins?.[figur];
+  return skinsFor(figur, weapon).some(s => s.id === id) ? id : STANDARD;
+}
+export function pickSkin(figur: Figur, id: SkinId) { meta.skins = cleanSkins({ ...meta.skins, [figur]: id }); saveMeta(); }
 
 // ---------- Pool ----------
 export function catalog() {
@@ -131,4 +141,4 @@ export function rollShop(tier) {
 // ---------- Dev ----------
 export function devSetDust(v) { meta.dust = v; saveMeta(); }
 export function devUnlockAll() { meta.unlocked = catalog().map(e => e.key); saveMeta(); }
-export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 }); saveMeta(); }
+export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {} }); saveMeta(); }

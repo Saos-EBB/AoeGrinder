@@ -12,6 +12,8 @@ import { buildWeaponOf, equipped, elementOf } from '../weaponRolls';
 import { ELEMENTS } from './weapons/baukasten';
 import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
+import { skinOf } from '../meta';
+import { figurOf, STANDARD } from '../skins';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -19,7 +21,7 @@ const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
 const WAR_WEAPONS = ['sword'];   // Axt und Kolben sind raus (v31); legendäre Waffen hängen am Feld legendary in realMen.ts
 const warBase = w => (WAR_WEAPONS.includes(w) ? w : 'sword');
 let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
-const HEROES = { krieger: () => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon) }) };
+const HEROES = { krieger: (look: string) => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon), look }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
 const NO_FX = {};
@@ -54,6 +56,10 @@ function tintWeapon(w, hw) {
   });
 }
 let cur = null, skin = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
+// look: Skin aus skins.ts (Standard, Hochspannung, Ausbrecher …), getrennt vom Schul-Look skin. Krieger-Skins hängen an der Waffe (legendär oder Basis)
+let look = STANDARD;
+const lookWeapon = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : null);
+const lookOf = id => skinOf(figurOf(id), lookWeapon(id));
 
 // Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
 const SPARK = { vy: .5, life: [.42, .84], size: .14, grav: -.3, spread: .12, bright: 1.6 };   // Werte der Viewer-Partikel, bright wie die Relikt-Aura // PH
@@ -104,8 +110,9 @@ function dispose(m, rebuild = false) {
 function setSkin(id) {
   if (cur) dispose(cur);
   skin = id;
+  look = lookOf(id);
   if (HEROES[id]) {
-    cur = HEROES[id]();
+    cur = HEROES[id](look);
     cur.onHit = (kind, x, z, i) => { for (const fn of hitHandlers()) fn(kind, x, z, i); };
     scene.add(cur.root, cur.fx.group);
     if (cur.scarf) scene.add(cur.scarf);
@@ -113,7 +120,7 @@ function setSkin(id) {
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
-  cur = buildStrichMagier(id, weaponElement(), { spark });
+  cur = buildStrichMagier(id, weaponElement(), { spark, look });
   scene.add(cur.root, cur.scarf);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
@@ -126,7 +133,7 @@ function recolor() {
   const el = weaponElement();
   if (HEROES[skin] || cur.element === el) return;
   const old = cur, st = old.animState;
-  cur = buildStrichMagier(skin, el, { trail: old.trail, spark });
+  cur = buildStrichMagier(skin, el, { trail: old.trail, spark, look });
   cur.adoptAnim(st);
   cur.root.position.copy(old.root.position); cur.root.quaternion.copy(old.root.quaternion); cur.root.scale.copy(old.root.scale);
   cur.anchors.crystal.parent.add(mount);
@@ -148,7 +155,7 @@ const skinForRun = () => { const ids = activeModIds(); return ids.includes('fros
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {
   const id = skinForRun();
-  if (id !== skin || cur.trail || (HEROES[id] && heroWeapon?.id !== heroWeaponOf(id)?.id)) setSkin(id);   // auch, wenn die legendäre Waffe gewechselt hat
+  if (id !== skin || cur.trail || lookOf(id) !== look || (HEROES[id] && heroWeapon?.id !== heroWeaponOf(id)?.id)) setSkin(id);   // auch, wenn die legendäre Waffe oder der Skin gewechselt hat
   else recolor();                             // Waffe mit anderem Element seit dem letzten Bau
 }
 // Run-Ende: Spuren raus aus der Szene
@@ -162,6 +169,9 @@ export const mage = {
   get trail() { return cur.trail; },
   get fx() { return HEROES[skin] ? NO_FX : cur.fx; },   // bei Nahkämpfern ist cur.fx die Effektgruppe, keine Spielregeln
   get skin() { return skin; },
+  get look() { return look; },
+  get lookWeapon() { return lookWeapon(skin); },   // Waffe, an der die Krieger-Skins hängen (Magier: null)
+  refreshLook() { if (lookOf(skin) !== look) setSkin(skin); },   // Skin-Wahl im Hauptmenü, Spielstand-Code
   get hero() { return cur; },
   get warWeapon() { return warWeapon; },
   setWarWeapon(id) {

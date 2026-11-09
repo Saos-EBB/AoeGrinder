@@ -2015,4 +2015,14 @@ export const de: Record<string, string> = {
   'wm.toChest': "Zur Kiste",
   'wm.values': "Werte",
   'wm.worse': "▼ −{n} % gegenüber ausgerüstet",
+
+  'look.standard.name': "Standard",
+  'look.prev': "Vorheriger Skin",
+  'look.next': "Nächster Skin",
+  'look.magier.blitz.name': "Hochspannung",
+  'look.magier.seuche.name': "Pestbringer",
+  'look.magier.frost14.name': "Splitterkönig",
+  'look.krieger.klapse.name': "Ausbrecher",
+  'look.krieger.classic.name': "Classic-Krieger 55",
+  'look.krieger.holz.name': "Holzfäller",
 };

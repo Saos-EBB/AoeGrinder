@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(ui): Skin-Wechsler unter der Figur in der Charakterwahl (◀ Name ▶, Vorschau ist die Menü-Figur): Magier Standard, Hochspannung, Pestbringer, Splitterkönig; Strichkrieger Standard plus Ausbrecher (nur Grabplatte/Riesenschwert), Classic-Krieger 55 (nur Leeroys Klinge), Holzfäller (nur Sions Axt). Alle frei, Wahl pro Figur gespeichert und im Spielstand-Code; noch sehen alle Skins wie Standard aus. Mods stehen jetzt in einer Reihe darunter
 - feat(ui): Charakterwahl: Knopf „Schwenk: an / aus“ oben rechts stoppt den langsamen Kameraschwenk um die Figur, die Wahl bleibt gespeichert
 - feat(ui): Waffenmenü: angeklickte Waffe trägt die Figur links zur Probe (mit Element-Farbe), ohne sie auszurüsten; Figur per Maus-Ziehen drehbar
 - feat(ui): Waffenmenü zeigt links die gewählte Figur als 3D-Ansicht mit der ausgerüsteten Waffe und Element-Farbe statt der Strichzeichnung; Ausrüsten wechselt sie sofort, kein eigener Renderer

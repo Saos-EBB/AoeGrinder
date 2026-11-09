@@ -62,7 +62,8 @@ const Q_END = [
 const SIT = { y: .32, h: [-.1, .15, 0], c: [.2, -.1, 0], n: [.1, 0, 0], hR: [-.55, 1.0, .25], b: [0, -1, .05], e: [0, 0, 1], hL: [.35, .75, .4], fL: [.42, .07, .75], fR: [-.3, .07, .45] };
 const DEAD = { y: .24, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hR: [-.75, .18, -.2], hL: [.7, .14, -.6], b: [-.5, -.02, .85], e: [0, 1, 0], fL: [.32, .07, .98], fR: [-.3, .07, 1.02] };
 
-export function buildStrichKrieger({ bloom = false, weapon = 'sword' } = {}) {
+// look: Skin aus src/skins.ts (standard, klapse, classic, holz). Unbekannt oder noch nicht gebaut = Standard
+export function buildStrichKrieger({ bloom = false, weapon = 'sword', look = 'standard' } = {}) {
   const W = STRICH_TIMING.weapons[weapon] ?? STRICH_TIMING.weapons.sword;
   const fxGroup = new THREE.Group();
   const VMAT = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad });
@@ -117,6 +118,7 @@ function leg(side) {
   return { th, sh, ft, side };
 }
 const armL = arm(1), armR = arm(-1), legL = leg(1), legR = leg(-1);
+// Skins (src/skins.ts): Teile mit part(bone, …) wie oben, `if (look === 'klapse') { … }` usw. Noch keiner gebaut, alle sehen aus wie Standard
 root.updateMatrixWorld(true);
 const bodyGeo = mergeGeometries(parts.map(p => {
   const g = prep(p.geo, p.color, p.bone.matrixWorld.clone().multiply(p.m));
@@ -600,7 +602,7 @@ function defQ(step, hitI = step) {
   // Risse von Bodenbrecher: das Spiel meldet jede Welle
   const crackAt = (x, z, dx, dz) => { const q = V(x, 0, z); crack(q, V(dx, 0, dz).applyAxisAngle(V(0, 1, 0), (Math.random() - .5) * .5), 1.9, 1.4); emit(V(x, gy() + .1, z), 8, 3, 0x8f877a, 12, .7); };
   const model: any = {
-    root, update, scarf: cloth, onHit: null, weapon,
+    root, update, scarf: cloth, onHit: null, weapon, look,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
     fx: { group: fxGroup, crackAt, ring, ghost, gy, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
     get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count + (maceGlow ? maceGlow.geometry.attributes.position.count : 0)) / 3 + (SN - 1) * 2); },

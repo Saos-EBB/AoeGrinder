@@ -2014,4 +2014,14 @@ export const en: Record<string, string> = {
   'wm.toChest': "To the chest",
   'wm.values': "Values",
   'wm.worse': "▼ −{n} % vs. equipped",
+
+  'look.standard.name': "Standard",
+  'look.prev': "Previous skin",
+  'look.next': "Next skin",
+  'look.magier.blitz.name': "High Voltage",
+  'look.magier.seuche.name': "Plaguebringer",
+  'look.magier.frost14.name': "Shard King",
+  'look.krieger.klapse.name': "Escapee",
+  'look.krieger.classic.name': "Classic Warrior 55",
+  'look.krieger.holz.name': "Lumberjack",
 };

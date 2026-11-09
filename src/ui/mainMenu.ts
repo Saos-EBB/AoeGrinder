@@ -14,7 +14,8 @@ import { uiSettings, setUi } from './uiSettings';
 import { fmtInt } from './dmgNumbers';
 import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
-import { meta } from '../meta';
+import { meta, pickSkin } from '../meta';
+import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES } from '../realMen';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { clearSpellEffects } from '../spells/core';
@@ -160,6 +161,7 @@ export function renderMenu() {
   wn.style.color = mage.skin !== 'krieger' && w ? rarityOf(w).color : '';
   $('startModal').style.setProperty('--fc', fig.color);
   renderMap();
+  renderSkin();
   const rules = figureRules();   // Besonderheit der Figur, gleicher Text wie im Charakterfenster
   $('menuRules').innerHTML = rules ? `<div class="menuHead" style="color:${rules.color}">${rules.name}</div><p>${rules.rules}</p>` : '';
   renderKit($('menuKit'), startKit());   // Start-Kit mit Info-Karten
@@ -169,6 +171,22 @@ export function renderMenu() {
   renderBoardPanel();
   if (nav) document.querySelector(`#startModal [data-nav="${CSS.escape(nav)}"]`)?.classList.add('navSel');
 }
+
+// ---------- Skin-Wechsler unter der Figur (skins.ts): nur Skins, die zur Waffe passen; Vorschau ist die Menü-Figur selbst ----------
+const skinChoice = () => { const list = skinsFor(figurOf(mage.skin), mage.lookWeapon); return { list, i: Math.max(0, list.findIndex(s => s.id === mage.look)) }; };
+function renderSkin() {
+  const { list, i } = skinChoice();
+  $('skinName').textContent = t(list[i].name);
+  for (const id of ['skinPrev', 'skinNext']) ($(id) as HTMLButtonElement).disabled = list.length < 2;
+}
+function cycleSkin(step: number) {
+  const { list, i } = skinChoice();
+  pickSkin(figurOf(mage.skin), list[(i + step + list.length) % list.length].id);
+  mage.refreshLook();
+  renderMenu();
+}
+$('skinPrev').addEventListener('click', () => cycleSkin(-1));
+$('skinNext').addEventListener('click', () => cycleSkin(1));
 
 // ---------- Map-Wechsler (gen7.py map_selector): alle Maps aus zones.ts, Vorschau aus den Farben der Map, Bestzeit für Figur + Mods + Map ----------
 const MAPS = Object.keys(ZONES).filter(id => ZONES[id].name);

@@ -811,11 +811,13 @@ const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchtei
 // weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element.
 // opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/mage.ts), sonst eine neue nach dem Skin.
 // opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
+// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
 export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
+  const look: string = opts.look ?? 'standard';
   const S = SKINS[skin];
   const U = { uTime: { value: 0 }, uM: { value: 0 }, uK: { value: 0 }, uLvl: { value: 0 } };   // pro Figur
-  const F: any = { skin, S, bones: [], parts: [], glow: [], t: 0, last: null, blendFrom: null, blendT: 0, freeze: 0, m: 0, props: {}, groundY: 0, groundPos: V() };
+  const F: any = { skin, look, S, bones: [], parts: [], glow: [], t: 0, last: null, blendFrom: null, blendT: 0, freeze: 0, m: 0, props: {}, groundY: 0, groundPos: V() };
   F.root = new THREE.Group();
   const world = new THREE.Group();   // Effekte in Weltkoordinaten
   const B = (p, x = 0, y = 0, z = 0) => { const b = new THREE.Bone(); b.position.set(x, y, z); p.add(b); F.bones.push(b); return b; };
@@ -893,6 +895,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     for (const [b, p, sc, c] of deco) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
     for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; glow(head, qGeo(), Y, [Math.sin(a) * .36, .52 + .06 * i, Math.cos(a) * .36], [0, a, 0], [.14, .14, .07]); }
   }
+  // Skins (src/skins.ts): Teile an Bones wie oben, `if (look === 'blitz') { … }` usw. Noch keiner gebaut, alle sehen aus wie Standard
   // Element der Waffe (Spell-Viewer, Block WEL): Kragen, Schärpe, Armreifen, schwebender Stein über dem Stab, Augen in der Element-Farbe.
   // Alles hängt an Bones im Körper-Mesh, kein Draw Call mehr. Ohne Element bleibt die Figur wie bisher.
   F.wel = weaponElement && weaponElement !== 'none' && ELEMENTS[weaponElement] ? ELEMENTS[weaponElement].color : null;
@@ -986,6 +989,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   const _o = new THREE.Object3D(), _om = new THREE.Matrix4();
   return {
     root: F.root,
+    look,                                         // Skin, nach dem gebaut wurde
     element: F.wel != null ? weaponElement : null,   // Element der Waffe, nach dem gebaut wurde (models/mage.ts baut bei Wechsel neu)
     body: F.body,                                 // Körper-Mesh: Hüllen der Effekte (Archon) binden an sein Skelett
     anchors: { crystal: F.crystal, handL: F.armL.hand, handR: F.armR.hand },
