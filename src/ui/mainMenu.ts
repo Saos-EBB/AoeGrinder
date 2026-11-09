@@ -15,7 +15,7 @@ import { uiSettings, setUi } from './uiSettings';
 import { fmtInt } from './dmgNumbers';
 import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns } from '../leaderboard';
-import { meta, pickSkin } from '../meta';
+import { meta, pickSkin, skinUnlocked } from '../meta';
 import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
@@ -183,15 +183,28 @@ export function renderMenu() {
 }
 
 // ---------- Skin-Wechsler unter der Figur (skins.ts): nur Skins, die zur Waffe passen; Vorschau ist die Menü-Figur selbst ----------
-const skinChoice = () => { const list = skinsFor(figurOf(mage.skin), mage.lookWeapon); return { list, i: Math.max(0, list.findIndex(s => s.id === mage.look)) }; };
+// Gesperrte Magier-Skins (Set noch nie 5/5 angelegt) stehen mit Schloss und Hinweis in der Liste, werden aber nicht gewählt: peek merkt sich,
+// welcher gesperrte Skin gerade angezeigt wird (gilt nur für die Schule bzw. Waffe, bei der er angesehen wurde); die Figur zeigt weiter den gewählten
+let peek: { id: string; need: string } | null = null;
+const skinChoice = () => {
+  const list = skinsFor(figurOf(mage.skin), mage.lookWeapon);
+  if (peek && (peek.need !== mage.lookWeapon || !list.some(s => s.id === peek.id) || skinUnlocked(figurOf(mage.skin), peek.id))) peek = null;
+  return { list, i: Math.max(0, list.findIndex(s => s.id === (peek?.id ?? mage.look))) };
+};
 function renderSkin() {
   const { list, i } = skinChoice(), forced = forcedLook(mage.skin);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear.ts)
-  $('skinName').textContent = forced ? t('gear.skinForced', { name: t(`look.magier.${forced}.name`) }) : t(list[i].name);
+  const locked = !forced && !!peek, name = t(list[i].name);
+  $('skinName').textContent = forced ? t('gear.skinForced', { name: t(`look.magier.${forced}.name`) }) : locked ? t('look.locked', { name }) : name;
+  $('skinName').classList.toggle('locked', locked);
+  const hint = $('skinHint');
+  hint.hidden = !locked;
+  hint.textContent = locked ? t('look.lockHint', { set: name }) : '';
   for (const id of ['skinPrev', 'skinNext']) ($(id) as HTMLButtonElement).disabled = list.length < 2 || !!forced;
 }
 function cycleSkin(step: number) {
-  const { list, i } = skinChoice();
-  pickSkin(figurOf(mage.skin), list[(i + step + list.length) % list.length].id);
+  const { list, i } = skinChoice(), next = list[(i + step + list.length) % list.length], figur = figurOf(mage.skin);
+  if (skinUnlocked(figur, next.id)) { peek = null; pickSkin(figur, next.id); }
+  else peek = { id: next.id, need: mage.lookWeapon };
   mage.refreshLook();
   renderMenu();
 }

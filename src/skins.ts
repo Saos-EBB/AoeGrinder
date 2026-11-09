@@ -1,4 +1,5 @@
-// Skins (nur Look) pro Figur, Vorlage docs/ref/set-skins-*.html, Handoff docs/handoffs/skins.md. Alle frei, kein Shop, keine Freischaltung.
+// Skins (nur Look) pro Figur, Vorlage docs/ref/set-skins-*.html, Handoff docs/handoffs/skins.md. Kein Shop. Krieger-Skins kommen mit der Waffe,
+// Magier-Skins sind Set-Skins: frei erst mit dem Erfolg „Set <Name> 5/5 angelegt“ (meta.achievements, setAch unten, gear.ts checkUnlocks).
 // Neuer Skin: Eintrag in SKIN_LIST (Krieger mit Waffe, Magier mit Schule) + i18n-Key look.<figur>.<id>.name (de/en), Optik als `if (look === '<id>')` im Modell
 // (buildStrichMagier: opts.look, buildStrichKrieger: { look }).
 // Gewählt wird in meta.skins ({ figur: skinId }), Auflösen über skinOf in meta.ts.
@@ -21,6 +22,13 @@ export const SKIN_LIST: Record<Figur, SkinDef[]> = {
 export const figurOf = (gameSkin: string): Figur => (gameSkin === 'krieger' ? 'krieger' : 'magier');
 // Wählbare Skins der Figur: need = Waffen-ID (Krieger) bzw. Schule (Magier, mage.skin). Passt nicht → nur Standard, die gespeicherte Wahl bleibt
 export const skinsFor = (figur: Figur, need?: string | null) => SKIN_LIST[figur].filter(s => { const req = s.weapon ?? s.school; return !req || req === need; });
+
+// Erfolg, der einen Skin freischaltet: Magier-Skins (außer Standard) = Set gleicher ID 5/5 angelegt (gear.ts SETS). null = immer frei
+export const setAch = (setId: string) => `set:${setId}`;
+export const skinLock = (figur: Figur, id: SkinId): string | null => figur === 'magier' && id !== STANDARD ? id : null;
+// Alle Erfolge (bisher nur die Set-Erfolge), Reihenfolge wie SKIN_LIST
+export const ACHIEVEMENTS: string[] = SKIN_LIST.magier.filter(s => s.id !== STANDARD).map(s => setAch(s.id));
+export const cleanAch = (raw: unknown): string[] => Array.isArray(raw) ? [...new Set(raw.filter(a => ACHIEVEMENTS.includes(a)))] : [];
 
 // Gespeichertes Feld säubern (localStorage, Spielstand-Code): nur bekannte Figuren mit bekannten Skins, sonst weg (= Standard)
 export function cleanSkins(raw: unknown): Partial<Record<Figur, SkinId>> {

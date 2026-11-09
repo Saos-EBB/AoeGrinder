@@ -6,7 +6,7 @@ import { SPELLS } from './config';
 import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
-import { STANDARD, cleanSkins, skinsFor, type Figur, type SkinId } from './skins';
+import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type Figur, type SkinId } from './skins';
 
 export const META = {
   store: 'frostgrind.meta.v1',
@@ -30,10 +30,16 @@ export const META = {
 const RANK = ['grün', 'blau', 'lila', 'orange'];
 const FREE = ['grün'];
 
-// skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard
+// skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen
 function load() {
-  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; m.skins = cleanSkins(m.skins); return m; }
-  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {} }; }
+  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; cleanSkinState(m); return m; }
+  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [] }; }
+}
+// Erfolge und Skin-Wahl säubern (Laden, Spielstand-Code): ein gewählter, aber gesperrter Skin fällt auf Standard zurück
+export function cleanSkinState(m) {
+  m.achievements = cleanAch(m.achievements);
+  m.skins = cleanSkins(m.skins);
+  for (const f of Object.keys(m.skins) as Figur[]) { const lock = skinLock(f, m.skins[f]); if (lock && !m.achievements.includes(setAch(lock))) delete m.skins[f]; }
 }
 // Migration alter Baukasten-Waffen (Inventar beim Laden, Spielstand-Codes in ui/saveCode.ts, Dev-Schmied). Nie crashen: Unbekanntes fällt zurück.
 // v28: Elemente Gift → Seuche (über Blut), Void → Arkan. Rework 2026-11-08 (Toon, Köpfe je Schule): Blut → Seuche, Dunkel → Arkan (Vorschlag, Kevin entscheidet noch, Alternative none),
@@ -58,13 +64,19 @@ export const meta = load();
 meta.inv.forEach(fixWeapon);
 export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
 
+// ---------- Erfolge ----------
+export const hasAch = (id: string) => meta.achievements.includes(id);
+// true, wenn neu (dann zeigt der Aufrufer die Einblendung)
+export function grantAch(id: string) { if (hasAch(id)) return false; meta.achievements.push(id); saveMeta(); return true; }
+
 // ---------- Skins ----------
-// Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe (Krieger) bzw. Schule (Magier) passt, sonst Standard
+export const skinUnlocked = (figur: Figur, id: SkinId) => { const lock = skinLock(figur, id); return !lock || hasAch(setAch(lock)); };
+// Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe (Krieger) bzw. Schule (Magier) passt und frei ist, sonst Standard
 export function skinOf(figur: Figur, need?: string | null): SkinId {
   const id = meta.skins?.[figur];
-  return skinsFor(figur, need).some(s => s.id === id) ? id : STANDARD;
+  return skinsFor(figur, need).some(s => s.id === id) && skinUnlocked(figur, id) ? id : STANDARD;
 }
-export function pickSkin(figur: Figur, id: SkinId) { meta.skins = cleanSkins({ ...meta.skins, [figur]: id }); saveMeta(); }
+export function pickSkin(figur: Figur, id: SkinId) { if (!skinUnlocked(figur, id)) return; meta.skins = cleanSkins({ ...meta.skins, [figur]: id }); saveMeta(); }
 
 // ---------- Pool ----------
 export function catalog() {
@@ -141,4 +153,4 @@ export function rollShop(tier) {
 // ---------- Dev ----------
 export function devSetDust(v) { meta.dust = v; saveMeta(); }
 export function devUnlockAll() { meta.unlocked = catalog().map(e => e.key); saveMeta(); }
-export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, gear: {}, wear: {}, gearOver: [], nextGear: 0, looks: [], lookWear: {} }); saveMeta(); }
+export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [], gear: {}, wear: {}, gearOver: [], nextGear: 0, looks: [], lookWear: {} }); saveMeta(); }

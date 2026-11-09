@@ -9,16 +9,24 @@ import { meta, saveMeta } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 import type { Find } from '../loot';
-import { SETS, devWearSet } from '../gear';
+import { SETS, devWearSet, devSetAch } from '../gear';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 
 // Dev: Set 5/5 oder 4/5 anlegen (Einstellungen → Dev)
 document.getElementById('devZones')?.insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin:10px 0 6px">Dev: Gear-Sets</div>
   <div><select class="bindBtn" id="devGearSet">${Object.keys(SETS).map(id => `<option value="${id}">${t(`look.magier.${id}.name`)}</option>`).join('')}</select>
-  <button class="bindBtn" id="devGearSet5">5/5 anlegen</button><button class="bindBtn" id="devGearSet4">4/5 anlegen</button></div>`);
+  <button class="bindBtn" id="devGearSet5">5/5 anlegen</button><button class="bindBtn" id="devGearSet4">4/5 anlegen</button>
+  <button class="bindBtn" id="devGearAchOn">Skin frei</button><button class="bindBtn" id="devGearAchOff">Skin sperren</button></div>`);
 for (const n of [5, 4] as number[]) document.getElementById(`devGearSet${n}`)?.addEventListener('click', () => {
   devWearSet((document.getElementById('devGearSet') as HTMLSelectElement).value, n);
+  mage.refreshLook();
+  renderMenu();
+});
+
+// Dev: Set-Erfolg (= Set-Skin frei) setzen oder entfernen, ohne Gear anzulegen. Sperren lässt die Wahl stehen, skinOf zeigt dann Standard
+for (const [id, on] of [['devGearAchOn', true], ['devGearAchOff', false]] as [string, boolean][]) document.getElementById(id)?.addEventListener('click', () => {
+  devSetAch((document.getElementById('devGearSet') as HTMLSelectElement).value, on);
   mage.refreshLook();
   renderMenu();
 });
