@@ -13,6 +13,7 @@ export const UI_DEFAULTS = {
   weaponSeen: 0,          // höchste Waffen-ID beim letzten Schließen des Waffenmenüs: alles darüber ist NEU           // zuletzt gewählte Map im Hauptmenü (zones.ts), leer = Tirisfal
   hudOverrides: {} as Record<string, Record<string, any>>,   // eigene Lage pro Layout (ui/hud/layout.ts)
   hudScale: 100,          // % (70–150)
+  brightness: 50,         // Helligkeit der Szene in % (0–100, 0 = dunkelster Look), dunkel.ts
   numFlavor: 'flavor',    // Zahlen & Meldungen: 'flavor' = wie der UI-Flavor, sonst eine Flavor-ID
   messages: true,         // Erfolgs-Meldungen (ui/messages.ts)
   numSize: 100,           // % (50–200)

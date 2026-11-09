@@ -137,6 +137,11 @@ function buildInterface() {
   );
 }
 
+// ---------- Tab Grafik: Helligkeit (dunkel.ts), 0 % = dunkelster Look; wird beim Öffnen neu gebaut, damit Abbrechen den Regler mitnimmt ----------
+const brightBox = document.createElement('div');
+$('setGrafik').querySelector('h2').after(brightBox);
+const buildGrafik = () => brightBox.replaceChildren(slider('brightness', t('set.brightness'), 0, 100));
+
 // Knöpfe unten links (nur im Tab Interface)
 $('setFootLeft').append(
   button(t('set.editUi'), 'fg-btn alt', () => {
@@ -151,7 +156,7 @@ $('setFootLeft').append(
 let opened: Partial<UiSettings> | null = null;
 new MutationObserver(() => {
   const show = $('settingsModal').classList.contains('show');
-  if (show && !opened) { opened = structuredClone(uiSettings); buildInterface(); showTab(tab); }
+  if (show && !opened) { opened = structuredClone(uiSettings); buildInterface(); buildGrafik(); showTab(tab); }
   if (!show) opened = null;
 }).observe($('settingsModal'), { attributes: true, attributeFilter: ['class'] });
 $('settingsCancel').addEventListener('click', () => {
@@ -161,5 +166,6 @@ $('settingsCancel').addEventListener('click', () => {
 });
 
 buildInterface();
+buildGrafik();
 showTab(tab);
 $('setBinds').addEventListener('click', openBinds);

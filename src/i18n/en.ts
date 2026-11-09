@@ -1804,6 +1804,7 @@ export const en: Record<string, string> = {
   'set.fraktur': "Blackletter",
   'set.heal': "Heal numbers",
   'set.hudSize': "HUD size",
+  'set.brightness': "Brightness",
   'set.load': "Load",
   'set.merge': "Merge small hits",
   'set.over': "Overwrite",

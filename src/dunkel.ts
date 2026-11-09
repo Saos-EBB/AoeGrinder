@@ -10,6 +10,7 @@ import { cam } from './camera';
 import { zone, terrain } from './world';
 import { mage } from './models/mage';
 import { blizCursor } from './fx/spellFx';
+import { uiSettings } from './ui/uiSettings';
 
 // Alle Zahlen des Modus. Alles // PH
 const D = {
@@ -21,7 +22,13 @@ const D = {
   fill: { color: 0xffc48a, closeColor: 0xfff1e2, power: 9, closePower: 6, range: 12, decay: 1.6, height: 2.4, closeFrom: 9, closeTo: 3 },
   flicker: true, flickerEvery: [3000, 10000], flickerFor: [100, 500], flickerLow: 0.15, flickerHigh: 0.9, flickerCalm: 0.7, flickerRate: 30,   // wie Hinter dir, ohne Blackouts
   cam: { dist: 7, pitch: 0.2, fov: 68, maxDist: 14 },
+  // Einstellung Helligkeit (uiSettings.brightness 0–100 %, 0 = Look ohne Aufhellung): Zuschlag bei 100 % (Standard 50 %, ui/uiSettings.ts). Nur Lichtstärken und Nebel,
+  // keine Belichtung: Selbstleuchtendes (MeshBasic, Glüh-Teile) und Bloom bleiben gleich, kein Draw Call extra
+  bright: { hemi: 5, sun: 3, lamp: 0.15, fill: 0.15, fog: 0.35 },
 };
+// Aufhellung 0–1 aus der Einstellung
+const brightK = () => clamp((uiSettings.brightness ?? 0) / 100, 0, 1);
+const fogDensity = () => (D.fogDensity + D.fogStorm * state.stormK + (state.fogExtra ?? 0)) * (1 - D.bright.fog * brightK());
 
 let lamp = null, fill = null;
 const tmpColor = new THREE.Color();
@@ -30,9 +37,10 @@ const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;   // Bewegu
 const fog = new THREE.FogExp2(D.fogColor, D.fogDensity);
 
 function darken() {
-  fog.density = D.fogDensity + D.fogStorm * state.stormK + (state.fogExtra ?? 0);   // fogExtra: Mondphase
-  hemi.intensity = zone.env.hemi * D.hemiMul;       // absolut: blendFog ruft das im Sandsturm jeden Frame
-  sun.intensity = zone.env.sunPower * D.sunMul;
+  const k = brightK();
+  fog.density = fogDensity();   // fogExtra: Mondphase
+  hemi.intensity = zone.env.hemi * D.hemiMul * (1 + D.bright.hemi * k);       // absolut: blendFog ruft das im Sandsturm jeden Frame
+  sun.intensity = zone.env.sunPower * D.sunMul * (1 + D.bright.sun * k);
   skyUniforms.top.value.set(D.skyTop); skyUniforms.mid.value.set(D.skyMid); skyUniforms.horizon.value.set(D.fogColor);
   skyUniforms.sunAmt.value = 0;
 }
@@ -41,6 +49,7 @@ export function initDunkel() {
   scene.fog = fog;
   setEnvHook(darken);
   setEnv(zone.env);
+  addEventListener('uisettings', darken);   // Helligkeit im Einstellungs-Menü wirkt sofort
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   terrain.receiveShadow = true;
@@ -80,7 +89,7 @@ function updateFlicker(dt) {
   const wild = Math.random() < 0.5 ? D.flickerLow : D.flickerHigh;
   const target = now < flickUntil ? (calm ? D.flickerCalm : wild) : 1;
   flick += (target - flick) * Math.min(1, dt / 1000 * D.flickerRate);
-  lamp.intensity = D.lamp.power * flick;
+  lamp.intensity = D.lamp.power * (1 + D.bright.lamp * brightK()) * flick;
 }
 
 export function updateDunkel(dt) {
@@ -91,10 +100,11 @@ export function updateDunkel(dt) {
   fill.position.set(p.x, p.y + F.height, p.z);
   const close = clamp((F.closeFrom - cam.dist) / (F.closeFrom - F.closeTo), 0, 1);
   fill.color.setHex(F.color).lerp(tmpColor.setHex(F.closeColor), close);
-  fill.intensity = F.power + (F.closePower - F.power) * close;
+  fill.intensity = (F.power + (F.closePower - F.power) * close) * (1 + D.bright.fill * brightK());
   cam.dist = Math.min(cam.dist, D.cam.maxDist);
   castShadows(mage.root);
   for (const m of state.mobs) castShadows(m.model.root, Math.hypot(m.pos.x - p.x, m.pos.z - p.z) < PERF.mobShadowYd);
   if (D.flicker) updateFlicker(dt);
-  fog.density = D.fogDensity + D.fogStorm * state.stormK + (state.fogExtra ?? 0);
+  else lamp.intensity = D.lamp.power * (1 + D.bright.lamp * brightK());
+  fog.density = fogDensity();
 }

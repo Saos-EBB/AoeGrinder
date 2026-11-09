@@ -1805,6 +1805,7 @@ export const de: Record<string, string> = {
   'set.fraktur': "Fraktur",
   'set.heal': "Heilzahlen",
   'set.hudSize': "HUD-Größe",
+  'set.brightness': "Helligkeit",
   'set.load': "Laden",
   'set.merge': "Kleine Treffer zusammenfassen",
   'set.over': "Überschreiben",
