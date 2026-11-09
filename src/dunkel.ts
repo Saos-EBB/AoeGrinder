@@ -16,7 +16,7 @@ const D = {
   fogColor: 0x050505, fogDensity: 0.035, fogStorm: 0.05,    // FogExp2, fogStorm kommt im Sandsturm dazu
   hemiMul: 0.18, sunMul: 0.12, skyTop: 0x020203, skyMid: 0x040405,
   // Lichtkreis: Spot senkrecht über der Figur, radius = Lichtkreis am Boden in yd
-  lamp: { color: 0xffc48a, power: 34, range: 40, radius: 13, penumbra: 0.55, decay: 0.8, height: 10, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
+  lamp: { color: 0xffc48a, power: 60, range: 40, radius: 22, penumbra: 0.85, decay: 0.8, height: 10, shadow: 1024, shadowLow: 512, bias: -0.0006, near: 0.5 },
   // Hellt Figur und Mobs neben dir auf, mittig über der Figur (rundum gleich). Nah wird es neutraler und schwächer, damit das Modell seine Farben behält.
   fill: { color: 0xffc48a, closeColor: 0xfff1e2, power: 9, closePower: 6, range: 12, decay: 1.6, height: 2.4, closeFrom: 9, closeTo: 3 },
   flicker: true, flickerEvery: [3000, 10000], flickerFor: [100, 500], flickerLow: 0.15, flickerHigh: 0.9, flickerCalm: 0.7, flickerRate: 30,   // wie Hinter dir, ohne Blackouts
