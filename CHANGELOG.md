@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(skins): Magier-Skin Glutprophet (nur Feuermagier): schwarzer Hoodie mit Kapuze und Kordeln, hellblaue Baggy, weiße Sneaker, Sturmhaube mit schmalen Glut-Augen (Kern in Waffen-Farbe), Flammenzungen aus den Augen, die mit der Hitze länger lodern, Bauchtasche quer über die Brust, Skulls und Schlüssel am Bund. Kein Draw Call mehr
 - feat(skins): Magier-Skins gehören jetzt zu ihrer Schule: Hochspannung nur beim Blitzmagier, Pestbringer nur beim Seuchenmagier, Splitterkönig nur beim Frostmagier; Feuer, ?-Magier haben nur Standard. Passt der gespeicherte Skin nicht zur Schule, zeigt die Figur Standard, die Wahl bleibt gespeichert
 - feat(skins): Magier-Skin Splitterkönig: Anzug im Facetten-Muster, Schnitt „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe, Augen in Eis- oder Waffen-Farbe. Die Eissplitter kreisen um die Figur (5 kleine → 1 großer, 5 große → 1 leuchtender). Kein Draw Call mehr
 - feat(skins): Magier-Skin Pestbringer: verwester Anzug in Dunkellila/Grün/Gold mit ausgefranstem Schoß, Pestmaske mit Schnabel, Gold-Brille (Gläser in Schleim- oder Waffen-Farbe) und Hut, Phiolen-Kette, Umhangrest, tropfende Manschetten, Dampf und Fliegen, Müllbeutel in der freien Hand, der mit der Zahl markierter Mobs wächst. Kein Draw Call mehr

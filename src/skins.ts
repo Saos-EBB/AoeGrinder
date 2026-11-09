@@ -6,14 +6,14 @@
 export type Figur = 'magier' | 'krieger';
 export type SkinId = string;
 // weapon: Krieger-Skin nur mit dieser Waffe (Basis-Waffe aus realMen R.weapons oder legendäre aus LEGENDARY): sword = Riesenschwert, leeroy = Leeroys Klinge, sion = Sions Axt
-// school: Magier-Skin nur in dieser Schule (Skin-ID im Spiel, mage.skin): blitz, blut (Seuche), frost, feuer. Normal, Arkan, ?-Magier: nur Standard
+// school: Magier-Skin nur in dieser Schule (Skin-ID im Spiel, mage.skin): blitz, blut (Seuche), frost, feuer. ?-Magier (und Arkan, geparkt): nur Standard
 export interface SkinDef { id: SkinId; name: string; weapon?: string; school?: string }
 
 export const STANDARD = 'standard';
 const def = (figur: Figur, id: SkinId, need?: string): SkinDef => ({ id, name: id === STANDARD ? 'look.standard.name' : `look.${figur}.${id}.name`, ...(need ? (figur === 'krieger' ? { weapon: need } : { school: need }) : {}) });
 
 export const SKIN_LIST: Record<Figur, SkinDef[]> = {
-  magier: [def('magier', STANDARD), def('magier', 'blitz', 'blitz'), def('magier', 'seuche', 'blut'), def('magier', 'frost14', 'frost')],   // Hochspannung, Pestbringer, Splitterkönig
+  magier: [def('magier', STANDARD), def('magier', 'blitz', 'blitz'), def('magier', 'seuche', 'blut'), def('magier', 'frost14', 'frost'), def('magier', 'glut', 'feuer')],   // Hochspannung, Pestbringer, Splitterkönig, Glutprophet
   krieger: [def('krieger', STANDARD), def('krieger', 'klapse', 'sword'), def('krieger', 'classic', 'leeroy'), def('krieger', 'holz', 'sion')],   // Ausbrecher, Classic-Krieger 55, Holzfäller
 };
 

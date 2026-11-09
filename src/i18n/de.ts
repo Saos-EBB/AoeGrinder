@@ -2022,6 +2022,7 @@ export const de: Record<string, string> = {
   'look.magier.blitz.name': "Hochspannung",
   'look.magier.seuche.name': "Pestbringer",
   'look.magier.frost14.name': "Splitterkönig",
+  'look.magier.glut.name': "Glutprophet",
   'look.krieger.klapse.name': "Ausbrecher",
   'look.krieger.classic.name': "Classic-Krieger 55",
   'look.krieger.holz.name': "Holzfäller",

@@ -77,6 +77,7 @@ const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].m
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
   seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
+  glut: { top: col(0x1a1a1e), sleeve: col(0x1a1a1e), pants: col(0x9cc7ea).multiplyScalar(.5), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: col(0x1a1a1e), collar: col(0x1a1a1e), eyes: true },
   frost14: { top: FACETTE, sleeve: col(0xeaf3fb).multiplyScalar(.45), pants: FACETTE, shoe: col(0x15151a), skin: SKIN_TONE, head: SKIN_TONE, collar: FACETTE, eyes: true, ankle: true },
 };
 
@@ -518,6 +519,7 @@ const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pt
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
 const SK = {   // Optik-Zahlen der Skins // PH
   blitz: { lvlMin: .08, lvlRate: 4, drip: 6, full: .98, arcs: 24 },   // Pegel: mindestens 8 %, folgt der Anzeige mit 4/s; Funken pro Sekunde am Korken (+ drip × Pegel) und bei voller Flasche zu den Händen
+  glut: { flame: [.45, .8], flick: 9 },   // Augen-Feuer: Länge 45 % ohne Hitze bis 125 % bei voller Hitze, Flackern pro Sekunde
   frost14: { slots: [2, 4, 4], r: .72, y: 1.35, spin: .8, sparkle: 6 },   // Splitter: Plätze für leuchtende (je 25), große (je 5), kleine; Bahn-Radius und Höhe; Umläufe; Glitzern pro Sekunde je leuchtendem
   seuche: { perMark: .06, cap: 20, every: .25, grow: 3, steam: 8, flies: 6, drip: .7 },   // Müllbeutel +6 % pro markiertem Mob, höchstens 20 zählen (× 2,2), gezählt alle 0,25 s; Dampf pro Sekunde; Fliegen; Tropfen pro Sekunde an den Manschetten
 };
@@ -526,6 +528,7 @@ function buildLook(F, look, { part, glow, B, M }) {
   const L: any = F.lk = { look, lvl: SK.blitz.lvlMin };
   const at = (list, bone, base, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => list.push({ bone, geo, color, m: base.clone().multiply(M(pos, rot, scl)) });
   const eye = d => (F.wel != null ? col(F.wel) : col(d));   // Augen in der Farbe des Waffen-Elements, sonst die des Skins
+  const sneakers = () => { for (const l of legs) { part(l.ft, new THREE.BoxGeometry(.14, .1, .3), col(0xe8e8e8), [0, -.02, .07]); part(l.ft, new THREE.BoxGeometry(.15, .03, .31), col(0xb8b8c0), [0, -.07, .07]); } };   // weiße Sneaker mit grauer Sohle
 
   if (look === 'blitz') {   // Hochspannung: Trainingsanzug mit eigenem Zickzack-Streifen, Sonnenbrille, Kupferkette, Isolierband-Bündchen, Flasche mit Strom auf dem Rücken
     const YEL = col(0xffe866), WHITE = col(0xe8e8e8), COPPER = col(0xc97a3a), BLACK = col(0x0b0b0b);
@@ -534,7 +537,7 @@ function buildLook(F, look, { part, glow, B, M }) {
     for (const l of legs) { glow(l.th, tubeGeo(zigPts(l.side * .083, -.04, -L1, .024, 7), .01), YEL); glow(l.sh, tubeGeo(zigPts(l.side * .067, 0, -L2 * .92, .024, 7), .01), YEL); }
     for (const a of arms) part(a.fa, new THREE.TorusGeometry(.056, .017, 4, 12), WHITE, [0, -A2 * .97, 0], [Math.PI / 2, 0, 0]);   // Isolierband-Bündchen
     part(chest, new THREE.TorusGeometry(.12, .012, 4, 20), COPPER, [0, .52, .03], [1.2, 0, 0], [1, 1, .8]);   // Kupferkette
-    for (const l of legs) { part(l.ft, new THREE.BoxGeometry(.14, .1, .3), WHITE, [0, -.02, .07]); part(l.ft, new THREE.BoxGeometry(.15, .03, .31), col(0xb8b8c0), [0, -.07, .07]); }   // Sneaker
+    sneakers();
     part(head, new THREE.SphereGeometry(.19, 12, 6, 0, TAU, 0, Math.PI * .45), col(0x2a221c), [0, .16, -.02], [-.4, 0, 0], [.97, 1.1, 1.02]);   // Haar, nach hinten gekippt
     const lens = F.wel != null ? glow : part, LC = F.wel != null ? eye(0) : BLACK;   // Sonnenbrille: mit Waffen-Element leuchten die Gläser
     for (const sx of [-1, 1]) lens(head, new THREE.BoxGeometry(.1, .05, .025), LC, [sx * .068, .17, .165], [0, sx * .35, 0]);
@@ -585,6 +588,47 @@ function buildLook(F, look, { part, glow, B, M }) {
       F.parts.push({ bone: f, geo: new THREE.SphereGeometry(.02, 5, 4), color: col(0x0b0a0e), m: new THREE.Matrix4(), noShell: true });
     }
   }
+  if (look === 'glut') {   // Glutprophet: Streetwear, schwarzer Hoodie, hellblaue Baggy, weiße Sneaker, Sturmhaube, scharfe Augen mit Hitzekern und Flammenzungen, Bauchtasche quer, Skulls und Schlüssel am Bund
+    const BLACK = col(0x1a1a1e), DARK = col(0x101013), WHITE = col(0xd8d8d8), BONE = col(0xece4d0).multiplyScalar(.55), STEEL = col(0xb0b0b8).multiplyScalar(.7), PANTS = LOOKS.glut.pants;
+    part(chest, new THREE.SphereGeometry(.2, 10, 6), BLACK, [0, .58, -.13], [0, 0, 0], [1.05, .55, .75]);   // Kapuze im Nacken
+    part(chest, new THREE.BoxGeometry(.3, .15, .02), DARK, [0, .13, .085], [-.12, 0, 0]);                 // Bauchtasche des Hoodies
+    for (const x of [-.05, .05]) part(chest, new THREE.CylinderGeometry(.007, .007, .17, 4), WHITE, [x, .5, .115], [.15, 0, 0]);   // Kordeln
+    for (const a of arms) part(a.fa, new THREE.TorusGeometry(.055, .017, 4, 12), DARK, [0, -A2 * .97, 0], [Math.PI / 2, 0, 0]);   // Bündchen
+    part(hips, new THREE.TorusGeometry(.18, .018, 4, 16), col(0x2a2a2e), [0, .05, 0], [Math.PI / 2, 0, 0], [1.05, 1, .8]);   // Gürtel
+    [.17, .11, .05].forEach(x => {   // 3 Skulls am Bund
+      part(hips, new THREE.CylinderGeometry(.005, .005, .06, 3), STEEL, [x, .02, .13]);
+      part(hips, new THREE.SphereGeometry(.032, 7, 5), BONE, [x, -.04, .135]);
+      for (const ex of [-.011, .011]) part(hips, new THREE.SphereGeometry(.008, 4, 3), DARK, [x + ex, -.038, .162]);
+    });
+    part(hips, new THREE.TorusGeometry(.026, .006, 3, 8), STEEL, [-.2, .0, .04], [0, Math.PI / 2, 0]);   // Schlüssel am Karabiner
+    for (const [x, r] of [[-.007, .2], [.009, -.25]]) part(hips, new THREE.BoxGeometry(.012, .065, .005), col(0xd8b04a).multiplyScalar(.7), [-.2 + x, -.06, .04], [0, 0, r]);
+    for (const l of legs) part(l.sh, new THREE.TorusGeometry(.085, .035, 4, 10), PANTS, [0, -L2 * .9, 0], [Math.PI / 2, 0, 0]);   // gestauchter Saum der Baggy
+    sneakers();
+    // Bauchtasche quer über die Brust: Gurte vorn und hinten, Tasche mit leuchtendem Reißverschluss
+    part(chest, tubeGeo([V(.2, .56, .07), V(.05, .36, .12), V(-.17, .1, .09)], .013), DARK);
+    part(chest, tubeGeo([V(.2, .56, -.07), V(.02, .34, -.13), V(-.17, .1, -.09)], .013), DARK);
+    part(chest, new THREE.CapsuleGeometry(.055, .18, 2, 8), col(0x24242a), [-.01, .34, .14], [0, 0, Math.PI / 2 - .75]);
+    glow(chest, new THREE.BoxGeometry(.19, .01, .012), col(0xff7a22), [-.01, .34, .195], [0, 0, -.75]);
+    // Sturmhaube (Kopf schwarz): Augenschlitz, schmale schräge Augen mit Hitzekern, Lidschatten
+    part(head, new THREE.BoxGeometry(.26, .06, .03), col(0x3a2a24).multiplyScalar(.6), [0, .15, .165]);
+    for (const sx of [-1, 1]) {
+      glow(head, new THREE.SphereGeometry(1, 8, 5), col(0xffe9a0), [sx * .065, .15, .177], [0, 0, sx * .28], [.039, .008, .009]);
+      glow(head, new THREE.SphereGeometry(.0075, 5, 4), eye(0xff7a0d), [sx * .06, .15, .184]);
+      part(head, new THREE.BoxGeometry(.084, .012, .012), col(0x0b0809), [sx * .065, .17, .182], [0, 0, sx * .32]);
+    }
+    // Flammenzungen aus den Augen (Feuer-Palette rot → orange → gelb), je Auge ein Bone: Länge folgt der Hitze, das Glühen flackert im Shader
+    const PAL5 = [0xd11d0a, 0xff7a0d, 0xffd23a];
+    L.eyeFl = [-1, 1].map(sx => {
+      const b = B(head, sx * .075, .15, .17);
+      for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) {
+        const g = new THREE.ConeGeometry(.033 - k * .009, .5 * (1 - k * .25) * (1 - i * .15), 6, 1, true).translate(0, .25 * (1 - k * .25) * (1 - i * .15), 0);
+        F.glow.push({ bone: b, geo: g, color: { base: col(PAL5[k]), tip: col(PAL5[Math.max(0, k - 1)]) }, flick: true, noShell: true,
+          m: M([sx * i * .012, 0, -k * .004], [-.5 - i * .12, 0, -sx * (.25 + i * .18)]) });
+      }
+      return b;
+    });
+  }
+
   if (look === 'frost14') {   // Splitterkönig: Muster Facette, Schnitt 14 „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe
     const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiplyScalar(.45), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
     FACET++; part(chest, new THREE.CylinderGeometry(.095, .1, .1, 10), FACETTE, [0, .63, 0], [0, 0, 0], [1, 1, .9]);   // Stehkragen
@@ -619,6 +663,10 @@ function buildLook(F, look, { part, glow, B, M }) {
 const _lp = V(), _lq = V(), _lqa = new THREE.Quaternion(), _lqb = new THREE.Quaternion();
 function updateLook(F, s, sp) {
   const L = F.lk;
+  if (L.look === 'glut') {   // Augen-Feuer: lodert mit der Hitze (Anzeige der Figur)
+    const k = SK.glut, len = F.dead ? 1e-4 : (k.flame[0] + k.flame[1] * F.m) * (1 + .08 * Math.sin(F.t * k.flick));
+    for (const b of L.eyeFl) b.scale.set(1, len, 1);
+  }
   if (L.look === 'frost14') {
     const k = SK.frost14, n = F.dead ? 0 : Math.max(0, Math.floor(state.shards ?? 0));
     const want = [Math.min(k.slots[0], Math.floor(n / 25)), Math.min(k.slots[1], Math.floor(n % 25 / 5)), Math.min(k.slots[2], n % 5)];
@@ -979,7 +1027,7 @@ const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchtei
 // weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element.
 // opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/mage.ts), sonst eine neue nach dem Skin.
 // opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
-// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
+// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14, glut), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
 export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
   const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
   const look: string = opts.look ?? 'standard';
