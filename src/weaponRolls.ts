@@ -21,7 +21,7 @@ import { t, fmtNum } from './i18n';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
-  price: 120, invMax: 15, devInvMax: 50,          // devInvMax: Dev-Füllen geht über das normale Limit
+  price: 120, invMax: 25, devInvMax: 50,   // invMax 15 → 25 mit den Gear-Slots (gear.ts) // PH          // devInvMax: Dev-Füllen geht über das normale Limit
   weights: [5, 20, 35, 25, 11, 4],                     // grau, weiß, grün, blau, lila, orange
   refund: [5, 10, 15, 25, 40, 60],
   types: ['staff', 'wand', 'book', 'relic'],          // alle vier Typen, ohne Nebenhand liegen Buch und Relikt in der Waffenhand (Kevin 2026-11-03)
@@ -34,7 +34,7 @@ export const ROLLS = {
   element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6,
     infectStacks: 1 },
   maker: { grab: { dmg: 0.1, cast: 0.1 }, stern: { crit: 0.05, critMana: 0.01 }, morra: { dur: 0.15, random: 0.05 }, vey: { cd: -0.05, mana: 0.1 }, brandt: { hp: 0.1, lifesteal: 0.02 } },
-  notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt'],   // Waffen des Strichkriegers (Standard und legendär)
+  notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt', 'haarspray'],   // Waffen des Strichkriegers (Standard und legendär), Haarspray ist nur Kosmetik (gear.ts)
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule (Seuche seit 2026-11-08: die Köpfe Speischädel und Phiolen brauchen Seuchen-Spells)
@@ -44,14 +44,14 @@ export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', '
 // Kettenblitz und Bogenblitz sind seit v26 zurück: nur neue Waffen (s.fv) meinen sie wirklich, alte bleiben beim Ersatz
 const FOCUS_REPLACE = { chain: 'arcmissiles', arc: 'arcmissiles', hurricane: 'bliz', barrage: 'arcmissiles' };
 // Geparkte Arkan-Spells (maybeLater/): Blink ist der einzige Arkan-Spell, der bleibt
-const focusId = (id, w?) => { const f = w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id; return SPELLS[f] ? f : 'blink'; };
+export const focusId = (id, w?) => { const f = w?.s?.fv ? id : FOCUS_REPLACE[id] ?? id; return SPELLS[f] ? f : 'blink'; };
 export const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 // Regel-Text der Typen, wie sie im Spiel wirken (der Viewer nennt beim Stab noch „Kanäle +1 Tick“, das ist nicht gebaut)
 const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
 const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`wval.${k}`)]));   // die deutschen Schlüssel oben stehen so in gespeicherten Waffen
 
-const factor = tier => CARD_RARITIES[tier].mult;
-const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
+export const factor = tier => CARD_RARITIES[tier].mult;
+export const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
 const isNew = w => w.v === 2;
 
 export function rollTier() {
@@ -161,7 +161,7 @@ export function devClearInventory() {
 }
 
 // Werte auf mods/stat. cd und cast sind Anteile (−0,05 = 5 % weniger)
-function applyValue(key, v) {
+export function applyValue(key, v) {
   if (key === 'dmg') mods.dmg += v;
   if (key === 'crit') mods.crit += v;
   if (key === 'cd') mods.cdMul = Math.max(0.1, mods.cdMul - v);
@@ -172,7 +172,7 @@ function applyValue(key, v) {
   if (key === 'radius') mods.radius += v;
   if (key === 'dur') mods.durMul += v;
 }
-function applyFocus(raw, f, w) {
+export function applyFocus(raw, f, w) {
   const id = focusId(raw, w), s = stat(id);
   s.dmg += ROLLS.focus.dmg * f;
   s.radius += ROLLS.focus.radius * f;
@@ -220,7 +220,7 @@ export function applyRunWeapon(magier) {
 
 // Treffer-Hook aus damageMob (nur Spell-Treffer des Spielers). api: Funktionen aus mobs.ts, damit hier kein Import-Kreis entsteht
 const E = ROLLS.element;
-function weaponHit(m, dmg, crit, api, el, chance, M) {
+export function weaponHit(m, dmg, crit, api, el, chance, M) {
   if (M.lifesteal) player.hp = Math.min(maxHp(), player.hp + dmg * M.lifesteal);
   if (M.critMana && crit && !player.rageMax) player.mana = Math.min(maxMana(), player.mana + maxMana() * M.critMana);
   if (!chance || Math.random() >= chance) return;

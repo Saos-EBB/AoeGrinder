@@ -16,6 +16,7 @@ import { resetGame, switchZone } from '../player';
 import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
 import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';
+import { applyRunGear } from '../gear';
 import { mage } from '../models/mage';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
@@ -261,6 +262,7 @@ $('restartBtn').addEventListener('click', () => {
   resetGame();
   resetSpells();
   applyRunWeapon(!!mage.weapon);
+  applyRunGear(mage.skin);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
   renderActionbar();
   showLoad(syncPause);
   syncPause();

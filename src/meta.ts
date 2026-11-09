@@ -141,4 +141,4 @@ export function rollShop(tier) {
 // ---------- Dev ----------
 export function devSetDust(v) { meta.dust = v; saveMeta(); }
 export function devUnlockAll() { meta.unlocked = catalog().map(e => e.key); saveMeta(); }
-export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {} }); saveMeta(); }
+export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, gear: {}, wear: {}, gearOver: [], nextGear: 0, looks: [], lookWear: {} }); saveMeta(); }

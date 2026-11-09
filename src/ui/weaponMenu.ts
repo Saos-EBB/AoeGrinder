@@ -20,7 +20,7 @@ import { t, fmtNum } from '../i18n';
 import { fmtInt } from './dmgNumbers';
 import './weaponMenu.css';
 
-const GRID = 15;   // 5 × 3 wie ROLLS.invMax; im Dev-Inventar (50) wachsen Reihen dazu
+const GRID = 25;   // 5 × 5 wie ROLLS.invMax; im Dev-Inventar (50) wachsen Reihen dazu
 // Material-Farbe des Herstellers für Quadrat und Liste (gen10.py MAKERS), Schlüssel = MAKERS[k].main // PH
 const MAT_COLOR = { bronze: '#b07a3a', gold: '#e3c27a', darkwood: '#6b4a2a', crystal: '#9fd8ff', blueiron: '#5a7aa8' };
 // Typ-Silhouetten (gen10.py type_svg), viewBox 28 × 70; alte Waffen zeigen den Stab

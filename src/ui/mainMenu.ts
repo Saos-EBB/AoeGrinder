@@ -20,6 +20,7 @@ import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
+import { applyRunGear } from '../gear';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -300,6 +301,7 @@ function startRun() {
   leaveMenu();
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
   applyRunWeapon(!!mage.weapon);
+  applyRunGear(mage.skin);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
   renderActionbar();
   showLoad(() => { syncPause(); ding(); });
   syncPause();

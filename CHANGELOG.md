@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(items): Gear neben der Waffe (nur Magier): 5 Slots Kopf, Hals, Rücken, Arme, Körper; jedes Teil würfelt Seltenheit wie die Waffen-Kiste, zur Hälfte einen Fokus-Spell der Schule, sonst einen Wert, dazu evtl. ein Element; wirkt halb so stark wie die Waffe. Grau, Weiß und Grün werden Staub, ab Blau ins Inventar. Inventar 25 je Slot, Waffen ebenfalls 15 → 25
 - fix(maps): Auf den generierten Maps erscheint ein nachspawnendes Pack nie näher als 50 yd und nie auf einem belegten Platz – nach einem Kill steht kein neues Pack mehr direkt neben dir
 - feat(licht): Lichtkegel um die Figur größer (Radius 13 → 22 yd) mit weicherem, längerem Ausblenden am Rand; etwas heller, damit die Mitte nicht absäuft; Mobs werfen bis 24 yd Schatten (vorher 18)
 - feat(mobs): Die generierten Maps (Wald, Wüste, Kanäle, Kathedrale, Hölle) spawnen jetzt die neuen Mob-Kategorien mit den Skins ihres Themes statt der alten Mobs: Packgröße wie bisher, Groß alle 3–4 Packs, Lauerer ab Kanäle; Mobs nur auf freiem Boden, „fliegt“ schwebt über Wände und Lava, Explosion von „Platzt“ zählt zur Theme-Schwierigkeit. Alte Zonen behalten ihre Mobs
