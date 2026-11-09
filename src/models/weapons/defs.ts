@@ -510,3 +510,24 @@ def({ id: 'sionaxt', gripY: 0.3, cane: false, pitch: 0.75, name: t('wmodel.siona
     fx.emit(g, { rate: 8, max: 30, life: [.6, 1.2], size: [.03, .008], c0: [3.5, .6, .3], c1: [1, .1, 0], gravity: -1.2, drag: .4, tex: 'spark',
       spawn: (R, p, v) => { p.set(.15 + R() * .35, 1.15 + R() * .4, (R() - .5) * .05); v.set(R() * .3, .3 + R() * .5, 0); } });
   } });
+
+// Waffen-Look „Haarspray + Feuerzeug“ (gear.ts, Kosmetik-Slot Waffe): nur Aussehen, frei bei Glutprophet 5/5. Pinke Dose, weiße Kappe, blaues Feuerzeug daneben,
+// kleine Zündflamme an der Düse. Kein Unikat, kein Kistenmodell (ROLLS.notForMages). Maße und Farben // PH
+def({ id: 'haarspray', gripY: .09, cane: false, pitch: .25, name: t('wmodel.haarspray.name'), school: 'Feuer', arch: 'Haarspray und Feuerzeug',
+  story: t('wmodel.haarspray.story'),
+  read: 'Eine pinke Spraydose, oben die Düse, daneben ein Feuerzeug mit Daumen am Rad.',
+  wear: 'Das Etikett ist angesengt, die Kappe fehlt schon lange.',
+  fx: t('wmodel.haarspray.fx'),
+  build(g, fx) {
+    const can = S('metal', 0xe04a8a), cap = S('metal', 0xf2f2f2), lighter = S('metal', 0x3a8cff), steel = S('iron', 0x9aa0a8);
+    part(g, cyl(.036, .036, .2, 10), can, 0, .1, 0);
+    part(g, cyl(.03, .036, .025, 10), cap, 0, .212, 0);
+    part(g, cyl(.008, .008, .022, 6), cap, 0, .235, 0);
+    part(g, new THREE.BoxGeometry(.012, .01, .014), cap, .01, .246, 0);
+    part(g, new THREE.BoxGeometry(.026, .06, .016), lighter, .056, .17, 0, 0, 0, -.25);
+    part(g, cyl(.007, .007, .014, 8), steel, .064, .204, 0, Math.PI / 2, 0, -.25);
+    fx.anchor(g, .03, .248, 0);
+    part(g, new THREE.IcosahedronGeometry(.009, 0), E(0xff7a22, 3), .07, .222, 0).scale.set(1, 1.8, 1);
+    fx.emit(g, { rate: 18, max: 40, life: [.25, .5], size: [.012, .002], c0: [3.4, 1.4, .3], c1: [1.2, .2, 0], gravity: -.25, drag: .5, tex: 'spark',
+      spawn: (R, p, v) => { p.set(.07 + (R() - .5) * .006, .228, (R() - .5) * .006); v.set((R() - .5) * .02, .06 + R() * .05, (R() - .5) * .02); } });
+  } });

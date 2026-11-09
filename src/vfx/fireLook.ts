@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { groundAt } from '../collision';
 import { mage } from '../models/mage';
+import { particles } from '../fx/particles';
 import { fx, em, uK, lay, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, type Pal } from './energy';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -45,6 +46,16 @@ export function fireField(o: { tongues?: number; disk?: boolean; h?: number; pal
 export function fireballLook(to: THREE.Vector3, r: number, big = 1) {
   const a = castFrom(), b = to.clone().setY(to.y + 1.1);
   shot(a, b, 0, PAL.fire, { r: .3 * big, tail: 3.2, dur: flight(a, b), hit: p => boom(p, r * .85, PAL.fire, .55, { ground: gy(p), n: 20 }) });
+}
+// Waffen-Look Haarspray + Feuerzeug (gear.ts): beim Feuerball faucht ein Flammenstoß aus der Düse Richtung Ziel. Nur Partikel, kein Draw Call extra // PH
+const JET = { n: 18, speed: [9, 15], spread: .22, life: [.16, .3], size: [.25, .5] };
+export function sprayJet(to: THREE.Vector3) {
+  const a = castFrom(), d = to.clone().setY(to.y + 1.1).sub(a).normalize();
+  for (let i = 0; i < JET.n; i++) {
+    const v = JET.speed[0] + Math.random() * (JET.speed[1] - JET.speed[0]), k = i / JET.n;
+    particles.spawn({ x: a.x, y: a.y, z: a.z, vx: (d.x + (Math.random() - .5) * JET.spread) * v, vy: (d.y + (Math.random() - .5) * JET.spread) * v, vz: (d.z + (Math.random() - .5) * JET.spread) * v,
+      drag: 3, life: JET.life[0] + Math.random() * (JET.life[1] - JET.life[0]), color: k < .3 ? [1.6, 1.2, .6] : k < .7 ? [1.5, .55, .1] : [.8, .18, .03], size: JET.size[0] + Math.random() * (JET.size[1] - JET.size[0]), grow: 1.5 });
+  }
 }
 // Flammenstoß: Glutkreis, dann Feuersäule mit Zungen
 export function flameStrikeLook(point: THREE.Vector3, r: number) {

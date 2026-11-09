@@ -66,6 +66,13 @@ export const forcedLook = (skin: string | null) => fullSet(skin);
 export const perfectText = (setId: string, slot: Slot) => { const [k, v] = SETS[setId].perfect[slot]; return t(`gear.perfect.${k}`, { n: Math.round(v * (v < 1 ? 1000 : 10)) / 10 }); };
 const NO_MAKER = {};   // weaponHit erwartet einen Hersteller; Gear hat keinen
 
+// Kosmetik (meta.looks: freigeschaltet, meta.lookWear: getragen je Slot oder 'waffe'). Regel: Look vor Gear. Nur Aussehen, keine Werte.
+// Einziger Inhalt bisher: Waffen-Look Haarspray + Feuerzeug (models/weapons/defs.ts), frei bei Glutprophet 5/5 (unlock: Set, dessen 5 Teile angelegt sein müssen)
+export const LOOK_SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper', 'waffe'] as const;
+export const LOOKS: Record<string, { slot: typeof LOOK_SLOTS[number]; name: string; unlock?: string }> = {
+  haarspray: { slot: 'waffe', name: 'wmodel.haarspray.name', unlock: 'glut' },
+};
+
 // Schule des gespielten Magiers (mage.skin) → Tag der Spells für den Fokus. ?-Magier: alle Schulen
 const SCHOOL_TAG = { frost: 'Frost', feuer: 'Feuer', blitz: 'Blitz', blut: 'Seuche' };
 export const isMagierSkin = (skin: string | null) => !!skin && skin !== 'krieger';
@@ -96,6 +103,8 @@ export function cleanGear(m: any) {
   }
   m.gear = gear;
   m.wear = wear;
+  m.looks = (Array.isArray(m.looks) ? m.looks : []).filter(id => LOOKS[id]);
+  m.lookWear = Object.fromEntries(LOOK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, LOOKS[id]?.slot === s && m.looks.includes(id) ? id : null]; }));
   m.gearOver = (Array.isArray(m.gearOver) ? m.gearOver : []).filter(g => SLOTS.includes(g?.slot) && okItem(g, g.slot)).map(fixItem);
   for (const g of m.gearOver) maxId = Math.max(maxId, g.id);
   m.nextGear = maxId;
@@ -141,7 +150,7 @@ export function buyGearBox(skin: string | null) {
   const g = rollDrop(skin);
   return { g, res: takeGear(g) };
 }
-const looksOwned = (): string[] => { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; };
+function looksOwned(): string[] { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; }
 export const lookBoxLeft = () => KOSMETIK_POOL.filter(id => !looksOwned().includes(id));
 // Kosmetik-Box: nie Duplikate
 export function buyLookBox() {
@@ -171,8 +180,23 @@ export function takeGear(g: GearItem): { kept: boolean; dust: number; over: bool
 
 export function wearGear(slot: Slot, id: number | null) {
   wearMap()[slot] = id != null && gearInv(slot).some(g => g.id === id) ? id : null;
+  checkUnlocks();
   saveMeta();
 }
+// Kosmetik freischalten: Set mit allen 5 Teilen angelegt (unabhängig von der Schule, die gerade gespielt wird)
+function checkUnlocks() {
+  for (const [id, L] of Object.entries(LOOKS)) if (L.unlock && setCount(L.unlock) === SLOTS.length && !looksOwned().includes(id)) looksOwned().push(id);
+}
+const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
+export const hasLook = (id: string) => looksOwned().includes(id);
+// Getragener Look im Slot (nur wenn freigeschaltet), sonst null = die Figur zeigt das Gear
+export const lookIn = (slot: string) => { const id = lookWearMap()[slot]; return id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null; };
+export function wearLook(slot: string, id: string | null) {
+  lookWearMap()[slot] = id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null;
+  saveMeta();
+}
+// Waffen-Look der Magier (mage.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
+export const weaponLook = () => lookIn('waffe');
 // Löschen gibt Staub zurück wie bei der Waffe (deleteWeapon)
 export function deleteGear(slot: Slot, id: number) {
   const g = gearInv(slot).find(x => x.id === id);
@@ -231,6 +255,7 @@ export function devWearSet(setId: string, n: number = SLOTS.length) {
     gearInv(slot).push(g);
     wearMap()[slot] = g.id;
   });
+  checkUnlocks();
   saveMeta();
 }
 

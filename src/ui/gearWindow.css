@@ -1,0 +1,51 @@
+/* Ausrüstungsfenster (Handoff items.md Schritt 5, Vorlage docs/ref/items-mockup.dc.html): nur Anordnung, Farben und Schriften aus dem UI-Flavor (--fg-*), Größen in --hu wie das Waffenmenü */
+#gearModal { z-index: 5; }
+#gmBox { width: calc(1240 * var(--hu)); max-height: 96vh; overflow: auto; display: flex; flex-direction: column; gap: calc(12 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+#gmBox .wmHead { flex-wrap: wrap; }
+#gmBox .wmHead h1 { margin: 0; font-size: calc(34 * var(--hu)); }
+#gmInfo { margin-left: auto; font: 600 calc(17 * var(--hu)) var(--font-body); }
+#gmInfo b { color: var(--fg-accent); }
+#gmBox .wmHead .fg-btn { min-height: 44px; }
+.gmCols { display: grid; grid-template-columns: calc(400 * var(--hu)) 1fr calc(400 * var(--hu)); gap: calc(20 * var(--hu)); }
+.gmCol { display: flex; flex-direction: column; gap: calc(8 * var(--hu)); }
+.gmColHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.gmColHead h2 { margin: 0; font-size: calc(16 * var(--hu)); letter-spacing: .1em; text-transform: uppercase; }
+.gmColHead span, .gmMuted { font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
+.gmRow { --rc: var(--fg-line); display: flex; align-items: center; gap: calc(12 * var(--hu)); width: 100%; min-height: 52px; box-sizing: border-box; padding: calc(8 * var(--hu)) calc(12 * var(--hu));
+  background: var(--fg-card); border: 1px solid var(--fg-line); color: var(--fg-text); font: inherit; text-align: left; cursor: pointer; }
+.gmRow.set { border-color: color-mix(in srgb, var(--rar-gruen) 45%, var(--fg-line)); }
+.gmRow.look { background: transparent; border-style: dashed; }
+.gmRow.look.on { background: var(--fg-card); border-style: solid; border-color: var(--fg-accent); }
+.gmRow.sel { box-shadow: 0 0 0 1px var(--fg-accent); }
+.gmSlot { width: calc(64 * var(--hu)); flex: none; font-size: calc(12 * var(--hu)); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.gmTxt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.gmTxt b { font-size: calc(15 * var(--hu)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gmTxt small { font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
+.gmTag { flex: none; padding: 2px 6px; font: 700 calc(11 * var(--hu)) var(--font-body); letter-spacing: .08em; color: #000; background: var(--rar-gruen); }
+.gmSet { display: flex; flex-direction: column; gap: calc(6 * var(--hu)); padding: calc(10 * var(--hu)) calc(14 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(13 * var(--hu)); line-height: 1.45; }
+.gmSet.off { opacity: .6; }
+.gmSet .gmBar { height: 6px; background: var(--fg-line); overflow: hidden; }
+.gmSet .gmBar i { display: block; height: 100%; }
+.gmFig { position: relative; min-height: calc(420 * var(--hu)); }
+.gmFig .wmFig3d { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gmFig .gmMuted { position: absolute; left: 12px; bottom: 10px; pointer-events: none; }
+.gmTabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.gmTabs .fg-chip { min-height: 44px; }
+.gmInv { display: grid; grid-template-columns: 1fr calc(380 * var(--hu)); gap: calc(20 * var(--hu)); }
+#gmGrid { grid-template-columns: repeat(5, calc(76 * var(--hu))); grid-auto-rows: calc(76 * var(--hu)); max-height: none; justify-content: start; }
+#gmGrid .wmCell .gmCellName { position: absolute; inset: auto 4px 4px 4px; font: 700 calc(11 * var(--hu)) var(--font-body); color: var(--rc); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#gmGrid .wmCell .gmTag { position: absolute; top: 4px; right: 4px; }
+.gmDetail .wmDBtns .fg-btn { min-height: 44px; }
+#menuGearBtn { width: calc(120 * var(--hu)); min-height: 0; height: calc(46 * var(--hu)); font-size: calc(15 * var(--hu)); }
+body.mobile #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }   /* Handy: feste Größen statt Mockup-Maß, sonst wird die Schrift winzig */
+body.mobile .gmCols, body.mobile .gmInv { grid-template-columns: 1fr; }
+body.mobile .gmFig { min-height: 260px; }
+body.mobile .gmRow, body.mobile .gmTabs .fg-chip, body.mobile #gmBox .fg-btn, body.mobile #menuGearBtn { min-height: 44px; }
+body.mobile #gmGrid { grid-template-columns: repeat(5, 1fr); grid-auto-rows: 64px; }
+@media (max-width: 760px) {
+  #gmBox { --hu: 1px; width: 100vw; max-height: 100vh; padding: 8px; box-sizing: border-box; }
+  .gmCols, .gmInv { grid-template-columns: 1fr; }
+  .gmFig { min-height: 260px; }
+  .gmRow, .gmTabs .fg-chip, #gmBox .fg-btn { min-height: 44px; }
+  #gmGrid { grid-template-columns: repeat(5, 1fr); grid-auto-rows: 64px; }
+}

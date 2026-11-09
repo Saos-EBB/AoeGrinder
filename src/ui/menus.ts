@@ -151,7 +151,7 @@ export function closeBinds() {
 }
 
 // Pausiert, solange irgendein Fenster offen ist oder die Figur tot
-const BLOCKING = ['invModal', 'loadModal', 'codeModal', 'startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal'];
+const BLOCKING = ['invModal', 'loadModal', 'codeModal', 'startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal', 'gearModal', 'gearKeepModal'];
 export function syncPause() {
   state.paused = player.dead || BLOCKING.some(id => $(id)?.classList.contains('show'));
 }

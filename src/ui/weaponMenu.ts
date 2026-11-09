@@ -119,6 +119,7 @@ export function openWeaponMenu(done?: () => void) {
   onClose = done ?? null;
   seen = uiSettings.weaponSeen;
   selected = equipped()?.id ?? [...meta.inv].sort(SORTS.rar[1])[0]?.id ?? null;   // ohne Waffe in der Hand: die beste zeigen
+  mountFigPreview($('wmFigBody'));   // das Ausrüstungsfenster leiht sich dasselbe Canvas
   $('invModal').classList.add('show');
   ($('wmQ') as HTMLInputElement).value = F().q;
   render();

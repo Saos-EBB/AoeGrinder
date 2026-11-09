@@ -20,7 +20,8 @@ import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
-import { applyRunGear, forcedLook } from '../gear';
+import { applyRunGear, forcedLook, isMagierSkin } from '../gear';
+import { openGearWindow, gearBtn } from './gearWindow';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -132,6 +133,7 @@ export function renderMenu() {
   weapons.innerHTML = '';
   const hasWeapons = !!mage.weapon || mage.skin === 'krieger';
   $('menuWeaponsBtn').hidden = !hasWeapons;
+  gearBtn.hidden = !isMagierSkin(mage.skin);   // Ausrüstung (gearWindow.ts): nur Magier
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
   if (mage.skin === 'krieger') {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
     const pickWar = (id, leg) => { setWarLegendary(leg); mage.setWarWeapon(id); applySelection(); };
@@ -268,6 +270,7 @@ $('menuWeaponsBtn').addEventListener('click', () => {
   if (mage.weapon) openWeaponMenu(renderMenu);
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
 });
+gearBtn.addEventListener('click', () => openGearWindow(renderMenu));
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
 addEventListener('pointermove', e => {
   if (turning === null) return;
@@ -367,7 +370,7 @@ $('pauseGiveUp').addEventListener('click', () => {
 addEventListener('keydown', e => {
   if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Waffenmenü tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
-  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'invModal'].some(id => $(id)?.classList.contains('show'))) return;
+  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'invModal', 'gearModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
   if (e.code === 'KeyD') cycleChar(1);
   if (e.code === 'KeyQ') cycleMap(-1);

@@ -14,7 +14,7 @@ import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { figurOf, STANDARD } from '../skins';
-import { forcedLook } from '../gear';
+import { forcedLook, weaponLook } from '../gear';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -146,7 +146,8 @@ function wield() {
   if (HEROES[skin]) return;                   // Nahkämpfer tragen ihre Waffen fest
   recolor();
   weapon?.dispose();
-  weapon = buildWeaponOf(shownWeapon());
+  const wl = !preview && weaponLook();   // Kosmetik-Slot Waffe (gear.ts): nur das Modell, die Werte bleiben bei der ausgerüsteten Waffe
+  weapon = wl ? buildWeapon(wl) : buildWeaponOf(shownWeapon());
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
