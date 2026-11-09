@@ -100,7 +100,7 @@ export function updateLoot() {
     return false;
   });
 }
-function pickUp(d: Drop, auto = false) {
+function pickUp(d: Drop, auto = false, overfill = false) {
   if (d.kind === 'dust') {
     meta.dust += d.dust;
     saveMeta();
@@ -108,7 +108,7 @@ function pickUp(d: Drop, auto = false) {
     return true;
   }
   if (d.kind === 'weapon') {
-    if (inventoryFull()) {
+    if (inventoryFull() && !overfill) {   // overfill: Finale, das Inventar darf kurz überlaufen (Waffenmenü zeigt mehr Reihen, Kiste bleibt zu bis aussortiert)
       if (!auto) { combatText(player.pos, t('loot.invFull', { n: ROLLS.invMax }), 'miss', 2.6); return false; }
       const n = ROLLS.refund[d.weapon.r];   // Portal: kein Platz → Staub statt Verlust
       meta.dust += n; saveMeta();
@@ -133,9 +133,10 @@ addUseSource(() => {
   const d = best;
   return { dist: bd, label: t('loot.takeWeapon', { name: weaponName(d.weapon) }), act: () => { if (pickUp(d)) drops = drops.filter(x => x !== d); } };
 });
-// Portal (portal.ts): liegengebliebene Drops kommen mit, statt auf der alten Map zu verfallen
-export function collectAll() {
-  for (const d of drops) pickUp(d, true);
+// Portal (portal.ts): liegengebliebene Drops kommen mit, statt auf der alten Map zu verfallen.
+// Letzter Boss (boss.ts, Finale Level 100): alles wird automatisch aufgehoben, Waffen auch über das volle Inventar hinaus (overfill)
+export function collectAll(overfill = false) {
+  for (const d of drops) pickUp(d, true, overfill);
   drops = [];
 }
 
@@ -145,4 +146,4 @@ export function resetLoot() {
   state.finds = [];
 }
 export const groundDrops = () => drops.length;
-(window as any).__loot = { DROP, drops: () => drops, bossDrops, spawnDrop, dropDust, dropWeapon };
+(window as any).__loot = { DROP, drops: () => drops, bossDrops, spawnDrop, dropDust, dropWeapon, collectAll };

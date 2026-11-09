@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(items): Nach dem letzten Boss (Finale Level 100) wird alles am Boden automatisch aufgehoben: Gear, Staub und Waffen; Waffen auch über das volle Inventar hinaus (bis aussortiert bleibt die Waffen-Kiste zu)
 - fix(ui): Ausrüstungsfenster passt ohne Scrollen ins Bild (1280 × 720 bis 2560 × 1440, alle drei UI-Flavors): Board wie das Waffenmenü waagrecht zwischen den Zierrahmen-Ecken; links Gear mit höchstens 2 Wertezeilen (voller Text im Tooltip und im Detail) und Set-Fortschritt, Mitte Figur und darunter Kosmetik als 3 × 2 Kacheln, rechts Inventar mit Raster und Detail darunter. Kompakt-Krypta: die Banner im Hauptmenü hängen in den Lücken neben dem Titel statt hinter Map-Wechsler und „UI bearbeiten“. Schlachtbank: die Lüftungsschlitze der Panels liegen nicht mehr über „Zeit · Punkte“ der Rangliste (und den Inventar-Tabs). Start-Kit-Icons und „Rangliste“-Knopf wachsen mit dem Bildschirm (2560 × 1440 nicht mehr winzig). Verzierte Panels, die scrollen, haben keinen Scroll-Überstand mehr durch die Rahmen-Deko. Level-up-Karten stehen mittig, auch wenn es nur 4 sind
 
 ## 2026-11-09

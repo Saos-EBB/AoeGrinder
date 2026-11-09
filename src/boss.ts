@@ -35,7 +35,7 @@ import { ATT, RANGE } from './bosses/attacks';
 import { ruleOf } from './bosses/rules';
 import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo as yawOf, BK } from './bosses/core';
 import { t } from './i18n';
-import { bossDrops } from './loot';
+import { bossDrops, collectAll } from './loot';
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
 export const B = {
@@ -365,7 +365,7 @@ export function updateBoss(dt) {
     if (player.level < lastLevel) seen.clear();   // neuer Run
     const crossed = Math.floor(Math.min(player.level, 99) / B.every) > Math.floor(Math.min(lastLevel, 99) / B.every);
     lastLevel = player.level;
-    if (finalPending) { finalPending = false; if (!startBoss()) completeRun(t('cause.lv100')); return; }
+    if (finalPending) { finalPending = false; if (!startBoss()) { collectAll(true); completeRun(t('cause.lv100')); } return; }
     if (crossed && mobMode === 'packs') startBoss();   // Packs: Boss alle B.every Level, Wellen starten ihn selbst (waves.ts)
     return;
   }
@@ -501,7 +501,7 @@ function endBoss() {
   bar.style.display = 'block';
   statsTimer = window.setTimeout(() => { bar.style.display = 'none'; }, E.statsMs);
   lastResult = { id: def.id, time, hits: st.hits, perfect };
-  if (final && player.level >= 100) window.setTimeout(() => completeRun(t('cause.lv100')), E.stopMs + E.slowMs + 600);   // Finale: danach Ergebnis
+  if (final && player.level >= 100) window.setTimeout(() => { collectAll(true); completeRun(t('cause.lv100')); }, E.stopMs + E.slowMs + 600);   // Finale: Boden-Drops automatisch einsammeln (auch über volles Inventar), danach Ergebnis
 }
 let lastResult = null;
 
