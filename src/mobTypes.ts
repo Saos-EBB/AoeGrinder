@@ -3,6 +3,7 @@
 import { buildBoar } from './models/boar';
 import { humanoid, quadruped, bat, raptor, bug, glowMat } from './models/creatures';
 import { t } from './i18n';
+import './mobKinds';   // Mob-Kategorien (Phase 7): Dev-Knopf und Tod-Hooks, spawnPack für den Map-Generator
 
 const DWARF = { skin: 0xb07a5a, scale: [1.22, 0.78, 1.22], lean: 0.08 };
 

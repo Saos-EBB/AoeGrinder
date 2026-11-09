@@ -200,7 +200,8 @@ function startFlee(mob) {
 export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
   let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
-  if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - mob.slowPct;
+  if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - Math.min(0.9, mob.slowPct * (mob.slowK ?? 1));   // slowK: Zusatz „fliegt“, Slow doppelt (mobKinds.ts)
+  if (mob.hasteUntil > state.now) speed *= 1.2;   // Zusatz „Tempo“ (mobKinds.ts), stapelt nicht // PH
   target = climbTarget(mob.pos, target);
   const dx = target.x - mob.pos.x, dz = target.z - mob.pos.z;
   const d = Math.hypot(dx, dz);
@@ -431,6 +432,7 @@ function bigKnock(mob, frac) {
 export function knockbackMob(mob, center, dist, dur = 450) {
   if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hing im Blutwirbel des Klingenstrichs (geparkt), noKnock: Steinhaut (champions.ts)
   dist *= zone.knockMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Eis: fliegt weiter
+  dist *= mob.knockMul ?? 1;   // Kategorie Groß: halber Rückstoß (mobKinds.ts)
   const dx = mob.pos.x - center.x, dz = mob.pos.z - center.z, d = Math.hypot(dx, dz) || 1;
   const target = new THREE.Vector3(mob.pos.x + dx / d * dist, 0, mob.pos.z + dz / d * dist);
   target.y = mob.pos.y;
