@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(ui): Strichkrieger-Skin Ausbrecher (Grabplatte): Zwangsjacke mit Gurten und aufgerissenem Ärmel, Krankenhaus-Hose, Schlappen, wirre Haare, Pflaster, Glubschaugen, zuckender Kopf, Brechstange als Waffen-Look; flüstert alle paar Sekunden (Blasen um den Kopf, DE/EN). Keine Draw Calls extra
 - feat(ui): Skin-Wechsler unter der Figur in der Charakterwahl (◀ Name ▶, Vorschau ist die Menü-Figur): Magier Standard, Hochspannung, Pestbringer, Splitterkönig; Strichkrieger Standard plus Ausbrecher (nur Grabplatte/Riesenschwert), Classic-Krieger 55 (nur Leeroys Klinge), Holzfäller (nur Sions Axt). Alle frei, Wahl pro Figur gespeichert und im Spielstand-Code; noch sehen alle Skins wie Standard aus. Mods stehen jetzt in einer Reihe darunter
 - feat(ui): Charakterwahl: Knopf „Schwenk: an / aus“ oben rechts stoppt den langsamen Kameraschwenk um die Figur, die Wahl bleibt gespeichert
 - feat(ui): Waffenmenü: angeklickte Waffe trägt die Figur links zur Probe (mit Element-Farbe), ohne sie auszurüsten; Figur per Maus-Ziehen drehbar

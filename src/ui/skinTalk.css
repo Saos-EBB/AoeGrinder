@@ -1,0 +1,8 @@
+/* Sprechblasen und Namensschild der Krieger-Skins (skinTalk.ts), Farben aus docs/ref/set-skins-krieger.html */
+#skinTalk { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+#skinTalk > div { position: absolute; transform: translate(-50%, -100%); white-space: nowrap; display: none; }
+#skinTalk .say { padding: 3px 10px; border: 2px solid #1a1420; border-radius: 12px; }
+#skinTalk .say::after { content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: #1a1420; }
+#skinTalk .whisper { background: rgba(230, 226, 240, .85); color: #3a3448; font: italic 600 13px system-ui, sans-serif; }
+#skinTalk .shout { background: #fff2c0; color: #b8200a; font: 900 18px system-ui, sans-serif; }
+#skinTalk .tag { color: #ffd200; font: 700 12px system-ui, sans-serif; -webkit-text-stroke: 3px #000; paint-order: stroke fill; }

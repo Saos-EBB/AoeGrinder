@@ -50,6 +50,7 @@ import { updateBolts } from './vfx/boltLook';
 import { dodgeVisual, updateDodgeHud, mobAttackSlow } from './dodge';
 import { initDunkel, updateDunkel } from './dunkel';
 import { updateMinimap } from './ui/minimap';
+import { updateSkinTalk } from './ui/skinTalk';
 import { updateMobStatus } from './vfx/mobStatus';
 import { poisoned } from './plagueMarks';
 import { phoenixRise } from './spells/phoenix';
@@ -159,6 +160,7 @@ function loop(t) {
   updatePerf(t);
   updateHud();
   updateMinimap();
+  updateSkinTalk(dt);   // Sprechblasen der Krieger-Skins
   requestAnimationFrame(loop);
 }
 

@@ -34,9 +34,11 @@ grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
 const L1 = .5, L2 = .48, A1 = .35, A2 = .33;
 const C = { ink: new THREE.Color(0x2b2b33), plate: new THREE.Color(0x5a1a14), cloth: new THREE.Color(0xa3151b),
   iron: new THREE.Color(0x4a4d54), edge: new THREE.Color(0xc4c8cd), wrap: new THREE.Color(0x7a1a14), guard: new THREE.Color(0x26231f) };
-function prep(geo, color, m?) {
+// flat: harte Kanten (Low-Poly-Look der Skins)
+function prep(geo, color, m?, flat = false) {
   let g = geo.index ? geo.toNonIndexed() : geo.clone();
   if (g.attributes.uv) g.deleteAttribute('uv');
+  if (flat && g.attributes.normal) g.deleteAttribute('normal');
   if (!g.attributes.normal) g.computeVertexNormals();
   if (m) g.applyMatrix4(m);
   const n = g.attributes.position.count, col = new Float32Array(n * 3);
@@ -75,60 +77,131 @@ export function buildStrichKrieger({ bloom = false, weapon = 'sword', look = 'st
   const gy = () => root.position.y - lift;             // Boden unter der Figur
 const bones = [], parts = [];
 function B(p, x = 0, y = 0, z = 0) { const b = new THREE.Bone(); b.position.set(x, y, z); p.add(b); bones.push(b); return b; }
-function part(bone, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) {
-  parts.push({ bone, geo, color, m: new THREE.Matrix4().compose(V(...pos), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), V(...scl)) });
+const M4 = (pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => new THREE.Matrix4().compose(V(...pos), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), V(...scl));
+// pm: Matrix einer Teile-Gruppe davor (Skins). Rückgabe: Eintrag, Skins färben ihn um (color), werfen ihn raus (drop) oder markieren ihn (tag)
+function part(bone, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1], pm = null) {
+  const e: any = { bone, geo, color, m: pm ? pm.clone().multiply(M4(pos, rot, scl)) : M4(pos, rot, scl) };
+  parts.push(e); return e;
 }
 const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
 const root = new THREE.Group();
 const hips = B(root, 0, 1.04, 0);
-part(hips, new THREE.SphereGeometry(.19, 7, 4), C.ink, [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
+const pHips = part(hips, new THREE.SphereGeometry(.19, 7, 4), C.ink, [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
 const chest = B(hips, 0, .06, 0);
-part(chest, new THREE.LatheGeometry([[0, -.04], [.13, -.02], [.14, .1], [.22, .32], [.29, .5], [.25, .6], [.12, .66], [0, .67]]
+const pChest = part(chest, new THREE.LatheGeometry([[0, -.04], [.13, -.02], [.14, .1], [.22, .32], [.29, .5], [.25, .6], [.12, .66], [0, .67]]
   .map(([x, y]) => new THREE.Vector2(x, y)), 8), C.ink, [0, 0, 0], [0, Math.PI / 8, 0], [1.15, 1, .66]);
 const neck = B(chest, 0, .64, .03);
-part(neck, new THREE.CylinderGeometry(.07, .09, .12, 5), C.ink, [0, .04, 0]);
+const pNeck = part(neck, new THREE.CylinderGeometry(.07, .09, .12, 5), C.ink, [0, .04, 0]);
 const head = B(neck, 0, .08, .02);
-part(head, new THREE.IcosahedronGeometry(.15, 1), C.ink, [0, .13, 0], [0, 0, 0], [1, 1.02, 1.05]);
+const pHead = part(head, new THREE.IcosahedronGeometry(.15, 1), C.ink, [0, .13, 0], [0, 0, 0], [1, 1.02, 1.05]);
 // Gürtel mit Stoffbahn hinten
-part(hips, new THREE.TorusGeometry(.2, .045, 3, 10), C.plate, [0, .06, 0], [Math.PI / 2, 0, 0], [1.2, .9, 1]);
+const pBelt = part(hips, new THREE.TorusGeometry(.2, .045, 3, 10), C.plate, [0, .06, 0], [Math.PI / 2, 0, 0], [1.2, .9, 1]);
 const clothAnchor = (() => { const o = new THREE.Object3D(); o.position.set(0, .02, -.2); hips.add(o); return o; })();
 
 function arm(side) {
   const ua = B(chest, side * .32, .52, 0);
-  part(ua, capDown(.095, A1), C.ink);
+  const pu = part(ua, capDown(.095, A1), C.ink);
   const fa = B(ua, 0, -A1, 0);
-  part(fa, capDown(.085, A2), C.ink);
+  const pf = part(fa, capDown(.085, A2), C.ink);
   const hand = B(fa, 0, -A2, 0);
-  part(hand, new THREE.IcosahedronGeometry(.11, 0), C.ink);
+  const ph = part(hand, new THREE.IcosahedronGeometry(.11, 0), C.ink);
+  const plate = [];
   if (side === 1) {
     // eine schwere Schulterplatte links mit zwei Dornen: macht die Silhouette asymmetrisch
-    part(ua, new THREE.ConeGeometry(.22, .14, 6), C.plate, [.03, .05, 0], [0, 0, -.35]);
-    part(ua, new THREE.ConeGeometry(.045, .26, 4), C.plate, [.08, .2, .04], [0, 0, -.35]);
-    part(ua, new THREE.ConeGeometry(.04, .2, 4), C.plate, [.16, .14, -.08], [-.3, 0, -.8]);
+    plate.push(part(ua, new THREE.ConeGeometry(.22, .14, 6), C.plate, [.03, .05, 0], [0, 0, -.35]));
+    plate.push(part(ua, new THREE.ConeGeometry(.045, .26, 4), C.plate, [.08, .2, .04], [0, 0, -.35]));
+    plate.push(part(ua, new THREE.ConeGeometry(.04, .2, 4), C.plate, [.16, .14, -.08], [-.3, 0, -.8]));
   }
-  return { ua, fa, hand, side };
+  return { ua, fa, hand, side, pu, pf, ph, plate };
 }
 function leg(side) {
   const th = B(hips, side * .14, -.06, 0);
-  part(th, capDown(.115, L1), C.ink);
+  const pt = part(th, capDown(.115, L1), C.ink);
   const sh = B(th, 0, -L1, 0);
-  part(sh, capDown(.095, L2), C.ink);
+  const ps = part(sh, capDown(.095, L2), C.ink);
   const ft = B(sh, 0, -L2, 0);
-  part(ft, new THREE.ConeGeometry(.095, .32, 5), C.ink, [0, -.02, .09], [Math.PI / 2, 0, 0], [1, 1, .7]);
-  return { th, sh, ft, side };
+  const pf = part(ft, new THREE.ConeGeometry(.095, .32, 5), C.ink, [0, -.02, .09], [Math.PI / 2, 0, 0], [1, 1, .7]);
+  return { th, sh, ft, side, pt, ps, pf };
 }
 const armL = arm(1), armR = arm(-1), legL = leg(1), legR = leg(-1);
-// Skins (src/skins.ts): Teile mit part(bone, …) wie oben, `if (look === 'klapse') { … }` usw. Noch keiner gebaut, alle sehen aus wie Standard
+// Skins (src/skins.ts): Teile mit part(bone, …) wie oben, je Skin ein Block `if (look === …)`. Vorlage docs/ref/set-skins-krieger.html (SKINS).
+// Alles landet im selben Körper-Mesh (0 Draw Calls extra). Kopf-Maße des Viewers mit hp() aufs Spiel umrechnen (Kopf hier r .15 statt .12)
+// Viewer-Farben gedimmt: das Spiel-Licht ist auf die dunkle Tusche abgestimmt, helle Stoffe würden sonst ausbrennen (Bloom)
+const LOOK_DIM = .5;   // PH
+const col = (hex: number) => new THREE.Color(hex).multiplyScalar(LOOK_DIM);
+const drop = (...es) => { for (const e of es.flat()) { const i = parts.indexOf(e); if (i >= 0) parts.splice(i, 1); } };
+const paint = (c, ...es) => { for (const e of es.flat()) e.color = c; };
+const hp = (x, y, z) => [x * 1.3, .13 + y * 1.3, z * 1.38];   // PH
+// Stab von a nach b (Punkte im Bone-Raum)
+function rod(bone, a, b, r, c, r2 = r, seg = 5) {
+  const d = V(...b).sub(V(...a)), q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), d.clone().normalize());
+  const e = part(bone, new THREE.CylinderGeometry(r2, r, d.length(), seg), c);
+  e.m = new THREE.Matrix4().compose(V(...a).add(d.multiplyScalar(.5)), q, V(1, 1, 1)); return e;
+}
+const band = (bone, pos, r, t, c, scl = [1, 1, 1], seg = 12) => part(bone, new THREE.TorusGeometry(r, t, 4, seg), c, pos, [Math.PI / 2, 0, 0], scl);
+const ext = (pts, depth) => new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y))), { depth, bevelEnabled: false }).translate(0, 0, -depth / 2);
+const tube = (pts, r, seg = 12, rs = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => V(...p))), seg, r, rs);
+let cloth0 = { color: 0xa3151b, w: 1 };   // Stoffbahn hinten: Farbe, Breite
+const TALK: any = {};                      // Sprechblasen (ui/skinTalk.ts): kind, keys, plate
+if (look === 'klapse') {
+  // Ausbrecher: Zwangsjacke, linker Ärmel aufgerissen, Gurte, Krankenhaus-Hose, Schlappen, wirre Haare, Pflaster, Glubschaugen
+  const jacket = col(0xe8e4d8), pants = col(0xa8c0c8), strap = col(0x6a5a48), skin = col(0xe8ccb0), ink = col(0x15121a);
+  drop(armL.plate);
+  paint(jacket, pChest, armL.pu, armR.pu, armR.pf);
+  paint(skin, pNeck, pHead, armL.pf, armL.ph, armR.ph);
+  paint(pants, pHips, legL.pt, legL.ps, legR.pt, legR.ps);
+  paint(col(0x8aa0b0), legL.pf, legR.pf);
+  paint(strap, pBelt);
+  // ausgefranster Saum am Ellbogen links
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; part(armL.fa, new THREE.ConeGeometry(.03, .1 + (i % 2) * .04, 4), jacket, [Math.cos(a) * .085, -.04, Math.sin(a) * .085], [Math.PI, 0, 0]); }
+  // drei Gurte um die Brust mit Schnallen vorne (Radien am Brust-Profil)
+  for (const [y, r] of [[.42, .28], [.26, .215], [.1, .16]]) {
+    band(chest, [0, y, 0], r, .018, strap, [1.15, .7, 1], 16);
+    part(chest, new THREE.BoxGeometry(.05, .045, .03), col(0xb0b0b8), [.06, y, r * .7 + .01]);
+  }
+  // baumelnde Gurte vorne (fest), der hinten ist die Stoffbahn
+  part(chest, new THREE.BoxGeometry(.035, .34, .012), strap, [-.12, -.15, .13], [.1, 0, .12]);
+  part(chest, new THREE.BoxGeometry(.035, .44, .012), strap, [.14, -.2, .12], [.08, 0, -.1]);
+  cloth0 = { color: 0x6a5a48, w: .35 };
+  // wirre Haare, Pflaster-Kreuz, Glubschaugen, schiefes Grinsen
+  const hair = col(0x5a4a3a);
+  for (let i = 0; i < 9; i++) { const a = i / 9 * TAU; part(head, new THREE.ConeGeometry(.05, .17, 5), hair, hp(Math.cos(a) * .07, .1 + Math.sin(i * 3) * .02, Math.sin(a) * .07 - .02), [Math.sin(a) * .9, 0, -Math.cos(a) * .9]); }
+  for (const r of [.5, -.5]) part(head, new THREE.BoxGeometry(.08, .026, .015), col(0xf2ece0), hp(.04, .06, .108), [0, 0, r]);
+  for (const [x, r] of [[-.042, .042], [.042, .034]]) { part(head, new THREE.SphereGeometry(r, 8, 6), col(0xffffff), [x * 1.3, .13, .145], [0, 0, 0], [1, 1, .45]); part(head, new THREE.SphereGeometry(.011, 5, 4), ink, [x * 1.3 + .005, .132, .163]); }
+  part(head, new THREE.TorusGeometry(.055, .011, 3, 10, Math.PI), ink, [0, .065, .142], [0, 0, Math.PI + .15]);
+  Object.assign(TALK, { kind: 'whisper', keys: [1, 2, 3, 4, 5, 6, 7].map(i => `look.krieger.klapse.say${i}`) });
+}
 root.updateMatrixWorld(true);
-const bodyGeo = mergeGeometries(parts.map(p => {
-  const g = prep(p.geo, p.color, p.bone.matrixWorld.clone().multiply(p.m));
+// Ränge je tag (Vertex-Anfang, Anzahl) im gemergten Mesh: Skins blenden Teile aus (zusammenfallen lassen) oder färben sie um, ohne Draw Call
+function mergeTagged(list) {
+  const ranges = {}; let o = 0;
+  for (const { g, tag } of list) { const n = g.attributes.position.count; if (tag) (ranges[tag] ??= []).push([o, n]); o += n; }
+  const geo = mergeGeometries(list.map(x => x.g));
+  return { geo, ranges, orig: geo.attributes.position.array.slice() };
+}
+function showTag(T, tag, on) {
+  const a = T.geo.attributes.position.array;
+  for (const [o, n] of T.ranges[tag] ?? []) {
+    if (on) a.set(T.orig.subarray(o * 3, (o + n) * 3), o * 3);
+    else for (let i = 0; i < n; i++) a.set(T.orig.subarray(o * 3, o * 3 + 3), (o + i) * 3);
+  }
+  T.geo.attributes.position.needsUpdate = true;
+}
+function tintTag(T, tag, c) {
+  const a = T.geo.attributes.color.array;
+  for (const [o, n] of T.ranges[tag] ?? []) for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], (o + i) * 3);
+  T.geo.attributes.color.needsUpdate = true;
+}
+const bodyT = mergeTagged(parts.map(p => {
+  const g = prep(p.geo, p.color, p.bone.matrixWorld.clone().multiply(p.m), p.flat);
   const n = g.attributes.position.count, bi = bones.indexOf(p.bone);
   const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
   for (let i = 0; i < n; i++) { si[i * 4] = bi; sw[i * 4] = 1; }
   g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
   g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
-  return g;
+  return { g, tag: p.tag };
 }));
+const bodyGeo = bodyT.geo;
 const body = new THREE.SkinnedMesh(bodyGeo, VMAT);
 body.frustumCulled = false; root.add(body); body.bind(new THREE.Skeleton(bones));
 // Wut-Aura: zweite Hülle aus derselben Geometrie, entlang der Normalen aufgeblasen, Rückseiten, 1 Draw Call
@@ -184,17 +257,37 @@ function maceGlowGeo() {
   const blue = new THREE.Color(0x6fc8ff);
   return mergeGeometries([0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.012, .26, .02).translate(0, 1.6, .2).rotateY(i / 6 * Math.PI * 2), blue)));
 }
+// Waffen-Look der Skins: reiner Look über dem Waffen-Modell (Treffer, Spitze, Griff bleiben die der Waffe). Viewer-Maße, Griff im Ursprung, Klinge +y, Schneide +x.
+// top: oberes Ende, wird auf die Treffer-Spitze der Waffe skaliert. glow: Teile fürs Glüh-Mesh. Teile mit tag blendet der Skin im Spiel ein und aus
+const LW: any = { list: [], glow: [], top: 0 };
+const wp = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1], tag = null, flat = false) => LW.list.push({ g: prep(geo, c, M4(pos, rot, scl), flat), tag });
+const wg = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => LW.glow.push(prep(geo, c, M4(pos, rot, scl)));
+if (look === 'klapse') {
+  // Brechstange statt Schwert: so lang wie die Klinge (Viewer 0,84 m wäre neben den Treffern zu kurz), Haken oben, Rost, Tape am Griff
+  const steel = col(0x3a3e46);
+  wp(new THREE.CylinderGeometry(.034, .034, 2.15, 6), steel, [0, .675, 0]);
+  wp(tube([0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => { const a = i / 8 * Math.PI * 1.1; return [-.12 + Math.cos(a) * .12, 1.75 + Math.sin(a) * .12, 0]; }), .034, 12), steel);
+  wp(new THREE.BoxGeometry(.08, .065, .04), steel, [-.25, 1.69, 0], [0, 0, -.5]);
+  wp(new THREE.BoxGeometry(.09, .05, .035), steel, [.03, -.44, 0], [0, 0, .4]);
+  for (const y of [.45, 1.25]) wp(new THREE.BoxGeometry(.076, .11, .076), col(0x8a4a2a), [0, y, 0]);
+  wp(new THREE.BoxGeometry(.078, .26, .078), col(0xf2ece0), [0, .02, 0]);
+  LW.top = 1.87;
+}
+const lookW = LW.list.length ? mergeTagged(LW.list) : null;
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
 const sword = new THREE.Group(); root.add(sword);
-const swordMesh = new THREE.Mesh(weapon === 'axe' ? axeGeo() : weapon === 'mace' ? maceGeo() : SWORD_GEO, VMAT); sword.add(swordMesh);
+const swordMesh = new THREE.Mesh(lookW ? lookW.geo : weapon === 'axe' ? axeGeo() : weapon === 'mace' ? maceGeo() : SWORD_GEO, VMAT); sword.add(swordMesh);
 let tipLen = WEAPON_SHAPE[weapon]?.tip ?? 1.95, gripLen = WEAPON_SHAPE[weapon]?.grip ?? .24, baseTip = tipLen, baseGrip = gripLen;
-// Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller
+// Kolben: Blitzrisse leuchten blau (+1 Draw Call), mit Bloom heller. Skins: Leuchtteile der Waffe im selben Glüh-Mesh
 let maceGlow = null;
-if (weapon === 'mace') {
-  maceGlow = new THREE.Mesh(maceGlowGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }));
+if (weapon === 'mace' || LW.glow.length) {
+  maceGlow = new THREE.Mesh(lookW ? mergeGeometries(LW.glow) : maceGlowGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }));
   if (bloom) maceGlow.material.color.setScalar(2.2);
   sword.add(maceGlow);
 }
+// Look-Waffe auf die Spitze der Waffe skalieren (k = Waffen-Maß × Skalierung)
+const fitLook = (tip) => { if (!lookW) return; const k = tip / LW.top; swordMesh.scale.setScalar(k); maceGlow?.scale.setScalar(k); };
+fitLook(tipLen);
   // Fleischkeule zum Essen: Knochen + Fleisch, Griff im Ursprung, Fleisch nach +y
   const meat = new THREE.Mesh(mergeGeometries([
     prep(new THREE.CylinderGeometry(.025, .025, .22, 5).translate(0, -.02, 0), new THREE.Color(0xeee6d0)),
@@ -209,7 +302,7 @@ const sP = [], sO = [];
 const clothGeo = new THREE.BufferGeometry();
 clothGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SN * 2 * 3), 3));
 { const idx = []; for (let i = 0; i < SN - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } clothGeo.setIndex(idx); }
-const cloth = new THREE.Mesh(clothGeo, new THREE.MeshBasicMaterial({ color: 0xa3151b, side: THREE.DoubleSide }));
+const cloth = new THREE.Mesh(clothGeo, new THREE.MeshBasicMaterial({ color: cloth0.color, side: THREE.DoubleSide }));
 cloth.frustumCulled = false;
 function clothReset() { const p = clothAnchor.getWorldPosition(V()); for (let i = 0; i < SN; i++) { sP[i] = p.clone().add(V(0, -i * SEG, 0)); sO[i] = sP[i].clone(); } }
 const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
@@ -593,26 +686,36 @@ function defQ(step, hitI = step) {
     for (let i = 1; i < SN; i++) { const d = sP[i].clone().sub(sP[i - 1]); const L = d.length() || 1; sP[i].copy(sP[i - 1]).addScaledVector(d, SEG / L); }
     const pa = clothGeo.attributes.position;
     for (let i = 0; i < SN; i++) {
-      const w = .11 * (1 - i / SN * .35);
+      const w = .11 * cloth0.w * (1 - i / SN * .35);
       for (const n of [0, 1]) { const p = sP[i].clone().addScaledVector(side, (n ? 1 : -1) * w + (i % 2 ? .015 : -.015)); pa.setXYZ(i * 2 + n, p.x, p.y, p.z); }
     }
     pa.needsUpdate = true;
+    lookTick(s, anim);
     updateFx(s); updateParts(s);
+  }
+  // Skin-Gags pro Frame (nur Optik)
+  function lookTick(s, anim) {
+    if (look === 'klapse') head.rotation.z = Math.sin(T * 7) * .04 + (Math.sin(T * .9) > .85 ? .25 : 0);   // ruckartiges Kopf-Zucken // PH
   }
   // Risse von Bodenbrecher: das Spiel meldet jede Welle
   const crackAt = (x, z, dx, dz) => { const q = V(x, 0, z); crack(q, V(dx, 0, dz).applyAxisAngle(V(0, 1, 0), (Math.random() - .5) * .5), 1.9, 1.4); emit(V(x, gy() + .1, z), 8, 3, 0x8f877a, 12, .7); };
   const model: any = {
     root, update, scarf: cloth, onHit: null, weapon, look,
+    // Sprechblasen und Namensschild des Skins (ui/skinTalk.ts): null = keine
+    talk: TALK.kind ? { ...TALK, anchor: head, get on() { return lastLoco !== 'dead'; } } : null,
     anchors: { crystal: armR.hand, handL: armL.hand, handR: armR.hand },
     fx: { group: fxGroup, crackAt, ring, ghost, gy, blood: (x, y, z, n = 6) => emit(V(x, y, z), n, 2.5, 0x9e0b0f, 12, .8) },
     get tris() { return Math.round((body.geometry.attributes.position.count + swordMesh.geometry.attributes.position.count + (maceGlow ? maceGlow.geometry.attributes.position.count : 0)) / 3 + (SN - 1) * 2); },
     get bloom() { return bloom; },
     // Waffe aus models/weapons statt des eigenen Schwerts: Griff in der rechten Hand, Länge für Treffer und linke Hand aus der Waffe
+    // Skin mit eigenem Waffen-Look: Waffe bleibt im Rahmen, aber unsichtbar; der Look übernimmt ihre Länge
     setWeapon(w, scale = 1, tip = 1.95, grip = .24) {
-      swordMesh.visible = false;
+      swordMesh.visible = !!lookW;
       w.root.scale.setScalar(scale);
+      w.root.visible = !lookW;
       sword.add(w.root);
       tipLen = tip * scale; gripLen = grip * scale; baseTip = tipLen; baseGrip = gripLen;
+      fitLook(tipLen);
     },
     // Schlagfolge Version E: Schwert wächst pro Stufe (Größe und Treffer-Spitze)
     setBladeScale(k) { sword.scale.setScalar(k); tipLen = baseTip * k; gripLen = baseGrip * k; },

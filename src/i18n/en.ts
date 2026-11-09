@@ -2024,4 +2024,11 @@ export const en: Record<string, string> = {
   'look.krieger.klapse.name': "Escapee",
   'look.krieger.classic.name': "Classic Warrior 55",
   'look.krieger.holz.name': "Lumberjack",
+  'look.krieger.klapse.say1': "psst…",
+  'look.krieger.klapse.say2': "behind you…",
+  'look.krieger.klapse.say3': "left…",
+  'look.krieger.klapse.say4': "count the mobs…",
+  'look.krieger.klapse.say5': "not THAT one…",
+  'look.krieger.klapse.say6': "now!",
+  'look.krieger.klapse.say7': "they know…",
 };
