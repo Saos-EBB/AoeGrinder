@@ -15,7 +15,7 @@ import { mobsInRadius, addField, makeCtx, cdEnd, startCd, noteCastStart, stopCha
 import { nearestTarget } from './target';
 import { zapLook } from '../vfx/boltLook';
 import { sludgeLook, slimeTrapField, slimeWaveLook, blackHoleField, holeImpact, poisonCloudField, webLook, contractLook, drainLook, burstLook, meltField, pestilenceLook } from '../vfx/plagueLook';
-import { mark, markStacks, clearMark, poison, poisoned } from '../plagueMarks';
+import { mark, markStacks, popMark, poison, poisoned } from '../plagueMarks';
 import { t } from '../i18n';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
@@ -52,7 +52,7 @@ export function updatePlague() {
   if (modValue('lifeCost')) player.resLabel = t('plague.label');
   for (const m of state.mobs) {
     if (m.dead || !poisoned(m) || state.now < m.poison.next) continue;
-    m.poison.next += 1000;
+    m.poison.next += m.poison.step ?? 1000;
     burnMob(m, Math.max(1, Math.round(m.poison.dps)));
   }
   if (liquid.end > state.now) player.vel.set(0, 0, 0);
@@ -64,7 +64,7 @@ function contractAll(c, list, keep = false) {
   if (!list.length) return;
   const center = list.reduce((p, m) => p.add(m.pos), list[0].pos.clone().multiplyScalar(0)).multiplyScalar(1 / list.length);
   contractLook(list.map(m => m.pos.clone()), center);
-  for (const m of list) { const n = markStacks(m); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n), 'glue'); if (!keep) clearMark(m); }
+  for (const m of list) { const n = markStacks(m); pullMob(m, center, dist2d(m.pos, center)); applyRoot(m, rootMs(n), 'glue'); if (!keep) popMark(m); }
 }
 const drainDmg = n => P.drain.dmg * UNIT * n;
 function drainAll(c, list, keep = false) {
@@ -72,15 +72,15 @@ function drainAll(c, list, keep = false) {
   for (const m of list) {
     const n = markStacks(m);
     if (c.hit(m, drainDmg(n))) heal(maxHp() * (P.drain.heal + mods.leech));
-    if (!keep) clearMark(m);
+    if (!keep) popMark(m);
   }
 }
 function burstAll(c, list, keep = false) {
   for (const m of list) {
     const n = markStacks(m);
-    poison(m, drainDmg(n) * c.scaleOut());   // Gift in Höhe des Entziehen-Schadens, verteilt auf 12 s
+    poison(m, drainDmg(n) * c.scaleOut() * (1 + mods.burstDmg), P.burst.ms, 1000 / (1 + mods.burstTick));   // Gift in Höhe des Entziehen-Schadens, verteilt auf 12 s; Set Pestbringer: stärker, tickt schneller
     burstLook(m.pos, n, list.indexOf(m) * .07);
-    if (!keep) clearMark(m);
+    if (!keep) popMark(m);
   }
 }
 // Schaden, den ein Treffer dieses Kontexts ungefähr machen würde (ohne Wurf und Rüstung): fürs Gift

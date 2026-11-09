@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-09
 
+- feat(items): Set Pestbringer (Seuche): Platzen +30 % Schaden, Ansteckung +2 Mobs, Platzen-Gift tickt 25 % schneller (mehr Ticks in derselben Zeit); mit 5/5 hält jedes Seuchen-Mal 2 Verbraucher aus (Zusammenziehen, Entziehen, Platzen), erst der zweite löscht es
 - feat(items): Set Hochspannung (Blitz): +3 Sprünge, +0,5 % Schaden pro Kill in der Kette, Kettenblitz −15 % Kosten; mit 5/5 gabelt sich jeder Sprung des Kettenblitzes mit 20 % in 2 Ketten, alle Äste teilen sich das Sprung-Budget, höchstens 400 Sprünge pro Wurf
 - feat(items): Set Splitterkönig (Frost): Splitter-Max +10, Gletschernadel +20 % pro Splitter, +15 % Schaden auf Eingefrorene; mit 5/5 reicht die Gletschernadel 50 % weiter und löst am Endpunkt die normale Frost Nova mit allen Nova-Karten aus
 - feat(items): Sets (1 pro Magier): ab Blau sind 15 % der Drops Set-Teile des gespielten Magiers; mit 1–4 Teilen gelten die eigenen Rolls, mit 5/5 ersetzt jeder Teil seinen Roll durch den Perfekt-Wert, die Set-Mechanik läuft und der Set-Skin wird erzwungen (die gespeicherte Skin-Wahl bleibt). Erstes Set Glutprophet (Feuer): +15 % Crit, +2 Projektile und −20 % Wurfzeit Feuerball, jeder 10. Feuerball ist ein Riesen-Feuerball (3× Größe, 300 % Schaden, alle Runen und Talente wirken mit). Dev: Set 5/5 oder 4/5 anlegen

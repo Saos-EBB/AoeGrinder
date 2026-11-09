@@ -97,6 +97,7 @@ export function resetMods() {
     iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
     needleShard: 0, frozenDmg: 0,   // Set Splitterkönig (gear.ts)
     chainKill: 0,   // Set Hochspannung (gear.ts)
+    burstDmg: 0, burstTick: 0,   // Set Pestbringer (gear.ts)
     condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
     toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0,   // Seuchen-Talente (v31)
     annihilator: 0, bladeMaster: 0 });   // Krieger-Talente (v31)
