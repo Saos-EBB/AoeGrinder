@@ -90,6 +90,21 @@ export class Grid {
     }
     return d;
   }
+  // Sichtlinie (Relikte): keine Wandzelle zwischen a und b. Zellen-Lauf entlang der Strecke (Amanatides-Woo), höchstens ~2 Zellen pro 8 yd.
+  // Start- und Zielzelle zählen nicht (fliegende Mobs schweben über Wänden). Löcher versperren nichts.
+  sightClear(ax: number, az: number, bx: number, bz: number) {
+    let i = this.ci(ax), j = this.cj(az);
+    const ti = this.ci(bx), tj = this.cj(bz), dx = bx - ax, dz = bz - az;
+    const si = Math.sign(dx), sj = Math.sign(dz);
+    const tdx = si ? CELL / Math.abs(dx) : Infinity, tdz = sj ? CELL / Math.abs(dz) : Infinity;
+    let tx = si ? ((si > 0 ? this.x0 + (i + 1) * CELL : this.x0 + i * CELL) - ax) / dx : Infinity;
+    let tz = sj ? ((sj > 0 ? this.z0 + (j + 1) * CELL : this.z0 + j * CELL) - az) / dz : Infinity;
+    for (let n = Math.abs(ti - i) + Math.abs(tj - j); n > 0; n--) {
+      if (tx < tz) { i += si; tx += tdx; } else { j += sj; tz += tdz; }
+      if ((i !== ti || j !== tj) && this.get(i, j) === WALL) return false;
+    }
+    return true;
+  }
   floorCount() { let n = 0; for (const c of this.cells) if (c === FLOOR) n++; return n; }
 }
 

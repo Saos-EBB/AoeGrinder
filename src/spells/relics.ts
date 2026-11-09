@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { rand, dist2d } from '../util';
 import { state, player } from '../state';
 import { scene } from '../render';
-import { obstacles } from '../world';
+import { obstacles, zone } from '../world';
 import { groundAt } from '../collision';
 import { particles } from '../fx/particles';
 import { ringFx, blightTex } from '../fx/spellFx';
@@ -45,8 +45,10 @@ export const desecrate = {
   },
 };
 
-// Sichtlinie: Strecke darf kein Hindernis schneiden
+// Sichtlinie: Strecke darf kein Hindernis schneiden. Generierte Maps (src/mapgen): Wände stehen nicht in obstacles, sondern im Zellraster
 function lineOfSight(a, b) {
+  const g = zone.gen ? zone.layout?.grid : null;
+  if (g && !g.sightClear(a.x, a.z, b.x, b.z)) return false;
   const dx = b.x - a.x, dz = b.z - a.z, len2 = dx * dx + dz * dz;
   return obstacles.every(o => {
     const t = Math.max(0, Math.min(1, ((o.x - a.x) * dx + (o.z - a.z) * dz) / len2));
