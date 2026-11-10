@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- fix(skins): ?-Magier: Mit Körper-Teil (Gear Körper oder Kosmetik wie Onesie, Anzug, Bademantel, Rock) fallen die Fragezeichen auf dem Körper weg, mit Arm-Teil die auf den Armen; vorher schauten sie durch den Stoff. Das Fragezeichen im Gesicht und die 3 schwebenden über dem Kopf bleiben. Kein Draw Call mehr
 - fix(kosmetik): Schottenrock mit sauberem Karo (Kästchen in Rot, Grün, Schwarz und Gold, Gitter der Form = Gitter des Musters) statt zackiger Dreiecke. Kuh-Onesie mit größeren, deutlich schwarzen Flecken, an der Figur und im Item-Bild gut zu sehen. Kein Draw Call mehr
 - fix(items): Gear-Teile heißen nach ihrer Form an der Figur (Slot × Wertgruppe wie im Gear-Baukasten), z. B. Spitzhut, Reisehut, Windschal, Runenkreis, Puffärmel, Weite Robe; vorher konnte ein „Stirnreif“ wie ein Spitzhut aussehen. Alte Teile heißen beim Laden gleich richtig, Set-Teile behalten ihre Namen
 - feat(ui): HUD kombinierbar: Einstellungen → Interface → „HUD kombinieren“ wählt für Leben & Mana, Zauberleiste (mit Kill-Anzeige, XP, Castbar, Mikro-Menü), Karte & Infos (Karte, Zeit, Relikte, Effekte, Tracker) und Combo je „wie Flavor“ oder einen festen UI-Flavor, z. B. Höllenfeste mit Krypta-Spielerrahmen und Schlachtbank-Leiste. Der Teil bringt Lage und Look aus seinem Flavor mit, Zierrahmen und Bildschirm-Effekte bleiben beim UI-Flavor. Wirkt sofort, auch im Run; „Alles zurück auf UI-Flavor“ stellt den alten Stand her. Eigene Verschiebungen gelten pro Kombination
