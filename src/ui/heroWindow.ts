@@ -22,6 +22,7 @@ import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
 import { attachWeaponCard, weaponCardData } from './weaponCard';
 import { weaponThumb } from './weaponThumb';
+import { gearThumbHtml, lookThumbHtml, weaponThumbHtml, warmThumbs } from './itemThumb';
 import { attachTip, hideTip, tipAt, type TipData } from './tooltip';
 import { heroStats, type StatRow } from './heroStats';
 import { figureInfo } from './charInfo';
@@ -60,6 +61,7 @@ let onClose: (() => void) | null = null, tab: Tab = (uiSettings.heroTab as Tab) 
 export const heroOpen = () => $('heroModal').classList.contains('show');
 export const inRun = () => !$('startModal').classList.contains('show');
 const viewOnly = inRun;
+warmThumbs(() => !inRun());   // Bild-Renderer im Hauptmenü vorab anlegen
 const mageGear = () => isMagierSkin(mage.skin);
 
 // ---------- Gear: Hersteller und Gruppe (optional, gear.ts makerOf/groupOf) ----------
@@ -132,7 +134,7 @@ function slotEl(slot: Slot | 'waffe') {
   const color = w ? rarityOf(w).color : g ? gearRarity(g).color : '';
   if (color) b.style.setProperty('--rc', color);
   if (w) { const src = weaponThumb(w); b.innerHTML = src ? `<img src="${src}" alt="">` : typeSvg(typeOf(w), color); }
-  else if (g) b.innerHTML = slotSvg(slot, color);
+  else if (g) b.innerHTML = gearThumbHtml(g, slotSvg(slot, color));
   else b.innerHTML = isW && mage.skin === 'krieger' ? '<span class="hwSlotEmpty"></span>' : `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
   b.append(el('small', '', isW ? t('cw.weapon') : slotName(slot)));
   if (g?.s.setId) b.append(el('b', 'hwSetMark', 'SET'));
@@ -156,7 +158,7 @@ function lookEl(slot: Slot | 'waffe') {
   b.type = 'button';
   b.title = on ? `${t(LOOKS[on].name)} · ${t('hw.lookClear')}` : free.length ? t('hw.lookSet', { name: t(LOOKS[free[0]].name) }) : t('hw.lookNone');
   b.setAttribute('aria-label', `${t('hw.look')} ${slot === 'waffe' ? t('cw.weapon') : slotName(slot)}: ${b.title}`);
-  if (on) b.innerHTML = slotSvg('kosmetik', 'currentColor');
+  if (on) b.innerHTML = lookThumbHtml(on, slotSvg('kosmetik', 'currentColor'));
   b.disabled = viewOnly() || (!on && !free.length) || !mageGear();
   b.addEventListener('click', () => { wearLook(slot, on ? null : free[0]); changed(); });
   return b;
@@ -451,9 +453,10 @@ function activeChips(k: Kind) {
 const GRID = 25;   // wie ROLLS.invMax / GEAR.invMax; im Dev-Inventar (50) wachsen Reihen dazu
 function cellInner(e: Entry) {
   const c = rarColor(e);
-  if (e.kind === 'k') return (e.dim ? LOCK : slotSvg('kosmetik', c)) + (isOn(e) ? `<b class="hwE" title="${t('shop.equipped')}">E</b>` : '');
+  if (e.kind === 'k') return lookThumbHtml(e.item, e.dim ? LOCK : slotSvg('kosmetik', c)) + (e.dim ? `<i class="hwLock">${LOCK}</i>` : '')   // gesperrt: Bild grau mit Schloss
+    + (isOn(e) ? `<b class="hwE" title="${t('shop.equipped')}">E</b>` : '');
   const i = e.item, elm = e.kind === 'w' ? elementOf(i) : i.s.element, mk = e.kind === 'w' ? W_ATTR.maker(i) : gearMaker(i);
-  return (e.kind === 'w' ? typeSvg(typeOf(i), c) : slotSvg(i.slot, c))
+  return (e.kind === 'w' ? weaponThumbHtml(i, typeSvg(typeOf(i), c)) : gearThumbHtml(i, slotSvg(i.slot, c)))
     + (elm && elm !== 'none' ? `<i class="hwEl" style="--ec:${elementColor(elm)}" title="${ELEMENTS[elm]?.name ?? elm}"></i>` : '')
     + (mk && MAKERS[mk] ? `<i class="hwMk" style="background:${MAT_COLOR[MAKERS[mk].main]}" title="${MAKERS[mk].name}"></i>` : '')
     + (e.kind === 'g' && i.s.setId ? '<b class="hwSetMark">SET</b>' : '')
@@ -479,7 +482,7 @@ function renderGrid(list: Entry[]) {
   grid.textContent = '';
   const cols = 10, n = Math.max(tab === 'kosmetik' ? cols : GRID, list.length);
   for (let i = 0; i < n; i++) {
-    const e = list[i], cell = el('button', 'hwCell' + (e ? '' : ' empty') + (e?.dim ? ' dim' : '') + (e && e.key === sel ? ' sel' : ''));
+    const e = list[i], cell = el('button', 'hwCell' + (e ? '' : ' empty') + (e?.dim ? e.kind === 'k' ? ' locked' : ' dim' : '') + (e && e.key === sel ? ' sel' : ''));
     cell.type = 'button';
     if (e) {
       cell.dataset.key = e.key;
@@ -562,7 +565,9 @@ function renderTree() {
       if (e.dim) row.classList.add('dim');
       const name = el('span', 'hwTName', entryName(e));
       name.style.color = c;
-      row.append(icon(entryIcon(e)), name);
+      const ic = icon(e.kind === 'g' ? gearThumbHtml(e.item, entryIcon(e)) : e.kind === 'k' && !e.dim ? lookThumbHtml(e.item, entryIcon(e)) : entryIcon(e));   // Gear und freie Kosmetik mit Bild, Waffen (hochkant, zu dünn) und Gesperrtes mit Umriss
+      if (e.kind === 'g' || e.kind === 'k' && !e.dim) ic.classList.add('hwTThumb');
+      row.append(ic, name);
       if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
       if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))}`));
       if (isOn(e)) row.append(el('b', 'hwE', 'E'));

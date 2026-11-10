@@ -125,7 +125,21 @@
 .hwCell:hover:not(.empty) { box-shadow: 0 0 0 2px #000, 0 0 12px var(--rc); }
 .hwCell.sel { outline: 2px solid var(--fg-accent); outline-offset: 1px; box-shadow: 0 0 0 2px #000, 0 0 16px var(--rc); }
 .hwCell.empty { border: 2px dashed var(--fg-line); background: none; box-shadow: none; cursor: default; opacity: .6; }
-.hwCell.dim { opacity: .28; filter: grayscale(.6); }   /* passt nicht zum Filter (bzw. Kosmetik gesperrt): abgedunkelt statt ausgeblendet // PH */
+.hwCell.dim { opacity: .28; filter: grayscale(.6); }   /* passt nicht zum Filter : abgedunkelt statt ausgeblendet // PH */
+/* Vorschaubilder aus dem Modell (itemThumb.ts): Waffen hochkant, Gear und Kosmetik quadratisch; bis sie fertig sind, steht das SVG */
+.hwCell { padding: calc(3 * var(--hu)); }
+.hwCell .thumbWait { display: grid; place-items: center; width: 100%; height: 100%; padding: calc(5 * var(--hu)); box-sizing: border-box; }
+.hwCell img.thumb { position: absolute; inset: calc(3 * var(--hu)); width: calc(100% - 6 * var(--hu)); height: calc(100% - 6 * var(--hu)); object-fit: contain; pointer-events: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rc) 45%, transparent)); }
+.hwCell.locked img.thumb { filter: grayscale(1) brightness(.85); opacity: .6; }   /* Kosmetik gesperrt: Bild grau, Schloss darüber // PH */
+.hwCell.locked .thumbWait { opacity: .4; }
+.hwLock { position: absolute; right: 2px; bottom: 2px; width: 40%; height: 40%; display: grid; place-items: center; color: var(--fg-title); pointer-events: none; }
+.hwLock svg { width: 100%; height: 100%; filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 2px #000); }
+.hwCell.locked:has(.thumbWait) .hwLock { display: none; }   /* bis das Bild da ist, ist das SVG schon das Schloss */
+.hwSlot img.thumb { height: calc(46 * var(--hu)); width: calc(46 * var(--hu)); max-width: none; }
+.hwSlot .thumbWait { display: grid; place-items: center; height: 100%; }
+.hwSlot .thumbWait svg { height: 100%; }
+.hwLook img.thumb { width: 100%; height: 100%; object-fit: contain; }
+.hwLook .thumbWait, .hwTIcon .thumbWait { display: grid; place-items: center; width: 100%; height: 100%; }
 .hwEl { position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--ec); box-shadow: 0 0 5px var(--ec), 0 0 0 1px #000; }
 .hwMk { position: absolute; left: 3px; bottom: 3px; width: 7px; height: 7px; box-shadow: 0 0 0 1px #000; }
 .hwE { position: absolute; left: 2px; top: 2px; padding: 0 3px; font: 700 calc(9 * var(--hu)) var(--font-body); color: #000; background: var(--fg-accent); }
@@ -168,6 +182,9 @@
 .hwTIcon { display: grid; place-items: center; width: calc(16 * var(--hu)); height: calc(18 * var(--hu)); flex: none; color: inherit; }
 .hwTIcon svg { width: 100%; height: 100%; }
 .hwTRow.folder .hwTIcon { color: var(--fg-muted); }
+.hwTIcon.hwTThumb { width: calc(24 * var(--hu)); height: calc(24 * var(--hu)); margin: 0 calc(-4 * var(--hu)); }   /* Bild statt Umriss, etwas größer */
+.hwTIcon .thumbWait svg { width: calc(16 * var(--hu)); height: calc(18 * var(--hu)); }
+.hwTIcon img.thumb { width: 100%; height: 100%; object-fit: contain; }
 .hwTRow .hwSetMark, .hwTRow .hwE, .hwTRow .hwNew { position: static; }
 .hwUp, .hwDown { font: 700 calc(12 * var(--hu)) var(--font-num); }
 .hwUp { color: #6ee7a0; }

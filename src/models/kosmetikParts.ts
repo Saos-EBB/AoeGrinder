@@ -475,6 +475,28 @@ export function kosmetikPieces(F, B, sel: Record<string, string>, A1: number, A2
   return out;
 }
 
+// Ein Teil allein im Viewer-Raum (Körper-Koordinaten, Boden = 0) fürs Vorschaubild (ui/itemThumb.ts): Kopf-Teile um P.head, Arme/Beine
+// stehen schon in Körper-Koordinaten. Reaktionen laufen nicht (Ruhelage), freie Gruppen (Marionettenfäden) bleiben weg
+export function kosmetikTree(id: string, el = SCHOOL_COL.arcane): THREE.Group | null {
+  const c = COS[id];
+  if (!c) return null;
+  const root = new THREE.Group(), body = new THREE.Group(), head = new THREE.Group();
+  head.position.copy(P.head);
+  const arms: Arm[] = [[new THREE.Group(), P.shL, P.elL, P.wrL, P.haL, -1], [new THREE.Group(), P.shR, P.elR, P.wrR, P.haR, 1]];
+  const legs: Leg[] = [[new THREE.Group(), P.hipL, P.knL, P.anL, -1], [new THREE.Group(), P.hipR, P.knR, P.anR, 1]];
+  const ticks: ((K: KosFrame) => void)[] = [], flags: Handle[] = [];
+  const ctx: Ctx = { body, head, arms, legs, el, tick: fn => ticks.push(fn), on: () => {}, spawn: () => {}, say: () => {}, hop: () => {}, flag: h => flags.push(h) };
+  SEED = 1 + KOS_IDS.indexOf(id) * 7;
+  c.build(ctx);
+  root.add(body, head, ...arms.map(a => a[0]), ...legs.map(l => l[0]));
+  // Ruhelage wie an der Figur: die Reaktion setzt bewegte Gruppen direkt (statt eines Bones), z. B. Füllstand des Rucksacks, Lage der Flagge
+  root.traverse(o => { const h = o.userData.kb as Handle | undefined; if (h && !o.userData.free) Object.assign(h, { bone: o, pos: o.position.clone(), quat: o.quaternion.clone(), scl: o.scale.clone() }); });
+  const K: KosFrame = { t: 0, dt: 1 / 60, since: () => 1e9, sprint: false, vals: { mana: 0.7, kills: 1000 }, F: null };
+  for (const fn of ticks) try { fn(K); } catch { /* Reaktion braucht die Figur (K.F): Ruhelage bleibt */ }
+  for (const h of flags) if (h.bone) { const f = new THREE.PlaneGeometry(0.4, 0.25); f.translate(0.2, 0, 0); mesh(f, ds(lit(0xb0202a)), h.bone); }   // Fahne ohne Zahl (an der Figur Textur-Mesh)
+  return root;
+}
+
 // Glas: ein Mesh für alle Glas-Teile der Figur, Deckkraft je Ecke (Farbe mit Alpha)
 export function glassGeo(p: KosGlass, mw: THREE.Matrix4) {
   const g = (p.geo.index ? p.geo.toNonIndexed() : p.geo.clone()); if (g.attributes.uv) g.deleteAttribute('uv');
