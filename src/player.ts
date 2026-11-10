@@ -45,6 +45,7 @@ import { t } from './i18n';
 import { resetLoot } from './loot';
 import { resetPortal } from './portal';
 import { milestone, MILESTONES } from './meta';
+import { figEvent } from './figEvents';
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
@@ -144,6 +145,7 @@ export function damagePlayer(amount, dot = false, source = '') {
     if (amount <= 0) { combatText(player.pos, t('msg.absorbed'), 'miss', 2.6); return; }
   }
   player.hp -= amount;
+  figEvent('hit');   // Figur: Leben verloren (figEvents.ts)
   hurtNumber(player.pos, amount);   // Anzeige im Zahlen-Stil (ui/dmgNumbers.ts)
   if (player.hp < 1 && warriorUndying()) player.hp = 1;   // Letzter Atem
   // Todesursache: hitPlayer setzt attackAt direkt vor dem Schaden
@@ -219,7 +221,7 @@ export function gainXp(xp) {
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
   if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun(t('cause.lv100'));   // #boss: erst der finale Boss (boss.ts)
-  if (player.level > fromLevel) levelUpFx();
+  if (player.level > fromLevel) { levelUpFx(); figEvent('level'); }
   updateCardQueue();
 }
 

@@ -68,6 +68,7 @@ import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
 import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
+import { updateFigEvents } from './figEvents';
 initGear();   // gespeichertes Gear säubern, sobald alle Module geladen sind
 connectPortal({ switchZone, bossActive });
 
@@ -120,6 +121,7 @@ function updateVisuals(dt) {
     speed: player.moveSpeed, vy: player.vel.y, squat,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: show ? show.stage : meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), kills: run.kills, ...realMenAnim(), ...(show ? { rage: show.meter * (player.rageMax > 1 ? player.rageMax : 100), berserk: show.stage === 3, h3: show.stage === 3 } : {}),
   });
+  updateFigEvents(mage.hero?.element ?? null);   // Werte und Ereignisse für die Figur (Kosmetik)
   dodgeVisual(mage.root);
   updateDodgeHud();
   if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht

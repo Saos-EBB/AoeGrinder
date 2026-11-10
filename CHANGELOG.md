@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- intern(kosmetik): Ereignis-Hub für die Figur (src/figEvents.ts): Kill, Crit, Zaubern, Treffer (Leben verloren), Level-Up, Kill-Serie (10 Kills in 2 s), 10 s ohne Eingabe und Laufen an/aus gehen ans Modell, dazu Mana, Kills im Run und Waffen-Element pro Frame. Nur Meldungen, keine Spiellogik geändert
 - feat(kosmetik): Meilensteine schalten die 5 ⭐-Teile frei: erster Boss-Kill (Pappkrone), 10.000 Staub gesammelt (XXL-Goldkette, zählt erspielten Staub, nicht den Kontostand), 1.000 Kills gesamt (Kill-Flagge), Boss ohne Treffer (Kaputte Handschellen), Level 100 in einem Run (Business-3-Teiler), jeweils mit Einblendung. Kills und Staub über alle Runs werden neu mitgezählt (auch im Spielstand-Code; alte Stände starten bei 0). Erfolgs-Einblendungen erscheinen wieder (waren seit dem Fenster-Umbau stumm)
 - feat(kosmetik): 25 Kosmetik-Teile als Looks angelegt (5 je Slot: z. B. Pappkrone, Fischglas, Zahnkette, Kill-Flagge, Krabbenscheren, Schaf-Onesie), Namen und Reaktion DE/EN. 20 davon kommen aus der Kosmetik-Box (120 Staub, keine Duplikate), 5 nur über Meilensteine. Weiße und grüne Gear-Drops bleiben Staub
 - refactor(ui): Waffenmenü, Ausrüstungsfenster und das alte Charakterfenster sind entfernt, alles läuft über das neue Fenster (X/I). Die Besonderheit der Figur steht im Run unter „Alle Werte“. Pause-Menü: nur noch ein Knopf „Charakterfenster“. Schlachtbank: Stufe, Schließen und der Tasten-Hinweis halten Abstand zu Lüftungsschlitzen und „SEKTOR“

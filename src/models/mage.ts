@@ -15,6 +15,7 @@ import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { figurOf, STANDARD } from '../skins';
 import { forcedLook, weaponLook, gearLook, gearKey } from '../gear';
+import { onFigEvent } from '../figEvents';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -201,5 +202,8 @@ export const mage = {
     weapon.update(s, clock);
   },
 };
+
+// Ereignisse fürs Modell (figEvents.ts → strichMagier onEvent, Kosmetik-Reaktionen). Krieger: keine
+onFigEvent((e, on) => cur?.onEvent?.(e, on));
 
 setSkin(skinForRun());
