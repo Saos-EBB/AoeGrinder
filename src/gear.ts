@@ -253,7 +253,15 @@ export function gearLook(skin: string | null): GearLook | null {
   }
   return out;
 }
-export const gearKey = (skin: string | null) => JSON.stringify(gearLook(skin));   // mage.ts baut neu, wenn sich das ändert
+// Kosmetik an der Figur (models/kosmetikParts.ts über mage.ts → buildStrichMagier opts.cos): getragener Look je Slot (ohne Waffe).
+// Set 5/5 hat Vorrang wie beim Gear (keine Kosmetik über dem Set-Skin). Nicht-Magier: nichts
+export function cosLook(skin: string | null): Partial<Record<Slot, string>> | null {
+  if (!isMagierSkin(skin) || forcedLook(skin)) return null;
+  const out: Partial<Record<Slot, string>> = {};
+  for (const slot of SLOTS) { const id = lookIn(slot); if (id) out[slot] = id; }
+  return out;
+}
+export const gearKey = (skin: string | null) => JSON.stringify([gearLook(skin), cosLook(skin)]);   // mage.ts baut neu, wenn sich das ändert
 // Waffen-Look der Magier (mage.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
 export const weaponLook = () => lookIn('waffe');
 // Löschen gibt Staub zurück wie bei der Waffe (deleteWeapon)
@@ -338,4 +346,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { cosLook, LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };

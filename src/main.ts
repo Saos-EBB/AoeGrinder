@@ -9,7 +9,7 @@ import { mage } from './models/mage';
 import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
 import { hitstopDt } from './fx/impact';
 import { cam, updateCamera, updateAutoCam } from './camera';
-import { refreshKeyLabels, updateHud, updatePerf } from './ui/hud';
+import { refreshKeyLabels, updateHud, updatePerf, combatText } from './ui/hud';
 import { binds, mouse, mouseBtn, pressSpell, pickGround } from './input';
 import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
@@ -68,8 +68,9 @@ import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
 import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
-import { updateFigEvents } from './figEvents';
+import { updateFigEvents, setFigSay } from './figEvents';
 initGear();   // gespeichertes Gear säubern, sobald alle Module geladen sind
+setFigSay(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
 connectPortal({ switchZone, bossActive });
 
 function update(dt) {

@@ -2396,4 +2396,8 @@ export const en: Record<string, string> = {
   'ach.ms.kills1k': "1,000 kills in total",
   'ach.ms.bossNoHit': "Boss defeated without taking a hit",
   'ach.ms.lvl100': "Level 100 in a run",
+  'cos.say.maeh': "Baaah!",
+  'cos.say.muh': "MOOOO!",
+  'cos.say.yawn': "*yaaawn*",
+  'cos.flag': "KILLS",
 };

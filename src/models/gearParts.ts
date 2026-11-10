@@ -299,17 +299,17 @@ export interface GearPiece { bone: THREE.Bone; geo: THREE.BufferGeometry; color:
 export interface GearAnim { bone: THREE.Bone; u: any; pos: THREE.Vector3; quat: THREE.Quaternion; slot: string; z0?: number }
 export interface GearFx { bone: THREE.Bone; aura?: number; slot: string }
 // Rahmen eines Arm-Segments im Viewer: Ursprung a, y zeigt von b nach a (zum Gelenk darüber), z möglichst nach vorn
-function limbFrame(a: THREE.Vector3, b: THREE.Vector3) {
+export function limbFrame(a: THREE.Vector3, b: THREE.Vector3) {
   const y = a.clone().sub(b).normalize(), z0 = V(0, 0, 1), z = z0.sub(y.clone().multiplyScalar(y.dot(z0))).normalize(), x = y.clone().cross(z);
   return new THREE.Matrix4().makeBasis(x, y, z).setPosition(a);
 }
-const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen (Viewer DoubleSide): Dreiecke umdrehen, Normalen umkehren
+export const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen (Viewer DoubleSide): Dreiecke umdrehen, Normalen umkehren
   const f = (g.index ? g.toNonIndexed() : g.clone()), p = f.attributes.position, n = f.attributes.normal;
   for (let i = 0; i < p.count; i += 3) for (const a of [p, n]) { if (!a) continue; const t = [a.getX(i + 1), a.getY(i + 1), a.getZ(i + 1)]; a.setXYZ(i + 1, a.getX(i + 2), a.getY(i + 2), a.getZ(i + 2)); a.setXYZ(i + 2, t[0], t[1], t[2]); }
   if (n) for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
   return f;
 };
-const litCol = (c: THREE.Color) => { const o = c.clone().multiplyScalar(GP.lit), k = Math.max(o.r, o.g, o.b); return k > GP.cap ? o.multiplyScalar(GP.cap / k) : o; };
+export const litCol = (c: THREE.Color) => { const o = c.clone().multiplyScalar(GP.lit), k = Math.max(o.r, o.g, o.b); return k > GP.cap ? o.multiplyScalar(GP.cap / k) : o; };
 // Wandelt einen Teilbaum: frame = Viewer-Matrix des Rahmens, root = Bone, der den Rahmen im Spiel trägt (Lage + Größe)
 function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B, slot: string, out: { pieces: GearPiece[]; anim: GearAnim[]; fx: GearFx[] }, pick: (o: THREE.Object3D) => boolean = () => true) {
   tree.updateMatrixWorld(true);

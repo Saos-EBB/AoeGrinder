@@ -14,8 +14,8 @@ import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { figurOf, STANDARD } from '../skins';
-import { forcedLook, weaponLook, gearLook, gearKey } from '../gear';
-import { onFigEvent } from '../figEvents';
+import { forcedLook, weaponLook, gearLook, gearKey, cosLook } from '../gear';
+import { onFigEvent, figVals, figSay } from '../figEvents';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
@@ -72,6 +72,14 @@ function spark(p, color) {
   particles.spawn({ x: p.x + j(), y: p.y + j(), z: p.z + j(), vx: (Math.random() - .5) * .6, vy: SPARK.vy + (Math.random() - .5) * .4, vz: (Math.random() - .5) * .6, life, color: [sparkCol.r * SPARK.bright, sparkCol.g * SPARK.bright, sparkCol.b * SPARK.bright], size: SPARK.size, grav: SPARK.grav });
 }
 
+// Kosmetik (strichMagier.ts opts): Partikel ins Partikel-System des Spiels, Sprechblasen über die schwebende Schrift (figEvents.ts figSay), Werte pro Frame
+const PUFF = { bright: 1.3 };   // PH
+function puff(p, v, color, size, life, grav) {
+  sparkCol.setHex(color);
+  particles.spawn({ x: p.x, y: p.y, z: p.z, vx: v.x, vy: v.y, vz: v.z, life, color: [sparkCol.r * PUFF.bright, sparkCol.g * PUFF.bright, sparkCol.b * PUFF.bright], size, grav });
+}
+const KOS_OPTS = { puff, say: figSay, vals: figVals };
+
 // Element der ausgerüsteten Waffe für die Farbe der Strichmagier. Nicht in ELEMENTS (alte Waffen, alte Elemente) = kein Element
 // Waffenmenü: gewählte Waffe zur Probe in der Hand, ohne sie auszurüsten (null = ausgerüstete)
 let preview = null;
@@ -98,6 +106,7 @@ function dispose(m, rebuild = false) {
   m.root.traverse(o => {
     if (o.isSkinnedMesh) o.skeleton.dispose();
     if (o.isMesh) o.geometry.dispose();
+    if (o.userData.ownMap) o.material.map?.dispose();   // eigene Textur (Kill-Flagge der Kosmetik)
     if (o.material) o.material.dispose();     // Atlanten sind im Modell gecacht und bleiben
   });
   if (m.trail && !rebuild) {
@@ -123,7 +132,7 @@ function setSkin(id) {
     if (hw) { heroWeapon = buildWeapon(hw.id); tintWeapon(heroWeapon, hw); cur.setWeapon(heroWeapon, hw.scale, hw.tip, hw.grip); }
     return;
   }
-  cur = buildStrichMagier(id, weaponElement(), { spark, look, gear: gearLook(id) });
+  cur = buildStrichMagier(id, weaponElement(), { ...KOS_OPTS, spark, look, gear: gearLook(id), cos: cosLook(id) });
   scene.add(cur.root, cur.scarf);
   if (cur.trail) scene.add(cur.trail.mesh);   // Spuren liegen in Weltkoordinaten
   mount = new THREE.Group();
@@ -136,7 +145,7 @@ function recolor() {
   const el = weaponElement();
   if (HEROES[skin] || cur.element === el) return;
   const old = cur, st = old.animState;
-  cur = buildStrichMagier(skin, el, { trail: old.trail, spark, look, gear: gearLook(skin) });
+  cur = buildStrichMagier(skin, el, { ...KOS_OPTS, trail: old.trail, spark, look, gear: gearLook(skin), cos: cosLook(skin) });
   cur.adoptAnim(st);
   cur.root.position.copy(old.root.position); cur.root.quaternion.copy(old.root.quaternion); cur.root.scale.copy(old.root.scale);
   cur.anchors.crystal.parent.add(mount);

@@ -14,6 +14,7 @@ import { ELEMENTS } from './weapons/baukasten';
 import { state } from '../state';
 import { markStacks } from '../plagueMarks';
 import { gearPieces, animateGear } from './gearParts';
+import { kosmetikPieces, glassGeo, makeKillFlag, KOS, type KosEvent, type KosFrame } from './kosmetikParts';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -45,15 +46,18 @@ function prep(geo, color, m?, flick = false) {
   }
   if (m) g.applyMatrix4(m);
   const col = new Float32Array(n * 3);
+  // Muster (Kosmetik: Kuh-Flecken, Karo): color.fn(Mitte des Dreiecks in Bind-Lage) → Farbe je Dreieck
+  const tri = color.fn ? Array.from({ length: n / 3 | 0 }, (_, k) => { const p = g.attributes.position; _tc.set(0, 0, 0); for (let j = 0; j < 3; j++) _tc.add(_tv.fromBufferAttribute(p, k * 3 + j)); return color.fn(_tc.multiplyScalar(1 / 3)); }) : null;
   const c2 = flick && color.tip ? color.tip : null;
   for (let i = 0; i < n; i++) {
-    const c = c2 ? color.base.clone().lerp(c2, g.attributes.flick.array[i]) : color.pal ? color.pal[Math.floor(facetPick(i / 3 | 0, n) * color.pal.length)] : (color.base || color);
+    const c = tri ? tri[i / 3 | 0] : c2 ? color.base.clone().lerp(c2, g.attributes.flick.array[i]) : color.pal ? color.pal[Math.floor(facetPick(i / 3 | 0, n) * color.pal.length)] : (color.base || color);
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   if (!g.attributes.flick) g.setAttribute('flick', new THREE.BufferAttribute(new Float32Array(n), 1));
   return g;
 }
+const _tc = new THREE.Vector3(), _tv = new THREE.Vector3();
 // Facetten-Muster (Skin Splitterkönig): jedes Dreieck eine Farbe aus color.pal, fest gestreut
 let FACET = 1;
 const facetPick = (tri, salt) => { const x = Math.sin((tri + 1) * 12.9898 + salt * 78.233 + FACET * 3.7) * 43758.5453; return x - Math.floor(x); };
@@ -528,6 +532,13 @@ const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(
 export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
   look: { seuche: ['kopf'] },   // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
   skin: { base: ['kopf'] },     // Zuhälter-Look (nur Dev): Fedora
+};
+// Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs
+export const KOS_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
+  look: { seuche: ['kopf'],                                     // Pestmaske mit Hut: nichts auf dem Kopf
+    blitz: ['bartbrille', 'elementrucksack', 'limojetpack'],    // Sonnenbrille; Flasche mit Strom auf dem Rücken
+    glut: ['bartbrille'] },                                     // Sturmhaube mit Augen-Feuer
+  skin: { base: ['kopf'] },                                     // Zuhälter-Look (nur Dev): Fedora
 };
 const GEAR_FX = { spark: 2, sparkOrange: 4.5, aura: 6, r: .4, y0: .45, y1: 2.1, fillY: 2.4, dimFrom: 1.6, dimMin: .08 };   // Funken pro Sekunde ab Blau (Orange mehr), Aura-Partikel pro Sekunde je Teil, Bahn um die Figur; Lampen-Ausgleich ab dimFrom bis zur Höhe des Fülllichts (dunkel.ts D.fill.height) // PH
 const SK = {   // Optik-Zahlen der Skins // PH
@@ -1169,6 +1180,13 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     F.gear.anim.push(...o.anim); F.gear.fx.push(...o.fx.map(f => ({ ...f, color: ELEMENTS[it.s.element] && it.s.element !== 'none' ? ELEMENTS[it.s.element].color : 0xd8d4e0 })));
     if (it.r >= 3 && it.s.element !== 'none' && ELEMENTS[it.s.element] && it.r >= F.gear.rar) { F.gear.el = ELEMENTS[it.s.element].color; F.gear.rar = it.r; }   // Funken: Element des seltensten Teils ab Blau (Viewer elAny)
   }
+  // Kosmetik (models/kosmetikParts.ts, opts.cos aus gear.ts cosLook): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
+  // Kill-Flagge als Textur-Mesh am Flaggen-Bone. Reaktionen auf Ereignisse (onEvent, figEvents.ts) drehen/skalieren nur eigene Bones
+  F.kosHidden = [] as string[];
+  const kHide = [...(KOS_HIDE.look[look] ?? []), ...(LK ? [] : KOS_HIDE.skin[skin] ?? [])];
+  const kSel = Object.fromEntries(Object.entries(opts.cos ?? {}).filter(([slot, id]: [string, any]) => { const off = kHide.includes(slot) || kHide.includes(id); if (id && off) F.kosHidden.push(id); return id && !off; })) as Record<string, string>;
+  F.kos = Object.keys(kSel).length ? kosmetikPieces(F, B, kSel, A1, A2, L1, L2, F.wel, skin) : null;
+  if (F.kos) for (const p of F.kos.pieces) (p.glow ? F.glow : F.parts).push({ bone: p.bone, geo: p.geo, color: p.color, m: p.m, noShell: p.noShell, gear: 1 });
   // Trink-Requisiten: je ein Bone, der ?-Magier hat alle 4 Getränke (anim.drinkSkin wählt)
   for (const k of skin === 'qm' ? ['base', 'fire', 'ice', 'arcane'] : [skin]) {
     const pg = propGeo(k);
@@ -1219,6 +1237,37 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   if (skin === 'blitz') { F.bolts = makeBolts(); world.add(F.bolts.mesh); }
   if (skin === 'plague') { F.goo = makeGoo(F); world.add(F.goo.drops, F.goo.strands); }
   if (F.lk?.shards) for (const b of F.lk.shards.flat()) b.scale.setScalar(1e-4);   // Splitter erst nach dem Binden verstecken (Bind-Pose mit Größe 1)
+  // Kosmetik: Glas (+1 Draw Call, transparent, ohne Schatten), Kill-Flagge (+1 Draw Call), danach erste Reaktion (versteckt Teile erst nach dem Binden)
+  const kosT: Partial<Record<KosEvent, number>> = {};
+  let kosSprint = false;
+  if (F.kos) {
+    if (F.kos.glass.length) { F.glass = build(F.kos.glass.map(p => ({ bone: p.bone, m: new THREE.Matrix4(), raw: mw => glassGeo(p, mw) })), new THREE.MeshToonMaterial({ vertexColors: true, transparent: true, depthWrite: false, gradientMap: grad })); F.glass.renderOrder = 2; }
+    if (F.kos.flag?.bone) { F.flag = makeKillFlag(grad); F.kos.flag.bone.add(F.flag.mesh); }
+  }
+  const _kp = V(), _kv = V(), _kq = new THREE.Quaternion(), _ks = V();
+  const kosFrame = (dt: number): KosFrame => ({ t: F.t, dt, since: e => F.t - (kosT[e] ?? -1e9), sprint: kosSprint, vals: opts.vals ?? { mana: .7, kills: 0 }, F });
+  function updateKos(dt: number) {
+    const K = F.kos; if (!K) return;
+    const fr = kosFrame(dt);
+    K.hop = 0;
+    for (const fn of K.ticks) fn(fr);
+    if (K.hop) F.hips.position.y += K.hop * 1.15;   // Hüpfen (Schaf, Kuh): Viewer-Maß × Körper-Maßstab (gearParts FIT.body.s)
+    if (F.flag) F.flag.update(fr.vals.kills, F.t, kosSprint);
+    if (K.says.length) { for (const s of K.says) opts.say?.(s); K.says.length = 0; }
+    if (K.spawns.length) {
+      F.root.updateMatrixWorld(true); F.root.getWorldQuaternion(_kq);
+      for (const q of K.spawns) {
+        const o = q.space === 'head' ? K.space.head : q.space === 'body' ? K.space.body : q.space === 'neck' ? K.space.neck ?? K.space.body : q.space.bone;
+        if (!o) continue;
+        o.localToWorld(_kp.copy(q.p)); o.getWorldScale(_ks);
+        _kv.copy(q.v).applyQuaternion(_kq).multiplyScalar(_ks.x);
+        if (opts.puff) opts.puff(_kp, _kv, q.col, q.size * KOS.puffSize, q.life, q.grav * _ks.x);
+        else emit(_kp, 1, _kv, q.col, q.grav, q.life, .02);
+      }
+      K.spawns.length = 0;
+    }
+  }
+  updateKos(0);
 
   // Partikel in Weltkoordinaten
   const PN = 400, pGeo = new THREE.BufferGeometry();
@@ -1268,6 +1317,15 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     setMeter(v) { F.m = clamp(v || 0, 0, 1); },
     get meter() { return F.m; },
     // Gag-Werte des Skins (Tests): Pegel der Flasche, Größe des Müllbeutels, sichtbare Splitter
+    get kosState() { return { ids: F.kos?.ids ?? [], hidden: F.kosHidden, glass: !!F.glass, flag: !!F.flag }; },   // Tests
+    // Ereignis fürs Modell (figEvents.ts über models/mage.ts): Zeit merken, Reaktionen der Kosmetik auslösen. sprint: on = an/aus
+    onEvent(e: KosEvent, on?: boolean) {
+      if (!F.kos) return;
+      if (e === 'sprint') kosSprint = !!on;
+      kosT[e] = F.t;
+      const fr = kosFrame(0);
+      for (const fn of F.kos.ons) fn(e, fr);
+    },
     get gearState() { return { hidden: F.gear.hidden, anim: F.gear.anim.length, fx: F.gear.fx.length, el: F.gear.el }; },   // Tests
     get lookState() { const L = F.lk; return L ? { look: L.look, lvl: L.lvl, bag: L.bag?.scale.x, marks: L.marks, shards: L.shown } : null; },
     // Laufende Animation für den Neubau bei Waffenwechsel (models/mage.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
@@ -1324,6 +1382,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       if (fl && mode !== 'dead') F.root.position.y += fl + .07 * Math.sin(F.t * 1.3);
       applyPose(F, p);
       if (F.gear.anim.length) animateGear(F.gear.anim, F.t);   // Gear: wehen, drehen, kreisen (gearParts.ts)
+      updateKos(s);   // Kosmetik: Reaktionen additiv auf die Pose (Arme, Kopf, Hüpfen), eigene Bones, Partikel
       F.root.getWorldPosition(F.groundPos); F.groundY = F.groundPos.y - (fl && mode !== 'dead' ? fl + .07 * Math.sin(F.t * 1.3) : 0);
       if (F.lk) updateLook(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
       if (!F.dead) updateGearFx(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));

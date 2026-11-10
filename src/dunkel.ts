@@ -76,7 +76,7 @@ export function initDunkel() {
 // Mobs schalten nur um, wenn sie über PERF.mobShadowYd wechseln: außerhalb des Lichtkreises sieht man keinen Schatten.
 function castShadows(root, on = true) {
   if (!root) return;
-  const list = root.userData.shadowMeshes ??= (() => { const l = []; root.traverse(o => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent) l.push(o); }); return l; })();
+  const list = root.userData.shadowMeshes ??= (() => { const l = []; root.traverse(o => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent && !o.userData.noShadow) l.push(o); }); return l; })();   // noShadow: Kill-Flagge der Kosmetik
   if (root.userData.shadowOn === on) return;
   root.userData.shadowOn = on;
   for (const o of list) o.castShadow = on;

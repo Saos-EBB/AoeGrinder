@@ -26,6 +26,11 @@ export function figEvent(e: FigEvent, on?: boolean) {
   for (const fn of subs) fn(e, on);
 }
 
+// Sprechblasen der Kosmetik (Määäh!, MUUUH!, *gääähn*): über die schwebende Schrift (main.ts setzt combatText ein)
+let sayFn: (text: string) => void = () => {};
+export const setFigSay = (fn: (text: string) => void) => { sayFn = fn; };
+export const figSay = (text: string) => sayFn(text);
+
 // Kill: zählt für die Serie jeden Kill, meldet aber höchstens einen je gap.kill
 let streakAt: number[] = [];
 export function figKill() {
