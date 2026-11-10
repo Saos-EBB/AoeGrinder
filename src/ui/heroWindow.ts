@@ -13,7 +13,7 @@ import { mage } from '../models/mage';
 import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows } from '../weaponRolls';
 import * as GEARMOD from '../gear';
 import { SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
-  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, type Slot, type GearItem } from '../gear';
+  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, lookSource, lookHint, type Slot, type GearItem } from '../gear';
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
@@ -464,7 +464,7 @@ export function tipOf(e: Entry): TipData | null {
   if (e.kind === 'k') {
     const L = LOOKS[e.item];
     return { title: t(L.name), color: 'var(--fg-title)', sub: `${t('hw.cosmetic')} · ${L.slot === 'waffe' ? t('cw.weapon') : slotName(L.slot)}`,
-      short: hasLook(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : L.unlock ? t('hw.lookUnlock', { set: t(`look.magier.${L.unlock}.name`) }) : t('gear.locked') };
+      short: [lookHint(e.item), hasLook(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : `🔒 ${lookSource(e.item)}`].filter(Boolean).join('<br>') };   // Reaktion, dann Zustand bzw. Quelle (Box, Set, ⭐ Meilenstein mit Fortschritt)
   }
   return null;
 }

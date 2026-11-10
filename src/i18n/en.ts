@@ -2400,4 +2400,10 @@ export const en: Record<string, string> = {
   'cos.say.muh': "MOOOO!",
   'cos.say.yawn': "*yaaawn*",
   'cos.flag': "KILLS",
+  'hw.lookMs': "⭐ Milestone: {name}",
+  'hw.lookBox': "From the Cosmetic Box",
+  'box.lookLeft': "{n}/{m} still to find.",
+  'box.lookDone': "You own every look in the box.",
+  'box.lookAll': "All collected",
+  'box.lookGot': "New: {name}",
 };

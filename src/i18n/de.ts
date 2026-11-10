@@ -2401,4 +2401,10 @@ export const de: Record<string, string> = {
   'cos.say.muh': "MUUUH!",
   'cos.say.yawn': "*gääähn*",
   'cos.flag': "KILLS",
+  'hw.lookMs': "⭐ Meilenstein: {name}",
+  'hw.lookBox': "Aus der Kosmetik-Box",
+  'box.lookLeft': "Noch {n}/{m} offen.",
+  'box.lookDone': "Alle Looks der Box gesammelt.",
+  'box.lookAll': "Alles gesammelt",
+  'box.lookGot': "Neu: {name}",
 };

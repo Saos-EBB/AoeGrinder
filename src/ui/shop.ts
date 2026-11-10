@@ -15,7 +15,7 @@ import { openHero } from './heroWindow';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 import { t, fmtNum } from '../i18n';
-import { BOX, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
+import { BOX, KOSMETIK_POOL, LOOKS, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
@@ -141,6 +141,7 @@ function gearResult(col: HTMLElement, name: HTMLElement) {
 }
 
 // Gear-Box und Kosmetik-Box unter den drei Spalten (Handoff items.md Schritt 3). Nur Magier: der Strichkrieger trägt kein Gear
+let lastLook: string | null = null;   // zuletzt aus der Kosmetik-Box gezogen (Hinweis an der Box)
 function boxRow(resultName: HTMLElement, result: HTMLElement) {
   const row = el('div', '');
   row.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:40px';
@@ -174,9 +175,14 @@ function boxRow(resultName: HTMLElement, result: HTMLElement) {
     };
     step();
   }));
-  const soon = !lookBoxLeft().length;   // Pool leer oder alles besessen
-  row.append(box(t('box.look'), BOX.look, t(soon ? 'box.soon' : 'shop.open'), soon || meta.dust < BOX.look, t(soon ? 'box.lookSoon' : 'box.lookHint'), () => {
-    if (buyLookBox()) renderShop();
+  const left = lookBoxLeft().length, done = !left;   // alles aus der Box besessen: Knopf aus
+  const lookHintText = (lastLook ? `${t('box.lookGot', { name: t(LOOKS[lastLook].name) })} · ` : '') + (done ? t('box.lookDone') : `${t('box.lookHint')} ${t('box.lookLeft', { n: left, m: KOSMETIK_POOL.length })}`);
+  row.append(box(t('box.look'), BOX.look, t(done ? 'box.lookAll' : 'shop.open'), done || meta.dust < BOX.look, lookHintText, () => {
+    const id = buyLookBox();
+    if (!id) return;
+    lastLook = id;
+    mage.refreshLook();
+    renderShop();
   }));
   return row;
 }

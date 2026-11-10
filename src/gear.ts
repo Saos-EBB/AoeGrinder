@@ -8,12 +8,12 @@
 
 import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta, grantAch, hasAch, earnDust } from './meta';
+import { meta, saveMeta, grantAch, hasAch, earnDust, MILESTONES } from './meta';
 import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
-import { t } from './i18n';
+import { t, locale } from './i18n';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
@@ -98,6 +98,18 @@ export const LOOKS: Record<string, LookDef> = {
     cos('koerper', 'dreiteiler', 'lvl100'), cos('koerper', 'schottenrock'), cos('koerper', 'bademantel'), cos('koerper', 'schaf'), cos('koerper', 'kuh'),
   ]),
 };
+// Quelle eines Looks fürs Fenster: Set 5/5, Meilenstein (mit Fortschritt, wo es einen Zähler gibt) oder Kosmetik-Box
+const MS_PROGRESS: Record<string, () => [number, number]> = { dust10k: () => [meta.stats?.dust ?? 0, MILESTONES.dust10k], kills1k: () => [meta.stats?.kills ?? 0, MILESTONES.kills1k] };
+export function lookSource(id: string) {
+  const L = LOOKS[id];
+  if (!L) return '';
+  if (L.unlock) return t('hw.lookUnlock', { set: t(`look.magier.${L.unlock}.name`) });
+  if (L.ach) {
+    const p = MS_PROGRESS[L.ach]?.(), f = (n: number) => Math.floor(n).toLocaleString(locale);
+    return t('hw.lookMs', { name: t(`ach.ms.${L.ach}`) }) + (p ? ` · ${f(Math.min(p[0], p[1]))}/${f(p[1])}` : '');
+  }
+  return t('hw.lookBox');
+}
 export const lookHint = (id: string) => (LOOKS[id]?.name.startsWith('look.') ? t(`look.${id}.hint`) : '');
 
 // Schule des gespielten Magiers (mage.skin) → Tag der Spells für den Fokus. ?-Magier: alle Schulen
@@ -346,4 +358,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { cosLook, LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { lookSource, cosLook, LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
