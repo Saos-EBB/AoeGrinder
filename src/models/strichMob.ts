@@ -51,7 +51,8 @@ function rig() {
   return R;
 }
 
-// Pro Mob ein Material (Tönung, Treffer-Blitz), Shader-Programm geteilt über customProgramCacheKey
+// Material pro Zustand (Tönung, Treffer-Blitz, Champion), von allen Mobs geteilt: Three.js lädt Licht und Uniforms nur beim
+// Materialwechsel neu und sortiert nach Material. Shader-Programm geteilt über customProgramCacheKey
 function mobMat(soft: boolean, opacity = 1) {
   const U = { uTint: { value: new THREE.Vector4(0, 0, 0, 0) }, uGlowK: { value: 1 } };
   const m: any = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad, transparent: soft || opacity < 1, opacity: soft ? .85 : opacity, side: soft ? THREE.DoubleSide : THREE.FrontSide, depthWrite: !soft && opacity >= 1 });
@@ -66,6 +67,20 @@ function mobMat(soft: boolean, opacity = 1) {
   };
   m.customProgramCacheKey = () => soft ? 'strichMobSoft' : 'strichMob';   // Häute ohne Lichtrand: flach von der Seite gesehen wären sie sonst weiß
   m.U = U;
+  return m;
+}
+const matCache = new Map<string, any>();
+function stateMat(soft: boolean, opacity: number, tint: string, fl: number, champ: boolean) {
+  const key = `${soft},${opacity},${tint},${fl},${champ}`;
+  let m = matCache.get(key);
+  if (m) return m;
+  m = keep(mobMat(soft, opacity));
+  const c = TINTS[tint];
+  m.U.uTint.value.set(c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? (tint === 'dead' ? 1 : .55) : 0);
+  m.U.uGlowK.value = tint === 'dead' ? .15 : 1;
+  m.emissive.setScalar(fl / 4 * .9);
+  if (champ) m.emissive.add(CHAMP_GLOW);
+  matCache.set(key, m);
   return m;
 }
 
@@ -305,11 +320,10 @@ export const strichMob = (kind: string, o: any, zusatz = 'none', size = 1) => {
 
     R.root.updateMatrixWorld(true);
     const skel = new THREE.Skeleton(R.bones);
-    const mat = mobMat(false, o.ghost ? .6 : 1);
-    const mats = [mat];
+    const opacity = o.ghost ? .6 : 1;
     geos ??= { main: bakeGeo(R, R.parts), soft: R.soft.length ? bakeGeo(R, R.soft) : null };
-    bake(R, geos.main, mat, skel);
-    if (geos.soft) { const sm = mobMat(true); mats.push(sm); bake(R, geos.soft, sm, skel); }
+    const body = bake(R, geos.main, stateMat(false, opacity, '', 0, false), skel);
+    const skin = geos.soft ? bake(R, geos.soft, stateMat(true, 1, '', 0, false), skel) : null;
     const ice = new THREE.Mesh(iceGeo, iceMat);
     ice.position.y = 1; ice.scale.set(Math.max(.8, P.width * .6), Math.max(.6, H / 2.2), Math.max(.8, P.width * .6)); ice.visible = false;
     R.root.add(ice);
@@ -368,19 +382,14 @@ export const strichMob = (kind: string, o: any, zusatz = 'none', size = 1) => {
       }
     };
     return {
-      root: R.root, height: (H + P.lift) * lv, pose, mats,
+      root: R.root, height: (H + P.lift) * lv, pose,
       update(dt, a) {
         ice.visible = !!a.iced;
         const tint = a.state === 'dead' ? 'dead' : a.feared ? 'fear' : a.poisoned ? 'poison' : a.slowed ? 'slow' : '', fl = Math.ceil((a.flash ?? 0) * 4), key = `${tint},${fl},${a.champion || false}`;
         if (key !== shown) {
           shown = key;
-          for (const m of mats) {
-            const c = TINTS[tint];
-            m.U.uTint.value.set(c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? (tint === 'dead' ? 1 : .55) : 0);
-            m.U.uGlowK.value = tint === 'dead' ? .15 : 1;
-            m.emissive.setScalar(fl / 4 * .9);
-            if (a.champion === true) m.emissive.add(CHAMP_GLOW);
-          }
+          body.material = stateMat(false, opacity, tint, fl, a.champion === true);
+          if (skin) skin.material = stateMat(true, 1, tint, fl, a.champion === true);
         }
         if (a.frozen || (pose.still && a.state !== 'dead')) return;   // Eis/Root und Lauerer im Blick: Pose bleibt stehen
         anim(dt / 1000, a);
