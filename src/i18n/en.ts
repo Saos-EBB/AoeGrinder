@@ -2335,4 +2335,7 @@ export const en: Record<string, string> = {
   'hw.selHint': "Nothing selected. Click or use the arrow keys.",
   'hw.hint': "Click to equip · Del to salvage · Shift to compare · right-click a slot to unequip",
   'hw.hintRun': "During a run you can only look: equip and salvage in the main menu",
+  'hw.view': "View",
+  'hw.grid': "Grid",
+  'hw.tree': "Tree",
 };

@@ -11,7 +11,9 @@ export const UI_DEFAULTS = {
   menuPan: true,          // langsamer Kameraschwenk in der Charakterwahl (ui/mainMenu.ts)
   weaponFilter: {} as Record<string, any>,   // Filter im Waffenmenü (ui/weaponMenu.ts), fehlende Felder = Standard
   heroAll: false,
-  heroTab: 'waffen',      // Fenster heroWindow.ts: zuletzt gewählter Tab
+  heroTab: 'waffen',
+  heroView: 'grid' as 'grid' | 'tree',   // Fenster heroWindow.ts: Raster oder Baum
+  heroOpen: ['waffen'] as string[],       // offene Ordner im Baum      // Fenster heroWindow.ts: zuletzt gewählter Tab
   gearFilter: {} as Record<string, any>,   // Filter für Gear-Tabs im Fenster heroWindow.ts, fehlende Felder = Standard
   gearSeen: 0,            // höchste Gear-ID beim letzten Schließen: alles darüber ist NEU         // Fenster heroWindow.ts: „Alle Werte“ aufgeklappt
   weaponSeen: 0,          // höchste Waffen-ID beim letzten Schließen des Waffenmenüs: alles darüber ist NEU           // zuletzt gewählte Map im Hauptmenü (zones.ts), leer = Tirisfal

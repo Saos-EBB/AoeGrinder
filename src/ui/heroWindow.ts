@@ -41,12 +41,13 @@ document.body.insertAdjacentHTML('beforeend', `<div id="heroModal" class="modal"
       <div class="hwStats" id="hwStats"></div>
     </div>
     <div class="fg-panel hwInv" data-sektor="SEKTOR 12 · ${t('hw.sekInv')}">
-      <div class="hwInvHead"><h2 class="fg-title l">${t('hw.inv')}</h2><span id="hwWait"></span><button type="button" class="fg-btn alt" id="hwClose">${t('ui.close')}</button></div>
+      <div class="hwInvHead"><h2 class="fg-title l">${t('hw.inv')}</h2><span id="hwWait"></span>
+        <div class="hwToggle" role="group" aria-label="${t('hw.view')}"><button type="button" data-v="grid">${t('hw.grid')}</button><button type="button" data-v="tree">${t('hw.tree')}</button></div><button type="button" class="fg-btn alt" id="hwClose">${t('ui.close')}</button></div>
       <div class="hwTabs" id="hwTabs" role="tablist"></div>
       <div class="hwBar" id="hwBar"></div>
       <div class="hwActive"><span id="hwChips"></span><small id="hwCount"></small></div>
       <div class="hwFinds" id="hwFinds"></div>
-      <div class="hwBody" id="hwBody"><div class="hwGrid" id="hwGrid"></div></div>
+      <div class="hwBody" id="hwBody"><div class="hwGrid" id="hwGrid"></div><div class="hwTree" id="hwTree" role="tree"></div></div>
       <div class="hwSel" id="hwSel"></div>
       <div class="hwFoot"><span id="hwDust"></span><button type="button" class="fg-btn alt" id="hwChest">${t('wm.toChest')}</button><button type="button" class="fg-btn alt" id="hwFuse" disabled title="${t('shop.soon')}"></button></div>
       <p class="hwHint" id="hwHint"></p>
@@ -488,6 +489,57 @@ function renderGrid(list: Entry[]) {
   }
 }
 
+// ---------- Baum: statt des Rasters, die Tabs werden Ordner (auf/zu und Ansicht in frostgrind.ui.v1) ----------
+const treeView = () => uiSettings.heroView === 'tree';
+const isOpenF = (x: Tab) => (uiSettings.heroOpen ?? []).includes(x);
+function setFolder(x: Tab, open: boolean) {
+  const cur = uiSettings.heroOpen ?? [];
+  setUi('heroOpen', open ? [...new Set([...cur, x])] : cur.filter(f => f !== x));
+}
+const tabLabel = (x: Tab) => `${x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x)} ${x === 'kosmetik' ? tabCount(x) : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`}`;
+type TreeRow = { key: string; tab: Tab; entry?: Entry };
+// Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten)
+export function treeRows(): TreeRow[] {
+  const out: TreeRow[] = [];
+  for (const x of TABS) {
+    out.push({ key: `f:${x}`, tab: x });
+    if (isOpenF(x)) for (const e of entries(x)) out.push({ key: e.key, tab: x, entry: e });
+  }
+  return out;
+}
+function renderTree() {
+  const box = $('hwTree');
+  box.textContent = '';
+  for (const r of treeRows()) {
+    const row = el('button', 'hwTRow' + (r.key === sel ? ' sel' : ''));
+    row.type = 'button';
+    row.dataset.key = r.key;
+    if (!r.entry) {
+      const open = isOpenF(r.tab);
+      row.classList.add('folder');
+      row.setAttribute('aria-expanded', String(open));
+      row.append(el('span', 'hwCaret', open ? '▾' : '▸'), el('span', 'hwTName', tabLabel(r.tab)));
+      row.addEventListener('click', () => { sel = r.key; tab = r.tab; setUi('heroTab', r.tab); setFolder(r.tab, !open); render(); });
+    } else {
+      const e = r.entry, c = rarColor(e), d = deltaOf(e);
+      if (e.dim) row.classList.add('dim');
+      const dia = el('i', 'hwDia');
+      dia.style.setProperty('--rc', c);
+      const name = el('span', 'hwTName', entryName(e));
+      name.style.color = c;
+      row.append(dia, name);
+      if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
+      if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))}`));
+      if (isOn(e)) row.append(el('b', 'hwE', 'E'));
+      if (isNewEntry(e)) row.append(el('b', 'hwNew', t('shop.new')));
+      row.setAttribute('role', 'treeitem');
+      attachEntryTip(row, e);
+      row.addEventListener('click', () => { tab = r.tab; setUi('heroTab', r.tab); wearEntry(e); });
+    }
+    box.append(row);
+  }
+}
+
 // Gewählter Eintrag unten: Name, Hauptwert mit ▲/▼, Ausrüsten und Zerlegen (+Staub). Shift: das Ausgerüstete zum Vergleich
 let shift = false;
 function renderSel(list: Entry[]) {
@@ -565,14 +617,18 @@ function renderInv() {
     if (document.activeElement !== q) q.value = f.q;
     activeChips(k);
   } else $('hwChips').textContent = '';
-  const list = entries(tab);
-  if (!list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? null;
+  const list = entries(tab), tree = treeView();
+  $('heroModal').classList.toggle('tree', tree);
+  for (const b of document.querySelectorAll<HTMLElement>('.hwToggle button')) { b.classList.toggle('on', (b.dataset.v === 'tree') === tree); b.setAttribute('aria-pressed', String((b.dataset.v === 'tree') === tree)); }
+  if (tree ? !treeRows().some(r => r.key === sel) : !list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? null;
+  if (tree && !treeRows().some(r => r.key === sel)) sel = `f:${tab}`;
   $('hwCount').textContent = k === 'k' ? '' : t('wm.count', { a: list.filter(e => !e.dim).length, b: list.length });
   // Probe tragen: gewählte Waffe an der Figur
   const se = list.find(e => e.key === sel);
   mage.previewWeapon(se?.kind === 'w' && se.item !== equipped() ? se.item : null);
-  if (k === 'g' && !mageGear()) { $('hwGrid').textContent = ''; $('hwGrid').append(el('p', 'hwMuted', t('gear.mageOnly'))); }
-  else renderGrid(list);
+  if (tree) { $('hwGrid').textContent = ''; renderTree(); }
+  else if (k === 'g' && !mageGear()) { $('hwTree').textContent = ''; $('hwGrid').textContent = ''; $('hwGrid').append(el('p', 'hwMuted', t('gear.mageOnly'))); }
+  else { $('hwTree').textContent = ''; renderGrid(list); }
   renderSel(list);
   renderFinds();
   $('hwDust').innerHTML = t('gear.info', { dust: fmtInt(meta.dust) });
@@ -583,6 +639,7 @@ function renderInv() {
   $('hwFuse').textContent = t('wm.fuse', { r: CARD_RARITIES[Math.max(0, counts.findIndex(n => n >= 3))].name });
   $('hwHint').textContent = t(viewOnly() ? 'hw.hintRun' : 'hw.hint');
 }
+for (const b of document.querySelectorAll<HTMLElement>('.hwToggle button')) b.addEventListener('click', () => { setUi('heroView', b.dataset.v as 'grid' | 'tree'); renderInv(); });
 $('hwChest').addEventListener('click', () => {
   const fromShop = $('shopModal').classList.contains('show');
   closeHero();

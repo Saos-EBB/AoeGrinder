@@ -2336,4 +2336,7 @@ export const de: Record<string, string> = {
   'hw.selHint': "Nichts gewählt. Klick oder Pfeiltasten wählen.",
   'hw.hint': "Klick ausrüsten · Entf zerlegen · Shift vergleichen · Rechtsklick am Slot legt ab",
   'hw.hintRun': "Im Run nur ansehen: Ausrüsten und Zerlegen gibt es im Hauptmenü",
+  'hw.view': "Ansicht",
+  'hw.grid': "Raster",
+  'hw.tree': "Baum",
 };

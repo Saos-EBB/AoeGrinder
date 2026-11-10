@@ -138,3 +138,26 @@
 #hwDust { margin-right: auto; font: 600 calc(14 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
 #hwDust b { color: var(--fg-accent); }
 .hwHint { margin: 0; font-size: calc(11 * var(--hu)); color: var(--fg-muted); flex: none; }
+/* Raster | Baum */
+.hwToggle { display: flex; border: 1px solid var(--fg-border); }
+#hwWait:empty + .hwToggle { margin-left: auto; }
+.hwToggle button { min-height: calc(30 * var(--hu)); padding: 0 calc(12 * var(--hu)); background: var(--fg-card); border: 0; color: var(--fg-muted); font: 600 calc(12 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.hwToggle button.on { background: var(--fg-btn); color: var(--fg-btn-text); }
+#hwWait:empty + #hwClose, .hwToggle + #hwClose { margin-left: 0; }
+#heroModal.tree .hwTabs { display: none; }
+/* Baum: Ordner je Tab, Zeilen mit Seltenheits-Raute und Namen in Seltenheitsfarbe, rechts ▲/▼, E, NEU */
+.hwTree { display: flex; flex-direction: column; }
+.hwTree:empty { display: none; }
+.hwTRow { display: flex; align-items: center; gap: calc(8 * var(--hu)); width: 100%; min-height: calc(26 * var(--hu)); padding: 0 calc(8 * var(--hu)) 0 calc(28 * var(--hu)); background: none; border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg-line) 60%, transparent); color: var(--fg-text); font: 500 calc(13 * var(--hu)) var(--font-body); text-align: left; cursor: pointer; }
+.hwTRow:hover { background: color-mix(in srgb, var(--fg-accent) 8%, transparent); }
+.hwTRow.sel { background: color-mix(in srgb, var(--fg-accent) 16%, transparent); box-shadow: inset 2px 0 0 var(--fg-accent); }
+.hwTRow.folder { padding-left: calc(6 * var(--hu)); font: 700 calc(13 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-title); }
+.hwTRow.dim { opacity: .35; }
+.hwCaret { width: calc(14 * var(--hu)); color: var(--fg-muted); }
+.hwTName { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hwDia { width: calc(8 * var(--hu)); height: calc(8 * var(--hu)); flex: none; transform: rotate(45deg); background: var(--rc); box-shadow: 0 0 0 1px #000; }
+.hwTRow .hwSetMark, .hwTRow .hwE, .hwTRow .hwNew { position: static; }
+.hwUp, .hwDown { font: 700 calc(12 * var(--hu)) var(--font-num); }
+.hwUp { color: #6ee7a0; }
+.hwDown { color: #f87171; }
