@@ -4,7 +4,7 @@
 // Bewegte Gruppen (key()) bekommen eigene Bones; die Reaktion auf ein Spiel-Ereignis (figEvents.ts) dreht, schiebt oder skaliert nur diese Bones
 // (Größe 1e-4 = unsichtbar). Partikel gehen ins Partikelsystem des Spiels (opts.puff in strichMagier.ts).
 // Ausnahmen mit je höchstens +1 Draw Call pro Figur: Glas (Fischglas, Limo-Flaschen, Rucksack-Fenster) in einem gemeinsamen transparenten Mesh,
-// die Zahl der Kill-Flagge als Canvas-Textur auf eigenem Mesh. Muster (Kuh-Flecken, Karo) als Farbe je Dreieck, keine Textur.
+// die Zahl der Kill-Flagge als Canvas-Textur auf eigenem Mesh. Muster (Kuh-Flecken, Karo) als Farbe je Dreieck, keine Textur (Karo: Gitter der Geometrie = Gitter des Musters).
 // Abweichungen zum Viewer: keine Inverted-Hull-Outline (toon.ts-Rand), Sprites (Glanz, Halo, Blitz) als Partikel oder Glüh-Teil,
 // Marionettenfäden als dünne Zylinder auf eigenen Bones statt Linien, Glühbirne und Schriftrolle ohne Glas bzw. Textur.
 
@@ -41,14 +41,14 @@ const rnd = (a: number, b: number) => a + srnd() * (b - a);
 function mesh(geo: THREE.BufferGeometry, mat: Mat, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
   const o = new THREE.Object3D(); o.position.set(x, y, z); o.userData.geo = geo; o.userData.mat = mat; parent.add(o); return o;
 }
-function seg(a: THREE.Vector3, b: THREE.Vector3, r1: number, r2: number, mat: Mat, parent: THREE.Object3D, joint = true) {
-  const d = b.clone().sub(a), len = d.length(); const m = mesh(new THREE.CylinderGeometry(r2, r1, len, 8), mat, parent);
+function seg(a: THREE.Vector3, b: THREE.Vector3, r1: number, r2: number, mat: Mat, parent: THREE.Object3D, joint = true, hs = 1) {
+  const d = b.clone().sub(a), len = d.length(); const m = mesh(new THREE.CylinderGeometry(r2, r1, len, hs > 1 ? 12 : 8, hs), mat, parent);
   m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize());
   if (joint) mesh(new THREE.SphereGeometry(r1, 8, 6), mat, parent).position.copy(a);
   return m;
 }
-function torso(parent, mat: Mat, yTop, yBot, rTop, rBot, depth = 0.62) {
-  const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, 14), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
+function torso(parent, mat: Mat, yTop, yBot, rTop, rBot, depth = 0.62, hs = 1) {
+  const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, hs > 1 ? 20 : 14, hs), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
   const cap = mesh(new THREE.SphereGeometry(rTop, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2), mat, parent, 0, yTop, 0); cap.scale.set(1, 0.35, depth); return m;
 }
 const tube = (pts: THREE.Vector3[], r: number, mat: Mat, parent, closed = false, n = 24) => mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, closed), n, r, 5, closed), mat, parent);
@@ -96,10 +96,12 @@ interface Ctx {
 }
 
 // ---------------- Onesie / Anzug ----------------
-function suit(ctx: Ctx, mat: Mat, o: { rb?: number; cuff?: number; legs?: boolean; legMat?: Mat } = {}) {
-  torso(ctx.body, mat, 1.475, 0.86, 0.22, o.rb ?? 0.172, 0.66);
-  for (const [arm, sh, el, wr] of ctx.arms) { mesh(new THREE.SphereGeometry(0.074, 10, 7), mat, arm).position.copy(sh); seg(sh, el, 0.064, 0.056, mat, arm, false); seg(el, wr, 0.056, o.cuff ?? 0.05, mat, arm); }
-  if (o.legs !== false) for (const [leg, hip, kn, an] of ctx.legs) { seg(hip, kn, 0.085, 0.07, o.legMat ?? mat, leg); seg(kn, an.clone().add(V(0, 0.04, 0)), 0.066, 0.06, o.legMat ?? mat, leg); }
+// hs: Höhen-Segmente für Muster (Kuh-Flecken brauchen kleinere Dreiecke, sonst ist ein Fleck ein halber Ärmel oder gar keiner)
+function suit(ctx: Ctx, mat: Mat, o: { rb?: number; cuff?: number; legs?: boolean; legMat?: Mat; hs?: number } = {}) {
+  const hs = o.hs ?? 1;
+  torso(ctx.body, mat, 1.475, 0.86, 0.22, o.rb ?? 0.172, 0.66, hs > 1 ? hs * 2 : 1);
+  for (const [arm, sh, el, wr] of ctx.arms) { mesh(new THREE.SphereGeometry(0.074, 10, 7), mat, arm).position.copy(sh); seg(sh, el, 0.064, 0.056, mat, arm, false, hs); seg(el, wr, 0.056, o.cuff ?? 0.05, mat, arm, true, hs); }
+  if (o.legs !== false) for (const [leg, hip, kn, an] of ctx.legs) { seg(hip, kn, 0.085, 0.07, o.legMat ?? mat, leg, true, hs); seg(kn, an.clone().add(V(0, 0.04, 0)), 0.066, 0.06, o.legMat ?? mat, leg, true, hs); }
 }
 function hood(ctx: Ctx, mat: Mat, r = 0.15) { const h = mesh(new THREE.SphereGeometry(r, 14, 9, Math.PI / 2 + 0.85, Math.PI * 2 - 1.7, 0, Math.PI * 0.72), ds(mat), ctx.head, 0, 0.01, -0.005); h.scale.set(1, 1.08, 1); return h; }
 // Kuh-Flecken: schwarze Flecken nach Lage (Spielraum), je Dreieck eine Farbe
@@ -108,15 +110,20 @@ const noise3 = (p: THREE.Vector3) => { const x = Math.floor(p.x), y = Math.floor
   const l = (a, b, k) => a + (b - a) * k * k * (3 - 2 * k);
   return l(l(l(hash3(x, y, z), hash3(x + 1, y, z), fx), l(hash3(x, y + 1, z), hash3(x + 1, y + 1, z), fx), fy), l(l(hash3(x, y, z + 1), hash3(x + 1, y, z + 1), fx), l(hash3(x, y + 1, z + 1), hash3(x + 1, y + 1, z + 1), fx), fy), fz); };
 const COW_W = new THREE.Color(0xf6f3ec), COW_B = new THREE.Color(0x1b1a1e), _np = V();
-const cowFn = (p: THREE.Vector3) => (noise3(_np.copy(p).multiplyScalar(7)) > 0.58 ? COW_B : COW_W);
-// Karo (Schottenrock): Rot mit grünen Bahnen, dunklen und gelben Linien, nach Winkel um die Hüfte und Höhe
-const TART = { red: new THREE.Color(0x9c1c26), green: new THREE.Color(0x2a4a34), dark: new THREE.Color(0x30121a), gold: new THREE.Color(0xc8a050) };
+const COW = { freq: 5, cut: 0.53, hs: 5 };   // Fleckengröße (kleiner = größer), Anteil Schwarz (0.53 ≈ 45 %), Höhen-Segmente des Anzugs // PH
+const cowFn = (p: THREE.Vector3) => (noise3(_np.copy(p).multiplyScalar(COW.freq)) > COW.cut ? COW_B : COW_W);
+// Karo (Schottenrock): Rock als Zylinder mit Gitter KILT.around × KILT.rows, jede Zelle eine Farbe (beide Dreiecke gleich) → saubere Kästchen.
+// Zelle aus Winkel und Radius der Dreiecksmitte (beides unabhängig von der Höhe des Bones, gleich im Körper-Mesh und im Item-Bild).
+// Farbe der Zelle = Mischung aus Kett- und Schussfaden (Streifenfolge KILT.sett), wie bei echtem Tartan
+const KILT = { rTop: 0.168, rBot: 0.25, h: 0.34, around: 40, rows: 12, sz: 0.8 };   // PH
+const TART = { R: new THREE.Color(0xa81e2a), G: new THREE.Color(0x1f4a30), K: new THREE.Color(0x140c12), Y: new THREE.Color(0xe0b850) };
+const SETT = 'GGKRRRRY';   // Streifen je Zelle, wiederholt
+const _tart = new THREE.Color();
 const tartFn = (p: THREE.Vector3) => {
-  const u = ((Math.atan2(p.x, p.z) / (Math.PI * 2) + 1) * 10) % 1, v = ((p.y * 6) % 1 + 1) % 1;
-  const band = (k: number) => (k > 0.12 && k < 0.34) || (k > 0.62 && k < 0.84);
-  if ((u > 0.47 && u < 0.5) || (v > 0.47 && v < 0.5)) return TART.gold;
-  if ((u > 0.2 && u < 0.24) || (v > 0.2 && v < 0.24)) return TART.dark;
-  return band(u) || band(v) ? TART.green : TART.red;
+  const zz = p.z / KILT.sz, u = (Math.atan2(p.x, zz) / (Math.PI * 2) + 1) % 1, r = Math.hypot(p.x, zz);
+  const i = Math.floor(u * KILT.around) % KILT.around, j = Math.max(0, Math.min(KILT.rows - 1, Math.floor((r - KILT.rTop) / (KILT.rBot - KILT.rTop) * KILT.rows)));
+  const a = TART[SETT[i % SETT.length]], b = TART[SETT[j % SETT.length]];
+  return a === b ? a : _tart.copy(a).lerp(b, 0.5).clone();
 };
 
 // ---------------- Die 25 Teile (Viewer COS) ----------------
@@ -342,7 +349,7 @@ const COS: Record<string, { slot: string; build: (ctx: Ctx) => void }> = {
     ctx.tick(K => { const s = K.sprint; th.rot(s ? -1.25 + Math.sin(K.t * 20) * 0.18 : Math.sin(K.t * 1.5) * 0.04, s ? Math.sin(K.t * 13) * 0.3 : 0, 0); }); } },
   schottenrock: { slot: 'koerper', build(ctx) {   // Karo, schwingt beim Laufen
     const b = ctx.body, g = group(b, 0, 0.9, 0), gh = key(g);
-    mesh(new THREE.CylinderGeometry(0.168, 0.25, 0.34, 36, 5, true), ds(lit(0x9c1c26, { fn: tartFn })), g, 0, -0.17, 0).scale.z = 0.8;
+    mesh(new THREE.CylinderGeometry(KILT.rTop, KILT.rBot, KILT.h, KILT.around, KILT.rows, true), ds(lit(0x9c1c26, { fn: tartFn })), g, 0, -KILT.h / 2, 0).scale.z = KILT.sz;
     mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.04, 16), lit(0x3a2418), b, 0, 0.92, 0).scale.z = 0.8; mesh(new THREE.BoxGeometry(0.04, 0.035, 0.01), MAT.gold, b, 0, 0.92, 0.14);
     const sp = group(b, 0, 0.86, 0.17), sh = key(sp); mesh(new THREE.SphereGeometry(1, 10, 7), lit(0x6a4a2a), sp, 0, -0.06, 0).scale.set(0.055, 0.065, 0.025);
     for (let i = 0; i < 3; i++) mesh(new THREE.SphereGeometry(0.014, 6, 4), MAT.weiss, sp, (i - 1) * 0.022, -0.09, 0.02);
@@ -378,7 +385,7 @@ const COS: Record<string, { slot: string; build: (ctx: Ctx) => void }> = {
     ctx.tick(K => { const k = K.since('level') / 0.6; ctx.hop(k < 1 ? Math.sin(Math.PI * k) * 0.12 : 0); }); } },
   kuh: { slot: 'koerper', build(ctx) {   // muht bei Kill-Serie (Flecken als Farbe je Dreieck)
     const b = ctx.body, m = lit(0xf6f3ec, { fn: cowFn }), pink = lit(0xffb6c6), horn = lit(0xf1e6cf);
-    suit(ctx, m); hood(ctx, m);
+    suit(ctx, m, { hs: COW.hs }); hood(ctx, m);
     for (const s of [-1, 1]) { mesh(new THREE.ConeGeometry(0.02, 0.08, 7), horn, ctx.head, s * 0.1, 0.14, -0.01).rotation.z = -s * 0.7;
       const e = mesh(new THREE.SphereGeometry(1, 8, 6), pink, ctx.head, s * 0.165, 0.04, 0); e.scale.set(0.055, 0.02, 0.03); e.rotation.z = s * -0.3; }
     mesh(new THREE.SphereGeometry(1, 10, 7), pink, b, 0, 1.0, 0.13).scale.set(0.06, 0.04, 0.03);
