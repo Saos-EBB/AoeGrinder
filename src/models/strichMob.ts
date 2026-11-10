@@ -17,14 +17,23 @@ const ZUS_COLOR = { heal: 0x60ff70, shield: 0x6aa8ff, haste: 0xffd040, platzt: 0
 const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
 grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
 
+// Grundformen einmal pro Maß bauen und teilen: Nach dem ersten Mob eines Typs werden sie nur noch fürs Rig gebraucht,
+// nie gezeichnet (bakeGeo kopiert sie). Spart beim Spawn das Neubauen von ~60 Formen pro Mob.
+const shapes = new Map<string, THREE.BufferGeometry>();
+const memo = (key: string, make: () => THREE.BufferGeometry) => { let g = shapes.get(key); if (!g) shapes.set(key, g = make()); return g; };
+const ctorId = new Map<unknown, number>();   // Klasse → Nummer für den Schlüssel (Klassennamen sind im Build gekürzt)
+const mk = (G: new (...a: any[]) => THREE.BufferGeometry, ...a: (number | boolean)[]) => {
+  if (!ctorId.has(G)) ctorId.set(G, ctorId.size);
+  return memo(`#${ctorId.get(G)}:${a.join(',')}`, () => new G(...a));
+};
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
-const ico = (r, d = 0) => new THREE.IcosahedronGeometry(r, d);
-const lathe = (pts, seg = 8) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg);
-const cone = (r, h, seg = 5) => new THREE.ConeGeometry(r, h, seg);
-const octa = r => new THREE.OctahedronGeometry(r, 0);
-const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-const ring = r => new THREE.RingGeometry(r - .08, r, 40).rotateX(-Math.PI / 2);
+const capDown = (r, len, rs = 6) => memo(`capDown${r},${len},${rs}`, () => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; });
+const ico = (r, d = 0) => mk(THREE.IcosahedronGeometry, r, d);
+const lathe = (pts, seg = 8) => memo(`lathe${pts.join(';')},${seg}`, () => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg));
+const cone = (r, h, seg = 5) => mk(THREE.ConeGeometry, r, h, seg);
+const octa = r => mk(THREE.OctahedronGeometry, r, 0);
+const box = (w, h, d) => mk(THREE.BoxGeometry, w, h, d);
+const ring = r => memo(`ring${r}`, () => new THREE.RingGeometry(r - .08, r, 40).rotateX(-Math.PI / 2));
 const C = c => c instanceof THREE.Color ? c : new THREE.Color(c);
 
 // Geteilt und nie freigegeben (removeMob ruft dispose auf)
@@ -99,7 +108,6 @@ function bakeGeo(R, list) {
     g.setAttribute('aGlow', new THREE.BufferAttribute(new Float32Array(n).fill(p.glow), 1));
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
-    p.geo.dispose();
     return g;
   }));
   const geo = keep(mergeVertices(flat));
@@ -123,14 +131,14 @@ function weapon(R, b, kind, o) {
   const wood = 0x4a3424, iron = 0xa8adb5, big = o.bigWeapon ? 1.7 : 1, gl = o.gl ?? 0xffffff;
   switch (kind) {
     case 'sword':   R.p(b, box(.05, 1.2 * big, .14 * big), iron, [0, -.65 * big, .08]); R.p(b, box(.28, .04, .07), wood, [0, -.05, .08]); break;
-    case 'axe':     R.p(b, capDown(.025, 1.3 * big), wood, [0, .3, .05]); R.p(b, new THREE.CylinderGeometry(.32 * big, .32 * big, .04, 10, 1, false, 0, Math.PI), iron, [0, -.85 * big, .1], [0, 0, Math.PI / 2]); break;
+    case 'axe':     R.p(b, capDown(.025, 1.3 * big), wood, [0, .3, .05]); R.p(b, mk(THREE.CylinderGeometry, .32 * big, .32 * big, .04, 10, 1, false, 0, Math.PI), iron, [0, -.85 * big, .1], [0, 0, Math.PI / 2]); break;
     case 'club':    R.p(b, lathe([[0, 0], [.05, 0], [.07, -.5], [.14, -.9], [.1, -1.05], [0, -1.08]]), wood, [0, 0, .05]); break;
     case 'hammer':  R.p(b, capDown(.03, 1.2), wood, [0, .2, .05]); R.p(b, box(.5, .3, .3), iron, [0, -1, .05]); break;
     case 'cleaver': R.p(b, box(.04, .6 * big, .34 * big), iron, [0, -.4, .18]); break;
     case 'staff':   R.p(b, capDown(.025, 1.8), wood, [0, .8, .05]); R.g(b, ico(.09), gl, [0, .9, .05]); break;
     case 'spear':   R.p(b, capDown(.022, 2), wood, [0, .9, .05]); R.p(b, cone(.05, .3, 4), iron, [0, 1.0, .05]); break;
     case 'orb':     R.g(b, ico(.13, 1), gl, [0, -.05, .2]); break;
-    case 'rock':    R.p(b, new THREE.DodecahedronGeometry(.17), 0x6a6458, [0, -.05, .15]); break;
+    case 'rock':    R.p(b, mk(THREE.DodecahedronGeometry, .17), 0x6a6458, [0, -.05, .15]); break;
     case 'blob':    R.p(b, ico(.15, 1), 0x6a7a24, [0, -.05, .15]); break;
     case 'bone':    R.p(b, capDown(.03, .6), 0xd8ceb0, [0, .2, .1], [1.2, 0, 0]); break;
     case 'ember':   R.g(b, ico(.12, 1), 0xff7020, [0, -.05, .15]); break;
@@ -138,7 +146,7 @@ function weapon(R, b, kind, o) {
     case 'censer':  R.p(b, capDown(.008, .5), iron, [0, 0, .05]); R.p(b, ico(.1, 1), 0x7a6a3a, [0, -.58, .05]); R.g(b, ico(.05), gl, [0, -.5, .05]); break;
     case 'whip':    for (let i = -1; i <= 1; i++) R.p(b, capDown(.012, 1), 0x3a2a20, [i * .05, 0, .05], [0, 0, i * .25]); break;
     case 'blades':  R.p(b, box(.03, 1, .1), iron, [0, -.5, .05], [.25, 0, 0]); break;
-    case 'hooks':   R.p(b, new THREE.TorusGeometry(.15, .022, 5, 12, Math.PI * 1.3), iron, [0, -.15, .1]); break;
+    case 'hooks':   R.p(b, mk(THREE.TorusGeometry, .15, .022, 5, 12, Math.PI * 1.3), iron, [0, -.15, .1]); break;
     case 'flail':   R.p(b, capDown(.02, .6), wood, [0, 0, .05]); R.p(b, capDown(.008, .4), iron, [0, -.6, .05]); R.p(b, ico(.18, 0), iron, [0, -1.1, .05]); break;
   }
 }
@@ -151,7 +159,7 @@ function humanoid(R, o) {
   const P: any = { kind: 'h' };
   const hipY = o.float ? 1.0 : L1 + L2;
   const hips = P.hips = R.B(R.inner, 0, hipY, 0); P.hipY = hipY;
-  R.p(hips, new THREE.SphereGeometry(.14, 7, 4), ink, [0, 0, 0], [0, 0, 0], [1.25 * W, .8, .9 * W]);
+  R.p(hips, mk(THREE.SphereGeometry, .14, 7, 4), ink, [0, 0, 0], [0, 0, 0], [1.25 * W, .8, .9 * W]);
   if (!o.float) for (const s of [1, -1]) {
     const l = R.joint(hips, s * .11 * W, -.05, 0, .08 * rk, L1, .064 * rk, L2, ink);
     R.p(l.end, cone(.065 * rk, .26), ink, [0, -.02, .08], [Math.PI / 2, 0, 0], [1, 1, .7]);
@@ -163,9 +171,9 @@ function humanoid(R, o) {
   }
   const chest = P.spine = R.B(hips, 0, .05, 0); chest.rotation.x = o.hunch ?? 0;
   R.p(chest, lathe([[0, -.04], [.1, -.02], [.11, .1], [.15, .33], [.18, .47], [.15, .56], [.08, .61], [0, .62]]), ink, [0, 0, 0], [0, Math.PI / 8, 0], [1.1 * W, 1, .64 * W]);
-  if (!o.hood && !o.bones) R.p(chest, new THREE.TorusGeometry(.13, .04, 3, 10), ac, [0, .56, 0], [Math.PI / 2, 0, 0], [W, W, .8]);
-  if (o.bones) for (let i = 0; i < 4; i++) R.p(chest, new THREE.TorusGeometry(.13 * W, .018, 3, 10), ac, [0, .18 + i * .1, 0], [Math.PI / 2, 0, 0], [1.05, .75, 1]);
-  if (o.bandage) for (let i = 0; i < 5; i++) R.p(chest, new THREE.TorusGeometry(.15 * W, .022, 3, 10), ac, [0, .08 + i * .11, 0], [Math.PI / 2 + (i % 2 - .5) * .25, 0, 0], [1.05, .7, 1]);
+  if (!o.hood && !o.bones) R.p(chest, mk(THREE.TorusGeometry, .13, .04, 3, 10), ac, [0, .56, 0], [Math.PI / 2, 0, 0], [W, W, .8]);
+  if (o.bones) for (let i = 0; i < 4; i++) R.p(chest, mk(THREE.TorusGeometry, .13 * W, .018, 3, 10), ac, [0, .18 + i * .1, 0], [Math.PI / 2, 0, 0], [1.05, .75, 1]);
+  if (o.bandage) for (let i = 0; i < 5; i++) R.p(chest, mk(THREE.TorusGeometry, .15 * W, .022, 3, 10), ac, [0, .08 + i * .11, 0], [Math.PI / 2 + (i % 2 - .5) * .25, 0, 0], [1.05, .7, 1]);
   if (o.cracks) for (let i = -1; i <= 1; i++) R.g(chest, box(.02, .26, .02), o.crackC ?? 0xff6020, [i * .07 * W, .32, .1 * W], [0, 0, i * .45]);
   if (o.drip) for (let i = 0; i < 5; i++) R.p(chest, cone(.035, .2), ac, [Math.cos(i * 1.3) * .14 * W, .02, Math.sin(i * 1.3) * .09 * W], [Math.PI, 0, 0]);
   if (o.wings) {
@@ -195,7 +203,7 @@ function humanoid(R, o) {
   }
   if (o.weapon) { weapon(R, arms[1].end, o.weapon, o); if (o.weapon === 'blades') weapon(R, arms[0].end, 'blades', o); }
   if (o.tufts) for (const s of [-1, 1]) R.p(chest, ico(.09), ac, [s * .23 * W, .55, 0]);
-  const neck = R.B(chest, 0, .6, 0); R.p(neck, new THREE.CylinderGeometry(.04, .05, .12, 5), ink, [0, .05, 0]);
+  const neck = R.B(chest, 0, .6, 0); R.p(neck, mk(THREE.CylinderGeometry, .04, .05, .12, 5), ink, [0, .05, 0]);
   const head = P.head = R.B(neck, 0, .1, 0);
   const hs = o.head ?? 1, hm = o.paleHead ? ac : ink;
   if (o.bell) {
@@ -206,12 +214,12 @@ function humanoid(R, o) {
     if (o.snout) R.p(head, cone(.08, .3, 5), hm, [0, .14, .22], [Math.PI / 2, 0, 0]);
     if (o.ears) for (const s of [-1, 1]) R.p(head, cone(.045, .28, 4), hm, [s * .09, .42, -.02]);
     if (gl && !o.faceless) for (const s of [-1, 1]) R.g(head, octa(.028 * hs), gl, [s * .065 * hs, .19 * hs, .16 * hs], [0, 0, 0], [1, .8, .5]);
-    if (o.mouth) R.p(head, new THREE.CircleGeometry(.055 * hs, 10), 0x050202, [0, .1 * hs, .175 * hs]);
-    if (o.wrap) R.p(head, new THREE.TorusGeometry(.17, .045, 3, 10), ac, [0, .12, 0], [Math.PI / 2 + .1, 0, 0], [1, 1, 1.3]);
+    if (o.mouth) R.p(head, mk(THREE.CircleGeometry, .055 * hs, 10), 0x050202, [0, .1 * hs, .175 * hs]);
+    if (o.wrap) R.p(head, mk(THREE.TorusGeometry, .17, .045, 3, 10), ac, [0, .12, 0], [Math.PI / 2 + .1, 0, 0], [1, 1, 1.3]);
     if (o.hood === 'point') R.p(head, cone(.24, .7, 4), ac, [0, .3, -.02], [0, Math.PI / 4, 0]);
     else if (o.hood) R.p(head, lathe([[0, .38], [.15, .34], [.23, .18], [.23, -.02], [.18, -.1]]), ac, [0, .02, -.03], [-.15, 0, 0]);
-    if (o.hat === 'point') { R.p(head, cone(.18, .65, 6), ac, [0, .55, -.03], [-.25, 0, 0]); R.p(head, new THREE.CylinderGeometry(.34, .34, .02, 10), ac, [0, .3, 0]); }
-    if (o.hat === 'tall') R.p(head, new THREE.CylinderGeometry(.16, .13, .4, 8), o.hatC, [0, .45, 0]);
+    if (o.hat === 'point') { R.p(head, cone(.18, .65, 6), ac, [0, .55, -.03], [-.25, 0, 0]); R.p(head, mk(THREE.CylinderGeometry, .34, .34, .02, 10), ac, [0, .3, 0]); }
+    if (o.hat === 'tall') R.p(head, mk(THREE.CylinderGeometry, .16, .13, .4, 8), o.hatC, [0, .45, 0]);
     if (o.horns) { const hr = o.bigHorns ? 2 : 1; for (const s of [-1, 1]) R.p(head, cone(.035 * hr, .26 * hr, 5), ac, [s * .12, .32 + .05 * hr, 0], [0, 0, -s * .45]); }
     if (o.leaves) for (let i = 0; i < 6; i++) R.p(head, cone(.06, .25, 4), ac, [Math.cos(i) * .1, .36, Math.sin(i) * .1], [Math.cos(i) * .5, 0, Math.sin(i) * .5]);
     if (o.tufts) R.p(head, ico(.1), ac, [0, .32 * hs, 0]);
@@ -229,7 +237,7 @@ function quadruped(R, o) {
   const r = o.lean ? .13 : o.heavy ? .26 : .16, by = legH * 2 + r;
   const P: any = { kind: 'q', legs: [] };
   const body = P.body = R.B(R.inner, 0, by, 0); P.by = by;
-  R.p(body, new THREE.CapsuleGeometry(r, len, 2, 8), ink, [0, 0, 0], [Math.PI / 2, 0, 0]);
+  R.p(body, mk(THREE.CapsuleGeometry, r, len, 2, 8), ink, [0, 0, 0], [Math.PI / 2, 0, 0]);
   for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {
     const l = R.joint(body, x * r * .7, -r * .3, z * len * .45, .045 * h, legH, .038 * h, legH, ink);
     l.lo.rotation.x = z > 0 ? .25 : -.25; l.up.rotation.x = z > 0 ? -.15 : .15;
@@ -257,7 +265,7 @@ function bat(R, o) {
   const ink = C(o.ink), ac = C(o.ac ?? o.ink), gl = o.gl;
   const P: any = { kind: 'b', wings: [] };
   const body = P.body = R.B(R.inner, 0, 2.0, 0);
-  R.p(body, new THREE.CapsuleGeometry(.14, .3, 2, 8), ink);
+  R.p(body, mk(THREE.CapsuleGeometry, .14, .3, 2, 8), ink);
   const head = P.head = R.B(body, 0, .35, .04);
   R.p(head, ico(.15, 1), ink);
   if (o.horns) for (const s of [-1, 1]) R.p(head, cone(.03, .24, 4), ac, [s * .09, .15, -.04], [-.4, 0, -s * .4]);
@@ -303,7 +311,7 @@ function zusatzMark(R, P, z, H) {
   if (z === 'haste') { R.g(zb, ring(3.5), c, [0, .05, 0]); R.g(mark, cone(.18, .4, 3), c, [0, 0, 0], [Math.PI, 0, 0]); }
   if (z === 'platzt') { R.g(zb, ring(4), c, [0, .05, 0]); R.g(mark, ico(.14, 1), c); }
   if (z === 'teilt') R.g(mark, cone(.14, .35, 4), c, [0, 0, 0], [Math.PI, 0, 0]);
-  if (z === 'fliegt') R.s(zb, new THREE.CircleGeometry(P.width * .35, 24).rotateX(-Math.PI / 2), 0x000000, [0, .05, 0]);
+  if (z === 'fliegt') R.s(zb, memo(`shadow${P.width}`, () => new THREE.CircleGeometry(P.width * .35, 24).rotateX(-Math.PI / 2)), 0x000000, [0, .05, 0]);
 }
 
 // skin = [Name-Key, Bauart, Optionen]; zusatz = Schlüssel oder 'none'; size: Faktor (kleine Kopien bei „teilt“)

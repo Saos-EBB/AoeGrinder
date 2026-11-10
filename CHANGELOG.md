@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- perf(mobs): Neue Packs ruckeln weniger: ein Theme-Mob ist in rund 0,1 ms gebaut statt 1,4 ms (ein Pack mit 11 Mobs auf Level 60 also ~1 ms statt ~16 ms in dem Frame, in dem er erscheint)
 - fix(maps): Packs entstehen nur noch auf Pack-Plätzen bis 150 yd um dich. Vorher wurde auf manchen Maps (z. B. Hölle, Kanäle ab Level 30) jeden Frame ein Pack weit draußen gebaut und gleich wieder entfernt; das kostete dort mehr als die Hälfte der Bildrate (Hölle Lvl 60: 72 → 185 FPS). Was du siehst, bleibt gleich
 - perf(mobs): Theme-Mobs hinter dem Nebel kosten keine Rechenzeit mehr für ihre Knochen, spürbar auf vollen Maps (Wald Lvl 60 etwa +19 % FPS). Aussehen unverändert
 - perf(mobs): Theme-Mobs teilen sich ihre Materialien je Zustand (normal, Treffer-Blitz, Verlangsamt, Gift, Furcht, Tod, Champion) statt eines eigenen pro Mob, spart Rechenzeit beim Zeichnen. Aussehen unverändert
