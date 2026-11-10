@@ -2408,4 +2408,10 @@ export const de: Record<string, string> = {
   'box.lookAll': "Alles gesammelt",
   'box.lookGot': "Neu: {name}",
   'hw.noElement': "Ohne Element",
+  'set.hudMix': "HUD kombinieren",
+  'set.hudPart.res': "Leben & Mana",
+  'set.hudPart.bar': "Zauberleiste",
+  'set.hudPart.map': "Karte & Infos",
+  'set.hudPart.combo': "Combo",
+  'set.hudMixReset': "Alles zurück auf UI-Flavor",
 };

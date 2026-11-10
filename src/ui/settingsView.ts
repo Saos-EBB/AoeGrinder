@@ -7,6 +7,7 @@ import { askConfirm } from './confirm';
 import { openBinds } from './menus';
 import { editHud, menuOpen } from './mainMenu';
 import { FLAVORS, flavorById } from './flavors';
+import { HUD_PARTS, type HudPart } from './hud/presets';
 import { t, locale, lang, LANGS, setLang, Lang } from '../i18n';
 
 let tab = 'interface';
@@ -44,15 +45,18 @@ function slider(key: keyof UiSettings, label: string, min: number, max: number) 
   return row(label, box);
 }
 function segmented(key: keyof UiSettings, label: string, options: [string, string][]) {
+  return segmentedBy(label, options, () => uiSettings[key] as string, v => setUi(key, v as never));
+}
+function segmentedBy(label: string, options: [string, string][], get: () => string, set: (v: string) => void) {
   const box = document.createElement('div');
   box.className = 'fg-seg';
   box.setAttribute('role', 'group');
   box.setAttribute('aria-label', label);
-  const paint = () => { for (const b of box.children) b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.v === uiSettings[key])); };
+  const paint = () => { for (const b of box.children) b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.v === get())); };
   for (const [v, name] of options) {
     const b = Object.assign(document.createElement('button'), { type: 'button', textContent: name });
     b.dataset.v = v;
-    b.addEventListener('click', () => { setUi(key, v as never); paint(); });
+    b.addEventListener('click', () => { set(v); paint(); });
     box.append(b);
   }
   paint();
@@ -104,6 +108,17 @@ function profileRows() {
   return box;
 }
 
+// ---------- HUD-Teile kombinieren: pro Teil wie UI-Flavor oder fest (uiSettings.hudMix, ui/hud/presets.ts HUD_PARTS) ----------
+function hudMixRows() {
+  const mixOf = (p: HudPart) => uiSettings.hudMix?.[p] ?? 'flavor';
+  const names: Record<HudPart, string> = { res: t('set.hudPart.res'), bar: t('set.hudPart.bar'), map: t('set.hudPart.map'), combo: t('set.hudPart.combo') };
+  const rows = (Object.keys(HUD_PARTS) as HudPart[]).map(p =>
+    segmentedBy(names[p], NUM_CHOICES(), () => mixOf(p), v => setUi('hudMix', { ...uiSettings.hudMix, [p]: v })));
+  const reset = button(t('set.hudMixReset'), 'fg-btn alt', () => { setUi('hudMix', {}); buildInterface(); });
+  reset.style.justifySelf = 'start';
+  return [h2(t('set.hudMix')), ...rows, row('', reset)];
+}
+
 // ---------- Tab Interface; wird nach jedem Flavor-Wechsel und Laden eines UI-Stands neu gebaut ----------
 const NUM_CHOICES = (): [string, string][] => [['flavor', t('set.likeFlavor')], ...FLAVORS.map(f => [f.id, t(f.name)] as [string, string])];
 function buildInterface() {
@@ -130,6 +145,7 @@ function buildInterface() {
     toggle('tooltipsExt', t('set.extTips')),
     toggle('screenFx', t('set.screenFx')),
     slider('hudScale', t('set.hudSize'), 70, 150),
+    ...hudMixRows(),
     h2(t('settings.lang')),
     row(t('settings.lang'), langSel),
     h2(t('set.ownUi')),

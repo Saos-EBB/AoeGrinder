@@ -2407,4 +2407,10 @@ export const en: Record<string, string> = {
   'box.lookAll': "All collected",
   'box.lookGot': "New: {name}",
   'hw.noElement': "No element",
+  'set.hudMix': "Mix HUD parts",
+  'set.hudPart.res': "Health & mana",
+  'set.hudPart.bar': "Spell bar",
+  'set.hudPart.map': "Map & info",
+  'set.hudPart.combo': "Combo",
+  'set.hudMixReset': "All back to UI flavor",
 };
