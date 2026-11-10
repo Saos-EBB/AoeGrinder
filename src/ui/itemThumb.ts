@@ -9,10 +9,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildGearTree } from '../models/gearParts';
 import { kosmetikTree } from '../models/kosmetikParts';
 import { groupOf, makerOf, LOOKS, type GearItem } from '../gear';
-import { snap, weaponThumb } from './weaponThumb';
+import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot } from './weaponThumb';
 
-export const THUMB = { px: 128, yaw: 0.5, pitch: 0.22, pad: 1.1, splinter: 0.85, budget: 6 };   // Bildgröße, Blick leicht schräg von vorn und oben, Rand, ms pro Frame beim Nachladen // PH
-const cache = new Map<string, string>();
+export const THUMB = { px: 128, yaw: 0.5, pitch: 0.22, pad: 1.1, splinter: 0.85, budget: 6, batch: 8 };   // Bildgröße, Blick leicht schräg von vorn und oben, Rand; Nachladen: ms Aufbau und Bilder pro Frame // PH
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
 
@@ -64,93 +63,107 @@ const freeTree = (tree: THREE.Object3D) => tree.traverse(o => (o.userData.geo as
 
 // Leicht schräg von vorn drehen, ins Quadrat einpassen. Schwebende Splitter (Seltenheit ab Lila) kreisen an der Figur weit weg vom Teil:
 // im Bild stehen sie oben links und rechts neben dem Teil, damit das Teil groß bleibt. back: Rücken-Teile von hinten zeigen
-function shoot(group: THREE.Group, splinters: THREE.Mesh[], back: boolean) {
+function shotOf(tree: THREE.Object3D, back: boolean, skip?: (o: THREE.Object3D) => boolean): Shot | null {
+  const m = toMeshes(tree, skip);
+  freeTree(tree);
+  const splinters = m.out.children.filter(c => c.userData.splinter) as THREE.Mesh[];
   const pivot = new THREE.Group();
-  pivot.add(group);
-  for (const s of splinters) group.remove(s);
-  pivot.rotation.set(THUMB.pitch, back ? Math.PI - THUMB.yaw : THUMB.yaw, 0);   // Rücken-Teile von hinten
+  pivot.add(m.out);
+  for (const s of splinters) m.out.remove(s);
+  pivot.rotation.set(THUMB.pitch, back ? Math.PI - THUMB.yaw : THUMB.yaw, 0);
   pivot.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(pivot);
-  if (box.isEmpty()) throw new Error('leer');
-  const size = box.getSize(V()), ctr = box.getCenter(V());
+  if (box.isEmpty()) { m.dispose(); return null; }
+  const size = box.getSize(V()), ctr = box.getCenter(V()), inv = pivot.matrixWorld.clone().invert();
   splinters.forEach((s, i) => {   // in Welt-Lage neben das Teil, ohne die Drehung des Pivots
     pivot.add(s);
     s.geometry.center();
-    s.position.set(ctr.x + (i % 2 ? 1 : -1) * size.x * 0.5 * THUMB.splinter, ctr.y + size.y * 0.35, ctr.z + size.z);
-    s.position.applyMatrix4(pivot.matrixWorld.clone().invert());
+    s.position.set(ctr.x + (i % 2 ? 1 : -1) * size.x * 0.5 * THUMB.splinter, ctr.y + size.y * 0.35, ctr.z + size.z).applyMatrix4(inv);
   });
-  return snap(pivot, THUMB.px, THUMB.px, box, THUMB.pad);
-}
-
-function render(tree: THREE.Object3D, back: boolean, skip?: (o: THREE.Object3D) => boolean) {
-  const m = toMeshes(tree, skip);
-  freeTree(tree);
-  try {
-    const spl = m.out.children.filter(c => c.userData.splinter);
-    return shoot(m.out, spl as THREE.Mesh[], back);
-  } finally { m.dispose(); }
+  return { root: pivot, w: THUMB.px, h: THUMB.px, fit: box, pad: THUMB.pad, done: m.dispose };
 }
 
 const gearKey = (g: GearItem) => `g:${g.slot}:${groupOf(g)}:${g.r}:${makerOf(g) ?? 'stern'}:${g.s.element}:${g.s.focus ?? ''}`;   // nach Aussehen, gleiche Teile teilen sich ein Bild
 // Gear-Teil: Form nach Wertgruppe, Farben nach Hersteller/Seltenheit/Element, Fokus-Emblem. Arme: nur der rechte Arm
-export function gearThumb(g: GearItem): string {
+function gearShot(g: GearItem): Shot | null {
   const group = groupOf(g);
-  if (!group) return '';
-  const look = { r: g.r, s: { maker: makerOf(g) ?? 'stern', element: g.s.element, ...(g.s.focus ? { focus: g.s.focus } : {}) } };
-  const key = gearKey(g), hit = cache.get(key);
-  if (hit !== undefined) return hit;
-  let url = '';
-  try {
-    const t = buildGearTree(g.slot, group, look);
-    if (t) {
-      const tree = 'L' in t ? (freeTree(t.L), t.R) : t;
-      url = render(tree, g.slot === 'ruecken');
-    }
-  } catch { url = ''; }   // ohne Bild bleibt das SVG
-  cache.set(key, url);
-  return url;
+  if (!group) return null;
+  const t = buildGearTree(g.slot, group, { r: g.r, s: { maker: makerOf(g) ?? 'stern', element: g.s.element, ...(g.s.focus ? { focus: g.s.focus } : {}) } });
+  if (!t) return null;
+  return shotOf('L' in t ? (freeTree(t.L), t.R) : t, g.slot === 'ruecken');
+}
+// Kosmetik-Teil je Look-id (Ruhelage, ohne Reaktion). Waffen-Looks (Haarspray) aus dem Waffen-Modell
+function lookShot(id: string): Shot | null {
+  if (LOOKS[id]?.slot === 'waffe') return weaponShot({ id: `look:${id}`, m: id });
+  const tree = kosmetikTree(id);
+  return tree ? shotOf(tree, LOOKS[id].slot === 'ruecken', o => !!o.userData.free) : null;
 }
 
-// Kosmetik-Teil je Look-id (Ruhelage, ohne Reaktion). Waffen-Looks (Haarspray) aus dem Waffen-Modell
-export function lookThumb(id: string): string {
-  const key = `k:${id}`, hit = cache.get(key);
+// Sofort (z. B. Shop-Ergebnis): Bild oder '' (dann bleibt das SVG)
+function now(key: string, make: () => Shot | null) {
+  const hit = cache.get(key);
   if (hit !== undefined) return hit;
   let url = '';
-  try {
-    if (LOOKS[id]?.slot === 'waffe') url = weaponThumb({ id: `look:${id}`, m: id });
-    else { const tree = kosmetikTree(id); if (tree) url = render(tree, LOOKS[id].slot === 'ruecken', o => !!o.userData.free); }
-  } catch { url = ''; }
+  try { const s = make(); url = s ? snapMany([s])[0] : ''; } catch { url = ''; }
   cache.set(key, url);
   return url;
 }
+export const gearThumb = (g: GearItem) => now(gearKey(g), () => gearShot(g));
+export const lookThumb = (id: string) => now(`k:${id}`, () => lookShot(id));
 
 // ---------------- Nachladen: Bilder erst nach dem Aufbau des Fensters rechnen, verteilt auf Frames ----------------
-// thumbHtml gibt das fertige <img> zurück, wenn es schon gemerkt ist, sonst das SVG in einem Platzhalter. Ein Frame-Loop rechnet dann
-// höchstens THUMB.budget ms pro Frame und tauscht die Platzhalter, die noch im Dokument hängen. Ist keiner mehr da (Fenster zu,
-// neu gebaut), wird nichts gerechnet; der Loop läuft nur, solange etwas wartet.
-const jobs = new Map<string, () => string>();
+// thumbHtml gibt das fertige <img> zurück, wenn es schon gemerkt ist, sonst das SVG in einem Platzhalter. Ein Frame-Loop baut dann
+// pro Frame Teile für höchstens THUMB.budget ms (bis THUMB.batch Stück), rendert sie gesammelt und tauscht die Platzhalter, die
+// noch im Dokument hängen. Ist keiner mehr da (Fenster zu, neu gebaut), wird nichts gerechnet; der Loop läuft nur, solange etwas wartet.
+const jobs = new Map<string, () => Shot | null>();
 let loop = 0;
 const img = (src: string) => `<img class="thumb" src="${src}" alt="" draggable="false">`;
+const attr = (key: string) => key.replace(/[^\w:.,-]/g, '_');   // Schlüssel als Attribut (Waffen-Schlüssel enthalten JSON)
+const spotsOf = (key: string) => document.querySelectorAll<HTMLElement>(`[data-thumb="${attr(key)}"]`);
 function pump() {
   loop = 0;
-  const t0 = performance.now();
+  const t0 = performance.now(), keys: string[] = [], shots: Shot[] = [];
   for (const [key, make] of jobs) {
-    const spots = document.querySelectorAll<HTMLElement>(`[data-thumb="${key}"]`);
     jobs.delete(key);
-    if (!spots.length) continue;
-    const src = make();
-    if (src) for (const s of spots) { s.innerHTML = img(src); s.removeAttribute('data-thumb'); }
-    if (performance.now() - t0 > THUMB.budget) break;
+    if (!spotsOf(key).length) continue;
+    let s: Shot | null = null;
+    try { s = make(); } catch { s = null; }
+    if (s) { keys.push(key); shots.push(s); } else done(key, '');
+    if (shots.length >= THUMB.batch || performance.now() - t0 > THUMB.budget) break;
   }
+  let urls: string[] = [];
+  try { urls = snapMany(shots); } catch { for (const s of shots) s.done?.(); }
+  keys.forEach((k, i) => done(k, urls[i] ?? ''));
   if (jobs.size) loop = requestAnimationFrame(pump);
 }
-function thumbHtml(key: string, make: () => string, fallback: string) {
+function done(key: string, src: string) {
+  cache.set(key, src);
+  for (const s of spotsOf(key)) { if (src) s.outerHTML = img(src); else s.removeAttribute('data-thumb'); }   // ohne Bild bleibt das SVG stehen
+}
+function thumbHtml(key: string, make: () => Shot | null, fallback: string) {
   const hit = cache.get(key);
   if (hit !== undefined) return hit ? img(hit) : fallback;
   jobs.set(key, make);
   if (!loop) loop = requestAnimationFrame(pump);
-  return `<span class="thumbWait" data-thumb="${key}">${fallback}</span>`;
+  return `<span class="thumbWait" data-thumb="${attr(key)}">${fallback}</span>`;
 }
-// HTML fürs Feld: Bild des Teils bzw. Looks, bis es fertig ist (oder wenn das Rendern scheitert) das SVG
-export const gearThumbHtml = (g: GearItem, fallback: string) => thumbHtml(gearKey(g), () => gearThumb(g), fallback);
-export const lookThumbHtml = (id: string, fallback: string) => thumbHtml(`k:${id}`, () => lookThumb(id), fallback);
+// HTML fürs Feld: Bild des Teils bzw. Looks, bis es fertig ist (oder wenn das Rendern scheitert) das SVG. Waffen im Raster ebenso
+export const gearThumbHtml = (g: GearItem, fallback: string) => thumbHtml(gearKey(g), () => gearShot(g), fallback);
+export const lookThumbHtml = (id: string, fallback: string) => thumbHtml(`k:${id}`, () => lookShot(id), fallback);
+export const weaponThumbHtml = (w, fallback: string) => thumbHtml(weaponKey(w), () => weaponShot(w), fallback);
+
+// Renderer und Shader vorab anlegen (im Hauptmenü, wenn der Browser Luft hat), damit das erste Öffnen des Fensters nicht stockt.
+// when(): nur dann (z. B. nicht im Run); sonst beim nächsten Leerlauf erneut fragen, höchstens bis es einmal geklappt hat
+export function warmThumbs(when: () => boolean) {
+  const idle = (fn: () => void) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+  const go = () => {
+    if (!when()) { setTimeout(() => idle(go), 3000); return; }
+    try {
+      const g = new THREE.Group(), box = new THREE.BoxGeometry(0.1, 0.1, 0.1).toNonIndexed();
+      box.setAttribute('color', new THREE.BufferAttribute(new Float32Array(box.attributes.position.count * 3).fill(1), 3));
+      for (const k of ['lit', 'litDs', 'glow', 'glowDs', 'glass']) g.add(new THREE.Mesh(box, mats()[k]));
+      snapMany([{ root: g, w: 8, h: 8, done: () => box.dispose() }, weaponShot({ id: 'look:haarspray', m: 'haarspray' })]);
+    } catch { /* ohne WebGL: SVG bleibt */ }
+  };
+  idle(go);
+}
