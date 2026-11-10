@@ -35,6 +35,15 @@
 .gmSet.off { opacity: .6; }
 .gmSet .gmBar { height: 6px; background: var(--fg-line); overflow: hidden; }
 .gmSet .gmBar i { display: block; height: 100%; }
+/* Erfolge unter dem Set: eine Zeile, links dieses Set, rechts alle (★ / 🔒 je Set, Tooltip) */
+#gmSet { display: flex; flex-direction: column; gap: calc(4 * var(--hu)); }
+.gmAch { display: flex; align-items: center; gap: calc(8 * var(--hu)); padding: 0 calc(4 * var(--hu)); font-size: calc(13 * var(--hu)); line-height: 1.35; color: var(--fg-muted); white-space: nowrap; }
+.gmAchCur { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.gmAchCur.done { color: var(--fg-accent); font-weight: 700; }
+.gmAchAll { margin-left: auto; display: flex; align-items: center; gap: calc(4 * var(--hu)); flex: none; }
+.gmAchAll i { font-style: normal; cursor: help; opacity: .55; }
+.gmAchAll i.done { opacity: 1; }
+#gmGear .gmRow { padding-block: calc(3 * var(--hu)); }   /* 2 hu weniger je Rand: Platz für die Erfolge-Zeile */
 /* Mitte: Figur füllt den Rest über der Kosmetik */
 .gmFig { position: relative; flex: 1; min-height: calc(180 * var(--hu)); }
 .gmFig .wmFig3d { position: absolute; inset: 0; width: 100%; height: 100%; }

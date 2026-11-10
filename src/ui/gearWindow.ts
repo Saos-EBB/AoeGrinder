@@ -8,7 +8,8 @@
 import { $ } from '../util';
 import { state } from '../state';
 import type { Find } from '../loot';
-import { meta } from '../meta';
+import { meta, hasAch } from '../meta';
+import { ACHIEVEMENTS, setAch } from '../skins';
 import { mage } from '../models/mage';
 import { ROLLS, equipped, weaponName, rarityOf, effectRows } from '../weaponRolls';
 import { SLOTS, LOOK_SLOTS, LOOKS, SETS, GEAR, gearInv, sortedGear, worn, wearGear, deleteGear, gearName, gearLines, gearRarity, slotName, setOfSchool, setCount, fullSet,
@@ -100,7 +101,7 @@ function renderGear() {
 function renderSet() {
   const box = $('gmSet'), id = setOfSchool(mage.skin);
   box.textContent = '';
-  if (!id) { box.append(el('p', 'gmMuted', t('gear.noSet'))); return; }
+  if (!id) { box.append(el('p', 'gmMuted', t('gear.noSet')), achRow(null)); return; }
   const n = setCount(id), on = n === SLOTS.length, S = SETS[id];
   const p = el('div', `gmSet${on ? '' : ' off'}`);
   p.style.borderColor = on ? S.color : '';
@@ -111,7 +112,29 @@ function renderSet() {
   bar.append(fill);
   const line = (label: string, text: string) => { const d = el('div'); d.append(el('strong', '', `${label} `), text); return d; };
   p.append(head, bar, line(t('gear.mech'), t(`gear.set.${id}.mech`)), line(t('gear.look'), t(`gear.set.${id}.look`)), el('div', 'gmMuted', t(on ? 'gear.setOn' : 'gear.setOff')));
-  box.append(p);
+  box.append(p, achRow(id));
+}
+// Erfolge unter dem Set (nicht ausgegraut): links der Erfolg dieses Sets (★ erreicht bzw. 🔒 Bedingung), rechts „Erfolge n/m“ mit einer Marke je Set
+// (★ in Set-Farbe / 🔒, Name und Bedingung im Tooltip). Eine Zeile, damit das Fenster weiter ohne Scrollen passt
+function achRow(id: string | null) {
+  const row = el('div', 'gmAch');
+  if (id) {
+    const done = hasAch(setAch(id)), name = t(`look.magier.${id}.name`);
+    const cur = el('span', done ? 'gmAchCur done' : 'gmAchCur', t(done ? 'gear.achDone' : 'gear.achNeed'));
+    cur.title = done ? `${t('ach.setName', { set: name })} – ${t('ach.skinFree', { skin: name })}` : t('ach.need', { set: name });
+    row.append(cur);
+  }
+  const n = ACHIEVEMENTS.filter(hasAch).length, all = el('span', 'gmAchAll', t('ach.title', { n, m: ACHIEVEMENTS.length }));
+  for (const a of ACHIEVEMENTS) {
+    const sid = a.slice(4), done = hasAch(a), name = t(`look.magier.${sid}.name`);
+    const m = el('i', done ? 'done' : '', done ? '★' : '🔒');
+    if (done) m.style.color = SETS[sid]?.color ?? '';
+    m.title = done ? `★ ${t('ach.setName', { set: name })} – ${t('ach.skinFree', { skin: name })}` : `🔒 ${t('ach.need', { set: name })}`;
+    m.setAttribute('aria-label', m.title);
+    all.append(m);
+  }
+  row.append(all);
+  return row;
 }
 
 // Kosmetik: belegt = Look, leer = „zeigt Gear: …“. Einziger Inhalt bisher Haarspray + Feuerzeug im Waffen-Slot

@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(ui): Erfolge auch im Ausrüstungsfenster: unter dem Set-Fortschritt eine Zeile mit dem Erfolg dieses Sets (★ „Erfolg: Set vollständig“ bzw. 🔒 „Erfolg: Set 5/5 anlegen“) und rechts „Erfolge n/4“ mit ★ oder 🔒 je Set (Name und Bedingung im Tooltip); damit sie im Hauptmenü und im Run sichtbar sind. Das Fenster passt weiter ohne Scrollen (Gear-Zeilen etwas flacher), auch bei 1263 × 638
 - fix(ui): Kompakt-Krypta: die hängenden Banner gibt es nur noch im Hauptmenü; Ausrüstung, Waffenmenü, Shop, Einstellungen, Charakterfenster, Weltkarte, Pause, Level-up und Run-Ende sind ohne
 - fix(items): Spiel startet wieder mit gespeichertem Gear (Absturz „Cannot access 'VALUE_KEY' before initialization“ beim Laden, Hauptmenü blieb ohne Layout); das Säubern des gespeicherten Gears läuft jetzt erst, wenn alle Module geladen sind
 - feat(maps): Truhen droppen auch Gear (25 % pro Truhe, Mimic doppelt; nur Magier wie alle Gear-Drops)

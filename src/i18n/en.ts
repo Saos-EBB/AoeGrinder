@@ -2216,6 +2216,8 @@ export const en: Record<string, string> = {
   'gear.look': "5/5 look:",
   'gear.setOn': "Active: the rolls are replaced by the perfect values.",
   'gear.setOff': "Inactive: with 1–4 pieces your own rolls apply, there is no partial bonus.",
+  'gear.achDone': "★ Achievement: set complete",
+  'gear.achNeed': "🔒 Achievement: equip set 5/5",
   'gear.noSet': "Sets exist for the Frost, Fire, Lightning and Plague mage.",
   'gear.mageOnly': "Only mages wear gear and sets. Pick a mage in the main menu.",
   'gear.figHint': "Drag to turn the figure",

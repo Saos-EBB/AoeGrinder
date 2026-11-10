@@ -2217,6 +2217,8 @@ export const de: Record<string, string> = {
   'gear.look': "5/5 Look:",
   'gear.setOn': "Aktiv: die Rolls sind durch die Perfekt-Werte ersetzt.",
   'gear.setOff': "Inaktiv: Mit 1–4 Teilen gelten die eigenen Rolls, es gibt keinen Teilbonus.",
+  'gear.achDone': "★ Erfolg: Set vollständig",
+  'gear.achNeed': "🔒 Erfolg: Set 5/5 anlegen",
   'gear.noSet': "Sets gibt es für den Frost-, Feuer-, Blitz- und Seuchenmagier.",
   'gear.mageOnly': "Gear und Sets tragen nur Magier. Wähle im Hauptmenü einen Magier.",
   'gear.figHint': "Ziehen dreht die Figur",
