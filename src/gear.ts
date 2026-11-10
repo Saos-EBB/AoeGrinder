@@ -8,7 +8,7 @@
 
 import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta, grantAch } from './meta';
+import { meta, saveMeta, grantAch, hasAch } from './meta';
 import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
@@ -26,7 +26,7 @@ export const GEAR = {
   focusShare: 0.5,     // ab focusFrom: Anteil der Teile mit Fokus zusätzlich zum Wert
   focusFrom: 3,        // Fokus erst ab Blau
   makerMul: 0.5,       // Hersteller-Trait halb so stark wie bei der Waffe (ROLLS.maker)
-  keepFrom: 3,         // ab Blau ins Inventar; Grau wird Staub, Weiß/Grün gehen später in die Kosmetik-Sammlung (bis dahin Staub)
+  keepFrom: 3,         // ab Blau ins Inventar; Grau, Weiß und Grün werden Staub (Entscheidung: Kosmetik kommt aus Box und Meilensteinen, nicht aus Drops)
   baseNames: 3,        // Grundnamen je Slot (gear.base.<slot>.<n>)
   setChance: 0.15,     // Anteil der Set-Teile an den Drops ab Blau, nur für den gespielten Magier
 };
@@ -82,11 +82,23 @@ export const makerOf = (g: GearItem | null): string | null => (g?.s?.maker && g.
 const halfMaker = (id: string) => Object.fromEntries(Object.entries(ROLLS.maker[id] ?? {}).map(([k, v]) => [k, (v as number) * GEAR.makerMul])) as Record<string, number>;
 
 // Kosmetik (meta.looks: freigeschaltet, meta.lookWear: getragen je Slot oder 'waffe'). Regel: Look vor Gear. Nur Aussehen, keine Werte.
-// Einziger Inhalt bisher: Waffen-Look Haarspray + Feuerzeug (models/weapons/defs.ts), frei bei Glutprophet 5/5 (unlock: Set, dessen 5 Teile angelegt sein müssen)
+// Freischalten: unlock = Set, dessen 5 Teile angelegt sein müssen (Haarspray + Feuerzeug, Glutprophet 5/5), ach = Meilenstein-Erfolg (meta.ts MILESTONES),
+// sonst aus der Kosmetik-Box (KOSMETIK_POOL). 25 Teile aus dem Kosmetik-Viewer (docs/ref/kosmetik-viewer.html), 5 je Slot, Modelle in models/kosmetikParts.ts.
+// Texte: look.<id>.name, look.<id>.hint (Reaktion auf ein Spiel-Ereignis)
 export const LOOK_SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper', 'waffe'] as const;
-export const LOOKS: Record<string, { slot: typeof LOOK_SLOTS[number]; name: string; unlock?: string }> = {
+type LookDef = { slot: typeof LOOK_SLOTS[number]; name: string; unlock?: string; ach?: string };
+const cos = (slot: Slot, id: string, ach?: string): [string, LookDef] => [id, { slot, name: `look.${id}.name`, ...(ach ? { ach } : {}) }];
+export const LOOKS: Record<string, LookDef> = {
   haarspray: { slot: 'waffe', name: 'wmodel.haarspray.name', unlock: 'glut' },
+  ...Object.fromEntries([
+    cos('kopf', 'pappkrone', 'boss1'), cos('kopf', 'fischglas'), cos('kopf', 'gluehbirne'), cos('kopf', 'bartbrille'), cos('kopf', 'fliegenpilz'),
+    cos('hals', 'goldkette', 'dust10k'), cos('hals', 'zahnkette'), cos('hals', 'kopfhoerer'), cos('hals', 'pizza'), cos('hals', 'schlangenschal'),
+    cos('ruecken', 'killflagge', 'kills1k'), cos('ruecken', 'elementrucksack'), cos('ruecken', 'schriftrolle'), cos('ruecken', 'gewitterwolke'), cos('ruecken', 'limojetpack'),
+    cos('arme', 'handschellen', 'bossNoHit'), cos('arme', 'krabbenscheren'), cos('arme', 'nietenhandschuhe'), cos('arme', 'marionette'), cos('arme', 'schlangenarmreif'),
+    cos('koerper', 'dreiteiler', 'lvl100'), cos('koerper', 'schottenrock'), cos('koerper', 'bademantel'), cos('koerper', 'schaf'), cos('koerper', 'kuh'),
+  ]),
 };
+export const lookHint = (id: string) => (LOOKS[id]?.name.startsWith('look.') ? t(`look.${id}.hint`) : '');
 
 // Schule des gespielten Magiers (mage.skin) → Tag der Spells für den Fokus. ?-Magier: alle Schulen
 const SCHOOL_TAG = { frost: 'Frost', feuer: 'Feuer', blitz: 'Blitz', blut: 'Seuche' };
@@ -167,8 +179,8 @@ export function rollDrop(skin: string | null) {
 
 // ---------- Boxen im Shop (Grundregel: nur erspielter Staub) ----------
 export const BOX = { gear: 120, look: 120 };   // PH
-// Kosmetik-Pool der Kosmetik-Box: leer, bis es Inhalte gibt (TODO Kosmetik-Inhalte, Plan Nr. 21). Haarspray + Feuerzeug kommt nur über Glutprophet 5/5
-export const KOSMETIK_POOL: string[] = [];
+// Kosmetik-Pool der Kosmetik-Box: die 20 Teile ohne Set und ohne Meilenstein (Haarspray + Feuerzeug nur über Glutprophet 5/5, ⭐-Teile nur über ihren Erfolg)
+export const KOSMETIK_POOL: string[] = Object.keys(LOOKS).filter(id => !LOOKS[id].unlock && !LOOKS[id].ach);
 export const anySlotFull = () => SLOTS.some(slotFull);
 // Gear-Box: zufälliger Slot, gleiche Regeln wie ein Drop. Gesperrt, solange ein Slot-Tab voll ist (sonst müsste der Shop nach dem Behalten fragen)
 export function buyGearBox(skin: string | null) {
@@ -190,11 +202,11 @@ export function buyLookBox() {
   return id;
 }
 
-// Neues Teil (Drop, Gear-Box): Grau → Staub, Weiß/Grün → Staub bis es Kosmetik gibt, Blau und besser ins Inventar
+// Neues Teil (Drop, Gear-Box): Grau, Weiß und Grün → Staub (so entschieden: Kosmetik kommt aus Box und Meilensteinen), Blau und besser ins Inventar
 // (Slot voll: in gearOver, das Run-Ende fragt, was bleibt). Gibt zurück, was passiert ist.
 export function takeGear(g: GearItem): { kept: boolean; dust: number; over: boolean } {
   if (g.r < GEAR.keepFrom) {
-    const dust = ROLLS.refund[g.r];   // TODO Kosmetik-Inhalte: Weiß und Grün in die Kosmetik-Sammlung
+    const dust = ROLLS.refund[g.r];
     meta.dust += dust;
     saveMeta();
     return { kept: false, dust, over: false };
@@ -210,10 +222,11 @@ export function wearGear(slot: Slot, id: number | null) {
   checkUnlocks();
   saveMeta();
 }
+// Meilenstein-Teile (ach): frei, sobald der Erfolg da ist (meta.ts checkMilestones vergibt ihn).
 // Freischalten, sobald ein Set mit allen 5 Teilen angelegt ist (unabhängig von der Schule, die gerade gespielt wird): Kosmetik und der Erfolg
 // „Set <Name> 5/5“, der den Set-Skin dauerhaft frei macht (skins.ts skinLock). Neuer Erfolg → Ereignis fg:ach (ui/achievements.ts blendet ein). quiet: ohne Einblendung
 export function checkUnlocks(quiet = false) {
-  for (const [id, L] of Object.entries(LOOKS)) if (L.unlock && setCount(L.unlock) === SLOTS.length && !looksOwned().includes(id)) looksOwned().push(id);
+  for (const [id, L] of Object.entries(LOOKS)) if ((L.unlock && setCount(L.unlock) === SLOTS.length || L.ach && hasAch(L.ach)) && !looksOwned().includes(id)) looksOwned().push(id);
   for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: setAch(id) }));
 }
 const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
@@ -225,7 +238,7 @@ export function wearLook(slot: string, id: string | null) {
   saveMeta();
 }
 // Gear an der Figur (models/gearParts.ts über mage.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
-// Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Körper-Looks haben noch kein Modell → leer).
+// Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Modell: models/kosmetikParts.ts).
 // Set 5/5 (forcedLook) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
 export type GearLook = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
 export function gearLook(skin: string | null): GearLook | null {
@@ -323,4 +336,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };

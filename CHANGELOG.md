@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(kosmetik): 25 Kosmetik-Teile als Looks angelegt (5 je Slot: z. B. Pappkrone, Fischglas, Zahnkette, Kill-Flagge, Krabbenscheren, Schaf-Onesie), Namen und Reaktion DE/EN. 20 davon kommen aus der Kosmetik-Box (120 Staub, keine Duplikate), 5 nur über Meilensteine. Weiße und grüne Gear-Drops bleiben Staub
 - refactor(ui): Waffenmenü, Ausrüstungsfenster und das alte Charakterfenster sind entfernt, alles läuft über das neue Fenster (X/I). Die Besonderheit der Figur steht im Run unter „Alle Werte“. Pause-Menü: nur noch ein Knopf „Charakterfenster“. Schlachtbank: Stufe, Schließen und der Tasten-Hinweis halten Abstand zu Lüftungsschlitzen und „SEKTOR“
 - feat(ui): Fenster ganz ohne Maus: Pfeile wählen (im Baum → ← klappt Ordner auf/zu), Enter rüstet aus, Entf zerlegt mit Rückfrage, Shift vergleicht, / sucht, Q/E bzw. Bild↑/↓ wechseln den Tab, Tab schaltet Raster/Baum; die Karte erscheint am gewählten Eintrag. Controller: Steuerkreuz/Stick wie Pfeile, A ausrüsten, X zerlegen (A/B bestätigt die Rückfrage), LB/RB Tabs, Y Raster/Baum, B schließt
 - feat(ui): Inventar mit Schalter „Raster | Baum“: im Baum werden die Tabs zu Ordnern (▾ Waffen 12/25), jede Zeile mit Seltenheits-Raute, Namen in Seltenheitsfarbe, rechts ▲/▼, E und NEU. Ansicht und offene Ordner bleiben gespeichert
