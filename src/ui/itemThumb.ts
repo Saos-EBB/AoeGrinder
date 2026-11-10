@@ -78,6 +78,7 @@ function shotOf(tree: THREE.Object3D, back: boolean, skip?: (o: THREE.Object3D) 
   splinters.forEach((s, i) => {   // in Welt-Lage neben das Teil, ohne die Drehung des Pivots
     pivot.add(s);
     s.geometry.center();
+    s.scale.setScalar(Math.max(1, size.y * 0.07 / 0.04));   // bei großen Teilen (Robe) mitwachsen, sonst kaum zu sehen // PH
     s.position.set(ctr.x + (i % 2 ? 1 : -1) * size.x * 0.5 * THUMB.splinter, ctr.y + size.y * 0.35, ctr.z + size.z).applyMatrix4(inv);
   });
   return { root: pivot, w: THUMB.px, h: THUMB.px, fit: box, pad: THUMB.pad, done: m.dispose };

@@ -63,16 +63,21 @@ export function snapMany(shots: Shot[]): string[] {
   });
   renderer.setScissorTest(false);
   renderer.setViewport(0, 0, full.x, full.y);
-  atlas.width = full.x; atlas.height = full.y;
-  const a = atlas.getContext('2d');
-  a.drawImage(renderer.domElement, 0, 0);   // einmal zurücklesen
+  let src: CanvasImageSource = renderer.domElement;
+  if (shots.length > 1) {   // einmal zurücklesen, dann aus der Kopie schneiden
+    if (atlas.width !== full.x || atlas.height !== full.y) { atlas.width = full.x; atlas.height = full.y; }
+    const a = atlas.getContext('2d');
+    a.clearRect(0, 0, AW, AH);
+    a.drawImage(renderer.domElement, 0, 0, AW, AH, 0, 0, AW, AH);
+    src = atlas;
+  }
   const tc = tile.getContext('2d');
   const out = shots.map((s, i) => {
     s.done?.();
     if (!ok[i]) return '';
-    tile.width = s.w; tile.height = s.h;
+    if (tile.width !== s.w || tile.height !== s.h) { tile.width = s.w; tile.height = s.h; }
     tc.clearRect(0, 0, s.w, s.h);
-    tc.drawImage(atlas, pos[i][0], pos[i][1], s.w, s.h, 0, 0, s.w, s.h);
+    tc.drawImage(src, pos[i][0], pos[i][1], s.w, s.h, 0, 0, s.w, s.h);
     return tile.toDataURL('image/png');
   });
   return out;

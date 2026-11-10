@@ -566,7 +566,7 @@ function renderTree() {
       const name = el('span', 'hwTName', entryName(e));
       name.style.color = c;
       const ic = icon(e.kind === 'g' ? gearThumbHtml(e.item, entryIcon(e)) : e.kind === 'k' && !e.dim ? lookThumbHtml(e.item, entryIcon(e)) : entryIcon(e));   // Gear und freie Kosmetik mit Bild, Waffen (hochkant, zu dünn) und Gesperrtes mit Umriss
-      if (e.kind !== 'w') ic.classList.add('hwTThumb');
+      if (e.kind === 'g' || e.kind === 'k' && !e.dim) ic.classList.add('hwTThumb');
       row.append(ic, name);
       if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
       if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))}`));
