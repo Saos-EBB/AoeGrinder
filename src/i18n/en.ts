@@ -2277,4 +2277,5 @@ export const en: Record<string, string> = {
   'tobj.lava': "Lava pours into the channel!",
   'tobj.bell': "The bell calls {n} enemies",
   'tobj.bees': "Bees!",
+  'gear.makerHalf': "{name}: {trait} (half strength)",
 };
