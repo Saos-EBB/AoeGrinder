@@ -1,6 +1,6 @@
 // UI-Flavors (Mockups X1*–X3*, ~/Downloads/fg-ui-mix): Höllenfeste, Schlachtbank, Kompakt-Krypta.
 // Ein Flavor = { id, name, tokens, hud, numbers, messages, overlay }, eine Datei pro Flavor (+ .css mit Farben und Ornamenten).
-// Die CSS-Variablen hängen an <body data-flavor="…">, die gemeinsamen Bausteine (.fg-panel, .fg-btn …) stehen in base.css.
+// Die CSS-Variablen hängen an <body data-flavor="…"> und an jedem HUD-Wrapper (.hudEl[data-flavor], ui/hud/layout.ts), die gemeinsamen Bausteine (.fg-panel, .fg-btn …) stehen in base.css.
 // Gewählt in Einstellungen → Interface, gespeichert in frostgrind.ui.v1 (flavor).
 
 import { uiSettings } from '../uiSettings';

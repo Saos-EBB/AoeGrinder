@@ -6,7 +6,7 @@ body {
   --rar-grau: #9d9d9d; --rar-weiss: #e8e8e8; --rar-gruen: #2ecc40; --rar-blau: #3a8cff; --rar-lila: #b05cff; --rar-orange: #ff8a1a; --rar-relikt: #e3c27a;
 }
 /* Fraktur: nur Titel und Namen, Fließtext bleibt */
-body.font-fraktur[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-title-weight: 700; }
+body.font-fraktur[data-flavor], body.font-fraktur .hudEl[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-title-weight: 700; }
 
 .fg-panel { position: relative; box-sizing: border-box; background: var(--fg-panel); border: var(--fg-panel-bd); border-top: var(--fg-panel-bt); box-shadow: var(--fg-panel-sh);
   color: var(--fg-text); font-family: var(--font-body); }

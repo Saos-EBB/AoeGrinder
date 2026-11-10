@@ -1,5 +1,5 @@
 /* Flavor 2 Schlachtbank (Doom + WoW-Rundkarte + Diablo-Gold). Werte aus gen4.py M2/H2 (Glut-Farben), Deko aus gen5.py/gen6.py (m2*, m2x*). */
-body[data-flavor=schlachtbank] {
+body[data-flavor=schlachtbank], .hudEl[data-flavor=schlachtbank] {
   --fg-bg: radial-gradient(ellipse at 50% 60%, #33070a 0%, #120203 50%, #050101 100%);
   --fg-panel: rgba(14, 4, 3, .88); --fg-panel-bd: 1px solid #5a1e18; --fg-panel-bt: 2px solid #ff3d1f; --fg-panel-sh: 0 10px 40px #000c;
   --fg-border: #5a1e18; --fg-top: #ff3d1f; --fg-line: #3a1410; --fg-gold: #c9a24a; --fg-input: #0a0202;
@@ -19,7 +19,7 @@ body[data-flavor=schlachtbank] {
 }
 
 /* Panel: Blechglanz, abgeschrägte Ecken, Nieten, Warnstreifen oben, Lüftungsschlitze, Gold-Winkel, rote Leuchtlinie unten, „SEKTOR xx“ über data-sektor */
-body[data-flavor=schlachtbank] .fg-panel::before, body[data-flavor=schlachtbank] .fg-deco::before { inset: -6px 0 0;
+body[data-flavor=schlachtbank] .fg-panel:not(:where(.hudEl))::before, .hudEl[data-flavor=schlachtbank].fg-panel::before, body[data-flavor=schlachtbank] .fg-deco::before { inset: -6px 0 0;
   background:
     repeating-linear-gradient(-45deg, #ff3d1f 0 8px, #000 8px 16px) 28px 0 / min(160px, calc(100% - 56px)) 8px no-repeat,
     linear-gradient(135deg, #050101 50%, transparent 50%) 0 6px / 18px 18px no-repeat,
@@ -32,7 +32,7 @@ body[data-flavor=schlachtbank] .fg-panel::before, body[data-flavor=schlachtbank]
     linear-gradient(rgba(255, 61, 31, .7), rgba(255, 61, 31, .7)) right 26px top 39px / 44px 3px no-repeat,
     linear-gradient(rgba(255, 61, 31, .5), rgba(255, 61, 31, .5)) right 26px top 46px / 44px 3px no-repeat,
     linear-gradient(to bottom, rgba(255, 255, 255, .05), transparent 30%, rgba(0, 0, 0, .25)) 0 6px / 100% calc(100% - 6px) no-repeat; }
-body[data-flavor=schlachtbank] .fg-panel::after, body[data-flavor=schlachtbank] .fg-deco::after { inset: -4px; content: attr(data-sektor); display: flex; align-items: flex-end; padding: 0 0 24px 30px;
+body[data-flavor=schlachtbank] .fg-panel:not(:where(.hudEl))::after, .hudEl[data-flavor=schlachtbank].fg-panel::after, body[data-flavor=schlachtbank] .fg-deco::after { inset: -4px; content: attr(data-sektor); display: flex; align-items: flex-end; padding: 0 0 24px 30px;
   font: 700 11px 'Oswald', sans-serif; letter-spacing: .3em; color: #8a3a2e;
   background: url(./schlachtbank/bracket-tr.svg) right top / 26px 26px no-repeat, url(./schlachtbank/bracket-bl.svg) left bottom / 26px 26px no-repeat,
     linear-gradient(#ff3d1f, #ff3d1f) 4px calc(100% - 4px) / calc(100% - 8px) 2px no-repeat; filter: drop-shadow(0 0 4px rgba(255, 61, 31, .5)); }
@@ -100,16 +100,16 @@ body[data-flavor=schlachtbank] #fgOverlay .fx-glitch { inset: 0; animation: fgGl
     linear-gradient(rgba(255,61,31,0.43), rgba(255,61,31,0.43)) 23.7% 56.5% / 17.6% 1px no-repeat; }
 
 /* ---------- HUD (X2H, gen4.py hud2 + gen5 m2_hud_extras) ---------- */
-body[data-flavor=schlachtbank] .hudEl[data-hud=hotbar] { --slot: calc(44 * var(--hu)); }
-body[data-flavor=schlachtbank] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); }
+.hudEl[data-flavor=schlachtbank][data-hud=hotbar] { --slot: calc(44 * var(--hu)); }
+.hudEl[data-flavor=schlachtbank][data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); }
 /* rote Leuchtlinie über den großen Zahlen */
-body[data-flavor=schlachtbank] .hudEl[data-variant~=bignum] .hBar::after { content: ''; position: absolute; top: calc(-104 * var(--hu)); left: calc(-94 * var(--hu)); width: calc(300 * var(--hu)); height: 2px;
+.hudEl[data-flavor=schlachtbank][data-variant~=bignum] .hBar::after { content: ''; position: absolute; top: calc(-104 * var(--hu)); left: calc(-94 * var(--hu)); width: calc(300 * var(--hu)); height: 2px;
   background: #ff3d1f; box-shadow: 0 0 12px #ff3d1f; }
-body[data-flavor=schlachtbank] .hudEl[data-hud=mana][data-variant~=bignum] .hBar::after { left: auto; right: calc(-94 * var(--hu)); }
-body[data-flavor=schlachtbank] .hudEl[data-hud=killmeter] { --mw: 288; --mh: 4; }
-body[data-flavor=schlachtbank] .hudEl[data-hud=xp] { --xw: 340; --xh: 3; }
-body[data-flavor=schlachtbank] .hudEl[data-hud=cast] { --cw: 260; --ch: 12; }
-body[data-flavor=schlachtbank] .hudEl[data-hud=runinfo] #hudRun { font-family: 'Oswald', sans-serif; }
+.hudEl[data-flavor=schlachtbank][data-hud=mana][data-variant~=bignum] .hBar::after { left: auto; right: calc(-94 * var(--hu)); }
+.hudEl[data-flavor=schlachtbank][data-hud=killmeter] { --mw: 288; --mh: 4; }
+.hudEl[data-flavor=schlachtbank][data-hud=xp] { --xw: 340; --xh: 3; }
+.hudEl[data-flavor=schlachtbank][data-hud=cast] { --cw: 260; --ch: 12; }
+.hudEl[data-flavor=schlachtbank][data-hud=runinfo] #hudRun { font-family: 'Oswald', sans-serif; }
 /* Warnstreifen am unteren Rand, nur im Spiel */
 body[data-flavor=schlachtbank] #fgOverlay .fx-hazard.bot { top: auto; bottom: 0; height: 10px; opacity: .9; background: repeating-linear-gradient(-45deg, #ff3d1f 0 12px, #000 12px 24px); }
 

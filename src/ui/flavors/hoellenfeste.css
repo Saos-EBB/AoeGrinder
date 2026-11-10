@@ -1,5 +1,5 @@
 /* Flavor 1 Höllenfeste (Diablo + Doom-Rot + WoW-Kompaktleiste). Werte aus gen4.py M1/H1, Deko aus gen5.py/gen6.py (m1*, m1x*). */
-body[data-flavor=hoellenfeste] {
+body[data-flavor=hoellenfeste], .hudEl[data-flavor=hoellenfeste] {
   --fg-bg: radial-gradient(ellipse at 50% 45%, #2e140d 0%, #150806 55%, #060202 100%);
   --fg-panel: #140a07; --fg-panel-bd: 2px solid #8a6a35; --fg-panel-bt: 2px solid #8a6a35;
   --fg-panel-sh: 0 0 0 2px #000, inset 0 0 24px rgba(255, 61, 31, .16), 0 8px 22px rgba(0, 0, 0, .6);
@@ -20,10 +20,10 @@ body[data-flavor=hoellenfeste] {
 }
 
 /* Panel: äußerer Rahmen, Gold-Ranken + rote Edelsteine an den Ecken, roter Stein oben Mitte, Goldsteg unten, innere Goldlinie, eingravierte Rauten */
-body[data-flavor=hoellenfeste] .fg-panel { outline: 2px solid #5a4424; outline-offset: 5px; }
-body[data-flavor=hoellenfeste] .fg-panel::before, body[data-flavor=hoellenfeste] .fg-deco::before { inset: -9px; border: 46px solid transparent; border-image: url(./hoellenfeste/frame.svg) 46;
+body[data-flavor=hoellenfeste] .fg-panel:not(:where(.hudEl)), .hudEl[data-flavor=hoellenfeste].fg-panel { outline: 2px solid #5a4424; outline-offset: 5px; }
+body[data-flavor=hoellenfeste] .fg-panel:not(:where(.hudEl))::before, .hudEl[data-flavor=hoellenfeste].fg-panel::before, body[data-flavor=hoellenfeste] .fg-deco::before { inset: -9px; border: 46px solid transparent; border-image: url(./hoellenfeste/frame.svg) 46;
   background: url(./hoellenfeste/gem.svg) 50% 0 / 18px 18px no-repeat, linear-gradient(#c9a24a, #c9a24a) center bottom 7px / 80px 4px no-repeat; background-origin: border-box; background-clip: border-box; }
-body[data-flavor=hoellenfeste] .fg-panel::after, body[data-flavor=hoellenfeste] .fg-deco::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
+body[data-flavor=hoellenfeste] .fg-panel:not(:where(.hudEl))::after, .hudEl[data-flavor=hoellenfeste].fg-panel::after, body[data-flavor=hoellenfeste] .fg-deco::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
   background: url(./hoellenfeste/rune.svg) center 5px / 26px 10px repeat-x; background-clip: content-box; padding: 0 22px; }
 /* Panels, die scrollen (Hauptmenü links/rechts): Rahmen unten/rechts nicht über die Box hinaus, sonst 9 px
    Scroll-Überstand. Gleicher Look: der Rahmen ragt per border-image-outset hinaus (zählt nicht zum Scrollbereich), Stein und Steg bleiben an ihrem Platz */
@@ -102,18 +102,18 @@ body:has(.modal.show:not(#startModal):not(#loadModal)) #fgOverlay .fx-chain { di
 
 /* ---------- HUD (X1H, gen4.py hud1 + gen5 m1_orb/m1_hud_extras) ---------- */
 /* Panel 580 × 92 unten Mitte mit kompakter Leiste (46 px, 2 px Abstand), Schädel mit roten Augen darüber */
-body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] { --slot: calc(46 * var(--hu)); width: calc(580 * var(--hu)); height: calc(92 * var(--hu)); box-sizing: border-box;
+.hudEl[data-flavor=hoellenfeste][data-hud=hotbar] { --slot: calc(46 * var(--hu)); width: calc(580 * var(--hu)); height: calc(92 * var(--hu)); box-sizing: border-box;
   justify-content: center; align-items: flex-start; padding-top: calc(28 * var(--hu)); outline-offset: calc(5 * var(--hu)); }
-body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
-body[data-flavor=hoellenfeste] .hudEl[data-hud=hotbar] #actionbar::before { content: ''; position: absolute; left: 50%; top: calc(-66 * var(--hu)); width: calc(44 * var(--hu)); height: calc(40 * var(--hu));
+.hudEl[data-flavor=hoellenfeste][data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
+.hudEl[data-flavor=hoellenfeste][data-hud=hotbar] #actionbar::before { content: ''; position: absolute; left: 50%; top: calc(-66 * var(--hu)); width: calc(44 * var(--hu)); height: calc(40 * var(--hu));
   margin-left: calc(-22 * var(--hu)); background: url(./hoellenfeste/skull.svg) 0 0 / 100% 100%; pointer-events: none; }
 /* Kugeln 140 px mit Gold-Zackenring */
-body[data-flavor=hoellenfeste] .hudEl[data-hud=hp], body[data-flavor=hoellenfeste] .hudEl[data-hud=mana] { --orb: 140; }
-body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudHp::before, body[data-flavor=hoellenfeste] .hudEl[data-variant~=orb] #hudMana::before { content: ''; position: absolute; z-index: 1; pointer-events: none;
+.hudEl[data-flavor=hoellenfeste][data-hud=hp], .hudEl[data-flavor=hoellenfeste][data-hud=mana] { --orb: 140; }
+.hudEl[data-flavor=hoellenfeste][data-variant~=orb] #hudHp::before, .hudEl[data-flavor=hoellenfeste][data-variant~=orb] #hudMana::before { content: ''; position: absolute; z-index: 1; pointer-events: none;
   left: calc(-12 * var(--hu)); top: calc(-12 * var(--hu)); width: calc(164 * var(--hu)); height: calc(164 * var(--hu)); background: url(./hoellenfeste/orbring.svg) 0 0 / 100% 100%; }
-body[data-flavor=hoellenfeste] .hudEl[data-hud=killmeter] { --mw: 468; --mh: 6; }
-body[data-flavor=hoellenfeste] .hudEl[data-hud=xp] { --xw: 540; --xh: 4; }
-body[data-flavor=hoellenfeste] .hudEl[data-hud=cast] { --cw: 260; --ch: 14; }
+.hudEl[data-flavor=hoellenfeste][data-hud=killmeter] { --mw: 468; --mh: 6; }
+.hudEl[data-flavor=hoellenfeste][data-hud=xp] { --xw: 540; --xh: 4; }
+.hudEl[data-flavor=hoellenfeste][data-hud=cast] { --cw: 260; --ch: 14; }
 
 /* ---------- Schadenszahlen (X1Z, gen8.py NUMS['1']); Konturen in em, Mockup-Kontur / Größe ---------- */
 .ct.num.nf-hoellenfeste { font: 900 1em 'Barlow Condensed', sans-serif; color: #fff; -webkit-text-stroke: .16em #000; }

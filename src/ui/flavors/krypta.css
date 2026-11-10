@@ -1,5 +1,5 @@
 /* Flavor 3 Kompakt-Krypta (WoW-Kompakt + Diablo-Stein/Gold + Doom-Combo). Werte aus gen4.py M3/H3, Deko aus gen5.py/gen6.py (m3*, m3x*). */
-body[data-flavor=krypta] {
+body[data-flavor=krypta], .hudEl[data-flavor=krypta] {
   --fg-bg: radial-gradient(ellipse at 50% 45%, #26201a 0%, #13100c 55%, #070605 100%);
   --fg-panel: #1c1915; --fg-panel-bd: 1px solid #b8963e; --fg-panel-bt: 1px solid #b8963e; --fg-panel-sh: 0 0 0 1px #000, inset 0 0 14px #000, 0 6px 16px rgba(0, 0, 0, .55);
   --fg-border: #b8963e; --fg-top: #d9b44a; --fg-line: #3a3226; --fg-gold: #d9b44a; --fg-input: #12100d;
@@ -19,7 +19,7 @@ body[data-flavor=krypta] {
 }
 
 /* Panel: Wappen oben Mitte, Gold-Endkappen, Goldperlen oben, blaue Edelsteine an den Ecken; dazu äußerer Rahmen, Goldnieten und feine Goldkanten */
-body[data-flavor=krypta] .fg-panel::before, body[data-flavor=krypta] .fg-deco::before { inset: -13px -10px -7px;
+body[data-flavor=krypta] .fg-panel:not(:where(.hudEl))::before, .hudEl[data-flavor=krypta].fg-panel::before, body[data-flavor=krypta] .fg-deco::before { inset: -13px -10px -7px;
   background:
     url(./krypta/crest.svg) 50% 0 / 68px 24px no-repeat,
     linear-gradient(to bottom, #f2d58a, #8a6a2a) left center / 16px 32px no-repeat,
@@ -30,7 +30,7 @@ body[data-flavor=krypta] .fg-panel::before, body[data-flavor=krypta] .fg-deco::b
     radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) left 2px bottom -1px / 16px 16px no-repeat,
     radial-gradient(circle at 35% 35%, #9fd8ff, #1d4f9a 4.5px, #d9b44a 5px 7px, #000 7.5px, transparent 8px) right 2px bottom -1px / 16px 16px no-repeat;
   background-clip: border-box; }
-body[data-flavor=krypta] .fg-panel::after, body[data-flavor=krypta] .fg-deco::after { inset: -4px; border: 2px solid #5a4a2a; box-shadow: 0 0 0 1px #000;
+body[data-flavor=krypta] .fg-panel:not(:where(.hudEl))::after, .hudEl[data-flavor=krypta].fg-panel::after, body[data-flavor=krypta] .fg-deco::after { inset: -4px; border: 2px solid #5a4a2a; box-shadow: 0 0 0 1px #000;
   background:
     radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) 9px 9px / 8px 8px no-repeat,
     radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) right 9px top 9px / 8px 8px no-repeat,
@@ -81,17 +81,17 @@ body[data-flavor=krypta] #fgOverlay .fx-corner { background: url(./krypta/corner
 
 /* ---------- HUD (X3H, gen4.py hud3 + gen5 m3_hud_extras) ---------- */
 /* Steinpanel 400 × 54 mit Leiste (40 px), Gold-Flügel an beiden Enden */
-body[data-flavor=krypta] .hudEl[data-hud=hotbar] { --slot: calc(40 * var(--hu)); width: calc(400 * var(--hu)); height: calc(54 * var(--hu)); box-sizing: border-box;
+.hudEl[data-flavor=krypta][data-hud=hotbar] { --slot: calc(40 * var(--hu)); width: calc(400 * var(--hu)); height: calc(54 * var(--hu)); box-sizing: border-box;
   justify-content: center; align-items: flex-start; padding-top: calc(5 * var(--hu)); }
-body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
-body[data-flavor=krypta] .hudEl[data-hud=hotbar]  #actionbar::before, body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::after { content: ''; position: absolute; top: calc(-24 * var(--hu));
+.hudEl[data-flavor=krypta][data-hud=hotbar] #actionbar { gap: calc(2 * var(--hu)); position: relative; z-index: 2; }
+.hudEl[data-flavor=krypta][data-hud=hotbar]  #actionbar::before, .hudEl[data-flavor=krypta][data-hud=hotbar] #actionbar::after { content: ''; position: absolute; top: calc(-24 * var(--hu));
   width: calc(64 * var(--hu)); height: calc(74 * var(--hu)); background: url(./krypta/wing.svg) 0 0 / 100% 100%; pointer-events: none; }
-body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::before { right: calc(100% + 26 * var(--hu)); }
-body[data-flavor=krypta] .hudEl[data-hud=hotbar] #actionbar::after { left: calc(100% + 26 * var(--hu)); transform: scaleX(-1); }
-body[data-flavor=krypta] .hudEl[data-hud=unitframe] #hudUnit { background: none; border: 0; box-shadow: none; }
-body[data-flavor=krypta] .hudEl[data-hud=killmeter] { --mw: 228; --mh: 6; }
-body[data-flavor=krypta] .hudEl[data-hud=xp] { --xw: 400; --xh: 5; }
-body[data-flavor=krypta] .hudEl[data-hud=cast] { --cw: 240; --ch: 14; }
+.hudEl[data-flavor=krypta][data-hud=hotbar] #actionbar::before { right: calc(100% + 26 * var(--hu)); }
+.hudEl[data-flavor=krypta][data-hud=hotbar] #actionbar::after { left: calc(100% + 26 * var(--hu)); transform: scaleX(-1); }
+.hudEl[data-flavor=krypta][data-hud=unitframe] #hudUnit { background: none; border: 0; box-shadow: none; }
+.hudEl[data-flavor=krypta][data-hud=killmeter] { --mw: 228; --mh: 6; }
+.hudEl[data-flavor=krypta][data-hud=xp] { --xw: 400; --xh: 5; }
+.hudEl[data-flavor=krypta][data-hud=cast] { --cw: 240; --ch: 14; }
 
 /* ---------- Schadenszahlen (X3Z, gen8.py NUMS['3']): WoW-Art ---------- */
 .ct.num.nf-krypta { font: 700 1em 'Barlow', sans-serif; color: #fff6d0; -webkit-text-stroke: .14em #000; }

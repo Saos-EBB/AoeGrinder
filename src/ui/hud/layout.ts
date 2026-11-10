@@ -67,6 +67,7 @@ function place(id: HudElementId) {
   Object.assign(w.style, { left: `${fx * 100 + p.x}%`, top: `${fy * 100 + p.y}%`,
     transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${(p.scale ?? 1) * uiSettings.hudScale / 100})`, transformOrigin: `${fx * 100}% ${fy * 100}%` });
   w.dataset.anchor = p.anchor;
+  w.dataset.flavor = activeFlavor().id;   // Look des Elements: Variablen und Regeln aus ui/flavors/<id>.css greifen am Wrapper
   if (p.variant) w.dataset.variant = p.variant; else delete w.dataset.variant;
   w.classList.toggle('fg-panel', !!p.variant?.split(' ').includes('panel'));   // Panel mit den Ornamenten des Flavors
 }
