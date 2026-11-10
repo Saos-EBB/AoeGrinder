@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>A – Kompakt-Krypta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.root{width:1280px;height:720px;box-sizing:border-box;padding:28px;display:flex;gap:20px;position:relative;overflow:hidden;font-family:var(--fb);color:var(--tx)}
+.p{position:relative;background:var(--panel);border:var(--bd);box-sizing:border-box}
+.t{font-family:var(--ft);font-weight:var(--ftw);color:var(--title);letter-spacing:.06em;margin:0;text-transform:var(--ttt)}
+.l{font-family:var(--fl);color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.s{width:64px;height:64px;border:2px solid var(--slot);background:var(--well);position:relative;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center}
+.s span{font-family:var(--fl);font-size:11px;color:var(--mut);margin-bottom:2px;text-transform:uppercase}
+.lk{position:absolute;right:-10px;top:-10px;width:26px;height:26px;border:1px dashed var(--gold);background:var(--well);box-sizing:border-box}
+.lk.on{border:1px solid var(--title)}
+.i{width:52px;height:52px;border:2px solid var(--slot);background:var(--well);box-sizing:border-box;position:relative}
+.i::before{content:"";position:absolute;left:23px;top:6px;width:4px;height:38px;background:currentColor;transform:rotate(30deg);border-radius:2px}
+.i .d{position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%}
+.i.e::after{content:"E";position:absolute;left:3px;bottom:1px;font:600 11px var(--fb);color:var(--title)}
+.e0{border-style:dashed;opacity:.45}
+.e0::before{display:none}
+.tg{display:flex;border:1px solid var(--gold)}
+.tg button{font:600 13px var(--fl);letter-spacing:.06em;text-transform:uppercase;background:var(--well);color:var(--mut);border:0;padding:8px 14px;min-height:36px}
+.tg button.on{background:var(--btn);color:var(--btntx)}
+.tab{font:600 13px var(--fl);text-transform:uppercase;letter-spacing:.06em;background:transparent;color:var(--mut);border:0;border-bottom:2px solid transparent;padding:8px 10px;min-height:36px}
+.tab.on{color:var(--title);border-bottom-color:var(--acc)}
+.btn{font:600 13px var(--fl);text-transform:uppercase;letter-spacing:.06em;background:var(--well);color:var(--title);border:1px solid var(--gold);padding:8px 12px;min-height:36px}
+.btn.a{background:var(--btn);color:var(--btntx)}
+.row{display:flex;justify-content:space-between;font:400 14px var(--fb);color:var(--tx);padding:3px 0;border-bottom:1px solid var(--line)}
+.row b{font-weight:600;color:var(--hi)}
+.big{font:600 30px var(--fb);color:var(--hi)}
+.tt{position:absolute;left:250px;top:200px;width:300px;padding:14px 16px;border-color:#b05cff !important;box-shadow:0 10px 40px #000}
+.cn,.gem,.fx,.fx2,.ban{display:none}
+
+.root{--fb:Barlow,sans-serif;--ft:Cinzel,serif;--ftw:700;--ttt:none;--fl:'Barlow Condensed',sans-serif;--tx:#e6dccb;--mut:#bfb29a;--title:#f2d58a;--hi:#fff6df;--gold:#b8963e;--slot:#4a4234;--well:#12100d;--line:#2e2a22;--acc:#ff5a3c;--btn:linear-gradient(#c23a22,#8e2414);--btntx:#fff6df;--panel:linear-gradient(#211d18,#171410);--bd:1px solid #b8963e;background:#0d0b09}
+.p{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 18px #000;border-radius:4px}
+.ban{display:block;position:absolute;left:-1px;right:-1px;top:-1px;height:50px;background:linear-gradient(#7a1a10,#4e0f08);border-bottom:1px solid #b8963e;border-radius:4px 4px 0 0}
+.hd{position:relative;z-index:1}
+.ban span{display:none}
+.gem{display:block;position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#9fd0ff,#1e5bc8);border:1px solid #b8963e;right:8px;bottom:8px}
+.cn{display:block;position:absolute;width:12px;height:12px;border:1px solid #b8963e;background:#2a2218;transform:rotate(45deg);pointer-events:none}
+.cn.a{left:-7px;top:-7px}.cn.b{right:-7px;top:-7px}.cn.c{left:-7px;bottom:-7px}.cn.d{right:-7px;bottom:-7px}
+.tg button.on,.btn.a{box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.fx{display:block;position:absolute;left:0;top:0;width:36px;height:100%;background:linear-gradient(90deg,#3a0d08,transparent);pointer-events:none}
+.fx2{display:block;position:absolute;right:0;top:0;width:36px;height:100%;background:linear-gradient(-90deg,#3a0d08,transparent);pointer-events:none}
+
+</style>
+</helmet>
+<div class="root">
+<i class="fx" aria-hidden="true"></i><i class="fx2" aria-hidden="true"></i>
+
+<div class="p" style="width:540px;display:flex;flex-direction:column;padding:18px 22px;gap:14px">
+<i class="ban" aria-hidden="true"><span>SEKTOR 07 · FIGUR</span></i><i class="cn a"></i><i class="cn b"></i><i class="cn c"></i><i class="cn d"></i><i class="gem"></i>
+<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline">
+<h1 class="t" style="font-size:26px">Strichmagier</h1>
+<span class="l">Frost · Stufe 47</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;height:330px;padding:0 6px">
+<div style="display:flex;flex-direction:column;gap:22px">
+<div class="s" style="border-color:#3a8cff"><span>Kopf</span><i class="lk on"></i></div>
+<div class="s"><span>Hals</span><i class="lk"></i></div>
+<div class="s"><span>Rücken</span><i class="lk"></i></div>
+</div>
+<svg viewBox="0 0 140 260" width="190" height="320" aria-hidden="true"><ellipse cx="70" cy="248" rx="50" ry="8" fill="var(--acc)" opacity=".3"></ellipse><g stroke="var(--title)" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="66" cy="32" r="18"></circle><line x1="66" y1="50" x2="68" y2="138"></line><line x1="67" y1="74" x2="30" y2="112"></line><line x1="67" y1="74" x2="108" y2="96"></line><line x1="68" y1="138" x2="44" y2="236"></line><line x1="68" y1="138" x2="94" y2="236"></line></g><line x1="114" y1="40" x2="104" y2="232" stroke="var(--gold)" stroke-width="6" stroke-linecap="round"></line><circle cx="115" cy="34" r="10" fill="#b05cff"></circle></svg>
+<div style="display:flex;flex-direction:column;gap:22px">
+<div class="s"><span>Arme</span><i class="lk"></i></div>
+<div class="s" style="border-color:#ff8a1a"><span>Körper</span><i class="lk"></i></div>
+<div class="s" style="border-color:#b05cff"><span>Waffe</span><i class="lk"></i></div>
+</div>
+</div>
+<div class="l" style="text-align:center;color:var(--title)">Set Splitterkönig 3/5</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+<div class="row"><span>Schaden</span><b>1.284</b></div>
+<div class="row"><span>Crit</span><b>18 %</b></div>
+<div class="row"><span>Abklingzeit</span><b>−12 %</b></div>
+<div class="row"><span>Radius</span><b>+20 %</b></div>
+<div class="row"><span>Leben</span><b>2.400</b></div>
+<div class="row"><span>Mana</span><b>3.100</b></div>
+</div>
+</div>
+
+<div class="p" style="flex:1;display:flex;flex-direction:column;padding:18px 22px;gap:12px">
+<i class="ban" aria-hidden="true"><span>SEKTOR 12 · LAGER</span></i><i class="cn a"></i><i class="cn b"></i><i class="cn c"></i><i class="cn d"></i><i class="gem"></i>
+<div class="hd" style="display:flex;justify-content:space-between;align-items:center">
+<h2 class="t" style="font-size:24px">Inventar</h2>
+<div class="tg"><button class="on" type="button">Raster</button><button type="button">Baum</button></div>
+</div>
+<div style="display:flex;gap:2px;border-bottom:1px solid var(--line)">
+<button class="tab on" type="button">Waffen 12/25</button><button class="tab" type="button">Kopf 6</button><button class="tab" type="button">Hals 3</button><button class="tab" type="button">Rücken 9</button><button class="tab" type="button">Arme 4</button><button class="tab" type="button">Körper 7</button><button class="tab" type="button">Kosmetik 31</button>
+</div>
+<div class="l">Filter: Frost ✕ · Lila+ ✕ · 7 von 12</div>
+<div style="display:grid;grid-template-columns:repeat(10,52px);gap:6px">
+<div class="i e" style="border-color:#b05cff;color:#b05cff"><i class="d" style="background:#7fd4ff"></i></div>
+<div class="i" style="border-color:#ff8a1a;color:#ff8a1a"><i class="d" style="background:#7fd4ff"></i></div>
+<div class="i" style="border-color:#3a8cff;color:#3a8cff"><i class="d" style="background:#ff5a3c"></i></div>
+<div class="i" style="border-color:#b05cff;color:#b05cff"><i class="d" style="background:#7fd4ff"></i></div>
+<div class="i" style="border-color:#3a8cff;color:#3a8cff"></div>
+<div class="i" style="border-color:#2ecc40;color:#2ecc40"></div>
+<div class="i" style="border-color:#b05cff;color:#b05cff"><i class="d" style="background:#9be35a"></i></div>
+<div class="i" style="border-color:#3a8cff;color:#3a8cff"><i class="d" style="background:#7fd4ff"></i></div>
+<div class="i" style="border-color:#ff8a1a;color:#ff8a1a"></div>
+<div class="i" style="border-color:#3a8cff;color:#3a8cff"></div>
+<div class="i" style="border-color:#b05cff;color:#b05cff"></div>
+<div class="i" style="border-color:#3a8cff;color:#3a8cff"></div>
+<div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div>
+<div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div><div class="i e0"></div>
+</div>
+<div class="p tt">
+<div style="font:700 17px var(--ft);color:#b05cff">Eisgriff der Sternwarte</div>
+<div class="l" style="margin:2px 0 8px">Lila · Langer Stab · Frost-Kopf</div>
+<div class="big">412 <span style="font-size:14px;color:#2ecc40">▲ 38</span></div>
+<div class="row"><span>Crit</span><b>+9 %</b></div>
+<div class="row"><span>Fokus</span><b>Gletschernadel</b></div>
+<div class="l" style="margin-top:8px">Enter ausrüsten · Shift vergleichen</div>
+</div>
+<div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center">
+<span class="l">Knochenstaub 1.240</span>
+<div style="display:flex;gap:8px"><button class="btn" type="button">Zur Kiste</button><button class="btn a" type="button">3× Blau verschmelzen</button></div>
+</div>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
