@@ -632,6 +632,18 @@ function renderFinds() {
   }
 }
 
+// Zu wenig Platz (kleines Fenster, Ersatzschrift ohne Webfonts): Tabs nur mit Icon + Zahl, der Name steht im title/aria-label.
+// Gemessen: erst voll zeigen, wird ein Name gekürzt → .compact. Neu bei Größenänderung und sobald Schriften nachladen.
+function fitTabs() {
+  const tabs = $('hwTabs');
+  if (!tabs.offsetParent) return;   // zu oder Baum-Ansicht: der ResizeObserver misst, sobald sichtbar
+  tabs.classList.remove('compact');
+  const cut = [...tabs.querySelectorAll<HTMLElement>('.hwTab span')].some(s => s.scrollWidth > s.clientWidth + 0.5);
+  tabs.classList.toggle('compact', cut);
+}
+new ResizeObserver(fitTabs).observe($('hwTabs'));
+document.fonts?.addEventListener?.('loadingdone', fitTabs);
+
 function renderInv() {
   const k = kindOf(tab);
   // Tabs mit Belegung (x/25, Kosmetik nur Anzahl)
@@ -642,12 +654,14 @@ function renderInv() {
     b.innerHTML = tabSvg(x);
     b.append(el('span', '', tabName(x)), el('small', '', tabFill(x)));
     b.title = tabLabel(x);
+    b.setAttribute('aria-label', tabLabel(x));
     b.type = 'button';
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-selected', String(x === tab));
     b.addEventListener('click', () => setTab(x));
     tabs.append(b);
   }
+  fitTabs();
   if (barKind !== k) buildBar(k);
   if (k !== 'k') {
     const f = F(k);

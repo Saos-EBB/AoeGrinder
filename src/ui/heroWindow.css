@@ -79,6 +79,9 @@
 .hwTab svg { width: auto; height: calc(14 * var(--hu)); flex: none; }
 .hwTab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .hwTab small { flex: none; font-size: calc(11 * var(--hu)); letter-spacing: 0; opacity: .8; }
+/* Zu eng (heroWindow.ts fitTabs): nur Icon + Zahl, gleich breit verteilt */
+.hwTabs.compact .hwTab { flex: 1 1 0; justify-content: center; }
+.hwTabs.compact .hwTab span { display: none; }
 .hwTab:hover { color: var(--fg-text); }
 .hwTab.on { color: var(--fg-title); border-bottom-color: var(--fg-accent); }
 .hwBar { display: flex; flex-wrap: wrap; align-items: stretch; gap: calc(5 * var(--hu)); position: relative; z-index: 3 !important; flex: none; }
