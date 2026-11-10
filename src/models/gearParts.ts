@@ -113,10 +113,10 @@ const BUILD = {
       plate(spike(0.07, 0.05), 0.016, edge(M), h, 0, 0.09, 0.13);
       emblem(h, M.focus, 0, 0.16, 0.1, 0.7); rarityExtras(h, M, 0.1, 0.45, -0.1, 0.12); },
     tempo(h, M: M) {   // Reisehut: breite, geschwungene Krempe, lange Feder nach hinten
-      const b = mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.012, 16), M.cloth, h, 0, 0.07, 0); b.rotation.set(-0.12, 0, 0.08);
+      const b = mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.012, 16), M.cloth, h, 0, 0.07, 0); b.rotation.set(-0.2, 0, 0.15);   // Krempe etwas stärker gekippt (Plan: offener Punkt) // PH
       mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.12, 12), M.cloth, h, 0, 0.13, 0);
       mesh(new THREE.TorusGeometry(0.13, 0.012, 4, 16), M.main, h, 0, 0.09, 0).rotation.x = Math.PI / 2;
-      const f = plate(leaf(0.42, 0.07), 0.01, edge(M), h, 0.1, 0.12, 0); f.rotation.set(0, Math.PI / 2, 2.0); f.userData.sway = true;
+      const f = plate(leaf(0.42, 0.07), 0.01, edge(M), h, 0.1, 0.12, 0); f.rotation.set(0, Math.PI / 2, -0.96); f.userData.sway = true;   // Feder flacher: nach hinten, ~35° steigend (im Viewer stand sie beim Wehen senkrecht) // PH
       emblem(h, M.focus, 0, 0.1, 0.135, 0.6); rarityExtras(h, M, 0, 0.32, -0.1, 0.18); },
     leben(h, M: M) {   // Weite Kapuze: tiefer Stoff, Saum in Metall
       const hood = mesh(new THREE.SphereGeometry(0.17, 12, 8, Math.PI * 0.8, Math.PI * 1.4, 0, Math.PI * 0.7), ds(M.cloth), h, 0, 0.0, -0.03); hood.scale.set(1.05, 1.15, 1.15);
@@ -296,7 +296,7 @@ export const FIT = { head: { y: 0.16, s: 1.5 }, body: { waist: 0.98, s: 1.15, hi
 const ANIM_KEYS = ['orbit', 'spinZ', 'spinY', 'sway', 'bob', 'tail', 'wobble'];
 const isAnim = (o: THREE.Object3D) => ANIM_KEYS.some(k => o.userData[k] !== undefined);
 export interface GearPiece { bone: THREE.Bone; geo: THREE.BufferGeometry; color: THREE.Color; m: THREE.Matrix4; glow: boolean; noShell?: boolean }
-export interface GearAnim { bone: THREE.Bone; u: any; pos: THREE.Vector3; quat: THREE.Quaternion; slot: string }
+export interface GearAnim { bone: THREE.Bone; u: any; pos: THREE.Vector3; quat: THREE.Quaternion; slot: string; z0?: number }
 export interface GearFx { bone: THREE.Bone; aura?: number; slot: string }
 // Rahmen eines Arm-Segments im Viewer: Ursprung a, y zeigt von b nach a (zum Gelenk darüber), z möglichst nach vorn
 function limbFrame(a: THREE.Vector3, b: THREE.Vector3) {
@@ -321,7 +321,7 @@ function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B
       local.decompose(pos, quat, scl);
       b = B(bone, pos.x, pos.y, pos.z); b.quaternion.copy(quat); b.scale.copy(scl);
       bs = o.matrixWorld.clone().invert(); mv = true;
-      if (isAnim(o)) out.anim.push({ bone: b, u: o.userData, pos: pos.clone(), quat: quat.clone(), slot });
+      if (isAnim(o)) out.anim.push({ bone: b, u: o.userData, pos: pos.clone(), quat: quat.clone(), slot, z0: o.rotation.z });
       if (o.userData.aura) out.fx.push({ bone: b, aura: o.userData.aura, slot });
     }
     const mat = o.userData.mat as Mat;
@@ -364,4 +364,23 @@ export function gearPieces(F, B, slot: string, group: string, item: GearLookItem
     if (slot === 'koerper') { const h = B(F.hips, 0, -waist * hipSy, 0); h.scale.set(s, hipSy, s); convert(t, ID, h, B, slot, out, low); }
   }
   return out;
+}
+
+// ---------------- Bewegung (Viewer-Animation, über Bone-Rotation/-Lage) ----------------
+// Wehen (sway: Schal, Bänder, Feder), Schöße/Umhang (tail), Ringe (wobble), Halo/Siegel/Runenkreis drehen (spinZ), Sicheln pendeln (spinY),
+// Klingen/Sicheln schweben (bob), Splitter und Bücher kreisen (orbit). Wehen und Drehen relativ zur Ruhelage, tail/wobble setzen z wie im Viewer.
+const _q = new THREE.Quaternion(), _e = new THREE.Euler();
+export function animateGear(list: GearAnim[], t: number) {
+  for (const a of list) {
+    const u = a.u, b = a.bone;
+    if (u.orbit) { orbitPos(u.orbit, t, b.position); _e.set(0, t * 2, 0); b.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e)); continue; }
+    if (u.bob) b.position.y = a.pos.y + Math.sin(t * 1.8) * 0.02;
+    if (u.spinZ) b.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e.set(0, 0, t * u.spinZ)));
+    if (u.spinY) b.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e.set(0, Math.sin(t * u.spinY) * 0.3, 0)));
+    if (u.sway) b.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e.set(Math.sin(t * 2.2) * 0.12, Math.sin(t * 1.6) * 0.2, 0)));
+    if (u.tail !== undefined || u.wobble !== undefined) {   // Viewer setzt rotation.z; hier als Drehung um die eigene z-Achse ab der Ruhelage (z0)
+      const z = u.tail !== undefined ? u.tail * (0.25 + Math.sin(t * 2.5 + u.tail) * 0.08) : Math.sin(t * 2 + u.wobble) * 0.15;
+      b.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e.set(0, 0, z - (a.z0 ?? 0))));
+    }
+  }
 }

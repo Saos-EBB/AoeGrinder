@@ -13,7 +13,7 @@ import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
 import { state } from '../state';
 import { markStacks } from '../plagueMarks';
-import { gearPieces } from './gearParts';
+import { gearPieces, animateGear } from './gearParts';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -1323,6 +1323,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       // Schweben: die Füße bleiben im Pose-Raum, die ganze Figur hebt sich (im Tod nicht)
       if (fl && mode !== 'dead') F.root.position.y += fl + .07 * Math.sin(F.t * 1.3);
       applyPose(F, p);
+      if (F.gear.anim.length) animateGear(F.gear.anim, F.t);   // Gear: wehen, drehen, kreisen (gearParts.ts)
       F.root.getWorldPosition(F.groundPos); F.groundY = F.groundPos.y - (fl && mode !== 'dead' ? fl + .07 * Math.sin(F.t * 1.3) : 0);
       if (F.lk) updateLook(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
       if (!F.dead) updateGearFx(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
