@@ -34,6 +34,7 @@ import * as playerMod from './player';
 import * as cardsMod from './cards';
 import * as weaponMod from './weaponRolls';
 import * as metaMod from './meta';
+import { initGear } from './gear';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import * as meterMod from './schoolMeter';
@@ -66,6 +67,7 @@ import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
 import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
+initGear();   // gespeichertes Gear säubern, sobald alle Module geladen sind
 connectPortal({ switchZone, bossActive });
 
 function update(dt) {

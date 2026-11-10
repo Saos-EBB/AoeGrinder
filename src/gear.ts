@@ -117,11 +117,15 @@ function fixItem(g) {
   if (!(g.s.element in ELEMENTS)) g.s.element = 'none';
   return g;
 }
-cleanGear(meta);
-// Alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
-checkUnlocks(true);
-// Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
-{ const seen = new Set(); for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); } }
+// Beim Start aus main.ts, nicht beim Laden des Moduls: gear.ts hängt über Import-Zyklen (weaponRolls ↔ spells ↔ gear) und würde sonst
+// VALUE_KEY lesen, bevor weaponRolls.ts fertig ist (ReferenceError, sobald gespeichertes Gear da ist)
+export function initGear() {
+  cleanGear(meta);
+  // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
+  const seen = new Set();
+  for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); }
+  checkUnlocks(true);   // alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
+}
 
 // ---------- Würfeln ----------
 // tier: feste Seltenheit (Dev, Tests), skin: gespielter Magier (Fokus aus seiner Schule)
