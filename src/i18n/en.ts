@@ -2406,4 +2406,5 @@ export const en: Record<string, string> = {
   'box.lookDone': "You own every look in the box.",
   'box.lookAll': "All collected",
   'box.lookGot': "New: {name}",
+  'hw.noElement': "No element",
 };

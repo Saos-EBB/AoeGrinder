@@ -2407,4 +2407,5 @@ export const de: Record<string, string> = {
   'box.lookDone': "Alle Looks der Box gesammelt.",
   'box.lookAll': "Alles gesammelt",
   'box.lookGot': "Neu: {name}",
+  'hw.noElement': "Ohne Element",
 };

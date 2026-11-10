@@ -106,16 +106,18 @@ const TYPE_SVG = {
   relic: '<circle cx="14" cy="36" r="10"/><circle cx="14" cy="36" r="4"/><path d="M14 22v-8M14 50v8M4 36H0M28 36h-4"/>',
 };
 export const typeSvg = (type: string, color: string) => `<svg aria-hidden="true" viewBox="0 0 28 70" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TYPE_SVG[type] ?? TYPE_SVG.staff}</svg>`;
-// Gear-Slots als einfache Umrisse, viewBox 24 // PH
+// Gear-Slots als Umrisse passend zu den Gear-Formen (models/gearParts.ts), auf ~24 px erkennbar, viewBox 24 // PH
 const SLOT_SVG: Record<string, string> = {
-  kopf: '<path d="M4 20c0-8 3-14 8-16 5 2 8 8 8 16z"/><path d="M8 20c1-4 2-6 4-7 2 1 3 3 4 7"/>',
-  hals: '<path d="M6 3c0 6 3 9 6 9s6-3 6-9"/><circle cx="12" cy="16" r="4"/>',
-  ruecken: '<path d="M7 3h10l3 18H4z"/><path d="M12 3v18"/>',
-  arme: '<path d="M7 3h8l2 8v10H7z"/><path d="M7 11h10"/>',
-  koerper: '<path d="M8 3 4 7l2 3 2-1v12h8V9l2 1 2-3-4-4-2 2h-4z"/>',
+  kopf: '<path d="M2.5 19.5c3 1.6 16 1.6 19 0"/><path d="M6 19 10.5 7.5C11.5 5 13.5 3.5 17 4.5l2 .8-3.3.4L18 19"/><path d="M7.4 15.5h9.4"/>',   // Spitzhut
+  hals: '<path d="M5 3c.5 5 3.5 8.5 7 9.5 3.5-1 6.5-4.5 7-9.5"/><path d="M12 13.5l3 3.5-3 4-3-4z"/>',   // Kette mit Amulett
+  ruecken: '<path d="M8 4c1.5 1.5 6.5 1.5 8 0"/><path d="M8 4 4 20.5c1.5.8 3 .3 4-.4 1.3.8 2.7.8 4 0 1.3.8 2.7.8 4 0 1 .7 2.5 1.2 4 .4L16 4"/><circle cx="12" cy="6.5" r="1"/>',   // Umhang mit Spange
+  arme: '<path d="M7 21v-4.5L4.6 11.7c-.6-1.2.8-2.2 1.8-1.2L8.5 13V5c0-1.6 2.4-1.6 2.4 0v6V3.8c0-1.6 2.4-1.6 2.4 0V11V5c0-1.6 2.4-1.6 2.4 0V15l-1.2 6z"/><path d="M7 18h9"/>',   // Handschuh mit Stulpe
+  koerper: '<path d="M10 3 7.5 4 3 9l2.2 2L7.5 9 5 21h14L16.5 9l2.3 2L21 9l-4.5-5L14 3l-2 2.5z"/><path d="M7 12.5h10"/><path d="M12 5.5v15"/>',   // Robe mit Gürtel
   kosmetik: '<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9L9.5 8z"/>',
 };
 export const slotSvg = (slot: string, color: string) => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SLOT_SVG[slot] ?? SLOT_SVG.kosmetik}</svg>`;
+// Icon eines Tabs bzw. Baum-Ordners: Waffen der Stab, sonst der Slot (Kosmetik der Stern)
+const tabSvg = (x: string, color = 'currentColor') => x === 'waffen' || x === 'waffe' ? typeSvg('staff', color) : slotSvg(x, color);
 
 // ---------- Links: Kopf, Figur mit Slots, Set, Werte ----------
 const LEFT: (Slot | 'waffe')[] = ['kopf', 'hals', 'ruecken'], RIGHT: (Slot | 'waffe')[] = ['arme', 'koerper', 'waffe'];
@@ -131,7 +133,7 @@ function slotEl(slot: Slot | 'waffe') {
   if (color) b.style.setProperty('--rc', color);
   if (w) { const src = weaponThumb(w); b.innerHTML = src ? `<img src="${src}" alt="">` : typeSvg(typeOf(w), color); }
   else if (g) b.innerHTML = slotSvg(slot, color);
-  else b.innerHTML = `<span class="hwSlotEmpty">${isW && mage.skin === 'krieger' ? '' : '—'}</span>`;
+  else b.innerHTML = isW && mage.skin === 'krieger' ? '<span class="hwSlotEmpty"></span>' : `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
   b.append(el('small', '', isW ? t('cw.weapon') : slotName(slot)));
   if (g?.s.setId) b.append(el('b', 'hwSetMark', 'SET'));
   if (w) attachWeaponCard(b, w);
@@ -350,9 +352,9 @@ async function salvageEntry(e: Entry) {
   const ok = e.kind === 'w' ? await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name, n }), t('shop.salvage'))
     : await askConfirm(t('gear.deleteTitle'), t('gear.deleteText', { name, n }), t('shop.salvage'));
   if (!ok) return;
-  const list = entries(tab), i = list.findIndex(x => x.key === e.key);
+  const list = treeView() ? treeRows() : entries(tab), i = list.findIndex(x => x.key === e.key);
   if (e.kind === 'w') deleteWeapon(e.item.id); else deleteGear(e.item.slot, e.item.id);
-  sel = list[i + 1]?.key ?? list[i - 1]?.key ?? null;   // Auswahl rückt weiter
+  sel = list[i + 1]?.key ?? list[i - 1]?.key ?? null;   // Auswahl rückt weiter (im Baum zur nächsten sichtbaren Zeile)
   changed();
 }
 
@@ -494,43 +496,73 @@ function renderGrid(list: Entry[]) {
 
 // ---------- Baum: statt des Rasters, die Tabs werden Ordner (auf/zu und Ansicht in frostgrind.ui.v1) ----------
 const treeView = () => uiSettings.heroView === 'tree';
-const isOpenF = (x: Tab) => (uiSettings.heroOpen ?? []).includes(x);
-function setFolder(x: Tab, open: boolean) {
+// Ordner: oben was es ist (Tab), darin nach Schule = Element (Kosmetik: nach Slot). Offen-Schlüssel in heroOpen: „waffen“ bzw. „waffen/frost“
+const isOpenF = (f: string) => (uiSettings.heroOpen ?? []).includes(f);
+function setFolder(f: string, open: boolean) {
   const cur = uiSettings.heroOpen ?? [];
-  setUi('heroOpen', open ? [...new Set([...cur, x])] : cur.filter(f => f !== x));
+  setUi('heroOpen', open ? [...new Set([...cur, f])] : cur.filter(x => x !== f));
 }
-const tabLabel = (x: Tab) => `${x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x)} ${x === 'kosmetik' ? tabCount(x) : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`}`;
-type TreeRow = { key: string; tab: Tab; entry?: Entry };
-// Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten)
+const tabName = (x: Tab) => x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x);
+const tabFill = (x: Tab) => x === 'kosmetik' ? `${tabCount(x)}` : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`;
+const tabLabel = (x: Tab) => `${tabName(x)} ${tabFill(x)}`;
+const subOf = (e: Entry): string => {
+  if (e.kind === 'k') return LOOKS[e.item].slot;
+  const elm = e.kind === 'w' ? elementOf(e.item) : e.item.s.element;
+  return elm in ELEMENTS ? elm : 'none';
+};
+const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...LOOK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
+const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('cw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
+const subColor = (x: Tab, sub: string) => x === 'kosmetik' || sub === 'none' ? '' : elementColor(sub);
+type TreeRow = { key: string; tab: Tab; depth: 0 | 1 | 2; parent?: string; folder?: string; sub?: string; n?: [number, number]; entry?: Entry };
+// Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten). Unterordner nur, wenn sie Einträge haben
 export function treeRows(): TreeRow[] {
   const out: TreeRow[] = [];
   for (const x of TABS) {
-    out.push({ key: `f:${x}`, tab: x });
-    if (isOpenF(x)) for (const e of entries(x)) out.push({ key: e.key, tab: x, entry: e });
+    const top = `f:${x}`;
+    out.push({ key: top, tab: x, depth: 0, folder: x });
+    if (!isOpenF(x)) continue;
+    const list = entries(x);
+    for (const sub of SUBS(x)) {
+      const in_ = list.filter(e => subOf(e) === sub);
+      if (!in_.length) continue;
+      const f = `${x}/${sub}`, key = `f:${f}`;
+      out.push({ key, tab: x, depth: 1, parent: top, folder: f, sub, n: [in_.filter(e => !e.dim).length, in_.length] });
+      if (isOpenF(f)) for (const e of in_) out.push({ key: e.key, tab: x, depth: 2, parent: key, entry: e });
+    }
   }
   return out;
 }
+// Icon einer Zeile in Seltenheitsfarbe: Waffen ihr Typ, Gear der Slot, Kosmetik Stern bzw. Schloss
+const entryIcon = (e: Entry) => e.kind === 'w' ? typeSvg(typeOf(e.item), rarColor(e)) : e.kind === 'g' ? slotSvg(e.item.slot, rarColor(e)) : e.dim ? LOCK : slotSvg('kosmetik', rarColor(e));
+const icon = (svg: string) => { const i = el('i', 'hwTIcon'); i.innerHTML = svg; return i; };
 function renderTree() {
   const box = $('hwTree');
   box.textContent = '';
   for (const r of treeRows()) {
-    const row = el('button', 'hwTRow' + (r.key === sel ? ' sel' : ''));
+    const row = el('button', 'hwTRow' + (r.key === sel ? ' sel' : '') + (r.depth ? ` d${r.depth}` : ''));
     row.type = 'button';
     row.dataset.key = r.key;
     if (!r.entry) {
-      const open = isOpenF(r.tab);
+      const open = isOpenF(r.folder);
       row.classList.add('folder');
       row.setAttribute('aria-expanded', String(open));
-      row.append(el('span', 'hwCaret', open ? '▾' : '▸'), el('span', 'hwTName', tabLabel(r.tab)));
-      row.addEventListener('click', () => { sel = r.key; tab = r.tab; setUi('heroTab', r.tab); setFolder(r.tab, !open); render(); });
+      row.setAttribute('aria-level', String(r.depth + 1));
+      row.append(el('span', 'hwCaret', open ? '▾' : '▸'));
+      if (r.depth === 0) row.append(icon(tabSvg(r.tab)), el('span', 'hwTName', tabLabel(r.tab)));
+      else {   // Unterordner: Schule (Element) in ihrer Farbe bzw. Kosmetik-Slot, mit Anzahl (gefiltert: „passend/alle“)
+        const c = subColor(r.tab, r.sub), name = el('span', 'hwTName', `${subName(r.tab, r.sub)} ${r.n[0] === r.n[1] ? r.n[1] : `${r.n[0]}/${r.n[1]}`}`);
+        if (r.tab === 'kosmetik') row.append(icon(tabSvg(r.sub)));
+        else { const dot = el('i', 'hwElDot'); if (c) dot.style.setProperty('--ec', c); row.append(dot); }
+        if (c) name.style.color = c;
+        row.append(name);
+      }
+      row.addEventListener('click', () => { sel = r.key; tab = r.tab; setUi('heroTab', r.tab); setFolder(r.folder, !open); render(); });
     } else {
       const e = r.entry, c = rarColor(e), d = deltaOf(e);
       if (e.dim) row.classList.add('dim');
-      const dia = el('i', 'hwDia');
-      dia.style.setProperty('--rc', c);
       const name = el('span', 'hwTName', entryName(e));
       name.style.color = c;
-      row.append(dia, name);
+      row.append(icon(entryIcon(e)), name);
       if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
       if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))}`));
       if (isOn(e)) row.append(el('b', 'hwE', 'E'));
@@ -601,7 +633,10 @@ function renderInv() {
   const tabs = $('hwTabs');
   tabs.textContent = '';
   for (const x of TABS) {
-    const b = el('button', 'hwTab' + (x === tab ? ' on' : ''), `${x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x)} ${x === 'kosmetik' ? tabCount(x) : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`}`);
+    const b = el('button', 'hwTab' + (x === tab ? ' on' : ''));
+    b.innerHTML = tabSvg(x);
+    b.append(el('span', '', tabName(x)), el('small', '', tabFill(x)));
+    b.title = tabLabel(x);
     b.type = 'button';
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-selected', String(x === tab));
@@ -725,17 +760,17 @@ export function heroCommand(cmd: HeroCmd) {
   if (cmd === 'down') return moveSel(tree ? 1 : 10);
   if (cmd === 'left') {
     if (!tree) return moveSel(-1);
-    if (row && !row.entry && isOpenF(row.tab)) { setFolder(row.tab, false); render(); showSel(); return; }   // Ordner zu
-    if (row?.entry) { sel = `f:${row.tab}`; render(); showSel(); }                                      // zum Ordner
+    if (row?.folder && isOpenF(row.folder)) { setFolder(row.folder, false); render(); showSel(); return; }   // Ordner zu
+    if (row?.parent) { sel = row.parent; render(); showSel(); }                                             // zum Eltern-Ordner
     return;
   }
   if (cmd === 'right') {
     if (!tree) return moveSel(1);
-    if (row && !row.entry && !isOpenF(row.tab)) { setFolder(row.tab, true); render(); showSel(); return; }  // Ordner auf
+    if (row?.folder && !isOpenF(row.folder)) { setFolder(row.folder, true); render(); showSel(); return; }  // Ordner auf
     return moveSel(1);
   }
   if (cmd === 'enter') {
-    if (row && !row.entry) { setFolder(row.tab, !isOpenF(row.tab)); render(); showSel(); return; }
+    if (row?.folder) { setFolder(row.folder, !isOpenF(row.folder)); render(); showSel(); return; }
     if (cur) { wearEntry(cur); showSel(); }
     return;
   }
