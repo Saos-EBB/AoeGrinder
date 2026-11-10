@@ -8,7 +8,7 @@ import { cam } from '../../camera';
 import { META } from '../../meta';
 import { modeId } from '../../modifiers';
 import { currentFigure, openPause } from '../mainMenu';
-import { toggleChar } from '../charWindow';
+import { toggleHero } from '../heroWindow';
 import { openBinds } from '../menus';
 import { t } from '../../i18n';
 import { run } from '../../score';
@@ -35,7 +35,7 @@ function init() {
 
 // ---------- Mikro-Menü (Krypta): Charakter, Pause, Einstellungen, Tasten; darüber 4 Taschen (nur Deko) ----------
 const MICRO: [string, string, () => void][] = [
-  ['hudx.micro.char', 'M4 20V6l8-3 8 3v14', () => toggleChar()],
+  ['hudx.micro.char', 'M4 20V6l8-3 8 3v14', () => toggleHero()],
   ['hudx.micro.pause', 'M5 5h14v14H5z', () => openPause()],
   ['hudx.micro.settings', 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3', () => { openPause(); $('pauseSettings').click(); }],
   ['hudx.micro.binds', 'M4 4h16v4H4zM4 10h16v10H4z', () => openBinds()],

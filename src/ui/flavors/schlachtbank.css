@@ -43,6 +43,7 @@ body[data-flavor=schlachtbank] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .
 body[data-flavor=schlachtbank] .menuBoardHead { padding-right: max(0px, calc(76px - 24 * var(--hu))); }
 body[data-flavor=schlachtbank] .gmInvPanel > .gmColHead { padding-right: max(0px, calc(76px - 16 * var(--hu))); }
 body[data-flavor=schlachtbank] .gmInvPanel { padding-top: max(calc(12 * var(--hu)), calc(50px - 28 * var(--hu))); }
+body[data-flavor=schlachtbank] .hwInvHead { padding-right: max(0px, calc(76px - 22 * var(--hu))); }   /* Fenster heroWindow.ts: Schließen neben den Schlitzen */
 
 /* Titel: zentriert mit rotem Glühen, schrägen Balken und ▼▼▼, links mit roter Leuchtlinie darunter */
 body[data-flavor=schlachtbank] .fg-title { text-transform: none; }

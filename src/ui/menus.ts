@@ -85,7 +85,7 @@ function cardTip(el, c, r, kind, stage, rep, color) {
 }
 // Tasten 1–0 wählen eine Karte
 addEventListener('keydown', e => {
-  if (!$('cardModal').classList.contains('show') || $('charModal').classList.contains('show') || state.rebinding) return;
+  if (!$('cardModal').classList.contains('show') || $('heroModal')?.classList.contains('show') || state.rebinding) return;
   const i = CARD_KEYS.indexOf(e.key);
   const el = $('cards').querySelectorAll<HTMLElement>('.card')[i];
   if (i < 0 || !el) return;
@@ -151,7 +151,7 @@ export function closeBinds() {
 }
 
 // Pausiert, solange irgendein Fenster offen ist oder die Figur tot
-const BLOCKING = ['invModal', 'loadModal', 'codeModal', 'startModal', 'cardModal', 'bindModal', 'charModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal', 'gearModal', 'gearKeepModal'];
+const BLOCKING = ['heroModal', 'loadModal', 'codeModal', 'startModal', 'cardModal', 'bindModal', 'pauseModal', 'settingsModal', 'deathModal', 'shopModal', 'gearKeepModal'];
 export function syncPause() {
   state.paused = player.dead || BLOCKING.some(id => $(id)?.classList.contains('show'));
 }

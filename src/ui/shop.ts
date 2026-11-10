@@ -11,7 +11,7 @@ import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, dev
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
-import { openWeaponMenu } from './weaponMenu';
+import { openHero } from './heroWindow';
 import { weaponThumb } from './weaponThumb';
 import { pick } from '../util';
 import { t, fmtNum } from '../i18n';
@@ -216,7 +216,7 @@ function renderShop() {
     }
   }
   const inv = el('button', 'smallBtn fg-btn alt shopInvBtn', t('shop.openInv', { a: meta.inv.length, b: ROLLS.invMax }));
-  inv.addEventListener('click', () => openWeaponMenu(renderShop));
+  inv.addEventListener('click', () => openHero({ tab: 'waffen', done: renderShop }));
   box.append(inv);
 }
 
@@ -248,9 +248,9 @@ $('shopClose').addEventListener('click', () => {
   toMainMenu();
 });
 
-// Esc schließt den Shop wie der Knopf (nicht, solange Waffenmenü oder Rückfrage darüber liegen)
+// Esc schließt den Shop wie der Knopf (nicht, solange das Fenster aus heroWindow.ts oder eine Rückfrage darüber liegen)
 addEventListener('keydown', e => {
-  if (e.code !== 'Escape' || !$('shopModal').classList.contains('show') || document.querySelector('#invModal.show, .modal.show:has(#askTitle)')) return;
+  if (e.code !== 'Escape' || !$('shopModal').classList.contains('show') || document.querySelector('#heroModal.show, .modal.show:has(#askTitle)')) return;
   e.stopImmediatePropagation();
   $('shopClose').click();
 }, true);

@@ -22,7 +22,6 @@ import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
 import { applyRunGear, forcedLook, isMagierSkin } from '../gear';
-import { openGearWindow, gearBtn, toggleGearWindow } from './gearWindow';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { fmtTime } from './hud';
@@ -30,14 +29,13 @@ import { resetGame, die, newRunMap } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
 import { startHudEdit, hudEditing, stopHudEdit } from './hud/layout';
-import { toggleChar } from './charWindow';
 import { figureRules } from './charInfo';
 import { openBinds, syncPause, ding } from './menus';
 import { UI } from './uiConfig';
 import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
-import { openWeaponMenu } from './weaponMenu';
+import { openHero, toggleHero } from './heroWindow';
 import { t, fmtNum, locale } from '../i18n';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
@@ -134,7 +132,6 @@ export function renderMenu() {
   weapons.innerHTML = '';
   const hasWeapons = !!mage.weapon || mage.skin === 'krieger';
   $('menuWeaponsBtn').hidden = !hasWeapons;
-  gearBtn.hidden = !isMagierSkin(mage.skin);   // Ausrüstung (gearWindow.ts): nur Magier
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
   if (mage.skin === 'krieger') {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
     const pickWar = (id, leg) => { setWarLegendary(leg); mage.setWarWeapon(id); applySelection(); };
@@ -305,12 +302,11 @@ $('menuBoardTabs').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest('button');
   if (b) { boardMode = b.dataset.b as any; renderBoardPanel(); }
 });
-// Magier: Inventar (Truhe, ausrüsten, zerlegen). Strichkrieger: feste Waffenwahl als Liste
+// Magier: das Fenster aus heroWindow.ts (Waffen, Gear, Werte). Strichkrieger: feste Waffenwahl als Liste
 $('menuWeaponsBtn').addEventListener('click', () => {
-  if (mage.weapon) openWeaponMenu(renderMenu);
+  if (mage.weapon) openHero({ tab: 'waffen', done: renderMenu });
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
 });
-gearBtn.addEventListener('click', () => openGearWindow(renderMenu));
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
 addEventListener('pointermove', e => {
   if (turning === null) return;
@@ -390,7 +386,7 @@ export const pauseOpen = () => $('pauseModal').classList.contains('show');
 export function openPause() {
   if (state.paused || player.dead) return;
   renderKit($('pauseKit'), currentKit());   // aktuelle Slots mit Runen und Rängen
-  $('pauseGear').hidden = !isMagierSkin(mage.skin);   // Ausrüstung im Run nur zum Ansehen (gearWindow.ts), nur Magier
+  $('pauseGear').hidden = true;   // Ausrüstung und Charakter sind ein Fenster (heroWindow.ts): ein Knopf reicht
   $('pauseModal').classList.add('show');
   syncPause();
 }
@@ -399,8 +395,7 @@ export function closePause() {
   syncPause();
 }
 $('pauseResume').addEventListener('click', closePause);
-$('pauseChar').addEventListener('click', () => toggleChar());
-$('pauseGear').addEventListener('click', toggleGearWindow);
+$('pauseChar').addEventListener('click', toggleHero);
 $('pauseEdit').addEventListener('click', () => editHud('pauseModal'));
 $('pauseBinds').addEventListener('click', openBinds);
 $('pauseGiveUp').addEventListener('click', () => {
@@ -413,7 +408,7 @@ $('pauseGiveUp').addEventListener('click', () => {
 addEventListener('keydown', e => {
   if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Waffenmenü tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
-  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'invModal', 'gearModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
+  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'heroModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
   if (e.code === 'KeyD') cycleChar(1);
   if (e.code === 'KeyQ') cycleMap(-1);

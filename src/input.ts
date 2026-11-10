@@ -13,8 +13,7 @@ import { cast } from './spells';
 import { isGround } from './spells/core';
 import { spellAtAction, modeAt } from './hotbar';
 import { refreshKeyLabels } from './ui/hud';
-import { charOpen, toggleChar } from './ui/charWindow';
-import { toggleGearWindow } from './ui/gearWindow';
+import { heroOpen, toggleHero, closeHero } from './ui/heroWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';
 import { t } from './i18n';
@@ -34,7 +33,7 @@ export const ACTIONS = [
   { id: 'use',         label: t('bind.use'),           code: 'KeyG',   key: 'G' },   // Truhen, Schreine, Hebel, Waffen am Boden (useKey.ts); F ist Spell-Slot 5
   { group: t('bind.group.windows') },
   { id: 'charWin', label: t('bind.charWin'), code: 'KeyX', key: 'X' },
-  { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // Ausrüstungsfenster (ui/gearWindow.ts), im Run nur zum Ansehen; X ist das Charakterfenster
+  { id: 'gearWin', label: t('bind.gearWin'), code: 'KeyI', key: 'I' },   // X und I öffnen dasselbe Fenster (ui/heroWindow.ts), im Run nur zum Ansehen
   { group: t('bind.group.spells') },
   // Raster seit v31 (SLOT in config.ts): 5 Attacken, Trinken, Bewegung auf der alten Blink-Taste, Relikt. Die 5. Attacke liegt auf F, weil 5 die Bewegung bleibt
   { id: 'nova',  label: t('bind.nova'),        code: 'Digit1', key: '1', spell: true },
@@ -113,7 +112,7 @@ addEventListener('keydown', e => {
     return;
   }
   if (e.code === 'Escape') {
-    if (charOpen()) toggleChar();
+    if (heroOpen()) closeHero();
     else if ($('settingsModal').classList.contains('show')) $('settingsClose').click();
     else if (pauseOpen() && !$('bindModal').classList.contains('show')) closePause();
     else if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
@@ -155,8 +154,7 @@ function spellUp(code) {
 function runAction(id, code = '') {
   if (SPELL_ACTIONS.includes(id)) spellDown(id, code);
   else if (SPELLS[id]) pressSpell(id);
-  if (id === 'charWin') toggleChar();
-  if (id === 'gearWin') toggleGearWindow();
+  if (id === 'charWin' || id === 'gearWin') toggleHero();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
   if (id === 'use' && !state.paused) doUse();

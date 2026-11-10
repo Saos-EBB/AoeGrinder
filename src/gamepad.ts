@@ -2,7 +2,7 @@
 
 import { spellAtAction } from './hotbar';
 import { startDodge } from './player';
-import { charOpen, charTab, toggleChar } from './ui/charWindow';
+import { heroOpen, toggleHero, closeHero } from './ui/heroWindow';
 import { openPause, closePause, cycleChar, cycleMap } from './ui/mainMenu';
 import * as THREE from 'three';
 import { state, player } from './state';
@@ -72,7 +72,7 @@ const PAD_EFFECTS = {
   dodge() { startDodge(); },
   use() { doUse(); },
   autorun() { state.autorun = !state.autorun; },
-  charWin() { toggleChar(); },
+  charWin() { toggleHero(); },
   camBehind() { cam.offset = 0; },
   zoomIn() { cam.dist = clamp(cam.dist - 1.5, 3, 35); },
   zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
@@ -168,9 +168,8 @@ function captureRebind() {
 function menuButtons() {
   const step = navStep();
   if (isOpen('bindModal')) return bindMenuButtons(step);
-  if (charOpen()) {
-    if (step.x) charTab(step.x);
-    if (pressed(CANCEL_BTN)) toggleChar();
+  if (heroOpen()) {
+    if (pressed(CANCEL_BTN)) closeHero();
     return;
   }
   if (isOpen('cardModal') && !isOpen('bindModal')) {
@@ -243,7 +242,7 @@ export function pollGamepad() {
   if (state.padRebinding) captureRebind();
   else if (!state.paused) gameButtons();
   else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();
-  else if (pressed(padBinds.charWin)) toggleChar();
+  else if (pressed(padBinds.charWin)) toggleHero();
   else menuButtons();
 }
 

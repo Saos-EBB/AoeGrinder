@@ -2278,4 +2278,7 @@ export const de: Record<string, string> = {
   'tobj.lava': "Lava strömt in die Rinne!",
   'tobj.bell': "Die Glocke ruft {n} Gegner",
   'tobj.bees': "Bienen!",
+  'hw.sekFig': "FIGUR",
+  'hw.sekInv': "LAGER",
+  'hw.inv': "Inventar",
 };

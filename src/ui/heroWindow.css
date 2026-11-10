@@ -1,0 +1,16 @@
+/* Ein Fenster für Waffen, Charakter und Ausrüstung (heroWindow.ts, Vorlage docs/ref/charakterfenster/ Layout A). Board 1200 × 680 in --hu,
+   waagrecht zwischen den Zierrahmen-Ecken (--fg-safe, base.css). Farben und Schriften nur aus dem UI-Flavor (--fg-*). Zahlen // PH */
+#heroModal { z-index: 5; }
+#hwBox { --hu: min(calc(100vw / 1280), calc(100vh / 720), calc((100vw - 2 * var(--fg-safe)) / 1200)); width: calc(1200 * var(--hu)); height: calc(680 * var(--hu));
+  display: grid; grid-template-columns: calc(520 * var(--hu)) 1fr; gap: calc(20 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+#hwBox > .fg-panel { display: flex; flex-direction: column; gap: calc(10 * var(--hu)); min-height: 0; padding: calc(16 * var(--hu)) calc(22 * var(--hu)); }
+#hwBox > .fg-panel > * { position: relative; z-index: 2; }
+.hwHead, .hwInvHead { display: flex; align-items: center; gap: calc(12 * var(--hu)); }
+.hwHead h1 { margin: 0; font-size: calc(26 * var(--hu)); }
+.hwInvHead h2 { margin: 0; font-size: calc(24 * var(--hu)); }
+.hwLabel { margin-left: auto; font: 600 calc(13 * var(--hu)) var(--font-num); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+#hwWait { margin-left: auto; }
+#hwWait:empty { display: none; }
+#hwClose { min-height: 0; height: calc(34 * var(--hu)); padding: 0 calc(14 * var(--hu)); font-size: calc(14 * var(--hu)); }
+#hwWait:empty + #hwClose { margin-left: auto; }
+.hwBody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(8 * var(--hu)); }
