@@ -24,7 +24,8 @@ npm run build        # eine dist/index.html
 | `src/boss.ts`, `waves.ts`, `champions.ts` | Bosse, Wellen-Modus, Champion-Packs mit Affixen | [boss-kader](handoffs/boss-kader.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
 | `src/gear.ts`, `loot.ts`, `models/gearParts.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, 25 Gear-Formen an der Figur, Erfolge | [items](handoffs/items.md), [gear-modelle](handoffs/gear-modelle.md) |
-| `src/ui/heroWindow.ts`, `ui/heroStats.ts` | Ein Fenster für Figur, Werte und Inventar (Taste X oder I), ganz ohne Maus bedienbar | [fenster](handoffs/fenster.md) |
+| `src/ui/heroWindow.ts`, `ui/heroStats.ts`, `ui/itemThumb.ts` | Ein Fenster für Figur, Werte und Inventar (Taste X oder I), Baum nach Art und Schule, 3D-Bilder aller Items, ganz ohne Maus bedienbar | [fenster](handoffs/fenster.md) |
+| `src/models/kosmetikParts.ts`, `src/figEvents.ts` | 25 Kosmetik-Teile (20 aus der Box, 5 über Meilensteine), reagieren auf Spiel-Ereignisse wie Kill, Crit, Treffer | [kosmetik](handoffs/kosmetik.md) |
 | `src/skins.ts`, `skinFx.ts`, `src/models/` | Figuren, Skins, Mob-Rigs, Waffen-Baukasten | [skins](handoffs/skins.md) |
 | `src/realMen.ts`, `melee.ts`, `wucht.ts` | Nahkampf des Strichkriegers, Treffer-Gefühl | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `src/vfx/`, `render.ts`, `dunkel.ts` | Effekte, Sound, Bloom, dunkles Licht mit Lampe | [Code-Karte](handoff.md#code-karte) |
@@ -45,6 +46,7 @@ npm run build        # eine dist/index.html
 - Kein UI-Element darf unter den Zierrahmen-Ecken liegen: Abstand über `--fg-safe` pro UI-Look → [base.css](../src/ui/flavors/base.css)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Das Spiel läuft immer dunkel, Helligkeit stellt man in den Einstellungen ein. Mobs hinter dem Nebel werden nicht gezeichnet → [dunkel.ts](../src/dunkel.ts)
+- Kosmetik geht vor Gear: angezeigt wird `look[slot] ?? gear[slot]`, Meilensteine zählen Kills und Staub über alle Runs in `meta.stats` → [gear.ts](../src/gear.ts)
 - Gear-Teile werden an die Bones ins Körper-Mesh der Figur gemergt, kosten also keine Draw Calls; Set-Skin 5/5 verdeckt sie → [gearParts.ts](../src/models/gearParts.ts)
 - Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
