@@ -352,9 +352,9 @@ async function salvageEntry(e: Entry) {
   const ok = e.kind === 'w' ? await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name, n }), t('shop.salvage'))
     : await askConfirm(t('gear.deleteTitle'), t('gear.deleteText', { name, n }), t('shop.salvage'));
   if (!ok) return;
-  const list = entries(tab), i = list.findIndex(x => x.key === e.key);
+  const list = treeView() ? treeRows() : entries(tab), i = list.findIndex(x => x.key === e.key);
   if (e.kind === 'w') deleteWeapon(e.item.id); else deleteGear(e.item.slot, e.item.id);
-  sel = list[i + 1]?.key ?? list[i - 1]?.key ?? null;   // Auswahl rückt weiter
+  sel = list[i + 1]?.key ?? list[i - 1]?.key ?? null;   // Auswahl rückt weiter (im Baum zur nächsten sichtbaren Zeile)
   changed();
 }
 
@@ -496,19 +496,39 @@ function renderGrid(list: Entry[]) {
 
 // ---------- Baum: statt des Rasters, die Tabs werden Ordner (auf/zu und Ansicht in frostgrind.ui.v1) ----------
 const treeView = () => uiSettings.heroView === 'tree';
-const isOpenF = (x: Tab) => (uiSettings.heroOpen ?? []).includes(x);
-function setFolder(x: Tab, open: boolean) {
+// Ordner: oben was es ist (Tab), darin nach Schule = Element (Kosmetik: nach Slot). Offen-Schlüssel in heroOpen: „waffen“ bzw. „waffen/frost“
+const isOpenF = (f: string) => (uiSettings.heroOpen ?? []).includes(f);
+function setFolder(f: string, open: boolean) {
   const cur = uiSettings.heroOpen ?? [];
-  setUi('heroOpen', open ? [...new Set([...cur, x])] : cur.filter(f => f !== x));
+  setUi('heroOpen', open ? [...new Set([...cur, f])] : cur.filter(x => x !== f));
 }
-const tabLabel = (x: Tab) => `${x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x)} ${x === 'kosmetik' ? tabCount(x) : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`}`;
-type TreeRow = { key: string; tab: Tab; entry?: Entry };
-// Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten)
+const tabName = (x: Tab) => x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x);
+const tabFill = (x: Tab) => x === 'kosmetik' ? `${tabCount(x)}` : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`;
+const tabLabel = (x: Tab) => `${tabName(x)} ${tabFill(x)}`;
+const subOf = (e: Entry): string => {
+  if (e.kind === 'k') return LOOKS[e.item].slot;
+  const elm = e.kind === 'w' ? elementOf(e.item) : e.item.s.element;
+  return elm in ELEMENTS ? elm : 'none';
+};
+const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...LOOK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
+const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('cw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
+const subColor = (x: Tab, sub: string) => x === 'kosmetik' || sub === 'none' ? '' : elementColor(sub);
+type TreeRow = { key: string; tab: Tab; depth: 0 | 1 | 2; parent?: string; folder?: string; sub?: string; n?: [number, number]; entry?: Entry };
+// Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten). Unterordner nur, wenn sie Einträge haben
 export function treeRows(): TreeRow[] {
   const out: TreeRow[] = [];
   for (const x of TABS) {
-    out.push({ key: `f:${x}`, tab: x });
-    if (isOpenF(x)) for (const e of entries(x)) out.push({ key: e.key, tab: x, entry: e });
+    const top = `f:${x}`;
+    out.push({ key: top, tab: x, depth: 0, folder: x });
+    if (!isOpenF(x)) continue;
+    const list = entries(x);
+    for (const sub of SUBS(x)) {
+      const in_ = list.filter(e => subOf(e) === sub);
+      if (!in_.length) continue;
+      const f = `${x}/${sub}`, key = `f:${f}`;
+      out.push({ key, tab: x, depth: 1, parent: top, folder: f, sub, n: [in_.filter(e => !e.dim).length, in_.length] });
+      if (isOpenF(f)) for (const e of in_) out.push({ key: e.key, tab: x, depth: 2, parent: key, entry: e });
+    }
   }
   return out;
 }
@@ -519,15 +539,24 @@ function renderTree() {
   const box = $('hwTree');
   box.textContent = '';
   for (const r of treeRows()) {
-    const row = el('button', 'hwTRow' + (r.key === sel ? ' sel' : ''));
+    const row = el('button', 'hwTRow' + (r.key === sel ? ' sel' : '') + (r.depth ? ` d${r.depth}` : ''));
     row.type = 'button';
     row.dataset.key = r.key;
     if (!r.entry) {
-      const open = isOpenF(r.tab);
+      const open = isOpenF(r.folder);
       row.classList.add('folder');
       row.setAttribute('aria-expanded', String(open));
-      row.append(el('span', 'hwCaret', open ? '▾' : '▸'), icon(tabSvg(r.tab)), el('span', 'hwTName', tabLabel(r.tab)));
-      row.addEventListener('click', () => { sel = r.key; tab = r.tab; setUi('heroTab', r.tab); setFolder(r.tab, !open); render(); });
+      row.setAttribute('aria-level', String(r.depth + 1));
+      row.append(el('span', 'hwCaret', open ? '▾' : '▸'));
+      if (r.depth === 0) row.append(icon(tabSvg(r.tab)), el('span', 'hwTName', tabLabel(r.tab)));
+      else {   // Unterordner: Schule (Element) in ihrer Farbe bzw. Kosmetik-Slot, mit Anzahl (gefiltert: „passend/alle“)
+        const c = subColor(r.tab, r.sub), name = el('span', 'hwTName', `${subName(r.tab, r.sub)} ${r.n[0] === r.n[1] ? r.n[1] : `${r.n[0]}/${r.n[1]}`}`);
+        if (r.tab === 'kosmetik') row.append(icon(tabSvg(r.sub)));
+        else { const dot = el('i', 'hwElDot'); if (c) dot.style.setProperty('--ec', c); row.append(dot); }
+        if (c) name.style.color = c;
+        row.append(name);
+      }
+      row.addEventListener('click', () => { sel = r.key; tab = r.tab; setUi('heroTab', r.tab); setFolder(r.folder, !open); render(); });
     } else {
       const e = r.entry, c = rarColor(e), d = deltaOf(e);
       if (e.dim) row.classList.add('dim');
@@ -606,7 +635,8 @@ function renderInv() {
   for (const x of TABS) {
     const b = el('button', 'hwTab' + (x === tab ? ' on' : ''));
     b.innerHTML = tabSvg(x);
-    b.append(el('span', '', tabLabel(x)));
+    b.append(el('span', '', tabName(x)), el('small', '', tabFill(x)));
+    b.title = tabLabel(x);
     b.type = 'button';
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-selected', String(x === tab));
@@ -730,17 +760,17 @@ export function heroCommand(cmd: HeroCmd) {
   if (cmd === 'down') return moveSel(tree ? 1 : 10);
   if (cmd === 'left') {
     if (!tree) return moveSel(-1);
-    if (row && !row.entry && isOpenF(row.tab)) { setFolder(row.tab, false); render(); showSel(); return; }   // Ordner zu
-    if (row?.entry) { sel = `f:${row.tab}`; render(); showSel(); }                                      // zum Ordner
+    if (row?.folder && isOpenF(row.folder)) { setFolder(row.folder, false); render(); showSel(); return; }   // Ordner zu
+    if (row?.parent) { sel = row.parent; render(); showSel(); }                                             // zum Eltern-Ordner
     return;
   }
   if (cmd === 'right') {
     if (!tree) return moveSel(1);
-    if (row && !row.entry && !isOpenF(row.tab)) { setFolder(row.tab, true); render(); showSel(); return; }  // Ordner auf
+    if (row?.folder && !isOpenF(row.folder)) { setFolder(row.folder, true); render(); showSel(); return; }  // Ordner auf
     return moveSel(1);
   }
   if (cmd === 'enter') {
-    if (row && !row.entry) { setFolder(row.tab, !isOpenF(row.tab)); render(); showSel(); return; }
+    if (row?.folder) { setFolder(row.folder, !isOpenF(row.folder)); render(); showSel(); return; }
     if (cur) { wearEntry(cur); showSel(); }
     return;
   }

@@ -2341,4 +2341,5 @@ export const de: Record<string, string> = {
   'hw.tree': "Baum",
   'hw.hintKeys': "Pfeile wählen · Enter ausrüsten · Entf zerlegen · Shift vergleichen · / suchen · Q/E Tab · Tab Raster/Baum · Pad: A, X, LB/RB, Y",
   'gear.makerHalf': "{name}: {trait} (halb so stark)",
+  'hw.noElement': "Ohne Element",
 };
