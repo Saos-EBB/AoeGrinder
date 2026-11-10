@@ -2414,4 +2414,5 @@ export const en: Record<string, string> = {
   'set.hudPart.combo': "Combo",
   'set.hudMixReset': "All back to UI flavor",
   'hw.st.regenRule': "{p}% / {s}s, {c}s after combat",
+  'tip.11': "Pick level-up cards with F1, F2 … so the number keys keep casting without grabbing a card by accident.",
 };

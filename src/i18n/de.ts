@@ -2415,4 +2415,5 @@ export const de: Record<string, string> = {
   'set.hudPart.combo': "Combo",
   'set.hudMixReset': "Alles zurück auf UI-Flavor",
   'hw.st.regenRule': "{p} % / {s} s, {c} s nach dem Kampf",
+  'tip.11': "Level-up-Karten wählst du mit F1, F2 … So zaubern die Zahlentasten weiter, ohne aus Versehen eine Karte zu nehmen.",
 };

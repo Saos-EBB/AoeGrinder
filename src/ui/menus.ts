@@ -26,9 +26,10 @@ import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '..
 import { t, fmtNum } from '../i18n';
 
 const KIND_LOOK = { rang: { name: t('cardui.kind.rang'), icon: '▲' }, spell: { name: t('cardui.kind.spell'), icon: '✦' }, rune: { name: t('cardui.kind.rune'), icon: '✧' }, support: { name: t('cardui.kind.support'), icon: '◆' }, relic: { name: t('cardui.kind.relic'), icon: '♛' }, talent: { name: t('cardui.kind.talent'), icon: '★' }, luck: { name: t('cardui.kind.luck'), icon: '♣' } };
-// Level-Up-Karten: bis 3 Karten groß (Mockup K2), 4–10 kompakt in 2 Reihen à 5 (L2). Tasten 1–0 wählen, X öffnet das Charakterfenster.
+// Level-Up-Karten: bis 3 Karten groß (Mockup K2), 4–10 kompakt in 2 Reihen à 5 (L2). F1–F12 wählen (nicht die Zahlentasten: die zaubern, wer
+// beim Level-up Spell 1 spammt, nimmt sonst aus Versehen eine Karte), X öffnet das Charakterfenster.
 // Rahmen = Seltenheit, Kopfleiste = Typ, Relikt mit Goldrahmen und gewölbter Oberkante, Upgrade grün mit „Rang x → y“.
-const CARD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+const CARD_KEYS = Array.from({ length: 12 }, (_, i) => `F${i + 1}`);   // Karte n = Fn
 const RELIC_GOLD = '#e3c27a';
 let offerShown = [];
 const cardSpell = c => c.spell ?? c.learn;
@@ -42,7 +43,7 @@ export function showCards(offer?) {
   state.paused = true;
   const big = offer.length <= 3;
   $('cardLvl').textContent = String(player.level);
-  $('cardHint').textContent = t('card.hint', { keys: big ? CARD_KEYS.slice(0, offer.length).join(' / ') : `1–${CARD_KEYS[offer.length - 1]}` });
+  $('cardHint').textContent = t('card.hint', { keys: big ? CARD_KEYS.slice(0, offer.length).join(' / ') : `F1–${CARD_KEYS[offer.length - 1]}` });
   $('cards').innerHTML = '';
   $('cards').className = `cards ${big ? 'k2' : 'l2'}`;
   offer.forEach((c, i) => {
@@ -83,14 +84,15 @@ function cardTip(el, c, r, kind, stage, rep, color) {
     short: markWords(c.desc(r.mult)),
     rows: [stage ? `<span class="tGood">${t('cardui.up', { a: stage, b: stage + 1 })}</span>` : '', prev ? `<span class="tGood">${prev}</span>` : '', rep ? `<span class="tRune">⇄ ${rep.label}: ${rep.name}</span>` : ''].filter(Boolean) }));
 }
-// Tasten 1–0 wählen eine Karte
+// F1–F12 wählen eine Karte. Solange die Kartenwahl offen ist, gehören alle F-Tasten ihr: kein Browser (F1 Hilfe, F5 Neu laden, F11 Vollbild;
+// F12 lässt sich nicht immer abfangen) und kein Dev-Panel (F10), auch ohne Karte unter der Taste. Capture vor devPanel.ts
 addEventListener('keydown', e => {
-  if (!$('cardModal').classList.contains('show') || $('heroModal')?.classList.contains('show') || state.rebinding) return;
-  const i = CARD_KEYS.indexOf(e.key);
-  const el = $('cards').querySelectorAll<HTMLElement>('.card')[i];
-  if (i < 0 || !el) return;
+  if (!$('cardModal').classList.contains('show') || state.rebinding) return;
+  const i = CARD_KEYS.indexOf(e.code);
+  if (i < 0) return;
   e.preventDefault(); e.stopImmediatePropagation();
-  el.click();
+  if (e.repeat || $('heroModal')?.classList.contains('show')) return;
+  $('cards').querySelectorAll<HTMLElement>('.card')[i]?.click();
 }, true);
 
 function pickCard(card) {
