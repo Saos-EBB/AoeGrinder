@@ -73,8 +73,10 @@ const SKINS = {
 // Skins (src/skins.ts, Viewer docs/ref/set-skins-magier.html): Farben des Grundkörpers, Teile baut buildStrichMagier im Block `look`.
 // top Brust, sleeve Arme, pants Hüfte und Beine, shoe Füße, skin Hals und Hände, head Kopf, collar Kragen-Schal, ankle: Knöchel frei
 const SKIN_TONE = col(0xf1dcc6).multiplyScalar(.3);   // Haut, dunkler als im Viewer: Lampe und Rand-Licht heben sie sonst über die Bloom-Schwelle // PH
-const LAMP_COMP = new THREE.Color(.36, .46, .64);   // Hellblau unter der warmen Lampe (dunkel.ts, 0xffc48a): dunkler und Richtung Blau, sonst wird es cremeweiß und brennt im Bloom aus; Blau-Anteil bleibt deutlich vorn, sonst kippt es wieder ins Creme // PH
-const FACETTE = { pal: ['#a9cbea', '#8fbbe6', '#d6e7f6', '#c2dbf1', '#eef5fb'].map(c => new THREE.Color(c).multiply(LAMP_COMP)) };   // Muster Facette (Splitterkönig) // PH
+// Babyblau unter der warmen Lampe (dunkel.ts, 0xffc48a) und ACES: Rot stark und Grün etwas gedämpft, sonst wird es cremeweiß und brennt aus. // PH
+const LAMP_COMP = new THREE.Color(.17, .3, .6);
+// Muster Facette (Splitterkönig): Babyblau-Töne plus ein paar tiefere Blau-Dreiecke, damit das Muster der Referenz erkennbar bleibt // PH
+const FACETTE = { pal: ['#a9cbea', '#7fb4ea', '#d6e7f6', '#c2dbf1', '#5f9be0', '#eef5fb'].map(c => new THREE.Color(c).multiply(LAMP_COMP)) };
 const LOOKS = {
   blitz: { top: col(0x1f2a5c), sleeve: col(0x1f2a5c), pants: col(0x1f2a5c), shoe: col(0xe8e8e8), skin: SKIN_TONE, head: SKIN_TONE, collar: col(0x1f2a5c), eyes: true },
   seuche: { top: col(0x3b1f46), sleeve: col(0x2e1838), pants: col(0x2e1838), shoe: col(0x1a1018), skin: SKIN_TONE, head: col(0xd8cfb0).multiplyScalar(.5), collar: col(0x2e1838), eyes: true },
@@ -131,9 +133,11 @@ function icicleGeo(len, r) {
   for (let i = 0; i < n.count; i++) if (!(Math.hypot(n.getX(i), n.getY(i), n.getZ(i)) > 1e-4)) n.setXYZ(i, 0, 1, 0);
   return g;
 }
-function makeIcicles(F) {
+// Splitterkönig (Skin frost14): Eis in Babyblau getönt statt Weiß, sonst brennt es unter der Lampe auf dem hellen Anzug aus // PH
+const ICE_TINT = { base: col(0x9fd2ff).multiply(LAMP_COMP), tip: col(0x4f9fff).multiply(LAMP_COMP), shell: col(0x8cc8ff).multiply(LAMP_COMP), emissive: [.01, .04, .12] };
+function makeIcicles(F, tint = false) {
   SEED = 11;
-  const L = [], C = { base: col(0xeefaff).multiplyScalar(.36), tip: col(0x7fc8ff).multiplyScalar(.36) };   // dunkler als im Viewer: die Lampe über der Figur hebt Weiß sonst über die Bloom-Schwelle // PH
+  const L = [], C = tint ? { base: ICE_TINT.base, tip: ICE_TINT.tip } : { base: col(0xeefaff).multiplyScalar(.36), tip: col(0x7fc8ff).multiplyScalar(.36) };   // dunkler als im Viewer: die Lampe über der Figur hebt Weiß sonst über die Bloom-Schwelle // PH
   const add = (bone, pos, dir, len, r, t) => {
     const q = new THREE.Quaternion().setFromUnitVectors(UP, V(...dir).normalize());
     L.push({ bone, geo: icicleGeo(len * 1.45, r * 1.35), color: C, flick: true, t, m: new THREE.Matrix4().compose(V(...pos), q, V(1, 1, 1)) });
@@ -157,8 +161,9 @@ function makeIcicles(F) {
   return L;
 }
 // Eisschicht: dünne Hülle aus der Körper-Geometrie, halb durchsichtig, Kristall-Facetten. Wächst fleckig von unten nach oben
-function makeIceShell(F, U) {
-  const mat = new THREE.MeshToonMaterial({ color: new THREE.Color(0xdff6ff).multiplyScalar(.36), gradientMap: grad, emissive: 0x0c161c, transparent: true, opacity: .72, depthWrite: false });   // dunkler als im Viewer, siehe Zapfen // PH
+function makeIceShell(F, U, tint = false) {
+  const mat = new THREE.MeshToonMaterial({ color: tint ? ICE_TINT.shell : new THREE.Color(0xdff6ff).multiplyScalar(.36), gradientMap: grad, emissive: tint ? 0x04101e : 0x0c161c, transparent: true, opacity: .72, depthWrite: false });   // dunkler als im Viewer, siehe Zapfen // PH
+  const ICE_A = tint ? 'vec3(.55, .78, 1.)' : 'vec3(.78, .93, 1.)', ICE_B = tint ? 'vec3(.75, .9, 1.)' : 'vec3(1.)';   // Facetten-Farben der Hülle (getönt: kein Weiß)
   mat.onBeforeCompile = sh => {
     sh.uniforms.uM = U.uM;
     sh.vertexShader = 'attribute float icT; attribute vec3 icB;\nuniform float uM; varying vec3 vP;\n' + sh.vertexShader.replace('#include <begin_vertex>',
@@ -173,7 +178,7 @@ function makeIceShell(F, U) {
         float cov = .55 * n3(vP * 9.) + .45 * hgt;              // fleckig, von unten nach oben
         if (cov > uM * 1.05) discard;
         float facet = floor(n3(vP * 22.) * 4.) / 4.;            // harte Kristall-Facetten
-        vec3 c = mix(vec3(.78, .93, 1.), vec3(1.), facet * .7);
+        vec3 c = mix(${ICE_A}, ${ICE_B}, facet * .7);
         vec4 diffuseColor = vec4(c * diffuse, opacity * (.6 + .4 * facet));`);
     shellNoProp(sh);
   };
@@ -631,7 +636,7 @@ function buildLook(F, look, { part, glow, B, M }) {
   }
 
   if (look === 'frost14') {   // Splitterkönig: Muster Facette, Schnitt 14 „Weste mit Stehkragen“, Platin-Perücke, Eis-Schulter links, Kristall-Kette, Eis-Manschetten, Knöchel frei, spitze Lackschuhe
-    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiply(LAMP_COMP), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiplyScalar(.22), PEARL = col(0xd8e4f0).multiplyScalar(.5);
+    const LK_SHOE = LOOKS.frost14.shoe, LIGHT = col(0xeaf3fb).multiply(LAMP_COMP), ICE = col(0xbfe9ff).multiplyScalar(.5), CRY = col(0x9fe4ff), PLAT = col(0xe8eef6).multiply(LAMP_COMP).multiplyScalar(.8), PEARL = col(0xd8e4f0).multiplyScalar(.5);
     FACET++; part(chest, new THREE.CylinderGeometry(.095, .1, .1, 10), FACETTE, [0, .63, 0], [0, 0, 0], [1, 1, .9]);   // Stehkragen
     for (let k = 0; k < 5; k++) part(chest, new THREE.SphereGeometry(.012, 5, 4), PEARL, [0, .44 - k * .085, .108 - k * .006]);   // Knopfleiste
     part(chest, new THREE.ConeGeometry(.07, .2, 3), LIGHT, [0, .5, .1], [Math.PI, 0, 0], [1, 1, .25]);   // Hemd im Westen-Ausschnitt
@@ -1099,7 +1104,8 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     glow(chest, new THREE.OctahedronGeometry(.03, 0), col(0xfff3b0), [0, .25, .15]);
   }
   if (skin === 'fire' && !LK) part(head, new THREE.IcosahedronGeometry(.185, 1), S.ink, [0, .14, 0], [0, 0, 0], [.9, .7, .95]);   // verkohlter Kiefer
-  if (skin === 'ice' && !LK) F.ice = makeIcicles(F);   // Skin (Splitterkönig): keine Eiszapfen und keine Eisschicht, die Kälte zeigen seine Splitter
+  const iceTint = look === 'frost14';   // Splitterkönig friert wie der Frost-Magier ein (Zapfen, Eisschicht), das Eis babyblau statt weiß
+  if (skin === 'ice' && (!LK || iceTint)) F.ice = makeIcicles(F, iceTint);
   if (skin === 'arcane') { glow(head, new THREE.OctahedronGeometry(.035, 0), S.orb, [0, .2, .17], [0, 0, 0], [1, 1.5, .5]); F.runeParts = bodyRunes(F); }   // drittes Auge
   if (skin === 'blitz' && !LK) for (let i = 0; i < 7; i++) { const a = (i / 7 - .5) * 2.4; part(head, new THREE.ConeGeometry(.04, .17, 4), S.ink, [Math.sin(a) * .12, .3 - Math.abs(a) * .03, Math.cos(a) * .05 - .06], [-.5 + Math.abs(a) * .1, 0, -a * .55]); }   // Haar-Zacken
   if (skin === 'plague' && !LK) {
@@ -1170,7 +1176,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   });
   F.body.customDepthMaterial = depthMat(U);
   if (F.runeParts) F.runeMesh = build(F.runeParts, runeMat(U));
-  if (skin === 'ice' && !LK) F.iceShell = makeIceShell(F, U);
+  if (skin === 'ice' && (!LK || iceTint)) F.iceShell = makeIceShell(F, U, iceTint);
   if (skin === 'fire') { F.flames = makeFlames(F, U); world.add(F.flames); F.shell = makeFireShell(F, U); }
   if (skin === 'arcane') { F.orbs = makeChargeOrbs(); world.add(F.orbs); }
   if (skin === 'blitz') { F.bolts = makeBolts(); world.add(F.bolts.mesh); }
@@ -1297,7 +1303,8 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
         let target = mode === 'chan' ? .35 : 0;
         if (castU > fr[0] && castU < fr[1]) target = 1;
         F.freeze = lerp(F.freeze, target, Math.min(1, s * (target > F.freeze ? 10 : 4)));
-        if (!LK) F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);   // Skin: kein Eis-Aufleuchten über dem ganzen Körper
+        if (!LK) F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);   // Skin: kein weißes Aufleuchten über dem ganzen Körper
+        else if (iceTint) { const [r, g, b] = ICE_TINT.emissive; F.mat.emissive.setRGB(r * F.freeze, g * F.freeze, b * F.freeze); }   // Splitterkönig: nur ein Hauch Blau beim Zaubern
         if (castU > fr[1] && castU < fr[1] + .05) emit(F.chest.getWorldPosition(V()).add(V(0, .3, 0)), 25, V(0, 1, 0), 0xdff6ff, 4, .6, .6);
         if (F.freeze > .5 && Math.random() < s * 30) emit(F.chest.getWorldPosition(V()).add(V(0, .2, .1)), 1, V(0, .3, 0), 0xe8f8ff, -.2, .9, .8);
         if (m > .5) { const n = rate(STAGE_FX.frost * (m - .5) * s); for (let i = 0; i < n; i++) emit(pickBone(F).getWorldPosition(V()), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18); }
