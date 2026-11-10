@@ -1,16 +1,20 @@
-/* Level-up-Karten (K2: bis 3 Karten, L2: 4–10 in 2 Reihen à 5) und Hover-Karten, Farben aus dem UI-Flavor. Größen in --hu (1 px Mockup 1280×720). --rc = Rahmenfarbe */
+/* Level-up-Karten (K2: bis 3 Karten, L2: 4–10 in 2 Reihen à 5, 11–12 in 2 Reihen à 6) und Hover-Karten, Farben aus dem UI-Flavor. Größen in --hu (1 px Mockup 1280×720). --rc = Rahmenfarbe */
 #cardModal { gap: calc(10 * var(--hu)); }
 #cardModal h1 { font-size: calc(46 * var(--hu)); }
 #cardHint { font: 600 calc(15 * var(--hu)) var(--font-body); color: var(--fg-muted); letter-spacing: .04em; }
 .cards { display: flex; justify-content: center; gap: calc(40 * var(--hu)); padding: calc(16 * var(--hu)); max-width: 98vw; max-height: 82vh; overflow: auto; }
-/* L2: höchstens 5 je Reihe, jede Reihe mittig (auch 4 Karten oder eine halbe zweite Reihe); 1102 = 5 × 206 + 4 × 18 */
-.cards.l2 { display: flex; flex-wrap: wrap; justify-content: center; max-width: calc(1102 * var(--hu)); gap: calc(22 * var(--hu)) calc(18 * var(--hu)); }
+/* L2: höchstens 5 je Reihe, jede Reihe mittig (auch 4 Karten oder eine halbe zweite Reihe); 1102 = 5 × 206 + 4 × 18, dazu das Padding (border-box).
+   Ab 11 Karten 6 je Reihe mit schmaleren Karten (6 × 186 + 5 × 14 = 1186), so bleiben es bis 12 Karten 2 Reihen. Kein Scrollbalken: der nähme
+   Breite weg und schöbe die 5. Karte in eine 3. Reihe */
+.cards.l2 { display: flex; flex-wrap: wrap; justify-content: center; max-width: calc(1134 * var(--hu)); gap: calc(22 * var(--hu)) calc(18 * var(--hu)); max-height: none; overflow: visible; }
+.cards.l2:has(> .card:nth-child(11)) { max-width: calc(1218 * var(--hu)); gap: calc(18 * var(--hu)) calc(14 * var(--hu)); }
 .lvCard { position: relative; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center;
   background: var(--fg-card); border: 3px solid var(--rc); border-radius: 10px; box-shadow: 0 0 0 2px #000, 0 0 16px color-mix(in srgb, var(--rc) 27%, transparent);
   font-family: var(--font-body); color: var(--fg-text); transition: transform .1s, box-shadow .1s; }
 .lvCard:hover, .lvCard.selected, .lvCard.navSel { transform: translateY(-6px); box-shadow: 0 0 0 2px #000, 0 0 30px var(--rc); }
 .cards.k2 .lvCard { width: calc(300 * var(--hu)); min-height: calc(420 * var(--hu)); padding: calc(16 * var(--hu)) 0 calc(36 * var(--hu)); }
 .cards.l2 .lvCard { width: calc(206 * var(--hu)); min-height: calc(210 * var(--hu)); padding: calc(10 * var(--hu)) 0 calc(8 * var(--hu)); gap: calc(4 * var(--hu)); border-width: 2px; border-radius: 8px; }
+.cards.l2:has(> .card:nth-child(11)) .lvCard { width: calc(186 * var(--hu)); }
 .lvCard.improves { box-shadow: 0 0 0 2px #000, 0 0 26px #6ee7a0aa; }
 .lvCard.relicCard { border-radius: 150px 150px 10px 10px; box-shadow: 0 0 0 2px #000, 0 0 34px color-mix(in srgb, var(--rc) 55%, transparent); }
 .cards.k2 .lvCard.relicCard { padding-top: calc(70 * var(--hu)); }

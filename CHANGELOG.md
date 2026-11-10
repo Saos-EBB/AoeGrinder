@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- fix(ui): Kartenwahl mit vielen Karten passt ins Bild: bis 10 Karten wieder 5 je Reihe (es waren nur 4, dadurch bei 10 Karten drei Reihen und die unterste abgeschnitten bzw. zum Scrollen), 11–12 Karten etwas schmaler 6 je Reihe. 4–12 Karten passen ohne Scrollen bei 1920 × 1080, 1600 × 900 und 1263 × 638 in allen drei UI-Flavors
 - feat(ui): Level-up-Karten wählt man mit F1, F2 … (bis F12) statt mit den Zahlentasten: wer beim Level-up Spell 1 spammt, nimmt nicht mehr aus Versehen eine Karte. Die Karten zeigen F1, F2 …, der Hinweis z. B. „F1–F7“. Solange die Kartenwahl offen ist, lösen F-Tasten nichts im Browser aus (F1 Hilfe, F5 Neu laden, F11 Vollbild) und F10 öffnet nicht das Dev-Panel (wählt die 10. Karte, falls es eine gibt). Controller unverändert. Neuer Ladebildschirm-Tipp dazu
 - fix(ui): „Regen (Leben)“ unter „Alle Werte“ zeigt den echten Wert statt „—“: Leben pro Sekunde aus dem max. Leben (im Run das echte), dahinter die Regel „3 % / 2 s, 5 s nach dem Kampf“, mit Aufschlüsselung Basis/Waffe/Gear/Karten. Seuchenmagier (keine Regeneration) weiter „—“. Die Werte stehen jetzt in der Config statt fest im Code
 - fix(ui): Waffen-Slot an der Figur bei leerem Waffen-Inventar zeigt den Pilgerast gedimmt (das trägt die Figur dann), Tooltip „Pilgerast (ohne Effekt)“. Krieger-Waffenslot wie bisher
