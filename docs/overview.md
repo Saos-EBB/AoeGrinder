@@ -1,48 +1,57 @@
 # Frost Grind — Was ist los
-> Browser-Game, das Kevin aus Spaß baut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Komplett in Arbeit, der Look ist noch raw, Spells und Balance werden gerade ausprobiert.
+> Mein Browser-Game, aus Spaß gebaut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Der Prototyp ist fast fertig, gerade läuft Feinschliff an Maps, Items und Kosmetik.
 
-**Stand:** v22 auf `main` und [live](handoff.md#stand): drei Klassen (Strichmagier, Strichkrieger, Klingenstrich), Dodge, Waffen-Baukasten, Minimap. Getestet per Skript, Kevins Handtest läuft.
+**Stand:** Zwei Klassen (Strichmagier mit 6 Figuren, Strichkrieger), generierte Maps mit 5 Themes, neue Mobs, Gear mit Sets, Portale, Weltkarte und Map-Objekte. Nur Desktop, Handy ist bis auf Weiteres gesperrt. Live-Version und Deploy → [handoff](handoff.md#stand).
 
 ## Loslegen
 ```
 npm install
-npm run dev          # Spiel, VFX-Labor /vfx.html, Figuren-Tests /klinge.html und /strich.html
+npm run dev          # Spiel, dazu VFX-Labor /vfx.html und Figuren-Test /strich.html
 npm run check        # tsc
-npm run build        # eine dist/index.html fürs Artifact
+npm run check:i18n   # alle Texte in DE und EN
+npm run build        # eine dist/index.html
 ```
 
 ## Aufbau
 | Teil | Was es macht | Details |
 |---|---|---|
 | `src/main.ts`, `state.ts`, `config.ts` | Loop, Zustand, alle Spielzahlen | [Code-Karte](handoff.md#code-karte) |
-| `src/world.ts`, `collision.ts`, `zones.ts` | Karten, Boden, massive Objekte | [map-audit](map-audit.md) |
-| `src/mobs.ts`, `abilities.ts`, `siege.ts` | Mobs, Fähigkeiten, Mob-Modus Belagerung | [zones-spec](zones-spec.md) |
+| `src/mapgen/` | Map-Generator: 4 Layouts aus Seed, 5 Themes (Wald, Wüste, Kanäle, Kathedrale, Hölle), Arena, Freischaltung | [map-umbau](handoffs/map-umbau.md) |
+| `src/portal.ts`, `src/ui/worldMap.ts` | Portale im Run (neue Map, gleiches Theme), Weltkarte im Hauptmenü mit Seed-Feld | [map-umbau-2](handoffs/map-umbau-2.md) |
+| `src/objects/` | Schreine, Truhen mit Mimic, Explosiv-Fässer, Schatzdieb, ein Objekt pro Theme; Taste „Benutzen“ | [map-umbau-2](handoffs/map-umbau-2.md) |
+| `src/world.ts`, `collision.ts`, `zones.ts` | Alte Handbau-Zonen (nur über Dev), Boden, Kollision | [map-audit](map-audit.md) |
+| `src/mobs.ts`, `mobKinds.ts`, `abilities.ts` | Mobs = Kategorie + Zusatz + Theme-Skin, Spawn auf Pack-Plätzen | [map-umbau](handoffs/map-umbau.md) |
+| `src/boss.ts`, `waves.ts`, `champions.ts` | Bosse, Wellen-Modus, Champion-Packs mit Affixen | [boss-kader](handoffs/boss-kader.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/models/` | Alle Figuren (Strichmagier mit 4 Skins, Strichkrieger, Klingenstrich), Mob-Rigs, Waffen-Baukasten | [Code-Karte](handoff.md#code-karte) |
-| `src/realMen.ts`, `klinge.ts`, `melee.ts` | Nahkampf-Modi Strichkrieger, Klingenstrich und ihre Helfer | [Code-Karte](handoff.md#code-karte) |
-| `src/skinFx.ts` | Skin-Effekte der Magier | [Code-Karte](handoff.md#code-karte) |
-| `src/wucht.ts`, `champions.ts` | Treffer-Gefühl (Wackeln, Hitstop-Anlässe, Boden-Spuren, Trümmer, Knockback) und Champion-Packs mit Affixen | [Code-Karte](handoff.md#code-karte) |
-| `src/fx/`, `render.ts` | Effekte, Sound, Bloom | [Code-Karte](handoff.md#code-karte) |
-| `src/ui/` | Menüs, HUD, Schadenszahlen, Fenster | [ui-meta-konzept](ui-meta-konzept.md) |
-| `src/score.ts`, `leaderboard.ts` | Punkte, Zeit und lokale Ranglisten | [score-spec](score-spec.md) |
-| `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, gesperrter Pool, Shop, Magische Kiste mit Mage-Waffen, Spielstand-Code | [pool-liste](pool-liste.md) |
+| `src/gear.ts`, `loot.ts`, `ui/gearWindow.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, Ausrüstungsfenster (Taste I), Erfolge | [items](handoffs/items.md) |
+| `src/skins.ts`, `skinFx.ts`, `src/models/` | Figuren, Skins, Mob-Rigs, Waffen-Baukasten | [skins](handoffs/skins.md) |
+| `src/realMen.ts`, `melee.ts`, `wucht.ts` | Nahkampf des Strichkriegers, Treffer-Gefühl | [Code-Karte](handoff.md#code-karte) |
+| `src/fx/`, `src/vfx/`, `render.ts`, `dunkel.ts` | Effekte, Sound, Bloom, dunkles Licht mit Lampe | [Code-Karte](handoff.md#code-karte) |
+| `src/ui/`, `src/ui/flavors/` | Menüs, HUD, Fenster, drei UI-Looks (Höllenfeste, Krypta, Schlachtbank) | [ui-mix](handoffs/ui-mix.md) |
+| `src/score.ts`, `leaderboard.ts` | Punkte, Zeit, Rangliste pro Map mit Seed | [score-spec](score-spec.md) |
+| `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, Shop, Waffen-Kiste, Spielstand-Code | [pool-liste](pool-liste.md) |
 
 ## ⚠ Besonderheiten
-- Es gibt nur noch Strichfiguren; sie kommen aus den Viewern, Quellen im [handoff](handoff.md). Spuren und Skin-Regeln liegen in [trail.ts](../src/models/trail.ts)
 - Grundregel: NIE Pay-to-win, der Shop läuft nur über erspielten Staub → [AGENTS.md](../AGENTS.md)
-- Effekte und Bodenziele nutzen `groundAt`, nicht `heightAt`, sonst liegen sie auf Plattformen falsch → [Code-Karte](handoff.md#code-karte)
-- Modus-ID des Strichkriegers bleibt `realmen`, Skin `krieger`. Wut steht in `player.mana`, `player.rageMax` schaltet den Modus um; Klingenstrich hat keine Ressource und nutzt den Balken für die Haltung → [realMen.ts](../src/realMen.ts), [klinge.ts](../src/klinge.ts)
-- Karten: `WORLD_K` ist der Radius-Faktor, 2 heißt vierfache Fläche, Bauwerke bleiben in der Mitte → [config.ts](../src/config.ts)
-- Belagerung hat absichtlich keine Obergrenze, spielbar bis etwa 200–300 Mobs → [siege.ts](../src/siege.ts)
+- Jede Map und jeder Run bekommt einen neuen Seed. `?seed=` oder das Seed-Feld der Weltkarte halten ihn fest, auch hinter Portalen (für Speedruns auf einem Seed) → [rng.ts](../src/mapgen/rng.ts)
+- Alte Handbau-Zonen gibt es nur noch über Dev → Zone oder `?zone=<id>`, nicht auf der Weltkarte → [map-umbau](handoffs/map-umbau.md)
+- Krieger-Skins kommen mit den Waffen. Magier-Skins (einer pro Schule) gibt es nur über das volle Set 5/5: Erfolg, danach dauerhaft wählbar → [skins.ts](../src/skins.ts), [gear.ts](../src/gear.ts)
+- Mit Skin bleiben die Schul-Effekte aus, die den ganzen Körper bedecken. Ausnahme ist der Frost-Skin, der babyblau einfriert → [strichMagier.ts](../src/models/strichMagier.ts)
+- `gear.ts` säubert den Spielstand erst über `initGear()` aus `main.ts`, nicht beim Laden des Moduls (Import-Zyklen) → [main.ts](../src/main.ts)
+- Drops normaler Kills sind absichtlich fast null, die Drops kommen aus Bossen, Champions, Truhen und Großen. Balance folgt später → [loot.ts](../src/loot.ts)
+- Nach dem letzten Boss wird alles am Boden automatisch aufgehoben, das Waffen-Inventar darf dabei überlaufen → [loot.ts](../src/loot.ts)
+- Handy ist gesperrt („In Arbeit“), der Code bleibt; `?mobile=1` öffnet ihn trotzdem → [boot.ts](../src/boot.ts)
+- Kein UI-Element darf unter den Zierrahmen-Ecken liegen: Abstand über `--fg-safe` pro UI-Look → [base.css](../src/ui/flavors/base.css)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
-- Der Shop öffnet nach einem Abschluss und im Hauptmenü, dort mit dem letzten Angebot. Staub gibt es auch nach einem Tod → [meta.ts](../src/meta.ts)
-- Das Spiel läuft immer dunkel. Mobs hinter dem Nebel werden nicht gezeichnet, Schatten gibt es nur im Lichtkreis (`PERF.mob*`) → [dunkel.ts](../src/dunkel.ts), [config.ts](../src/config.ts)
+- Das Spiel läuft immer dunkel, Helligkeit stellt man in den Einstellungen ein. Mobs hinter dem Nebel werden nicht gezeichnet → [dunkel.ts](../src/dunkel.ts)
 - Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
-- Spell-Icons kommen als SVG aus dem Spell-Viewer, `ui/spellIcons.ts` wird erzeugt und nicht von Hand geändert; Zuordnung über den Anzeigenamen → [icons.ts](../src/ui/icons.ts)
+- Spell-Icons kommen als SVG aus dem Spell-Viewer, `ui/spellIcons.ts` wird erzeugt und nicht von Hand geändert → [icons.ts](../src/ui/icons.ts)
+- Geparkter Code (z. B. eine frühere dritte Klasse) liegt in `maybeLater/` und wird nicht gebaut → [maybeLater](../maybeLater/README.md)
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)
+- Aufträge pro Feature → [docs/handoffs/](handoffs/), Vorlagen und Viewer → [docs/ref/](ref/)
 - Alle Änderungen → [CHANGELOG.md](../CHANGELOG.md)
 - Warum etwas so gebaut wurde → [build-log.md](build-log.md)
 - Mechanik mit Belegen → [mechanics-spec.md](mechanics-spec.md)

@@ -37,6 +37,7 @@ Feuer-Set und alle anderen Mockups aus dem Viewer: nicht übernehmen.
 - Gewählter Skin in meta (Feld skins: { figur: skinId }, fehlt → 'standard'). Spielstand-Code: fehlendes Feld → Standard, nie crashen.
 - Hauptmenü: Skin-Wechsler unter der Figur (◀ Name ▶), Vorschau = Menü-Figur. Im Flavor-Look (src/ui/flavors), keine neuen Styles erfinden.
 - Alle 6 Skins sind frei (kein Shop, keine Freischaltung). Im Bericht sagen.
+  Später geändert (10.11.): Magier-Skins gibt es nur über das volle Set 5/5 (Erfolg), Krieger-Skins kommen mit den Waffen, siehe `src/skins.ts`.
 Commit.
 
 ## Schritt 2: Magier-Skins (Blitz, Seuche, Frost 14)
