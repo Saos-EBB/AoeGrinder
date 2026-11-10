@@ -57,6 +57,7 @@ npm run build        # eine dist/index.html
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)
+- Code-Audit (Schwachstellen, Fahrplan zum Aufräumen) → [audit/gesamt.md](audit/gesamt.md)
 - Aufträge pro Feature → [docs/handoffs/](handoffs/), Vorlagen und Viewer → [docs/ref/](ref/)
 - Alle Änderungen → [CHANGELOG.md](../CHANGELOG.md)
 - Warum etwas so gebaut wurde → [build-log.md](build-log.md)
