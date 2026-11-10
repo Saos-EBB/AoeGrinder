@@ -21,6 +21,7 @@ export const UI_DEFAULTS = {
   hudScale: 100,          // % (70–150)
   brightness: 50,         // Helligkeit der Szene in % (0–100, 0 = dunkelster Look), dunkel.ts
   numFlavor: 'flavor',    // Zahlen & Meldungen: 'flavor' = wie der UI-Flavor, sonst eine Flavor-ID
+  hudMix: {} as Record<string, string>,   // HUD-Teile kombinieren (ui/hud/presets.ts HUD_PARTS): Teil → 'flavor' oder Flavor-ID, fehlend = 'flavor'
   messages: true,         // Erfolgs-Meldungen (ui/messages.ts)
   numSize: 100,           // % (50–200)
   numMerge: true,         // kleine Treffer zusammenfassen

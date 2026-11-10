@@ -6,8 +6,8 @@ import { $ } from '../../util';
 import { device } from '../../device';
 import { UI } from '../uiConfig';
 import { uiSettings, setUi } from '../uiSettings';
-import { MOBILE } from './presets';
-import { activeFlavor } from '../flavors';
+import { MOBILE, MIX_FIXES, HUD_PARTS, partOf, type HudPart } from './presets';
+import { activeFlavor, flavorById, FLAVORS, type Flavor } from '../flavors';
 import { t } from '../../i18n';
 
 export type Anchor = 'tl' | 't' | 'tr' | 'l' | 'c' | 'r' | 'bl' | 'b' | 'br';
@@ -23,22 +23,30 @@ export const HUD_NAMES: Record<HudElementId, string> = {
 const ANCHORS: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
 const SNAP = 0.5;   // Raster in %
 
-// Layout = Standard-Layout des aktiven UI-Flavors; eigene Änderungen gelten pro Flavor
-export const activeLayout = (): HudLayout => { const f = activeFlavor(); return { id: f.id, elements: f.hud }; };
-const overrideKey = () => activeLayout().id + (device.mobile ? '@mobile' : '');
-const overrides = (): Partial<Record<HudElementId, Placement>> => uiSettings.hudOverrides[overrideKey()] ?? {};
+// Layout = Standard-Layout des aktiven UI-Flavors; ein HUD-Teil (presets.ts HUD_PARTS) kann aus einem anderen Flavor kommen (uiSettings.hudMix).
+// Eigene Änderungen gelten pro UI-Flavor, bei einem fremden Teil pro Paar „UI-Flavor+Teil-Flavor“ (Schlüssel hoellenfeste+krypta)
+export function elementFlavor(id: HudElementId): Flavor {
+  const part = partOf(id), pick = part && uiSettings.hudMix?.[part];
+  return pick && pick !== 'flavor' && FLAVORS.some(f => f.id === pick) ? flavorById(pick) : activeFlavor();
+}
+const mobileKey = () => device.mobile ? '@mobile' : '';
+const overrideKey = (id: HudElementId) => { const main = activeFlavor().id, src = elementFlavor(id).id; return main + (src !== main ? `+${src}` : '') + mobileKey(); };
+const overrides = (id: HudElementId): Partial<Record<HudElementId, Placement>> => uiSettings.hudOverrides[overrideKey(id)] ?? {};
+const mixNow = () => Object.assign({ main: activeFlavor().id },
+  ...(Object.keys(HUD_PARTS) as HudPart[]).map(k => ({ [k]: elementFlavor(HUD_PARTS[k][0]).id }))) as Parameters<(typeof MIX_FIXES)[number]['when']>[0];
 function base(id: HudElementId): Placement | undefined {
-  const p = activeLayout().elements[id];
+  let p = elementFlavor(id).hud[id];
+  if (p) { const m = mixNow(); for (const fix of MIX_FIXES) if (fix.hud[id] && fix.when(m)) p = { ...p, ...fix.hud[id] }; }   // Ausweich-Lage im gemischten Layout
   return device.mobile && p && MOBILE[id] ? { ...p, ...MOBILE[id] } : p;
 }
 export function placementOf(id: HudElementId): Placement | undefined {
-  const b = base(id), o = overrides()[id];
+  const b = base(id), o = overrides(id)[id];
   return b || o ? { ...b, ...o } as Placement : undefined;
 }
 function saveOverride(id: HudElementId, p: Placement | null) {
-  const all = { ...uiSettings.hudOverrides }, mine = { ...(all[overrideKey()] ?? {}) };
+  const key = overrideKey(id), all = { ...uiSettings.hudOverrides }, mine = { ...(all[key] ?? {}) };
   if (p) mine[id] = { ...p }; else delete mine[id];
-  all[overrideKey()] = mine;
+  all[key] = mine;
   setUi('hudOverrides', all);
 }
 
@@ -67,7 +75,7 @@ function place(id: HudElementId) {
   Object.assign(w.style, { left: `${fx * 100 + p.x}%`, top: `${fy * 100 + p.y}%`,
     transform: `translate(${-fx * 100}%, ${-fy * 100}%) scale(${(p.scale ?? 1) * uiSettings.hudScale / 100})`, transformOrigin: `${fx * 100}% ${fy * 100}%` });
   w.dataset.anchor = p.anchor;
-  w.dataset.flavor = activeFlavor().id;   // Look des Elements: Variablen und Regeln aus ui/flavors/<id>.css greifen am Wrapper
+  w.dataset.flavor = elementFlavor(id).id;   // Look des Elements: Variablen und Regeln aus ui/flavors/<id>.css greifen am Wrapper
   if (p.variant) w.dataset.variant = p.variant; else delete w.dataset.variant;
   w.classList.toggle('fg-panel', !!p.variant?.split(' ').includes('panel'));   // Panel mit den Ornamenten des Flavors
 }
@@ -167,9 +175,10 @@ addEventListener('keydown', e => {
   if (p) saveOverride(hover, { ...p, hidden: !p.hidden });
 }, true);
 
+// Zurücksetzen: alle eigenen Änderungen des UI-Flavors, auch die der fremden Teile
 $('hudEditReset').addEventListener('click', () => {
-  const all = { ...uiSettings.hudOverrides };
-  delete all[overrideKey()];
+  const main = activeFlavor().id, all = { ...uiSettings.hudOverrides };
+  for (const k of Object.keys(all)) if (k.split(/[+@]/)[0] === main && k.includes('@mobile') === device.mobile) delete all[k];
   setUi('hudOverrides', all);
 });
 $('hudEditDone').addEventListener('click', stopHudEdit);
