@@ -132,6 +132,7 @@ export function rollPackSize() {
 
 // Generierte Map: freien Pack-Platz wählen, bevorzugt im Ring PACK_NEAR … PACK_FAR um den Spieler. at: Ersatz für ein veraltetes Pack (nächster Platz)
 // Nachspawn nie näher als SPOT_MIN_PLAYER (Lichtkreis 22 + Aggro 18 + Luft) und nie auf einen belegten Platz; gibt es keinen, wartet er (false).
+// Nie weiter als PACK_DROP: dropFarPack würde das Pack im nächsten Frame wieder entfernen, und es entstünde jeden Frame ein neues (Modellbau!).
 const SPOT_MIN_PLAYER = 50;   // PH
 const spotTaken = (s: PackSpot) => state.mobs.some(m => !m.dead && dist2d(m.home, s) < s.r + 12);   // PH
 function spawnOnSpot(at) {
@@ -139,7 +140,7 @@ function spawnOnSpot(at) {
   let spot: PackSpot = null;
   if (at) spot = spots.reduce((a, b) => dist2d(a, at) <= dist2d(b, at) ? a : b);
   else {
-    const free = spots.filter(s => !spotTaken(s) && d(s) >= SPOT_MIN_PLAYER);
+    const free = spots.filter(s => d(s) >= SPOT_MIN_PLAYER && d(s) + Math.max(s.r, 2) <= PACK_DROP && !spotTaken(s));
     const ring = free.filter(s => d(s) <= PACK_FAR);
     spot = ring.length ? pick(ring) : free.length ? pick(free) : null;
   }
