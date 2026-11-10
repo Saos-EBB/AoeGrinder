@@ -2,7 +2,7 @@
    waagrecht zwischen den Zierrahmen-Ecken (--fg-safe, base.css). Farben und Schriften nur aus dem UI-Flavor (--fg-*). Zahlen // PH */
 #heroModal { z-index: 5; }
 #hwBox { --hu: min(calc(100vw / 1280), calc(100vh / 720), calc((100vw - 2 * var(--fg-safe)) / 1200)); width: calc(1200 * var(--hu)); height: calc(680 * var(--hu));
-  display: grid; grid-template-columns: calc(520 * var(--hu)) 1fr; gap: calc(20 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
+  display: grid; grid-template-columns: calc(520 * var(--hu)) minmax(0, 1fr); gap: calc(20 * var(--hu)); color: var(--fg-text); font-family: var(--font-body); text-align: left; }
 #hwBox > .fg-panel { display: flex; flex-direction: column; gap: calc(10 * var(--hu)); min-height: 0; padding: calc(16 * var(--hu)) calc(22 * var(--hu)); }
 #hwBox > .fg-panel > * { position: relative; z-index: 2; }
 .hwHead, .hwInvHead { display: flex; align-items: center; gap: calc(12 * var(--hu)); }
@@ -31,7 +31,8 @@
 .hwSlot img { height: calc(44 * var(--hu)); width: auto; max-width: 90%; object-fit: contain; }
 .hwSlot img { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)); }
 .hwSlot small { position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font: 600 calc(10 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
-.hwSlotEmpty { font-size: calc(16 * var(--hu)); }
+.hwSlotEmpty { display: grid; place-items: center; width: 100%; height: 100%; font-size: calc(16 * var(--hu)); opacity: .4; }   /* leerer Slot: Umriss gedimmt */
+.hwSlotEmpty svg { height: calc(34 * var(--hu)); max-width: 80%; }
 .hwSetMark { position: absolute; left: 2px; top: 2px; padding: 0 3px; font: 700 calc(8 * var(--hu)) var(--font-body); color: #000; background: var(--rar-gruen); }
 .hwLook { position: absolute; right: calc(-10 * var(--hu)); top: calc(-10 * var(--hu)); width: calc(26 * var(--hu)); height: calc(26 * var(--hu)); padding: 2px; box-sizing: border-box; display: grid; place-items: center;
   background: var(--fg-card); border: 1px dashed var(--fg-border); color: var(--fg-title); cursor: pointer; }
@@ -73,6 +74,10 @@
 .hwTabs { display: flex; gap: 2px; border-bottom: 1px solid var(--fg-line); flex: none; }
 .hwTab { padding: calc(6 * var(--hu)) calc(8 * var(--hu)); min-height: calc(32 * var(--hu)); background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--fg-muted);
   font: 600 calc(13 * var(--hu)) var(--font-num); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+/* Tabs mit Icon: enger, damit alle 7 in die Breite passen; zu schmal (Ersatzschrift) kürzen sie mit … statt das Fenster zu sprengen */
+.hwTab { display: inline-flex; align-items: center; gap: calc(4 * var(--hu)); flex: 0 1 auto; min-width: 0; padding-left: calc(5 * var(--hu)); padding-right: calc(5 * var(--hu)); letter-spacing: .03em; }
+.hwTab svg { width: auto; height: calc(14 * var(--hu)); flex: none; }
+.hwTab span { overflow: hidden; text-overflow: ellipsis; }
 .hwTab:hover { color: var(--fg-text); }
 .hwTab.on { color: var(--fg-title); border-bottom-color: var(--fg-accent); }
 .hwBar { display: flex; flex-wrap: wrap; align-items: stretch; gap: calc(5 * var(--hu)); position: relative; z-index: 3 !important; flex: none; }
@@ -156,7 +161,9 @@
 .hwTRow.dim { opacity: .35; }
 .hwCaret { width: calc(14 * var(--hu)); color: var(--fg-muted); }
 .hwTName { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hwDia { width: calc(8 * var(--hu)); height: calc(8 * var(--hu)); flex: none; transform: rotate(45deg); background: var(--rc); box-shadow: 0 0 0 1px #000; }
+.hwTIcon { display: grid; place-items: center; width: calc(16 * var(--hu)); height: calc(18 * var(--hu)); flex: none; color: inherit; }
+.hwTIcon svg { width: 100%; height: 100%; }
+.hwTRow.folder .hwTIcon { color: var(--fg-muted); }
 .hwTRow .hwSetMark, .hwTRow .hwE, .hwTRow .hwNew { position: static; }
 .hwUp, .hwDown { font: 700 calc(12 * var(--hu)) var(--font-num); }
 .hwUp { color: #6ee7a0; }
