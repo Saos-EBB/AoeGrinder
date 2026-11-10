@@ -126,6 +126,8 @@ const LEFT: (Slot | 'waffe')[] = ['kopf', 'hals', 'ruecken'], RIGHT: (Slot | 'wa
 // Nach jeder Änderung: Figur (Set-Skin, Waffen-Look) und Fenster neu
 function changed() { mage.refreshLook(); mage.refreshWeapon(); render(); }
 
+// Leeres Waffen-Inventar: die Figur trägt ROLLS.fallback (Pilgerast ohne Effekt). Als alte Waffe (ohne v: 2) baut buildWeaponOf das Modell m
+const pilger = () => ({ id: 'pilger', m: ROLLS.fallback, r: 0 });   // erst beim Zeichnen: ROLLS ist beim Laden des Moduls evtl. noch nicht da (Import-Zyklus)
 function slotEl(slot: Slot | 'waffe') {
   const wrap = el('div', 'hwSlotWrap'), b = el('button', 'hwSlot'), isW = slot === 'waffe';
   b.type = 'button';
@@ -135,7 +137,9 @@ function slotEl(slot: Slot | 'waffe') {
   if (color) b.style.setProperty('--rc', color);
   if (w) { const src = weaponThumb(w); b.innerHTML = src ? `<img src="${src}" alt="">` : typeSvg(typeOf(w), color); }
   else if (g) b.innerHTML = gearThumbHtml(g, slotSvg(slot, color));
-  else b.innerHTML = isW && mage.skin === 'krieger' ? '<span class="hwSlotEmpty"></span>' : `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
+  else if (isW && mage.skin === 'krieger') b.innerHTML = '<span class="hwSlotEmpty"></span>';
+  else if (isW) { const src = weaponThumb(pilger()); b.innerHTML = `<span class="hwSlotEmpty pilger">${src ? `<img src="${src}" alt="">` : tabSvg(slot)}</span>`; }   // kein Stab: die Figur trägt den Pilgerast, gedimmt
+  else b.innerHTML = `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
   b.append(el('small', '', isW ? t('cw.weapon') : slotName(slot)));
   if (g?.s.setId) b.append(el('b', 'hwSetMark', 'SET'));
   if (w) attachWeaponCard(b, w);

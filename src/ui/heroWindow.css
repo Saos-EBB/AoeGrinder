@@ -32,6 +32,8 @@
 .hwSlot img { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)); }
 .hwSlot small { position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font: 600 calc(10 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
 .hwSlotEmpty { display: grid; place-items: center; width: 100%; height: 100%; font-size: calc(16 * var(--hu)); opacity: .4; }   /* leerer Slot: Umriss gedimmt */
+.hwSlotEmpty.pilger { opacity: .6; }
+.hwSlotEmpty.pilger img { height: calc(48 * var(--hu)); filter: grayscale(.5); }
 .hwSlotEmpty svg { height: calc(34 * var(--hu)); max-width: 80%; }
 .hwSetMark { position: absolute; left: 2px; top: 2px; padding: 0 3px; font: 700 calc(8 * var(--hu)) var(--font-body); color: #000; background: var(--rar-gruen); }
 .hwLook { position: absolute; right: calc(-10 * var(--hu)); top: calc(-10 * var(--hu)); width: calc(26 * var(--hu)); height: calc(26 * var(--hu)); padding: 2px; box-sizing: border-box; display: grid; place-items: center;
