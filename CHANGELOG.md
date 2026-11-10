@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- fix(ui): Kompakt-Krypta: die hängenden Banner gibt es nur noch im Hauptmenü; Ausrüstung, Waffenmenü, Shop, Einstellungen, Charakterfenster, Weltkarte, Pause, Level-up und Run-Ende sind ohne
 - fix(items): Spiel startet wieder mit gespeichertem Gear (Absturz „Cannot access 'VALUE_KEY' before initialization“ beim Laden, Hauptmenü blieb ohne Layout); das Säubern des gespeicherten Gears läuft jetzt erst, wenn alle Module geladen sind
 - feat(maps): Truhen droppen auch Gear (25 % pro Truhe, Mimic doppelt; nur Magier wie alle Gear-Drops)
 - feat(items): Nach dem letzten Boss (Finale Level 100) wird alles am Boden automatisch aufgehoben: Gear, Staub und Waffen; Waffen auch über das volle Inventar hinaus (bis aussortiert bleibt die Waffen-Kiste zu)
