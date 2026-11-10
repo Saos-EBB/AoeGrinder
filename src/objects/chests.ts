@@ -14,7 +14,7 @@ import { registerKind, planObjects, redraw, removeObj, addDevButton, devAhead, s
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
 
-export const CHEST = { perMap: 4, openMs: 1000, mimic: 0.1, dust: [15, 30], weapon: 0.35, gear: 0.25, mimicLevel: 1 };   // gear: Kevin 10.11. „Truhen auch Gear“, Chance PH
+export const CHEST = { perMap: 4, openMs: 1000, mimic: 0.1, dust: [15, 30], weapon: 0.5, gear: 0.35, mimicLevel: 1 };   // gear: Kevin 10.11. „Truhen auch Gear“; weapon/gear 10.11. ~+40 % (vorher 0.35 / 0.25), Chance PH
 
 function body() {
   const box = new THREE.BoxGeometry(1.4, 0.75, 0.9).translate(0, 0.375, 0);

@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(items): Mehr Drops, je Quelle etwa +40 %: Boss 3 statt 2 Gear-Teile, Champion-Pack 70 % statt 50 % auf ein Teil, Große 35 % statt 25 % Waffe, Truhen 50 % statt 35 % Waffe und 35 % statt 25 % Gear, normale Kills weiter selten (0,07 % statt 0,05 % pro Kill). Bis Level 60 im Schnitt ~49 statt ~34 Teile (Gear + Waffen). Rangliste v37
 - feat(skins): Fertige Magier-Skins zeigen keine Hüte mehr: mit Splitterkönig, Hochspannung und Glutprophet (wie schon Pestbringer) bleiben Kopf-Gear und Kopf-Kosmetik unsichtbar, mit Hochspannung auch alles am Rücken (Gear und Kosmetik, die Strom-Flasche bleibt frei). Das Teil bleibt angelegt und seine Werte zählen
 - fix(skins): ?-Magier: Mit Körper-Teil (Gear Körper oder Kosmetik wie Onesie, Anzug, Bademantel, Rock) fallen die Fragezeichen auf dem Körper weg, mit Arm-Teil die auf den Armen; vorher schauten sie durch den Stoff. Das Fragezeichen im Gesicht und die 3 schwebenden über dem Kopf bleiben. Kein Draw Call mehr
 - fix(kosmetik): Schottenrock mit sauberem Karo (Kästchen in Rot, Grün, Schwarz und Gold, Gitter der Form = Gitter des Musters) statt zackiger Dreiecke. Kuh-Onesie mit größeren, deutlich schwarzen Flecken, an der Figur und im Item-Bild gut zu sehen. Kein Draw Call mehr
