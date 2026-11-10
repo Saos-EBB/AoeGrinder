@@ -2,7 +2,7 @@
 
 import { spellAtAction } from './hotbar';
 import { startDodge } from './player';
-import { heroOpen, toggleHero, closeHero } from './ui/heroWindow';
+import { heroOpen, toggleHero, heroCommand } from './ui/heroWindow';
 import { openPause, closePause, cycleChar, cycleMap } from './ui/mainMenu';
 import * as THREE from 'three';
 import { state, player } from './state';
@@ -168,8 +168,18 @@ function captureRebind() {
 function menuButtons() {
   const step = navStep();
   if (isOpen('bindModal')) return bindMenuButtons(step);
+  // Fenster heroWindow.ts: Steuerkreuz/Stick wie Pfeile, A ausrüsten, X zerlegen, LB/RB Tabs, Y Raster/Baum, B schließt. Rückfrage: A ja, B nein
   if (heroOpen()) {
-    if (pressed(CANCEL_BTN)) closeHero();
+    const ask = document.querySelector<HTMLElement>('.modal.show #askYes');
+    if (ask) { if (pressed(CONFIRM_BTN)) ask.click(); else if (pressed(CANCEL_BTN)) $('askNo').click(); return; }
+    if (step.y) heroCommand(step.y > 0 ? 'down' : 'up');
+    if (step.x) heroCommand(step.x > 0 ? 'right' : 'left');
+    if (pressed(CONFIRM_BTN)) heroCommand('enter');
+    if (pressed(2)) heroCommand('delete');
+    if (pressed(4)) heroCommand('prevTab');
+    if (pressed(5)) heroCommand('nextTab');
+    if (pressed(3)) heroCommand('view');
+    if (pressed(CANCEL_BTN)) heroCommand('close');
     return;
   }
   if (isOpen('cardModal') && !isOpen('bindModal')) {

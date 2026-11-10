@@ -57,11 +57,13 @@ function weaponTip(w): TipData {
     footer: [t('wcard.salvage'), t('shop.refund', { n: ROLLS.refund[w.r] })],
   };
 }
+// Karte mit Vergleich zur ausgerüsteten Waffe (auch für Tastatur-Auswahl im Fenster heroWindow.ts)
+export function weaponCardData(w): TipData {
+  const d = weaponTip(w), eq = equipped();
+  if (eq && eq !== w) Object.assign(d, { compare: weaponTip(eq), compareLabels: [t('wcard.this'), t('shop.equipped')] });
+  else d.label = eq === w ? t('shop.equipped') : t('wcard.weapon');
+  return d;
+}
 export function attachWeaponCard(el: HTMLElement, w) {
-  attachTip(el, () => {
-    const d = weaponTip(w), eq = equipped();
-    if (eq && eq !== w) Object.assign(d, { compare: weaponTip(eq), compareLabels: [t('wcard.this'), t('shop.equipped')] });
-    else d.label = eq === w ? t('shop.equipped') : t('wcard.weapon');
-    return d;
-  });
+  attachTip(el, () => weaponCardData(w));
 }

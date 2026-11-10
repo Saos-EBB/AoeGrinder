@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(ui): Fenster ganz ohne Maus: Pfeile wählen (im Baum → ← klappt Ordner auf/zu), Enter rüstet aus, Entf zerlegt mit Rückfrage, Shift vergleicht, / sucht, Q/E bzw. Bild↑/↓ wechseln den Tab, Tab schaltet Raster/Baum; die Karte erscheint am gewählten Eintrag. Controller: Steuerkreuz/Stick wie Pfeile, A ausrüsten, X zerlegen (A/B bestätigt die Rückfrage), LB/RB Tabs, Y Raster/Baum, B schließt
 - feat(ui): Inventar mit Schalter „Raster | Baum“: im Baum werden die Tabs zu Ordnern (▾ Waffen 12/25), jede Zeile mit Seltenheits-Raute, Namen in Seltenheitsfarbe, rechts ▲/▼, E und NEU. Ansicht und offene Ordner bleiben gespeichert
 - feat(ui): Neues Fenster rechts: Inventar mit Tabs Waffen, Kopf, Hals, Rücken, Arme, Körper, Kosmetik (Belegung x/25, Kosmetik als Anzahl), Filterleiste wie im Waffenmenü (für Gear: Element, Hersteller, Fokus, Set, Seltenheit, Sortieren, Suche) mit „x von y“, Raster 10 breit. Hover zeigt die Karte mit ▲/▼ gegenüber dem Ausgerüsteten, Shift den Vergleich (auch ohne erweiterte Tooltips). Klick rüstet aus, Zerlegen mit Rückfrage; unten Knochenstaub, „Zur Kiste“ und „Verschmelzen“ (noch nicht gebaut, aus). Im Run nur ansehen, mit den Funden dieses Runs. Filter, Tab und NEU-Marken bleiben gespeichert
 - perf(ui): Die Figuren-Vorschau im Fenster rechnet nur noch, solange das Fenster offen ist (eigener Schalter statt einer Layout-Abfrage in jedem Frame, die im Run Layout erzwingen konnte)

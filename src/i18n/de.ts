@@ -2339,4 +2339,5 @@ export const de: Record<string, string> = {
   'hw.view': "Ansicht",
   'hw.grid': "Raster",
   'hw.tree': "Baum",
+  'hw.hintKeys': "Pfeile wählen · Enter ausrüsten · Entf zerlegen · Shift vergleichen · / suchen · Q/E Tab · Tab Raster/Baum · Pad: A, X, LB/RB, Y",
 };

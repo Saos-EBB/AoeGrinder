@@ -20,9 +20,9 @@ import { openKeepChooser } from './lootView';
 import { fmtInt } from './dmgNumbers';
 import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
-import { attachWeaponCard } from './weaponCard';
+import { attachWeaponCard, weaponCardData } from './weaponCard';
 import { weaponThumb } from './weaponThumb';
-import { attachTip, hideTip, type TipData } from './tooltip';
+import { attachTip, hideTip, tipAt, type TipData } from './tooltip';
 import { heroStats, type StatRow } from './heroStats';
 import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
@@ -620,7 +620,7 @@ function renderInv() {
   const list = entries(tab), tree = treeView();
   $('heroModal').classList.toggle('tree', tree);
   for (const b of document.querySelectorAll<HTMLElement>('.hwToggle button')) { b.classList.toggle('on', (b.dataset.v === 'tree') === tree); b.setAttribute('aria-pressed', String((b.dataset.v === 'tree') === tree)); }
-  if (tree ? !treeRows().some(r => r.key === sel) : !list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? null;
+  if (tree ? !treeRows().some(r => r.key === sel) : !list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? list[0]?.key ?? null;
   if (tree && !treeRows().some(r => r.key === sel)) sel = `f:${tab}`;
   $('hwCount').textContent = k === 'k' ? '' : t('wm.count', { a: list.filter(e => !e.dim).length, b: list.length });
   // Probe tragen: gewählte Waffe an der Figur
@@ -637,7 +637,8 @@ function renderInv() {
   const pool = k === 'w' ? meta.inv.filter(w => w !== equipped()) : k === 'g' ? gearInv(tab as Slot).filter(g => g !== worn(tab as Slot)) : [];
   const counts = CARD_RARITIES.map((_, r) => pool.filter(x => x.r === r).length);
   $('hwFuse').textContent = t('wm.fuse', { r: CARD_RARITIES[Math.max(0, counts.findIndex(n => n >= 3))].name });
-  $('hwHint').textContent = t(viewOnly() ? 'hw.hintRun' : 'hw.hint');
+  $('hwHint').textContent = viewOnly() ? t('hw.hintRun') : t('hw.hintKeys');
+  $('hwHint').title = t('hw.hint');
 }
 for (const b of document.querySelectorAll<HTMLElement>('.hwToggle button')) b.addEventListener('click', () => { setUi('heroView', b.dataset.v as 'grid' | 'tree'); renderInv(); });
 $('hwChest').addEventListener('click', () => {
@@ -689,8 +690,69 @@ export function toggleHero() {
   openHero();
 }
 
+// ---------- Bedienung ohne Maus: Tastatur und Pad (gamepad.ts) über dieselben Befehle ----------
+export type HeroCmd = 'left' | 'right' | 'up' | 'down' | 'enter' | 'delete' | 'prevTab' | 'nextTab' | 'view' | 'search' | 'close';
+// Auswahl sichtbar machen: hinscrollen und die Karte am Eintrag zeigen
+function showSel() {
+  const node = document.querySelector<HTMLElement>(`#heroModal [data-key="${CSS.escape(sel ?? '')}"]`);
+  if (!node) { hideTip(); return; }
+  node.scrollIntoView({ block: 'nearest' });
+  const e = (treeView() ? treeRows().find(r => r.key === sel)?.entry : entries(tab).find(x => x.key === sel)) ?? null;
+  if (!e) { hideTip(); return; }
+  tipAt(node, () => e.kind === 'w' ? weaponCardData(e.item) : tipOf(e));
+}
+function moveSel(step: number) {
+  if (treeView()) {
+    const rows = treeRows(), i = rows.findIndex(r => r.key === sel), next = rows[Math.max(0, Math.min(rows.length - 1, i < 0 ? 0 : i + step))];
+    if (next) { sel = next.key; if (next.tab !== tab) { tab = next.tab; setUi('heroTab', tab); } }
+  } else {
+    const list = entries(tab), i = list.findIndex(x => x.key === sel);
+    const next = list[i < 0 ? 0 : Math.max(0, Math.min(list.length - 1, i + step))];
+    if (next) sel = next.key;
+  }
+  render();
+  showSel();
+}
+function stepTab(d: number) { setTab(TABS[(TABS.indexOf(tab) + d + TABS.length) % TABS.length]); if (treeView()) { sel = `f:${tab}`; render(); } showSel(); }
+export function heroCommand(cmd: HeroCmd) {
+  if (!heroOpen() || askOpen()) return;
+  const tree = treeView(), row = tree ? treeRows().find(r => r.key === sel) : null, cur = tree ? row?.entry : entries(tab).find(x => x.key === sel);
+  if (cmd === 'close') { if (listsOpen()) closeLists(); else closeHero(); return; }
+  if (cmd === 'up') return moveSel(tree ? -1 : -10);
+  if (cmd === 'down') return moveSel(tree ? 1 : 10);
+  if (cmd === 'left') {
+    if (!tree) return moveSel(-1);
+    if (row && !row.entry && isOpenF(row.tab)) { setFolder(row.tab, false); render(); showSel(); return; }   // Ordner zu
+    if (row?.entry) { sel = `f:${row.tab}`; render(); showSel(); }                                      // zum Ordner
+    return;
+  }
+  if (cmd === 'right') {
+    if (!tree) return moveSel(1);
+    if (row && !row.entry && !isOpenF(row.tab)) { setFolder(row.tab, true); render(); showSel(); return; }  // Ordner auf
+    return moveSel(1);
+  }
+  if (cmd === 'enter') {
+    if (row && !row.entry) { setFolder(row.tab, !isOpenF(row.tab)); render(); showSel(); return; }
+    if (cur) { wearEntry(cur); showSel(); }
+    return;
+  }
+  if (cmd === 'delete') { if (cur) salvageEntry(cur).then(showSel); return; }
+  if (cmd === 'prevTab') return stepTab(-1);
+  if (cmd === 'nextTab') return stepTab(1);
+  if (cmd === 'view') { setUi('heroView', tree ? 'grid' : 'tree'); renderInv(); showSel(); return; }
+  if (cmd === 'search') { const q = document.getElementById('hwQ') as HTMLInputElement | null; if (q && !$('hwBar').hidden) { hideTip(); q.focus(); q.select(); } }
+}
+// Pfeile wählen (im Baum → ← auf/zu), Enter rüstet aus, Entf zerlegt (Rückfrage), / sucht, Q/E bzw. Bild↑/↓ wechseln den Tab, Tab schaltet Raster/Baum,
+// Shift vergleicht (Karte und Zeile unten), Esc schließt. Tasten, die hier etwas tun, gehen nicht weiter ans Spiel
+const KEYS: Record<string, HeroCmd> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'enter', NumpadEnter: 'enter', Delete: 'delete',
+  KeyQ: 'prevTab', KeyE: 'nextTab', PageUp: 'prevTab', PageDown: 'nextTab', Tab: 'view', Slash: 'search', NumpadDivide: 'search', Escape: 'close' };
 $('hwClose').addEventListener('click', closeHero);
 addEventListener('keydown', e => {
-  if (!heroOpen() || askOpen()) return;
-  if (e.code === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeHero(); }
+  if (!heroOpen() || askOpen() || e.target instanceof HTMLInputElement) return;
+  const cmd = e.key === '/' ? 'search' : KEYS[e.code];
+  if (!cmd || e.ctrlKey || e.altKey || e.metaKey) return;
+  if (cmd === 'enter' && document.activeElement instanceof HTMLButtonElement && document.activeElement.closest('#heroModal') && !document.activeElement.closest('.hwGrid, .hwTree')) return;   // fokussierter Knopf: der Browser klickt
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  heroCommand(cmd);
 }, true);

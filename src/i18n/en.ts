@@ -2338,4 +2338,5 @@ export const en: Record<string, string> = {
   'hw.view': "View",
   'hw.grid': "Grid",
   'hw.tree': "Tree",
+  'hw.hintKeys': "Arrows select · Enter equips · Del salvages · Shift compares · / search · Q/E tab · Tab grid/tree · Pad: A, X, LB/RB, Y",
 };
