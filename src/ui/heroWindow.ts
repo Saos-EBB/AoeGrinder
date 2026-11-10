@@ -29,6 +29,7 @@ import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
 import { t, fmtNum } from '../i18n';
 import './heroWindow.css';
+import './achievements';   // Einblendung bei neuem Erfolg (fg:ach aus gear.ts), sonst importiert niemand die Datei
 
 export type Tab = 'waffen' | Slot | 'kosmetik';
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
