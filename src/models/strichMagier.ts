@@ -528,17 +528,22 @@ const qGeo = () => mergeGeometries([
 // ───────────────────────── Skins (src/skins.ts): Teile an Bones ins Körper-Mesh, Leuchtteile ins Glühen, Gag-Teile auf eigenen Bones
 const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4);
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
-// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF)
+// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF).
+// Kevin: fertige Skins müssen nicht alles zulassen, mit Skin keine Hüte, Hochspannung keine Rückenteile. Angelegt bleibt das Teil trotzdem (Werte zählen)
 export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
-  look: { seuche: ['kopf'] },   // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
-  skin: { base: ['kopf'] },     // Zuhälter-Look (nur Dev): Fedora
+  look: { seuche: ['kopf'],        // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
+    frost14: ['kopf'],             // Platin-Perücke mit hoher Welle
+    blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken
+    glut: ['kopf'] },              // Sturmhaube mit Flammen aus den Augen
+  skin: { base: ['kopf'] },        // Zuhälter-Look (nur Dev): Fedora
 };
-// Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs
+// Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs. Gleiche Regel wie oben
 export const KOS_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
-  look: { seuche: ['kopf'],                                     // Pestmaske mit Hut: nichts auf dem Kopf
-    blitz: ['bartbrille', 'elementrucksack', 'limojetpack'],    // Sonnenbrille; Flasche mit Strom auf dem Rücken
-    glut: ['bartbrille'] },                                     // Sturmhaube mit Augen-Feuer
-  skin: { base: ['kopf'] },                                     // Zuhälter-Look (nur Dev): Fedora
+  look: { seuche: ['kopf'],        // Pestmaske mit Hut: nichts auf dem Kopf
+    frost14: ['kopf'],             // Platin-Perücke
+    blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken (auch Element-Rucksack, Limo-Jetpack, Kill-Flagge …)
+    glut: ['kopf'] },              // Sturmhaube mit Augen-Feuer (auch Fake-Bart-Brille)
+  skin: { base: ['kopf'] },        // Zuhälter-Look (nur Dev): Fedora
 };
 const GEAR_FX = { spark: 2, sparkOrange: 4.5, aura: 6, r: .4, y0: .45, y1: 2.1, fillY: 2.4, dimFrom: 1.6, dimMin: .08 };   // Funken pro Sekunde ab Blau (Orange mehr), Aura-Partikel pro Sekunde je Teil, Bahn um die Figur; Lampen-Ausgleich ab dimFrom bis zur Höhe des Fülllichts (dunkel.ts D.fill.height) // PH
 const SK = {   // Optik-Zahlen der Skins // PH
