@@ -4,7 +4,7 @@
 // Schnittstelle wie models/creatures.ts: { root, height, update(dt, anim) }, dazu pose = { windup, spin, still }, die Fähigkeiten setzen (abilities.ts).
 
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { lerpTo as lerp } from '../util';
 
 // Alles // PH
@@ -69,8 +69,10 @@ function mobMat(soft: boolean, opacity = 1) {
   return m;
 }
 
-function bake(R, list, mat, skel) {
-  const geo = mergeGeometries(list.map(p => {
+// Geometrie einmal pro Mob-Typ (strichMob-Aufruf) verschmelzen und mit Index (gleiche Ecken nur einmal) teilen: die GPU rechnet Skinning und Licht pro Ecke.
+// Geteilt und nie freigegeben (keep), removeMob ruft dispose auf.
+function bakeGeo(R, list) {
+  const flat = mergeGeometries(list.map(p => {
     const mw = p.bone.matrixWorld.clone().multiply(p.m);
     let g = p.geo.index ? p.geo.toNonIndexed() : p.geo.clone();
     for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
@@ -85,11 +87,17 @@ function bake(R, list, mat, skel) {
     p.geo.dispose();
     return g;
   }));
+  const geo = keep(mergeVertices(flat));
+  flat.dispose();
+  // Feste, großzügige Hülle statt Neuberechnung aus der Pose (wie creatures.ts)
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+function bake(R, geo, mat, skel) {
   const sm = new THREE.SkinnedMesh(geo, mat);
   R.root.add(sm);
   sm.bind(skel);
-  // Feste, großzügige Hülle statt Neuberechnung aus der Pose (wie creatures.ts)
-  geo.computeBoundingSphere();
   sm.boundingSphere = geo.boundingSphere.clone();
   sm.boundingSphere.radius *= 1.6;
   return sm;
@@ -284,95 +292,99 @@ function zusatzMark(R, P, z, H) {
 }
 
 // skin = [Name-Key, Bauart, Optionen]; zusatz = Schlüssel oder 'none'; size: Faktor (kleine Kopien bei „teilt“)
-export const strichMob = (kind: string, o: any, zusatz = 'none', size = 1) => (level: number) => {
-  const R = rig();
-  const P = BUILD[kind](R, o);
-  const sc = (o.scale ?? 1) * size;
-  R.inner.scale.multiplyScalar(sc);
-  const H = P.height * R.inner.scale.y;
-  P.lift = zusatz === 'fliegt' && kind !== 'b' ? 1.4 : 0;
-  if (zusatz !== 'none') zusatzMark(R, P, zusatz, H + P.lift);
+export const strichMob = (kind: string, o: any, zusatz = 'none', size = 1) => {
+  let geos: { main: THREE.BufferGeometry; soft: THREE.BufferGeometry | null } = null;   // pro Typ einmal gebaut (bakeGeo)
+  return (level: number) => {
+    const R = rig();
+    const P = BUILD[kind](R, o);
+    const sc = (o.scale ?? 1) * size;
+    R.inner.scale.multiplyScalar(sc);
+    const H = P.height * R.inner.scale.y;
+    P.lift = zusatz === 'fliegt' && kind !== 'b' ? 1.4 : 0;
+    if (zusatz !== 'none') zusatzMark(R, P, zusatz, H + P.lift);
 
-  R.root.updateMatrixWorld(true);
-  const skel = new THREE.Skeleton(R.bones);
-  const mat = mobMat(false, o.ghost ? .6 : 1);
-  const mats = [mat];
-  bake(R, R.parts, mat, skel);
-  if (R.soft.length) { const sm = mobMat(true); mats.push(sm); bake(R, R.soft, sm, skel); }
-  const ice = new THREE.Mesh(iceGeo, iceMat);
-  ice.position.y = 1; ice.scale.set(Math.max(.8, P.width * .6), Math.max(.6, H / 2.2), Math.max(.8, P.width * .6)); ice.visible = false;
-  R.root.add(ice);
-  const lv = 0.9 + (level - 18) * 0.02;   // wie creatures.ts: Mobs wachsen mit dem Level
-  R.root.scale.setScalar(lv);
+    R.root.updateMatrixWorld(true);
+    const skel = new THREE.Skeleton(R.bones);
+    const mat = mobMat(false, o.ghost ? .6 : 1);
+    const mats = [mat];
+    geos ??= { main: bakeGeo(R, R.parts), soft: R.soft.length ? bakeGeo(R, R.soft) : null };
+    bake(R, geos.main, mat, skel);
+    if (geos.soft) { const sm = mobMat(true); mats.push(sm); bake(R, geos.soft, sm, skel); }
+    const ice = new THREE.Mesh(iceGeo, iceMat);
+    ice.position.y = 1; ice.scale.set(Math.max(.8, P.width * .6), Math.max(.6, H / 2.2), Math.max(.8, P.width * .6)); ice.visible = false;
+    R.root.add(ice);
+    const lv = 0.9 + (level - 18) * 0.02;   // wie creatures.ts: Mobs wachsen mit dem Level
+    R.root.scale.setScalar(lv);
 
-  const pose = { windup: 0, spin: 0, still: false };
-  const j: any = {};
-  const ease = (k, v, f) => { j[k] = lerp(j[k] ?? v, v, f); return j[k]; };
-  let t = Math.random() * 10, phase = Math.random() * 6, shown = '';
-  const ph = Math.random() * 6;
-  const jerk = o.jerky ? x => Math.round(x * 3) / 3 : x => x;
-  const anim = (s, a) => {
-    const dead = a.state === 'dead', run = a.state === 'run', f = Math.min(1, s * 12);
-    t += s;
-    if (run) phase += s * (a.speed || 6) * (P.kind === 'q' ? 2.1 : P.kind === 'k' ? 4 : 1.5);
-    const ph2 = o.jerky ? Math.round(phase * 2.5) / 2.5 : phase;   // ruckartig: Schritte springen
-    const atk = a.attack > 0 ? Math.sin(a.attack * Math.PI) : 0, w = pose.windup;
-    const lift = P.lift ? P.lift + Math.sin(t * 1.6) * .15 : 0;
-    R.inner.rotation.y = pose.spin * Math.PI * 2;
-    if (P.mark) { P.mark.rotation.y = t * 2; P.zb.scale.setScalar(dead ? 1e-4 : 1); }
-    if (P.kind === 'h') {
-      const sw = run ? Math.sin(ph2) : jerk(Math.sin(t * 2 + ph)) * .12;
-      if (P.legL) {
-        P.legL.up.rotation.x = ease('lL', dead ? 0 : run ? -sw * .8 : -sw * .4, f); P.legR.up.rotation.x = ease('lR', dead ? 0 : run ? sw * .8 : sw * .4, f);
-        P.legL.lo.rotation.x = ease('kL', run ? Math.max(0, Math.cos(ph2)) * 1.1 : 0, f); P.legR.lo.rotation.x = ease('kR', run ? Math.max(0, -Math.cos(ph2)) * 1.1 : 0, f);
-      }
-      P.armL.up.rotation.x = ease('aL', dead ? -.3 : (run ? sw * .6 : sw) - w * 2.2 * (o.scale > 1.5 ? 1 : 0), f);
-      P.armR.up.rotation.x = ease('aR', dead ? .3 : (run ? -sw * .5 - .2 : -sw) - atk * 2.4 - w * 2.8, f);
-      P.armR.lo.rotation.x = ease('fR', -.25 - atk * .6 - w * .5, f);
-      if (P.armL2) { P.armL2.rotation.x = -sw * 2 - atk * 1.6; P.armR2.rotation.x = sw * 2 - atk * 1.6; }
-      P.spine.rotation.x = ease('sp', (o.hunch ?? 0) + (run ? .14 : jerk(Math.sin(t * 1.3 + ph)) * .03) + atk * .25 - w * .3, f);
-      P.head.rotation.z = o.jerky ? (Math.sin(t * 7 + ph) > .85 ? .45 : Math.sin(t * .8) * .1) : 0;
-      if (P.wings) P.wings.forEach((g, i) => { g.rotation.y = (i ? -1 : 1) * (Math.sin(t * 3 + ph) * .15); });
-      if (P.tail) P.tail.rotation.z = Math.sin(t * 3 + ph) * .3;
-      const fl = o.float ? Math.sin(t * 1.5 + ph) * .2 + .3 : 0;
-      R.inner.position.y = ease('y', dead ? .15 : fl + lift + (run ? Math.abs(Math.cos(ph2)) * .05 : 0), f);
-      R.inner.rotation.x = ease('dx', dead ? -Math.PI / 2 : 0, Math.min(1, s * 6));
-    } else if (P.kind === 'q') {
-      P.legs.forEach((l, i) => { l.up.rotation.x = l.rest + (run ? Math.sin(ph2 + (i === 0 || i === 3 ? 0 : Math.PI)) * .8 : Math.sin(t * 2 + i * 1.6 + ph) * .08); });
-      P.tail.rotation.z = Math.sin(t * 3 + ph) * .3;
-      P.head.rotation.x = ease('hd', -atk * .5 + (run ? Math.sin(ph2 * 2) * .06 : Math.sin(t * 1.5 + ph) * .06), f);
-      P.body.position.z = atk * .6 + w * -.3;
-      R.inner.position.y = ease('y', dead ? .05 : lift + (run ? Math.abs(Math.cos(ph2)) * .07 : 0) + atk * .3, f);
-      R.inner.rotation.z = ease('dz', dead ? Math.PI / 2 : 0, Math.min(1, s * 6));
-    } else if (P.kind === 'b') {
-      const fl = dead ? -.3 : Math.sin(t * (run ? 11 : 8) + ph) * .6;
-      P.wings[0].rotation.y = -.3 - fl; P.wings[1].rotation.y = .3 + fl;
-      P.body.position.y = ease('y', dead ? .3 : 2.2 + Math.sin(t * 2 + ph) * .2 - atk * 1.0, f);
-      R.inner.rotation.z = ease('dz', dead ? 1.3 : 0, Math.min(1, s * 6));
-    } else {
-      P.legs.forEach((l, i) => { l.rotation.y = Math.sin(t * (run ? 14 : 2) + i) * (run ? .35 : .08); });
-      P.body.position.z = atk * .6;
-      R.inner.position.y = ease('y', dead ? .8 : lift, f);
-      R.inner.rotation.z = ease('dz', dead ? Math.PI : 0, Math.min(1, s * 6));
-    }
-  };
-  return {
-    root: R.root, height: (H + P.lift) * lv, pose, mats,
-    update(dt, a) {
-      ice.visible = !!a.iced;
-      const tint = a.state === 'dead' ? 'dead' : a.feared ? 'fear' : a.poisoned ? 'poison' : a.slowed ? 'slow' : '', fl = Math.ceil((a.flash ?? 0) * 4), key = `${tint},${fl},${a.champion || false}`;
-      if (key !== shown) {
-        shown = key;
-        for (const m of mats) {
-          const c = TINTS[tint];
-          m.U.uTint.value.set(c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? (tint === 'dead' ? 1 : .55) : 0);
-          m.U.uGlowK.value = tint === 'dead' ? .15 : 1;
-          m.emissive.setScalar(fl / 4 * .9);
-          if (a.champion === true) m.emissive.add(CHAMP_GLOW);
+    const pose = { windup: 0, spin: 0, still: false };
+    const j: any = {};
+    const ease = (k, v, f) => { j[k] = lerp(j[k] ?? v, v, f); return j[k]; };
+    let t = Math.random() * 10, phase = Math.random() * 6, shown = '';
+    const ph = Math.random() * 6;
+    const jerk = o.jerky ? x => Math.round(x * 3) / 3 : x => x;
+    const anim = (s, a) => {
+      const dead = a.state === 'dead', run = a.state === 'run', f = Math.min(1, s * 12);
+      t += s;
+      if (run) phase += s * (a.speed || 6) * (P.kind === 'q' ? 2.1 : P.kind === 'k' ? 4 : 1.5);
+      const ph2 = o.jerky ? Math.round(phase * 2.5) / 2.5 : phase;   // ruckartig: Schritte springen
+      const atk = a.attack > 0 ? Math.sin(a.attack * Math.PI) : 0, w = pose.windup;
+      const lift = P.lift ? P.lift + Math.sin(t * 1.6) * .15 : 0;
+      R.inner.rotation.y = pose.spin * Math.PI * 2;
+      if (P.mark) { P.mark.rotation.y = t * 2; P.zb.scale.setScalar(dead ? 1e-4 : 1); }
+      if (P.kind === 'h') {
+        const sw = run ? Math.sin(ph2) : jerk(Math.sin(t * 2 + ph)) * .12;
+        if (P.legL) {
+          P.legL.up.rotation.x = ease('lL', dead ? 0 : run ? -sw * .8 : -sw * .4, f); P.legR.up.rotation.x = ease('lR', dead ? 0 : run ? sw * .8 : sw * .4, f);
+          P.legL.lo.rotation.x = ease('kL', run ? Math.max(0, Math.cos(ph2)) * 1.1 : 0, f); P.legR.lo.rotation.x = ease('kR', run ? Math.max(0, -Math.cos(ph2)) * 1.1 : 0, f);
         }
+        P.armL.up.rotation.x = ease('aL', dead ? -.3 : (run ? sw * .6 : sw) - w * 2.2 * (o.scale > 1.5 ? 1 : 0), f);
+        P.armR.up.rotation.x = ease('aR', dead ? .3 : (run ? -sw * .5 - .2 : -sw) - atk * 2.4 - w * 2.8, f);
+        P.armR.lo.rotation.x = ease('fR', -.25 - atk * .6 - w * .5, f);
+        if (P.armL2) { P.armL2.rotation.x = -sw * 2 - atk * 1.6; P.armR2.rotation.x = sw * 2 - atk * 1.6; }
+        P.spine.rotation.x = ease('sp', (o.hunch ?? 0) + (run ? .14 : jerk(Math.sin(t * 1.3 + ph)) * .03) + atk * .25 - w * .3, f);
+        P.head.rotation.z = o.jerky ? (Math.sin(t * 7 + ph) > .85 ? .45 : Math.sin(t * .8) * .1) : 0;
+        if (P.wings) P.wings.forEach((g, i) => { g.rotation.y = (i ? -1 : 1) * (Math.sin(t * 3 + ph) * .15); });
+        if (P.tail) P.tail.rotation.z = Math.sin(t * 3 + ph) * .3;
+        const fl = o.float ? Math.sin(t * 1.5 + ph) * .2 + .3 : 0;
+        R.inner.position.y = ease('y', dead ? .15 : fl + lift + (run ? Math.abs(Math.cos(ph2)) * .05 : 0), f);
+        R.inner.rotation.x = ease('dx', dead ? -Math.PI / 2 : 0, Math.min(1, s * 6));
+      } else if (P.kind === 'q') {
+        P.legs.forEach((l, i) => { l.up.rotation.x = l.rest + (run ? Math.sin(ph2 + (i === 0 || i === 3 ? 0 : Math.PI)) * .8 : Math.sin(t * 2 + i * 1.6 + ph) * .08); });
+        P.tail.rotation.z = Math.sin(t * 3 + ph) * .3;
+        P.head.rotation.x = ease('hd', -atk * .5 + (run ? Math.sin(ph2 * 2) * .06 : Math.sin(t * 1.5 + ph) * .06), f);
+        P.body.position.z = atk * .6 + w * -.3;
+        R.inner.position.y = ease('y', dead ? .05 : lift + (run ? Math.abs(Math.cos(ph2)) * .07 : 0) + atk * .3, f);
+        R.inner.rotation.z = ease('dz', dead ? Math.PI / 2 : 0, Math.min(1, s * 6));
+      } else if (P.kind === 'b') {
+        const fl = dead ? -.3 : Math.sin(t * (run ? 11 : 8) + ph) * .6;
+        P.wings[0].rotation.y = -.3 - fl; P.wings[1].rotation.y = .3 + fl;
+        P.body.position.y = ease('y', dead ? .3 : 2.2 + Math.sin(t * 2 + ph) * .2 - atk * 1.0, f);
+        R.inner.rotation.z = ease('dz', dead ? 1.3 : 0, Math.min(1, s * 6));
+      } else {
+        P.legs.forEach((l, i) => { l.rotation.y = Math.sin(t * (run ? 14 : 2) + i) * (run ? .35 : .08); });
+        P.body.position.z = atk * .6;
+        R.inner.position.y = ease('y', dead ? .8 : lift, f);
+        R.inner.rotation.z = ease('dz', dead ? Math.PI : 0, Math.min(1, s * 6));
       }
-      if (a.frozen || (pose.still && a.state !== 'dead')) return;   // Eis/Root und Lauerer im Blick: Pose bleibt stehen
-      anim(dt / 1000, a);
-    },
+    };
+    return {
+      root: R.root, height: (H + P.lift) * lv, pose, mats,
+      update(dt, a) {
+        ice.visible = !!a.iced;
+        const tint = a.state === 'dead' ? 'dead' : a.feared ? 'fear' : a.poisoned ? 'poison' : a.slowed ? 'slow' : '', fl = Math.ceil((a.flash ?? 0) * 4), key = `${tint},${fl},${a.champion || false}`;
+        if (key !== shown) {
+          shown = key;
+          for (const m of mats) {
+            const c = TINTS[tint];
+            m.U.uTint.value.set(c?.r ?? 0, c?.g ?? 0, c?.b ?? 0, c ? (tint === 'dead' ? 1 : .55) : 0);
+            m.U.uGlowK.value = tint === 'dead' ? .15 : 1;
+            m.emissive.setScalar(fl / 4 * .9);
+            if (a.champion === true) m.emissive.add(CHAMP_GLOW);
+          }
+        }
+        if (a.frozen || (pose.still && a.state !== 'dead')) return;   // Eis/Root und Lauerer im Blick: Pose bleibt stehen
+        anim(dt / 1000, a);
+      },
+    };
   };
 };
