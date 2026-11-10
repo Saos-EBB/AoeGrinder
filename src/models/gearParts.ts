@@ -14,7 +14,8 @@ type Mat = { c: THREE.Color; g: 0 | 1; ds?: boolean } | null;   // g = 1: leucht
 
 // ---------------- Daten aus dem Viewer ----------------
 export const GP = {   // Optik-Zahlen // PH
-  lit: 0.7,         // beleuchtete Teile dunkler als im Viewer: die Lampe (dunkel.ts) und der Rand heben sie sonst über die Bloom-Schwelle
+  lit: 0.45,        // beleuchtete Teile dunkler als im Viewer: die Lampe (dunkel.ts) und der Rand heben sie sonst über die Bloom-Schwelle
+  cap: 0.36,        // hellster Kanal beleuchteter Teile (linear), sonst blüht Kristall/Gold weiß aus
   ghost: 0.6,       // Geisterklingen: im Viewer additiv mit 55 % Deckkraft, hier opakes Glühen in Elementfarbe × ghost
   line: 0.85,       // Linien des Runenkreises (Viewer 85 % Deckkraft)
 };
@@ -278,11 +279,15 @@ export function buildGearTree(slot: string, group: string, item: GearLookItem): 
   const M = matsOf(item);
   if (slot === 'arme') {
     const L = new THREE.Group(), R = new THREE.Group();
-    fn(L, M, VP.shL, VP.elL, VP.wrL, -1); fn(R, M, VP.shR, VP.elR, VP.wrR, 1);
+    fn(L, M, VP.shL, VP.elL, VP.wrL, -1); fn(R, M, VP.shR, VP.elR, VP.wrR, 1); orbitStart(L); orbitStart(R);
     return { L, R };
   }
-  const root = new THREE.Group(); fn(root, M); return root;
+  const root = new THREE.Group(); fn(root, M); orbitStart(root); return root;
 }
+// Kreisende Teile (Splitter, Bücher) stehen in der Bind-Pose dort, wo die Bahn des Viewers bei t = 0 liegt
+export const orbitPos = (u, t: number, out = V()) => { const a = u.a + t * 1.2;
+  return u.flat ? out.set(Math.cos(a) * u.r, u.y + Math.sin(a) * u.r, u.back) : out.set(Math.cos(a) * u.r, u.y + Math.sin(t * 2 + u.a) * 0.02, Math.sin(a) * u.r); };
+function orbitStart(root: THREE.Object3D) { root.traverse(o => { if (o.userData.orbit) orbitPos(o.userData.orbit, 0, o.position); }); }
 
 // ---------------- Viewer-Raum → Bones der Figur (strichMagier.ts) ----------------
 // Maße der Figur im Spiel: Kopf-Mitte 0,16 über dem Kopf-Bone und etwa 1,5 × so groß wie im Viewer; Rumpf ab Hüfte (y 1,0) etwa 1,15 × höher;
@@ -304,6 +309,7 @@ const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen
   if (n) for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
   return f;
 };
+const litCol = (c: THREE.Color) => { const o = c.clone().multiplyScalar(GP.lit), k = Math.max(o.r, o.g, o.b); return k > GP.cap ? o.multiplyScalar(GP.cap / k) : o; };
 // Wandelt einen Teilbaum: frame = Viewer-Matrix des Rahmens, root = Bone, der den Rahmen im Spiel trägt (Lage + Größe)
 function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B, slot: string, out: { pieces: GearPiece[]; anim: GearAnim[]; fx: GearFx[] }, pick: (o: THREE.Object3D) => boolean = () => true) {
   tree.updateMatrixWorld(true);
@@ -321,8 +327,9 @@ function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B
     const mat = o.userData.mat as Mat;
     if (o.userData.geo && mat) {
       const m = bs.clone().multiply(o.matrixWorld);
-      out.pieces.push({ bone: b, geo: o.userData.geo, color: mat.g ? mat.c : mat.c.clone().multiplyScalar(GP.lit), m, glow: !!mat.g, noShell: mv });
-      if (mat.ds) out.pieces.push({ bone: b, geo: flip(o.userData.geo), color: mat.c.clone().multiplyScalar(GP.lit), m, glow: !!mat.g, noShell: mv });
+      const color = mat.g ? mat.c : litCol(mat.c);
+      out.pieces.push({ bone: b, geo: o.userData.geo, color, m, glow: !!mat.g, noShell: mv });
+      if (mat.ds) out.pieces.push({ bone: b, geo: flip(o.userData.geo), color, m, glow: !!mat.g, noShell: mv });
     }
     for (const c of o.children) walk(c, b, bs, mv);
   };

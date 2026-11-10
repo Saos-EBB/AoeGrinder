@@ -13,6 +13,7 @@ import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
 import { state } from '../state';
 import { markStacks } from '../plagueMarks';
+import { gearPieces } from './gearParts';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -457,11 +458,11 @@ function plagueShader(mat, U) {
   const prev = mat.onBeforeCompile;
   mat.onBeforeCompile = (sh, r) => {
     prev(sh, r);
-    sh.vertexShader = 'varying vec3 vP;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+    sh.vertexShader = 'attribute float aGear; varying vec3 vP; varying float vGear;\n' + sh.vertexShader.replace('#include <begin_vertex>',
       `vec3 transformed = position + normal * .012 * sin(uTime * 3. + position.y * 14. + position.x * 9.);
        transformed.y -= .012 * (.5 + .5 * sin(uTime * 1.7 + position.x * 11. + position.z * 7.));
-       vP = position;`);
-    sh.fragmentShader = `uniform float uTime; varying vec3 vP;
+       vP = position; vGear = aGear;`);
+    sh.fragmentShader = `uniform float uTime; varying vec3 vP; varying float vGear;
       float h3(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
       float n3(vec3 p) { vec3 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
         return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y),
@@ -475,7 +476,7 @@ function plagueShader(mat, U) {
        c = mix(c, vec3(.47, .52, .17), smoothstep(.22, .4, k) * (1. - smoothstep(.4, .55, k)));
        c = mix(c, vec3(.44, .22, .58), smoothstep(.42, .66, k));
        c = mix(c, vec3(.24, .1, .34), smoothstep(.7, .95, k));
-       vec4 diffuseColor = vec4(c * diffuse * .6, opacity);`);   // .6: die Lampe über der Figur hellt sonst zu Pastell auf // PH
+       vec4 diffuseColor = vec4(mix(c * diffuse * .6, diffuse, vGear), opacity);`);   // .6: die Lampe über der Figur hellt sonst zu Pastell auf // PH
   };
   mat.customProgramCacheKey = () => 'plagueBody';
 }
@@ -523,6 +524,12 @@ const qGeo = () => mergeGeometries([
 // ───────────────────────── Skins (src/skins.ts): Teile an Bones ins Körper-Mesh, Leuchtteile ins Glühen, Gag-Teile auf eigenen Bones
 const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4);
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
+// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF)
+export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
+  look: { seuche: ['kopf'] },   // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
+  skin: { base: ['kopf'] },     // Zuhälter-Look (nur Dev): Fedora
+};
+const GEAR_FX = { spark: 2, sparkOrange: 4.5, aura: 6, r: .4, y0: .45, y1: 2.1, fillY: 2.4, dimFrom: 1.6, dimMin: .08 };   // Funken pro Sekunde ab Blau (Orange mehr), Aura-Partikel pro Sekunde je Teil, Bahn um die Figur; Lampen-Ausgleich ab dimFrom bis zur Höhe des Fülllichts (dunkel.ts D.fill.height) // PH
 const SK = {   // Optik-Zahlen der Skins // PH
   blitz: { lvlMin: .08, lvlRate: 4, drip: 6, full: .98, arcs: 24 },   // Pegel: mindestens 8 %, folgt der Anzeige mit 4/s; Funken pro Sekunde am Korken (+ drip × Pegel) und bei voller Flasche zu den Händen
   glut: { flame: [.45, .8], flick: 9 },   // Augen-Feuer: Länge 45 % ohne Hitze bis 125 % bei voller Hitze, Flackern pro Sekunde
@@ -721,6 +728,20 @@ function updateLook(F, s, sp) {
 }
 
 // ───────────────────────── IK
+// Gear: Funken in Elementfarbe ab Blau (Viewer: steigen um die Figur auf), Orange-Aura als Partikel um das Teil
+const _gfp = V();
+function updateGearFx(F, s, sp) {
+  const G = F.gear;
+  if (G.el != null) for (let n = rate(s * (G.rar >= 5 ? GEAR_FX.sparkOrange : GEAR_FX.spark)); n > 0; n--) {
+    const a = Math.random() * TAU;
+    F.root.localToWorld(_gfp.set(Math.cos(a) * GEAR_FX.r, GEAR_FX.y0 + Math.random() * (GEAR_FX.y1 - GEAR_FX.y0), Math.sin(a) * GEAR_FX.r));
+    sp(_gfp, G.el);
+  }
+  for (const f of G.fx) if (f.aura) for (let n = rate(s * GEAR_FX.aura); n > 0; n--) {
+    f.bone.getWorldPosition(_gfp); const r = f.aura * .25 * f.bone.getWorldScale(_lq).x;
+    sp(_gfp.add(_lq.set(rnd(-r, r), rnd(-r, r), rnd(-r, r))), f.color);
+  }
+}
 const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = V(0, -1, 0);
 function ik(upper, lower, l1, l2, targetW, poleW) {
   const par = upper.parent;
@@ -1137,6 +1158,17 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     glow(staff, new THREE.OctahedronGeometry(.055, 0), E, [0, WEL_STONE_Y, 0], [0, 0, 0], [1, 1.5, 1]);   // Stein über dem Knauf
     if (!LK?.eyes) for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH (Skins tragen sie in Brille/Maske/Blick)
   }
+  // Gear (models/gearParts.ts, opts.gear aus gear.ts gearLook): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
+  F.gear = { anim: [], fx: [], hidden: [] as string[], el: null as number | null, rar: 0 };
+  const hide = [...(GEAR_HIDE.look[look] ?? []), ...(LK ? [] : GEAR_HIDE.skin[skin] ?? [])];
+  for (const [slot, it] of Object.entries(opts.gear ?? {}) as [string, any][]) {
+    if (!it) continue;
+    if (hide.includes(slot)) { F.gear.hidden.push(slot); continue; }
+    const o = gearPieces(F, B, slot, it.group, it, A1, A2);
+    for (const p of o.pieces) (p.glow ? F.glow : F.parts).push({ bone: p.bone, geo: p.geo, color: p.color, m: p.m, noShell: p.noShell, gear: 1 });
+    F.gear.anim.push(...o.anim); F.gear.fx.push(...o.fx.map(f => ({ ...f, color: ELEMENTS[it.s.element] && it.s.element !== 'none' ? ELEMENTS[it.s.element].color : 0xd8d4e0 })));
+    if (it.r >= 3 && it.s.element !== 'none' && ELEMENTS[it.s.element] && it.r >= F.gear.rar) { F.gear.el = ELEMENTS[it.s.element].color; F.gear.rar = it.r; }   // Funken: Element des seltensten Teils ab Blau (Viewer elAny)
+  }
   // Trink-Requisiten: je ein Bone, der ?-Magier hat alle 4 Getränke (anim.drinkSkin wählt)
   for (const k of skin === 'qm' ? ['base', 'fire', 'ice', 'arcane'] : [skin]) {
     const pg = propGeo(k);
@@ -1173,6 +1205,11 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     g.setAttribute('icB', new THREE.BufferAttribute(base, 3));
     g.setAttribute('icT', new THREE.BufferAttribute(new Float32Array(n).fill(p.prop || p.noShell ? -2 : p.t ?? -1), 1));
     g.setAttribute('aGlow', new THREE.BufferAttribute(new Float32Array(n).fill(p.glow || 0), 1));
+    g.setAttribute('aGear', new THREE.BufferAttribute(new Float32Array(n).fill(p.gear || 0), 1));   // Gear behält im Seuchen-Muster seine Farben
+    if (p.gear && !p.glow) {   // Lampen-Ausgleich: das Fülllicht hängt GEAR_FX.fillY über dem Boden (dunkel.ts), hohe Hüte kämen ihm sonst so nah, dass sie weiß ausbrennen
+      const pa = g.attributes.position, ca = g.attributes.color, y0 = GEAR_FX.dimFrom, y1 = GEAR_FX.fillY;
+      for (let i = 0; i < n; i++) { const y = pa.getY(i); if (y <= y0) continue; const k = Math.max(GEAR_FX.dimMin, Math.pow(Math.max(0, (y1 - y) / (y1 - y0)), 1.6)); ca.setXYZ(i, ca.getX(i) * k, ca.getY(i) * k, ca.getZ(i) * k); }
+    }
   });
   F.body.customDepthMaterial = depthMat(U);
   if (F.runeParts) F.runeMesh = build(F.runeParts, runeMat(U));
@@ -1231,6 +1268,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     setMeter(v) { F.m = clamp(v || 0, 0, 1); },
     get meter() { return F.m; },
     // Gag-Werte des Skins (Tests): Pegel der Flasche, Größe des Müllbeutels, sichtbare Splitter
+    get gearState() { return { hidden: F.gear.hidden, anim: F.gear.anim.length, fx: F.gear.fx.length, el: F.gear.el }; },   // Tests
     get lookState() { const L = F.lk; return L ? { look: L.look, lvl: L.lvl, bag: L.bag?.scale.x, marks: L.marks, shards: L.shown } : null; },
     // Laufende Animation für den Neubau bei Waffenwechsel (models/mage.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
     get animState() { return { t: F.t, m: F.m, last: F.last, blendFrom: F.blendFrom, blendT: F.blendT, freeze: F.freeze, uTime: U.uTime.value, loco, mode, castT, castKeys, runT, wasCast, chargeT }; },
@@ -1287,6 +1325,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       applyPose(F, p);
       F.root.getWorldPosition(F.groundPos); F.groundY = F.groundPos.y - (fl && mode !== 'dead' ? fl + .07 * Math.sin(F.t * 1.3) : 0);
       if (F.lk) updateLook(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
+      if (!F.dead) updateGearFx(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
 
       // Stufen-Effekte nach der Anzeige m
       const m = F.dead ? 0 : F.m;

@@ -224,6 +224,21 @@ export function wearLook(slot: string, id: string | null) {
   lookWearMap()[slot] = id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null;
   saveMeta();
 }
+// Gear an der Figur (models/gearParts.ts über mage.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
+// Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Körper-Looks haben noch kein Modell → leer).
+// Set 5/5 (forcedLook) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
+export type GearLook = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
+export function gearLook(skin: string | null): GearLook | null {
+  if (!isMagierSkin(skin) || forcedLook(skin)) return null;
+  const out: GearLook = {};
+  for (const slot of SLOTS) {
+    const g = worn(slot), group = groupOf(g);
+    if (!g || !group || lookIn(slot)) continue;
+    out[slot] = { group, r: g.r, s: { maker: makerOf(g) ?? 'stern', element: g.s.element, ...(g.s.focus ? { focus: g.s.focus } : {}) } };
+  }
+  return out;
+}
+export const gearKey = (skin: string | null) => JSON.stringify(gearLook(skin));   // mage.ts baut neu, wenn sich das ändert
 // Waffen-Look der Magier (mage.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
 export const weaponLook = () => lookIn('waffe');
 // Löschen gibt Staub zurück wie bei der Waffe (deleteWeapon)
@@ -308,4 +323,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
