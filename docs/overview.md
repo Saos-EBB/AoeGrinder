@@ -1,7 +1,7 @@
 # Frost Grind — Was ist los
 > Mein Browser-Game, aus Spaß gebaut: AoE-Grinden wie der Mage in WoW Classic als Roguelike. Der Prototyp ist fast fertig, gerade läuft Feinschliff an Maps, Items und Kosmetik.
 
-**Stand:** Zwei Klassen (Strichmagier mit 6 Figuren, Strichkrieger), generierte Maps mit 5 Themes, neue Mobs, Gear mit Sets, Portale, Weltkarte und Map-Objekte. Nur Desktop, Handy ist bis auf Weiteres gesperrt. Live-Version und Deploy → [handoff](handoff.md#stand).
+**Stand:** Zwei Klassen (Strichmagier mit 6 Figuren, Strichkrieger), generierte Maps mit 5 Themes, neue Mobs, Gear mit Sets (an der Figur sichtbar), Portale, Weltkarte und Map-Objekte. Nur Desktop, Handy ist bis auf Weiteres gesperrt. Live-Version und Deploy → [handoff](handoff.md#stand).
 
 ## Loslegen
 ```
@@ -23,7 +23,8 @@ npm run build        # eine dist/index.html
 | `src/mobs.ts`, `mobKinds.ts`, `abilities.ts` | Mobs = Kategorie + Zusatz + Theme-Skin, Spawn auf Pack-Plätzen | [map-umbau](handoffs/map-umbau.md) |
 | `src/boss.ts`, `waves.ts`, `champions.ts` | Bosse, Wellen-Modus, Champion-Packs mit Affixen | [boss-kader](handoffs/boss-kader.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/gear.ts`, `loot.ts`, `ui/gearWindow.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, Ausrüstungsfenster (Taste I), Erfolge | [items](handoffs/items.md) |
+| `src/gear.ts`, `loot.ts`, `models/gearParts.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, 25 Gear-Formen an der Figur, Erfolge | [items](handoffs/items.md), [gear-modelle](handoffs/gear-modelle.md) |
+| `src/ui/heroWindow.ts`, `ui/heroStats.ts` | Ein Fenster für Figur, Werte und Inventar (Taste X oder I), ganz ohne Maus bedienbar | [fenster](handoffs/fenster.md) |
 | `src/skins.ts`, `skinFx.ts`, `src/models/` | Figuren, Skins, Mob-Rigs, Waffen-Baukasten | [skins](handoffs/skins.md) |
 | `src/realMen.ts`, `melee.ts`, `wucht.ts` | Nahkampf des Strichkriegers, Treffer-Gefühl | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `src/vfx/`, `render.ts`, `dunkel.ts` | Effekte, Sound, Bloom, dunkles Licht mit Lampe | [Code-Karte](handoff.md#code-karte) |
@@ -44,6 +45,7 @@ npm run build        # eine dist/index.html
 - Kein UI-Element darf unter den Zierrahmen-Ecken liegen: Abstand über `--fg-safe` pro UI-Look → [base.css](../src/ui/flavors/base.css)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Das Spiel läuft immer dunkel, Helligkeit stellt man in den Einstellungen ein. Mobs hinter dem Nebel werden nicht gezeichnet → [dunkel.ts](../src/dunkel.ts)
+- Gear-Teile werden an die Bones ins Körper-Mesh der Figur gemergt, kosten also keine Draw Calls; Set-Skin 5/5 verdeckt sie → [gearParts.ts](../src/models/gearParts.ts)
 - Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons kommen als SVG aus dem Spell-Viewer, `ui/spellIcons.ts` wird erzeugt und nicht von Hand geändert → [icons.ts](../src/ui/icons.ts)
