@@ -19,8 +19,8 @@
 .hwDoll { flex: 1 1 calc(300 * var(--hu)); min-height: calc(170 * var(--hu)); display: grid; grid-template-columns: auto 1fr auto; gap: calc(12 * var(--hu)); align-items: center; position: relative; }
 .hwCol { display: flex; flex-direction: column; justify-content: center; gap: calc(22 * var(--hu)); height: 100%; }
 .hwFig { position: relative; height: 100%; min-height: 0; }
-.hwFig .wmFig3d { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; cursor: grab; touch-action: none; }
-.hwFig .wmFig3d:active { cursor: grabbing; }
+.hwFig .hwFig3d { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; cursor: grab; touch-action: none; }
+.hwFig .hwFig3d:active { cursor: grabbing; }
 .hwFigHint { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font-size: calc(11 * var(--hu)); color: var(--fg-muted); pointer-events: none; white-space: nowrap; }
 .hwSlotWrap { position: relative; }
 .hwSlot { --rc: var(--fg-line); width: calc(64 * var(--hu)); height: calc(64 * var(--hu)); box-sizing: border-box; padding: calc(4 * var(--hu)) 0 calc(14 * var(--hu)); position: relative; display: grid; place-items: center;
@@ -161,3 +161,13 @@
 .hwUp, .hwDown { font: 700 calc(12 * var(--hu)) var(--font-num); }
 .hwUp { color: #6ee7a0; }
 .hwDown { color: #f87171; }
+/* Auswahl-Liste „Was behalten?“ (lootView.ts, Fenster außerhalb von #hwBox, feste px) */
+.hwKeepOpt { display: flex; align-items: center; gap: 10px; padding: 5px 6px; font: 600 14px var(--font-body); color: var(--fg-text); cursor: pointer; text-align: left; }
+.hwKeepOpt:hover { background: color-mix(in srgb, var(--fg-accent) 13%, transparent); }
+.hwKeepOpt input { width: 16px; height: 16px; accent-color: var(--fg-accent); margin: 0; }
+.hwKeepOpt small { margin-left: auto; padding-left: 12px; font-size: 12px; color: var(--fg-muted); }
+/* Besonderheit der Figur in „Alle Werte“ (charInfo.ts figureInfo: cSub, cRow, cNote) */
+.hwFigInfo .cSub { margin: calc(8 * var(--hu)) 0 calc(2 * var(--hu)); font: 700 calc(12 * var(--hu)) var(--font-num); letter-spacing: .1em; text-transform: uppercase; }
+.hwFigInfo .cRow { display: flex; justify-content: space-between; gap: calc(10 * var(--hu)); padding: calc(3 * var(--hu)) 0; border-bottom: 1px solid var(--fg-line); font-size: calc(13 * var(--hu)); }
+.hwFigInfo .cRow b { font-weight: 600; color: var(--fg-title); }
+.hwFigInfo .cNote { margin: calc(4 * var(--hu)) 0 0; font-size: calc(12 * var(--hu)); line-height: 1.4; color: var(--fg-muted); }

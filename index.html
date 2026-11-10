@@ -193,7 +193,7 @@
   #tMenu { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); left: calc(env(safe-area-inset-left, 0px) + 50%); margin-left: 140px; width: 44px; height: 44px; font-size: 26px; line-height: 40px; text-align: center; z-index: 1;
     background: #0d0b08cc; border: 2px solid #b8913f; border-radius: 8px; color: #f2c94c; }
   body.mobile #actionbar { display: none; }
-  body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit, body.mobile #charClose { display: none; }
+  body.mobile .slot .key, body.mobile #pauseEdit, body.mobile #pauseBinds, body.mobile #menuBinds, body.mobile #menuEdit { display: none; }
   body.mobile .modal { overflow: auto; justify-content: flex-start; }
   body.mobile #settingsBox { width: 100vw !important; height: 100vh !important; }
   body.mobile .modal > .frame.panel { width: 100vw !important; max-width: none !important; min-height: 100vh; max-height: none !important; border-radius: 0; border-width: 0; padding: 16px 24px; }
@@ -434,15 +434,6 @@
     <div id="shopCols"></div>
     <div id="shopList"></div>
     <button class="btn fg-btn" id="shopClose" data-i18n="shop.close">Weiter zum Hauptmenü</button>
-  </div>
-</div>
-
-<div id="charModal" class="modal" style="z-index:4">
-  <div class="frame panel fg-panel" id="charBox">
-    <div class="charHead"><h1 class="fg-title" data-i18n="char.title">Charakter</h1><span data-i18n="char.head">X schließt · pausiert</span></div>
-    <div id="charTabs"></div>
-    <div id="charBody"></div>
-    <button class="smallBtn fg-btn alt" id="charClose" data-i18n="char.close">Schließen (X)</button>
   </div>
 </div>
 

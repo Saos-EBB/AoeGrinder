@@ -1,8 +1,6 @@
 // Erfolge (schlicht): Liste in meta.achievements (skins.ts ACHIEVEMENTS), bisher nur „Set <Name> 5/5 angelegt“ (gear.ts checkUnlocks), jeder schaltet den
-// Set-Skin frei. Neuer Erfolg → Einblendung oben in der Mitte, auch über Fenstern. Liste im Charakterfenster (Werte, achListHtml).
+// Set-Skin frei. Neuer Erfolg → Einblendung oben in der Mitte, auch über Fenstern. Liste im Fenster heroWindow.ts (unter dem Set-Fortschritt).
 
-import { hasAch } from '../meta';
-import { ACHIEVEMENTS } from '../skins';
 import { t } from '../i18n';
 
 const ACH_TOAST = { showMs: 4500 };   // PH
@@ -29,11 +27,3 @@ export function showAch(ach: string) {
   setTimeout(() => el.remove(), ACH_TOAST.showMs);
 }
 addEventListener('fg:ach', (e: Event) => showAch((e as CustomEvent).detail));
-
-// Charakterfenster: alle Erfolge, erreichte hell mit ★, offene grau mit Bedingung
-export function achListHtml() {
-  const n = ACHIEVEMENTS.filter(hasAch).length;
-  return `<div class="cSub">${t('ach.title', { n, m: ACHIEVEMENTS.length })}</div>${ACHIEVEMENTS.map(a => hasAch(a)
-    ? `<div class="cRow"><span>★ ${t('ach.setName', { set: setName(a) })}</span><b>${t('ach.skinFree', { skin: setName(a) })}</b></div>`
-    : `<div class="cRow" style="opacity:.5"><span>🔒 ${t('ach.setName', { set: setName(a) })}</span><b>${t('ach.need', { set: setName(a) })}</b></div>`).join('')}`;
-}

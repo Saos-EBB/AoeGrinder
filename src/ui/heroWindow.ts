@@ -24,6 +24,7 @@ import { attachWeaponCard, weaponCardData } from './weaponCard';
 import { weaponThumb } from './weaponThumb';
 import { attachTip, hideTip, tipAt, type TipData } from './tooltip';
 import { heroStats, type StatRow } from './heroStats';
+import { figureInfo } from './charInfo';
 import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
 import { t, fmtNum } from '../i18n';
@@ -228,6 +229,8 @@ function renderStats() {
     all.append(el('div', 'hwGroup', g.name));
     for (const r of g.rows) all.append(statEl(r));
   }
+  const fig = live ? figureInfo() : '';   // Besonderheit der Figur (Kill-Anzeige, Batterie, Wut …), Stand jetzt und Regeln
+  if (fig) { const f = el('div', 'hwFigInfo'); f.innerHTML = fig; all.append(f); }
   box.append(all);
 }
 
@@ -244,7 +247,7 @@ function renderLeft() {
 }
 
 // ---------- Rechts: Inventar ----------
-// Tabs Waffen, 5 Gear-Slots, Kosmetik. Filterleiste wie im alten Waffenmenü (Listen mit Häkchen, Seltenheits-Rauten, Sortieren, Suche), für Gear mit
+// Tabs Waffen, 5 Gear-Slots, Kosmetik. Filterleiste wie im früheren Waffenmenü (Listen mit Häkchen, Seltenheits-Rauten, Sortieren, Suche), für Gear mit
 // Element, Hersteller, Fokus, Set. Nicht passende Teile werden abgedunkelt, nicht ausgeblendet. Filter in frostgrind.ui.v1 (weaponFilter, gearFilter).
 export const TABS: Tab[] = ['waffen', ...SLOTS, 'kosmetik'];
 type Kind = 'w' | 'g' | 'k';

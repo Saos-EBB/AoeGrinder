@@ -1,4 +1,4 @@
-// Waffenmenü: die gewählte Figur mit der ausgerüsteten Waffe als 3D-Ansicht links im Menü.
+// Fenster heroWindow.ts: die gewählte Figur mit der ausgerüsteten Waffe als 3D-Ansicht zwischen den Slots.
 // Kein eigener Renderer: Vor dem normalen Bild wird nur die Figur in eine Ecke des Spiel-Canvas gezeichnet, sofort in ein
 // 2D-Canvas kopiert und danach vom Composer übermalt. Läuft nur, solange ein Fenster mit Vorschau offen ist (setFigPreview): ein eigener Schalter statt
 // einer Layout-Abfrage (offsetParent) in jedem Frame, die im Run sonst Layout erzwingt.
@@ -13,11 +13,11 @@ const size = new THREE.Vector2(), clear = new THREE.Color();
 const TURN_PER_PX = 0.012;   // Ziehen mit der Maus dreht die Figur // PH
 let active = false, canvas: HTMLCanvasElement | null = null, ctx: CanvasRenderingContext2D | null = null, spin = 0, dragX: number | null = null;
 
-// Ein Canvas für Waffenmenü und Ausrüstungsfenster: erneutes Mounten hängt es in den neuen Platz um
+// Ein Canvas, erneutes Mounten hängt es in den neuen Platz um
 export function mountFigPreview(host: HTMLElement) {
   if (canvas) { host.replaceChildren(canvas); return; }
   canvas = document.createElement('canvas');
-  canvas.className = 'wmFig3d';
+  canvas.className = 'hwFig3d';
   canvas.setAttribute('aria-hidden', 'true');
   host.replaceChildren(canvas);
   ctx = canvas.getContext('2d');

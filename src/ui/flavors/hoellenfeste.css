@@ -25,9 +25,9 @@ body[data-flavor=hoellenfeste] .fg-panel::before, body[data-flavor=hoellenfeste]
   background: url(./hoellenfeste/gem.svg) 50% 0 / 18px 18px no-repeat, linear-gradient(#c9a24a, #c9a24a) center bottom 7px / 80px 4px no-repeat; background-origin: border-box; background-clip: border-box; }
 body[data-flavor=hoellenfeste] .fg-panel::after, body[data-flavor=hoellenfeste] .fg-deco::after { inset: 7px; border: 1px solid rgba(201, 162, 74, .35);
   background: url(./hoellenfeste/rune.svg) center 5px / 26px 10px repeat-x; background-clip: content-box; padding: 0 22px; }
-/* Panels, die scrollen (Hauptmenü links/rechts, Waffenmenü, Inventar im Ausrüstungsfenster): Rahmen unten/rechts nicht über die Box hinaus, sonst 9 px
+/* Panels, die scrollen (Hauptmenü links/rechts): Rahmen unten/rechts nicht über die Box hinaus, sonst 9 px
    Scroll-Überstand. Gleicher Look: der Rahmen ragt per border-image-outset hinaus (zählt nicht zum Scrollbereich), Stein und Steg bleiben an ihrem Platz */
-body[data-flavor=hoellenfeste] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::before { inset: -9px 0 0 -9px; border-image-outset: 0 9px 9px 0;
+body[data-flavor=hoellenfeste] :is(#menuLeft, #menuRight)::before { inset: -9px 0 0 -9px; border-image-outset: 0 9px 9px 0;
   background-position: calc(50% + 4.5px) 0, left calc(50% + 4.5px) bottom 0; }
 
 /* Titel: zentriert zwischen Gold-Linien mit roten Rauten und Zacken-Bogen, links mit kleiner Goldraute */

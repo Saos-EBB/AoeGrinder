@@ -38,10 +38,10 @@ body[data-flavor=krypta] .fg-panel::after, body[data-flavor=krypta] .fg-deco::af
     radial-gradient(circle, #d9b44a 2.5px, #000 3px, transparent 3.5px) right 9px bottom 9px / 8px 8px no-repeat,
     linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px 5px / calc(100% - 12px) 1px no-repeat,
     linear-gradient(rgba(242, 213, 138, .35), rgba(242, 213, 138, .35)) 6px calc(100% - 6px) / calc(100% - 12px) 1px no-repeat; }
-/* Panels, die scrollen (Hauptmenü links/rechts, Waffenmenü, Inventar im Ausrüstungsfenster): Deko unten bündig mit der Box, sonst 7 px
+/* Panels, die scrollen (Hauptmenü links/rechts): Deko unten bündig mit der Box, sonst 7 px
    Scroll-Überstand; die unteren Edelsteine sitzen dafür auf der Unterkante statt darunter (oben und seitlich ragt die Deko weiter hinaus: oben scrollt nicht, waagrecht ist overflow-x hidden) */
-body[data-flavor=krypta] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::before { inset: -13px -10px 0; }
-body[data-flavor=krypta] :is(#menuLeft, #menuRight, .wmMain > .fg-panel, .gmInvPanel)::after { inset: -4px -4px 0; }
+body[data-flavor=krypta] :is(#menuLeft, #menuRight)::before { inset: -13px -10px 0; }
+body[data-flavor=krypta] :is(#menuLeft, #menuRight)::after { inset: -4px -4px 0; }
 
 /* Titel auf rotem Banner, zentriert mit roten Rauten an den Enden */
 body[data-flavor=krypta] .fg-title.c, body[data-flavor=krypta] .fg-title.l { position: relative; display: inline-block; padding: .12em 1.6em .32em;

@@ -1,4 +1,4 @@
-// Charakterfenster → Werte: was die Figur besonders macht. Stand jetzt plus Regeln in Kurzform, Zahlen direkt aus den Configs.
+// Fenster heroWindow.ts → Alle Werte (im Run) und Hauptmenü (Regeln): was die Figur besonders macht. Stand jetzt plus Regeln in Kurzform, Zahlen direkt aus den Configs.
 
 import { state, player } from '../state';
 import { SPELLS, SCHOOL_METER, BATTERY, PLAGUE, RANDOM_MAGE, mods } from '../config';

@@ -406,7 +406,7 @@ $('pauseGiveUp').addEventListener('click', () => {
 
 // Tastatur: A/D wechselt die Figur, Q/E die Map, Enter startet (oder löst den fokussierten Knopf aus), Esc beendet das Bearbeiten
 addEventListener('keydown', e => {
-  if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Waffenmenü tippen
+  if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Fenster heroWindow.ts tippen
   if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
   if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'heroModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
   if (e.code === 'KeyA') cycleChar(-1);
