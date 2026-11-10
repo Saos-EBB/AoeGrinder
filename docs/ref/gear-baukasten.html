@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gear-Baukasten</title>
+<style>
+  :root { --bg: #0f0d13; --panel: #17141c; --line: #2a2533; --text: #ece8f2; --mute: #a49cb3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 Inter, system-ui, sans-serif; overflow: hidden; }
+  #c { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+  #bar { position: fixed; top: 0; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; background: linear-gradient(#0f0d13ee, #0f0d1300); }
+  #bar h1 { margin: 0 12px 0 0; font-size: 20px; letter-spacing: .5px; }
+  .grp { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  select { min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; }
+  button { min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--acc, #e8b23a); color: #0f0d13; border-color: var(--acc, #e8b23a); }
+  #info { position: fixed; left: 16px; bottom: 16px; width: min(440px, calc(100vw - 32px)); max-height: 46vh; overflow: auto; padding: 14px 16px; background: #17141ce6; border: 1px solid var(--line); border-radius: 12px; }
+  #info h2 { margin: 0 0 6px; font-size: 18px; }
+  #info p { margin: 6px 0 0; font-size: 13.5px; color: #d9d2e4; }
+  #info .row { display: flex; gap: 8px; font-size: 13.5px; padding: 3px 0; border-bottom: 1px solid #2a2533; }
+  #info .row b { width: 64px; flex: none; color: var(--mute); font-weight: 600; }
+  #info .mute { color: var(--mute); font-size: 12.5px; }
+  #slots { position: fixed; right: 16px; bottom: 16px; padding: 12px 14px; background: #17141ce6; border: 1px solid var(--line); border-radius: 12px; display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; min-width: 280px; }
+  #slots label { font-size: 13px; color: var(--mute); }
+  #bMore, #bInfo { display: none; }
+  @media (max-width: 760px) {
+    #bar { flex-wrap: nowrap; overflow-x: auto; padding: 8px; gap: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none; background: #0f0d13f2; }
+    #bar::-webkit-scrollbar { display: none; }
+    #bar h1 { display: none; }
+    .grp { flex-wrap: nowrap; }
+    button, select { min-height: 40px; font-size: 13px; white-space: nowrap; flex: none; }
+    #bMore, #bInfo { display: inline-block; }
+    #info { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 40vh; padding: 10px 12px; }
+    #slots { left: 8px; right: 8px; bottom: 8px; min-width: 0; }
+    body:not(.showInfo) #info { display: none; }
+    body:not(.showMore) #slots { display: none; }
+  }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  #labels div { position: absolute; transform: translate(-50%, 0); font-weight: 700; font-size: 12px; text-shadow: 0 1px 3px #000; white-space: nowrap; color: #ece8f2; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="labels"></div>
+<div id="bar">
+  <h1>Gear-Baukasten</h1>
+  <button id="bInfo" aria-pressed="false">Info</button>
+  <button id="bMore" aria-pressed="false">Slots</button>
+  <div class="grp">
+    <button id="bRoll" style="--acc:#ff9a3c">Würfeln</button>
+    <select id="sMaker" aria-label="Hersteller"></select>
+    <select id="sEl" aria-label="Element"></select>
+    <select id="sRar" aria-label="Seltenheit"></select>
+    <select id="sFocus" aria-label="Fokus-Schule"></select>
+  </div>
+  <div class="grp">
+    <select id="sGal" aria-label="Galerie"></select>
+    <button id="bSpin" aria-pressed="true">Drehen</button>
+  </div>
+</div>
+<div id="info"></div>
+<div id="slots"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------------- Daten (Konzept wie Waffen-Baukasten: jede Schicht hat einen sichtbaren Kanal) ----------------
+// Slot → Silhouette · Wertgruppe → Form · Fokus-Schule → Emblem · Element → Leuchtfarbe/Partikel · Hersteller → Material · Seltenheit → Glühen + Extras
+const SLOTS = { kopf: 'Kopf', hals: 'Hals', ruecken: 'Rücken', arme: 'Arme', koerper: 'Körper' };
+// Wertgruppen = die 5 Schaft-Gruppen der Waffe (baukasten.ts SHAFTS)
+const GROUPS = {
+  off:   { name: 'Offensiv', values: 'Schaden / Crit', motif: 'Spitzen, Zacken' },
+  tempo: { name: 'Tempo', values: 'Abklingzeit / Lauftempo', motif: 'wehender Stoff, Federn' },
+  leben: { name: 'Leben', values: 'Leben / Regen im Kampf', motif: 'weich, weit, umhüllend' },
+  mana:  { name: 'Mana', values: 'Mana / Dauereffekte', motif: 'schwebend, Bücher, Sicheln' },
+  radius:{ name: 'Radius', values: 'Radius', motif: 'Kreise, Perlen, Halo' },
+};
+const FORMS = {   // Name je Slot × Gruppe
+  kopf:    { off: 'Spitzhut', tempo: 'Reisehut mit Feder', leben: 'Weite Kapuze', mana: 'Segment-Diadem', radius: 'Sonnenhalo' },
+  hals:    { off: 'Stehkragen', tempo: 'Windschal', leben: 'Stola', mana: 'Fokus-Amulett', radius: 'Gebetskette' },
+  ruecken: { off: 'Geisterklingen', tempo: 'Wehender Umhang', leben: 'Schutzsiegel', mana: 'Schwebende Bücher', radius: 'Runenkreis' },
+  arme:    { off: 'Zackenärmel', tempo: 'Flatterärmel', leben: 'Puffärmel', mana: 'Sichel-Schultern + Ringstapel', radius: 'Bänder' },
+  koerper: { off: 'Kampfrobe', tempo: 'Schwingenmantel', leben: 'Weite Robe', mana: 'Runenrobe', radius: 'Weiter Saum' },
+};
+const MAKERS = {   // gleiche Hersteller und Materialien wie die Waffen
+  stern:  { name: 'Sternwarte (Gold)', main: 0xd9a63a, acc: 0xfff2c4, trim: 0x2a2030, cloth: 0x3a2f5c },
+  morra:  { name: 'Hexenküche (dunkles Holz)', main: 0x5a3420, acc: 0x8a5a36, trim: 0xb08a5a, cloth: 0x3a2a22 },
+  grab:   { name: 'Grabkammer (Bronze)', main: 0xb06e38, acc: 0x4f8a6a, trim: 0x3f6e58, cloth: 0x2f4a40 },
+  vey:    { name: 'Kristallgießerei (Kristall)', main: 0xc8ecff, acc: 0xffffff, trim: 0x4f7eb0, cloth: 0xdfe9f5, glass: true },
+  brandt: { name: 'Kriegsschmiede (blaues Eisen)', main: 0x3e6490, acc: 0x1c2638, trim: 0x1c2232, cloth: 0x22324e },
+};
+const ELEMENTS = { none: ['kein Element', 0xd8d4e0], frost: ['Frost', 0x9fe4ff], feuer: ['Feuer', 0xff7a22], blitz: ['Blitz', 0xffe866], seuche: ['Seuche', 0x7dff3a], arkan: ['Arkan', 0xd070ff] };
+const RARITIES = [['grau', '#9d9d9d'], ['weiß', '#f2f2f2'], ['grün', '#3ad65a'], ['blau', '#5aa2ff'], ['lila', '#bf86ff'], ['orange', '#ff9a3c']];
+const FOCUS = { none: 'kein Fokus', frost: 'Fokus Frost', feuer: 'Fokus Feuer', blitz: 'Fokus Blitz', seuche: 'Fokus Seuche' };
+const S = { gear: { kopf: 'off', hals: 'mana', ruecken: 'tempo', arme: 'leben', koerper: 'radius' }, maker: 'stern', el: 'frost', rar: 4, focus: 'frost', gal: 'none', spin: true, parts: null };
+// parts: je Slot eigene Werte { maker, el, rar, focus } (nach „Würfeln“). null = alle Teile wie die Auswahl oben
+
+// ---------------- Szene ----------------
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f0d13);
+const cam = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+const ctl = new OrbitControls(cam, canvas); ctl.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xcfd8ff, 0x2a2030, 1.4));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(2.5, 4, 3); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 48), new THREE.MeshToonMaterial({ color: 0x1d1924 }));
+floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+// ---------------- Material (Toon wie Waffen) ----------------
+const ramp = (() => { const d = new Uint8Array([70, 70, 70, 255, 160, 160, 160, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+const cache = {};
+const toon = (c, o = {}) => { const k = c + JSON.stringify(o); return cache[k] ||= new THREE.MeshToonMaterial({ color: c, gradientMap: ramp, ...o }); };
+const glow = c => cache['g' + c] ||= new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(1.3) });
+const outlineMat = new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide });
+outlineMat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normal * 0.012;'); };
+function addOutlines(root) { const list = []; root.traverse(o => { if (o.isMesh && o.material.isMeshToonMaterial && !o.material.transparent && !o.userData.noOutline) list.push(o); }); for (const m of list) m.add(new THREE.Mesh(m.geometry, outlineMat)); }
+function canvasTex(draw, w = 64, h = 64) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const dotTex = canvasTex((g, w) => { const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); r.addColorStop(0, '#fff'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, w, w); });
+const sprite = (col, size, op = 1) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: col, transparent: true, opacity: op, depthWrite: false, blending: THREE.AdditiveBlending })); s.scale.setScalar(size); return s; };
+
+// ---------------- Geometrie-Helfer ----------------
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function mesh(geo, mat, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; }
+function seg(a, b, r1, r2, mat, parent, joint = true) { const d = b.clone().sub(a), len = d.length(); const m = mesh(new THREE.CylinderGeometry(r2, r1, len, 14), mat, parent);
+  m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); if (joint) mesh(new THREE.SphereGeometry(r1, 14, 10), mat, parent).position.copy(a); return m; }
+function torso(parent, mat, yTop, yBot, rTop, rBot, depth = 0.62) { const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, 20), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
+  const cap = mesh(new THREE.SphereGeometry(rTop, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), mat, parent, 0, yTop, 0); cap.scale.set(1, 0.35, depth); return m; }
+const tube = (pts, r, mat, parent, closed = false) => mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, closed), 64, r, 6, closed), mat, parent);
+const helix = (r, h, turns, y0 = 0) => { const p = []; for (let i = 0; i <= 60; i++) { const a = i / 60 * turns * Math.PI * 2; p.push(V(Math.cos(a) * r, y0 + i / 60 * h, Math.sin(a) * r)); } return p; };
+// Teil entlang eines Unterarms ausrichten
+const alongArm = (g, el, wr, t = 0.55) => { g.position.copy(el).lerp(wr, t); g.quaternion.setFromUnitVectors(V(0, 1, 0), wr.clone().sub(el).normalize()); };
+
+// Manga-Proportionen wie im Set-Skins Viewer (7,5 Köpfe, V-Torso)
+const P = { head: V(0, 1.67, 0), shL: V(-0.19, 1.44, 0), elL: V(-0.24, 1.14, -0.01), wrL: V(-0.26, 0.88, 0.02), haL: V(-0.265, 0.83, 0.02),
+  shR: V(0.19, 1.44, 0), elR: V(0.24, 1.14, 0), wrR: V(0.26, 0.9, 0.06), haR: V(0.265, 0.85, 0.07),
+  hipL: V(-0.09, 0.9, 0), knL: V(-0.1, 0.49, 0.01), anL: V(-0.105, 0.08, 0), hipR: V(0.09, 0.9, 0), knR: V(0.1, 0.49, 0.01), anR: V(0.105, 0.08, 0) };
+
+// ---------------- Teile bauen ----------------
+// M = { main, acc, el (Leuchtmaterial in Elementfarbe), elCol, rar, focus }
+function emblem(parent, focus, x, y, z, s = 1) {   // Fokus-Schule als Emblem (wie der Kopf bei der Waffe)
+  if (focus === 'none') return;
+  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); parent.add(g);
+  mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.012, 16), toon(0x1a1622), g).rotation.x = Math.PI / 2;
+  const c = { frost: 0x9fe4ff, feuer: 0xff7a22, blitz: 0xffe866, seuche: 0x7dff3a }[focus];
+  if (focus === 'frost') mesh(new THREE.OctahedronGeometry(0.022), glow(c), g, 0, 0, 0.012);
+  if (focus === 'feuer') { const f = mesh(new THREE.ConeGeometry(0.016, 0.045, 8), glow(c), g, 0, 0.004, 0.012); }
+  if (focus === 'blitz') tube([V(-0.01, 0.022, 0.012), V(0.008, 0.004, 0.012), V(-0.008, -0.002, 0.012), V(0.01, -0.022, 0.012)], 0.005, glow(c), g);
+  if (focus === 'seuche') { mesh(new THREE.SphereGeometry(0.016, 10, 8), glow(c), g, 0, -0.006, 0.012); mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.02, 6), glow(c), g, 0, 0.014, 0.012); }
+  g.children.forEach(o => o.userData.noOutline = true);
+}
+function rarityExtras(parent, M, x, y, z, r = 0.12) {   // ab Lila: 2 schwebende Splitter, ab Orange: Aura
+  if (M.rar >= 4) for (let k = 0; k < 2; k++) { const o = mesh(new THREE.OctahedronGeometry(0.02), M.el, parent, x, y, z); o.userData.orbit = { a: k * Math.PI, r, y }; o.userData.noOutline = true; }
+  if (M.rar >= 5) { const a = sprite(M.elCol, r * 4, 0.45); a.position.set(x, y, z); parent.add(a); a.userData.pulse = true; }
+}
+// Leuchtkante: ab Blau eine dünne Linie in Elementfarbe
+const edge = (M) => M.rar >= 3 ? M.el : M.trim;
+// ---- Formen-Werkzeuge: saubere Silhouetten statt Grundkörper (Manga-Rüstung: große klare Platten, dunkle Kanten) ----
+// plate: 2D-Umriss (x,y in m) extrudiert, mit kleiner Fase
+function plate(pts, depth, mat, parent, x = 0, y = 0, z = 0) {
+  const sh = new THREE.Shape(); pts.forEach(([px, py], i) => i ? sh.lineTo(px, py) : sh.moveTo(px, py)); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: true, bevelSize: 0.004, bevelThickness: 0.004, bevelSegments: 1 }); g.translate(0, 0, -depth / 2);
+  return mesh(g, mat, parent, x, y, z);
+}
+// Umrisse
+const leaf = (l, w) => [[0, 0], [w * 0.5, l * 0.25], [w * 0.35, l * 0.7], [0, l], [-w * 0.2, l * 0.6], [-w * 0.3, l * 0.2]];          // Feder / Klinge
+const blade = (l, w) => [[-w / 2, 0], [w / 2, 0], [w * 0.3, l * 0.75], [0, l], [-w * 0.15, l * 0.7]];                                // Klinge, leicht gebogen
+const spike = (l, w) => [[-w / 2, 0], [w / 2, 0], [0, l]];
+const spikeDown = (l, w) => [[-w / 2, 0], [0, -l], [w / 2, 0]];
+const diamond = (h, w) => [[0, -h / 2], [w / 2, 0], [0, h / 2], [-w / 2, 0]];
+const crescent = (r, t, n = 10) => { const a = [], b = []; for (let i = 0; i <= n; i++) { const u = Math.PI * (0.15 + 0.7 * i / n); a.push([Math.cos(u) * r, Math.sin(u) * r]); b.unshift([Math.cos(u) * (r - t) , Math.sin(u) * (r - t) + t * 0.4]); } return a.concat(b); };
+const tablet = (h, w) => [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h * 0.3], [0, h / 2], [-w / 2, h * 0.3]];
+const kite = (h, w) => [[0, -h / 2], [w / 2, h * 0.15], [w * 0.4, h / 2], [-w * 0.4, h / 2], [-w / 2, h * 0.15]];
+// taper: Röhre entlang einer Kurve, Radius r0 → r1 (Hörner, Schal-Enden)
+function taper(pts, r0, r1, mat, parent, flat = 1) {
+  const curve = new THREE.CatmullRomCurve3(pts), N = 24, R = 8, pos = [], idx = [];
+  const frames = curve.computeFrenetFrames(N, false);
+  for (let i = 0; i <= N; i++) { const p = curve.getPointAt(i / N), r = r0 + (r1 - r0) * (i / N);
+    for (let j = 0; j < R; j++) { const a = j / R * Math.PI * 2, n = frames.normals[i].clone().multiplyScalar(Math.cos(a) * r), bn = frames.binormals[i].clone().multiplyScalar(Math.sin(a) * r * flat); const v = p.clone().add(n).add(bn); pos.push(v.x, v.y, v.z); } }
+  for (let i = 0; i < N; i++) for (let j = 0; j < R; j++) { const a = i * R + j, b = i * R + (j + 1) % R, c = (i + 1) * R + j, d = (i + 1) * R + (j + 1) % R; idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  return mesh(g, mat, parent);
+}
+// wrap: gebogene Platte, die der Körperform folgt (Teil eines Zylinders). theta 0 = vorne
+const wrap = (r1, r2, h, t0, tl, mat, parent, x = 0, y = 0, z = 0, depth = 0.7) => { const m = mesh(new THREE.CylinderGeometry(r1, r2, h, 24, 1, true, t0, tl), ds(mat), parent, x, y, z); m.scale.z = depth; return m; };
+const ds = mat => mat.side === THREE.DoubleSide ? mat : toon(mat.color.getHex(), { side: THREE.DoubleSide, ...(mat.transparent ? { transparent: true, opacity: mat.opacity } : {}) });
+
+// v3 (Kevin 10.11.: weniger Ritter, mehr Magier): Stoff, Hüte, Ärmel, Umhänge, Schwebendes. Metall nur noch als Schmuck/Kante.
+// M.cloth = Stoff in der Hausfarbe des Herstellers, M.main = Material des Herstellers für Ornamente
+const BUILD = {
+  kopf: {
+    off(h, M) {   // Spitzhut: hoher, geknickter Zauberhut mit gezackter Krempe
+      const brim = new THREE.Shape(); for (let i = 0; i <= 32; i++) { const a = i / 32 * Math.PI * 2, r = i % 2 ? 0.2 : 0.24; i ? brim.lineTo(Math.cos(a) * r, Math.sin(a) * r) : brim.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+      const b = mesh(new THREE.ExtrudeGeometry(brim, { depth: 0.012, bevelEnabled: false }), M.cloth, h, 0, 0.07, 0); b.rotation.x = Math.PI / 2;
+      taper([V(0, 0.07, 0), V(0, 0.22, -0.01), V(0.02, 0.36, -0.04), V(0.1, 0.44, -0.1)], 0.13, 0.008, M.cloth, h);
+      mesh(new THREE.TorusGeometry(0.128, 0.014, 6, 28), M.main, h, 0, 0.09, 0).rotation.x = Math.PI / 2;
+      plate(spike(0.07, 0.05), 0.016, edge(M), h, 0, 0.09, 0.13);
+      emblem(h, M.focus, 0, 0.16, 0.1, 0.7); rarityExtras(h, M, 0.1, 0.45, -0.1, 0.12); },
+    tempo(h, M) {   // Reisehut: breite, geschwungene Krempe, lange Feder nach hinten
+      const b = mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.012, 32), M.cloth, h, 0, 0.07, 0); b.rotation.set(-0.12, 0, 0.08);
+      mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.12, 20), M.cloth, h, 0, 0.13, 0);
+      mesh(new THREE.TorusGeometry(0.13, 0.012, 6, 24), M.main, h, 0, 0.09, 0).rotation.x = Math.PI / 2;
+      const f = plate(leaf(0.42, 0.07), 0.01, edge(M), h, 0.1, 0.12, 0); f.rotation.set(0, Math.PI / 2, 2.0); f.userData.sway = true;
+      emblem(h, M.focus, 0, 0.1, 0.135, 0.6); rarityExtras(h, M, 0, 0.32, -0.1, 0.18); },
+    leben(h, M) {   // Weite Kapuze: tiefer Stoff, Saum in Metall
+      const hood = mesh(new THREE.SphereGeometry(0.17, 20, 12, Math.PI * 0.8, Math.PI * 1.4, 0, Math.PI * 0.7), ds(M.cloth), h, 0, 0.0, -0.03); hood.scale.set(1.05, 1.15, 1.15);
+      taper([V(0, 0.15, -0.12), V(0, 0.05, -0.24), V(0, -0.1, -0.26)], 0.06, 0.02, M.cloth, h);
+      const rim = mesh(new THREE.TorusGeometry(0.16, 0.012, 6, 28, Math.PI * 1.4), M.main, h, 0, -0.01, 0.06); rim.rotation.set(0.3, 0, -Math.PI * 0.2);
+      mesh(new THREE.TorusGeometry(0.16, 0.005, 6, 28, Math.PI * 1.4), edge(M), h, 0, -0.01, 0.075).rotation.set(0.3, 0, -Math.PI * 0.2);
+      emblem(h, M.focus, 0, 0.14, 0.14, 0.7); rarityExtras(h, M, 0, 0.32, 0, 0.2); },
+    mana(h, M) {   // Segment-Diadem: feiner Reif, 5 schwebende Sicheln im Halbbogen
+      mesh(new THREE.TorusGeometry(0.12, 0.009, 6, 28), M.main, h, 0, 0.06, 0).rotation.x = Math.PI / 2 - 0.15;
+      plate(diamond(0.06, 0.04), 0.02, edge(M), h, 0, 0.07, 0.12);
+      const arc = new THREE.Group(); arc.position.set(0, 0.12, -0.04); h.add(arc); arc.userData.spinY = 0.5;
+      for (let k = 0; k < 5; k++) { const a = (k / 4 - 0.5) * Math.PI * 1.1; const sg = plate(crescent(0.05, 0.016, 6), 0.012, k === 2 ? edge(M) : M.main, arc, Math.sin(a) * 0.19, 0.12 + Math.cos(a) * 0.05, -Math.cos(a) * 0.04); sg.rotation.z = -a; }
+      emblem(h, M.focus, 0, 0.0, 0.13, 0.6); rarityExtras(h, M, 0, 0.32, -0.05, 0.2); },
+    radius(h, M) {   // Sonnenhalo: Ring hinter dem Kopf mit Strahlen, dreht langsam (etwas höher, verdeckt den Kopf nicht)
+      mesh(new THREE.TorusGeometry(0.118, 0.01, 6, 28), M.main, h, 0, 0.06, 0).rotation.x = Math.PI / 2;
+      const halo = new THREE.Group(); halo.position.set(0, 0.16, -0.2); h.add(halo); halo.userData.spinZ = 0.3;
+      mesh(new THREE.TorusGeometry(0.2, 0.012, 8, 48), M.main, halo); mesh(new THREE.TorusGeometry(0.17, 0.005, 6, 48), edge(M), halo).userData.noOutline = true;
+      for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, sp = plate(spike(k % 2 ? 0.07 : 0.12, 0.03), 0.008, M.main, halo, Math.cos(a) * 0.21, Math.sin(a) * 0.21, 0); sp.rotation.z = a - Math.PI / 2; }
+      emblem(h, M.focus, 0, 0.0, 0.13, 0.6); rarityExtras(h, M, 0, 0.4, -0.2, 0.24); },
+  },
+  hals: {
+    off(b, M) {   // Stehkragen: hoher, spitz auslaufender Magier-Kragen aus Stoff, Metallkante
+      const col = mesh(new THREE.CylinderGeometry(0.2, 0.1, 0.24, 24, 1, true, Math.PI * 0.42, Math.PI * 1.16), ds(M.cloth), b, 0, 1.58, -0.01); col.scale.z = 0.8;
+      for (const s of [-1, 1]) { const tip = plate(spike(0.12, 0.08), 0.01, M.cloth, b, s * 0.17, 1.66, 0.04); tip.rotation.set(0.2, s * 0.6, -s * 0.5); }
+      mesh(new THREE.TorusGeometry(0.2, 0.007, 6, 30, Math.PI * 1.16), edge(M), b, 0, 1.7, -0.01).rotation.set(Math.PI / 2, 0, Math.PI * 0.92);
+      plate(diamond(0.05, 0.035), 0.016, M.main, b, 0, 1.45, 0.12);
+      emblem(b, M.focus, 0, 1.38, 0.13, 0.8); rarityExtras(b, M, 0, 1.75, -0.05, 0.2); },
+    tempo(b, M) {   // Windschal: um den Hals, zwei lange Enden wehen nach hinten
+      const r = mesh(new THREE.TorusGeometry(0.1, 0.04, 10, 24), M.cloth, b, 0, 1.48, 0); r.rotation.x = Math.PI / 2; r.scale.set(1, 0.85, 1);
+      const tails = new THREE.Group(); tails.position.set(0.04, 1.47, -0.08); b.add(tails); tails.userData.sway = true;
+      taper([V(0, 0, 0), V(0.08, -0.08, -0.15), V(0.2, -0.05, -0.38), V(0.32, -0.12, -0.62)], 0.05, 0.02, M.cloth, tails, 0.3);
+      taper([V(-0.04, 0, 0), V(0.0, -0.12, -0.14), V(0.08, -0.16, -0.34), V(0.14, -0.28, -0.5)], 0.045, 0.018, M.main, tails, 0.3);
+      mesh(new THREE.TorusGeometry(0.1, 0.008, 6, 24), edge(M), b, 0, 1.45, 0.005).rotation.x = Math.PI / 2;
+      emblem(b, M.focus, -0.05, 1.45, 0.12, 0.8); rarityExtras(b, M, 0, 1.6, -0.2, 0.2); },
+    leben(b, M) {   // Stola: dicker Stoff über die Schultern, zwei breite Bahnen vorn, Quasten
+      const st = mesh(new THREE.TorusGeometry(0.15, 0.045, 10, 28), M.cloth, b, 0, 1.45, 0); st.rotation.x = Math.PI / 2; st.scale.set(1, 0.72, 1);
+      for (const s of [-1, 1]) { const band = plate([[-0.04, 0], [0.04, 0], [0.045, -0.42], [-0.045, -0.42]], 0.015, M.cloth, b, s * 0.085, 1.43, 0.13); band.rotation.x = -0.12;
+        plate([[-0.045, 0], [0.045, 0], [0.045, -0.04], [-0.045, -0.04]], 0.02, M.main, b, s * 0.085, 1.02, 0.18);
+        mesh(new THREE.ConeGeometry(0.02, 0.07, 8), edge(M), b, s * 0.085, 0.95, 0.18); }
+      emblem(b, M.focus, 0.085, 1.25, 0.15, 0.8); rarityExtras(b, M, 0, 1.6, 0, 0.24); },
+    mana(b, M) {   // Fokus-Amulett: Kette als V, großer Rahmen mit Edelstein
+      tube([V(-0.08, 1.48, 0.06), V(-0.04, 1.35, 0.12), V(0, 1.3, 0.135), V(0.04, 1.35, 0.12), V(0.08, 1.48, 0.06)], 0.007, M.main, b);
+      plate(diamond(0.13, 0.09), 0.02, M.main, b, 0, 1.24, 0.14); plate(diamond(0.08, 0.05), 0.03, edge(M), b, 0, 1.24, 0.145);
+      for (const s of [-1, 1]) plate(spike(0.05, 0.025), 0.012, M.main, b, s * 0.05, 1.24, 0.14).rotation.z = -s * Math.PI / 2;
+      emblem(b, M.focus, 0, 1.15, 0.15, 0.7); rarityExtras(b, M, 0, 1.24, 0.17, 0.12); },
+    radius(b, M) {   // Gebetskette: große Perlen in weitem Bogen, Anhänger
+      const c = new THREE.CatmullRomCurve3([V(-0.15, 1.46, 0.02), V(-0.16, 1.3, 0.12), V(0, 1.12, 0.15), V(0.16, 1.3, 0.12), V(0.15, 1.46, 0.02), V(0, 1.5, -0.1)], true);
+      for (let k = 0; k < 22; k++) { const p = c.getPointAt(k / 22); mesh(new THREE.SphereGeometry(k % 4 === 0 ? 0.026 : 0.018, 10, 8), k % 4 === 0 ? edge(M) : M.main, b, p.x, p.y, p.z); }
+      plate(crescent(0.05, 0.02, 8), 0.014, M.main, b, 0, 1.04, 0.15).rotation.z = Math.PI;
+      emblem(b, M.focus, 0, 1.06, 0.16, 0.7); rarityExtras(b, M, 0, 1.2, 0.17, 0.16); },
+  },
+  ruecken: {
+    off(b, M) {   // Geisterklingen: schwebende, leuchtende Klingen im Fächer hinter dem Rücken (nicht befestigt)
+      const fan = new THREE.Group(); fan.position.set(0, 1.35, -0.3); b.add(fan); fan.userData.bob = true;
+      const ghost = new THREE.MeshBasicMaterial({ color: M.elCol, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+      for (let k = 0; k < 6; k++) { const a = (k / 5 - 0.5) * 2.1, bl = plate(blade(0.42 - Math.abs(k - 2.5) * 0.05, 0.06), 0.008, k % 2 ? M.main : ghost, fan, Math.sin(a) * 0.08, 0, 0); bl.rotation.z = -a; bl.translateY(0.05); bl.userData.noOutline = !(k % 2); }
+      emblem(fan, M.focus, 0, -0.02, 0.01, 1); rarityExtras(b, M, 0, 1.75, -0.3, 0.3); },
+    tempo(b, M) {   // Wehender Umhang: zweigeteilt, flattert
+      for (const s of [-1, 1]) { const c = plate([[-0.13, 0], [0.13, 0], [0.18, -0.95], [0.02, -0.85], [-0.14, -0.95]], 0.012, M.cloth, b, s * 0.11, 1.45, -0.17); c.rotation.set(0.12, 0, s * 0.08); c.userData.tail = s * 0.5;
+        mesh(new THREE.SphereGeometry(0.03, 10, 8), M.main, b, s * 0.13, 1.45, -0.06); }
+      plate([[-0.006, 0], [0.006, 0], [0.006, -0.85], [-0.006, -0.85]], 0.02, edge(M), b, 0, 1.45, -0.17).userData.noOutline = true;
+      rarityExtras(b, M, 0, 1.0, -0.35, 0.35); },
+    leben(b, M) {   // Schutzsiegel: schwebendes, durchsichtiges Sechseck-Schild aus Licht hinter dem Rücken
+      const g = new THREE.Group(); g.position.set(0, 1.2, -0.32); b.add(g); g.userData.spinZ = 0.15;
+      const hex = []; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; hex.push([Math.cos(a) * 0.32, Math.sin(a) * 0.32]); }
+      const pane = plate(hex, 0.004, new THREE.MeshBasicMaterial({ color: M.elCol, transparent: true, opacity: 0.18, depthWrite: false }), g); pane.userData.noOutline = true;
+      const ring = []; for (let k = 0; k <= 6; k++) { const a = k / 6 * Math.PI * 2; ring.push(V(Math.cos(a) * 0.32, Math.sin(a) * 0.32, 0)); } tube(ring, 0.012, M.main, g);
+      mesh(new THREE.TorusGeometry(0.18, 0.006, 6, 36), edge(M), g).userData.noOutline = true;
+      emblem(g, M.focus, 0, 0, 0.01, 1.4); rarityExtras(b, M, 0, 1.2, -0.34, 0.36); },
+    mana(b, M) {   // Schwebende Bücher: drei offene Folianten kreisen hinter dem Rücken
+      for (let k = 0; k < 3; k++) { const bk = new THREE.Group(); b.add(bk); bk.userData.orbit = { a: k / 3 * Math.PI * 2, r: 0.28, y: 1.35, back: -0.32, flat: true };
+        for (const s of [-1, 1]) { const c = mesh(new THREE.BoxGeometry(0.11, 0.15, 0.012), M.cloth, bk, s * 0.055, 0, 0); c.rotation.y = s * 0.35; mesh(new THREE.BoxGeometry(0.1, 0.14, 0.008), toon(0xece0c0), bk, s * 0.052, 0, 0.01).rotation.y = s * 0.35; }
+        mesh(new THREE.BoxGeometry(0.012, 0.15, 0.02), M.main, bk); const r = mesh(new THREE.BoxGeometry(0.05, 0.006, 0.004), edge(M), bk, 0.05, 0.02, 0.02); r.userData.noOutline = true; }
+      emblem(b, M.focus, 0, 1.35, -0.32, 1.1); rarityExtras(b, M, 0, 1.35, -0.32, 0.36); },
+    radius(b, M) {   // Runenkreis: flacher Zauberkreis hinter dem Rücken, dreht sich
+      const g = new THREE.Group(); g.position.set(0, 1.3, -0.3); b.add(g); g.userData.spinZ = 0.35;
+      const lineM = new THREE.MeshBasicMaterial({ color: M.rar >= 3 ? M.elCol : 0xd8d0e8, transparent: true, opacity: 0.85, depthWrite: false });
+      for (const r of [0.4, 0.33, 0.2]) mesh(new THREE.TorusGeometry(r, r === 0.33 ? 0.004 : 0.008, 6, 64), r === 0.4 ? M.main : lineM, g).userData.noOutline = r !== 0.4;
+      const tri = []; for (let k = 0; k <= 3; k++) { const a = k / 3 * Math.PI * 2 + Math.PI / 2; tri.push(V(Math.cos(a) * 0.33, Math.sin(a) * 0.33, 0)); } tube(tri, 0.004, lineM, g).userData.noOutline = true;
+      const tri2 = tri.map(p => V(-p.x, -p.y, 0)); tube(tri2, 0.004, lineM, g).userData.noOutline = true;
+      for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; const rn = plate(diamond(0.04, 0.025), 0.006, lineM, g, Math.cos(a) * 0.365, Math.sin(a) * 0.365, 0); rn.userData.noOutline = true; }
+      emblem(g, M.focus, 0, 0, 0.01, 1.3); rarityExtras(b, M, 0, 1.3, -0.32, 0.45); },
+  },
+  arme: {   // Schulter + Ärmel. a = Arm-Gruppe, sh/el/wr, s = Seite (+1 rechts)
+    off(a, M, sh, el, wr, s) {   // Zackenmantel-Schulter + Zackenärmel: Stoffspitzen, die nach unten hängen
+      const p = new THREE.Group(); p.position.copy(sh).add(V(s * 0.02, 0.02, 0)); a.add(p);
+      for (let i = 0; i < 3; i++) { const t = plate(spikeDown(0.16 - i * 0.03, 0.09), 0.01, i === 1 ? M.main : M.cloth, p, s * (0.02 + i * 0.035), 0.03, -0.04 + i * 0.04); t.rotation.set(0, s * Math.PI / 2, -s * 0.25); }
+      const g = new THREE.Group(); a.add(g); alongArm(g, el, wr, 0.75);
+      const cuff = mesh(new THREE.CylinderGeometry(0.06, 0.1, 0.12, 6, 1, true), ds(M.cloth), g, 0, -0.06, 0); cuff.rotation.y = 0.5;
+      for (let i = 0; i < 3; i++) { const t = plate(spikeDown(0.12, 0.06), 0.008, i === 1 ? edge(M) : M.cloth, g, Math.sin(i * 2.1) * 0.08, -0.12, Math.cos(i * 2.1) * 0.08); t.rotation.y = i * 2.1; }
+      mesh(new THREE.TorusGeometry(0.062, 0.01, 6, 16), M.main, g, 0, 0.0, 0).rotation.x = Math.PI / 2;
+      if (s > 0) { emblem(g, M.focus, 0, -0.02, 0.07, 0.6); rarityExtras(a, M, sh.x, sh.y + 0.18, 0, 0.12); } },
+    tempo(a, M, sh, el, wr, s) {   // Flatterärmel: weiter Ärmel mit langem Band, das nachweht, Feder an der Schulter
+      const g = new THREE.Group(); a.add(g); alongArm(g, el, wr, 0.6);
+      mesh(new THREE.CylinderGeometry(0.05, 0.11, 0.2, 14, 1, true), ds(M.cloth), g, 0, -0.04, 0);
+      mesh(new THREE.TorusGeometry(0.11, 0.008, 6, 20), edge(M), g, 0, -0.14, 0).rotation.x = Math.PI / 2;
+      const rib = new THREE.Group(); rib.position.set(0, -0.12, -0.08); g.add(rib); rib.userData.sway = true;
+      taper([V(0, 0, 0), V(0, -0.1, -0.1), V(s * 0.04, -0.15, -0.28)], 0.03, 0.01, M.main, rib, 0.25);
+      const f = plate(leaf(0.18, 0.05), 0.008, M.main, a, sh.x + s * 0.03, sh.y + 0.02, -0.03); f.rotation.set(0, s * Math.PI / 2, s > 0 ? 2.4 : -2.4);
+      if (s > 0) { emblem(g, M.focus, 0, 0.04, 0.07, 0.6); rarityExtras(a, M, sh.x, sh.y + 0.18, 0, 0.12); } },
+    leben(a, M, sh, el, wr, s) {   // Puffärmel: weich gepolsterte Schulter, gewickelter Unterarm
+      const puff = mesh(new THREE.SphereGeometry(0.1, 16, 12), M.cloth, a); puff.position.copy(sh).add(V(s * 0.02, -0.02, 0)); puff.scale.set(1, 1.15, 1);
+      mesh(new THREE.TorusGeometry(0.085, 0.012, 6, 20), M.main, a, sh.x + s * 0.02, sh.y - 0.12, 0).rotation.set(Math.PI / 2, 0, 0);
+      const g = new THREE.Group(); a.add(g); alongArm(g, el, wr, 0.55);
+      for (let i = 0; i < 5; i++) { const w = mesh(new THREE.TorusGeometry(0.05, 0.016, 8, 16), i === 2 ? edge(M) : M.cloth, g, 0, -0.08 + i * 0.04, 0); w.rotation.set(Math.PI / 2 + (i % 2 ? 0.25 : -0.25), 0, 0); }
+      if (s > 0) { emblem(a, M.focus, sh.x + s * 0.1, sh.y, 0.05, 0.7); rarityExtras(a, M, sh.x, sh.y + 0.2, 0, 0.14); } },
+    mana(a, M, sh, el, wr, s) {   // Schwebende Sicheln über der Schulter + Ringstapel
+      const p = new THREE.Group(); p.position.copy(sh).add(V(s * 0.04, 0.1, 0)); a.add(p); p.userData.bob = true;
+      for (let i = 0; i < 3; i++) { const c = plate(crescent(0.07 - i * 0.012, 0.018, 6), 0.012, i === 1 ? edge(M) : M.main, p, 0, i * 0.035, 0); c.rotation.set(Math.PI / 2, 0, s * 0.4); }
+      const g = new THREE.Group(); a.add(g); alongArm(g, el, wr, 0.55);
+      for (let i = 0; i < 3; i++) { const r = mesh(new THREE.TorusGeometry(0.058 + i * 0.006, 0.013, 6, 18), i === 1 ? edge(M) : M.main, g, 0, -0.06 + i * 0.06, 0); r.rotation.x = Math.PI / 2; r.userData.wobble = i; }
+      if (s > 0) { emblem(g, M.focus, 0, 0, 0.07, 0.6); rarityExtras(a, M, sh.x, sh.y + 0.22, 0, 0.12); } },
+    radius(a, M, sh, el, wr, s) {   // Bänder: lange Stoffbänder um den Arm, Perlen an den Enden
+      const g = new THREE.Group(); a.add(g); alongArm(g, el, wr, 0.2);
+      tube(helix(0.052, 0.3, 3.5), 0.011, M.cloth, g); tube(helix(0.056, 0.3, 3.5, 0.008), 0.004, edge(M), g);
+      const rib = new THREE.Group(); rib.position.set(0, 0.0, 0); g.add(rib); rib.userData.sway = true;
+      taper([V(0, 0, 0.04), V(s * 0.06, -0.12, 0.02), V(s * 0.04, -0.3, -0.04)], 0.012, 0.006, M.cloth, rib, 0.3);
+      mesh(new THREE.SphereGeometry(0.02, 10, 8), M.main, rib, s * 0.04, -0.31, -0.04);
+      mesh(new THREE.SphereGeometry(0.03, 12, 8), M.main, a, sh.x + s * 0.04, sh.y + 0.02, 0);
+      if (s > 0) { emblem(g, M.focus, 0, 0.15, 0.07, 0.6); rarityExtras(a, M, sh.x, sh.y + 0.18, 0, 0.14); } },
+  },
+  koerper: {
+    off(b, M) {   // Kampfrobe: schlanke Robe, Saum in Zacken, Schärpe quer
+      torso(b, M.cloth, 1.46, 1.0, 0.208, 0.15, 0.64);
+      const hem = new THREE.Group(); hem.position.set(0, 0.98, 0); b.add(hem);
+      for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, t = plate(spikeDown(0.5 + (k % 2) * 0.18, 0.12), 0.01, M.cloth, hem, Math.sin(a) * 0.16, 0, Math.cos(a) * 0.16 * 0.8); t.rotation.y = a; t.rotateX(0.18); }
+      const sash = mesh(new THREE.BoxGeometry(0.07, 0.6, 0.014), M.main, b, 0, 1.2, 0.135); sash.rotation.z = 0.62;
+      mesh(new THREE.BoxGeometry(0.012, 0.6, 0.016), edge(M), b, 0, 1.2, 0.14).rotation.z = 0.62;
+      emblem(b, M.focus, -0.08, 1.3, 0.15, 1); rarityExtras(b, M, 0, 1.25, 0.2, 0.3); },
+    tempo(b, M) {   // Schwingenmantel: schmaler Mantel, zwei lange Schöße fliegen nach hinten
+      torso(b, M.cloth, 1.46, 1.0, 0.212, 0.15, 0.64);
+      for (const s of [-1, 1]) { const t = plate(leaf(0.75, 0.2), 0.012, M.cloth, b, s * 0.07, 1.02, -0.1); t.rotation.set(Math.PI - 0.35, 0, s * 0.25); t.userData.tail = s; }
+      for (const s of [-1, 1]) plate([[-0.006, 0], [0.006, 0], [0.006, 0.42], [-0.006, 0.42]], 0.02, edge(M), b, s * 0.07, 1.02, 0.13).userData.noOutline = true;
+      mesh(new THREE.TorusGeometry(0.15, 0.012, 6, 24), M.main, b, 0, 1.0, 0).rotation.x = Math.PI / 2;
+      emblem(b, M.focus, 0, 1.32, 0.15, 1); rarityExtras(b, M, 0, 1.25, 0.2, 0.3); },
+    leben(b, M) {   // Weite Robe: bodenlang, breiter Wappenrock, Kordelgürtel
+      torso(b, M.cloth, 1.46, 0.95, 0.22, 0.18, 0.7);
+      const sk = mesh(new THREE.CylinderGeometry(0.18, 0.3, 0.88, 22, 1, true), ds(M.cloth), b, 0, 0.52, 0); sk.scale.z = 0.78;
+      plate([[-0.08, 0.3], [0.08, 0.3], [0.08, -0.55], [0, -0.62], [-0.08, -0.55]], 0.014, M.main, b, 0, 0.88, 0.16);
+      plate([[-0.006, 0.28], [0.006, 0.28], [0.006, -0.55], [-0.006, -0.55]], 0.02, edge(M), b, 0, 0.88, 0.165).userData.noOutline = true;
+      const belt = mesh(new THREE.TorusGeometry(0.17, 0.018, 8, 24), M.main, b, 0, 0.99, 0); belt.rotation.x = Math.PI / 2; belt.scale.y = 0.75;
+      emblem(b, M.focus, 0, 1.05, 0.18, 1.2); rarityExtras(b, M, 0, 1.25, 0.2, 0.32); },
+    mana(b, M) {   // Runenrobe: Robe mit leuchtendem Runenstreifen vorn und Saum aus Bahnen
+      torso(b, M.cloth, 1.46, 1.0, 0.208, 0.15, 0.64);
+      for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, sl = plate([[-0.05, 0], [0.05, 0], [0.04, -0.62], [-0.04, -0.62]], 0.01, k % 2 ? M.cloth : M.main, b, Math.sin(a) * 0.16, 1.0, Math.cos(a) * 0.16 * 0.75); sl.rotation.y = a; sl.rotateX(0.14); }
+      for (let k = 0; k < 6; k++) { const r = plate(diamond(0.035, 0.022), 0.012, edge(M), b, 0, 1.4 - k * 0.075, 0.14); r.userData.noOutline = true; }
+      emblem(b, M.focus, 0, 0.95, 0.16, 1); rarityExtras(b, M, 0, 1.25, 0.2, 0.3); },
+    radius(b, M) {   // Weiter Saum: weit ausgestellte Robe, Ring am Saum, Mittelbahn
+      torso(b, M.cloth, 1.46, 1.0, 0.208, 0.15, 0.64);
+      const sk = mesh(new THREE.CylinderGeometry(0.16, 0.42, 0.62, 28, 1, true), ds(M.cloth), b, 0, 0.67, 0); sk.scale.z = 0.8;
+      const ring = mesh(new THREE.TorusGeometry(0.42, 0.016, 8, 48), edge(M), b, 0, 0.36, 0); ring.rotation.x = Math.PI / 2; ring.scale.y = 0.8;
+      plate([[-0.05, 0.3], [0.05, 0.3], [0.08, -0.3], [-0.08, -0.3]], 0.02, M.main, b, 0, 0.7, 0.26).rotation.x = -0.4;
+      emblem(b, M.focus, 0, 1.3, 0.14, 1); rarityExtras(b, M, 0, 0.6, 0, 0.5); },
+  },
+};
+
+// ---------------- Figur ----------------
+function buildFigure(gear, opt) {
+  const F = new THREE.Group(); F.userData.fx = [];
+  const body = new THREE.Group(); F.add(body);
+  const armL = new THREE.Group(), armR = new THREE.Group(); body.add(armL, armR);
+  const head = new THREE.Group(); head.position.copy(P.head); body.add(head);
+  const skin = toon(0xf1dcc6), cloth = toon(0x2c2a38), dark = toon(0x1c1a24);
+  // Grundfigur: schlichter dunkler Magier, damit das Gear lesbar ist
+  seg(V(0, 1.47, 0), V(0, 1.58, 0), 0.05, 0.045, skin, body, false);
+  torso(body, cloth, 1.46, 0.98, 0.205, 0.145, 0.62);
+  const pelvis = mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.16, 18), dark, body, 0, 0.92, 0); pelvis.scale.z = 0.7;
+  for (const [arm, sh, el, wr, ha] of [[armL, P.shL, P.elL, P.wrL, P.haL], [armR, P.shR, P.elR, P.wrR, P.haR]]) {
+    mesh(new THREE.SphereGeometry(0.066, 14, 10), cloth, arm).position.copy(sh); seg(sh, el, 0.056, 0.047, cloth, arm, false); seg(el, wr, 0.047, 0.04, cloth, arm);
+    const h = mesh(new THREE.SphereGeometry(1, 12, 8), skin, arm); h.position.copy(ha); h.scale.set(0.038, 0.055, 0.03); }
+  for (const [hip, kn, an] of [[P.hipL, P.knL, P.anL], [P.hipR, P.knR, P.anR]]) { seg(hip, kn, 0.075, 0.062, dark, body); seg(kn, an, 0.056, 0.05, dark, body); mesh(new THREE.BoxGeometry(0.1, 0.07, 0.24), toon(0x14121a), body, an.x, 0.035, 0.05); }
+  const skull = mesh(new THREE.SphereGeometry(0.12, 22, 16), skin, head); skull.scale.set(0.9, 1.1, 0.95);
+  for (const x of [-0.042, 0.042]) { const e = mesh(new THREE.SphereGeometry(1, 10, 8), toon(0x15121a), head, x, -0.005, 0.104); e.scale.set(0.013, 0.02, 0.01); }
+  const hair = mesh(new THREE.SphereGeometry(0.128, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.42), toon(0x2a221c), head, 0, 0.02, -0.01); hair.scale.set(0.93, 1.1, 1);
+  // Stab in der rechten Hand (neutral)
+  const st = new THREE.Group(); st.position.copy(P.haR); armR.add(st); mesh(new THREE.CylinderGeometry(0.02, 0.024, 1.55, 8), toon(0x5a3420), st, 0, 0.08, 0); mesh(new THREE.SphereGeometry(0.06, 12, 8), toon(0x8a7a9a), st, 0, 0.88, 0);
+
+  // Gear
+  const matsOf = o => { const mk = MAKERS[o.maker], elCol = ELEMENTS[o.el][1];
+    const M = { main: mk.glass ? toon(mk.main, { transparent: true, opacity: 0.85 }) : toon(mk.main), acc: toon(mk.acc), trim: toon(mk.trim), cloth: toon(o.rar <= 1 ? new THREE.Color(mk.cloth).multiplyScalar(0.8).getHex() : mk.cloth), el: glow(o.rar >= 3 ? elCol : 0xb8b0c8), elCol, rar: o.rar, focus: o.rar >= 3 ? o.focus : 'none' };
+    if (o.rar <= 1) M.main = toon(new THREE.Color(mk.main).multiplyScalar(o.rar === 0 ? 0.55 : 0.8).getHex());   // grau/weiß matter
+    return M; };
+  let elAny = null, rarMax = 0;
+  for (const [slot, grp] of Object.entries(gear)) {
+    if (!grp) continue;
+    const o = opt.parts?.[slot] ?? opt, M = matsOf(o);
+    if (o.rar >= 3 && o.el !== 'none' && o.rar >= rarMax) { elAny = ELEMENTS[o.el][1]; rarMax = o.rar; }
+    if (slot === 'kopf') BUILD.kopf[grp](head, M);
+    else if (slot === 'arme') { BUILD.arme[grp](armL, M, P.shL, P.elL, P.wrL, -1); BUILD.arme[grp](armR, M, P.shR, P.elR, P.wrR, 1); }
+    else BUILD[slot][grp](body, M);
+  }
+  // Element-Partikel ab Blau: ein paar Funken steigen auf
+  if (elAny !== null) { const sp = new THREE.Group(); F.add(sp); for (let i = 0; i < (rarMax === 5 ? 18 : 8); i++) { const p = sprite(elAny, 0.06, 0.8); p.userData.p = Math.random(); p.userData.a = Math.random() * 6.28; sp.add(p); }
+    F.userData.fx.push(t => sp.children.forEach(p => { const k = (p.userData.p + t * 0.25) % 1; p.position.set(Math.cos(p.userData.a + t * 0.5) * 0.35, 0.4 + k * 1.6, Math.sin(p.userData.a + t * 0.5) * 0.35); p.material.opacity = Math.sin(k * Math.PI) * 0.9; })); }
+  // Animationen: Orbits, Spin, Flügel
+  const anim = []; F.traverse(o => { const u = o.userData; if (u.orbit || u.spin || u.spinZ || u.spinY || u.flap || u.pulse || u.sway || u.bob || u.tail || u.wobble !== undefined) { u.y0 = o.position.y; anim.push(o); } });
+  F.userData.fx.push(t => anim.forEach(o => { const u = o.userData;
+    if (u.orbit) { const a = u.orbit.a + t * 1.2; if (u.orbit.flat) o.position.set(Math.cos(a) * u.orbit.r, u.orbit.y + Math.sin(a) * u.orbit.r, u.orbit.back); else o.position.set(Math.cos(a) * u.orbit.r, u.orbit.y + Math.sin(t * 2 + u.orbit.a) * 0.02, Math.sin(a) * u.orbit.r); o.rotation.y = t * 2; }
+    if (u.spin) o.rotation.y = t * 1.5; if (u.spinZ) o.rotation.z = t * u.spinZ; if (u.spinY) o.rotation.y = Math.sin(t * u.spinY) * 0.3;
+    if (u.sway) o.rotation.set(Math.sin(t * 2.2) * 0.12, Math.sin(t * 1.6) * 0.2, 0); if (u.bob) o.position.y = u.y0 + Math.sin(t * 1.8) * 0.02; if (u.tail) o.rotation.z = u.tail * (0.25 + Math.sin(t * 2.5 + u.tail) * 0.08); if (u.flap) o.rotation.y = -u.flap * (0.35 + Math.sin(t * 3) * 0.12);
+    if (u.pulse) o.material.opacity = 0.35 + Math.sin(t * 3) * 0.12; if (u.wobble !== undefined) o.rotation.z = Math.sin(t * 2 + u.wobble) * 0.15; }));
+  addOutlines(F); F.userData.body = body;
+  return F;
+}
+
+// ---------------- Aufbau + UI ----------------
+const $ = id => document.getElementById(id);
+const opt = () => ({ maker: S.maker, el: S.el, rar: S.rar, focus: S.focus, parts: S.gal === 'none' ? S.parts : null });
+let figs = [];
+const portrait = () => innerWidth < innerHeight;
+function rebuild() {
+  figs.forEach(f => scene.remove(f)); figs = [];
+  if (S.gal !== 'none') {   // Galerie: ein Slot, alle 5 Wertgruppen nebeneinander (Hochformat 2 Reihen)
+    const slot = S.gal, keys = Object.keys(GROUPS), cols = portrait() ? 3 : 5;
+    keys.forEach((g, i) => { const f = buildFigure({ [slot]: g }, opt()); f.userData.label = (i + 1) + ' ' + FORMS[slot][g] + ' · ' + GROUPS[g].name;
+      const rows = Math.ceil(keys.length / cols); f.position.set(((i % cols) - (cols - 1) / 2) * 1.5, ((rows - 1) / 2 - Math.floor(i / cols)) * 2.35, 0); scene.add(f); figs.push(f); });
+    figs.forEach(f => f.userData.base = slot === 'ruecken' ? Math.PI * 0.8 : 0.35);
+    floor.visible = false; const ty = { kopf: 1.65, hals: 1.38, ruecken: 1.25, arme: 1.05, koerper: 1.0 }[slot], k = portrait() ? 1 / Math.max(0.45, cam.aspect) * 0.8 : 1;
+    const z = (slot === 'kopf' || slot === 'hals' ? 6.2 : 7.4) * k;
+    if (portrait()) { figs.forEach(f => f.position.y += ty); cam.position.set(0, ty + 0.9, z * 1.25); ctl.target.set(0, ty + 0.9, 0); }
+    else { cam.position.set(0, ty + 0.15, z); ctl.target.set(0, ty, 0); }
+  } else {
+    floor.visible = true; const f = buildFigure(S.gear, opt()); scene.add(f); figs.push(f);
+    const k = portrait() ? Math.min(2.4, 1 / Math.max(0.42, cam.aspect)) * 0.72 : 1;
+    cam.position.set(2.2 * k, 1.5, 4.4 * k); ctl.target.set(0, 1.0, 0);
+  }
+  ui();
+}
+const fill = (sel, entries) => { sel.innerHTML = ''; entries.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.append(o); }); };
+fill($('sMaker'), Object.entries(MAKERS).map(([k, m]) => [k, m.name]));
+fill($('sEl'), Object.entries(ELEMENTS).map(([k, e]) => [k, e[0]]));
+fill($('sRar'), RARITIES.map((r, i) => [i, 'Seltenheit ' + r[0]]));
+fill($('sFocus'), Object.entries(FOCUS));
+fill($('sGal'), [['none', 'Ganze Figur'], ...Object.entries(SLOTS).map(([k, n]) => [k, 'Galerie: ' + n + ' (5 Formen)'])]);
+$('sMaker').onchange = e => { S.maker = e.target.value; S.parts = null; rebuild(); };
+$('sEl').onchange = e => { S.el = e.target.value; S.parts = null; rebuild(); };
+$('sRar').onchange = e => { S.rar = +e.target.value; S.parts = null; rebuild(); };
+$('sFocus').onchange = e => { S.focus = e.target.value; S.parts = null; rebuild(); };
+$('sGal').onchange = e => { S.gal = e.target.value; rebuild(); };
+$('bSpin').onclick = () => { S.spin = !S.spin; ui(); };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const W = [5, 20, 35, 25, 11, 4], ELC = [0, 0.25, 0.5, 1, 1, 1];   // Gewichte und Element-Chance wie die Waffe (weaponRolls.ts)
+const rollRar = () => { let r = Math.random() * 100; for (let i = 0; i < 6; i++) { r -= W[i]; if (r < 0) return i; } return 0; };
+$('bRoll').onclick = () => { S.parts = {};
+  for (const s of Object.keys(SLOTS)) { const rar = rollRar();
+    S.gear[s] = pick(Object.keys(GROUPS));
+    S.parts[s] = { maker: pick(Object.keys(MAKERS)), rar, el: Math.random() < ELC[rar] ? pick(Object.keys(ELEMENTS).filter(e => e !== 'none')) : 'none', focus: rar >= 3 && Math.random() < 0.5 ? pick(Object.keys(FOCUS).filter(f => f !== 'none')) : 'none' }; }
+  S.gal = 'none'; rebuild(); };
+// Slot-Auswahl: je Slot die Wertgruppe
+const slotsEl = $('slots');
+for (const [k, n] of Object.entries(SLOTS)) { const l = document.createElement('label'); l.textContent = n; l.htmlFor = 'g_' + k; const s = document.createElement('select'); s.id = 'g_' + k;
+  fill(s, [['', '— leer —'], ...Object.keys(GROUPS).map(g => [g, FORMS[k][g] + ' (' + GROUPS[g].name + ')'])]); s.onchange = e => { S.gear[k] = e.target.value || null; S.gal = 'none'; rebuild(); }; slotsEl.append(l, s); }
+$('bInfo').onclick = () => { document.body.classList.toggle('showInfo'); document.body.classList.remove('showMore'); };
+$('bMore').onclick = () => { document.body.classList.toggle('showMore'); document.body.classList.remove('showInfo'); };
+function ui() {
+  $('sMaker').value = S.maker; $('sEl').value = S.el; $('sRar').value = S.rar; $('sFocus').value = S.focus; $('sGal').value = S.gal;
+  for (const k of Object.keys(SLOTS)) $('g_' + k).value = S.gear[k] || '';
+  $('bSpin').setAttribute('aria-pressed', String(S.spin));
+  const r = RARITIES[S.rar];
+  const rows = S.gal === 'none'
+    ? Object.entries(SLOTS).filter(([k]) => S.gear[k]).map(([k, n]) => { const o = S.parts?.[k] ?? S, rr = RARITIES[o.rar];
+        return `<div class="row"><b>${n}</b><span><span style="color:${rr[1]}">${FORMS[k][S.gear[k]]}</span> · ${GROUPS[S.gear[k]].values}<br><span class="mute">${MAKERS[o.maker].name} · ${ELEMENTS[o.el][0]} · ${rr[0]}${o.rar >= 3 && o.focus !== 'none' ? ' · ' + FOCUS[o.focus] : ''}</span></span></div>`; }).join('')
+    : Object.entries(GROUPS).map(([g, d], i) => `<div class="row"><b>${i + 1}</b><span>${FORMS[S.gal][g]}</span>&nbsp;· ${d.values} · ${d.motif}</div>`).join('');
+  $('info').innerHTML = `<h2>${S.gal === 'none' ? 'Gear-Baukasten' : 'Galerie ' + SLOTS[S.gal]}</h2>${rows}
+    <p class="mute">Kanäle: Form = Wertgruppe · Emblem = Fokus-Schule · Leuchtfarbe/Funken = Element (ab Blau) · Material = Hersteller · Seltenheit: grau/weiß matt, ab Blau Leuchtkante, ab Lila 2 Splitter, Orange Aura.</p>
+    <p class="mute">${S.parts && S.gal === 'none' ? 'Gewürfelt: jedes Teil hat eigene Werte.' : 'Alle Teile: ' + MAKERS[S.maker].name + ' · ' + ELEMENTS[S.el][0] + ' · <span style="color:' + r[1] + '">' + r[0] + '</span> · ' + FOCUS[S.focus]}. Jedes Teil hat immer eine Wertgruppe (Form), ab Blau kann ein Fokus dazukommen (Emblem).</p>`;
+}
+const labels = $('labels');
+function drawLabels() { labels.innerHTML = ''; if (S.gal === 'none') return;
+  figs.forEach(f => { const p = f.position.clone().add(V(0, 2.12, 0)).project(cam); const d = document.createElement('div'); d.textContent = portrait() ? f.userData.label.split(' · ')[0] : f.userData.label; d.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; d.style.top = ((1 - p.y) / 2 * innerHeight) + 'px'; labels.append(d); }); }
+let wasP = null;
+function resize() { renderer.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); if (wasP !== null && wasP !== portrait()) rebuild(); wasP = portrait(); }
+addEventListener('resize', resize); resize();
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => { const t = clock.getElapsedTime();
+  figs.forEach(f => { f.rotation.y = (f.userData.base || 0) + (S.spin ? Math.sin(t * 0.35) * (S.gal === 'none' ? 1.1 : 0.4) : 0); f.userData.body.position.y = Math.sin(t * 2) * 0.006; f.userData.fx.forEach(fn => fn(t)); });
+  ctl.update(); renderer.render(scene, cam); drawLabels(); });
+window.__set = o => { Object.assign(S, o); rebuild(); };
+window.__dbg = { cam, ctl };
+rebuild();
+</script>
+</body>
+</html>
