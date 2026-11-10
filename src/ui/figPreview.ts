@@ -1,6 +1,7 @@
 // Waffenmenü: die gewählte Figur mit der ausgerüsteten Waffe als 3D-Ansicht links im Menü.
 // Kein eigener Renderer: Vor dem normalen Bild wird nur die Figur in eine Ecke des Spiel-Canvas gezeichnet, sofort in ein
-// 2D-Canvas kopiert und danach vom Composer übermalt. Läuft nur, solange das Canvas sichtbar ist (Waffenmenü offen).
+// 2D-Canvas kopiert und danach vom Composer übermalt. Läuft nur, solange ein Fenster mit Vorschau offen ist (setFigPreview): ein eigener Schalter statt
+// einer Layout-Abfrage (offsetParent) in jedem Frame, die im Run sonst Layout erzwingt.
 
 import * as THREE from 'three';
 import { renderer, scene } from '../render';
@@ -10,7 +11,7 @@ const VIEW = { fov: 28, dist: 6.2, camY: 1.5, lookY: 1.15, turn: 0.35 };   // Ka
 const cam = new THREE.PerspectiveCamera(VIEW.fov, 1, 0.1, 60);
 const size = new THREE.Vector2(), clear = new THREE.Color();
 const TURN_PER_PX = 0.012;   // Ziehen mit der Maus dreht die Figur // PH
-let canvas: HTMLCanvasElement | null = null, ctx: CanvasRenderingContext2D | null = null, spin = 0, dragX: number | null = null;
+let active = false, canvas: HTMLCanvasElement | null = null, ctx: CanvasRenderingContext2D | null = null, spin = 0, dragX: number | null = null;
 
 // Ein Canvas für Waffenmenü und Ausrüstungsfenster: erneutes Mounten hängt es in den neuen Platz um
 export function mountFigPreview(host: HTMLElement) {
@@ -27,8 +28,11 @@ export function mountFigPreview(host: HTMLElement) {
   canvas.addEventListener('pointercancel', stop);
 }
 
+// Fenster mit Vorschau auf/zu (heroWindow.ts)
+export function setFigPreview(on: boolean) { active = on; }
+
 export function renderFigPreview() {
-  if (!canvas?.offsetParent || !ctx) return;
+  if (!active || !canvas?.offsetParent || !ctx) return;
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!w || !h) return;
   const pr = renderer.getPixelRatio(), pw = Math.round(w * pr), ph = Math.round(h * pr);

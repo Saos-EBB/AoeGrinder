@@ -13,7 +13,7 @@ import * as GEARMOD from '../gear';
 import { SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
   hasLook, lookIn, wearLook, type Slot, type GearItem } from '../gear';
 import { MAKERS } from '../models/weapons/baukasten';
-import { mountFigPreview } from './figPreview';
+import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
 import { attachWeaponCard } from './weaponCard';
 import { weaponThumb } from './weaponThumb';
@@ -245,6 +245,7 @@ export function openHero(opts: { tab?: Tab; done?: () => void } = {}) {
   onClose = opts.done ?? null;
   if (opts.tab) tab = opts.tab;
   mountFigPreview($('hwFig'));   // 3D-Ansicht der Figur, gezeichnet in main.ts (renderFigPreview)
+  setFigPreview(true);
   $('heroModal').classList.add('show');
   render();
   syncPause();
@@ -252,6 +253,7 @@ export function openHero(opts: { tab?: Tab; done?: () => void } = {}) {
 export function closeHero() {
   hideTip();
   $('heroModal').classList.remove('show');
+  setFigPreview(false);
   mage.previewWeapon(null);
   setUi('weaponSeen', Math.max(uiSettings.weaponSeen, ...meta.inv.map(w => w.id)));   // ab jetzt nicht mehr NEU
   syncPause();
