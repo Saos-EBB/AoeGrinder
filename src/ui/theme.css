@@ -143,6 +143,7 @@ body.hudEdit .hudEl > * { pointer-events: none; }
 /* Start-Kit und „Rangliste“-Knopf wachsen mit dem Bildschirm-Maß (sonst bei 2560 × 1440 winzig), nie kleiner als bisher. Der Knopf bringt Inline-Stil mit (leaderboardView.ts) */
 #menuKit { gap: max(5px, calc(4 * var(--hu))); }
 #menuKit .kitSlot { width: max(40px, calc(32 * var(--hu))); height: max(40px, calc(32 * var(--hu))); font-size: max(8px, calc(6.4 * var(--hu))); }
+@media (max-height: 700px) { #menuKit .kitSlot { width: max(36px, calc(32 * var(--hu))); height: max(36px, calc(32 * var(--hu))); } #menuLeft { gap: calc(3 * var(--hu)); padding-block: calc(12 * var(--hu)); } }   /* z. B. 1263 × 638: 7 Plätze in einer Reihe, sonst ragt die letzte Zeile unten raus */
 #menuBoardBtn > button { font-size: max(12px, calc(12 * var(--hu))) !important; padding: max(6px, calc(5 * var(--hu))) max(14px, calc(12 * var(--hu))) !important; margin-top: max(10px, calc(8 * var(--hu))) !important; }
 #menuInfo { margin: 0; font-size: calc(13 * var(--hu)); color: var(--fg-muted); }
 /* Rangliste rechts */
@@ -253,13 +254,29 @@ body.mobile #menuActions { max-width: 50vw; }
 .shopFuse .smallBtn { margin-top: auto; width: 100%; height: 54px; }
 .shopFuse .smallBtn:disabled { opacity: .45; cursor: not-allowed; }
 #shopModal #shopList { max-height: none; margin: 22px 0 14px; }
+/* Der Shop scrollt als Ganzes (Freischaltungen-Liste); „Zurück“ bleibt unten im Bild stehen */
+#shopModal #shopClose { position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -12px 18px rgba(0, 0, 0, .65); }
+/* Wenig Höhe (z. B. 1263 × 638): Kiste, Zug und Verschmelzen flacher, damit Gear-Box und Kosmetik-Box anschließen */
+@media (max-height: 800px) {
+  #shopModal #shopBox { padding: 12px 30px; max-height: 100vh; box-sizing: border-box; }
+  .shopHead { margin-bottom: 8px; }
+  .shopHead h1 { font-size: 30px !important; }
+  .shopCol, .shopResult { min-height: 0; }
+  .shopCol { padding: 14px 20px; gap: 8px; }
+  .shopIcon { width: 96px; height: 96px; }
+  .shopOpen { height: 48px; font-size: 19px; }
+}
 #shopModal #shopList h3 { font: var(--font-title-weight) 20px var(--font-title); color: var(--fg-title); margin: 14px 0 6px; }
 #shopModal #shopList h4 { font: 800 13px var(--font-num); letter-spacing: .14em; text-transform: uppercase; color: var(--fg-accent); margin: 10px 0 4px; }
 #shopModal .shopItem { background: rgba(0, 0, 0, .4); border-width: 1px; border-radius: 0; font-family: var(--font-body); color: var(--fg-text); }
 body.mobile #shopCols { grid-template-columns: 1fr; }
 
 /* ---------- Run-Ende (E2.dc.html) ---------- */
-#deathModal #endBox { width: min(1100px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: auto; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none; }   /* X?E: kein Außenrahmen */
+#deathModal #endBox { width: min(1100px, 96vw, 100vw - 2 * var(--fg-safe)); max-width: none; max-height: 96vh; overflow: hidden; padding: 26px 40px; text-align: center; background: none; border: 0; box-shadow: none;
+  box-sizing: border-box; display: flex; flex-direction: column; }
+/* Titel oben und Knöpfe unten bleiben immer im Bild, nur die Auswertung dazwischen scrollt (bei wenig Höhe oder vielen Gear-Funden) */
+#deathModal #endBox > * { flex: none; }
+#deathModal #runResult { flex: 0 1 auto; min-height: 0; overflow: hidden auto; scrollbar-color: var(--fg-accent) transparent; padding: 0 4px; }   /* X?E: kein Außenrahmen */
 #endTitle { font-size: 46px !important; }
 #endSub { margin-top: 6px; font-size: 16px; color: var(--fg-muted); }
 .endTime { margin-top: 6px; font: 700 64px var(--font-num); line-height: 1; }
@@ -287,6 +304,26 @@ body.mobile #shopCols { grid-template-columns: 1fr; }
 .endBtns { display: flex; justify-content: center; gap: 16px; margin-top: 18px; }
 .endBtns button { width: 210px !important; height: 52px; margin: 0 !important; padding: 0 !important; font-size: 17px; display: block !important; }
 .endBtns [hidden] { display: none; }
+/* Wenig Höhe (z. B. 1263 × 638, 1280 × 720): alles kompakter, damit die Auswertung meist ohne Scrollen passt */
+@media (max-height: 800px) {
+  #deathModal #endBox { padding: 12px 32px 14px; max-height: 100vh; }
+  #endTitle { font-size: 34px !important; }
+  #endSub { margin-top: 2px; font-size: 14px; }
+  .endTime { margin-top: 2px; font-size: 44px; }
+  .endRank { margin-top: 4px; font-size: 16px; }
+  .endStats { margin: 8px 0 2px; }
+  .endStat b { font-size: 26px; }
+  .endStat span { font-size: 13px; }
+  .endPoints { font-size: 12px; margin-bottom: 10px; }
+  .endCols .gPanel { padding: 10px 18px 12px; }
+  .endCols .fg-title { margin-bottom: 6px; }
+  .endBar { height: 26px; font-size: 14px; }
+  .endRow { height: 26px; font-size: 15px; }
+  .endRow.sum b { font-size: 26px; }
+  #runNote { margin-top: 8px; }
+  .endBtns { margin-top: 10px; }
+  .endBtns button { height: 44px; font-size: 16px; }
+}
 body.mobile .endCols { grid-template-columns: 1fr; }
 body.mobile .endStat { width: auto; flex: 1; }
 
@@ -319,6 +356,18 @@ body.mobile .endStat { width: auto; flex: 1; }
 .cDps { margin-top: 20px; }
 .cDps b { font: 700 28px var(--font-num); }
 #charClose { width: auto !important; margin: 16px auto 0 !important; display: block; padding: 8px 18px !important; }
+/* Titel, Tabs und „Schließen“ bleiben im Bild, bei wenig Höhe (z. B. 1263 × 638) scrollt jede Spalte für sich */
+#charModal #charBox { display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+#charModal #charBox > * { flex: none; }
+#charModal #charBody { flex: 0 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+.charCol { min-height: min(420px, 100%); overflow: hidden auto; scrollbar-color: var(--fg-accent) transparent; }
+@media (max-height: 800px) {
+  #charModal #charBox { padding: 12px 30px 14px; }
+  .charHead h1 { font-size: 28px !important; }
+  #charTabs { margin: 8px 0; }
+  .cTab { height: 32px; }
+  #charClose { margin-top: 10px !important; }
+}
 /* Schmale Fenster: nur der aktive Tab */
 @media (max-width: 1099px) {
   #charModal #charBody { grid-template-columns: 1fr; }

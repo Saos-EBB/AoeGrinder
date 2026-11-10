@@ -78,6 +78,8 @@ body[data-flavor=schlachtbank] #fgOverlay .fx-status { font: 700 11px 'Oswald', 
 body[data-flavor=schlachtbank] #fgOverlay .fx-status.a { left: var(--fg-safe); top: 8px; }
 body[data-flavor=schlachtbank] #fgOverlay .fx-status.b { right: var(--fg-safe); top: 8px; }
 body[data-flavor=schlachtbank] #fgOverlay .fx-status.c { left: var(--fg-safe); bottom: 12px; }
+/* Wenig Höhe: Fenster reichen bis an den Rand (Run-Ende-Knöpfe, „Zurück“ im Shop), die untere Statuszeile läge darüber */
+@media (max-height: 800px) { body[data-flavor=schlachtbank]:has(.modal.show:not(#startModal)) #fgOverlay .fx-status.c { display: none; } }
 @keyframes fgGlitch { 0%, 88%, 100% { opacity: 1; transform: none; } 90% { opacity: .3; transform: translateX(6px); } 94% { opacity: .8; transform: translateX(-4px); } }
 body[data-flavor=schlachtbank] #fgOverlay .fx-glitch { inset: 0; animation: fgGlitch 4s steps(1) infinite;
   background:

@@ -29,7 +29,10 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #menuMap:hover { filter: brightness(1.15); }
   #worldModal { z-index: 4; }
   #worldModal .panel { width: min(900px, 96vw); max-width: none; max-height: 94vh; overflow: auto; text-align: left; }
-  #worldSvg { width: 100%; height: auto; display: block; }
+  #worldModal .panel { display: flex; flex-direction: column; }
+  #worldModal .panel > * { flex: none; }
+  /* Karte schrumpft bei wenig Höhe (z. B. 1263 × 638), damit Seed, Hinweis und „Schließen“ ohne Scrollen im Bild bleiben */
+  #worldSvg { width: 100%; height: auto; display: block; flex: 0 1 auto !important; min-height: 0; max-height: calc(94vh - 250px); }
   #worldSvg .place { cursor: pointer; }
   #worldSvg .place.locked { cursor: not-allowed; }
   #worldSvg .place:not(.locked):hover .orb { stroke-width: 5; }
