@@ -30,6 +30,7 @@ import { meterKill, meterKillHeal } from './schoolMeter';
 import { buffCrit } from './buffs';
 import { t } from './i18n';
 import { xpBonusMul } from './xpBonus';
+import { countKill } from './meta';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
 export const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
@@ -415,6 +416,7 @@ function killMob(mob) {
   mob.rootUntil = 0;
   mob.plate.style.display = 'none';
   player.kills++;
+  countKill();   // Kills gesamt (meta.stats, Meilenstein)
   meterKill(!!mob.champion);
   if (meterKillHeal()) player.hp = Math.min(maxHp(), player.hp + maxHp() * meterKillHeal());   // Feuer: jeder Kill heilt
   const xpMul = mob.xpMul ?? 1;                         // Champions: XP und Punkte ×3

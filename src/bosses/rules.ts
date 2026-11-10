@@ -3,7 +3,7 @@
 // Einmalige Auslöser (HP-Schwelle, Zeit) prüft die Regel selbst in tick. Werte aus RULE_P (roster.ts) oder hier, alle // PH
 
 import { state, player } from '../state';
-import { meta, saveMeta } from '../meta';
+import { meta, saveMeta, earnDust } from '../meta';
 import { mage } from '../models/mage';
 import { rollWeapon, rollTier, inventoryFull } from '../weaponRolls';
 import { CARD_RARITIES } from '../config';
@@ -62,7 +62,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
       addTrauma(.4);
       if (melee || inventoryFull()) {
         const dust = (p.dust ?? 20) * 3;
-        meta.dust += dust; saveMeta();
+        earnDust(dust); saveMeta();
         textAt(pos, t('msg.dust', { n: dust }), 'xp', 4);
         return;
       }

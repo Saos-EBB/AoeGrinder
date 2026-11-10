@@ -21,7 +21,7 @@ import { spawnKind, addKind } from './mobKinds';
 import { mobMode, scoreMult } from './modifiers';
 import { C } from './champions';
 import { run } from './score';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, earnDust, milestone } from './meta';
 import { combatText, fmtTime } from './ui/hud';
 import { completeRun, setRunEndHook, setXpHold, releaseXp } from './player';
 import { particles } from './fx/particles';
@@ -487,7 +487,9 @@ function endBoss() {
   lightFlash(m.pos, 0xffb070, 800, 40, 600);
   // Champion-Kills zählten schon in killMob (xpMul), dazu die übrigen points − 1
   run.killPoints += Math.round(xpForKill(m.level) * C.xp * (B.points - 1) * scoreMult());
-  meta.dust += B.dust;
+  earnDust(B.dust);
+  milestone('boss1');
+  if (st.hits === 0) milestone('bossNoHit');   // kein Treffer in diesem Kampf (boss.stats.hits)
   saveMeta();
   combatText(m.pos, t('msg.dust', { n: B.dust }), 'xp', 4);
   for (const fn of boss.hooks.onEnd) fn(m.pos);

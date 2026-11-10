@@ -5,7 +5,7 @@
 import { state } from '../state';
 import { ROLLS } from '../weaponRolls';
 import { SLOTS, GEAR, gearInv, overflow, worn, gearName, gearLines, gearRarity, slotName, type Slot } from '../gear';
-import { meta, saveMeta } from '../meta';
+import { meta, saveMeta, earnDust } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 import type { Find } from '../loot';
@@ -112,7 +112,7 @@ $m('gearKeepOk').addEventListener('click', async () => {
   if (lose.length && !await askConfirm(t('loot.keepTitle'), t('loot.keepConfirm', { n: lose.length, dust }), t('loot.keepOk'))) return;
   for (const slot of slotsOver()) meta.gear[slot] = allOf(slot).filter(g => pick[g.id]);
   meta.gearOver = [];
-  meta.dust += dust;
+  earnDust(dust);
   saveMeta();
   modal.classList.remove('show');
   done?.();

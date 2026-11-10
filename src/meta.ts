@@ -32,9 +32,11 @@ const FREE = ['grün'];
 
 // skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen
 function load() {
-  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; cleanSkinState(m); return m; }
-  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [] }; }
+  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; cleanSkinState(m); m.stats = cleanStats(m.stats); return m; }
+  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [], stats: cleanStats(null) }; }
 }
+// Zähler über alle Runs (Meilensteine): kills, dust = erspielter Staub gesamt (nicht der Kontostand). Fehlt in alten Ständen → 0
+export const cleanStats = (raw: any) => ({ kills: Math.max(0, Math.floor(Number(raw?.kills) || 0)), dust: Math.max(0, Math.floor(Number(raw?.dust) || 0)) });
 // Erfolge und Skin-Wahl säubern (Laden, Spielstand-Code): ein gewählter, aber gesperrter Skin fällt auf Standard zurück
 export function cleanSkinState(m) {
   m.achievements = cleanAch(m.achievements);
@@ -68,6 +70,24 @@ export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stri
 export const hasAch = (id: string) => meta.achievements.includes(id);
 // true, wenn neu (dann zeigt der Aufrufer die Einblendung)
 export function grantAch(id: string) { if (hasAch(id)) return false; meta.achievements.push(id); saveMeta(); return true; }
+
+// ---------- Meilensteine (Kosmetik ⭐, gear.ts LOOKS ach) ----------
+// Vorhanden war: meta.dust (nur Kontostand), player.kills und run.kills (nur im Run), boss.stats.hits (Treffer im Bosskampf, bosses/core.ts).
+// Neu: meta.stats.kills (Kills gesamt, mobs.ts killMob) und meta.stats.dust (erspielter Staub gesamt, earnDust). Grenzen alle // PH
+export const MILESTONES = { dust10k: 10000, kills1k: 1000, lvl100: 100 };   // lvl100 = LEVEL_MAX (config.ts), hier als Zahl: meta.ts läuft in Import-Kreisen vor config.ts
+// Neuer Meilenstein → Einblendung fg:ach (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasLook)
+export function milestone(id: string, quiet = false) { if (grantAch(id) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: id })); }
+export function checkMilestones(quiet = false) {
+  const s = meta.stats;
+  if (s.dust >= MILESTONES.dust10k) milestone('dust10k', quiet);
+  if (s.kills >= MILESTONES.kills1k) milestone('kills1k', quiet);
+}
+// Staub aus dem Spiel (Run-Ende, Boss, Aufheben, Funde): Kontostand und Zähler. Nicht für Zerlegen (Rückgabe) und Dev. Speichern macht der Aufrufer
+export function earnDust(n: number) { meta.dust += n; meta.stats.dust += n; checkMilestones(); }
+// Jeder Kill (mobs.ts killMob). Gespeichert wird mit dem nächsten saveMeta (Run-Ende, Aufheben), nicht bei jedem Kill
+export function countKill() { meta.stats.kills++; if (meta.stats.kills === MILESTONES.kills1k) checkMilestones(); }
+// Dev: Zähler setzen (Test der Meilensteine)
+export function devSetStats(o: { kills?: number; dust?: number }) { Object.assign(meta.stats, cleanStats({ ...meta.stats, ...o })); checkMilestones(); saveMeta(); }
 
 // ---------- Skins ----------
 export const skinUnlocked = (figur: Figur, id: SkinId) => { const lock = skinLock(figur, id); return !lock || hasAch(setAch(lock)); };
@@ -117,7 +137,7 @@ export function awardDust(completed) {
   const bonus = tier ? Math.round(META.dust.doneBonusAtTier3 * tier / 3) : 0;
   const base = Math.round(player.level * META.dust.perLevel * scoreMult());
   const dust = base + bonus;
-  meta.dust += dust;
+  earnDust(dust);
   meta.bestTier = Math.max(meta.bestTier, tier);
   saveMeta();
   return { dust, tier, base, bonus };   // base/bonus: Zeilen der Staub-Rechnung im Run-Ende
@@ -153,4 +173,4 @@ export function rollShop(tier) {
 // ---------- Dev ----------
 export function devSetDust(v) { meta.dust = v; saveMeta(); }
 export function devUnlockAll() { meta.unlocked = catalog().map(e => e.key); saveMeta(); }
-export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [], gear: {}, wear: {}, gearOver: [], nextGear: 0, looks: [], lookWear: {} }); saveMeta(); }
+export function devReset() { Object.assign(meta, { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [], gear: {}, wear: {}, gearOver: [], nextGear: 0, looks: [], lookWear: {}, stats: cleanStats(null) }); saveMeta(); }

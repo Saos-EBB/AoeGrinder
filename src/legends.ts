@@ -7,7 +7,7 @@ import { $, dist2d, pick } from './util';
 import { state, player } from './state';
 import { UNIT } from './config';
 import { maxHp } from './formulas';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, earnDust } from './meta';
 import { camera, scene } from './render';
 import { mage } from './models/mage';
 import { applyRoot, enterCombat, startLeap, knockbackMob, onMobDeath } from './mobs';
@@ -148,7 +148,7 @@ const EFFECTS = {
 export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy.dmg : 1;
 
 // Cow Level: tote Kühe geben Staub
-onMobDeath(m => { if (m.cow) { meta.dust += LEG.cow.dust; saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } });
+onMobDeath(m => { if (m.cow) { earnDust(LEG.cow.dust); saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } });
 
 // ---------- Murky-Ei ----------
 const egg: any = { pos: null, until: 0, mesh: null };

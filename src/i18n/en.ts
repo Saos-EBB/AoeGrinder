@@ -2390,4 +2390,10 @@ export const en: Record<string, string> = {
   'look.schaf.hint': "Bleats on level-up",
   'look.kuh.name': "Cow Onesie",
   'look.kuh.hint': "Moos on a kill streak",
+  'ach.msDone': "Milestone: {name} – {look} unlocked",
+  'ach.ms.boss1': "First boss defeated",
+  'ach.ms.dust10k': "10,000 dust collected",
+  'ach.ms.kills1k': "1,000 kills in total",
+  'ach.ms.bossNoHit': "Boss defeated without taking a hit",
+  'ach.ms.lvl100': "Level 100 in a run",
 };

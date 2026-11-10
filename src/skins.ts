@@ -28,7 +28,10 @@ export const setAch = (setId: string) => `set:${setId}`;
 export const skinLock = (figur: Figur, id: SkinId): string | null => figur === 'magier' && id !== STANDARD ? id : null;
 // Alle Erfolge (bisher nur die Set-Erfolge), Reihenfolge wie SKIN_LIST
 export const ACHIEVEMENTS: string[] = SKIN_LIST.magier.filter(s => s.id !== STANDARD).map(s => setAch(s.id));
-export const cleanAch = (raw: unknown): string[] => Array.isArray(raw) ? [...new Set(raw.filter(a => ACHIEVEMENTS.includes(a)))] : [];
+// Meilenstein-Erfolge (meta.ts MILESTONES): schalten je ein Kosmetik-Teil frei (gear.ts LOOKS ach), keinen Skin
+export const MILESTONE_LOOK: Record<string, string> = { boss1: 'pappkrone', dust10k: 'goldkette', kills1k: 'killflagge', bossNoHit: 'handschellen', lvl100: 'dreiteiler' };
+export const MILESTONE_ACH = Object.keys(MILESTONE_LOOK);
+export const cleanAch = (raw: unknown): string[] => Array.isArray(raw) ? [...new Set(raw.filter(a => ACHIEVEMENTS.includes(a) || MILESTONE_ACH.includes(a)))] : [];
 
 // Gespeichertes Feld säubern (localStorage, Spielstand-Code): nur bekannte Figuren mit bekannten Skins, sonst weg (= Standard)
 export function cleanSkins(raw: unknown): Partial<Record<Figur, SkinId>> {

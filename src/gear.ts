@@ -8,7 +8,7 @@
 
 import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
-import { meta, saveMeta, grantAch, hasAch } from './meta';
+import { meta, saveMeta, grantAch, hasAch, earnDust } from './meta';
 import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
@@ -131,7 +131,8 @@ export function cleanGear(m: any) {
   m.gear = gear;
   m.wear = wear;
   m.looks = (Array.isArray(m.looks) ? m.looks : []).filter(id => LOOKS[id]);
-  m.lookWear = Object.fromEntries(LOOK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, LOOKS[id]?.slot === s && m.looks.includes(id) ? id : null]; }));
+  const owns = id => m.looks.includes(id) || !!LOOKS[id]?.ach && Array.isArray(m.achievements) && m.achievements.includes(LOOKS[id].ach);
+  m.lookWear = Object.fromEntries(LOOK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, LOOKS[id]?.slot === s && owns(id) ? id : null]; }));
   m.gearOver = (Array.isArray(m.gearOver) ? m.gearOver : []).filter(g => SLOTS.includes(g?.slot) && okItem(g, g.slot)).map(fixItem);
   for (const g of m.gearOver) maxId = Math.max(maxId, g.id);
   m.nextGear = maxId;
@@ -187,7 +188,7 @@ export function buyGearBox(skin: string | null) {
   if (anySlotFull() || meta.dust < BOX.gear) return null;
   meta.dust -= BOX.gear;
   const g = rollDrop(skin);
-  return { g, res: takeGear(g) };
+  return { g, res: takeGear(g, false) };
 }
 function looksOwned(): string[] { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; }
 export const lookBoxLeft = () => KOSMETIK_POOL.filter(id => !looksOwned().includes(id));
@@ -204,10 +205,11 @@ export function buyLookBox() {
 
 // Neues Teil (Drop, Gear-Box): Grau, Weiß und Grün → Staub (so entschieden: Kosmetik kommt aus Box und Meilensteinen), Blau und besser ins Inventar
 // (Slot voll: in gearOver, das Run-Ende fragt, was bleibt). Gibt zurück, was passiert ist.
-export function takeGear(g: GearItem): { kept: boolean; dust: number; over: boolean } {
+// earned: Drop aus dem Spiel (zählt für den Meilenstein Staub gesamt), false bei der Gear-Box (gekauft)
+export function takeGear(g: GearItem, earned = true): { kept: boolean; dust: number; over: boolean } {
   if (g.r < GEAR.keepFrom) {
     const dust = ROLLS.refund[g.r];
-    meta.dust += dust;
+    if (earned) earnDust(dust); else meta.dust += dust;
     saveMeta();
     return { kept: false, dust, over: false };
   }
@@ -230,7 +232,7 @@ export function checkUnlocks(quiet = false) {
   for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: setAch(id) }));
 }
 const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
-export const hasLook = (id: string) => looksOwned().includes(id);
+export const hasLook = (id: string) => looksOwned().includes(id) || !!LOOKS[id]?.ach && hasAch(LOOKS[id].ach);   // Meilenstein-Teile: frei mit dem Erfolg
 // Getragener Look im Slot (nur wenn freigeschaltet), sonst null = die Figur zeigt das Gear
 export const lookIn = (slot: string) => { const id = lookWearMap()[slot]; return id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null; };
 export function wearLook(slot: string, id: string | null) {

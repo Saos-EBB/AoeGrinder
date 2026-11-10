@@ -44,6 +44,7 @@ import { updateRandomMage } from './spells/random';
 import { t } from './i18n';
 import { resetLoot } from './loot';
 import { resetPortal } from './portal';
+import { milestone, MILESTONES } from './meta';
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
@@ -214,6 +215,7 @@ export function gainXp(xp) {
     else if (player.level % CARD_CLASSIC_EVERY === 0) rankAllSpells();   // Classic pur: statt Karten ein Rang, das Spiel läuft weiter
   }
   if (player.level >= LEVEL_MAX) player.xp = 0;
+  if (player.level >= MILESTONES.lvl100) milestone('lvl100');   // Meilenstein: Level 100 in einem Run
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
   if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun(t('cause.lv100'));   // #boss: erst der finale Boss (boss.ts)

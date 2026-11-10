@@ -15,7 +15,7 @@ import { mage } from './models/mage';
 import { rollDrop, takeGear, gearName, gearRarity, isMagierSkin, type GearItem } from './gear';
 import { dist2d, rand } from './util';
 import { t } from './i18n';
-import { meta, saveMeta } from './meta';
+import { meta, saveMeta, earnDust } from './meta';
 import { CARD_RARITIES } from './config';
 import { rollWeapon, rollTier, weaponName, inventoryFull, ROLLS } from './weaponRolls';
 import { zone } from './world';
@@ -106,7 +106,7 @@ export function updateLoot() {
 }
 function pickUp(d: Drop, auto = false, overfill = false) {
   if (d.kind === 'dust') {
-    meta.dust += d.dust;
+    earnDust(d.dust);
     saveMeta();
     combatText(player.pos, t('msg.dust', { n: d.dust }), 'xp', 2.4);
     return true;
@@ -115,7 +115,7 @@ function pickUp(d: Drop, auto = false, overfill = false) {
     if (inventoryFull() && !overfill) {   // overfill: Finale, das Inventar darf kurz überlaufen (Waffenmenü zeigt mehr Reihen, Kiste bleibt zu bis aussortiert)
       if (!auto) { combatText(player.pos, t('loot.invFull', { n: ROLLS.invMax }), 'miss', 2.6); return false; }
       const n = ROLLS.refund[d.weapon.r];   // Portal: kein Platz → Staub statt Verlust
-      meta.dust += n; saveMeta();
+      earnDust(n); saveMeta();
       combatText(player.pos, t('loot.dust', { name: weaponName(d.weapon), n }), 'info', 2.6, CARD_RARITIES[d.weapon.r].color);
       return true;
     }
