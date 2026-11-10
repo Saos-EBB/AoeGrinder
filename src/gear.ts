@@ -1,6 +1,8 @@
 // Gear neben der Waffe (Handoff docs/handoffs/items.md): 5 Slots mit Werten, nur Magier. Der Strichkrieger bekommt nichts davon.
 // Kein zweites Roll-System: Seltenheit (rollTier), Werte (VALUE_KEY, ROLLS.values), Fokus (FOCUS_SPELLS), Element (ROLLS.elementChance) und der
 // Treffer-Hook kommen aus weaponRolls.ts. Gear wirkt halb so stark wie die Waffe (GEAR.mul). Grundregel: nur erspielter Staub.
+// Schichten je Teil (Gear-Baukasten v3, docs/ref/gear-baukasten.html): immer 1 Wert (→ Wertgruppe = Form am Modell), ab Blau mit focusShare ein Fokus (→ Emblem),
+// immer ein Hersteller (→ Material, Trait halb so stark wie bei der Waffe), Element wie bei der Waffe, Seltenheit (→ Glühen, Extras).
 // Gespeichert in meta: gear (Inventar je Slot), wear (angelegt je Slot), gearOver (Funde, die nicht mehr ins volle Inventar passten), nextGear (Zähler).
 // Fehlt ein Feld (alter Stand), gilt der Standardwert; nichts crasht.
 
@@ -9,19 +11,21 @@ import { SPELLS, CARD_RARITIES, mods } from './config';
 import { meta, saveMeta, grantAch } from './meta';
 import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
-import { ELEMENTS, elementColor } from './models/weapons/baukasten';
+import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
 import { t } from './i18n';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
-export interface GearItem { id: number; v: 1; slot: Slot; r: number; s: { value?: string; focus?: string; element: string; setId?: string } }
+export interface GearItem { id: number; v: 1; slot: Slot; r: number; s: { value: string; focus?: string; element: string; maker: string; setId?: string } }
 
 // Alle Zahlen PH
 export const GEAR = {
   invMax: 25,          // je Slot-Art, wie die Waffen (ROLLS.invMax)
   mul: 0.5,            // halb so stark wie die Waffe (Kevin: erst testen, dann tunen)
-  focusShare: 0.5,     // Hälfte der Teile mit Fokus, der Rest mit 1 Wert
+  focusShare: 0.5,     // ab focusFrom: Anteil der Teile mit Fokus zusätzlich zum Wert
+  focusFrom: 3,        // Fokus erst ab Blau
+  makerMul: 0.5,       // Hersteller-Trait halb so stark wie bei der Waffe (ROLLS.maker)
   keepFrom: 3,         // ab Blau ins Inventar; Grau wird Staub, Weiß/Grün gehen später in die Kosmetik-Sammlung (bis dahin Staub)
   baseNames: 3,        // Grundnamen je Slot (gear.base.<slot>.<n>)
   setChance: 0.15,     // Anteil der Set-Teile an den Drops ab Blau, nur für den gespielten Magier
@@ -65,7 +69,17 @@ export const fullSet = (skin: string | null) => { const id = setOfSchool(skin); 
 // Set-Skin, solange 5/5 angelegt ist (mage.ts). Die gespeicherte Skin-Wahl bleibt
 export const forcedLook = (skin: string | null) => fullSet(skin);
 export const perfectText = (setId: string, slot: Slot) => { const [k, v] = SETS[setId].perfect[slot]; return t(`gear.perfect.${k}`, { n: Math.round(v * (v < 1 ? 1000 : 10)) / 10 }); };
-const NO_MAKER = {};   // weaponHit erwartet einen Hersteller; Gear hat keinen
+
+// Wertgruppe = Schaft-Gruppe des Werts (SHAFTS, wie rollWeapon) → Form am Modell (Gruppen des Viewers, models/gearParts.ts)
+export const GROUP_OF_SHAFT = { gerade: 'off', gedreht: 'tempo', geknotet: 'leben', segmentiert: 'mana', umwickelt: 'radius' } as const;
+export type GearGroup = typeof GROUP_OF_SHAFT[keyof typeof GROUP_OF_SHAFT];
+export const GEAR_GROUPS = Object.values(GROUP_OF_SHAFT);
+const shaftOf = (value: string) => Object.keys(SHAFTS).find(k => SHAFTS[k].values.includes(value)) ?? null;
+// Für Fenster und Modell: fehlt der Wert oder der Hersteller (sollte nach cleanGear nicht vorkommen) → null
+export const groupOf = (g: GearItem | null): GearGroup | null => { const sh = g?.s?.value != null ? shaftOf(g.s.value) : null; return sh ? GROUP_OF_SHAFT[sh] : null; };
+export const makerOf = (g: GearItem | null): string | null => (g?.s?.maker && g.s.maker in MAKERS ? g.s.maker : null);
+// Hersteller-Trait mit makerMul (Werte aus ROLLS.maker, Wege wie applyRunWeapon)
+const halfMaker = (id: string) => Object.fromEntries(Object.entries(ROLLS.maker[id] ?? {}).map(([k, v]) => [k, (v as number) * GEAR.makerMul])) as Record<string, number>;
 
 // Kosmetik (meta.looks: freigeschaltet, meta.lookWear: getragen je Slot oder 'waffe'). Regel: Look vor Gear. Nur Aussehen, keine Werte.
 // Einziger Inhalt bisher: Waffen-Look Haarspray + Feuerzeug (models/weapons/defs.ts), frei bei Glutprophet 5/5 (unlock: Set, dessen 5 Teile angelegt sein müssen)
@@ -110,8 +124,13 @@ export function cleanGear(m: any) {
   for (const g of m.gearOver) maxId = Math.max(maxId, g.id);
   m.nextGear = maxId;
 }
+let migrated = 0;   // Teile, die beim Säubern einen Wert oder Hersteller bekamen (initGear speichert dann)
 function fixItem(g) {
   if (!Number.isInteger(g.id)) g.id = 0;
+  // Alter Stand (vor v36): Teile mit nur Fokus bekommen einen zufälligen Wert, ohne Hersteller einen zufälligen Hersteller. Der Fokus bleibt
+  if (!(g.s.value in VALUE_KEY)) { g.s.value = pick(Object.keys(VALUE_KEY)); migrated++; }
+  if (!(g.s.maker in MAKERS)) { g.s.maker = pick(Object.keys(MAKERS)); migrated++; }
+  if (g.s.focus != null && !SPELLS[g.s.focus]) delete g.s.focus;
   if (g.s.setId != null && !SETS[g.s.setId]) delete g.s.setId;
   g.v = 1;
   if (!(g.s.element in ELEMENTS)) g.s.element = 'none';
@@ -120,11 +139,13 @@ function fixItem(g) {
 // Beim Start aus main.ts, nicht beim Laden des Moduls: gear.ts hängt über Import-Zyklen (weaponRolls ↔ spells ↔ gear) und würde sonst
 // VALUE_KEY lesen, bevor weaponRolls.ts fertig ist (ReferenceError, sobald gespeichertes Gear da ist)
 export function initGear() {
+  migrated = 0;
   cleanGear(meta);
   // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
   const seen = new Set();
   for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); }
   checkUnlocks(true);   // alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
+  if (migrated) saveMeta();   // gewürfelte Werte/Hersteller festhalten, sonst würfelt jeder Reload neu
 }
 
 // ---------- Würfeln ----------
@@ -132,9 +153,8 @@ export function initGear() {
 export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = null, skin: string | null = null): GearItem {
   const r = tier ?? rollTier(), tag = SCHOOL_TAG[skin];
   const els = Object.keys(ELEMENTS).filter(e => e !== 'none');
-  const s: GearItem['s'] = { element: Math.random() < ROLLS.elementChance[r] ? pick(els) : 'none' };
-  if (Math.random() < GEAR.focusShare) s.focus = pick(FOCUS_SPELLS.filter(id => SPELLS[id] && (!tag || SPELLS[id].tags.includes(tag))));
-  else s.value = pick(Object.keys(VALUE_KEY));
+  const s: GearItem['s'] = { value: pick(Object.keys(VALUE_KEY)), maker: pick(Object.keys(MAKERS)), element: Math.random() < ROLLS.elementChance[r] ? pick(els) : 'none' };
+  if (r >= GEAR.focusFrom && Math.random() < GEAR.focusShare) s.focus = pick(FOCUS_SPELLS.filter(id => SPELLS[id] && (!tag || SPELLS[id].tags.includes(tag))));
   return { id: ++meta.nextGear, v: 1, slot, r, s };
 }
 
@@ -204,6 +224,21 @@ export function wearLook(slot: string, id: string | null) {
   lookWearMap()[slot] = id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null;
   saveMeta();
 }
+// Gear an der Figur (models/gearParts.ts über mage.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
+// Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Körper-Looks haben noch kein Modell → leer).
+// Set 5/5 (forcedLook) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
+export type GearLook = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
+export function gearLook(skin: string | null): GearLook | null {
+  if (!isMagierSkin(skin) || forcedLook(skin)) return null;
+  const out: GearLook = {};
+  for (const slot of SLOTS) {
+    const g = worn(slot), group = groupOf(g);
+    if (!g || !group || lookIn(slot)) continue;
+    out[slot] = { group, r: g.r, s: { maker: makerOf(g) ?? 'stern', element: g.s.element, ...(g.s.focus ? { focus: g.s.focus } : {}) } };
+  }
+  return out;
+}
+export const gearKey = (skin: string | null) => JSON.stringify(gearLook(skin));   // mage.ts baut neu, wenn sich das ändert
 // Waffen-Look der Magier (mage.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
 export const weaponLook = () => lookIn('waffe');
 // Löschen gibt Staub zurück wie bei der Waffe (deleteWeapon)
@@ -221,12 +256,13 @@ const valueKey = (g: GearItem) => VALUE_KEY[g.s.value];
 export const gearName = (g: GearItem) => g.s.setId ? t(`gear.set.${g.s.setId}.${g.slot}`) : t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
 export const slotName = (slot: string) => t(`gear.slot.${slot}`);
 export const gearRarity = (g: GearItem) => CARD_RARITIES[g.r];
-// Werte-Zeilen wie effectLines bei der Waffe: Fokus oder Wert, dazu das Element
+// Werte-Zeilen wie effectLines bei der Waffe: Wert, ggf. Fokus, Element, Hersteller
 export function gearRows(g: GearItem): { kind: string; text: string; color?: string }[] {
   const f = factor(g.r) * GEAR.mul, rows = [];
+  const k = valueKey(g); rows.push({ kind: 'value', text: `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f)} ${t(`wval.${k}`)}` });
   if (g.s.focus) rows.push({ kind: 'focus', text: t('wrow.focusText', { name: SPELLS[g.s.focus].name, dmg: pct(ROLLS.focus.dmg * f), radius: pct(ROLLS.focus.radius * f) }) });
-  else { const k = valueKey(g); rows.push({ kind: 'value', text: `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f)} ${t(`wval.${k}`)}` }); }
   if (g.s.element !== 'none') rows.push({ kind: 'element', text: t('wrow.perHit', { name: ELEMENTS[g.s.element].name, fx: ELEMENTS[g.s.element].fx, pct: pct(ROLLS.procChance * f).slice(1) }), color: elementColor(g.s.element) });
+  if (makerOf(g)) rows.push({ kind: 'maker', text: t('gear.makerHalf', { name: MAKERS[g.s.maker].name, trait: MAKERS[g.s.maker].trait }) });
   return rows;
 }
 export const gearLines = (g: GearItem) => gearRows(g).map(r => r.text);
@@ -236,22 +272,32 @@ export const gearLines = (g: GearItem) => gearRows(g).map(r => r.text);
 export function applyRunGear(skin: string | null) {
   state.gearSet = null;
   if (!isMagierSkin(skin)) return;
-  const procs: [string, number][] = [], set = fullSet(skin);
+  const procs: [string, number, Record<string, number>][] = [], set = fullSet(skin);
   state.gearSet = set;
   for (const slot of SLOTS) {
     const g = worn(slot);
     if (!g) continue;
     if (set) { const [k, v] = SETS[set].perfect[slot]; PERFECT[k](v); continue; }   // 5/5: Perfekt-Wert statt eigenem Roll
     const f = factor(g.r) * GEAR.mul;
+    applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f);
     if (g.s.focus) applyFocus(g.s.focus, f, { s: { fv: 1 } });
-    else applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f);
-    if (g.s.element !== 'none') procs.push([g.s.element, ROLLS.procChance * f]);
+    const M = makerOf(g) ? halfMaker(g.s.maker) : {};
+    if (M.dmg) mods.dmg += M.dmg;
+    if (M.cast) mods.castMul += M.cast;
+    if (M.crit) mods.crit += M.crit;
+    if (M.dur) mods.durMul += M.dur;
+    if (M.random) applyValue(pick(Object.values(VALUE_KEY)), M.random);
+    if (M.cd) applyValue('cd', -M.cd);
+    if (M.mana) mods.manaMult += M.mana;
+    if (M.hp) mods.hpMult += M.hp;
+    const chance = g.s.element !== 'none' ? ROLLS.procChance * f : 0;
+    if (chance || M.lifesteal || M.critMana) procs.push([g.s.element, chance, M]);
   }
   if (!procs.length) return;
   const prev = state.weaponHit;
   state.weaponHit = (m, dmg, crit, api) => {
     prev?.(m, dmg, crit, api);
-    for (const [el, chance] of procs) weaponHit(m, dmg, crit, api, el, chance, NO_MAKER);
+    for (const [el, chance, M] of procs) weaponHit(m, dmg, crit, api, el, chance, M);
   };
 }
 
@@ -277,4 +323,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
