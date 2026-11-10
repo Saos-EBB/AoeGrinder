@@ -12,6 +12,7 @@ import type { Find } from '../loot';
 import { SETS, devWearSet, devSetAch } from '../gear';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
+import { gearThumbHtml } from './itemThumb';
 
 // Dev: Set 5/5 oder 4/5 anlegen (Einstellungen → Dev)
 document.getElementById('devZones')?.insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin:10px 0 6px">Dev: Gear-Sets</div>
@@ -38,7 +39,8 @@ export function findsHtml() {
   const finds: Find[] = state.finds ?? [];
   if (!finds.length && !overflow().length) return '';
   const kept = finds.filter(f => !f.dust), dust = finds.reduce((s, f) => s + f.dust, 0);
-  const rows = kept.map(f => `<div class="endRow"><span style="color:${gearRarity(f.item).color}">${esc(gearName(f.item))}${f.item.s.setId ? ' · SET' : ''}</span><b>${esc(slotName(f.item.slot))}</b></div>`).join('');
+  const thumb = (g) => `<i class="lootThumb" style="--rc:${gearRarity(g).color}">${gearThumbHtml(g, '◆')}</i>`;   // Bild des Teils (bis es da ist: Raute)
+  const rows = kept.map(f => `<div class="endRow"><span style="color:${gearRarity(f.item).color}">${thumb(f.item)}${esc(gearName(f.item))}${f.item.s.setId ? ' · SET' : ''}</span><b>${esc(slotName(f.item.slot))}</b></div>`).join('');
   return `<div class="gPanel fg-panel" style="margin-top:14px;padding:14px 20px 18px;text-align:left"><div class="fg-title" style="position:relative;z-index:2;font-size:17px;margin-bottom:8px">${t('loot.title', { n: finds.length })}</div>
     <div style="position:relative;z-index:2">${rows || `<p>${t('loot.noneKept')}</p>`}
     ${dust ? `<div class="endRow"><span>${t('loot.dustRow', { n: finds.length - kept.length })}</span><b>+${dust}</b></div>` : ''}
@@ -97,7 +99,11 @@ function render() {
       name.textContent = `${gearName(g)}${g.s.setId ? ' · SET' : ''}${overflow().includes(g) ? ` · ${t('shop.new')}` : ''}`;
       name.style.color = gearRarity(g).color;
       sub.textContent = `${gearLines(g).join(' · ')} · +${ROLLS.refund[g.r]}`;
-      row.append(cb, name, sub);
+      const ic = document.createElement('i');
+      ic.className = 'lootThumb';
+      ic.style.setProperty('--rc', gearRarity(g).color);
+      ic.innerHTML = gearThumbHtml(g, '◆');
+      row.append(cb, ic, name, sub);
       box.append(row);
     }
   }

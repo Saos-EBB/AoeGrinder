@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- feat(ui): Shop zeigt das Teil aus der Gear-Box als 3D-Bild statt der Kiste, die Kosmetik-Box den zuletzt gezogenen Look als Bild. Run-Ende: die Gear-Funde und die Auswahl „Was bleibt?“ haben vor jedem Teil ein kleines Bild
 - feat(ui): Charakterfenster zeigt Gear und Kosmetik als kleine 3D-Bilder der echten Teile (wie die Waffen): im Raster aller Tabs (auch Waffen statt Umriss), an den Gear-Slots der Figur, im Look-Feld und im Baum (Gear und freie Kosmetik, Waffen bleiben dort Umriss). Gesperrte Kosmetik: Bild grau mit Schloss in der Ecke. Die Bilder kommen beim ersten Öffnen innerhalb weniger Frames nach (bis dahin der Umriss), danach sofort; Renderer und Shader werden im Hauptmenü im Leerlauf vorbereitet
 - intern(ui): Vorschaubilder für Gear und Kosmetik aus den echten Modellen (src/ui/itemThumb.ts): Teil ohne Figur, leicht schräg von vorn (Rücken-Teile von hinten), 128 × 128, im selben kleinen Offscreen-Renderer wie die Waffenbilder; gemerkt je Aussehen bzw. Look, gesammelt gerendert (bis 8 pro Frame, einmal zurückgelesen) und nur, solange das Feld im Dokument ist
 - feat(kosmetik): Kosmetik-Box im Shop ist offen (120 Staub, „Noch x/20 offen“, zeigt den neuen Look, „Alles gesammelt“ sobald leer). Im Fenster zeigt der Kosmetik-Tab bei jedem Teil die Reaktion und, wenn gesperrt, die Quelle: Kosmetik-Box oder ⭐ Meilenstein mit Fortschritt (z. B. 3.120/10.000 Staub)

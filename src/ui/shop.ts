@@ -13,6 +13,7 @@ import { attachWeaponCard } from './weaponCard';
 import { askConfirm } from './confirm';
 import { openHero } from './heroWindow';
 import { weaponThumb } from './weaponThumb';
+import { gearThumb, lookThumb } from './itemThumb';
 import { pick } from '../util';
 import { t, fmtNum } from '../i18n';
 import { BOX, KOSMETIK_POOL, LOOKS, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
@@ -123,8 +124,8 @@ function gearResult(col: HTMLElement, name: HTMLElement) {
   const { g, res } = lastPull, rar = gearRarity(g);
   col.style.setProperty('--rc', rar.color);
   if (lastIsNew) col.append(el('span', 'resNew', t('shop.new')));
-  const icon = el('div', 'resIcon');
-  icon.innerHTML = CHEST_SVG;
+  const icon = el('div', 'resIcon'), img = gearThumb(g);   // Bild des echten Teils, sonst die Kiste
+  icon.innerHTML = img ? `<img class="resGear" src="${img}" alt="">` : CHEST_SVG;
   name.textContent = gearName(g);
   col.append(icon, name, el('div', 'resSub', `${rar.name} · ${slotName(g.slot)}${g.s.setId ? ' · SET' : ''}`));
   const lines = el('div', 'resLines');
@@ -145,14 +146,16 @@ let lastLook: string | null = null;   // zuletzt aus der Kosmetik-Box gezogen (H
 function boxRow(resultName: HTMLElement, result: HTMLElement) {
   const row = el('div', '');
   row.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:40px';
-  const box = (title: string, price: number, label: string, disabled: boolean, hint: string, onBuy: () => void) => {
+  const box = (title: string, price: number, label: string, disabled: boolean, hint: string, onBuy: () => void, got?: string) => {
     const col = el('div', 'gPanel fg-panel shopCol');
     col.style.minHeight = '0';
     const b = el('button', 'btn fg-btn shopOpen', label) as HTMLButtonElement;
     b.disabled = disabled;
     b.style.height = '52px';
     b.addEventListener('click', onBuy);
-    col.append(el('div', 'fg-title fuseTitle', title), el('div', 'shopPrice', t('shop.price', { n: price })), el('div', 'shopHint', hint), b);
+    col.append(el('div', 'fg-title fuseTitle', title), el('div', 'shopPrice', t('shop.price', { n: price })));
+    if (got) { const i = el('div', 'shopGot'); i.innerHTML = `<img src="${got}" alt="">`; col.append(i); }   // zuletzt gezogener Look als Bild
+    col.append(el('div', 'shopHint', hint), b);
     return col;
   };
   const mageNow = isMagierSkin(mage.skin), full = anySlotFull();
@@ -183,7 +186,7 @@ function boxRow(resultName: HTMLElement, result: HTMLElement) {
     lastLook = id;
     mage.refreshLook();
     renderShop();
-  }));
+  }, lastLook ? lookThumb(lastLook) : ''));
   return row;
 }
 
