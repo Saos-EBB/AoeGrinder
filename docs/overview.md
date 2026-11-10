@@ -29,7 +29,7 @@ npm run build        # eine dist/index.html
 | `src/skins.ts`, `skinFx.ts`, `src/models/` | Figuren, Skins, Mob-Rigs, Waffen-Baukasten | [skins](handoffs/skins.md) |
 | `src/realMen.ts`, `melee.ts`, `wucht.ts` | Nahkampf des Strichkriegers, Treffer-Gefühl | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `src/vfx/`, `render.ts`, `dunkel.ts` | Effekte, Sound, Bloom, dunkles Licht mit Lampe | [Code-Karte](handoff.md#code-karte) |
-| `src/ui/`, `src/ui/flavors/` | Menüs, HUD, Fenster, drei UI-Looks (Höllenfeste, Krypta, Schlachtbank) | [ui-mix](handoffs/ui-mix.md) |
+| `src/ui/`, `src/ui/flavors/` | Menüs, HUD, Fenster, drei UI-Looks (Höllenfeste, Krypta, Schlachtbank); HUD-Teile einzeln aus einem anderen Look kombinierbar | [ui-mix](handoffs/ui-mix.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit, Rangliste pro Map mit Seed | [score-spec](score-spec.md) |
 | `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, Shop, Waffen-Kiste, Spielstand-Code | [pool-liste](pool-liste.md) |
 
@@ -40,9 +40,11 @@ npm run build        # eine dist/index.html
 - Krieger-Skins kommen mit den Waffen. Magier-Skins (einer pro Schule) gibt es nur über das volle Set 5/5: Erfolg, danach dauerhaft wählbar → [skins.ts](../src/skins.ts), [gear.ts](../src/gear.ts)
 - Mit Skin bleiben die Schul-Effekte aus, die den ganzen Körper bedecken. Ausnahme ist der Frost-Skin, der babyblau einfriert → [strichMagier.ts](../src/models/strichMagier.ts)
 - `gear.ts` säubert den Spielstand erst über `initGear()` aus `main.ts`, nicht beim Laden des Moduls (Import-Zyklen) → [main.ts](../src/main.ts)
-- Drops normaler Kills sind absichtlich fast null, die Drops kommen aus Bossen, Champions, Truhen und Großen. Balance folgt später → [loot.ts](../src/loot.ts)
+- Drops normaler Kills sind absichtlich fast null, die Drops kommen aus Bossen, Champions, Truhen und Großen (Werte `// PH`) → [loot.ts](../src/loot.ts)
 - Nach dem letzten Boss wird alles am Boden automatisch aufgehoben, das Waffen-Inventar darf dabei überlaufen → [loot.ts](../src/loot.ts)
 - Handy ist gesperrt („In Arbeit“), der Code bleibt; `?mobile=1` öffnet ihn trotzdem → [boot.ts](../src/boot.ts)
+- Level-up-Karten wählt man mit F1–F12, nicht mit Zahlen (die sind Spells); F10 öffnet sonst das Dev-Panel → [menus.ts](../src/ui/menus.ts)
+- Fertige Magier-Skins blenden Gear und Kosmetik an einzelnen Slots aus (z. B. Splitterkönig Kopf, Hochspannung Kopf und Rücken), die Werte zählen trotzdem → [strichMagier.ts](../src/models/strichMagier.ts)
 - Kein UI-Element darf unter den Zierrahmen-Ecken liegen: Abstand über `--fg-safe` pro UI-Look → [base.css](../src/ui/flavors/base.css)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Das Spiel läuft immer dunkel, Helligkeit stellt man in den Einstellungen ein. Mobs hinter dem Nebel werden nicht gezeichnet → [dunkel.ts](../src/dunkel.ts)
