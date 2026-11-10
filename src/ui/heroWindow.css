@@ -14,3 +14,58 @@
 #hwClose { min-height: 0; height: calc(34 * var(--hu)); padding: 0 calc(14 * var(--hu)); font-size: calc(14 * var(--hu)); }
 #hwWait:empty + #hwClose { margin-left: auto; }
 .hwBody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(8 * var(--hu)); }
+.hwMuted { font-size: calc(13 * var(--hu)); color: var(--fg-muted); margin: 0; }
+/* Links: Figur mittig, Slots links (Kopf, Hals, Rücken) und rechts (Arme, Körper, Waffe), Rahmen in Seltenheitsfarbe */
+.hwDoll { flex: 1 1 calc(300 * var(--hu)); min-height: calc(170 * var(--hu)); display: grid; grid-template-columns: auto 1fr auto; gap: calc(12 * var(--hu)); align-items: center; position: relative; }
+.hwCol { display: flex; flex-direction: column; justify-content: center; gap: calc(22 * var(--hu)); height: 100%; }
+.hwFig { position: relative; height: 100%; min-height: 0; }
+.hwFig .wmFig3d { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; cursor: grab; touch-action: none; }
+.hwFig .wmFig3d:active { cursor: grabbing; }
+.hwFigHint { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font-size: calc(11 * var(--hu)); color: var(--fg-muted); pointer-events: none; white-space: nowrap; }
+.hwSlotWrap { position: relative; }
+.hwSlot { --rc: var(--fg-line); width: calc(64 * var(--hu)); height: calc(64 * var(--hu)); box-sizing: border-box; padding: calc(4 * var(--hu)) 0 calc(14 * var(--hu)); position: relative; display: grid; place-items: center;
+  background: var(--fg-card); border: 2px solid var(--rc); box-shadow: inset 0 0 12px #000; color: var(--fg-muted); cursor: pointer; }
+.hwSlot:hover, .hwSlot.sel { box-shadow: 0 0 0 2px #000, 0 0 12px var(--rc); }
+.hwSlot.sel { outline: 1px solid var(--fg-accent); outline-offset: 2px; }
+.hwSlot svg { height: 100%; max-width: 90%; }
+.hwSlot img { height: calc(44 * var(--hu)); width: auto; max-width: 90%; object-fit: contain; }
+.hwSlot img { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 60%, transparent)); }
+.hwSlot small { position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font: 600 calc(10 * var(--hu)) var(--font-num); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
+.hwSlotEmpty { font-size: calc(16 * var(--hu)); }
+.hwSetMark { position: absolute; left: 2px; top: 2px; padding: 0 3px; font: 700 calc(8 * var(--hu)) var(--font-body); color: #000; background: var(--rar-gruen); }
+.hwLook { position: absolute; right: calc(-10 * var(--hu)); top: calc(-10 * var(--hu)); width: calc(26 * var(--hu)); height: calc(26 * var(--hu)); padding: 2px; box-sizing: border-box; display: grid; place-items: center;
+  background: var(--fg-card); border: 1px dashed var(--fg-border); color: var(--fg-title); cursor: pointer; }
+.hwLook.on { border-style: solid; border-color: var(--fg-title); box-shadow: 0 0 8px color-mix(in srgb, var(--fg-title) 50%, transparent); }
+.hwLook:disabled { cursor: default; opacity: .7; }
+.hwLook svg { width: 100%; height: 100%; }
+/* Set-Fortschritt und Erfolge */
+#hwSet { display: flex; flex-direction: column; gap: calc(4 * var(--hu)); flex: none; }
+.hwSetBox { display: flex; flex-direction: column; gap: calc(2 * var(--hu)); padding: calc(6 * var(--hu)) calc(10 * var(--hu)); background: var(--fg-card); border: 1px solid var(--fg-line); font-size: calc(12 * var(--hu)); line-height: 1.3; }
+.hwSetBox.off .hwSetLine { opacity: .6; }
+.hwSetHead { display: flex; align-items: center; gap: calc(10 * var(--hu)); }
+.hwSetHead .fg-title { font-size: calc(15 * var(--hu)); white-space: nowrap; }
+.hwSetHead .hwMuted { font-size: calc(11 * var(--hu)); white-space: nowrap; }
+.hwBar { flex: 1; height: 6px; background: var(--fg-line); overflow: hidden; }
+.hwBar i { display: block; height: 100%; }
+.hwSetLine { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fg-muted); }
+.hwSetLine strong { color: var(--fg-text); }
+.hwAch { display: flex; align-items: center; gap: calc(8 * var(--hu)); padding: 0 calc(4 * var(--hu)); font-size: calc(12 * var(--hu)); color: var(--fg-muted); white-space: nowrap; }
+.hwAchCur { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hwAchCur.done { color: var(--fg-accent); font-weight: 700; }
+.hwAchAll { margin-left: auto; display: flex; align-items: center; gap: calc(4 * var(--hu)); flex: none; }
+.hwAchAll i { font-style: normal; cursor: help; opacity: .55; }
+.hwAchAll i.done { opacity: 1; }
+/* Werte: 6 Hauptwerte in zwei Spalten, „Alle Werte“ klappt darunter auf und scrollt für sich; die Figur wird dann kleiner */
+.hwStats { flex: none; display: flex; flex-direction: column; gap: calc(4 * var(--hu)); min-height: 0; }
+.hwStats.open { flex: 1 1 0; }
+.hwLeft:has(.hwStats.open) .hwDoll { flex: 0 0 calc(236 * var(--hu)); }
+.hwLeft:has(.hwStats.open) .hwFigHint { display: none; }
+.hwMain { display: grid; grid-template-columns: 1fr 1fr; gap: 0 calc(24 * var(--hu)); }
+.hwRow { display: flex; justify-content: space-between; gap: calc(10 * var(--hu)); padding: calc(3 * var(--hu)) 0; border-bottom: 1px solid var(--fg-line); font-size: calc(14 * var(--hu)); color: var(--fg-text); cursor: default; }
+.hwRow b { font-weight: 600; color: var(--fg-title); text-align: right; white-space: nowrap; }
+.hwRow b small { font-weight: 400; font-size: calc(11 * var(--hu)); color: var(--fg-muted); }
+.hwAllBtn { align-self: flex-start; padding: calc(2 * var(--hu)) 0; background: none; border: 0; color: var(--fg-muted); font: 600 calc(13 * var(--hu)) var(--font-num); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.hwAllBtn:hover { color: var(--fg-text); }
+.hwAll { flex: 1; min-height: 0; overflow-y: auto; padding-right: calc(8 * var(--hu)); scrollbar-color: var(--fg-accent) transparent; }
+.hwGroup { margin: calc(8 * var(--hu)) 0 calc(2 * var(--hu)); font: 700 calc(12 * var(--hu)) var(--font-num); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-accent); }
+.hwAll .hwRow { font-size: calc(13 * var(--hu)); }
