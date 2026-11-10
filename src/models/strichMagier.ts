@@ -528,17 +528,22 @@ const qGeo = () => mergeGeometries([
 // ───────────────────────── Skins (src/skins.ts): Teile an Bones ins Körper-Mesh, Leuchtteile ins Glühen, Gag-Teile auf eigenen Bones
 const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4);
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
-// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF)
+// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF).
+// Kevin: fertige Skins müssen nicht alles zulassen, mit Skin keine Hüte, Hochspannung keine Rückenteile. Angelegt bleibt das Teil trotzdem (Werte zählen)
 export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
-  look: { seuche: ['kopf'] },   // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
-  skin: { base: ['kopf'] },     // Zuhälter-Look (nur Dev): Fedora
+  look: { seuche: ['kopf'],        // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
+    frost14: ['kopf'],             // Platin-Perücke mit hoher Welle
+    blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken
+    glut: ['kopf'] },              // Sturmhaube mit Flammen aus den Augen
+  skin: { base: ['kopf'] },        // Zuhälter-Look (nur Dev): Fedora
 };
-// Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs
+// Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs. Gleiche Regel wie oben
 export const KOS_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
-  look: { seuche: ['kopf'],                                     // Pestmaske mit Hut: nichts auf dem Kopf
-    blitz: ['bartbrille', 'elementrucksack', 'limojetpack'],    // Sonnenbrille; Flasche mit Strom auf dem Rücken
-    glut: ['bartbrille'] },                                     // Sturmhaube mit Augen-Feuer
-  skin: { base: ['kopf'] },                                     // Zuhälter-Look (nur Dev): Fedora
+  look: { seuche: ['kopf'],        // Pestmaske mit Hut: nichts auf dem Kopf
+    frost14: ['kopf'],             // Platin-Perücke
+    blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken (auch Element-Rucksack, Limo-Jetpack, Kill-Flagge …)
+    glut: ['kopf'] },              // Sturmhaube mit Augen-Feuer (auch Fake-Bart-Brille)
+  skin: { base: ['kopf'] },        // Zuhälter-Look (nur Dev): Fedora
 };
 const GEAR_FX = { spark: 2, sparkOrange: 4.5, aura: 6, r: .4, y0: .45, y1: 2.1, fillY: 2.4, dimFrom: 1.6, dimMin: .08 };   // Funken pro Sekunde ab Blau (Orange mehr), Aura-Partikel pro Sekunde je Teil, Bahn um die Figur; Lampen-Ausgleich ab dimFrom bis zur Höhe des Fülllichts (dunkel.ts D.fill.height) // PH
 const SK = {   // Optik-Zahlen der Skins // PH
@@ -1146,13 +1151,20 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     for (const a of [F.armL, F.armR]) part(a.hand, new THREE.ConeGeometry(.04, .16, 5), S.ink, [0, -.06, 0], [Math.PI, 0, 0]);
     part(chest, new THREE.ConeGeometry(.12, .2, 7), S.ink, [0, -.06, 0], [Math.PI, 0, 0], [1.2, 1, .8]);
   }
+  // Ausblend-Listen für Gear und Kosmetik (unten), schon hier gebraucht: die Fragezeichen des ?-Magiers fragen, ob ein Körper-Teil sichtbar ist
+  const gearHide = [...(GEAR_HIDE.look[look] ?? []), ...(LK ? [] : GEAR_HIDE.skin[skin] ?? [])];
+  const kosHide = [...(KOS_HIDE.look[look] ?? []), ...(LK ? [] : KOS_HIDE.skin[skin] ?? [])];
   if (skin === 'qm') {
     // Gelbe und weiße Fragezeichen auf Brust, Rücken, Hüfte, Armen, Beinen und Kopf, 3 schwebende über dem Kopf
     const Y = col(0xffd23a), W = col(0xf4efe4);
     const deco: any[] = [[chest, [0, .32, .15], .1, Y], [chest, [-.1, .18, .14], .06, W], [chest, [.11, .45, .12], .05, W], [chest, [0, .32, -.15], .1, Y], [chest, [.08, .12, -.14], .06, W],
       [hips, [.1, -.02, .12], .06, W], [hips, [-.09, -.05, -.12], .06, Y], [F.armL.ua, [0, -.12, .06], .05, Y], [F.armR.ua, [0, -.14, .06], .05, W], [F.armL.fa, [0, -.1, .05], .045, W], [F.armR.fa, [0, -.1, .05], .045, Y],
       [F.legL.th, [0, -.2, .08], .055, W], [F.legR.th, [0, -.15, .08], .055, Y], [head, [0, .2, .17], .05, Y]];
-    if (!LK) for (const [b, p, sc, c] of deco) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
+    // Körper-Teil an (Gear Körper, Kosmetik Onesie/Anzug/Rock): die Fragezeichen auf dem Körper fallen weg, sonst schauen sie durch den Stoff;
+    // Arm-Teil an: die auf den Armen. Kopf und die 3 schwebenden bleiben. Beim Wechsel baut mage.ts die Figur neu (gearKey)
+    const worn = (sl: string) => (!!opts.gear?.[sl] && !gearHide.includes(sl)) || (!!opts.cos?.[sl] && !kosHide.includes(sl) && !kosHide.includes(opts.cos[sl]));
+    const arms = [F.armL.ua, F.armR.ua, F.armL.fa, F.armR.fa], off = (b) => b !== head && (worn('koerper') || (worn('arme') && arms.includes(b)));
+    if (!LK) for (const [b, p, sc, c] of deco) if (!off(b)) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
     for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; glow(head, qGeo(), Y, [Math.sin(a) * .36, .52 + .06 * i, Math.cos(a) * .36], [0, a, 0], [.14, .14, .07]); }
   }
   F.wel = weaponElement && weaponElement !== 'none' && ELEMENTS[weaponElement] ? ELEMENTS[weaponElement].color : null;
@@ -1171,7 +1183,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   }
   // Gear (models/gearParts.ts, opts.gear aus gear.ts gearLook): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
   F.gear = { anim: [], fx: [], hidden: [] as string[], el: null as number | null, rar: 0 };
-  const hide = [...(GEAR_HIDE.look[look] ?? []), ...(LK ? [] : GEAR_HIDE.skin[skin] ?? [])];
+  const hide = gearHide;
   for (const [slot, it] of Object.entries(opts.gear ?? {}) as [string, any][]) {
     if (!it) continue;
     if (hide.includes(slot)) { F.gear.hidden.push(slot); continue; }
@@ -1183,7 +1195,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   // Kosmetik (models/kosmetikParts.ts, opts.cos aus gear.ts cosLook): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
   // Kill-Flagge als Textur-Mesh am Flaggen-Bone. Reaktionen auf Ereignisse (onEvent, figEvents.ts) drehen/skalieren nur eigene Bones
   F.kosHidden = [] as string[];
-  const kHide = [...(KOS_HIDE.look[look] ?? []), ...(LK ? [] : KOS_HIDE.skin[skin] ?? [])];
+  const kHide = kosHide;
   const kSel = Object.fromEntries(Object.entries(opts.cos ?? {}).filter(([slot, id]: [string, any]) => { const off = kHide.includes(slot) || kHide.includes(id); if (id && off) F.kosHidden.push(id); return id && !off; })) as Record<string, string>;
   F.kos = Object.keys(kSel).length ? kosmetikPieces(F, B, kSel, A1, A2, L1, L2, F.wel, skin) : null;
   if (F.kos) for (const p of F.kos.pieces) (p.glow ? F.glow : F.parts).push({ bone: p.bone, geo: p.geo, color: p.color, m: p.m, noShell: p.noShell, gear: 1 });

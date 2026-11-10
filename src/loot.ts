@@ -1,10 +1,10 @@
-// Gear-Drops im Run (Handoff docs/handoffs/items.md Schritt 2), nur Magier. Ziel: im Schnitt ~25 Drops pro vollem Run (Level 100).
-// Boss: 2 Teile sicher (boss.ts endBoss), Champion-Pack: 1 Teil mit 50 % beim letzten Champion, normale Kills: DROP.kill pro Kill.
+// Gear-Drops im Run (Handoff docs/handoffs/items.md Schritt 2), nur Magier. Ziel war ~25 Drops pro vollem Run (Level 100), seit 10.11. ~40 % mehr.
+// Boss: 3 Teile sicher (boss.ts endBoss), Champion-Pack: 1 Teil mit 70 % beim letzten Champion, normale Kills: DROP.kill pro Kill.
 // Optik: Lichtsäule aus Partikeln in Seltenheitsfarbe (vorhandenes Partikel-System, kein Draw Call extra), Aufheben beim Drüberlaufen.
 // Aufgehobene Teile landen sofort im Spielstand (gear.ts takeGear), bleiben also auch beim Tod. Liste der Funde: state.finds, gezeigt im Run-Ende.
 // Map-Umbau Teil 2 (Phase 3) baut hierauf auf, kein zweites Drop-System: Staub-Haufen (Aufheben im Lauf-Radius DROP.dustR) und Waffen
 // (weaponRolls.ts rollWeapon, Seltenheit nach Theme-Schwierigkeit, Aufheben per Taste „Benutzen“, Inventar wie heute ROLLS.invMax), beide mit Lichtsäule.
-// Quellen: Truhen, Mimic, Schatzdieb (objects/), Champions (Staub sicher), Große (Staub sicher + 25 % Waffe). Normale Kills unverändert (DROP.dustKill 0).
+// Quellen: Truhen, Mimic, Schatzdieb (objects/), Champions (Staub sicher), Große (Staub sicher + DROP.bigWeapon Waffe). Normale Kills unverändert (DROP.dustKill 0).
 
 import * as THREE from 'three';
 import { state, player } from './state';
@@ -23,14 +23,14 @@ import { addUseSource } from './useKey';
 
 // Alle Zahlen PH. kill: gemessen per Skript (docs/handoffs/items.md, Test), Schnitt ~25 pro Run bis Level 100
 export const DROP = {
-  kill: 0.0005, champ: 0.5, boss: 2,   // kill: Boss (7 × 2) und Champions (~23 Packs × 50 %) geben schon ~26, Kills nur noch selten (Skript: ~1640 Kills/Run)
+  kill: 0.0007, champ: 0.7, boss: 3,   // 10.11. Kevin „bisschen nach oben“, je ~+40 % (vorher 0.0005 / 0.5 / 2). Kills bleiben selten (~1640 Kills/Run → ~1 Teil) // PH
   pickR: 2.5,                         // yd: so nah drüberlaufen hebt auf
   spread: 1.5,                        // yd um den Mob
   beamMs: 70, beam: { vy: 3, life: 0.9, size: 0.45, bright: 1.8 },   // Lichtsäule: alle beamMs ein Partikel, steigt ~2,7 yd
   popN: 14,                           // Funken beim Erscheinen
   dustR: 2,                           // yd: Staub-Haufen hebt man im Lauf-Radius auf (Handoff map-umbau-2)
   dustKill: 0,                        // Handoff: 2 % Staub pro normalem Kill. Kevin: Drop-Raten normaler Kills bleiben, er balanciert später → 0
-  champDust: [6, 12], bigDust: [8, 16], bigWeapon: 0.25,   // Champion-Pack (letzter Champion) und Große: Staub sicher, Große 25 % Waffe
+  champDust: [6, 12], bigDust: [8, 16], bigWeapon: 0.35,   // Champion-Pack (letzter Champion) und Große: Staub sicher, Große 35 % Waffe (vorher 25 %) // PH
   tierUp: 0.15,                       // Waffen: pro Theme-Schwierigkeit über 1 diese Chance auf eine Seltenheit höher
   dustColor: '#e8d8a8', dustBeam: { vy: 1.6, life: 0.6, size: 0.35, bright: 1.4 },
 };
