@@ -329,6 +329,9 @@ export const strichMob = (kind: string, o: any, zusatz = 'none', size = 1) => {
     R.root.add(ice);
     const lv = 0.9 + (level - 18) * 0.02;   // wie creatures.ts: Mobs wachsen mit dem Level
     R.root.scale.setScalar(lv);
+    // Unsichtbar (hinter dem Nebel, main.ts; Lauerer versteckt): Matrizen der ~20 Knochen nicht jeden Frame neu rechnen.
+    // Three.js geht sonst durch alle Objekte der Szene, auch unsichtbare. Beim Einblenden rechnet der nächste Frame alles neu.
+    R.root.updateMatrixWorld = function (force?: boolean) { if (this.visible) THREE.Object3D.prototype.updateMatrixWorld.call(this, force); };
 
     const pose = { windup: 0, spin: 0, still: false };
     const j: any = {};

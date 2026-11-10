@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- perf(mobs): Theme-Mobs hinter dem Nebel kosten keine Rechenzeit mehr für ihre Knochen, spürbar auf vollen Maps (Wald Lvl 60 etwa +19 % FPS). Aussehen unverändert
 - perf(mobs): Theme-Mobs teilen sich ihre Materialien je Zustand (normal, Treffer-Blitz, Verlangsamt, Gift, Furcht, Tod, Champion) statt eines eigenen pro Mob, spart Rechenzeit beim Zeichnen. Aussehen unverändert
 - perf(mobs): Theme-Mobs laufen flüssiger: jeder Mob-Typ baut sein Modell nur einmal und teilt es, gleiche Ecken zählen nur einmal (rund 4300 → 1050 Ecken pro Mob). Aussehen unverändert
 - fix(ui): Kleine Fenster (z. B. 1263 × 638): Run-Ende hält Titel oben und die Knöpfe (Zum Shop, Nochmal, Rangliste, Hauptmenü) immer unten im Bild, nur die Auswertung dazwischen scrollt, bei wenig Höhe alles kompakter. Weltkarte: die Karte schrumpft, Seed und „Schließen“ bleiben sichtbar. Charakterfenster: „Schließen (X)“ bleibt sichtbar, die Spalten scrollen einzeln. Shop: „Zurück“ bleibt beim Scrollen unten stehen, Kiste/Zug/Verschmelzen flacher. Hauptmenü: Start-Kit in einer Reihe, Figuren-Text ragt nicht mehr unten raus. Schlachtbank: untere Statuszeile in Fenstern bei wenig Höhe aus
