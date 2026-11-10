@@ -1,7 +1,7 @@
 // Werte für das Fenster aus heroWindow.ts: 6 Hauptwerte und „Alle Werte“ in Gruppen, jeder Wert mit Aufschlüsselung Basis + Waffe + Gear + Karten/Relikte.
 // Quelle sind nur mods, stat() und die Formeln (formulas.ts), nichts doppelt gerechnet: Für die Aufschlüsselung werden die mods einmal frisch gesetzt
 // (resetMods), dann Waffe (applyRunWeapon) und Gear (applyRunGear) angewendet wie beim Run-Start, und danach alles zurückgelegt. Im Run ist der Rest
-// bis zum echten Wert Karten/Relikte, im Hauptmenü gibt es den nicht. Fehlt ein Wert im Spiel, steht „—“. Werte der Figur: charInfo.ts.
+// bis zum echten Wert Karten/Relikte, im Hauptmenü gibt es den nicht. Fehlt ein Wert im Spiel (z. B. Regeneration beim Seuchenmagier), steht „—“. Werte der Figur: charInfo.ts.
 
 import { state, player } from '../state';
 import { CFG, SPELLS, CARDS, mods, resetMods } from '../config';
@@ -71,6 +71,9 @@ const DEFS: Record<string, Def> = {
   dur: { id: 'dur', label: () => t('hw.st.dur'), v: () => mods.durMul - 1, fmt: pctSigned, dfmt: pctSigned },
   proj: { id: 'proj', label: () => t('hw.st.proj'), v: () => mods.fbExtra ?? 0, fmt: v => `+${fmtInt(v)}`, dfmt: intSigned },
   hp: { id: 'hp', label: () => t('cw.life'), v: () => maxHp(), fmt: fmtInt, dfmt: intSigned },
+  // Leben-Regeneration aus player.ts regenerate(): CFG.hpRegen vom max. Leben je Tick (CFG.regenTick), nur außer Kampf; Seuchenmagier gar nicht
+  regen: { id: 'regen', label: () => t('hw.st.regen'), v: () => maxHp() * CFG.hpRegen / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
+    show: () => !modValue('lifeCost') },
   dr: { id: 'dr', label: () => t('hw.st.dr'), v: () => 1 - takenMul(), fmt: pctAbs, dfmt: pctSigned },
   dodge: { id: 'dodge', label: () => t('hw.st.dodge'), v: () => DG.charges + (mods.dodgeCharges ?? 0), fmt: fmtInt, dfmt: intSigned },
   speed: { id: 'speed', label: () => t('cw.speed'), v: () => CFG.runSpeed * (mods.moveMul ?? 1) * moveMul(), fmt: v => `${de1(v)} yd/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))} yd/s` },
@@ -144,12 +147,15 @@ function buildRows(): StatRow[] {
   return rows;
 }
 
+// Regeneration: dazu die Regel aus der Config, z. B. „3 % / 2 s außer Kampf“
+const regenRow = (r: StatRow): StatRow => r.value === DASH ? r : { ...r, small: t('hw.st.regenRule', { p: fmtNum(CFG.hpRegen * 100), s: fmtNum(CFG.regenTick / 1000), c: fmtNum(CFG.hpRegenCalm / 1000) }) };
+
 // Alles auf einmal (je Öffnen bzw. Neuzeichnen einmal gerechnet)
 export function heroStats(live: boolean): { main: StatRow[]; groups: StatGroup[] } {
   const L = layers(), row = (id: string) => statRow(DEFS[id], L, live);
   const groups: StatGroup[] = [
     { id: 'atk', name: t('hw.g.atk'), rows: ['dmg', 'crit', 'critDmg', 'cd', 'cast', 'radius', 'proj', 'dur'].map(row) },
-    { id: 'def', name: t('hw.g.def'), rows: [row('hp'), { id: 'regen', label: t('hw.st.regen'), value: DASH }, row('dr'), row('dodge'), row('speed')] },
+    { id: 'def', name: t('hw.g.def'), rows: [row('hp'), regenRow(row('regen')), row('dr'), row('dodge'), row('speed')] },
     { id: 'res', name: t('hw.g.res'), rows: ['mana', 'manaS', 'regenCombat', 'cost'].map(row) },
     { id: 'el', name: t('hw.g.el'), rows: elementRows(live) },
     { id: 'dmgRun', name: t('cw.dmgTitle'), rows: dmgRows(live) },

@@ -2414,4 +2414,5 @@ export const de: Record<string, string> = {
   'set.hudPart.map': "Karte & Infos",
   'set.hudPart.combo': "Combo",
   'set.hudMixReset': "Alles zurück auf UI-Flavor",
+  'hw.st.regenRule': "{p} % / {s} s, {c} s nach dem Kampf",
 };

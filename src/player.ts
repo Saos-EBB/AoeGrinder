@@ -186,7 +186,7 @@ function regenerate(dt) {
     if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
     mana *= buffRegenMul();   // Schrein des Manas (objects/shrines.ts)
     if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
-    if (state.now - player.lastCombat > 5000 && !modValue('lifeCost')) player.hp = Math.min(maxHp(), player.hp + maxHp() * 0.03);  // PH; Blutmagier heilt nur über Infekt, Saugen, Lachen
+    if (state.now - player.lastCombat > CFG.hpRegenCalm && !modValue('lifeCost')) player.hp = Math.min(maxHp(), player.hp + maxHp() * CFG.hpRegen);  // CFG.hpRegen (auch heroStats.ts); Blutmagier heilt nur über Infekt, Saugen, Lachen
   }
   if (player.drink?.custom) {            // Getränk des ?-Magiers: wirkt erst, wenn er sitzen bleibt (random.ts)
     if (state.now >= player.drink.end) { const done = player.drink.onDone; stopDrink(); done(); }

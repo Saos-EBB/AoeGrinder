@@ -56,6 +56,7 @@ export const CFG = {
   fleeAssistRadius: 30, fleeDuration: 7000,         // DoFleeToGetAssistance
   fleeHpPct: 0.15, fleeChance: 0.3,                 // PH: steht im DB-Script, nicht im Core
   regenTick: 2000, fiveSecRule: 5000,               // Player::Regenerate, SetLastManaUse
+  hpRegen: 0.03, hpRegenCalm: 5000,                 // PH: Leben je Tick (Anteil am max. Leben), erst so lange nach dem letzten Kampf
   critBonus: 0.5,                                   // SpellCriticalDamageBonus
   baseCrit: 0.05,                                   // PH
   novaBreakChance: 0.25,                            // PH

@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-10
 
+- fix(ui): „Regen (Leben)“ unter „Alle Werte“ zeigt den echten Wert statt „—“: Leben pro Sekunde aus dem max. Leben (im Run das echte), dahinter die Regel „3 % / 2 s, 5 s nach dem Kampf“, mit Aufschlüsselung Basis/Waffe/Gear/Karten. Seuchenmagier (keine Regeneration) weiter „—“. Die Werte stehen jetzt in der Config statt fest im Code
 - fix(ui): Waffen-Slot an der Figur bei leerem Waffen-Inventar zeigt den Pilgerast gedimmt (das trägt die Figur dann), Tooltip „Pilgerast (ohne Effekt)“. Krieger-Waffenslot wie bisher
 - fix(ui): Inventar-Tabs im Charakterfenster werden nicht mehr abgeschnitten („WA…“, „KOS…“): ist zu wenig Platz (kleines Fenster, Ersatzschrift ohne Webfonts), zeigen sie nur Icon und Belegung, der volle Name steht im Tooltip; mit genug Platz wie bisher Icon, Name und Belegung
 - feat(ui): HUD kombinierbar: Einstellungen → Interface → „HUD kombinieren“ wählt für Leben & Mana, Zauberleiste (mit Kill-Anzeige, XP, Castbar, Mikro-Menü), Karte & Infos (Karte, Zeit, Relikte, Effekte, Tracker) und Combo je „wie Flavor“ oder einen festen UI-Flavor, z. B. Höllenfeste mit Krypta-Spielerrahmen und Schlachtbank-Leiste. Der Teil bringt Lage und Look aus seinem Flavor mit, Zierrahmen und Bildschirm-Effekte bleiben beim UI-Flavor. Wirkt sofort, auch im Run; „Alles zurück auf UI-Flavor“ stellt den alten Stand her. Eigene Verschiebungen gelten pro Kombination

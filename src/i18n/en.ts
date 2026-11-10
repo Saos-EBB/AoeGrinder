@@ -2413,4 +2413,5 @@ export const en: Record<string, string> = {
   'set.hudPart.map': "Map & info",
   'set.hudPart.combo': "Combo",
   'set.hudMixReset': "All back to UI flavor",
+  'hw.st.regenRule': "{p}% / {s}s, {c}s after combat",
 };
