@@ -288,7 +288,13 @@ export function deleteGear(slot: Slot, id: number) {
 
 // ---------- Text ----------
 const valueKey = (g: GearItem) => VALUE_KEY[g.s.value];
-export const gearName = (g: GearItem) => g.s.setId ? t(`gear.set.${g.s.setId}.${g.slot}`) : t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
+// Name folgt der Form an der Figur (Slot × Wertgruppe, wie im Gear-Baukasten), wird nicht gespeichert: alte Teile heißen beim Laden gleich richtig.
+// Set-Teile behalten ihre eigenen Namen; ohne Wert (sollte nach fixItem nicht vorkommen) der alte Grundname nach Id
+export const gearName = (g: GearItem) => {
+  if (g.s.setId) return t(`gear.set.${g.s.setId}.${g.slot}`);
+  const group = groupOf(g);
+  return group ? t(`gear.form.${g.slot}.${group}`) : t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
+};
 export const slotName = (slot: string) => t(`gear.slot.${slot}`);
 export const gearRarity = (g: GearItem) => CARD_RARITIES[g.r];
 // Werte-Zeilen wie effectLines bei der Waffe: Wert, ggf. Fokus, Element, Hersteller
