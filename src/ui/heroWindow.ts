@@ -4,15 +4,20 @@
 // Gear-Teile können Hersteller und Gruppe tragen (gear.ts makerOf/groupOf, sobald es die gibt): gelesen nur über optionale Aufrufe, sonst „—“.
 
 import { $ } from '../util';
-import { player } from '../state';
+import { state, player } from '../state';
+import { SPELLS, CARD_RARITIES } from '../config';
+import type { Find } from '../loot';
 import { meta, hasAch } from '../meta';
 import { ACHIEVEMENTS, setAch } from '../skins';
 import { mage } from '../models/mage';
-import { ROLLS, equipped, equip, weaponName, rarityOf, typeOf } from '../weaponRolls';
+import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows } from '../weaponRolls';
 import * as GEARMOD from '../gear';
 import { SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
-  hasLook, lookIn, wearLook, type Slot, type GearItem } from '../gear';
-import { MAKERS } from '../models/weapons/baukasten';
+  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, type Slot, type GearItem } from '../gear';
+import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
+import { askConfirm } from './confirm';
+import { openKeepChooser } from './lootView';
+import { fmtInt } from './dmgNumbers';
 import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
 import { attachWeaponCard } from './weaponCard';
@@ -37,12 +42,19 @@ document.body.insertAdjacentHTML('beforeend', `<div id="heroModal" class="modal"
     </div>
     <div class="fg-panel hwInv" data-sektor="SEKTOR 12 · ${t('hw.sekInv')}">
       <div class="hwInvHead"><h2 class="fg-title l">${t('hw.inv')}</h2><span id="hwWait"></span><button type="button" class="fg-btn alt" id="hwClose">${t('ui.close')}</button></div>
-      <div class="hwBody" id="hwBody"></div>
+      <div class="hwTabs" id="hwTabs" role="tablist"></div>
+      <div class="hwBar" id="hwBar"></div>
+      <div class="hwActive"><span id="hwChips"></span><small id="hwCount"></small></div>
+      <div class="hwFinds" id="hwFinds"></div>
+      <div class="hwBody" id="hwBody"><div class="hwGrid" id="hwGrid"></div></div>
+      <div class="hwSel" id="hwSel"></div>
+      <div class="hwFoot"><span id="hwDust"></span><button type="button" class="fg-btn alt" id="hwChest">${t('wm.toChest')}</button><button type="button" class="fg-btn alt" id="hwFuse" disabled title="${t('shop.soon')}"></button></div>
+      <p class="hwHint" id="hwHint"></p>
     </div>
   </div>
 </div>`);
 
-let onClose: (() => void) | null = null, tab: Tab = 'waffen';
+let onClose: (() => void) | null = null, tab: Tab = (uiSettings.heroTab as Tab) || 'waffen';
 export const heroOpen = () => $('heroModal').classList.contains('show');
 export const inRun = () => !$('startModal').classList.contains('show');
 const viewOnly = inRun;
@@ -155,7 +167,7 @@ function renderSet() {
   const n = setCount(id), on = n === SLOTS.length, S = SETS[id];
   const p = el('div', `hwSetBox${on ? '' : ' off'}`);
   if (on) p.style.borderColor = S.color;
-  const head = el('div', 'hwSetHead'), name = el('b', 'fg-title', `${t(`look.magier.${id}.name`)} ${n}/${SLOTS.length}`), bar = el('i', 'hwBar'), fill = el('i');
+  const head = el('div', 'hwSetHead'), name = el('b', 'fg-title', `${t(`look.magier.${id}.name`)} ${n}/${SLOTS.length}`), bar = el('i', 'hwProg'), fill = el('i');
   name.style.color = S.color;
   fill.style.cssText = `width:${n / SLOTS.length * 100}%;background:${S.color}`;
   bar.append(fill);
@@ -230,9 +242,354 @@ function renderLeft() {
   renderStats();
 }
 
-// ---------- Rechts: Inventar (Schritt 3) ----------
-function setTab(next: Tab) { tab = next; render(); }
-function renderInv() { /* Schritt 3 */ }
+// ---------- Rechts: Inventar ----------
+// Tabs Waffen, 5 Gear-Slots, Kosmetik. Filterleiste wie im alten Waffenmenü (Listen mit Häkchen, Seltenheits-Rauten, Sortieren, Suche), für Gear mit
+// Element, Hersteller, Fokus, Set. Nicht passende Teile werden abgedunkelt, nicht ausgeblendet. Filter in frostgrind.ui.v1 (weaponFilter, gearFilter).
+export const TABS: Tab[] = ['waffen', ...SLOTS, 'kosmetik'];
+type Kind = 'w' | 'g' | 'k';
+const kindOf = (x: Tab): Kind => x === 'waffen' ? 'w' : x === 'kosmetik' ? 'k' : 'g';
+type Opt = { id: string; name: string; color?: string; sub?: string };
+// Material-Farbe des Herstellers (gen10.py MAKERS) // PH
+const MAT_COLOR = { bronze: '#b07a3a', gold: '#e3c27a', darkwood: '#6b4a2a', crystal: '#9fd8ff', blueiron: '#5a7aa8' };
+const isNewW = w => w.v === 2;
+const schoolKey = (school: string) => school?.toLowerCase();
+const W_ATTR: Record<string, (w) => string | null> = {
+  type: w => typeOf(w),
+  school: w => isNewW(w) ? schoolKey(HEADS[w.s.head]?.[1]) ?? null : null,
+  el: w => elementOf(w),
+  maker: w => isNewW(w) ? w.s.maker : null,
+  val: w => isNewW(w) ? w.s.shaft : null,
+};
+const G_ATTR: Record<string, (g: GearItem) => string | null> = {
+  el: g => g.s.element ?? 'none',
+  maker: g => gearMaker(g) ?? 'none',
+  focus: g => g.s.focus ?? 'none',
+  set: g => g.s.setId ?? 'none',
+};
+const attrs = (k: Kind) => k === 'w' ? W_ATTR : k === 'g' ? G_ATTR : {};
+const valName = (k: string) => t(`wval.${VALUE_KEY[k]}`);
+const NONE: Opt = { id: 'none', name: '—' };
+// Erst beim ersten Gebrauch gebaut: weaponRolls/baukasten sind beim Import dieses Moduls noch nicht fertig (Import-Kreis über mainMenu)
+function options(k: Kind, g: string): Opt[] {
+  if (g === 'type') return [...Object.keys(TYPES).map(x => ({ id: x, name: TYPES[x].name })), { id: 'alt', name: t('inv.oldWeapon') }];
+  if (g === 'school') return [...new Set(Object.values(HEADS).map(h => schoolKey(h[1])))].map(x => ({ id: x, name: ELEMENTS[x]?.name ?? x, color: ELEMENTS[x] ? elementColor(x) : '' }));
+  if (g === 'el') return Object.keys(ELEMENTS).map(x => ({ id: x, name: ELEMENTS[x].name, color: x === 'none' ? '#777777' : elementColor(x) }));
+  if (g === 'maker') return [...Object.keys(MAKERS).map(x => ({ id: x, name: MAKERS[x].name, color: MAT_COLOR[MAKERS[x].main], sub: t(`wmat.${MAKERS[x].main}`) })), ...(k === 'g' ? [NONE] : [])];
+  if (g === 'val') return Object.keys(SHAFTS).map(x => ({ id: x, name: SHAFTS[x].values.map(valName).join(' / ') }));
+  if (g === 'focus') return [...new Set(SLOTS.flatMap(s => gearInv(s).map(x => x.s.focus)).filter(Boolean))].sort().map(x => ({ id: x, name: SPELLS[x]?.name ?? x })).concat(NONE);
+  if (g === 'set') return [...Object.keys(SETS).map(x => ({ id: x, name: t(`look.magier.${x}.name`), color: SETS[x].color })), NONE];
+  return [];
+}
+const GROUP_NAME = (g: string) => ({ type: t('inv.type'), school: t('wm.school'), el: t('inv.element'), maker: t('wm.maker'), val: t('wm.values'), focus: t('hw.focus'), set: t('hw.set') })[g] ?? g;
+const mainW = w => { const p = pctOf(effectRows(w).find(r => r.kind === 'value')?.text ?? ''); return Math.abs(p?.v ?? 0); };
+const mainG = (g: GearItem) => Math.abs(gearMain(g)?.v ?? 0);
+const SORTS: Record<string, [() => string, (k: Kind) => (a, b) => number]> = {
+  rar: [() => t('inv.sort.rar'), () => (a, b) => b.r - a.r || b.id - a.id],
+  neu: [() => t('inv.sort.neu'), () => (a, b) => b.id - a.id],
+  main: [() => t('wm.sort.main'), k => (a, b) => (k === 'w' ? mainW(b) - mainW(a) : mainG(b) - mainG(a)) || b.r - a.r],
+  maker: [() => t('wm.maker'), k => (a, b) => String(attrs(k).maker(a)).localeCompare(String(attrs(k).maker(b))) || b.r - a.r],
+};
+const DEF = { type: null, school: null, el: null, maker: null, val: null, focus: null, set: null, rar: [0, 1, 2, 3, 4, 5], sort: 'rar', q: '' };
+const fKey = (k: Kind) => k === 'g' ? 'gearFilter' : 'weaponFilter';
+const F = (k: Kind) => ({ ...DEF, ...(uiSettings[fKey(k)] ?? {}) });
+const setF = (k: Kind, patch: Record<string, any>) => setUi(fKey(k), { ...F(k), ...patch });
+const nameOf = (k: Kind, x) => k === 'w' ? weaponName(x) : gearName(x);
+function matches(k: Kind, x) {
+  const f = F(k), A = attrs(k);
+  for (const g of Object.keys(A)) if (f[g] && !f[g].includes(A[g](x))) return false;
+  if (!f.rar.includes(x.r)) return false;
+  return !f.q || nameOf(k, x).toLowerCase().includes(f.q.toLowerCase());
+}
+
+// Inhalt eines Tabs: Waffen, Gear eines Slots, Kosmetik (alle Looks, gesperrte abgedunkelt)
+type Entry = { key: string; kind: Kind; item: any; dim: boolean };
+const LOOK_IDS = () => Object.keys(LOOKS);
+export const tabCount = (x: Tab) => x === 'waffen' ? meta.inv.length : x === 'kosmetik' ? LOOK_IDS().filter(hasLook).length : gearInv(x).length;
+export function entries(x: Tab): Entry[] {
+  const k = kindOf(x);
+  if (k === 'k') return LOOK_IDS().sort((a, b) => Number(hasLook(b)) - Number(hasLook(a))).map(id => ({ key: `k${id}`, kind: k, item: id, dim: !hasLook(id) }));
+  if (k === 'g' && !mageGear()) return [];
+  const all = [...(k === 'w' ? meta.inv : gearInv(x as Slot))].sort(SORTS[F(k).sort]?.[1](k) ?? SORTS.rar[1](k));
+  const hit = all.filter(i => matches(k, i)), miss = all.filter(i => !matches(k, i));
+  return [...hit, ...miss].map(i => ({ key: `${k}${i.id}`, kind: k, item: i, dim: miss.includes(i) }));
+}
+const isOn = (e: Entry) => e.kind === 'w' ? equipped() === e.item : e.kind === 'g' ? worn(e.item.slot) === e.item : Object.values(LOOK_SLOTS).some(s => lookIn(s) === e.item);
+const rarColor = (e: Entry) => e.kind === 'w' ? rarityOf(e.item).color : e.kind === 'g' ? gearRarity(e.item).color : 'var(--fg-title)';
+const entryName = (e: Entry) => e.kind === 'k' ? t(LOOKS[e.item].name) : nameOf(e.kind, e.item);
+let seenW = 0, seenG = 0;
+const isNewEntry = (e: Entry) => e.kind === 'w' ? e.item.id > seenW : e.kind === 'g' ? e.item.id > seenG : false;
+// ▲/▼ gegenüber dem Ausgerüsteten (Hauptwert, nur bei gleichem Wert-Wort)
+export function deltaOf(e: Entry): number | null {
+  if (e.kind === 'g') return gearDelta(e.item);
+  if (e.kind !== 'w') return null;
+  const eq = equipped();
+  if (!eq || eq === e.item) return null;
+  const a = pctOf(effectRows(e.item).find(r => r.kind === 'value')?.text ?? ''), b = pctOf(effectRows(eq).find(r => r.kind === 'value')?.text ?? '');
+  return a && b && a.label === b.label && a.v !== b.v ? Math.round((Math.abs(a.v) - Math.abs(b.v)) * 10) / 10 : null;
+}
+
+let sel: string | null = null;   // gewählter Eintrag im aktiven Tab (Tastatur/Pad, Klick)
+function setTab(next: Tab) { tab = next; sel = null; setUi('heroTab', next); render(); }
+
+// Aktionen: Ausrüsten (Klick, Enter, A) und Zerlegen mit Rückfrage (Entf, X). Im Run aus
+function wearEntry(e: Entry) {
+  sel = e.key;
+  if (viewOnly() || e.dim && e.kind === 'k') { render(); return; }
+  if (e.kind === 'w') { if (equipped() !== e.item) equip(e.item.id); }
+  else if (e.kind === 'g') { if (mageGear() && worn(e.item.slot) !== e.item) wearGear(e.item.slot, e.item.id); }
+  else wearLook(LOOKS[e.item].slot, lookIn(LOOKS[e.item].slot) === e.item ? null : e.item);   // Kosmetik: an/aus
+  changed();
+}
+async function salvageEntry(e: Entry) {
+  if (viewOnly() || e.kind === 'k') return;
+  const name = entryName(e), n = ROLLS.refund[e.item.r];
+  const ok = e.kind === 'w' ? await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name, n }), t('shop.salvage'))
+    : await askConfirm(t('gear.deleteTitle'), t('gear.deleteText', { name, n }), t('shop.salvage'));
+  if (!ok) return;
+  const list = entries(tab), i = list.findIndex(x => x.key === e.key);
+  if (e.kind === 'w') deleteWeapon(e.item.id); else deleteGear(e.item.slot, e.item.id);
+  sel = list[i + 1]?.key ?? list[i - 1]?.key ?? null;   // Auswahl rückt weiter
+  changed();
+}
+
+// ---------- Filterleiste ----------
+let barKind: Kind | null = null;
+const RAR_DIA = () => CARD_RARITIES.map((r, i) => `<button type="button" class="hwRar" data-r="${i}" style="--rc:${r.color}" aria-label="${t('inv.rarity')} ${r.name}" title="${r.name}"></button>`).join('');
+function buildBar(k: Kind) {
+  barKind = k;
+  const bar = $('hwBar');
+  bar.hidden = k === 'k';
+  if (k === 'k') { bar.textContent = ''; return; }
+  bar.innerHTML = `${Object.keys(attrs(k)).map(g => `<div class="hwDrop" data-g="${g}"><button type="button" class="hwChip" aria-haspopup="listbox" aria-expanded="false"><small>${GROUP_NAME(g)}</small><b></b></button><div class="hwList fg-panel" role="listbox" hidden></div></div>`).join('')}
+    <div class="hwRars"><small>${t('inv.rarity')}</small><span>${RAR_DIA()}</span></div>
+    <div class="hwDrop" data-g="sort"><button type="button" class="hwChip" aria-haspopup="listbox" aria-expanded="false"><small>${t('inv.sort')}</small><b></b></button><div class="hwList fg-panel" role="listbox" hidden></div></div>
+    <label class="hwSearch"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hwQ" placeholder="${t('wm.search')}" aria-label="${t('wm.search')}"></label>`;
+  for (const drop of bar.querySelectorAll<HTMLElement>('.hwDrop')) {
+    const g = drop.dataset.g, list = drop.querySelector<HTMLElement>('.hwList'), btn = drop.querySelector('.hwChip');
+    btn.addEventListener('click', () => {
+      closeLists(drop);
+      list.hidden = !list.hidden;
+      btn.setAttribute('aria-expanded', String(!list.hidden));
+      if (!list.hidden) renderList(drop);
+    });
+    list.addEventListener('change', () => {
+      const on = [...list.querySelectorAll<HTMLInputElement>('input:checked')].map(i => i.dataset.v);
+      setF(k, { [g]: on.length === options(k, g).length ? null : on });
+      renderInv();
+    });
+    list.addEventListener('click', e => {
+      const b = (e.target as HTMLElement).closest('button');
+      if (!b) return;
+      if (g === 'sort') { setF(k, { sort: b.dataset.v }); closeLists(); }
+      else setF(k, { [g]: b.dataset.all === '1' ? null : [] });
+      renderList(drop);
+      renderInv();
+    });
+  }
+  for (const b of bar.querySelectorAll<HTMLElement>('.hwRar')) b.addEventListener('click', () => {
+    const r = +b.dataset.r, rar = F(k).rar;
+    setF(k, { rar: rar.includes(r) ? rar.filter(x => x !== r) : [...rar, r].sort() });
+    renderInv();
+  });
+  const q = $('hwQ') as HTMLInputElement;
+  q.addEventListener('input', () => { setF(k, { q: q.value.trim() }); renderInv(); });
+  q.addEventListener('keydown', e => {   // Tippen löst keine Spieltasten aus; Esc/Enter/↓ zurück ins Raster
+    e.stopPropagation();
+    if (e.code === 'Escape' || e.code === 'Enter' || e.code === 'ArrowDown') { e.preventDefault(); q.blur(); }
+  });
+}
+function chipValue(k: Kind, g: string) {
+  const f = F(k);
+  if (g === 'sort') return (SORTS[f.sort] ?? SORTS.rar)[0]();
+  const s = f[g];
+  if (!s) return t('inv.all');
+  if (!s.length) return t('wm.none');
+  return s.length === 1 ? options(k, g).find(o => o.id === s[0])?.name ?? s[0] : t('wm.picked', { n: s.length });
+}
+function renderList(drop: HTMLElement) {
+  const k = barKind, g = drop.dataset.g, list = drop.querySelector<HTMLElement>('.hwList'), f = F(k);
+  if (g === 'sort') {
+    list.innerHTML = Object.entries(SORTS).map(([id, [n]]) => `<button type="button" role="option" class="hwOpt${f.sort === id ? ' on' : ''}" data-v="${id}" aria-selected="${f.sort === id}">${n()}</button>`).join('');
+    return;
+  }
+  const s = f[g];
+  list.innerHTML = options(k, g).map(o => `<label class="hwOpt"><input type="checkbox" data-v="${o.id}"${!s || s.includes(o.id) ? ' checked' : ''}>`
+    + `${o.color ? `<i style="background:${o.color}"></i>` : ''}<span>${o.name}</span>${o.sub ? `<small>${o.sub}</small>` : ''}</label>`).join('')
+    + `<div class="hwAllNone"><button type="button" data-all="1">${t('inv.all')}</button><button type="button" data-all="0">${t('wm.none')}</button></div>`;
+}
+function closeLists(except?: HTMLElement) {
+  for (const d of document.querySelectorAll<HTMLElement>('#heroModal .hwDrop')) if (d !== except) {
+    d.querySelector<HTMLElement>('.hwList').hidden = true;
+    d.querySelector('.hwChip').setAttribute('aria-expanded', 'false');
+  }
+}
+const listsOpen = () => !!document.querySelector('#heroModal .hwList:not([hidden])');
+$('heroModal').addEventListener('pointerdown', e => { if (!(e.target as HTMLElement).closest('.hwDrop')) closeLists(); });
+// Aktive Filter als Chips mit ✕
+function activeChips(k: Kind) {
+  const f = F(k), out: [string, Record<string, any>][] = [];
+  for (const g of Object.keys(attrs(k))) if (f[g]) out.push([`${GROUP_NAME(g)}: ${f[g].length ? f[g].map(v => options(k, g).find(o => o.id === v)?.name ?? v).join(', ') : t('wm.none')}`, { [g]: null }]);
+  if (f.rar.length < CARD_RARITIES.length) out.push([`${t('inv.rarity')}: ${f.rar.map(i => CARD_RARITIES[i].name).join(', ') || t('wm.none')}`, { rar: DEF.rar }]);
+  if (f.q) out.push([`„${f.q}“`, { q: '' }]);
+  const box = $('hwChips');
+  box.textContent = '';
+  for (const [label, reset] of out) {
+    const b = el('button', 'hwActiveChip', `${label} ✕`);
+    b.type = 'button';
+    b.addEventListener('click', () => { setF(k, reset); if ('q' in reset) ($('hwQ') as HTMLInputElement).value = ''; renderInv(); });
+    box.append(b);
+  }
+}
+
+// ---------- Raster ----------
+const GRID = 25;   // wie ROLLS.invMax / GEAR.invMax; im Dev-Inventar (50) wachsen Reihen dazu
+function cellInner(e: Entry) {
+  const c = rarColor(e);
+  if (e.kind === 'k') return (e.dim ? LOCK : slotSvg('kosmetik', c)) + (isOn(e) ? `<b class="hwE" title="${t('shop.equipped')}">E</b>` : '');
+  const i = e.item, elm = e.kind === 'w' ? elementOf(i) : i.s.element, mk = e.kind === 'w' ? W_ATTR.maker(i) : gearMaker(i);
+  return (e.kind === 'w' ? typeSvg(typeOf(i), c) : slotSvg(i.slot, c))
+    + (elm && elm !== 'none' ? `<i class="hwEl" style="--ec:${elementColor(elm)}" title="${ELEMENTS[elm]?.name ?? elm}"></i>` : '')
+    + (mk && MAKERS[mk] ? `<i class="hwMk" style="background:${MAT_COLOR[MAKERS[mk].main]}" title="${MAKERS[mk].name}"></i>` : '')
+    + (e.kind === 'g' && i.s.setId ? '<b class="hwSetMark">SET</b>' : '')
+    + (isOn(e) ? `<b class="hwE" title="${t('shop.equipped')}">E</b>` : '')
+    + (isNewEntry(e) ? `<b class="hwNew">${t('shop.new')}</b>` : '');
+}
+const LOCK = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+export function tipOf(e: Entry): TipData | null {
+  if (e.kind === 'g') return gearTip(e.item);
+  if (e.kind === 'k') {
+    const L = LOOKS[e.item];
+    return { title: t(L.name), color: 'var(--fg-title)', sub: `${t('hw.cosmetic')} · ${L.slot === 'waffe' ? t('cw.weapon') : slotName(L.slot)}`,
+      short: hasLook(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : L.unlock ? t('hw.lookUnlock', { set: t(`look.magier.${L.unlock}.name`) }) : t('gear.locked') };
+  }
+  return null;
+}
+function attachEntryTip(node: HTMLElement, e: Entry) {
+  if (e.kind === 'w') attachWeaponCard(node, e.item);
+  else attachTip(node, () => tipOf(e));
+}
+function renderGrid(list: Entry[]) {
+  const grid = $('hwGrid');
+  grid.textContent = '';
+  const cols = 10, n = Math.max(tab === 'kosmetik' ? cols : GRID, list.length);
+  for (let i = 0; i < n; i++) {
+    const e = list[i], cell = el('button', 'hwCell' + (e ? '' : ' empty') + (e?.dim ? ' dim' : '') + (e && e.key === sel ? ' sel' : ''));
+    cell.type = 'button';
+    if (e) {
+      cell.dataset.key = e.key;
+      cell.style.setProperty('--rc', rarColor(e));
+      cell.innerHTML = cellInner(e);
+      cell.setAttribute('aria-label', `${entryName(e)}${e.kind !== 'k' ? ` · ${CARD_RARITIES[e.item.r].name}` : ''}`);
+      attachEntryTip(cell, e);
+      cell.addEventListener('click', () => wearEntry(e));
+      cell.addEventListener('contextmenu', ev => { ev.preventDefault(); sel = e.key; render(); });
+    } else cell.disabled = true;
+    grid.append(cell);
+  }
+}
+
+// Gewählter Eintrag unten: Name, Hauptwert mit ▲/▼, Ausrüsten und Zerlegen (+Staub). Shift: das Ausgerüstete zum Vergleich
+let shift = false;
+function renderSel(list: Entry[]) {
+  const box = $('hwSel'), e = list.find(x => x.key === sel);
+  box.textContent = '';
+  if (!e) { box.append(el('span', 'hwMuted', list.length ? t('hw.selHint') : tab === 'waffen' ? t('wm.empty') : t('gear.invEmpty'))); return; }
+  const other = e.kind === 'w' ? equipped() : e.kind === 'g' ? worn(e.item.slot) : null;
+  const show = shift && other && other !== e.item ? { ...e, item: other } as Entry : e;
+  const name = el('b', 'hwSelName', entryName(show));
+  name.style.color = rarColor(show);
+  const info = el('div', 'hwSelInfo');
+  info.append(name);
+  const sub = shift && show !== e ? t('wm.compare') : e.kind === 'k' ? t('hw.cosmetic') : (e.kind === 'w' ? effectRows(e.item) : gearRows(e.item)).find(r => r.kind === 'value')?.text ?? '';
+  const d = show === e ? deltaOf(e) : null;
+  const subEl = el('small', '', sub);
+  if (d !== null) { const s = el('span', d > 0 ? 'up' : 'down', ` ${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))} %`); subEl.append(s); }
+  if (isOn(e)) subEl.append(el('span', 'hwOn', ` · ${t('shop.equipped')}`));
+  info.append(subEl);
+  box.append(info);
+  if (viewOnly()) { box.append(el('span', 'hwMuted', t('gear.menuOnly'))); return; }
+  const eq = el('button', 'fg-btn', e.kind === 'k' ? t(isOn(e) ? 'gear.unwear' : 'gear.wear') : t(isOn(e) ? 'shop.equipped' : 'shop.equip'));
+  eq.type = 'button';
+  eq.disabled = e.kind === 'k' ? e.dim : isOn(e);
+  eq.addEventListener('click', () => wearEntry(e));
+  box.append(eq);
+  if (e.kind !== 'k') {
+    const del = el('button', 'fg-btn alt', `${t('shop.salvage')} +${ROLLS.refund[e.item.r]}`);
+    del.type = 'button';
+    del.addEventListener('click', () => salvageEntry(e));
+    box.append(del);
+  }
+}
+
+// Im Run: Funde dieses Runs (loot.ts state.finds), behaltene in Seltenheitsfarbe, Staub-Funde gezählt. Hauptmenü: wartende Funde (volles Inventar)
+function renderFinds() {
+  const box = $('hwFinds'), wait = $('hwWait');
+  box.textContent = wait.textContent = '';
+  if (viewOnly()) {
+    const finds: Find[] = state.finds ?? [], kept = finds.filter(f => !f.dust), dust = finds.length - kept.length;
+    box.append(el('b', '', `${t('loot.title', { n: finds.length })} `));
+    if (!finds.length) box.append(el('span', 'hwMuted', t('gear.noFinds')));
+    for (const f of kept) { const c = el('span', 'hwFind', `${gearName(f.item)}${f.item.s.setId ? ' · SET' : ''} (${slotName(f.item.slot)})`); c.style.color = gearRarity(f.item).color; box.append(c); }
+    if (dust) box.append(el('span', 'hwMuted', t('gear.findsDust', { n: dust })));
+    box.title = box.textContent;
+  } else if (overflow().length) {
+    const b = el('button', 'fg-btn', t('gear.waiting', { n: overflow().length }));
+    b.type = 'button';
+    b.addEventListener('click', () => openKeepChooser(render));
+    wait.append(b);
+  }
+}
+
+function renderInv() {
+  const k = kindOf(tab);
+  // Tabs mit Belegung (x/25, Kosmetik nur Anzahl)
+  const tabs = $('hwTabs');
+  tabs.textContent = '';
+  for (const x of TABS) {
+    const b = el('button', 'hwTab' + (x === tab ? ' on' : ''), `${x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x)} ${x === 'kosmetik' ? tabCount(x) : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`}`);
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(x === tab));
+    b.addEventListener('click', () => setTab(x));
+    tabs.append(b);
+  }
+  if (barKind !== k) buildBar(k);
+  if (k !== 'k') {
+    const f = F(k);
+    for (const d of document.querySelectorAll<HTMLElement>('#hwBar .hwDrop')) {
+      d.querySelector('.hwChip b').textContent = `${chipValue(k, d.dataset.g)} ▾`;
+      d.querySelector('.hwChip').classList.toggle('on', d.dataset.g !== 'sort' && f[d.dataset.g] !== null);
+    }
+    for (const b of document.querySelectorAll<HTMLElement>('#hwBar .hwRar')) b.setAttribute('aria-pressed', String(f.rar.includes(+b.dataset.r)));
+    const q = $('hwQ') as HTMLInputElement;
+    if (document.activeElement !== q) q.value = f.q;
+    activeChips(k);
+  } else $('hwChips').textContent = '';
+  const list = entries(tab);
+  if (!list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? null;
+  $('hwCount').textContent = k === 'k' ? '' : t('wm.count', { a: list.filter(e => !e.dim).length, b: list.length });
+  // Probe tragen: gewählte Waffe an der Figur
+  const se = list.find(e => e.key === sel);
+  mage.previewWeapon(se?.kind === 'w' && se.item !== equipped() ? se.item : null);
+  if (k === 'g' && !mageGear()) { $('hwGrid').textContent = ''; $('hwGrid').append(el('p', 'hwMuted', t('gear.mageOnly'))); }
+  else renderGrid(list);
+  renderSel(list);
+  renderFinds();
+  $('hwDust').innerHTML = t('gear.info', { dust: fmtInt(meta.dust) });
+  ($('hwChest') as HTMLButtonElement).disabled = viewOnly();
+  // Verschmelzen gibt es im Code nicht: Knopf nur als Anzeige, deaktiviert
+  const pool = k === 'w' ? meta.inv.filter(w => w !== equipped()) : k === 'g' ? gearInv(tab as Slot).filter(g => g !== worn(tab as Slot)) : [];
+  const counts = CARD_RARITIES.map((_, r) => pool.filter(x => x.r === r).length);
+  $('hwFuse').textContent = t('wm.fuse', { r: CARD_RARITIES[Math.max(0, counts.findIndex(n => n >= 3))].name });
+  $('hwHint').textContent = t(viewOnly() ? 'hw.hintRun' : 'hw.hint');
+}
+$('hwChest').addEventListener('click', () => {
+  const fromShop = $('shopModal').classList.contains('show');
+  closeHero();
+  if (!fromShop && $('startModal').classList.contains('show')) $('menuShop').click();
+});
+addEventListener('keydown', e => { if (e.key === 'Shift' && !shift && heroOpen()) { shift = true; renderSel(entries(tab)); } }, true);
+addEventListener('keyup', e => { if (e.key === 'Shift' && shift) { shift = false; if (heroOpen()) renderSel(entries(tab)); } });
 
 function render() {
   hideTip();
@@ -243,7 +600,9 @@ function render() {
 
 export function openHero(opts: { tab?: Tab; done?: () => void } = {}) {
   onClose = opts.done ?? null;
-  if (opts.tab) tab = opts.tab;
+  if (opts.tab && opts.tab !== tab) { tab = opts.tab; sel = null; }
+  seenW = uiSettings.weaponSeen;
+  seenG = uiSettings.gearSeen;
   mountFigPreview($('hwFig'));   // 3D-Ansicht der Figur, gezeichnet in main.ts (renderFigPreview)
   setFigPreview(true);
   $('heroModal').classList.add('show');
@@ -255,7 +614,9 @@ export function closeHero() {
   $('heroModal').classList.remove('show');
   setFigPreview(false);
   mage.previewWeapon(null);
+  closeLists();
   setUi('weaponSeen', Math.max(uiSettings.weaponSeen, ...meta.inv.map(w => w.id)));   // ab jetzt nicht mehr NEU
+  setUi('gearSeen', Math.max(uiSettings.gearSeen, ...SLOTS.flatMap(s => gearInv(s).map(g => g.id))));
   syncPause();
   const done = onClose;
   onClose = null;

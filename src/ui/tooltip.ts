@@ -51,12 +51,12 @@ function card(d: TipData, ext: boolean, label?: string) {
   return out.join('');
 }
 
-let timer = 0, lastX = 0, lastY = 0, current: (() => TipData | null) | null = null;
+let timer = 0, lastX = 0, lastY = 0, current: (() => TipData | null) | null = null, shiftDown = false;
 function render() {
   const d = current?.();
   if (!d) { box.hidden = true; return; }
   const ext = uiSettings.tooltipsExt;
-  box.innerHTML = d.compare && ext
+  box.innerHTML = d.compare && (ext || shiftDown)   // Shift zeigt den Vergleich auch ohne erweiterte Tooltips
     ? `<div class="tPair">${card(d, ext, d.compareLabels?.[0])}${card(d.compare, ext, d.compareLabels?.[1])}</div>`
     : card(d, ext);
   box.hidden = false;
@@ -84,6 +84,14 @@ export function attachTip(el: HTMLElement, build: () => TipData | null) {
   el.addEventListener('mouseleave', hideTip);
   el.addEventListener('mousedown', hideTip);
 }
-addEventListener('keydown', e => { if (e.key === 'Shift') box.classList.add('formulas'); });
-addEventListener('keyup', e => { if (e.key === 'Shift') box.classList.remove('formulas'); });
+// Karte an einem Element statt am Mauszeiger (Auswahl per Tastatur oder Pad, heroWindow.ts): rechts neben dem Element bzw. links, wenn kein Platz ist
+export function tipAt(el: HTMLElement, build: () => TipData | null) {
+  clearTimeout(timer);
+  const r = el.getBoundingClientRect();
+  lastX = r.right; lastY = r.top;
+  current = build;
+  render();
+}
+addEventListener('keydown', e => { if (e.key === 'Shift') { box.classList.add('formulas'); if (!shiftDown) { shiftDown = true; if (!box.hidden) render(); } } });
+addEventListener('keyup', e => { if (e.key === 'Shift') { box.classList.remove('formulas'); shiftDown = false; if (!box.hidden) render(); } });
 addEventListener('uisettings', () => { if (!box.hidden) render(); });

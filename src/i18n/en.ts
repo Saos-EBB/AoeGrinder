@@ -2326,4 +2326,13 @@ export const en: Record<string, string> = {
   'hw.st.poisonVal': "+{n} plague mark",
   'hw.st.meter': "Kill meter bonus",
   'hw.st.dmgTotal': "Total",
+  'hw.focus': "Focus",
+  'hw.set': "Set",
+  'hw.cosmetic': "Cosmetics",
+  'hw.lookOnTip': "Worn: the figure shows this look instead of the gear. Click to take it off.",
+  'hw.lookOffTip': "Unlocked. Click to wear it (looks only, no stats).",
+  'hw.lookUnlock': "Locked: unlocked with {set} 5/5",
+  'hw.selHint': "Nothing selected. Click or use the arrow keys.",
+  'hw.hint': "Click to equip · Del to salvage · Shift to compare · right-click a slot to unequip",
+  'hw.hintRun': "During a run you can only look: equip and salvage in the main menu",
 };

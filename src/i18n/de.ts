@@ -2327,4 +2327,13 @@ export const de: Record<string, string> = {
   'hw.st.poisonVal': "+{n} Seuchen-Mal",
   'hw.st.meter': "Kill-Anzeige-Bonus",
   'hw.st.dmgTotal': "Gesamt",
+  'hw.focus': "Fokus",
+  'hw.set': "Set",
+  'hw.cosmetic': "Kosmetik",
+  'hw.lookOnTip': "Getragen: die Figur zeigt diesen Look statt des Gears. Klick legt ihn ab.",
+  'hw.lookOffTip': "Frei. Klick legt ihn an (nur Aussehen, keine Werte).",
+  'hw.lookUnlock': "Gesperrt: frei bei {set} 5/5",
+  'hw.selHint': "Nichts gewählt. Klick oder Pfeiltasten wählen.",
+  'hw.hint': "Klick ausrüsten · Entf zerlegen · Shift vergleichen · Rechtsklick am Slot legt ab",
+  'hw.hintRun': "Im Run nur ansehen: Ausrüsten und Zerlegen gibt es im Hauptmenü",
 };
