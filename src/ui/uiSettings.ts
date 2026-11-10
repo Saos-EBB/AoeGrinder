@@ -26,7 +26,7 @@ export const UI_DEFAULTS = {
   numMerge: true,         // kleine Treffer zusammenfassen
   healNums: true,
   tooltipsExt: true,      // erweiterte Tooltips
-  devPanel: { x: 12, y: 60, w: 440, h: 620, ghost: false, fold: false },   // Dev-Fenster in px
+  devPanel: { x: 12, y: 60, w: 440, h: 620, ghost: false, fold: false, open: ['spieler'] as string[] },   // Dev-Fenster in px, open: aufgeklappte Sektionen
   profiles: [null, null, null, null] as ({ at: string; data: Record<string, any> } | null)[],   // 4 eigene UI-Stände
 };
 export type UiSettings = typeof UI_DEFAULTS;

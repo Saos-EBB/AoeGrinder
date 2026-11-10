@@ -29,41 +29,69 @@ panel.querySelector('.devHead')?.remove();
 body.append(...panel.children);
 panel.append(head, body, fps, grip);
 
-// Gruppen wie im Mockup. Die alten „Dev: …“-Überschriften fallen weg, kleine Unterzeilen sagen, was ein Block tut
+// Sektionen als Akkordeon: Kopfzeile ▸/▾ klappt auf/zu, offene Sektionen in frostgrind.ui.v1 (devPanel.open). Standard: nur die erste offen.
+// Die alten „Dev: …“-Überschriften fallen weg, kleine Unterzeilen sagen, was ein Block tut
 let sorted = false;
+const openList = () => box().open ?? ['spieler'];
 function sortGroups() {
   sorted = true;
   for (const t of [...body.querySelectorAll(':scope > .title')]) t.remove();
   const byId = id => document.getElementById(id);
   const parentOf = id => byId(id)?.parentElement;
-  const groups: [string, [string, HTMLElement | null | undefined][]][] = [
-    ['Spieler', [['', byId('devMobAtk')], ['', byId('devLuck')]]],
-    ['Level', [['Level setzen', byId('devLevels')], ['Karte erzwingen', byId('devCards')], ['', byId('devComplete')]]],
-    ['Spawn', [['Zone', byId('devZones')], ['Champion-Pack', parentOf('devChamp')], ['Boss', parentOf('devBoss')], ['Pack: Kategorie × Zusatz × Theme', byId('devKinds')]]],
-    ['Map-Objekte', [['Objekte', byId('devObjects')], ['Portal', byId('devPortal')], ['Weltkarte', byId('devWorld')]]],
-    ['Build', [['Krieger-Legende', byId('devLegend')], ['Meta', byId('devMeta')], ['Waffen-Baukasten', byId('devForge')]]],
-    ['Anzeige', [['', byId('devPerf')], ['', byId('devColliders')], ['Erfolgs-Meldung', byId('devFeat')]]],
+  const groups: [string, string, [string, HTMLElement | null | undefined][]][] = [
+    ['spieler', 'Spieler & Level', [['Level setzen', byId('devLevels')], ['Karte erzwingen', byId('devCards')], ['', byId('devLuck')], ['', byId('devComplete')]]],
+    ['zone', 'Zone & Map', [['Zone', byId('devZones')], ['Weltkarte', byId('devWorld')], ['Portal', byId('devPortal')], ['Objekte', byId('devObjects')]]],
+    ['mobs', 'Mobs & Bosse', [['Champion-Pack', parentOf('devChamp')], ['Boss', parentOf('devBoss')], ['Pack: Kategorie × Zusatz × Theme', byId('devKinds')], ['', byId('devMobAtk')]]],
+    ['waffen', 'Waffen', [['Inventar', byId('devInv')], ['Waffen-Baukasten', byId('devForge')], ['Krieger-Legende', byId('devLegend')]]],
+    ['gear', 'Gear', [['Sets', parentOf('devGearSet')]]],
+    ['kosmetik', 'Kosmetik', [['', byId('devKosmetik')]]],
+    ['meta', 'Meta & Staub', [['', byId('devMeta')]]],
+    ['anzeige', 'Anzeige', [['', byId('devPerf')], ['', byId('devColliders')], ['Erfolgs-Meldung', byId('devFeat')]]],
   ];
   const rest = [...body.children];
   body.innerHTML = '';
-  for (const [name, items] of groups) {
+  const section = (key: string, name: string, els: HTMLElement[]) => {
     const sec = document.createElement('section');
-    sec.append(Object.assign(document.createElement('h2'), { textContent: name }));
+    sec.className = 'devAcc';
+    sec.dataset.k = key;
+    const btn = Object.assign(document.createElement('button'), { type: 'button', className: 'devAccHead' });
+    btn.innerHTML = `<span class="devAccArrow" aria-hidden="true"></span><span>${name}</span>`;
+    const inner = document.createElement('div');
+    inner.className = 'devAccBody';
+    inner.append(...els);
+    sec.append(btn, inner);
+    setOpen(sec, openList().includes(key));
+    body.append(sec);
+  };
+  for (const [key, name, items] of groups) {
+    const els: HTMLElement[] = [];
     for (const [label, el] of items) {
       if (!el) continue;
-      if (label) sec.append(Object.assign(document.createElement('h3'), { textContent: label }));
-      sec.append(el);
+      if (label) els.push(Object.assign(document.createElement('h3'), { textContent: label }));
+      els.push(el);
     }
-    body.append(sec);
+    if (els.length) section(key, name, els);
   }
   // Was keiner Gruppe gehört (neue Dev-Knöpfe), landet unten statt zu verschwinden
-  const left = rest.filter(e => !body.contains(e));
-  if (left.length) {
-    const sec = document.createElement('section');
-    sec.append(Object.assign(document.createElement('h2'), { textContent: 'Sonstiges' }), ...left);
-    body.append(sec);
-  }
+  const left = rest.filter(e => !body.contains(e)) as HTMLElement[];
+  if (left.length) section('sonst', 'Sonstiges', left);
 }
+function setOpen(sec: HTMLElement, on: boolean) {
+  sec.classList.toggle('open', on);
+  const btn = sec.querySelector('.devAccHead');
+  btn.setAttribute('aria-expanded', String(on));
+  (btn.querySelector('.devAccArrow') as HTMLElement).textContent = on ? '▾' : '▸';
+}
+// Klick auf die Kopfzeile: auf/zu und merken. Zählt nicht als Dev-Bedienung (stopPropagation vor dem devUsed-Listener)
+body.addEventListener('click', e => {
+  const btn = (e.target as HTMLElement).closest('.devAccHead');
+  if (!btn) return;
+  e.stopImmediatePropagation();
+  const sec = btn.parentElement as HTMLElement, on = !sec.classList.contains('open');
+  setOpen(sec, on);
+  box().open = [...body.querySelectorAll<HTMLElement>('.devAcc.open')].map(s => s.dataset.k);
+  save();
+});
 
 // Hinweis „Run zählt nicht“: Jede Bedienung im Panel markiert den laufenden Run. Die Rangliste filtert das (noch) nicht
 const showSub = () => { (head.querySelector('.devSub') as HTMLElement).textContent = `F10 · ${SCORE_VERSION}${state.devUsed ? ' · Run zählt nicht' : ''}`; };
@@ -75,7 +103,7 @@ const box = () => uiSettings.devPanel;
 function place() {
   const b = box();
   b.w = Math.max(MIN, Math.min(b.w, innerWidth)); b.h = Math.max(MIN, Math.min(b.h, innerHeight));
-  b.x = Math.max(0, Math.min(b.x, innerWidth - b.w)); b.y = Math.max(0, Math.min(b.y, innerHeight - 40));
+  b.x = Math.max(0, Math.min(b.x, innerWidth - b.w)); b.y = Math.max(0, Math.min(b.y, innerHeight - (b.fold ? 40 : b.h)));   // ganz im Bild, damit der Inhalt scrollt statt unten abzuschneiden
   Object.assign(panel.style, { left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px`, height: b.fold ? 'auto' : `${b.h}px` });
   panel.classList.toggle('ghost', !!b.ghost);
   panel.classList.toggle('folded', !!b.fold);
