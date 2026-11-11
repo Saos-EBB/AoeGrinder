@@ -45,7 +45,7 @@ const CHARS = [
   { mod: FIGURES.frost.mod, name: t('char.frost.name'), sub: t('char.frost.sub'), color: '#7dd3fc', stats: [3, 5, 3] },
   { mod: FIGURES.feuer.mod, name: t('char.fire.name'), sub: t('char.fire.sub'), color: '#fb923c', stats: [5, 1, 2] },
   { mod: FIGURES.blitz.mod, name: t('char.blitz.name'), sub: t('char.blitz.sub'), color: '#fde047', stats: [4, 3, 2] },
-  { mod: FIGURES.blut.mod, name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
+  { mod: FIGURES.seuche.mod, name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
   { mod: FIGURES.krieger.mod, name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
 ];
 const STAT_NAMES = [t('stat.dmg'), t('stat.control'), t('stat.survive')], STAT_MAX = 5;

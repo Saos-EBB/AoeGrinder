@@ -16,8 +16,8 @@ import { markWords } from './keywords';
 import { attachTip, hideTip, TipData } from './tooltip';
 import { t, fmtNum } from '../i18n';
 
-// cls 'nature' sind die Seuche-Spells (spells/plague.ts): Anzeige „Seuche“, die ID selbst bleibt vorerst
-const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'nature', 'shadow', 'blood', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k === 'nature' ? 'plague' : k}`)]));
+// Schule eines Spells (Feld cls bzw. school), Seuche-Spells: cls 'plague' (spells/plague.ts)
+const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'plague', 'shadow', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k}`)]));
 const num = (v: number) => fmtNum(Math.round(v * 100) / 100);
 const sec = ms => `${fmtNum(Math.round(ms / 10) / 100)} s`;
 const unit = id => paysLife(id) ? t('cost.life') : batteryMode() ? t('res.charge') : player.rageMax === 1 ? '' : player.rageMax ? t('res.rage') : t('cost.mana');

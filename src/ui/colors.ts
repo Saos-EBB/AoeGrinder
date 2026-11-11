@@ -6,7 +6,7 @@ export const COLORS = {
   good: '#5dff7a', bad: '#ff5a4a',
   relic: '#e3c27a',   // Relikt-Gold (Karten, Tooltip, Run-Ende), auch CSS-Variable --rar-relikt (ui/flavors/index.ts)
   up: '#6ee7a0', down: '#f87171',   // ▲/▼ gegenüber ausgerüstet (ui/compare.ts), gleich wie .hwUp/.hwDown in heroWindow.css
-  school: { frost: '#7fd0ff', fire: '#ff9a3c', arcane: '#d08cff', shadow: '#b48cff', nature: '#7ee87a', lightning: '#a8ccff', blood: '#ff4a5a', bone: '#efe0b8', util: '#e8d29a', warrior: '#ff6a5a' },
+  school: { frost: '#7fd0ff', fire: '#ff9a3c', arcane: '#d08cff', shadow: '#b48cff', plague: '#7ee87a', lightning: '#a8ccff', bone: '#efe0b8', util: '#e8d29a', warrior: '#ff6a5a' },
   keyword: { Schaden: '#ff8a6a', Frost: '#7fd0ff', Feuer: '#ff9a3c', Arkan: '#d08cff', Mana: '#6f9dff', Tempo: '#7ee87a', Crit: '#ffe14d', Grimm: '#ff6a5a',
     damage: '#ff8a6a', Fire: '#ff9a3c', Arcane: '#d08cff', mana: '#6f9dff', speed: '#7ee87a', crit: '#ffe14d', Wrath: '#ff6a5a' },   // deutsch und englisch
   weaponRow: { type: '#d8c49a', focus: '#4aa3ff', value: '#5dff7a', element: '#9a9080', maker: '#f2c94c', extra: '#c573ff', unique: '#ff9a2e' },   // Zeilen der Waffen-Werte

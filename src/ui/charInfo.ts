@@ -49,7 +49,7 @@ function battery() {
 
 function plague() {
   const P = PLAGUE;
-  return { name: t('tag.Seuche'), color: COLORS.school.nature, rows: `
+  return { name: t('tag.Seuche'), color: COLORS.school.plague, rows: `
     ${kv(t('ci.plague.near'), String(state.mobs.filter(m => !m.dead && m.plague && m.plague.until > state.now).length))}
   `, rules: t('ci.plague.rules', { sludge: name('sludge'), life: pc(SPELLS.sludge.lifePct), max: P.mark.max, ms: sec(P.mark.ms), contract: name('contract'),
     root: sec(P.contract.rootMs + 1000 * mods.toughSlime), drain: name('drain'), dmg: de(P.drain.dmg), heal: pc(P.drain.heal + mods.leech), burst: name('burst'), burstMs: sec(P.burst.ms) }) };

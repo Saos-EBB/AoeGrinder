@@ -87,7 +87,7 @@ function burstAll(c, list, keep = false) {
 // Schaden, den ein Treffer dieses Kontexts ungefähr machen würde (ohne Wurf und Rüstung): fürs Gift
 function withScale(c) { c.scaleOut = () => 1; return c; }
 
-const spell = (o) => ({ ranks: ['dmg', 'radius'], tags: ['Seuche', ...(o.tags ?? [])], cls: 'nature', ...o });
+const spell = (o) => ({ ranks: ['dmg', 'radius'], tags: ['Seuche', ...(o.tags ?? [])], cls: 'plague', ...o });
 
 export const sludge = spell({
   name: t('spell.sludge.name'), desc: t('spell.sludge.desc'), tags: ['Geschoss'],
@@ -224,7 +224,7 @@ export const melt = spell({
 
 // Relikt Pestilenz: alle Male im Umkreis platzen, ziehen zusammen und entziehen gleichzeitig, ohne sich zu verbrauchen
 export const pestilence = {
-  name: t('spell.pestilence.name'), figRelic: true, desc: t('spell.pestilence.desc'), ranks: [], tags: ['Seuche'], cls: 'nature',
+  name: t('spell.pestilence.name'), figRelic: true, desc: t('spell.pestilence.desc'), ranks: [], tags: ['Seuche'], cls: 'plague',
   mana: 0, cd: P.pestilence.cd,
   press() {
     if (cdEnd('pestilence') > state.now) return showError(t('msg.notReady'));

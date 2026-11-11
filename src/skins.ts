@@ -9,7 +9,7 @@ import { figureOfSet } from './figureTable';
 export type Figur = 'magier' | 'krieger';
 export type SkinId = string;
 // weapon: Krieger-Skin nur mit dieser Waffe (Basis-Waffe aus realMen R.weapons oder legendäre aus LEGENDARY): sword = Riesenschwert, leeroy = Leeroys Klinge, sion = Sions Axt
-// school: Magier-Skin nur in dieser Schule (Skin-ID im Spiel, mage.skin): blitz, blut (Seuche), frost, feuer. ?-Magier (und Arkan, geparkt): nur Standard
+// school: Magier-Skin nur in dieser Schule (Skin-ID im Spiel, mage.skin): blitz, seuche, frost, feuer (figureTable.ts). ?-Magier (und Arkan, geparkt): nur Standard
 export interface SkinDef { id: SkinId; name: string; weapon?: string; school?: string }
 
 export const STANDARD = 'standard';

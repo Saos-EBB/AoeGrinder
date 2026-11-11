@@ -2,7 +2,8 @@
 import { describe, it, expect } from 'vitest';
 import { FIGURES, FIGURE_LIST, figureOfMods, figureOfSet, paletteOf, elementOfTag, elementOfTags } from '../src/figureTable';
 
-// Stand vor E7 (6378962)
+// Stand vor E7 (6378962); seit E7 Schritt 2 heißt die Figur-ID blut → seuche (unten über NEW_ID abgebildet)
+const NEW_ID = (id: string) => (id === 'blut' ? 'seuche' : id);
 const OLD = {
   SKIN_OF: { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'qm', blitz: 'blitz', blut: 'plague' },   // strichMagier.ts
   SCHOOL_TAG: { frost: 'Frost', feuer: 'Feuer', blitz: 'Blitz', blut: 'Seuche' },   // gear.ts
@@ -21,12 +22,12 @@ const MOD_SETS = [[], ['frost'], ['fire'], ['blitz'], ['plague'], ['realmen'], [
 
 describe('figureTable', () => {
   it('Viewer-Skin (SKIN_OF)', () => {
-    for (const [id, pal] of Object.entries(OLD.SKIN_OF)) expect(paletteOf(id)).toBe(pal);
+    for (const [id, pal] of Object.entries(OLD.SKIN_OF)) expect(paletteOf(NEW_ID(id))).toBe(pal);
     expect(paletteOf('krieger')).toBe('base');
     expect(paletteOf('xyz')).toBe('base');
   });
   it('Schul-Tag des Magiers (SCHOOL_TAG)', () => {
-    for (const f of FIGURE_LIST) expect(f.element ? f.tag : undefined).toBe(OLD.SCHOOL_TAG[f.id]);
+    for (const f of FIGURE_LIST) expect(f.element ? f.tag : undefined).toBe(Object.fromEntries(Object.entries(OLD.SCHOOL_TAG).map(([k, v]) => [NEW_ID(k), v]))[f.id]);
   });
   it('Tag → Element (SCHOOL_OF_TAG, TAG_EL, HEADS)', () => {
     for (const [tag, el] of Object.entries(OLD.SCHOOL_OF_TAG)) expect(elementOfTag(tag)).toBe(el);
@@ -42,13 +43,13 @@ describe('figureTable', () => {
     expect(FIGURE_LIST.filter(f => f.element).map(f => f.element).sort()).toEqual([...OLD.FOCUS_COL_KEYS].sort());
   });
   it('Sets (SETS.school, setOfSchool)', () => {
-    for (const [set, school] of Object.entries(OLD.SETS_SCHOOL)) { expect(figureOfSet(set)).toBe(school); expect(FIGURES[school].set).toBe(set); }
+    for (const [set, school] of Object.entries(OLD.SETS_SCHOOL)) { expect(figureOfSet(set)).toBe(NEW_ID(school)); expect(FIGURES[NEW_ID(school)].set).toBe(set); }
     expect(FIGURES.zufall.set).toBe(null); expect(FIGURES.krieger.set).toBe(null);
   });
   it('Figur aus Mods (skinForRun), Dodge-Modus, onlyTag, Hotbar-Key', () => {
     for (const ids of MOD_SETS) {
       const f = figureOfMods(ids);
-      expect(f.id).toBe(OLD.skinForRun(ids));
+      expect(f.id).toBe(NEW_ID(OLD.skinForRun(ids)));
       expect(f.dodge).toBe(OLD.dodgeMode(ids));
       expect(f.tag ?? undefined).toBe(ids.map(i => OLD.onlyTag[i]).find(Boolean));
       expect(f.heroClass === 'krieger').toBe(ids.includes('realmen'));

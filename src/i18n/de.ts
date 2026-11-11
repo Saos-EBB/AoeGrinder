@@ -862,7 +862,6 @@ export const de: Record<string, string> = {
   'tip.shift': "Shift = Formeln",
 
   'school.arcane': "Arkan",
-  'school.blood': "Blut",
   'school.bone': "Knochen",
   'school.fire': "Feuer",
   'school.frost': "Frost",

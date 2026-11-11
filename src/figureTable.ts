@@ -3,7 +3,7 @@
 // Alle anderen IDs sind reiner Code und werden hier abgebildet, nicht an mehreren Stellen von Hand übersetzt.
 // Farbe einer Figur: ELEMENTS[element].color (models/weapons/baukasten.ts, einzige Farbquelle). Zufall und Krieger haben kein Element.
 
-export type FigureId = 'frost' | 'feuer' | 'blitz' | 'blut' | 'zufall' | 'krieger';
+export type FigureId = 'frost' | 'feuer' | 'blitz' | 'seuche' | 'zufall' | 'krieger';
 export type ElementId = 'frost' | 'feuer' | 'blitz' | 'seuche' | 'arkan';   // Keys von ELEMENTS (ohne none)
 export type HeroClass = 'magier' | 'krieger';
 export type DodgeMode = 'normal' | 'frost' | 'feuer' | 'krieger';
@@ -26,12 +26,12 @@ export const FIGURES: Record<FigureId, Figure> = {
   frost: fig({ id: 'frost', mod: 'frost', element: 'frost', tag: 'Frost', palette: 'ice', cls: 'frost', set: 'frost14', heroClass: 'magier', hotbarKey: 'frost', dodge: 'frost' }),
   feuer: fig({ id: 'feuer', mod: 'fire', element: 'feuer', tag: 'Feuer', palette: 'fire', cls: 'fire', set: 'glut', heroClass: 'magier', hotbarKey: 'fire', dodge: 'feuer' }),
   blitz: fig({ id: 'blitz', mod: 'blitz', element: 'blitz', tag: 'Blitz', palette: 'blitz', cls: 'lightning', set: 'blitz', heroClass: 'magier', hotbarKey: 'blitz', dodge: 'normal' }),
-  blut: fig({ id: 'blut', mod: 'plague', element: 'seuche', tag: 'Seuche', palette: 'plague', cls: 'nature', set: 'seuche', heroClass: 'magier', hotbarKey: 'plague', dodge: 'normal' }),
+  seuche: fig({ id: 'seuche', mod: 'plague', element: 'seuche', tag: 'Seuche', palette: 'plague', cls: 'plague', set: 'seuche', heroClass: 'magier', hotbarKey: 'plague', dodge: 'normal' }),
   krieger: fig({ id: 'krieger', mod: 'realmen', element: null, tag: 'Krieger', palette: null, cls: null, set: null, heroClass: 'krieger', hotbarKey: 'realmen', dodge: 'krieger' }),
   zufall: fig({ id: 'zufall', mod: null, element: null, tag: null, palette: 'qm', cls: null, set: null, heroClass: 'magier', hotbarKey: 'normal', dodge: 'normal' }),   // ?-Magier „Der Leere“ (spells/random.ts)
 };
 // Reihenfolge beim Suchen über Mods (die Figuren-Mods schließen sich gegenseitig aus), ?-Magier zuletzt als Rückfall
-export const FIGURE_LIST: Figure[] = [FIGURES.frost, FIGURES.feuer, FIGURES.blitz, FIGURES.blut, FIGURES.krieger, FIGURES.zufall];
+export const FIGURE_LIST: Figure[] = [FIGURES.frost, FIGURES.feuer, FIGURES.blitz, FIGURES.seuche, FIGURES.krieger, FIGURES.zufall];
 
 // Nur im Modell/Viewer, nicht spielbar: 'alle' (Kevins Zuhälter-Look, im Menü nicht mehr wählbar), 'arkan' (Schule geparkt)
 const MODEL_ONLY_PALETTE: Record<string, string> = { alle: 'base', arkan: 'arcane' };
