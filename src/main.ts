@@ -1,3 +1,14 @@
+// CSS in fester Reihenfolge (Kaskade wie im Build vor E6), egal welches Modul sie zuerst lädt. Neue .css-Dateien hier eintragen
+import './ui/cards.css';
+import './ui/heroWindow.css';
+import './ui/flavors/base.css';
+import './ui/flavors/hoellenfeste.css';
+import './ui/flavors/schlachtbank.css';
+import './ui/flavors/krypta.css';
+import './ui/numbers.css';
+import './ui/hud/hud.css';
+import './ui/theme.css';
+import './ui/skinTalk.css';
 import { state, player } from './state';
 import { clamp, dist2d } from './util';
 import { CFG, SPELLS, mods, PERF } from './config';
@@ -19,7 +30,6 @@ import { updateWaves } from './waves';
 import { cast } from './spells';
 import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
-import './ui/theme.css';
 import './ui/uiSettings';
 import './ui/flavors';
 import './ui/menus';
