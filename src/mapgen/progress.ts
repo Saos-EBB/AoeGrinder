@@ -14,8 +14,8 @@ export const ORDER: ThemeId[] = ['wald', 'wueste', 'kanaele', 'kathedrale', 'hoe
 export const UNLOCK_LEVEL = 100;   // PH
 
 let devOpen = readRaw(KEYS.devMapsOpen) === '1' || /[?&]maps=all/.test(location.search);
-export const devMapsOpen = () => devOpen;
-export function setDevMapsOpen(on: boolean) { devOpen = on; writeRaw(KEYS.devMapsOpen, on ? '1' : '0'); }
+export const devAllMapsUnlocked = () => devOpen;
+export function setDevAllMapsUnlocked(on: boolean) { devOpen = on; writeRaw(KEYS.devMapsOpen, on ? '1' : '0'); }
 
 // Gespeicherte Liste säubern: nur bekannte Themes, Wald immer offen
 export function cleanMaps(list: unknown): ThemeId[] {
@@ -24,7 +24,7 @@ export function cleanMaps(list: unknown): ThemeId[] {
 }
 meta.maps = cleanMaps(meta.maps);
 
-export const themeOpen = (id: ThemeId) => devOpen || meta.maps.includes(id);
+export const isThemeUnlocked = (id: ThemeId) => devOpen || meta.maps.includes(id);
 export const nextTheme = (id: ThemeId) => ORDER[ORDER.indexOf(id) + 1] ?? null;
 
 export function unlockTheme(id: ThemeId) {
@@ -42,4 +42,5 @@ export function updateMapProgress() {
   if (next && unlockTheme(next)) state.newMob = { text: t('world.unlocked', { name: THEMES[next].name }), at: state.now };
 }
 
-(window as any).__progress = { ORDER, themeOpen, unlockTheme, setDevMapsOpen, get maps() { return meta.maps; } };
+// Debug-API für Testskripte: alte Namen als Keys bleiben (E7)
+(window as any).__progress = { ORDER, themeOpen: isThemeUnlocked, unlockTheme, setDevMapsOpen: setDevAllMapsUnlocked, get maps() { return meta.maps; } };

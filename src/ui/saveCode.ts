@@ -2,7 +2,7 @@
 // Kein Schutz gegen Cheaten, Einzelspieler. Eingabe ersetzt den Spielstand nach Rückfrage.
 
 import { $ } from '../util';
-import { meta, saveMeta, fixWeapon, cleanSkinState } from '../meta';
+import { meta, saveMeta, cleanWeapon, cleanSkinState } from '../meta';
 import { checkUnlocks } from '../gear';
 import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
@@ -37,7 +37,7 @@ function importCode(code, replace = true) {
   if (data?.v !== SAVE_CODE.version) return t('code.version', { a: data?.v ?? '?', b: SAVE_CODE.version });
   if (!replace) return null;
   // Alte Waffen als [Effekt, Seltenheit, Modell], Baukasten-Waffen als { r, s }
-  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : fixWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
+  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : cleanWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
     equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length, skins: data.k, achievements: data.ac,
     gear: data.g, wear: data.w, gearOver: data.go, nextGear: data.ng, looks: data.lk, lookWear: data.lw, maps: data.mp, stats: data.st });

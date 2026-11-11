@@ -10,7 +10,7 @@ import { cam, autoCamOn, setAutoCam } from '../camera';
 import { zone, zoneId } from '../world';
 import { ZONES } from '../zones';
 import { THEME_ZONES } from '../mapgen/registry';
-import { themeOpen } from '../mapgen/progress';
+import { isThemeUnlocked } from '../mapgen/progress';
 import { switchZone } from '../player';
 import { uiSettings, setUi } from './uiSettings';
 import { fmtInt, fmtTime, fmtMult } from './fmt';
@@ -230,15 +230,15 @@ function showMap(id: string) {
   setUi('menuZone', id);
 }
 // Q / E: nur freigeschaltete Maps (mapgen/progress.ts); die Auswahl selbst läuft über die Weltkarte (ui/worldMap.ts)
-const mapOpen = (id: string) => themeOpen(ZONES[id]?.theme?.id);
+const isMapUnlocked = (id: string) => isThemeUnlocked(ZONES[id]?.theme?.id);
 export function cycleMap(step: number) {
-  const open = MAPS.filter(mapOpen);
+  const open = MAPS.filter(isMapUnlocked);
   if (!open.length) return;
   showMap(open[(Math.max(0, open.indexOf(zoneId)) + step + open.length) % open.length]);
   renderMenu();
 }
 export function selectMap(id: string) {
-  if (!MAPS.includes(id) || !mapOpen(id)) return false;
+  if (!MAPS.includes(id) || !isMapUnlocked(id)) return false;
   showMap(id);
   renderMenu();
   return true;
@@ -318,7 +318,7 @@ $('startModal').addEventListener('wheel', e => {
   cam.dist = Math.min(maxDist, Math.max(minDist, cam.dist + Math.sign(e.deltaY) * zoomStep));
 }, { passive: true });
 export function enterMenu() {
-  if (!savedMapShown) { savedMapShown = true; if (MAPS.includes(uiSettings.menuZone) && uiSettings.menuZone !== zoneId && mapOpen(uiSettings.menuZone)) showMap(uiSettings.menuZone); }
+  if (!savedMapShown) { savedMapShown = true; if (MAPS.includes(uiSettings.menuZone) && uiSettings.menuZone !== zoneId && isMapUnlocked(uiSettings.menuZone)) showMap(uiSettings.menuZone); }
   camSaved ??= { dist: cam.dist, pitch: cam.pitch, offset: cam.offset };
   Object.assign(cam, { dist: UI.menuCam.dist, pitch: UI.menuCam.pitch, offset: 0 });
   menuTurn = 0;

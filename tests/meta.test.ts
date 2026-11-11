@@ -2,22 +2,22 @@
 // meta.ts lädt über baukasten.ts Canvas-Texturen und über config → i18n das document, deshalb der Browser-Ersatz zuerst.
 import './setup/browserStub';
 import { describe, it, expect } from 'vitest';
-import { fixWeapon, cleanStats } from '../src/meta';
+import { cleanWeapon, cleanStats } from '../src/meta';
 import { TYPES, MAKERS } from '../src/models/weapons/baukasten';
 
 const weapon = (s: Record<string, unknown>) => ({ id: 1, r: 2, s: { type: 'staff', maker: 'grab', element: 'frost', head: 'frostorb', ...s } });
 
-describe('fixWeapon', () => {
+describe('cleanWeapon', () => {
   it('gültige Waffe bleibt gleich', () => {
     const w = weapon({});
-    expect(fixWeapon(structuredClone(w))).toEqual(w);
+    expect(cleanWeapon(structuredClone(w))).toEqual(w);
   });
   it('gibt dasselbe Objekt zurück (repariert an Ort und Stelle)', () => {
     const w = weapon({ element: 'gift' });
-    expect(fixWeapon(w)).toBe(w);
+    expect(cleanWeapon(w)).toBe(w);
   });
   it('alte Elemente: Gift/Blut → Seuche, Void/Dunkel → Arkan, Unbekanntes → none', () => {
-    const el = (e: string) => fixWeapon(weapon({ element: e })).s.element;
+    const el = (e: string) => cleanWeapon(weapon({ element: e })).s.element;
     expect(el('gift')).toBe('seuche');
     expect(el('blut')).toBe('seuche');
     expect(el('void')).toBe('arkan');
@@ -26,12 +26,12 @@ describe('fixWeapon', () => {
     expect(el(undefined as any)).toBe('none');
   });
   it('unbekannter Typ → staff, unbekannter Hersteller → erster Hersteller', () => {
-    const w = fixWeapon(weapon({ type: 'axt', maker: 'niemand' }));
+    const w = cleanWeapon(weapon({ type: 'axt', maker: 'niemand' }));
     expect(w.s.type).toBe('staff');
     expect(w.s.maker).toBe(Object.keys(MAKERS)[0]);
   });
   it('alte Köpfe nach Schule, unbekannte → erster Kopf des Typs', () => {
-    const head = (h: string) => fixWeapon(weapon({ head: h })).s.head;
+    const head = (h: string) => cleanWeapon(weapon({ head: h })).s.head;
     expect(head('kristall')).toBe('frostorb');
     expect(head('laterne')).toBe('glutschaedel');
     expect(head('klaue')).toBe('dreizack');
@@ -40,10 +40,10 @@ describe('fixWeapon', () => {
     expect(head('quatsch')).toBe(TYPES.staff.heads[0]);
   });
   it('ohne s oder null: nie crashen, unverändert zurück', () => {
-    expect(fixWeapon(null)).toBe(null);
-    expect(fixWeapon(undefined)).toBe(undefined);
+    expect(cleanWeapon(null)).toBe(null);
+    expect(cleanWeapon(undefined)).toBe(undefined);
     const w = { id: 3 };
-    expect(fixWeapon(w)).toBe(w);
+    expect(cleanWeapon(w)).toBe(w);
   });
 });
 

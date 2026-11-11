@@ -88,6 +88,9 @@ export const SLOT = { attacks: 5, drink: 5, move: 6, relic: 7 };
 export const SPELL_START = ['nova', 'ae', 'bliz', 'coc', null, 'drink', 'blink', null];
 // Die Tasten-Aktionen heißen seit v1 wie das alte Start-Kit. Sie stehen für den Slot, nicht für den Spell: slot7 ist die 5. Attacke, blink die Bewegung, slot8 das Relikt.
 export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'slot7', 'drink', 'blink', 'slot8'];
+// Klartext zu den Bind-IDs (NAME-09): Rolle und Slot-Index. Die IDs sind gespeichert (frostgrind.binds.v1, Hotbar-/Pad-Store) und bleiben; neuer Code liest Rolle bzw. Slot hier
+export const BIND_LABEL = { nova: 'attack1', ae: 'attack2', bliz: 'attack3', coc: 'attack4', slot7: 'attack5', drink: 'drink', blink: 'move', slot8: 'relic' } as const;
+export const BIND_SLOT: Record<string, number> = Object.fromEntries(SPELL_ACTIONS.map((id, i) => [id, i]));
 // Einheit für den Schaden neuer Spells: Arcane Explosion auf Level 1 (34–38). Alle neuen Spells rechnen in Vielfachen davon // PH
 export const UNIT = 36;
 // Relikt der Figur (modifiers.ts relics): Seltenheit blau, nur eins pro Run, ab diesem Level im Angebot // PH

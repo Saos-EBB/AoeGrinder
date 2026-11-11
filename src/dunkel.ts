@@ -9,7 +9,7 @@ import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv } from './rende
 import { cam } from './camera';
 import { zone, terrain } from './world';
 import { heroModel } from './models/heroModel';
-import { blizCursor } from './fx/spellFx';
+import { groundCursor } from './fx/spellFx';
 import { uiSettings } from './ui/uiSettings';
 import { hooks } from './hooks';
 
@@ -66,8 +66,8 @@ export function initDunkel() {
   scene.add(fill);
 
   // Zielkreis liegt auch weit draußen sichtbar im Dunkeln
-  blizCursor.material.fog = false;
-  blizCursor.material.needsUpdate = true;
+  groundCursor.material.fog = false;
+  groundCursor.material.needsUpdate = true;
   Object.assign(cam, { dist: D.cam.dist, pitch: D.cam.pitch });
   camera.fov = D.cam.fov;
   camera.updateProjectionMatrix();

@@ -64,7 +64,7 @@ function load() {
   step('stats', () => { m.stats = cleanStats(m.stats); }, () => { m.stats = cleanStats(null); });
   // Waffen einzeln: eine kaputte fällt raus (steht im Backup), die anderen bleiben
   if (!Array.isArray(m.inv)) step('inv', () => { throw new TypeError('inv ist keine Liste'); }, () => { m.inv = []; });
-  m.inv = m.inv.filter((w, i) => { let ok = true; step(`inv[${i}]`, () => fixWeapon(w), () => { ok = false; }); return ok; });
+  m.inv = m.inv.filter((w, i) => { let ok = true; step(`inv[${i}]`, () => cleanWeapon(w), () => { ok = false; }); return ok; });
   return m;
 }
 // Zähler über alle Runs (Meilensteine): kills, dust = erspielter Staub gesamt (nicht der Kontostand). Fehlt in alten Ständen → 0
@@ -85,7 +85,7 @@ const HEAD_REPLACE = {
   kaefig: 'glutschaedel', laterne: 'glutschaedel', herz: 'glutschaedel', klaue: 'dreizack', maul: 'dreizack',
   gabel: 'spulen', ring: 'ring', kugel: 'ring', rune: 'ring', auge: 'auge', schaedel: 'auge',
 };
-export function fixWeapon(w) {
+export function cleanWeapon(w) {
   const s = w?.s;
   if (!s) return w;
   if (!TYPES[s.type]) s.type = 'staff';
@@ -103,11 +103,11 @@ export const hasAch = (id: string) => meta.achievements.includes(id);
 // true, wenn neu (dann zeigt der Aufrufer die Einblendung)
 export function grantAch(id: string) { if (hasAch(id)) return false; meta.achievements.push(id); saveMeta(); return true; }
 
-// ---------- Meilensteine (Kosmetik ⭐, gear.ts LOOKS ach) ----------
+// ---------- Meilensteine (Kosmetik ⭐, gear.ts KOSMETIK ach) ----------
 // Vorhanden war: meta.dust (nur Kontostand), player.kills und run.kills (nur im Run), boss.stats.hits (Treffer im Bosskampf, bosses/core.ts).
 // Neu: meta.stats.kills (Kills gesamt, mobs.ts killMob) und meta.stats.dust (erspielter Staub gesamt, earnDust). Grenzen alle // PH
 export const MILESTONES = { dust10k: 10000, kills1k: 1000, lvl100: 100 };   // lvl100 = LEVEL_MAX (config.ts), hier als Zahl: meta.ts läuft in Import-Kreisen vor config.ts
-// Neuer Meilenstein → Bus ach (hooks.ts) → Einblendung (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasLook)
+// Neuer Meilenstein → Bus ach (hooks.ts) → Einblendung (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasKosmetik)
 export function milestone(id: string, quiet = false) { if (grantAch(id) && !quiet) emit('ach', id); }
 export function checkMilestones(quiet = false) {
   const s = meta.stats;

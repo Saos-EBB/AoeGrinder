@@ -190,7 +190,7 @@ export const heroModel = {
     if (figureId === 'krieger') setFigure('krieger');
   },
   get weapon() { return weapon; },
-  setSkin: setFigure,
+  setFigure,
   refreshWeapon() { wield(); },   // Wahl im Hauptmenü
   previewWeapon(w) { if (preview === w) return; preview = w; wield(); },   // Charakterfenster (heroWindow.ts): Probe tragen, null = zurück zur ausgerüsteten
   // Anzeige 0 … 1 für die Stufen-Effekte der Strichmagier (Hitze, Kälte, Ladungen, Batterie)

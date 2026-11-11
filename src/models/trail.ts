@@ -8,7 +8,7 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 function canvas(size, draw) { const c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size); return c; }
 function toTex(c) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 
-// Spielregeln pro Skin. Die Spiellogik wendet sie an (skinFx.ts); das Modell liefert nur Spuren (trail.zones()) und Werte.
+// Spielregeln pro Skin. Die Spiellogik wendet sie an (trailEffects.ts); das Modell liefert nur Spuren (trail.zones()) und Werte.
 export const SKIN_FX = {
   alle: {},
   frost: { trail: 'frost', slow: 0.3, slowMs: 1500 },  // wie Improved Blizzard Rang 1 (mechanics-spec): 30 % für 1,5 s, solange der Mob auf einer Spur steht

@@ -9,7 +9,7 @@ import { meterHeat } from './schoolMeter';
 
 const FIRE_TICK = 1000;   // ms; mob.trailTickAt pro Mob, darum stapeln mehrere Spuren nicht
 
-export function updateSkinFx() {
+export function updateTrailEffects() {
   const fx = heroModel.fx;
   if (!heroModel.trail || player.dead) return;
   const zones = heroModel.trail.zones();

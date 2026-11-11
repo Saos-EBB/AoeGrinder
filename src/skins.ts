@@ -30,7 +30,7 @@ export const setAch = (setId: string) => `set:${setId}`;
 export const skinLock = (heroClass: HeroClass, id: SkinId): string | null => heroClass === 'magier' && id !== STANDARD ? id : null;
 // Alle Erfolge (bisher nur die Set-Erfolge), Reihenfolge wie SKIN_LIST
 export const ACHIEVEMENTS: string[] = SKIN_LIST.magier.filter(s => s.id !== STANDARD).map(s => setAch(s.id));
-// Meilenstein-Erfolge (meta.ts MILESTONES): schalten je ein Kosmetik-Teil frei (gear.ts LOOKS ach), keinen Skin
+// Meilenstein-Erfolge (meta.ts MILESTONES): schalten je ein Kosmetik-Teil frei (gear.ts KOSMETIK ach), keinen Skin
 export const MILESTONE_KOSMETIK: Record<string, string> = { boss1: 'pappkrone', dust10k: 'goldkette', kills1k: 'killflagge', bossNoHit: 'handschellen', lvl100: 'dreiteiler' };
 export const MILESTONE_ACH = Object.keys(MILESTONE_KOSMETIK);
 export const cleanAch = (raw: unknown): string[] => Array.isArray(raw) ? [...new Set(raw.filter(a => ACHIEVEMENTS.includes(a) || MILESTONE_ACH.includes(a)))] : [];

@@ -11,7 +11,7 @@ import { $, clamp } from './util';
 import { CFG, SPELLS, SPELL_ACTIONS } from './config';
 import { cam } from './camera';
 import { groundAt, SKY } from './collision';
-import { blizCursor } from './fx/spellFx';
+import { groundCursor } from './fx/spellFx';
 import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './feedback';
 import { pressSpell } from './input';
@@ -85,7 +85,7 @@ let aimAction = null;   // Aktion, deren Taste gerade gehalten wird
 function cancelAim() {
   state.padAim = null;
   player.targeting = false;
-  blizCursor.visible = false;
+  groundCursor.visible = false;
 }
 
 function startAim(action, id) {
@@ -94,7 +94,7 @@ function startAim(action, id) {
   const z = player.pos.z + Math.cos(player.facing) * CFG.blizAimStart;
   state.padAim = new THREE.Vector3(x, groundAt(x, z, SKY), z);
   player.targeting = id;
-  blizCursor.visible = true;
+  groundCursor.visible = true;
 }
 
 function moveAim(s) {

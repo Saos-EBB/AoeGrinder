@@ -7,7 +7,7 @@ import { $, clamp } from './util';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { renderer, camera } from './render';
 import { groundAt } from './collision';
-import { blizCursor } from './fx/spellFx';
+import { groundCursor } from './fx/spellFx';
 import { cam } from './camera';
 import { closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
@@ -114,7 +114,7 @@ addEventListener('keydown', e => {
     if (heroOpen()) closeHero();
     else if ($('settingsModal').classList.contains('show')) $('settingsClose').click();
     else if (pauseOpen() && !$('bindModal').classList.contains('show')) closePause();
-    else if (player.targeting) { player.targeting = false; blizCursor.visible = false; }
+    else if (player.targeting) { player.targeting = false; groundCursor.visible = false; }
     else if ($('bindModal').classList.contains('show')) closeBinds();
     else if (!state.paused) openPause();
     return;
@@ -135,7 +135,7 @@ function spellDown(action, code) {
   if (!id || state.paused || player.dead) return;
   const ground = groundSpell(id), mode = modeAt(SPELL_ACTIONS.indexOf(action), ground);
   if (mode === 'release') { releaseOf.set(code, action); if (ground && player.targeting !== id) pressSpell(action); return; }   // Bodenziel: Zielkreis, solange gehalten
-  if (mode === 'instant' && ground && !state.bossAim) { pickGround(); player.targeting = false; blizCursor.visible = false; cast(action, mouse.ground.clone()); return; }   // Bodenziel unter der Maus
+  if (mode === 'instant' && ground && !state.bossAim) { pickGround(); player.targeting = false; groundCursor.visible = false; cast(action, mouse.ground.clone()); return; }   // Bodenziel unter der Maus
   pressSpell(action);
 }
 function spellUp(code) {
@@ -208,7 +208,7 @@ addEventListener('mouseup', e => {
   if (document.pointerLockElement && !mouseBtn.left && !mouseBtn.right) document.exitPointerLock();
   if (!wasClick || !player.targeting || e.target !== canvas) return;
   if (e.button === 0) cast('bliz', mouse.ground.clone());
-  else { player.targeting = false; blizCursor.visible = false; }
+  else { player.targeting = false; groundCursor.visible = false; }
 });
 addEventListener('mousemove', e => {
   if (mouseBtn.left || mouseBtn.right) {

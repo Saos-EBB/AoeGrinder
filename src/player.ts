@@ -5,7 +5,7 @@ import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVER
 import { xpNeeded, maxHp, maxMana, manaRegenPerTick } from './formulas';
 import { heightAt, zone, zoneId, buildWorld } from './world';
 import { groundAt, resolve, STEP } from './collision';
-import { blizCursor, levelUpFx } from './fx/spellFx';
+import { groundCursor, levelUpFx } from './fx/spellFx';
 import { cam, autoCamOn, MOBILE_YAW } from './camera';
 import { device } from './device';
 import { combatText, hurtNumber } from './feedback';
@@ -91,7 +91,7 @@ export function resetGame() {
   resetWaves();
   resetSplits();
   state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)
-  blizCursor.visible = false;
+  groundCursor.visible = false;
   stopChannel();
   fillPacks();
 }
@@ -104,7 +104,7 @@ export function switchZone(id) {
   state.autorun = false;
   stopChannel(); stopDrink();
   player.targeting = false;
-  blizCursor.visible = false;
+  groundCursor.visible = false;
   buildWorld(id);
   player.pos.set(zone.spawn.x, heightAt(zone.spawn.x, zone.spawn.z), zone.spawn.z);
   player.vel.set(0, 0, 0);

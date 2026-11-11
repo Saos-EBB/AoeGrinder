@@ -17,14 +17,14 @@ import { composer, tickHeat, renderer, camera } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
 import { heroModel } from './models/heroModel';
-import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
+import { groundCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
 import { hitstopDt } from './fx/impact';
 import { cam, updateCamera, updateAutoCam } from './camera';
 import { refreshKeyLabels, updateHud, updatePerf, combatText } from './ui/hud';
 import { binds, mouse, mouseBtn, pressSpell, pickGround } from './input';
 import { updateRespawn, spawnMob, enterCombat, updateMob, separateMobs, sinkCorpse, removeMob } from './mobs';
 import { updateAbilities } from './abilities';
-import { updateSkinFx } from './skinFx';
+import { updateTrailEffects } from './trailEffects';
 import { updateRealMen, realMenAnim, warTimeScale } from './realMen';
 import { updateWaves } from './waves';
 import { cast } from './spells';
@@ -97,7 +97,7 @@ function update(dt) {
   for (const m of state.mobs) updateMob(m, dt);
   separateMobs();
   updateAbilities(dt);
-  updateSkinFx();
+  updateTrailEffects();
   updateRealMen(dt);
   updateZoneEvent(dt);
   updateFigures();
@@ -169,8 +169,8 @@ function updateVisuals(dt) {
 
   if (player.targeting) {
     const aim = state.padAim || mouse.ground;
-    drape(blizCursor, aim, blizRadius());
-    blizCursor.material.color.set(dist2d(player.pos, aim) <= SPELLS.bliz.range ? 0x7fd0ff : 0xff5050);
+    drape(groundCursor, aim, blizRadius());
+    groundCursor.material.color.set(dist2d(player.pos, aim) <= SPELLS.bliz.range ? 0x7fd0ff : 0xff5050);
   }
   updateBlizFx(state.paused ? 0 : dt);
   ambientParticles(state.paused ? 0 : dt);

@@ -57,6 +57,11 @@ Ein Begriff pro Konzept. Gespeicherte IDs bleiben, wie sie sind, und werden übe
 | Spell-Schule (Karte, Farbe) | Feld `cls` (`frost/fire/lightning/plague/arcane/…`) | – |
 | Seltenheit | `rarity` (Index 0–5), Zugriff `rarityOf(x)`, `rollRarity()`, Karten `rollCardRarity()` | Feld `r` in Waffen/Gear/Spielstand-Code |
 | Shop-Stufe / Boss-Stufe | „tier“ nur hier: `shopTier`, `bestTier`; Boss lokal `stage` (Roster-Feld `tier` bleibt) | `bestTier` |
+| Tasten-Aktion | Bind-IDs `nova/ae/bliz/coc/slot7/blink/drink/slot8`, Klartext `BIND_LABEL` und `BIND_SLOT` (`config.ts`) | `frostgrind.binds.v1`, Hotbar-/Pad-Store |
+| Bodenzauber-Zielkreis | `groundCursor` (`fx/spellFx.ts`) | – |
+| Map freigeschaltet | `isThemeUnlocked` (`mapgen/progress.ts`), `isMapUnlocked` (Hauptmenü); „Open“ heißt nur „Fenster offen“ | `meta.maps` (Theme-IDs) |
+| Säubern beim Laden | `clean*` (`cleanWeapon`, `cleanGearItem`, `cleanGear`, `cleanSkins` …), Prüfen `isValid*` | – |
+| Spuren-Regeln | `trailEffects.ts` (`updateTrailEffects`): Feuerspur Schaden, Frostspur Slow | – |
 
 ## Entscheidungen
 - 2026-10-31: Lava schadet Mobs wie dem Spieler, kein Pathfinding; Kills dort zählen wie eigene. Gift bricht Trinken nicht, Schwärmlinge geben keine XP, der Panther bleibt nach Entdeckung sichtbar.

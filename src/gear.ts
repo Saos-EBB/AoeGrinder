@@ -130,13 +130,13 @@ export const worn = (slot: Slot): GearItem | null => gearInv(slot).find(g => g.i
 export const slotFull = (slot: Slot) => gearInv(slot).length >= GEAR.invMax;
 
 // Gespeichertes Feld säubern (localStorage, Spielstand-Code): unbekannte Slots, kaputte Teile und tote Verweise fallen weg
-const okItem = (g: any, slot: string) => g && typeof g === 'object' && Number.isInteger(g.r) && g.r >= 0 && g.r < CARD_RARITIES.length && g.s && typeof g.s === 'object'
+const isValidGearItem = (g: any, slot: string) => g && typeof g === 'object' && Number.isInteger(g.r) && g.r >= 0 && g.r < CARD_RARITIES.length && g.s && typeof g.s === 'object'
   && (g.s.value in VALUE_KEY || !!SPELLS[g.s.focus]) && (g.slot ?? slot) === slot;
 export function cleanGear(m: any) {
   const gear = {}, wear = {};
   let maxId = Number.isInteger(m.nextGear) ? m.nextGear : 0;
   for (const slot of SLOTS) {
-    gear[slot] = (Array.isArray(m.gear?.[slot]) ? m.gear[slot] : []).filter(g => okItem(g, slot)).map(g => fixItem({ ...g, slot }));
+    gear[slot] = (Array.isArray(m.gear?.[slot]) ? m.gear[slot] : []).filter(g => isValidGearItem(g, slot)).map(g => cleanGearItem({ ...g, slot }));
     for (const g of gear[slot]) maxId = Math.max(maxId, g.id);
     const id = m.wear?.[slot];
     wear[slot] = gear[slot].some(g => g.id === id) ? id : null;
@@ -146,12 +146,12 @@ export function cleanGear(m: any) {
   m.looks = (Array.isArray(m.looks) ? m.looks : []).filter(id => KOSMETIK[id]);
   const owns = id => m.looks.includes(id) || !!KOSMETIK[id]?.ach && Array.isArray(m.achievements) && m.achievements.includes(KOSMETIK[id].ach);
   m.lookWear = Object.fromEntries(KOSMETIK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, KOSMETIK[id]?.slot === s && owns(id) ? id : null]; }));
-  m.gearOver = (Array.isArray(m.gearOver) ? m.gearOver : []).filter(g => SLOTS.includes(g?.slot) && okItem(g, g.slot)).map(fixItem);
+  m.gearOver = (Array.isArray(m.gearOver) ? m.gearOver : []).filter(g => SLOTS.includes(g?.slot) && isValidGearItem(g, g.slot)).map(cleanGearItem);
   for (const g of m.gearOver) maxId = Math.max(maxId, g.id);
   m.nextGear = maxId;
 }
 let migrated = 0;   // Teile, die beim Säubern einen Wert oder Hersteller bekamen (initGear speichert dann)
-function fixItem(g) {
+function cleanGearItem(g) {
   if (!Number.isInteger(g.id)) g.id = 0;
   // Alter Stand (vor v36): Teile mit nur Fokus bekommen einen zufälligen Wert, ohne Hersteller einen zufälligen Hersteller. Der Fokus bleibt
   if (!(g.s.value in VALUE_KEY)) { g.s.value = pick(Object.keys(VALUE_KEY)); migrated++; }
@@ -252,7 +252,7 @@ export function wearKosmetik(slot: string, id: string | null) {
 }
 // Gear an der Figur (models/gearParts.ts über heroModel.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
 // Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Modell: models/kosmetikParts.ts).
-// Set 5/5 (forcedLook) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
+// Set 5/5 (forcedSkin) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
 export type GearShown = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
 export function gearShown(skin: string | null): GearShown | null {
   if (!isMageFigure(skin) || forcedSkin(skin)) return null;
@@ -288,7 +288,7 @@ export function deleteGear(slot: Slot, id: number) {
 // ---------- Text ----------
 const valueKey = (g: GearItem) => VALUE_KEY[g.s.value];
 // Name folgt der Form an der Figur (Slot × Wertgruppe, wie im Gear-Baukasten), wird nicht gespeichert: alte Teile heißen beim Laden gleich richtig.
-// Set-Teile behalten ihre eigenen Namen; ohne Wert (sollte nach fixItem nicht vorkommen) der alte Grundname nach Id
+// Set-Teile behalten ihre eigenen Namen; ohne Wert (sollte nach cleanGearItem nicht vorkommen) der alte Grundname nach Id
 export const gearName = (g: GearItem) => {
   if (g.s.setId) return t(`gear.set.${g.s.setId}.${g.slot}`);
   const group = groupOf(g);
@@ -364,4 +364,5 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
+// Debug-API für Testskripte: alte Namen als Keys bleiben (E7)
 (window as any).__gear = { lookSource: kosmetikSource, cosLook: kosmetikShown, LOOKS: KOSMETIK, KOSMETIK_POOL, buyLookBox: buyKosmetikBox, lookBoxLeft: kosmetikBoxLeft, hasLook: hasKosmetik, gearLook: gearShown, groupOf, makerOf, devSetAch, checkUnlocks, wearLook: wearKosmetik, lookIn: kosmetikIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };

@@ -10,7 +10,7 @@ import { SPELLS, SPELL_ACTIONS } from './config';
 import { ICONS } from './ui/icons';
 import { openPause, menuOpen } from './ui/mainMenu';
 import { device, goFullscreen, toView } from './device';
-import { blizCursor } from './fx/spellFx';
+import { groundCursor } from './fx/spellFx';
 import { groundAt, SKY } from './collision';
 import { isGround, castSpell } from './spells';
 import { cdEnd, chargesOf, paysLife } from './spells/core';
@@ -99,7 +99,7 @@ function stopAim() {
   touch.aiming = false;
   state.padAim = null;
   player.targeting = false;
-  blizCursor.visible = false;
+  groundCursor.visible = false;
   cancelEl.hidden = true;
 }
 const groundSpell = (id: string) => isGround(id);   // auch ?-Magier: die Kategorie meldet, ob der nächste Wurf ein Bodenziel ist
@@ -140,7 +140,7 @@ function spellButton(action: string, cls: string) {
       if (t.identifier !== id) continue;
       const v = toView(t.clientX, t.clientY), dx = v.x - ox, dy = v.y - oy, d = Math.hypot(dx, dy);
       if (!aiming && d < DRAG_PX) continue;
-      if (!aiming) { aiming = true; touch.aiming = true; cancelEl.hidden = false; if (groundSpell(spell)) { player.targeting = spell; blizCursor.visible = true; } }
+      if (!aiming) { aiming = true; touch.aiming = true; cancelEl.hidden = false; if (groundSpell(spell)) { player.targeting = spell; groundCursor.visible = true; } }
       const w = worldDir(dx, dy), wl = Math.hypot(w.x, w.z) || 1;
       aimDir = { x: w.x / wl, z: w.z / wl };
       aimLen = Math.min(1, d / AIM_R);

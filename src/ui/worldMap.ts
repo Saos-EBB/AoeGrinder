@@ -8,7 +8,7 @@ import { state } from '../state';
 import { zone, zoneId } from '../world';
 import { THEMES } from '../mapgen/themes';
 import { zoneIdOf } from '../mapgen/registry';
-import { ORDER, themeOpen, UNLOCK_LEVEL, devMapsOpen, setDevMapsOpen } from '../mapgen/progress';
+import { ORDER, isThemeUnlocked, UNLOCK_LEVEL, devAllMapsUnlocked, setDevAllMapsUnlocked } from '../mapgen/progress';
 import { mapSeed, seedPinned, setMapSeed, unpinSeed } from '../mapgen/rng';
 import { byTime, comboRuns } from '../leaderboard';
 import { fmtTime } from './fmt';
@@ -64,7 +64,7 @@ for (const id of ['worldSeedIn']) $(id).addEventListener('keydown', e => { e.sto
 const skull = (x: number, y: number, on: boolean) => `<g transform="translate(${x},${y})" opacity="${on ? 1 : 0.25}"><path d="M-5 0a5 5 0 1 1 10 0v2.5h-2v2h-6v-2h-2z" fill="${on ? '#efe0b8' : '#6b5d48'}"/><circle cx="-2" cy="0" r="1.3" fill="#1a1008"/><circle cx="2" cy="0" r="1.3" fill="#1a1008"/></g>`;
 
 function placeSvg(id: ThemeId) {
-  const th = THEMES[id], [x, y] = SPOT[id], open = themeOpen(id), zid = zoneIdOf(id), sel = zid === zoneId;
+  const th = THEMES[id], [x, y] = SPOT[id], open = isThemeUnlocked(id), zid = zoneIdOf(id), sel = zid === zoneId;
   const best = byTime(comboRuns(zid))[0]?.timeTo100, d = th.info.difficulty;
   const prev = ORDER[ORDER.indexOf(id) - 1];
   const sub = open ? t('world.best', { t: typeof best === 'number' ? fmtTime(best) : '—' }) : t('world.locked', { lv: UNLOCK_LEVEL, name: THEMES[prev].name });
@@ -85,7 +85,7 @@ function render() {
   // Weg: geschwungene Linie von Ort zu Ort, offen = durchgezogen, gesperrt = gestrichelt
   const roads = pts.slice(1).map((p, i) => {
     const a = pts[i], mx = (a[0] + p[0]) / 2, my = (a[1] + p[1]) / 2 - 30;
-    const open = themeOpen(ORDER[i + 1]);
+    const open = isThemeUnlocked(ORDER[i + 1]);
     return `<path d="M${a[0]} ${a[1]} Q${mx} ${my} ${p[0]} ${p[1]}" fill="none" stroke="${open ? '#c9a45c' : '#5a4e3c'}" stroke-width="${open ? 5 : 3}" stroke-dasharray="${open ? '0' : '8 8'}" stroke-linecap="round"/>`;
   }).join('');
   const [ax, ay] = ARENA;
@@ -147,8 +147,8 @@ new MutationObserver(showPauseSeed).observe($('pauseModal'), { attributes: true,
 
 // Dev: alle Maps offen (Block für ui/devGame.ts)
 export function devWorldBlock() {
-  const box = html(`<div id="devWorld"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="devMapsOpen"${devMapsOpen() ? ' checked' : ''}> Weltkarte: alles offen</label></div>`);
-  box.querySelector('#devMapsOpen').addEventListener('change', e => { setDevMapsOpen((e.target as HTMLInputElement).checked); if (worldOpen()) render(); });
+  const box = html(`<div id="devWorld"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="devMapsOpen"${devAllMapsUnlocked() ? ' checked' : ''}> Weltkarte: alles offen</label></div>`);
+  box.querySelector('#devMapsOpen').addEventListener('change', e => { setDevAllMapsUnlocked((e.target as HTMLInputElement).checked); if (worldOpen()) render(); });
   return box;
 }
 

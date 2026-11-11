@@ -13,7 +13,7 @@ import { zone } from '../world';
 import { particles } from '../fx/particles';
 import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS, RANDOM_MAGE } from '../config';
 import { manaCost, spellCd, maxHp } from '../formulas';
-import { blizCursor, crystalBurst } from '../fx/spellFx';
+import { groundCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../feedback';
 import { damageMob, applyRoot } from '../mobs';
 import { spendMana } from '../player';
@@ -184,7 +184,7 @@ export function applySlow(mob, pct, dur) {
 // Bodenziel: Maus wählt per Klick. Das Pad zielt selbst (gamepad.ts) und kommt mit fertigem Punkt.
 function startTargeting(id) {
   player.targeting = player.targeting === id ? false : id;
-  blizCursor.visible = !!player.targeting;
+  groundCursor.visible = !!player.targeting;
 }
 
 // Einstieg aus input.ts und gamepad.ts: bekommt die Aktion, sucht den Slot
@@ -219,7 +219,7 @@ export function castSpell(id, point?) {
   stopDrink();
   player.casting = null;
   player.targeting = false;
-  blizCursor.visible = false;
+  groundCursor.visible = false;
   // Dodge-Kombos: Normal kein Mana, Fire only Feuerball crittet
   const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
   let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul * (stat(id).cast ?? 1) / pdRateMul();   // stat.cast: Wurfzeit je Spell (Set Glutprophet, gear.ts)   // Perfekter Dodge: schneller zaubern   // castMul: Waffen-Typ und Hersteller

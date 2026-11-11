@@ -17,10 +17,10 @@ import { blinkLook } from '../vfx/arcaneLook';
 
 export { fxClock };
 
-export const blizCursor = terrainDecal(new THREE.RingGeometry(0.93, 1, 64, 1),
+export const groundCursor = terrainDecal(new THREE.RingGeometry(0.93, 1, 64, 1),
   new THREE.MeshBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.9, depthWrite: false }));
-blizCursor.visible = false;
-scene.add(blizCursor);
+groundCursor.visible = false;
+scene.add(groundCursor);
 
 // Blizzard-Effekt (Boden + fallende Eissplitter)
 const blizFx = (() => {
