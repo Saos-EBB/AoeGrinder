@@ -67,7 +67,8 @@ function load() {
   return m;
 }
 // Zähler über alle Runs (Meilensteine): kills, dust = erspielter Staub gesamt (nicht der Kontostand). Fehlt in alten Ständen → 0
-export const cleanStats = (raw: any) => ({ kills: Math.max(0, Math.floor(Number(raw?.kills) || 0)), dust: Math.max(0, Math.floor(Number(raw?.dust) || 0)) });
+const count = (v: any) => { const n = Math.floor(Number(v)); return Number.isFinite(n) && n > 0 ? n : 0; };   // ganze Zahl ≥ 0, NaN/Infinity → 0
+export const cleanStats = (raw: any) => ({ kills: count(raw?.kills), dust: count(raw?.dust) });
 // Erfolge und Skin-Wahl säubern (Laden, Spielstand-Code): ein gewählter, aber gesperrter Skin fällt auf Standard zurück
 export function cleanSkinState(m) {
   m.achievements = cleanAch(m.achievements);

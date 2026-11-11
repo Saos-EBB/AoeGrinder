@@ -14,6 +14,7 @@ import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, appl
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
 import { t, locale } from './i18n';
+import { normalizeMeta } from './metaNormalize';   // zuletzt: nur Funktionen, beim Laden wird nichts davon gebraucht
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
@@ -165,10 +166,7 @@ function fixItem(g) {
 // VALUE_KEY lesen, bevor weaponRolls.ts fertig ist (ReferenceError, sobald gespeichertes Gear da ist)
 export function initGear() {
   migrated = 0;
-  cleanGear(meta);
-  // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
-  const seen = new Set();
-  for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); }
+  normalizeMeta(meta);   // ganze Säuberung (metaNormalize.ts), dieselbe wie beim Spielstand-Code
   checkUnlocks(true);   // alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
   if (migrated) saveMeta();   // gewürfelte Werte/Hersteller festhalten, sonst würfelt jeder Reload neu
 }

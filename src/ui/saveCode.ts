@@ -2,12 +2,12 @@
 // Kein Schutz gegen Cheaten, Einzelspieler. Eingabe ersetzt den Spielstand nach Rückfrage.
 
 import { $ } from '../util';
-import { meta, saveMeta, fixWeapon, cleanSkinState, cleanStats } from '../meta';
-import { cleanGear, checkUnlocks } from '../gear';
-import { cleanMaps } from '../mapgen/progress';
+import { meta, saveMeta, fixWeapon, cleanSkinState } from '../meta';
+import { checkUnlocks } from '../gear';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 import { loadRuns, saveRuns } from '../leaderboard';   // nach mainMenu: das lädt leaderboard schon, Reihenfolge der Module bleibt
+import { normalizeMeta } from '../metaNormalize';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 
@@ -40,10 +40,10 @@ function importCode(code, replace = true) {
   const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : fixWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
     equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length, skins: data.k, achievements: data.ac,
-    gear: data.g, wear: data.w, gearOver: data.go, nextGear: data.ng, looks: data.lk, lookWear: data.lw, maps: cleanMaps(data.mp), stats: cleanStats(data.st) });
-  cleanGear(meta);   // fehlende oder kaputte Gear-Felder → Standard
-  meta.achievements = Array.isArray(meta.achievements) ? meta.achievements : [];
+    gear: data.g, wear: data.w, gearOver: data.go, nextGear: data.ng, looks: data.lk, lookWear: data.lw, maps: data.mp, stats: data.st });
+  normalizeMeta(meta);   // dieselbe Säuberung wie beim Start (metaNormalize.ts), mit Id-Dedupe
   checkUnlocks(true);   // alter Code ohne Erfolge, aber mit angelegtem 5/5: Erfolg nachtragen
+  meta.skins = data.k;   // Skin aus dem Code erst jetzt prüfen: sein Set-Erfolg kann eben von checkUnlocks nachgetragen worden sein
   cleanSkinState(meta);   // gewählter, aber gesperrter Magier-Skin → Standard
   saveMeta();
   saveRuns(data.r ?? []);

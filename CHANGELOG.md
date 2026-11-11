@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- fix(save): Spielstand-Code laden säubert jetzt genauso wie der Start: doppelte Gear-Ids im Code werden neu vergeben (vorher blieben sie doppelt, Anlegen/Zerlegen konnte das falsche Teil treffen). Zähler über alle Runs (Kills, Staub) nehmen nur endliche Zahlen an, sonst 0
 - fix(save): Ein kaputter Spielstand wird nicht mehr still durch einen leeren ersetzt: ist der gespeicherte Text kein lesbares JSON, liegt er danach unter `frostgrind.meta.v1.backup-<Zeit>` (höchstens 3 Sicherungen), Hinweis in der Konsole, Start mit leerem Stand. Ist nur ein Teil kaputt (z. B. eine Waffe), fällt nur dieser Teil weg, Staub, Gear, Skins und Erfolge bleiben; vorher startete das Spiel bei einer kaputten Waffe gar nicht
 
 ## 2026-11-10
