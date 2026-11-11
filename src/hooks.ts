@@ -45,8 +45,8 @@ export const hooks = {
   runEnd: slot<() => boolean>(() => false),
   // true = XP wird gesammelt und erst nach dem Bosskampf gutgeschrieben (boss.ts setzt, player.ts gainXp fragt)
   xpHold: slot<() => boolean>(() => false),
-  // Boss-Anbindung für Wellen und Portal (boss.ts setzt, waves.ts und portal.ts fragen)
-  boss: slot<{ start: () => boolean; active: () => boolean }>({ start: () => false, active: () => false }),
+  // Boss-Anbindung für Wellen, Portal und die Arena (#boss) (boss.ts setzt; waves.ts, portal.ts, mapgen/arena.ts fragen)
+  boss: slot<{ start: () => boolean; active: () => boolean; busy: () => boolean }>({ start: () => false, active: () => false, busy: () => false }),
   // Zonenwechsel durchs Portal (main.ts setzt player.ts switchZone ein, portal.ts ruft)
   switchZone: slot<(id: string) => void>(() => {}),
   // Sprechblasen der Kosmetik (main.ts setzt die schwebende Schrift ein, figEvents.ts figSay ruft)

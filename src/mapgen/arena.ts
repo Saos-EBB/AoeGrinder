@@ -8,6 +8,7 @@ import { state } from '../state';
 import { t } from '../i18n';
 import { colored } from './build';
 import * as M from './models';
+import { hooks } from '../hooks';
 
 const A = { r: 40, wallR: 42, pillars: 16, pillarR: 34, braziers: 8, bossDelay: 3000 };
 
@@ -49,14 +50,14 @@ export const arena: any = {
   mobs: ['skelett', 'gefallener', 'daemon', 'waechter', 'knochenwirker'],   // für Boss-Adds (boss.ts liest zone.mobs)
   packs: { count: 0, initialMobs: 0, sizeBonus: 0 },
   update() {
-    // #boss: Boss starten, sobald keiner läuft (boss.ts dynamisch, sonst Import-Kreis zones → boss → world)
+    // #boss: Boss starten, sobald keiner läuft (boss.ts über hooks.ts, sonst Import-Kreis zones → boss → world)
     if (location.hash !== '#boss' || document.body.classList.contains('menu')) return;
     if (state.now < bossStarted) { bossStarted = -1; bossAt = 0; }   // neuer Run (state.now beginnt bei 0): wieder ein Boss
     if (bossStarted >= 0) return;                                    // pro Run nur ein Boss, danach geht der Run normal weiter
     bossAt ||= state.now + A.bossDelay;
     if (state.now < bossAt) return;
     bossAt = state.now + A.bossDelay;
-    import('../boss').then(b => { if (!b.bossBusy() && b.startBoss()) bossStarted = state.now; });
+    queueMicrotask(() => { const b = hooks.boss.fn; if (!b.busy() && b.start()) bossStarted = state.now; });   // nach dem Frame-Code, wie früher das import().then
   },
   leave() { bossAt = 0; bossStarted = -1; },
 };

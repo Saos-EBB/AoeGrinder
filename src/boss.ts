@@ -552,7 +552,7 @@ export function updateBossVisuals(dt) {
 // Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
 hooks.runEnd.set(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
 // Wellen: nach jeder Welle ein Boss, die Welle wartet auf sein Ende
-hooks.boss.set({ start: () => startBoss(), active: bossActive });
+hooks.boss.set({ start: () => startBoss(), active: bossActive, busy: bossBusy });
 
 // Für Tests
 (window as any).__boss = {
