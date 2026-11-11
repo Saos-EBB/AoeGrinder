@@ -18,7 +18,7 @@ import { ICONS } from './icons';
 import { attachSpellCard, hideSpellCards } from './spellCard';
 import { slotAt, swapPos, modeAt, setModeAt, MODE_NAMES, type CastMode } from '../hotbar';
 import { UI } from './uiConfig';
-import { healNumber } from './dmgNumbers';
+import { healNumber, damageNumber, hurtNumber } from './dmgNumbers';
 import './hud/hud.css';
 import './hud/layout';
 import { updateHudExtras } from './hud/elements';
@@ -36,7 +36,7 @@ document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
 export const overlay = $('overlay');
 // Logik-Dateien melden sich über feedback.ts (ohne Import-Kreis), hier steckt die Umsetzung
-connectFeedback({ combatText, showError, renderActionbar, refreshKeyLabels });
+connectFeedback({ combatText, showError, renderActionbar, refreshKeyLabels, damageNumber, hurtNumber });
 
 export function screenPos(pos, height) {
   const p = new THREE.Vector3(pos.x, pos.y + height, pos.z).project(camera);

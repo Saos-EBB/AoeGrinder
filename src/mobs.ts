@@ -24,9 +24,8 @@ import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, cham
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
-import { combatText } from './feedback';
+import { combatText, damageNumber } from './feedback';
 import { damagePlayer, gainXp } from './player';
-import { damageNumber } from './ui/dmgNumbers';
 import { meterKill, meterKillHeal } from './schoolMeter';
 import { buffCrit } from './buffs';
 import { t } from './i18n';

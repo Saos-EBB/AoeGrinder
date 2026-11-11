@@ -19,7 +19,7 @@ const SRC = path.join(ROOT, 'src');
 const ENTRIES = ['main.ts', 'vfxLab.ts'];
 // Ausgangswert 11.11.2026 (Audit, E4): statisch Kreise 88/4/2 (94 Module in Kreisen), mit import() 102/2 (104).
 // Darf nur sinken; nach jedem Umbau, der Kreise auflöst, hier nachziehen.
-const LIMIT = { static: { largest: 88, inCycles: 94 }, dynamic: { largest: 102, inCycles: 104 } };
+const LIMIT = { static: { largest: 87, inCycles: 93 }, dynamic: { largest: 101, inCycles: 103 } };
 let NO_DYN = false;
 
 // Kommentare entfernen, Strings behalten (Regex-Literale grob erkannt, damit // darin nicht als Kommentar gilt)
