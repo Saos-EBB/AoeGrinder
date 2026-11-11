@@ -9,6 +9,7 @@ Hier liegt alles, was rausgenommen wurde. Es wird nicht gelöscht, nur geparkt.
 Der Ordner liegt außerhalb von `src/`: `tsc` und Vite sehen ihn nicht, nichts davon wird gebaut.
 Ganze Dateien sind mit `git mv` hierher gewandert (Pfade wie vorher unter `src/`, History bleibt: `git log --follow`).
 Teile aus Dateien, die im Spiel bleiben, liegen als `*.parked.ts` daneben: ausgeschnittener Code plus Notiz, wo er stand.
+Die i18n-Keys, die nur dieser Ordner brauchte (63 Stück: `boss.v-arkan.*`, `boss.v-klinge.*`, `char.arcane.*`, `mod.klinge.*`, `legend.*`, `ci.arc.*` u. a.), wurden am 11.11.2026 aus `src/i18n/de.ts`/`en.ts` entfernt; beim Zurückholen müssen sie neu geschrieben oder aus der Git-History (Etappe E3) geholt werden.
 
 ## Was drin liegt
 
