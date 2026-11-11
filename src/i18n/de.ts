@@ -2441,4 +2441,5 @@ export const de: Record<string, string> = {
   'gear.form.koerper.leben': "Weite Robe",
   'gear.form.koerper.mana': "Runenrobe",
   'gear.form.koerper.radius': "Weiter Saum",
+  'school.plague': "Seuche",
 };
