@@ -87,7 +87,7 @@ export function showRunResult() {
     <div class="endCols">
       <div class="gPanel fg-panel endDmg"><div class="endDmgHead"><span class="fg-title">${t('end.dmgBySource')}</span><b>${total ? fmt(total) : '—'}</b></div>${top.length ? top.map(([id, v]) => {
         const s = SPELLS[id], c = spellColor(id, '#c4aea6'), p = Math.round(v / total * 100);
-        return `<div class="endBar"><span>${esc(s?.name ?? t('cw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${fmt(v)}</b><small>${p} %</small></div>`;
+        return `<div class="endBar"><span>${esc(s?.name ?? t('hw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${fmt(v)}</b><small>${p} %</small></div>`;
       }).join('') : '<p>—</p>'}</div>
       <div class="gPanel fg-panel endDust"><div class="fg-title">${t('res.dust')}</div>
         <div class="endRow"><span>${t('end.dustLevel', { lv: entry.level, per: META.dust.perLevel, mult: fmtMult(entry.mult) })}</span><b>${award.base}</b></div>

@@ -349,7 +349,7 @@ function buildText() {
   const spells = owned.filter(id => !SPELLS[id].relic).map(id => rune(id) ? `${SPELLS[id].name} (${rune(id).name})` : SPELLS[id].name);
   const supports = SUPPORTS.filter(x => state.supports[x.id]).map(x => x.name);
   const relic = owned.find(id => SPELLS[id].relic);
-  return [spells.join(', '), supports.join(', '), relic && `${t('cw.relic')}: ${SPELLS[relic].name}`, (state.runWeapon || state.heroWeapon) && `${t('cw.weapon')}: ${state.runWeapon || state.heroWeapon}`].filter(Boolean).join(' · ');
+  return [spells.join(', '), supports.join(', '), relic && `${t('hw.relic')}: ${SPELLS[relic].name}`, (state.runWeapon || state.heroWeapon) && `${t('hw.weapon')}: ${state.runWeapon || state.heroWeapon}`].filter(Boolean).join(' · ');
 }
 
 // recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.

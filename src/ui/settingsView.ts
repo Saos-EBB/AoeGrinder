@@ -94,12 +94,12 @@ function profileRows() {
   uiSettings.profiles.forEach((p, i) => {
     const r = document.createElement('div');
     r.className = 'setProfile';
-    const name = p ? t('set.slot', { n: i + 1, at: fmtAt(p.at) }) + ` · ${t(flavorById(p.data.flavor ?? '').name)}` : t('set.slotEmpty', { n: i + 1 });
-    const save = button(t('set.save'), 'fg-btn alt', async () => {
-      if (p && !await askConfirm(t('set.overTitle'), t('set.overText', { n: i + 1 }), t('set.over'))) return;
+    const name = p ? t('settings.slot', { n: i + 1, at: fmtAt(p.at) }) + ` · ${t(flavorById(p.data.flavor ?? '').name)}` : t('settings.slotEmpty', { n: i + 1 });
+    const save = button(t('settings.save'), 'fg-btn alt', async () => {
+      if (p && !await askConfirm(t('settings.overTitle'), t('settings.overText', { n: i + 1 }), t('settings.over'))) return;
       saveProfile(i); buildInterface();
     });
-    const load = button(t('set.load'), 'fg-btn alt', () => { if (loadProfile(i)) buildInterface(); });
+    const load = button(t('settings.load'), 'fg-btn alt', () => { if (loadProfile(i)) buildInterface(); });
     (load as HTMLButtonElement).disabled = !p;
     r.append(Object.assign(document.createElement('span'), { textContent: name }), save, load);
     box.append(r);
@@ -110,16 +110,16 @@ function profileRows() {
 // ---------- HUD-Teile kombinieren: pro Teil wie UI-Flavor oder fest (uiSettings.hudMix, ui/hud/presets.ts HUD_PARTS) ----------
 function hudMixRows() {
   const mixOf = (p: HudPart) => uiSettings.hudMix?.[p] ?? 'flavor';
-  const names: Record<HudPart, string> = { res: t('set.hudPart.res'), bar: t('set.hudPart.bar'), map: t('set.hudPart.map'), combo: t('set.hudPart.combo') };
+  const names: Record<HudPart, string> = { res: t('settings.hudPart.res'), bar: t('settings.hudPart.bar'), map: t('settings.hudPart.map'), combo: t('settings.hudPart.combo') };
   const rows = (Object.keys(HUD_PARTS) as HudPart[]).map(p =>
     segmentedBy(names[p], NUM_CHOICES(), () => mixOf(p), v => setUi('hudMix', { ...uiSettings.hudMix, [p]: v })));
-  const reset = button(t('set.hudMixReset'), 'fg-btn alt', () => { setUi('hudMix', {}); buildInterface(); });
+  const reset = button(t('settings.hudMixReset'), 'fg-btn alt', () => { setUi('hudMix', {}); buildInterface(); });
   reset.style.justifySelf = 'start';
-  return [h2(t('set.hudMix')), ...rows, row('', reset)];
+  return [h2(t('settings.hudMix')), ...rows, row('', reset)];
 }
 
 // ---------- Tab Interface; wird nach jedem Flavor-Wechsel und Laden eines UI-Stands neu gebaut ----------
-const NUM_CHOICES = (): [string, string][] => [['flavor', t('set.likeFlavor')], ...FLAVORS.map(f => [f.id, t(f.name)] as [string, string])];
+const NUM_CHOICES = (): [string, string][] => [['flavor', t('settings.likeFlavor')], ...FLAVORS.map(f => [f.id, t(f.name)] as [string, string])];
 function buildInterface() {
   const ui = $('setInterface');
   ui.textContent = '';
@@ -133,28 +133,28 @@ function buildInterface() {
     setLang(langSel.value as Lang);
   });
   ui.append(
-    h2(t('set.flavor')),
+    h2(t('settings.flavor')),
     flavorCards(),
-    segmented('numFlavor', t('set.numFlavor'), NUM_CHOICES()),
-    slider('numSize', t('set.numSize'), 50, 200),
-    toggle('numMerge', t('set.merge')),
-    toggle('healNums', t('set.heal')),
-    toggle('messages', t('set.messages')),
-    segmented('font', t('set.font'), [['standard', t('set.standard')], ['fraktur', t('set.fraktur')]]),
-    toggle('tooltipsExt', t('set.extTips')),
-    toggle('screenFx', t('set.screenFx')),
-    slider('hudScale', t('set.hudSize'), 70, 150),
+    segmented('numFlavor', t('settings.numFlavor'), NUM_CHOICES()),
+    slider('numSize', t('settings.numSize'), 50, 200),
+    toggle('numMerge', t('settings.merge')),
+    toggle('healNums', t('settings.heal')),
+    toggle('messages', t('settings.messages')),
+    segmented('font', t('settings.font'), [['standard', t('settings.standard')], ['fraktur', t('settings.fraktur')]]),
+    toggle('tooltipsExt', t('settings.extTips')),
+    toggle('screenFx', t('settings.screenFx')),
+    slider('hudScale', t('settings.hudSize'), 70, 150),
     ...hudMixRows(),
     h2(t('settings.lang')),
     row(t('settings.lang'), langSel),
-    h2(t('set.ownUi')),
+    h2(t('settings.ownUi')),
     profileRows(),
   );
 }
 
 // ---------- Tab Grafik: Helligkeit (dunkel.ts), 0 % = dunkelster Look; wird beim Öffnen neu gebaut, damit Abbrechen den Regler mitnimmt ----------
 const brightBox = document.createElement('div');
-const buildGrafik = () => brightBox.replaceChildren(slider('brightness', t('set.brightness'), 0, 100));
+const buildGrafik = () => brightBox.replaceChildren(slider('brightness', t('settings.brightness'), 0, 100));
 
 let opened: Partial<UiSettings> | null = null;   // Stand beim Öffnen (Abbrechen)
 
@@ -164,12 +164,12 @@ export function mount() {
   for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.addEventListener('click', () => showTab(b.dataset.tab));
   // Knöpfe unten links (nur im Tab Interface)
   $('setFootLeft').append(
-    button(t('set.editUi'), 'fg-btn alt', () => {
+    button(t('settings.editUi'), 'fg-btn alt', () => {
       const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
       $('settingsClose').click();
       editHud(backdrop);
     }),
-    button(t('set.resetLayout'), 'fg-btn alt', () => $('hudEditReset').click()),
+    button(t('settings.resetLayout'), 'fg-btn alt', () => $('hudEditReset').click()),
   );
 
   // Abbrechen: Stand vom Öffnen zurück. Der Stand wird gemerkt, sobald das Fenster aufgeht

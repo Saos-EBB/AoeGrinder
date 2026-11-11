@@ -71,13 +71,13 @@ const DEFS: Record<string, Def> = {
   radius: { id: 'radius', label: () => t('hw.st.radius'), v: () => mods.radius - 1, fmt: pctSigned, dfmt: pctSigned },
   dur: { id: 'dur', label: () => t('hw.st.dur'), v: () => mods.durMul - 1, fmt: pctSigned, dfmt: pctSigned },
   proj: { id: 'proj', label: () => t('hw.st.proj'), v: () => mods.fbExtra ?? 0, fmt: v => `+${fmtInt(v)}`, dfmt: intSigned },
-  hp: { id: 'hp', label: () => t('cw.life'), v: () => maxHp(), fmt: fmtInt, dfmt: intSigned },
+  hp: { id: 'hp', label: () => t('hw.life'), v: () => maxHp(), fmt: fmtInt, dfmt: intSigned },
   // Leben-Regeneration aus player.ts regenerate(): CFG.hpRegen vom max. Leben je Tick (CFG.regenTick), nur außer Kampf; Seuchenmagier gar nicht
   regen: { id: 'regen', label: () => t('hw.st.regen'), v: () => maxHp() * CFG.hpRegen / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
     show: () => !modValue('lifeCost') },
   dr: { id: 'dr', label: () => t('hw.st.dr'), v: () => 1 - takenMul(), fmt: pctAbs, dfmt: pctSigned },
   dodge: { id: 'dodge', label: () => t('hw.st.dodge'), v: () => DG.charges + (mods.dodgeCharges ?? 0), fmt: fmtInt, dfmt: intSigned },
-  speed: { id: 'speed', label: () => t('cw.speed'), v: () => CFG.runSpeed * (mods.moveMul ?? 1) * moveMul(), fmt: v => `${de1(v)} yd/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))} yd/s` },
+  speed: { id: 'speed', label: () => t('hw.speed'), v: () => CFG.runSpeed * (mods.moveMul ?? 1) * moveMul(), fmt: v => `${de1(v)} yd/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))} yd/s` },
   mana: { id: 'mana', label: () => player.rageMax ? t('res.rage') : 'Mana', v: () => maxMana(), fmt: fmtInt, dfmt: intSigned },
   manaS: { id: 'manaS', label: () => t('hw.st.manaS'), v: () => manaRegenPerTick() / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
     show: () => !player.rageMax && !modValue('lifeCost') },
@@ -124,8 +124,8 @@ function dmgRows(live: boolean): StatRow[] {
   const total = list.reduce((s, [, v]) => s + v, 0);
   if (!total) return [{ id: 'dmgTotal', label: t('hw.st.dmgTotal'), value: DASH }];
   return [{ id: 'dmgTotal', label: t('hw.st.dmgTotal'), value: fmtInt(total) },
-    ...list.slice(0, 8).map(([id, v]) => ({ id: `src.${id}`, label: SPELLS[id]?.name ?? t('cw.env'), value: fmtInt(v), small: `${fmtInt(v / total * 100)} %` })),
-    { id: 'dps', label: t('cw.dps'), value: state.now > 1000 ? fmtInt(total / (state.now / 1000)) : DASH }];
+    ...list.slice(0, 8).map(([id, v]) => ({ id: `src.${id}`, label: SPELLS[id]?.name ?? t('hw.env'), value: fmtInt(v), small: `${fmtInt(v / total * 100)} %` })),
+    { id: 'dps', label: t('hw.dps'), value: state.now > 1000 ? fmtInt(total / (state.now / 1000)) : DASH }];
 }
 
 // Build im Run: Spells mit Rang und Rune, Talente, Supports, Relikte, Waffe
@@ -136,14 +136,14 @@ function buildRows(): StatRow[] {
   for (const id of (state.slots ?? []).filter(Boolean)) {
     const def = SPELLS[id];
     if (!def) continue;
-    if (def.relic) { rows.push({ id: `relic.${id}`, label: t('cw.relic'), value: def.name }); continue; }
+    if (def.relic) { rows.push({ id: `relic.${id}`, label: t('hw.relic'), value: def.name }); continue; }
     const r = rune(id);
-    rows.push({ id: `spell.${id}`, label: def.name, value: `${t('cw.rank', { n: roman(rankOf(id) + 1) })}${r ? ` · ${r.name}` : ''}` });
+    rows.push({ id: `spell.${id}`, label: def.name, value: `${t('hw.rank', { n: roman(rankOf(id) + 1) })}${r ? ` · ${r.name}` : ''}` });
   }
-  for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) rows.push({ id: `tal.${id}`, label: CARDS.find(c => c.id === id)?.name ?? id, value: t('cw.stage', { n: roman(n) }) });
+  for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) rows.push({ id: `tal.${id}`, label: CARDS.find(c => c.id === id)?.name ?? id, value: t('hw.stage', { n: roman(n) }) });
   for (const id of Object.keys(state.supports ?? {})) rows.push({ id: `sup.${id}`, label: SUPPORTS.find(x => x.id === id)?.name ?? id, value: t('cardui.kindName.support') });
   const w = equipped();
-  rows.push({ id: 'weapon', label: t('cw.weapon'), value: w && heroModel.weapon ? weaponName(w) : DASH });
+  rows.push({ id: 'weapon', label: t('hw.weapon'), value: w && heroModel.weapon ? weaponName(w) : DASH });
   return rows;
 }
 
@@ -158,8 +158,8 @@ export function heroStats(live: boolean): { main: StatRow[]; groups: StatGroup[]
     { id: 'def', name: t('hw.g.def'), rows: [row('hp'), regenRow(row('regen')), row('dr'), row('dodge'), row('speed')] },
     { id: 'res', name: t('hw.g.res'), rows: ['mana', 'manaS', 'regenCombat', 'cost'].map(row) },
     { id: 'el', name: t('hw.g.el'), rows: elementRows(live) },
-    { id: 'dmgRun', name: t('cw.dmgTitle'), rows: dmgRows(live) },
+    { id: 'dmgRun', name: t('hw.dmgTitle'), rows: dmgRows(live) },
   ];
-  if (live) groups.push({ id: 'build', name: t('cw.tab.build'), rows: buildRows() });
+  if (live) groups.push({ id: 'build', name: t('hw.tab.build'), rows: buildRows() });
   return { main: MAIN.map(row), groups };
 }

@@ -54,7 +54,7 @@ document.body.insertAdjacentHTML('beforeend', `<div id="heroModal" class="modal"
       <div class="hwFinds" id="hwFinds"></div>
       <div class="hwBody" id="hwBody"><div class="hwGrid" id="hwGrid"></div><div class="hwTree" id="hwTree" role="tree"></div></div>
       <div class="hwSel" id="hwSel"></div>
-      <div class="hwFoot"><span id="hwDust"></span><button type="button" class="fg-btn alt" id="hwChest">${t('wm.toChest')}</button><button type="button" class="fg-btn alt" id="hwFuse" disabled title="${t('shop.soon')}"></button></div>
+      <div class="hwFoot"><span id="hwDust"></span><button type="button" class="fg-btn alt" id="hwChest">${t('hw.toChest')}</button><button type="button" class="fg-btn alt" id="hwFuse" disabled title="${t('shop.soon')}"></button></div>
       <p class="hwHint" id="hwHint"></p>
     </div>
   </div>
@@ -82,7 +82,7 @@ export function gearDelta(g: GearItem): number | null {
 export function gearTip(g: GearItem, compare = true): TipData {
   const rar = rarityOf(g), rows = gearRows(g), main = gearMainValue(g), on = worn(g.slot), d = gearDelta(g);
   const lines = rows.filter(r => r.kind !== 'value').map(r => `<span class="tAffix"${r.color ? ` style="color:${r.color}"` : ''}>◆ ${r.text}</span>`);
-  lines.push(`<span class="tAffix">◆ ${t('wm.maker')}: ${makerName(gearMaker(g))} · ${t('hw.group')}: ${groupName(gearGroup(g))}</span>`);
+  lines.push(`<span class="tAffix">◆ ${t('hw.maker')}: ${makerName(gearMaker(g))} · ${t('hw.group')}: ${groupName(gearGroup(g))}</span>`);
   if (g.s.setId) lines.push(`<span class="tLegend">◆ SET ${t(`look.magier.${g.s.setId}.name`)} · 5/5: ${perfectText(g.s.setId, g.slot)}</span>`);
   const tip: TipData = {
     title: gearName(g), color: rar.color, border: rar.color, sub: `${rar.name} · ${slotName(g.slot)}`,
@@ -137,7 +137,7 @@ function slotEl(slot: Slot | 'waffe') {
   else if (isW && isWarrior()) b.innerHTML = '<span class="hwSlotEmpty"></span>';
   else if (isW) { const src = weaponThumb(pilger()); b.innerHTML = `<span class="hwSlotEmpty pilger">${src ? `<img src="${src}" alt="">` : tabSvg(slot)}</span>`; }   // kein Stab: die Figur trägt den Pilgerast, gedimmt
   else b.innerHTML = `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
-  b.append(el('small', '', isW ? t('cw.weapon') : slotName(slot)));
+  b.append(el('small', '', isW ? t('hw.weapon') : slotName(slot)));
   if (g?.s.setId) b.append(el('b', 'hwSetMark', 'SET'));
   if (w) attachWeaponCard(b, w);
   else if (g) attachTip(b, () => gearTip(g));
@@ -158,7 +158,7 @@ function lookEl(slot: Slot | 'waffe') {
   const b = el('button', `hwLook${on ? ' on' : ''}`);
   b.type = 'button';
   b.title = on ? `${t(KOSMETIK[on].name)} · ${t('hw.lookClear')}` : free.length ? t('hw.lookSet', { name: t(KOSMETIK[free[0]].name) }) : t('hw.lookNone');
-  b.setAttribute('aria-label', `${t('hw.look')} ${slot === 'waffe' ? t('cw.weapon') : slotName(slot)}: ${b.title}`);
+  b.setAttribute('aria-label', `${t('hw.look')} ${slot === 'waffe' ? t('hw.weapon') : slotName(slot)}: ${b.title}`);
   if (on) b.innerHTML = kosmetikThumbHtml(on, slotSvg('kosmetik', 'currentColor'));
   b.disabled = viewOnly() || (!on && !free.length) || !mageGear();
   b.addEventListener('click', () => { wearKosmetik(slot, on ? null : free[0]); changed(); });
@@ -289,14 +289,14 @@ function options(k: Kind, g: string): Opt[] {
   if (g === 'set') return [...Object.keys(SETS).map(x => ({ id: x, name: t(`look.magier.${x}.name`), color: SETS[x].color })), NONE];
   return [];
 }
-const GROUP_NAME = (g: string) => ({ type: t('inv.type'), school: t('wm.school'), el: t('inv.element'), maker: t('wm.maker'), val: t('wm.values'), focus: t('hw.focus'), set: t('hw.set') })[g] ?? g;
+const GROUP_NAME = (g: string) => ({ type: t('inv.type'), school: t('hw.school'), el: t('inv.element'), maker: t('hw.maker'), val: t('hw.values'), focus: t('hw.focus'), set: t('hw.set') })[g] ?? g;
 const mainW = w => mainStrength(mainValue(w));
 const mainG = (g: GearItem) => mainStrength(gearMainValue(g));
 const SORTS: Record<string, [() => string, (k: Kind) => (a, b) => number]> = {
   rar: [() => t('inv.sort.rar'), () => (a, b) => b.r - a.r || b.id - a.id],
   neu: [() => t('inv.sort.neu'), () => (a, b) => b.id - a.id],
-  main: [() => t('wm.sort.main'), k => (a, b) => (k === 'w' ? mainW(b) - mainW(a) : mainG(b) - mainG(a)) || b.r - a.r],
-  maker: [() => t('wm.maker'), k => (a, b) => String(attrs(k).maker(a)).localeCompare(String(attrs(k).maker(b))) || b.r - a.r],
+  main: [() => t('hw.sort.main'), k => (a, b) => (k === 'w' ? mainW(b) - mainW(a) : mainG(b) - mainG(a)) || b.r - a.r],
+  maker: [() => t('hw.maker'), k => (a, b) => String(attrs(k).maker(a)).localeCompare(String(attrs(k).maker(b))) || b.r - a.r],
 };
 const DEF = { type: null, school: null, el: null, maker: null, val: null, focus: null, set: null, rar: [0, 1, 2, 3, 4, 5], sort: 'rar', q: '' };
 const fKey = (k: Kind) => k === 'g' ? 'gearFilter' : 'weaponFilter';
@@ -370,7 +370,7 @@ function buildBar(k: Kind) {
   bar.innerHTML = `${Object.keys(attrs(k)).map(g => `<div class="hwDrop" data-g="${g}"><button type="button" class="hwChip" aria-haspopup="listbox" aria-expanded="false"><small>${GROUP_NAME(g)}</small><b></b></button><div class="hwList fg-panel" role="listbox" hidden></div></div>`).join('')}
     <div class="hwRars"><small>${t('inv.rarity')}</small><span>${RAR_DIA()}</span></div>
     <div class="hwDrop" data-g="sort"><button type="button" class="hwChip" aria-haspopup="listbox" aria-expanded="false"><small>${t('inv.sort')}</small><b></b></button><div class="hwList fg-panel" role="listbox" hidden></div></div>
-    <label class="hwSearch"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hwQ" placeholder="${t('wm.search')}" aria-label="${t('wm.search')}"></label>`;
+    <label class="hwSearch"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hwQ" placeholder="${t('hw.search')}" aria-label="${t('hw.search')}"></label>`;
   for (const drop of bar.querySelectorAll<HTMLElement>('.hwDrop')) {
     const g = drop.dataset.g, list = drop.querySelector<HTMLElement>('.hwList'), btn = drop.querySelector('.hwChip');
     btn.addEventListener('click', () => {
@@ -410,8 +410,8 @@ function chipValue(k: Kind, g: string) {
   if (g === 'sort') return (SORTS[f.sort] ?? SORTS.rar)[0]();
   const s = f[g];
   if (!s) return t('inv.all');
-  if (!s.length) return t('wm.none');
-  return s.length === 1 ? options(k, g).find(o => o.id === s[0])?.name ?? s[0] : t('wm.picked', { n: s.length });
+  if (!s.length) return t('hw.none');
+  return s.length === 1 ? options(k, g).find(o => o.id === s[0])?.name ?? s[0] : t('hw.picked', { n: s.length });
 }
 function renderList(drop: HTMLElement) {
   const k = barKind, g = drop.dataset.g, list = drop.querySelector<HTMLElement>('.hwList'), f = F(k);
@@ -422,7 +422,7 @@ function renderList(drop: HTMLElement) {
   const s = f[g];
   list.innerHTML = options(k, g).map(o => `<label class="hwOpt"><input type="checkbox" data-v="${o.id}"${!s || s.includes(o.id) ? ' checked' : ''}>`
     + `${o.color ? `<i style="background:${o.color}"></i>` : ''}<span>${o.name}</span>${o.sub ? `<small>${o.sub}</small>` : ''}</label>`).join('')
-    + `<div class="hwAllNone"><button type="button" data-all="1">${t('inv.all')}</button><button type="button" data-all="0">${t('wm.none')}</button></div>`;
+    + `<div class="hwAllNone"><button type="button" data-all="1">${t('inv.all')}</button><button type="button" data-all="0">${t('hw.none')}</button></div>`;
 }
 function closeLists(except?: HTMLElement) {
   for (const d of document.querySelectorAll<HTMLElement>('#heroModal .hwDrop')) if (d !== except) {
@@ -435,8 +435,8 @@ $('heroModal').addEventListener('pointerdown', e => { if (!(e.target as HTMLElem
 // Aktive Filter als Chips mit ✕
 function activeChips(k: Kind) {
   const f = F(k), out: [string, Record<string, any>][] = [];
-  for (const g of Object.keys(attrs(k))) if (f[g]) out.push([`${GROUP_NAME(g)}: ${f[g].length ? f[g].map(v => options(k, g).find(o => o.id === v)?.name ?? v).join(', ') : t('wm.none')}`, { [g]: null }]);
-  if (f.rar.length < CARD_RARITIES.length) out.push([`${t('inv.rarity')}: ${f.rar.map(i => CARD_RARITIES[i].name).join(', ') || t('wm.none')}`, { rar: DEF.rar }]);
+  for (const g of Object.keys(attrs(k))) if (f[g]) out.push([`${GROUP_NAME(g)}: ${f[g].length ? f[g].map(v => options(k, g).find(o => o.id === v)?.name ?? v).join(', ') : t('hw.none')}`, { [g]: null }]);
+  if (f.rar.length < CARD_RARITIES.length) out.push([`${t('inv.rarity')}: ${f.rar.map(i => CARD_RARITIES[i].name).join(', ') || t('hw.none')}`, { rar: DEF.rar }]);
   if (f.q) out.push([`„${f.q}“`, { q: '' }]);
   const box = $('hwChips');
   box.textContent = '';
@@ -467,7 +467,7 @@ export function tipOf(e: Entry): TipData | null {
   if (e.kind === 'g') return gearTip(e.item);
   if (e.kind === 'k') {
     const L = KOSMETIK[e.item];
-    return { title: t(L.name), color: 'var(--fg-title)', sub: `${t('hw.cosmetic')} · ${L.slot === 'waffe' ? t('cw.weapon') : slotName(L.slot)}`,
+    return { title: t(L.name), color: 'var(--fg-title)', sub: `${t('hw.cosmetic')} · ${L.slot === 'waffe' ? t('hw.weapon') : slotName(L.slot)}`,
       short: [kosmetikHint(e.item), hasKosmetik(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : `🔒 ${kosmetikSource(e.item)}`].filter(Boolean).join('<br>') };   // Reaktion, dann Zustand bzw. Quelle (Box, Set, ⭐ Meilenstein mit Fortschritt)
   }
   return null;
@@ -504,7 +504,7 @@ function setFolder(f: string, open: boolean) {
   const cur = uiSettings.heroOpen ?? [];
   setUi('heroOpen', open ? [...new Set([...cur, f])] : cur.filter(x => x !== f));
 }
-const tabName = (x: Tab) => x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x);
+const tabName = (x: Tab) => x === 'waffen' ? t('hw.title') : x === 'kosmetik' ? t('hw.cosmetic') : slotName(x);
 const tabFill = (x: Tab) => x === 'kosmetik' ? `${tabCount(x)}` : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`;
 const tabLabel = (x: Tab) => `${tabName(x)} ${tabFill(x)}`;
 const subOf = (e: Entry): string => {
@@ -513,7 +513,7 @@ const subOf = (e: Entry): string => {
   return elm in ELEMENTS ? elm : 'none';
 };
 const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...KOSMETIK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
-const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('cw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
+const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('hw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
 const subColor = (x: Tab, sub: string) => x === 'kosmetik' || sub === 'none' ? '' : elementColor(sub);
 type TreeRow = { key: string; tab: Tab; depth: 0 | 1 | 2; parent?: string; folder?: string; sub?: string; n?: [number, number]; entry?: Entry };
 // Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten). Unterordner nur, wenn sie Einträge haben
@@ -584,14 +584,14 @@ let shift = false;
 function renderSel(list: Entry[]) {
   const box = $('hwSel'), e = list.find(x => x.key === sel);
   box.textContent = '';
-  if (!e) { box.append(el('span', 'hwMuted', list.length ? t('hw.selHint') : tab === 'waffen' ? t('wm.empty') : t('gear.invEmpty'))); return; }
+  if (!e) { box.append(el('span', 'hwMuted', list.length ? t('hw.selHint') : tab === 'waffen' ? t('hw.empty') : t('gear.invEmpty'))); return; }
   const other = e.kind === 'w' ? equipped() : e.kind === 'g' ? worn(e.item.slot) : null;
   const show = shift && other && other !== e.item ? { ...e, item: other } as Entry : e;
   const name = el('b', 'hwSelName', entryName(show));
   name.style.color = rarColor(show);
   const info = el('div', 'hwSelInfo');
   info.append(name);
-  const sub = shift && show !== e ? t('wm.compare') : e.kind === 'k' ? t('hw.cosmetic') : (e.kind === 'w' ? effectRows(e.item) : gearRows(e.item)).find(r => r.kind === 'value')?.text ?? '';
+  const sub = shift && show !== e ? t('hw.compare') : e.kind === 'k' ? t('hw.cosmetic') : (e.kind === 'w' ? effectRows(e.item) : gearRows(e.item)).find(r => r.kind === 'value')?.text ?? '';
   const d = show === e ? deltaOf(e) : null;
   const subEl = el('small', '', sub);
   if (d !== null) subEl.append(el('span', d > 0 ? 'up' : 'down', ` ${fmtDelta(d)}`));
@@ -678,7 +678,7 @@ function renderInv() {
   for (const b of document.querySelectorAll<HTMLElement>('.hwToggle button')) { b.classList.toggle('on', (b.dataset.v === 'tree') === tree); b.setAttribute('aria-pressed', String((b.dataset.v === 'tree') === tree)); }
   if (tree ? !treeRows().some(r => r.key === sel) : !list.some(e => e.key === sel)) sel = list.find(isOn)?.key ?? list[0]?.key ?? null;
   if (tree && !treeRows().some(r => r.key === sel)) sel = `f:${tab}`;
-  $('hwCount').textContent = k === 'k' ? '' : t('wm.count', { a: list.filter(e => !e.dim).length, b: list.length });
+  $('hwCount').textContent = k === 'k' ? '' : t('hw.count', { a: list.filter(e => !e.dim).length, b: list.length });
   // Probe tragen: gewählte Waffe an der Figur
   const se = list.find(e => e.key === sel);
   heroModel.previewWeapon(se?.kind === 'w' && se.item !== equipped() ? se.item : null);
@@ -692,7 +692,7 @@ function renderInv() {
   // Verschmelzen gibt es im Code nicht: Knopf nur als Anzeige, deaktiviert
   const pool = k === 'w' ? meta.inv.filter(w => w !== equipped()) : k === 'g' ? gearInv(tab as Slot).filter(g => g !== worn(tab as Slot)) : [];
   const counts = CARD_RARITIES.map((_, r) => pool.filter(x => x.r === r).length);
-  $('hwFuse').textContent = t('wm.fuse', { r: CARD_RARITIES[Math.max(0, counts.findIndex(n => n >= 3))].name });
+  $('hwFuse').textContent = t('hw.fuse', { r: CARD_RARITIES[Math.max(0, counts.findIndex(n => n >= 3))].name });
   $('hwHint').textContent = viewOnly() ? t('hw.hintRun') : t('hw.hintKeys');
   $('hwHint').title = t('hw.hint');
 }
