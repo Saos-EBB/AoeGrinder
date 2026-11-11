@@ -112,7 +112,7 @@ function pickUp(d: Drop, auto = false, overfill = false) {
     return true;
   }
   if (d.kind === 'weapon') {
-    if (inventoryFull() && !overfill) {   // overfill: Finale, das Inventar darf kurz überlaufen (Waffenmenü zeigt mehr Reihen, Kiste bleibt zu bis aussortiert)
+    if (inventoryFull() && !overfill) {   // overfill: Finale, das Inventar darf kurz überlaufen (Charakterfenster heroWindow.ts zeigt mehr Reihen, Kiste bleibt zu bis aussortiert)
       if (!auto) { combatText(player.pos, t('loot.invFull', { n: ROLLS.invMax }), 'miss', 2.6); return false; }
       const n = ROLLS.refund[d.weapon.r];   // Portal: kein Platz → Staub statt Verlust
       earnDust(n); saveMeta();

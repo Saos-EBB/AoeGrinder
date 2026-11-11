@@ -20,7 +20,7 @@ const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1,
 const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
 const figureName = () => currentFigure()?.name ?? '';
 
-// Beim ersten Frame, wenn alle Module ihr Markup eingehängt haben: Tracker übernimmt #siegeHud (siege.ts, boss.ts schreiben hinein)
+// Beim ersten Frame, wenn alle Module ihr Markup eingehängt haben: Tracker übernimmt #siegeHud (waves.ts schreibt hinein)
 let ready = false;
 function init() {
   ready = true;

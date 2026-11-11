@@ -406,7 +406,7 @@ export function burnMob(mob, amount) {
   if (mob.hp <= 0) killMob(mob);
 }
 
-// Tod eines Mobs melden (Blutlache bei Infekt, blood.ts). Liste an einer Funktion: Import-Kreis
+// Tod eines Mobs melden (loot.ts, mobKinds.ts, legends.ts, realMen.ts). Liste an einer Funktion: Import-Kreis
 function deathHooks(): any[] { return (deathHooks as any).list ??= []; }
 export function onMobDeath(fn) { deathHooks().push(fn); }
 

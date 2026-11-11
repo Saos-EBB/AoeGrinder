@@ -107,6 +107,7 @@ Ersetzt den Normal-Modus (ID bleibt `normal`, Rangliste läuft weiter, `SCORE_VE
 | Tee-Schale | Mana voll, 10 s Abklingzeiten −30 % |
 
 ## Blutmagier (v27, Entwurf aus `claude/blutmagier-konzept.md`)
+_Historisch: seit v31 ersetzt durch den Seuchenmagier (`spells/plague.ts`); `BLOOD` und `spells/blood.ts` gibt es nicht mehr._
 Modus Blut only (`blood`, ×1,4), Skin `blut`. Zahlen in `BLOOD` (`config.ts`), Spells in `spells/blood.ts`. Grundwerte: −40 % Leben, +40 % Schaden, Zauber kosten Leben (Anteil der max. Leben, `lifePct`), bei weniger Leben mehr Schaden (bei 0 Leben +60 %, linear), kein Trinken, keine Regeneration außerhalb des Kampfes.
 - **Infekt** (passiv): jeder Treffer eines Blut-Spells hängt 4 s an, höchstens 5 Stapel = 20 s. Pro Sekunde 1 % der Mob-Leben × Stapel als fester Schaden, du heilst um denselben Betrag. Mob dunkelrot, Tropfen, Stapel-Zahl am Namensschild.
 - **Blutlachen** bei Sprung-Landung und beim Tod eines Infizierten: 6 s, 3 yd, Gegner 20 % langsamer und 5 Schaden pro s (mit Infekt), du heilst darin 1 %/s. Höchstens 8.

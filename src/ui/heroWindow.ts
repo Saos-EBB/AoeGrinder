@@ -1,5 +1,5 @@
 // Ein Fenster für Waffen, Charakter und Ausrüstung (Handoff docs/handoffs/fenster.md, Vorlage docs/ref/charakterfenster/, Layout A).
-// Links Figur mit Slots und Werten, rechts das Inventar. X und I öffnen und schließen es (input.ts charWin/gearWin), Esc schließt.
+// Links Figur mit Slots und Werten, rechts das Inventar. X und I öffnen und schließen es (Bind-IDs charWin/gearWin in input.ts), Esc schließt.
 // Pausiert (menus.ts BLOCKING), geht auch während der Kartenwahl und aus dem Pause-Menü. Im Run nur ansehen, im Hauptmenü voll.
 // Gear-Teile tragen Hersteller und Gruppe (gear.ts makerOf/groupOf), fehlt eins → „—“.
 

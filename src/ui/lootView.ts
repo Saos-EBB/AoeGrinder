@@ -1,5 +1,5 @@
 // Gear-Funde im Run-Ende (Handoff items.md Schritt 2): Liste der Funde und, wenn ein Slot-Tab voll war, die Auswahl, was bleibt.
-// Kein Verlust ohne Rückfrage: Überzählige Teile warten in meta.gearOver, bis die Auswahl bestätigt ist (auch später aus dem Ausrüstungsfenster).
+// Kein Verlust ohne Rückfrage: Überzählige Teile warten in meta.gearOver, bis die Auswahl bestätigt ist (auch später aus dem Charakterfenster heroWindow.ts).
 // Look: Klassen des Run-Endes (endRow, gPanel) und der Filterlisten im Fenster heroWindow.ts (hwKeepOpt in heroWindow.css).
 
 import { state } from '../state';

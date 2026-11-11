@@ -1,5 +1,7 @@
 # Handoff: UI-Mix einbauen (3 Flavors), alte UIs + Zahlen raus
 
+> Historisch: Waffenmenü und Ausrüstungsfenster sind inzwischen durch das Charakterfenster `ui/heroWindow.ts` ersetzt (siehe [fenster.md](fenster.md)).
+
 Stand 2026-11-08 (inkl. Waffenmenü mit Baukasten-Filtern + Einstellungen pro Flavor). Ersetzt `claude/handoff-ui-komplett.md` und `claude/ui-auswahl.md` (beide überholt).
 **Vorher:** `fg-ui-mix.zip` (neueste Version aus dem Chat) nach `~/Downloads/` entpacken → `~/Downloads/fg-ui-mix/` (README.md = Übersicht).
 Danach (separat): Spell-Icons-Prompt.

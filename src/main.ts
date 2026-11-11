@@ -175,7 +175,7 @@ function loop(t) {
   if (!state.paused && simDt > 0) { state.now += simDt; update(simDt); }
   updateVisuals(dt);
   tickHeat(t);
-  renderFigPreview();   // Waffenmenü: Figur in die Ecke, wird gleich übermalt
+  renderFigPreview();   // Charakterfenster (heroWindow.ts): Figur in die Vorschau, wird gleich übermalt
   composer.render();
   updatePerf(t);
   updateHud();

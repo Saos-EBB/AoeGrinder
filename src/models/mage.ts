@@ -81,7 +81,7 @@ function puff(p, v, color, size, life, grav) {
 const KOS_OPTS = { puff, say: figSay, vals: figVals };
 
 // Element der ausgerüsteten Waffe für die Farbe der Strichmagier. Nicht in ELEMENTS (alte Waffen, alte Elemente) = kein Element
-// Waffenmenü: gewählte Waffe zur Probe in der Hand, ohne sie auszurüsten (null = ausgerüstete)
+// Charakterfenster (heroWindow.ts): gewählte Waffe zur Probe in der Hand, ohne sie auszurüsten (null = ausgerüstete)
 let preview = null;
 const shownWeapon = () => preview ?? equipped();
 function weaponElement() {
@@ -184,7 +184,7 @@ export const mage = {
   get skin() { return skin; },
   get look() { return look; },
   get lookWeapon() { return lookWeapon(skin); },   // Waffe, an der die Krieger-Skins hängen (Magier: die Schule)
-  refreshLook() { if (lookOf(skin) !== look || gearKey(skin) !== gk) setSkin(skin); },   // Skin-Wahl im Hauptmenü, Spielstand-Code, Gear angelegt (Ausrüstungsfenster)
+  refreshLook() { if (lookOf(skin) !== look || gearKey(skin) !== gk) setSkin(skin); },   // Skin-Wahl im Hauptmenü, Spielstand-Code, Gear angelegt (Charakterfenster heroWindow.ts)
   get hero() { return cur; },
   get warWeapon() { return warWeapon; },
   setWarWeapon(id) {
@@ -195,7 +195,7 @@ export const mage = {
   get weapon() { return weapon; },
   setSkin,
   refreshWeapon() { wield(); },   // Wahl im Hauptmenü
-  previewWeapon(w) { if (preview === w) return; preview = w; wield(); },   // Waffenmenü: Probe tragen, null = zurück zur ausgerüsteten
+  previewWeapon(w) { if (preview === w) return; preview = w; wield(); },   // Charakterfenster (heroWindow.ts): Probe tragen, null = zurück zur ausgerüsteten
   // Anzeige 0 … 1 für die Stufen-Effekte der Strichmagier (Hitze, Kälte, Ladungen, Batterie)
   setMeter(v) { cur.setMeter?.(v); },
   // Sekunden: das Modell hält Werte ≤ 1 dafür, ms unter 1 würden sonst falsch gelesen.

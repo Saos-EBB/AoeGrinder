@@ -31,7 +31,7 @@ export const MODIFIERS = [
 ];
 
 export const MODES = [
-  { id: 'normal', name: t('mode.normal.name'), mods: [] },   // ID bleibt, damit die Rangliste weiterläuft; 4 Zufalls-Tasten (randomMage.ts)
+  { id: 'normal', name: t('mode.normal.name'), mods: [] },   // ID bleibt, damit die Rangliste weiterläuft; 4 Zufalls-Tasten (spells/random.ts)
   { id: 'hard', name: t('mode.hard.name'), mods: ['half'] },
   { id: 'sprint', name: t('mode.sprint.name'), mods: ['time'] },
   { id: 'frostonly', name: t('mode.frostonly.name'), mods: ['frost'] },
