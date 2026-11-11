@@ -1,7 +1,7 @@
 // UI-Einstellungen in einem localStorage-Eintrag. Fehlende Felder bekommen die Standardwerte (wie meta.ts),
 // unbekannte Felder (alte HUD-Presets, Zahlen-Stile, Zahlen-Schriften) werden beim Laden verworfen.
 
-const STORE = 'frostgrind.ui.v1';
+import { KEYS, read, write } from '../storage';
 
 export const UI_DEFAULTS = {
   flavor: 'hoellenfeste',  // UI-Flavor (ui/flavors): hoellenfeste, schlachtbank, krypta
@@ -40,15 +40,15 @@ function clean(raw: Record<string, any>): Partial<UiSettings> {
   return out;
 }
 function load(): UiSettings {
-  try { return { ...UI_DEFAULTS, ...clean(JSON.parse(localStorage.getItem(STORE) || '{}')) }; } catch { return { ...UI_DEFAULTS }; }
+  try { return { ...UI_DEFAULTS, ...clean(read(KEYS.ui, {})) }; } catch { return { ...UI_DEFAULTS }; }   // clean scheitert an falscher Form (z. B. hudOverrides: null)
 }
 export const uiSettings = load();
 uiSettings.profiles = uiSettings.profiles.map(p => p && { ...p, data: clean(p.data) });
-try { localStorage.setItem(STORE, JSON.stringify(uiSettings)); } catch { /* kein Storage */ }
+write(KEYS.ui, uiSettings);
 
 export function setUi<K extends keyof UiSettings>(key: K, value: UiSettings[K]) {
   uiSettings[key] = value;
-  try { localStorage.setItem(STORE, JSON.stringify(uiSettings)); } catch { /* kein Storage */ }
+  write(KEYS.ui, uiSettings);
   applyUi();
 }
 
@@ -64,7 +64,7 @@ export function loadProfile(i: number) {
   const p = uiSettings.profiles[i];
   if (!p) return false;
   Object.assign(uiSettings, { ...UI_DEFAULTS, ...structuredClone(clean(p.data)), devPanel: uiSettings.devPanel, profiles: uiSettings.profiles });
-  try { localStorage.setItem(STORE, JSON.stringify(uiSettings)); } catch { /* kein Storage */ }
+  write(KEYS.ui, uiSettings);
   applyUi();
   return true;
 }

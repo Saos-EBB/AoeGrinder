@@ -4,19 +4,19 @@
 
 import { de } from './de';
 import { en } from './en';
+import { KEYS, readRaw, writeRaw } from '../storage';
 
 export type Lang = 'de' | 'en';
 export const LANGS: [Lang, string][] = [['de', 'Deutsch'], ['en', 'English']];
-const STORE = 'frostgrind.lang';
 const DICTS: Record<Lang, Record<string, string>> = { de, en };
 
-export const lang: Lang = (() => { try { const l = localStorage.getItem(STORE); return l === 'en' ? 'en' : 'de'; } catch { return 'de'; } })();
+export const lang: Lang = readRaw(KEYS.lang) === 'en' ? 'en' : 'de';
 document.documentElement.lang = lang;
 export const locale = lang === 'de' ? 'de-DE' : 'en-US';   // für toLocaleString und Datum
 
 export function setLang(l: Lang) {
   if (l === lang) return;
-  try { localStorage.setItem(STORE, l); } catch { /* kein Storage: bleibt bei DE */ }
+  writeRaw(KEYS.lang, l);   // kein Storage: bleibt bei DE
   location.reload();
 }
 

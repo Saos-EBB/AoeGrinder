@@ -58,8 +58,9 @@ describe('cleanStats', () => {
     expect(cleanStats({ kills: -5, dust: 'abc' })).toEqual({ kills: 0, dust: 0 });
     expect(cleanStats({ kills: NaN, dust: null })).toEqual({ kills: 0, dust: 0 });
   });
-  it('Infinity bleibt heute Infinity (Ist-Stand; in JSON wird daraus null, beim nächsten Laden 0)', () => {
-    expect(cleanStats({ dust: Infinity }).dust).toBe(Infinity);
+  it('Infinity und NaN werden 0 (seit E2: nur endliche Zahlen)', () => {
+    expect(cleanStats({ dust: Infinity }).dust).toBe(0);
+    expect(cleanStats({ kills: NaN }).kills).toBe(0);
   });
   it('nur kills und dust, Fremdes fällt weg', () => {
     expect(cleanStats({ kills: 3, dust: 4, extra: 1 })).toEqual({ kills: 3, dust: 4 });

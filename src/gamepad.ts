@@ -1,6 +1,7 @@
 // Gamepad API, Standard-Mapping: einmal pro Frame abfragen. Ereignisse gibt es nur fürs Ein- und Ausstecken.
 
 import { spellAtAction } from './hotbar';
+import { KEYS, read, write } from './storage';
 import { startDodge } from './player';
 import { heroOpen, toggleHero, heroCommand } from './ui/heroWindow';
 import { openPause, closePause, cycleChar, cycleMap } from './ui/mainMenu';
@@ -47,12 +48,11 @@ export const PAD_ACTIONS = [
   { id: 'use',       label: t('bind.use'),                btn: -1 },   // alle 16 Standard-Knöpfe sind belegt: frei, belegbar unter Tastenbelegung → Pad
 ];
 const padDefaults = () => Object.fromEntries(PAD_ACTIONS.map(a => [a.id, a.btn]));
-const PAD_STORE = 'frostgrind.padbinds.v1';
 export const padBinds: Record<string, number> = padDefaults();
-try { Object.assign(padBinds, JSON.parse(localStorage.getItem(PAD_STORE) || '{}')); } catch { /* kein Storage */ }
+Object.assign(padBinds, read(KEYS.padBinds, {}));
 
 export function savePadBinds() {
-  try { localStorage.setItem(PAD_STORE, JSON.stringify(padBinds)); } catch { /* egal */ }
+  write(KEYS.padBinds, padBinds);
 }
 export function resetPadBinds() { Object.assign(padBinds, padDefaults()); }
 

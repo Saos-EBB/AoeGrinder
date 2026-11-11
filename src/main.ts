@@ -37,6 +37,7 @@ import * as cardsMod from './cards';
 import * as weaponMod from './weaponRolls';
 import * as metaMod from './meta';
 import { initGear } from './gear';
+import { normalizeMeta } from './metaNormalize';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';
 import * as meterMod from './schoolMeter';
@@ -70,7 +71,7 @@ import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMe
 import { batteryMode, batteryMax } from './battery';
 import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
 import { updateFigEvents, setFigSay } from './figEvents';
-initGear();   // gespeichertes Gear säubern, sobald alle Module geladen sind
+initGear(normalizeMeta);   // gespeicherten Stand säubern, sobald alle Module geladen sind
 setFigSay(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
 connectPortal({ switchZone, bossActive });
 

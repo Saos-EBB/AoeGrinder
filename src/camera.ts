@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { KEYS, readRaw, writeRaw } from './storage';
 import { state, player } from './state';
 import { camera } from './render';
 import { heightAt, obstacles } from './world';
@@ -26,13 +27,12 @@ function segmentHitsCircle(a, b, c, r) {
 
 // Auto-Kamera: Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen. Ohne sie geht sie nur hinter die Blickrichtung (player.ts).
 // Ziehen mit der linken Maustaste hat Vorrang, rückwärts bleibt sie hinter der Figur.
-const AUTO_CAM_STORE = 'frostgrind.autocam.v1', AUTO_CAM_RATE = 3;   // PH: 1/s
-let autoCam = false;
-try { autoCam = localStorage.getItem(AUTO_CAM_STORE) === '1'; } catch { /* kein Storage */ }
+const AUTO_CAM_RATE = 3;   // PH: 1/s
+let autoCam = readRaw(KEYS.autoCam) === '1';
 export const autoCamOn = () => autoCam;
 export function setAutoCam(on) {
   autoCam = on;
-  try { localStorage.setItem(AUTO_CAM_STORE, on ? '1' : '0'); } catch { /* egal */ }
+  writeRaw(KEYS.autoCam, on ? '1' : '0');
 }
 export function updateAutoCam(dt, dragging) {
   if (!autoCam || state.paused || player.moveState === 'idle' || dragging) return;

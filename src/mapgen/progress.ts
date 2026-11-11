@@ -3,6 +3,7 @@
 // kommt mit in den Spielstand-Code (ui/saveCode.ts). Dev: „alles offen“ (localStorage, nur dieser Browser) oder ?maps=all.
 
 import { player, state } from '../state';
+import { KEYS, readRaw, writeRaw } from '../storage';
 import { meta, saveMeta } from '../meta';
 import { zone } from '../world';
 import { t } from '../i18n';
@@ -11,11 +12,10 @@ import type { ThemeId } from './types';
 
 export const ORDER: ThemeId[] = ['wald', 'wueste', 'kanaele', 'kathedrale', 'hoelle'];
 export const UNLOCK_LEVEL = 100;   // PH
-const DEV_KEY = 'frostgrind.dev.mapsOpen';
 
-let devOpen = (() => { try { return localStorage.getItem(DEV_KEY) === '1'; } catch { return false; } })() || /[?&]maps=all/.test(location.search);
+let devOpen = readRaw(KEYS.devMapsOpen) === '1' || /[?&]maps=all/.test(location.search);
 export const devMapsOpen = () => devOpen;
-export function setDevMapsOpen(on: boolean) { devOpen = on; try { localStorage.setItem(DEV_KEY, on ? '1' : '0'); } catch { /* egal */ } }
+export function setDevMapsOpen(on: boolean) { devOpen = on; writeRaw(KEYS.devMapsOpen, on ? '1' : '0'); }
 
 // Gespeicherte Liste säubern: nur bekannte Themes, Wald immer offen
 export function cleanMaps(list: unknown): ThemeId[] {

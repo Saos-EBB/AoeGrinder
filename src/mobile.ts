@@ -4,6 +4,7 @@
 // Welche Taste welchen Zauber trägt, ist die Leisten-Reihenfolge (hotbar.ts), einstellbar unter Einstellungen → Steuerung.
 
 import { spellAtAction, slotAt, posOf, swapPos } from './hotbar';
+import { KEYS, readRaw, writeRaw } from './storage';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { ICONS } from './ui/icons';
@@ -273,11 +274,10 @@ function showCd(b: Btn, id: string) {
 }
 
 // ---------- Einstellungen → Steuerung: Zoom und Tastenbelegung ----------
-const ZOOM_STORE = 'frostgrind.mobilezoom.v1';
 export const ZOOM = { min: 7, max: 14, def: 10 };   // PH: Kameraabstand in yd, dunkel.ts deckelt bei 14
 let zoomDist = ZOOM.def;
 function loadZoom() {
-  try { zoomDist = Number(localStorage.getItem(ZOOM_STORE)) || ZOOM.def; } catch { /* kein Storage */ }
+  zoomDist = Number(readRaw(KEYS.mobileZoom)) || ZOOM.def;
   zoomDist = Math.min(ZOOM.max, Math.max(ZOOM.min, zoomDist));
 }
 function settings() {
@@ -286,7 +286,7 @@ function settings() {
   const sec = document.createElement('div');
   sec.id = 'setMobile';
   const zoom = Object.assign(document.createElement('input'), { type: 'range', min: ZOOM.min, max: ZOOM.max, step: 1, value: String(zoomDist), id: 'setMobileZoom' });
-  zoom.addEventListener('input', () => { zoomDist = +zoom.value; try { localStorage.setItem(ZOOM_STORE, zoom.value); } catch { /* egal */ } });
+  zoom.addEventListener('input', () => { zoomDist = +zoom.value; writeRaw(KEYS.mobileZoom, zoom.value); });
   const zrow = document.createElement('label');
   zrow.className = 'setRow';
   zrow.append(Object.assign(document.createElement('span'), { textContent: 'Zoom (nah ↔ weit)' }), zoom);

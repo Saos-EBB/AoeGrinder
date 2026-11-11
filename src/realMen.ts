@@ -2,6 +2,7 @@
 // Wut steht in player.mana, player.rageMax meldet den Modus an maxMana und die Regeneration. Modell und Treffer-Momente: models/strichKrieger.ts.
 
 import { actionOfSpell } from './hotbar';
+import { KEYS, readRaw, writeRaw, remove } from './storage';
 import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS, SLOT } from './config';
@@ -160,13 +161,12 @@ let whirlOn = false, whirlUntil = 0, whirlCtx = null, nextWhirlTick = 0, whirlSt
 let charge = null;   // Ansturm: { from, target, start, ctx }
 const moveLog = [];
 // Feld legendary: null oder Waffen-ID aus LEGENDARY. Zum Testen im Dev-Panel, gespeichert wie die Waffenwahl
-const LEGENDARY_STORE = 'frostgrind.warLegendary';
-let legendary: string | null = (() => { try { const v = localStorage.getItem(LEGENDARY_STORE); return LEGENDARY[v] ? v : null; } catch { return null; } })();
+let legendary: string | null = (() => { const v = readRaw(KEYS.warLegendary); return LEGENDARY[v] ? v : null; })();
 export const warLegendary = () => legendary;
 export const WAR_LEGENDARIES = Object.keys(LEGENDARY);
 export function setWarLegendary(id: string | null) {
   legendary = LEGENDARY[id] ? id : null;
-  try { if (legendary) localStorage.setItem(LEGENDARY_STORE, legendary); else localStorage.removeItem(LEGENDARY_STORE); } catch { /* egal */ }
+  if (legendary) writeRaw(KEYS.warLegendary, legendary); else remove(KEYS.warLegendary);
 }
 // Combo „Für Noxus!“ (legends.ts): so lange ist der Vernichtende Hieb sofort voll geladen, dazu mehr Schaden // PH
 export const NOXUS = { ms: 8000, dmg: 0.4 };

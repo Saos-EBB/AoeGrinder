@@ -163,12 +163,10 @@ function fixItem(g) {
 }
 // Beim Start aus main.ts, nicht beim Laden des Moduls: gear.ts hängt über Import-Zyklen (weaponRolls ↔ spells ↔ gear) und würde sonst
 // VALUE_KEY lesen, bevor weaponRolls.ts fertig ist (ReferenceError, sobald gespeichertes Gear da ist)
-export function initGear() {
+// normalize = normalizeMeta aus metaNormalize.ts, von main.ts übergeben (kein Import hier, sonst Import-Kreis gear ↔ metaNormalize)
+export function initGear(normalize: (m: any) => void) {
   migrated = 0;
-  cleanGear(meta);
-  // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
-  const seen = new Set();
-  for (const g of [...SLOTS.flatMap(s => meta.gear[s]), ...meta.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++meta.nextGear; seen.add(g.id); }
+  normalize(meta);   // ganze Säuberung (metaNormalize.ts), dieselbe wie beim Spielstand-Code
   checkUnlocks(true);   // alter Stand mit schon angelegtem 5/5: Erfolg nachtragen, ohne Einblendung
   if (migrated) saveMeta();   // gewürfelte Werte/Hersteller festhalten, sonst würfelt jeder Reload neu
 }

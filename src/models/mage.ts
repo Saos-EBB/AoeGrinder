@@ -2,6 +2,7 @@
 // Der Skin kommt beim Run-Start aus dem Modus; mage bleibt dasselbe Objekt, damit Aufrufer nichts merken.
 
 import * as THREE from 'three';
+import { KEYS, readRaw, writeRaw } from '../storage';
 import { PERF } from '../config';
 import { scene } from '../render';
 import { activeModIds } from '../modifiers';
@@ -19,10 +20,9 @@ import { onFigEvent, figVals, figSay } from '../figEvents';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
-const WAR_WEAPON_STORE = 'frostgrind.warWeapon';
 const WAR_WEAPONS = ['sword'];   // Axt und Kolben sind raus (v31); legendäre Waffen hängen am Feld legendary in realMen.ts
 const warBase = w => (WAR_WEAPONS.includes(w) ? w : 'sword');
-let warWeapon = (() => { try { const w = localStorage.getItem(WAR_WEAPON_STORE); return WAR_WEAPONS.includes(w) ? w : 'sword'; } catch { return 'sword'; } })();
+let warWeapon = (() => { const w = readRaw(KEYS.warWeapon); return WAR_WEAPONS.includes(w) ? w : 'sword'; })();
 const HEROES = { krieger: (look: string) => buildStrichKrieger({ bloom: PERF.bloom, weapon: warBase(warWeapon), look }) };
 const STAFF_FOOT = 0.85;   // so weit reicht ein Stab unter die Hand, sonst steckt er im Boden (Maß des Viewer-Stabs)
 
@@ -189,7 +189,7 @@ export const mage = {
   get warWeapon() { return warWeapon; },
   setWarWeapon(id) {
     warWeapon = id;
-    try { localStorage.setItem(WAR_WEAPON_STORE, id); } catch { /* egal */ }
+    writeRaw(KEYS.warWeapon, id);
     if (skin === 'krieger') setSkin('krieger');
   },
   get weapon() { return weapon; },
