@@ -2,5 +2,5 @@
   "extends": "./tsconfig.json",
   "compilerOptions": { "noImplicitAny": true },
   "include": [],
-  "files": ["src/state.ts", "src/storage.ts", "src/hooks.ts", "src/feedback.ts", "src/figureTable.ts", "src/ui/fmt.ts", "src/ui/dom.ts", "src/ui/compare.ts", "src/metaNormalize.ts", "src/gear/data.ts", "src/gear/sets.ts", "src/gear/clean.ts", "src/gear/rules.ts"]
+  "files": ["src/state.ts", "src/storage.ts", "src/hooks.ts", "src/feedback.ts", "src/figureTable.ts", "src/ui/fmt.ts", "src/ui/dom.ts", "src/ui/compare.ts", "src/metaNormalize.ts", "src/gear/data.ts", "src/gear/sets.ts", "src/gear/clean.ts", "src/gear/rules.ts", "src/mapgen/mapOrder.ts"]
 }

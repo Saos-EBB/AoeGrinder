@@ -1,6 +1,5 @@
 // Schema-Version des Spielstands (storage.ts, ARCH-08 Schritt 4): fehlt = 0, nur ganze Zahlen ≥ 0 zählen.
-// normalizeMeta selbst ist in Node nicht ladbar (metaNormalize → gear → weaponRolls → spells → render.ts baut beim Laden einen WebGLRenderer),
-// der Aufruf dort ist eine Zeile: m.schema = Math.max(metaSchemaOf(m), META_SCHEMA).
+// normalizeMeta selbst (m.schema = Math.max(metaSchemaOf(m), META_SCHEMA)) prüft tests/metaNormalize.test.ts (seit E10 in Node ladbar).
 import { describe, it, expect } from 'vitest';
 import { META_SCHEMA, metaSchemaOf } from '../src/storage';
 

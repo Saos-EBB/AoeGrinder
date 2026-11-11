@@ -1,12 +1,13 @@
-// Eine Säuberung für den Spielstand, benutzt beim Start (gear.ts initGear, aus main.ts) und beim Spielstand-Code (ui/saveCode.ts importCode).
+// Eine Säuberung für den Spielstand, benutzt beim Start (gear/inventory.ts initGear, aus main.ts) und beim Spielstand-Code (ui/saveCode.ts importCode).
 // Reihenfolge: Waffen → Skins/Erfolge → Zähler → Maps → Gear/Kosmetik → doppelte Gear-Ids → Schema-Version. Jeder Schritt einzeln abgesichert: schlägt einer fehl,
 // fällt nur sein Feld auf Standard, der Rest bleibt. Alle Schritte sind wiederholbar (zweimal säubern = einmal), deshalb darf meta.ts beim Laden
 // die frühen Schritte schon vorziehen (andere Module lesen meta beim Import) und mapgen/progress.ts die Maps.
-// Läuft erst, wenn alle Module geladen sind: cleanGear braucht weaponRolls.ts (Import-Zyklen, siehe gear.ts initGear).
+// Läuft erst, wenn alle Module geladen sind (gear/inventory.ts initGear aus main.ts). Seit E10 ohne weaponRolls/world/render importierbar: Tests in tests/metaNormalize.test.ts.
 
 import { cleanWeapon, cleanSkinState, cleanStats } from './meta';
-import { cleanMaps } from './mapgen/progress';
-import { cleanGear, SLOTS } from './gear';
+import { cleanMaps } from './mapgen/mapOrder';
+import { SLOTS } from './gear/data';
+import { cleanGear } from './gear/rules';
 import { cleanAch } from './skins';
 import { META_SCHEMA, metaSchemaOf } from './storage';
 

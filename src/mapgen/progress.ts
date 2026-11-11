@@ -9,19 +9,15 @@ import { zone } from '../world';
 import { t } from '../i18n';
 import { THEMES } from './themes';
 import type { ThemeId } from './types';
+import { ORDER, cleanMaps } from './mapOrder';
 
-export const ORDER: ThemeId[] = ['wald', 'wueste', 'kanaele', 'kathedrale', 'hoelle'];
+export { ORDER, cleanMaps };   // in mapOrder.ts (ohne Laufzeit-Imports, für metaNormalize.ts)
 export const UNLOCK_LEVEL = 100;   // PH
 
 let devOpen = readRaw(KEYS.devMapsOpen) === '1' || /[?&]maps=all/.test(location.search);
 export const devAllMapsUnlocked = () => devOpen;
 export function setDevAllMapsUnlocked(on: boolean) { devOpen = on; writeRaw(KEYS.devMapsOpen, on ? '1' : '0'); }
 
-// Gespeicherte Liste säubern: nur bekannte Themes, Wald immer offen
-export function cleanMaps(list: unknown): ThemeId[] {
-  const ok = Array.isArray(list) ? list.filter((id): id is ThemeId => ORDER.includes(id as ThemeId)) : [];
-  return ORDER.filter(id => id === 'wald' || ok.includes(id));
-}
 meta.maps = cleanMaps(meta.maps);
 
 export const isThemeUnlocked = (id: ThemeId) => devOpen || meta.maps.includes(id);
