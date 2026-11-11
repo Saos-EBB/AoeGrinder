@@ -120,3 +120,4 @@ Laufend statt als Etappe: `strict` pro Modul einschalten, wenn eine Datei ohnehi
 
 ## Nachträge
 Neue Funde aus späteren Sessions hier anhängen (Datum, ID-Kürzel, Beleg).
+- 2026-11-11 E2 erledigt: KOMP-06 (e4b6ae8), ARCH-08 Schritt 1–2, NAME-12, NAME-13, KOMP-18 (f7e8fa7), ARCH-08 Schritt 3 `normalizeMeta` (b92482a). Offen aus ARCH-08: Schritt 4 (`schema`-Feld) und 5 (Tests, E8). Hinweis: es sind 16 `frostgrind.*`-Keys (nicht 18), dazu neu das Präfix `frostgrind.meta.v1.backup-`. Konstanten heißen jetzt einheitlich `KEYS.<bereich>` in `src/storage.ts`.
