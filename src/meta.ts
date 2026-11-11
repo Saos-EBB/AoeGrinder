@@ -196,7 +196,7 @@ export function rollShop(tier) {
   for (const e of allowed) {
     if (picks.includes(e)) continue;
     if (picks.length >= count) break;
-    if (e.rarity === capRarity && ++capped > s.capped) continue;
+    if (e.rarity === capRarity) { capped++; if (capped > s.capped) continue; }
     picks.push(e);
   }
   return picks;

@@ -1,6 +1,7 @@
 import { hooks, emit } from './hooks';
 import * as THREE from 'three';
 import { state, player } from './state';
+import type { Mob } from './state';
 import { $, rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, spellElement, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL, PACK_STALE_LEVELS, PACK_STALE_DIST } from './config';
 import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
@@ -162,7 +163,7 @@ export function spawnChampionPack(x, z, affixes) {
 (window as any).__champ = { spawnNear: (off = 0) => spawnChampionPack(player.pos.x + 10 + off, player.pos.z + 10, rollAffixes()) };
 
 // Modelle sind pro Mob verschmolzen, Geometrie und Material müssen mit weg
-export function removeMob(m) {
+export function removeMob(m: Mob) {
   scene.remove(m.model.root);
   m.model.onRemove?.();                     // verdorbene Figuren: Effekte in Weltkoordinaten (bosses/evil.ts)
   m.plate.remove();
@@ -184,8 +185,8 @@ export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
   plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
   $('overlay').appendChild(plate);   // Namensschild über der schwebenden Schrift (#overlay, ui/hud.ts)
   const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1) * hpMulOf(zone.theme));   // hpMulOf: Theme-Schwierigkeit (mapgen/difficulty.ts)
-  const mob = {
-    type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),
+  const mob: Mob = {
+    type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector<HTMLElement>('.hp div'), plateLv: plate.querySelector<HTMLElement>('.lv'),
     pos: model.root.position, home: pos.clone(), packId,
     level, hp, maxHp: hp, speedMul: type.speedMul ?? 1, dmgMulT: dmgMulOf(zone.theme),
     state: 'idle', assistAt: 0, nextSwing: 0, attackAt: -1e9, rootUntil: 0, slowUntil: 0, slowPct: 0,
@@ -196,7 +197,7 @@ export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
   return mob;
 }
 
-export function enterCombat(mob, callForHelp) {
+export function enterCombat(mob: Mob, callForHelp) {
   if (mob.dead || mob.state === 'combat') return;
   mob.state = 'combat';
   mob.nextSwing = state.now + 500;
@@ -209,13 +210,13 @@ export function enterCombat(mob, callForHelp) {
   }
 }
 
-function startEvade(mob) {
+function startEvade(mob: Mob) {
   mob.state = 'evade';
   mob.rootUntil = 0;
   mob.slowUntil = 0;
 }
 
-function startFlee(mob) {
+function startFlee(mob: Mob) {
   let helper = null, best = CFG.fleeAssistRadius;
   for (const other of state.mobs) {
     if (other === mob || other.dead || other.state !== 'idle') continue;
@@ -228,7 +229,7 @@ function startFlee(mob) {
   combatText(mob.pos, t('msg.panic'), 'info', 2.5);
 }
 
-export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
+export function moveMob(mob: Mob, target, dt, speedMul = 1, ignoreCC = false) {
   if (!ignoreCC && mob.rootUntil > state.now) return;
   let speed = CFG.mobSpeed * mob.speedMul * speedMul * modFactor('speed');
   if (!ignoreCC && mob.slowUntil > state.now) speed *= 1 - Math.min(0.9, mob.slowPct * (mob.slowK ?? 1));   // slowK: Zusatz „fliegt“, Slow doppelt (mobKinds.ts)
@@ -247,14 +248,14 @@ export function moveMob(mob, target, dt, speedMul = 1, ignoreCC = false) {
   mob.speed = speed;
 }
 
-export function faceMob(mob, target) {
+export function faceMob(mob: Mob, target) {
   const want = Math.atan2(target.x - mob.pos.x, target.z - mob.pos.z);
   if (mob.rootUntil > state.now) return;
   mob.model.root.rotation.y = want;
 }
 
 // Mob trifft den Spieler, von Nahkampf und Fähigkeiten genutzt
-export function hitPlayer(mob, mul = 1) {
+export function hitPlayer(mob: Mob, mul = 1) {
   mob.attackAt = state.now;
   const dmg = Math.round(mobHitDmg(mob.level) * (mob.type.dmgMul ?? 1) * (mob.dmgMulC ?? 1) * (mob.dmgMulT ?? 1) * mul);   // dmgMulT: Theme-Schwierigkeit
   damagePlayer(dmg);
@@ -263,13 +264,13 @@ export function hitPlayer(mob, mul = 1) {
 }
 
 // Sprung im Bogen auf ein Ziel, onLand läuft bei der Landung
-export function startLeap(mob, target, dur, onLand) {
+export function startLeap(mob: Mob, target, dur, onLand) {
   mob.leap = { x0: mob.pos.x, y0: mob.pos.y, z0: mob.pos.z, x1: target.x, y1: groundAt(target.x, target.z, Math.max(mob.pos.y, player.pos.y)), z1: target.z, start: state.now, dur, onLand };
   mob.moving = true;
   mob.speed = CFG.mobSpeed;
 }
 
-function updateLeap(mob) {
+function updateLeap(mob: Mob) {
   const l = mob.leap, t = clamp((state.now - l.start) / l.dur, 0, 1);
   mob.pos.x = lerpTo(l.x0, l.x1, t);
   mob.pos.z = lerpTo(l.z0, l.z1, t);
@@ -280,7 +281,7 @@ function updateLeap(mob) {
   l.onLand();
 }
 
-export function updateMob(mob, dt) {
+export function updateMob(mob: Mob, dt) {
   if (mob.dead) return;
   mob.moving = false;
   if (mob.leap) return updateLeap(mob);
@@ -341,7 +342,7 @@ export function separateMobs() {
 
 // Root mit Typ-Regeln: manche Mobs sind immun, manche halten nur kurz
 // look: nur Optik (vfx/mobStatus.ts) – 'ice' Eisblock, 'glue' Schleim am Boden, sonst Betäubungs-Ring
-export function applyRoot(mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
+export function applyRoot(mob: Mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
   if (mob.type.rootImmune) { combatText(mob.pos, t('msg.immune'), 'miss'); return; }
   mob.rootUntil = state.now + Math.min(dur, mob.type.rootMax ?? dur);
   mob.rootLook = look;
@@ -355,7 +356,9 @@ export function applyRoot(mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun') {
 // Gibt true zurück, wenn der Zauber getroffen hat
 // noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
 // dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
-export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = false, forceCrit = false) {
+// Optionen (KOMP-10): noRoll, dark, forceCrit, alle Standard false
+export type DamageOpts = { noRoll?: boolean; dark?: boolean; forceCrit?: boolean };
+export function damageMob(mob: Mob, amount, source, castKey?, { noRoll = false, dark = false, forceCrit = false }: DamageOpts = {}) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, t('msg.evaded'), 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);
@@ -399,14 +402,14 @@ export function damageMob(mob, amount, source, castKey?, noRoll = false, dark = 
 }
 
 // Fester Umgebungsschaden: kein Trefferwurf, keine Spieler-Boni, zieht keine Aggro
-export function burnMob(mob, amount) {
+export function burnMob(mob: Mob, amount) {
   mob.hp -= amount;
   mob.hitAt = state.now;
   combatText(mob.pos, amount, 'dmg');
   if (mob.hp <= 0) killMob(mob);
 }
 
-function killMob(mob) {
+function killMob(mob: Mob) {
   for (const fn of hooks.mobDeath.fns) fn(mob);   // Tod melden (hooks.ts): Seuche, Krieger-Legende, Loot, Pack-Arten, Kuh, Mimic, Schatzdieb
   mob.dead = true;
   mob.deathAt = state.now;
@@ -428,7 +431,7 @@ function killMob(mob) {
 }
 
 // Leiche versinkt nach 1,5 s im Boden, mit Staubwolke
-export function sinkCorpse(mob) {
+export function sinkCorpse(mob: Mob) {
   const t = clamp((state.now - mob.deathAt - 1500) / 2000, 0, 1);
   if (t > 0 && !mob.dusted) {
     mob.dusted = true;
@@ -444,7 +447,7 @@ export function sinkCorpse(mob) {
 }
 
 // Zug zu einem Punkt. Eingefrorene bleiben stehen.
-export function pullMob(mob, center, amount) {
+export function pullMob(mob: Mob, center, amount) {
   if (mob.rootUntil > state.now || mob.state === 'evade') return;
   const dx = center.x - mob.pos.x, dz = center.z - mob.pos.z, d = Math.hypot(dx, dz);
   if (d < 0.5) return;
@@ -454,13 +457,13 @@ export function pullMob(mob, center, amount) {
 }
 
 // Wucht: Knockback großer Treffer, 0,5–2 yd. Nicht bei gerooteten Mobs (Frost Nova), nicht bei Steinhaut (noKnock), nicht im Blutwirbel (knockbackMob)
-function bigKnock(mob, frac) {
+function bigKnock(mob: Mob, frac) {
   if (mob.dead || mob.rootUntil > state.now) return;
   knockbackMob(mob, player.pos, Math.min(W.knock.max, Math.max(W.knock.min, frac * W.knock.k)), W.knock.ms);
 }
 
 // Rückschlag im Bogen, weg vom Punkt
-export function knockbackMob(mob, center, dist, dur = 450) {
+export function knockbackMob(mob: Mob, center, dist, dur = 450) {
   if (mob.dead || mob.leap || mob.orbit || mob.noKnock) return;   // orbit: hing im Blutwirbel des Klingenstrichs (geparkt), noKnock: Steinhaut (champions.ts)
   dist *= zone.knockMul?.(mob.pos.x, mob.pos.z) ?? 1;   // Eis: fliegt weiter
   dist *= mob.knockMul ?? 1;   // Kategorie Groß: halber Rückstoß (mobKinds.ts)

@@ -27,7 +27,7 @@ import { $, rand, clamp } from './util';
 
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward, stepForward } from './melee';
 import { t } from './i18n';
-import { hooks, onMobDeath, onWarriorHit } from './hooks';
+import { hooks, onMobDeath, onWarriorHit, onRunReset } from './hooks';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
 const REALMEN = {
@@ -198,6 +198,7 @@ export function resetRealMen() {
     heroModel.hero.setBladeScale?.(1);
   }
 }
+onRunReset(resetRealMen, 50);   // Run-Reset (hooks.ts runReset)
 
 const rateOf = id => stat(id).tempo ?? 1;
 function startMove(id, ability, ms) {

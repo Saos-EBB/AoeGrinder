@@ -23,7 +23,7 @@ export function updateTrailEffects() {
     if (fx.slow) applySlow(m, fx.slow, fx.slowMs);
     if (fx.dps && state.now >= (m.trailTickAt ?? -Infinity)) {
       m.trailTickAt = state.now + FIRE_TICK;
-      damageMob(m, fx.dps * (modValue('dotMul') ?? 1) * (1 + meterHeat() / 100), 'flame', 'env', true);   // Hitze: × (1 + Hitze/100)    // Funken wie Feuer; 'env' zählt als Multi nur im Zeitfenster
+      damageMob(m, fx.dps * (modValue('dotMul') ?? 1) * (1 + meterHeat() / 100), 'flame', 'env', { noRoll: true });   // Hitze: × (1 + Hitze/100)    // Funken wie Feuer; 'env' zählt als Multi nur im Zeitfenster
     }
   }
 }

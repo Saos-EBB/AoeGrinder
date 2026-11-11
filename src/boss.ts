@@ -559,6 +559,6 @@ hooks.boss.set({ start: () => startBoss(), active: bossActive, busy: bossBusy })
   B, BOSSES, start: (id?) => startBoss(id), toggleLock,
   force: (k, bi = 0) => { const b = boss?.bodies[bi]; const a = (b?.attacks ?? boss?.def.attacks ?? []).find(x => x.k === k || x.n === k); if (!b || !a) return false; if (b.run) b.run.alive = false; b.busy = true; const run = b.run = newRun(); ATT[a.k](run, b, { ...a.p }).then(() => { if (run.alive) { b.busy = false; b.walkUntil = fight.time + .5; } }); return true; },
   phase2: () => { if (boss) for (const b of boss.bodies) if (b.mob) b.mob.hp = Math.floor(b.mob.maxHp * B.phase2.at * .99); },
-  hit: (bi = 0, amount = 1e9) => { const m = boss?.bodies[bi]?.mob; return m ? damageMob(m, amount, 'test', 0, true) : false; },
+  hit: (bi = 0, amount = 1e9) => { const m = boss?.bodies[bi]?.mob; return m ? damageMob(m, amount, 'test', 0, { noRoll: true }) : false; },
   get boss() { return boss; }, get result() { return lastResult; }, camera, get lock() { return lockOn; }, get camK() { return camK; }, seen,
 };

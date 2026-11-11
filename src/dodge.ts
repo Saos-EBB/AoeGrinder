@@ -15,6 +15,7 @@ import { combatText } from './feedback';
 import { currentFigure } from './modifiers';
 import { mods } from './config';
 import { t } from './i18n';
+import { onRunReset } from './hooks';
 
 // Alle Zahlen PH
 export const DG = {
@@ -66,6 +67,7 @@ export function resetDodge() {
   charges = Array(DG.charges).fill(0);
   state.dodgeStats = { n: 0, perfect: 0 };
 }
+onRunReset(resetDodge, 60);   // Run-Reset (hooks.ts runReset)
 
 // Richtung aus WASD oder Stick, relativ zur Blickrichtung; ohne Eingabe nach hinten
 function direction() {

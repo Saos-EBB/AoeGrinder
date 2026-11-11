@@ -21,6 +21,6 @@ export const renderActionbar = () => impl.renderActionbar();
 // Tasten-Beschriftungen und Hilfe neu (Tastatur oder Gamepad)
 export const refreshKeyLabels = () => impl.refreshKeyLabels();
 // Schadenszahl am Mob im Zahlen-Stil (ui/dmgNumbers.ts), tick = kleine Tick-Zahl (DoT, Umgebung)
-export const damageNumber = (mob, dmg: number, crit: boolean, source, tick?: boolean) => impl.damageNumber(mob, dmg, crit, source, tick);
+export const damageNumber = (mob: any, dmg: number, crit: boolean, source: any, tick?: boolean) => impl.damageNumber(mob, dmg, crit, source, tick);
 // Treffer am Spieler im Zahlen-Stil (ui/dmgNumbers.ts)
-export const hurtNumber = (pos, amount: number) => impl.hurtNumber(pos, amount);
+export const hurtNumber = (pos: any, amount: number) => impl.hurtNumber(pos, amount);

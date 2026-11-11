@@ -5,6 +5,7 @@ import { state, player } from './state';
 import { BATTERY as B, mods } from './config';
 import { modValue } from './modifiers';
 import { t } from './i18n';
+import { onRunReset } from './hooks';
 
 export const batteryMode = () => !!modValue('battery');
 // Kondensator (v31): größere Batterie, Überladung erst bei vollem Wert
@@ -17,6 +18,7 @@ export function resetBattery() {
   player.mana = B.start;
   player.overcharged = false;
 }
+onRunReset(resetBattery, 130);   // Run-Reset (hooks.ts runReset)
 function add(v) {
   player.mana = Math.min(batteryMax(), player.mana + v);
   if (player.mana >= batteryMax()) player.overcharged = true;

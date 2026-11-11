@@ -4,6 +4,7 @@ import { onMultiKill } from './fx/impact';
 import { state, player } from './state';
 import { scoreMult } from './modifiers';
 import { SPELLS, SCORE_MULTI_WINDOW, SCORE_MULTI_STEP, SCORE_MULTI_MAX, SCORE_COMBO_WINDOW, SCORE_COMBO_DIV, SCORE_COMBO_MAX, SCORE_PULL_POINTS, SCORE_MINUTE_POINTS } from './config';
+import { onRunReset } from './hooks';
 
 export const run: any = {};
 
@@ -11,6 +12,7 @@ export function resetScore() {
   Object.assign(run, { killPoints: 0, kills: 0, combo: 0, bestCombo: 0, lastKill: -1e9, casts: {}, lastMulti: 0, multiAt: -1e9, bestMulti: 0, bestPull: 0, dmgBySource: {}, splits: {}, wave: 0 });
 }
 resetScore();
+onRunReset(resetScore, 30);   // Run-Reset (hooks.ts runReset)
 
 export function reportKill(mob, xp) {
   const now = state.now, key = mob.castKey ?? 'env', cast = run.casts[key] ?? (run.casts[key] = { n: 0, last: -1e9 });

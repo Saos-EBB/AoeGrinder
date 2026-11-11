@@ -37,6 +37,12 @@ export const hooks = {
   castStart: channel<(id: string) => void>(),
   // Treffer-Moment der Nahkampf-Animation (models/heroModel.ts): realMen.ts
   warriorHit: channel<(kind: string, x: number, z: number, i: number) => void>(),
+  // Run-Reset (player.ts resetGame ruft alle in rank-Reihenfolge, ARCH-05). Wer pro Run Zustand hat, meldet sich hier an.
+  // rank (Reihenfolge wie vor E8 in resetGame): 10 player.ts (Held-Modell, Mobs weg), 20 player.ts (resetMods), 30 score.ts,
+  // 40 player.ts (Run-Felder in state, Spieler neu, Kamera, Leben/Mana), 50 realMen.ts, 60 dodge.ts, 70 schoolMeter.ts, 80 figures.ts,
+  // 90 legends.ts, 100 player.ts (Schild 0), 110 buffs.ts, 120 player.ts (Nahkampf-Belegung), 130 battery.ts, 140 spells/plague.ts,
+  // 150 loot.ts, 160 portal.ts, 170 waves.ts, 180 leaderboard.ts (Split-Anzeige), 190 player.ts (Dev-Marke, Zielkreis, Kanal, Packs füllen)
+  runReset: channel<() => void>(),
 
   // Plätze: genau eine Umsetzung
   // Legendäre Krieger-Waffe ersetzt Spells in Start-Kit und Pool (realMen.ts setzt, spells/core.ts fragt)
@@ -79,3 +85,4 @@ export const onFireHit = hooks.fireHit.on;
 export const onSpellArea = hooks.spellArea.on;
 export const onCastStart = hooks.castStart.on;
 export const onWarriorHit = hooks.warriorHit.on;
+export const onRunReset = hooks.runReset.on;

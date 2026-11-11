@@ -7,16 +7,15 @@
 // Fehlt ein Feld (alter Stand), gilt der Standardwert; nichts crasht.
 
 import { state } from './state';
-import { SPELLS, CARD_RARITIES, mods } from './config';
+import { SPELLS, CARD_RARITIES } from './config';
 import { meta, saveMeta, grantAch, hasAch, earnDust, MILESTONES } from './meta';
 import { setAch } from './skins';
-import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollRarity, factor, pct, applyValue, applyFocus, weaponHit, mainOf, type MainValue } from './weaponRolls';
+import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollRarity, factor, pct, applyValue, applyFocus, weaponHit, mainOf, runTarget, type MainValue, type ModTarget } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
 import { t } from './i18n';
 import { fmtInt } from './ui/fmt';
 import { emit } from './hooks';
-import { stat } from './spells/stats';
 import { FIGURES, figureOfSet } from './figureTable';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
@@ -51,19 +50,19 @@ export const GIANT_FB = { every: 10, size: 3, dmg: 3 };
 export const SHARD_NEEDLE = { len: 1.5 };
 // Hochspannung: jeder Sprung des Kettenblitzes gabelt sich mit fork in 2 Ketten; cap: höchstens so viele Sprünge pro Wurf, alle Äste zusammen (spells/chain.ts)
 export const HV_FORK = { fork: 0.2, cap: 400 };
-const PERFECT: Record<string, (v: number) => void> = {
-  crit: v => { mods.crit += v; },
-  fbExtra: v => { mods.fbExtra += v; },
-  fbCast: v => { const s = stat('fireball'); s.cast = (s.cast ?? 1) - v; },
-  shardMax: v => { mods.shardMax += v; },
-  needleShard: v => { mods.needleShard += v; },
-  frozenDmg: v => { mods.frozenDmg += v; },
-  chainJumps: v => { mods.chainJumps += v; },
-  chainKill: v => { mods.chainKill += v; },
-  chainCost: v => { stat('chain').mana -= v; },
-  burstDmg: v => { mods.burstDmg += v; },
-  contagion: v => { mods.contagion += v; },
-  burstTick: v => { mods.burstTick += v; },
+const PERFECT: Record<string, (v: number, to: ModTarget) => void> = {
+  crit: (v, { mods }) => { mods.crit += v; },
+  fbExtra: (v, { mods }) => { mods.fbExtra += v; },
+  fbCast: (v, { stat }) => { const s = stat('fireball'); s.cast = (s.cast ?? 1) - v; },
+  shardMax: (v, { mods }) => { mods.shardMax += v; },
+  needleShard: (v, { mods }) => { mods.needleShard += v; },
+  frozenDmg: (v, { mods }) => { mods.frozenDmg += v; },
+  chainJumps: (v, { mods }) => { mods.chainJumps += v; },
+  chainKill: (v, { mods }) => { mods.chainKill += v; },
+  chainCost: (v, { stat }) => { stat('chain').mana -= v; },
+  burstDmg: (v, { mods }) => { mods.burstDmg += v; },
+  contagion: (v, { mods }) => { mods.contagion += v; },
+  burstTick: (v, { mods }) => { mods.burstTick += v; },
 };
 export const setOfFigure = (skin: string | null) => FIGURES[skin]?.set ?? null;
 export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;
@@ -310,33 +309,34 @@ export const gearMainValue = (g: GearItem): MainValue => mainOf(valueKey(g), ROL
 
 // ---------- Wirkung ----------
 // Run-Start nach applyRunWeapon (mods frisch aus resetMods, spellStats aus resetSpells): Werte über mods/stat, Element-Proc über den Treffer-Hook
-export function applyRunGear(skin: string | null) {
-  state.gearSet = null;
+export function applyRunGear(skin: string | null, to: ModTarget = runTarget()) {
+  const mods = to.mods, st = to.state;
+  st.gearSet = null;
   if (!isMageFigure(skin)) return;
   const procs: [string, number, Record<string, number>][] = [], set = fullSet(skin);
-  state.gearSet = set;
+  st.gearSet = set;
   for (const slot of SLOTS) {
     const g = worn(slot);
     if (!g) continue;
-    if (set) { const [k, v] = SETS[set].perfect[slot]; PERFECT[k](v); continue; }   // 5/5: Perfekt-Wert statt eigenem Roll
+    if (set) { const [k, v] = SETS[set].perfect[slot]; PERFECT[k](v, to); continue; }   // 5/5: Perfekt-Wert statt eigenem Roll
     const f = factor(g.r) * GEAR.mul;
-    applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f);
-    if (g.s.focus) applyFocus(g.s.focus, f, { s: { fv: 1 } });
+    applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f, to);
+    if (g.s.focus) applyFocus(g.s.focus, f, { s: { fv: 1 } }, to);
     const M = makerOf(g) ? halfMaker(g.s.maker) : {};
     if (M.dmg) mods.dmg += M.dmg;
     if (M.cast) mods.castMul += M.cast;
     if (M.crit) mods.crit += M.crit;
     if (M.dur) mods.durMul += M.dur;
-    if (M.random) applyValue(pick(Object.values(VALUE_KEY)), M.random);
-    if (M.cd) applyValue('cd', -M.cd);
+    if (M.random) applyValue(pick(Object.values(VALUE_KEY)), M.random, to);
+    if (M.cd) applyValue('cd', -M.cd, to);
     if (M.mana) mods.manaMult += M.mana;
     if (M.hp) mods.hpMult += M.hp;
     const chance = g.s.element !== 'none' ? ROLLS.procChance * f : 0;
     if (chance || M.lifesteal || M.critMana) procs.push([g.s.element, chance, M]);
   }
   if (!procs.length) return;
-  const prev = state.weaponHit;
-  state.weaponHit = (m, dmg, crit, api) => {
+  const prev = st.weaponHit;
+  st.weaponHit = (m, dmg, crit, api) => {
     prev?.(m, dmg, crit, api);
     for (const [el, chance, M] of procs) weaponHit(m, dmg, crit, api, el, chance, M);
   };

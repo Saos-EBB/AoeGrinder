@@ -21,7 +21,7 @@ const fromB64 = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.ch
 function exportCode() {
   const data = { v: SAVE_CODE.version, d: meta.dust, u: meta.unlocked, b: meta.bought, t: meta.bestTier, o: meta.offer,
     i: meta.inv.map(w => w.v === 2 ? { r: w.r, s: w.s } : [w.e, w.r, w.m]), q: meta.inv.findIndex(w => w.id === meta.equipped), k: meta.skins, r: loadRuns(),   // k: Skins pro Figur, fehlt in alten Codes
-    g: meta.gear, w: meta.wear, go: meta.gearOver, ng: meta.nextGear, lk: meta.looks, lw: meta.lookWear, ac: meta.achievements, mp: meta.maps, st: meta.stats };   // st: Zähler über alle Runs (Meilensteine), fehlt in alten Codes → 0   // Gear, angelegt, wartende Funde, Zähler, Kosmetik, Erfolge: fehlen in alten Codes, alter Code überliest sie (bleibt Version 1); mp: offene Themes der Weltkarte (mapgen/progress.ts), fehlt in alten Codes → nur Wald
+    g: meta.gear, w: meta.wear, go: meta.gearOver, ng: meta.nextGear, lk: meta.looks, lw: meta.lookWear, ac: meta.achievements, mp: meta.maps, st: meta.stats, sc: meta.schema };   // sc: Schema-Version des Stands (storage.ts META_SCHEMA), fehlt in alten Codes; beim Laden ignoriert, normalizeMeta setzt sie   // st: Zähler über alle Runs (Meilensteine), fehlt in alten Codes → 0   // Gear, angelegt, wartende Funde, Zähler, Kosmetik, Erfolge: fehlen in alten Codes, alter Code überliest sie (bleibt Version 1); mp: offene Themes der Weltkarte (mapgen/progress.ts), fehlt in alten Codes → nur Wald
   const b64 = toB64(JSON.stringify(data));
   return b64 + check(b64);
 }

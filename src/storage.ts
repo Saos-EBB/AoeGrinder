@@ -24,6 +24,12 @@ export const KEYS = {
 } as const;
 export type StoreKey = (typeof KEYS)[keyof typeof KEYS];
 
+// Schema-Version des Spielstands (KEYS.meta, Feld schema; ARCH-08 Schritt 4). Fehlt = 0 (Stand vor E8). normalizeMeta (metaNormalize.ts) setzt sie
+// nach dem Säubern. Eine spätere Migration erhöht META_SCHEMA und läuft in normalizeMeta nur, wenn metaSchemaOf(stand) kleiner ist.
+// 1 = Stand von E8 (alles, was das Säubern seit v1 repariert). Ein Stand mit höherer Zahl (neuere Version) behält seine Zahl.
+export const META_SCHEMA = 1;
+export const metaSchemaOf = (m: unknown): number => { const v = (m as { schema?: unknown } | null)?.schema; return Number.isInteger(v) && (v as number) >= 0 ? v as number : 0; };
+
 let warned = false;
 const warnOnce = (key: string, e: unknown) => { if (warned) return; warned = true; console.warn(`[storage] Speichern fehlgeschlagen (${key}), weitere Fehler still`, e); };
 
