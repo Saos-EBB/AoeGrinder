@@ -32,7 +32,7 @@ export const VFX_QUALITY = {
 export const SCORE_MULTI_WINDOW = 1200, SCORE_MULTI_STEP = 0.1, SCORE_MULTI_MAX = 5, SCORE_MULTI_BANNER = 10;
 export const SCORE_COMBO_WINDOW = 4000, SCORE_COMBO_DIV = 50, SCORE_COMBO_MAX = 3;
 export const SCORE_PULL_POINTS = 100, SCORE_MINUTE_POINTS = 50;
-export const SCORE_VERSION = 'v37';   // v37: mehr Gear- und Waffen-Drops (loot.ts DROP, chests.ts CHEST); v36: Gear-Teile haben immer Wert + Hersteller, Fokus erst ab Blau (gear/); v35: Portale (XP-Druck), Rangliste pro Map mit Seed; v34: Gear-Slots und Sets (gear/) ändern die Balance; v33: Wellen 50, 100, 150 … Gegner; v32: Bosse in Packs alle 25 Level, Wellen statt Belagerung
+export const SCORE_VERSION = 'v38';   // v38: Seuchen-Spells tragen das Tag Seuche (Rang-/Support-Karten des Seuchenmagiers, Fässer, Fokus; spells/plagueSpell.ts); v37: mehr Gear- und Waffen-Drops (loot.ts DROP, chests.ts CHEST); v36: Gear-Teile haben immer Wert + Hersteller, Fokus erst ab Blau (gear/); v35: Portale (XP-Druck), Rangliste pro Map mit Seed; v34: Gear-Slots und Sets (gear/) ändern die Balance; v33: Wellen 50, 100, 150 … Gegner; v32: Bosse in Packs alle 25 Level, Wellen statt Belagerung
 
 // LEVEL_*: Level 1–100, alles PH (docs/levels-spec.md)
 export const LEVEL_START = 1, LEVEL_MAX = 100;

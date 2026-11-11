@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- fix(seuche): Alle Seuchen-Spells zählen jetzt zur Schule Seuche (vorher fehlte 9 von 11 das Tag „Seuche“, nur Platzen und Pestilenz hatten es). Der Seuchenmagier bekommt dadurch Rang-Karten für alle seine Spells statt nur für Platzen (auch für gelernte wie Schleimfalle, Schwarzes Loch, Giftwolke, Klebefaden) und die Support-Karten Konzentration und Weite für seine Flächen-Spells; Fässer reagieren auf alle Seuchen-Spells mit der Giftwolke statt mit Explosion und Rückstoß; Spell-Karten zeigen das Tag Seuche. Rangliste v38
 - fix(modell): Der Lichtrand des Kriegers hat jetzt dieselbe Farbe wie bei Magiern und Mobs (kühles Blaugrau `0.5, 0.55, 0.65` statt hellgrau `0.62, 0.62, 0.68`): sein Rand ist etwas dunkler und leicht bläulich, die Figur bleibt im Dunkeln lesbar
 - feat(save): Der Spielstand trägt jetzt eine Schema-Version (`schema: 1` in `frostgrind.meta.v1`, fehlt bei alten Ständen = 0), gesetzt beim Säubern und mit dem nächsten Speichern geschrieben; der Spielstand-Code gibt sie als `sc` mit. Alte Stände und Codes laden wie bisher, neue Codes laden auch in der alten Version. Grundlage für spätere Migrationen
 - feat(dodge): Blitz und Seuche haben eine eigene Dodge-Variante statt „Normal“: Blitz zieht Funken im Zickzack hinter sich her, Seuche eine Giftwolke. Die Kombo bleibt wie bisher (nächster Zauber ohne Mana, Fenster 1,5 s), nur die Optik ist neu

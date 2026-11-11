@@ -18,6 +18,7 @@ import { sludgeLook, slimeTrapField, slimeWaveLook, blackHoleField, holeImpact, 
 import { mark, markStacks, popMark, poison, poisoned } from '../plagueMarks';
 import { t } from '../i18n';
 import { onMobDeath, onAnyHit, onRunReset } from '../hooks';
+import { plagueSpell } from './plagueSpell';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
 const heal = v => { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + v); };
@@ -88,7 +89,7 @@ function burstAll(c, list, keep = false) {
 // Schaden, den ein Treffer dieses Kontexts ungefähr machen würde (ohne Wurf und Rüstung): fürs Gift
 function withScale(c) { c.scaleOut = () => 1; return c; }
 
-const spell = (o) => ({ ranks: ['dmg', 'radius'], tags: ['Seuche', ...(o.tags ?? [])], cls: 'plague', ...o });
+const spell = plagueSpell;   // Grundform: ranks dmg/radius, cls plague, Tag 'Seuche' vorn (spells/plagueSpell.ts)
 
 export const sludge = spell({
   name: t('spell.sludge.name'), desc: t('spell.sludge.desc'), tags: ['Geschoss'],
