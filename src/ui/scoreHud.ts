@@ -6,7 +6,8 @@ import { die } from '../player';
 import { run, tickScore } from '../score';
 import { put } from './hud';
 import { SCORE_COMBO_WINDOW, LEVEL_NEW_MOB_BANNER } from '../config';
-import { t, locale } from '../i18n';
+import { t } from '../i18n';
+import { fmtInt } from './fmt';
 
 document.head.insertAdjacentHTML('beforeend', `<style>
   #scoreHud { position: fixed; top: 78px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; text-align: center; text-shadow: 0 1px 3px #000; }
@@ -24,7 +25,7 @@ function frame() {
       die();
     }
   }
-  put(pts, run.killPoints.toLocaleString(locale));
+  put(pts, fmtInt(run.killPoints));
   const left = 1 - (state.now - run.lastKill) / SCORE_COMBO_WINDOW, live = run.combo > 0 && left > 0;
   put(combo, live ? String(run.combo) : '0');
   combo.classList.toggle('idle', !live);

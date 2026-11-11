@@ -17,8 +17,9 @@ import { meterSchool, meterDmgMul, meterValue } from '../schoolMeter';
 import { ROLLS, equipped, factor, applyRunWeapon, weaponName } from '../weaponRolls';
 import { applyRunGear, fullSet, worn, SLOTS, GEAR, isMagierSkin } from '../gear';
 import { ELEMENTS, elementColor } from '../models/weapons/baukasten';
-import { fmtInt } from './dmgNumbers';
+import { fmtInt } from './fmt';
 import { t, fmtNum } from '../i18n';
+import { rankOf } from '../cards';
 
 export type StatRow = { id: string; label: string; value: string; color?: string; small?: string; parts?: [string, string][] };
 export type StatGroup = { id: string; name: string; rows: StatRow[] };
@@ -130,7 +131,6 @@ function dmgRows(live: boolean): StatRow[] {
 // Build im Run: Spells mit Rang und Rune, Talente, Supports, Relikte, Waffe
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const roman = (n: number) => ROMAN[n] ?? String(n);
-const rankOf = (id: string) => Object.entries<any>(state.cardPicks ?? {}).reduce((n, [cid, k]) => cid.startsWith(`${id}-`) ? n + k : n, 0);
 function buildRows(): StatRow[] {
   const rows: StatRow[] = [];
   for (const id of (state.slots ?? []).filter(Boolean)) {

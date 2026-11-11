@@ -16,10 +16,10 @@ import { ZONES } from '../zones';
 import { THEME_ZONES } from '../mapgen/registry';
 import { zoneId } from '../world';
 import { copySeed } from './worldMap';
-import { t, fmtNum, locale } from '../i18n';
+import { t, locale } from '../i18n';
 import { findsHtml, bindFinds } from './lootView';
+import { fmtTime, fmtInt, fmtMult } from './fmt';
 
-const fmtMult = v => `×${fmtNum(Math.round(v * 100) / 100)}`;
 const $ = id => document.getElementById(id);
 
 document.head.insertAdjacentHTML('beforeend', `<style>
@@ -59,12 +59,12 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
 function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }
 
-const fmt = n => Math.round(n).toLocaleString('de-DE', { maximumFractionDigits: 0 });   // ganze Zahlen mit Tausenderpunkt (UI-Mix)
+const fmt = fmtInt;   // ganze Zahlen mit Tausenderpunkt (UI-Mix)
 
 
 // Beim Tod: speichern und Aufschlüsselung zeigen
 // Run-Ende (Mockups X?E, Look des UI-Flavors): Titel, Zeit groß mit Abstand zur Bestzeit und Rang, 5 Werte, Schaden nach Quelle (ganze Zahlen, Prozent klein), Staub-Rechnung
-const fmtT = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
+const fmtT = (ms: number) => fmtTime(ms, true);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function showRunResult() {
   const { entry, rank } = recordRun(), b = entry.breakdown;
@@ -129,7 +129,6 @@ document.body.insertAdjacentHTML('beforeend', `<div id="boardModal" class="modal
 ownKeys($('boardIo'));
 
 function cell(row, text) { const td = document.createElement('td'); td.textContent = text; row.appendChild(td); }
-const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 const fmtDate = d => new Date(d).toLocaleDateString(locale);
 // Importierte Einträge sind fremde Daten: nur über textContent ausgeben und fehlende Felder abfangen
 const num = v => (typeof v === 'number' ? fmt(v) : '–');

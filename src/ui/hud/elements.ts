@@ -14,6 +14,7 @@ import { t } from '../../i18n';
 import { run } from '../../score';
 import { bestSplits } from '../../leaderboard';
 import { placementOf } from './layout';
+import { fmtTime, fmtDiff } from '../fmt';
 
 const put = (el: Element, text: string) => { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } };
 const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } };
@@ -99,8 +100,7 @@ function updateCompass() {
 }
 
 // ---------- Splits: Zeit beim Erreichen von Lvl 15 … 100, Abstand zur Bestzeit (frostgrind.splits.v1) ----------
-const fmt = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
-const fmtDiff = ms => `${ms < 0 ? '−' : '+'}${fmt(Math.abs(ms))}`;
+const fmt = (ms: number) => fmtTime(ms, true);
 const sp = $('hudSplits');
 sp.innerHTML = `<div class="spHead"></div>${META.splits.map(l => `<div class="spRow" data-l="${l}"><span>Lvl ${l}</span><b>—</b><i></i></div>`).join('')}<div class="spNow"></div>`;
 const spRows = [...sp.querySelectorAll<HTMLElement>('.spRow')];

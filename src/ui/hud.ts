@@ -29,6 +29,7 @@ import { buffs } from '../buffs';
 import { batteryMode } from '../battery';
 import { BATTERY } from '../config';
 import { t, fmtNum } from '../i18n';
+import { fmtTime } from './fmt';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
@@ -68,7 +69,6 @@ export function put(el: HTMLElement, text: string) { if ((el as any)._t !== text
 export function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } }
 const $q = (sel: string) => document.querySelector(sel) as HTMLElement;
 
-export const fmtTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
 // Hotbar: feste Plätze, die Tasten gehören den Plätzen (hotbar.ts). Spells lassen sich per Drag & Drop umsetzen,
 // Rechtsklick wählt den Auslöse-Modus des Platzes (Sofort, Bei Loslassen, Klicken). Leere Plätze bleiben als Rahmen stehen.

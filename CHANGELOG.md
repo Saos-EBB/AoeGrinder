@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- fix(ui): Split-Abstand unter der Run-Uhr im HUD (`L15 +0:42`) zeigt jetzt auch Zehntel (`L15 +0:42.3`), wie die Split-Tabelle und die Meldung „Split“. Ganze Zahlen haben auf Englisch jetzt auch den Tausenderpunkt (Punkte-HUD `1.234` statt `1,234`, Fortschritt bei Meilenstein-Looks im Charakterfenster), wie Run-Ende und Schadenszahlen schon vorher
 - fix(ui): Tastenbelegung nennt Taste I „Charakterfenster (alternativ)“ (EN „Character window (alt.)“) statt „Ausrüstungsfenster“: I öffnet dasselbe Fenster wie X
 - fix(ui): Spell-Karten der Seuche zeigen als Schule „Seuche“ (EN „Plague“) statt „Natur“
 - fix(ui): ▲/▼ „gegenüber ausgerüstet“ überall gleich: bei Abklingzeit zählt die stärkere Reduktion als besser (−6 % gegen −3 % ist ▲), in Hover-Karte, Shop, Liste und Auswahl gleich; vorher zeigten Hover-Karte und Shop bei Waffen und alle Gear-Ansichten ▼. Gleich starke Werte zeigen nichts mehr statt „▼ −0 %“

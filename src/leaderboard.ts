@@ -12,6 +12,7 @@ import { zone, zoneId } from './world';
 import { ZONES } from './zones';
 import { t } from './i18n';
 import { mapSeed, seedPinned } from './mapgen/rng';
+import { fmtDiff } from './ui/fmt';
 
 // Einzige Stelle für KEYS.runs (auch spells/core.ts saveRunBuild und ui/saveCode.ts gehen hierüber)
 export function loadRuns() {
@@ -67,7 +68,7 @@ export function importRuns(text) {
 }
 
 // Gleiche Kombination aus Figur, Mods, Mob-Modus und Map: Darauf beziehen sich beide Ranglisten und die Splits
-const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+export const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
 // Map eines Runs: neue Einträge haben zoneId, alte nur den Anzeigenamen (ohne Namen = Tirisfal)
 export const runZone = r => r.zoneId ?? Object.keys(ZONES).find(id => ZONES[id].name === r.zone) ?? 'tirisfal';
 export function comboRuns(map = zoneId) {
@@ -77,7 +78,6 @@ export function comboRuns(map = zoneId) {
 export const byTime = list => list.filter(r => typeof r.timeTo100 === 'number').sort((a, b) => a.timeTo100 - b.timeTo100);
 
 // Splits gegen den schnellsten Run derselben Kombination, grün heißt schneller
-const fmtDiff = ms => { const t = Math.abs(ms) / 1000; return `${ms < 0 ? '−' : '+'}${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`; };
 // Bestwert pro Split, auch aus Runs, die Level 100 nicht erreicht haben. Schlüssel wie comboRuns: Figur + Mods + Mob-Modus + Map
 const oldSplitKey = () => `${[...activeModIds()].sort().join(',')}|${mobMode}|${siegeGoal ?? 0}`;   // bis ui-mix ohne Map, gilt als Tirisfal
 const splitKey = () => `${oldSplitKey()}|${zoneId}`;

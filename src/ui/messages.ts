@@ -12,6 +12,7 @@ import { meterSchool, meterValue, meterOverheated } from '../schoolMeter';
 import { uiSettings } from './uiSettings';
 import { activeFlavor, flavorById } from './flavors';
 import { t } from '../i18n';
+import { fmtDiff } from './fmt';
 
 export const FEATS = ['multi3', 'multi5', 'multi10', 'multi20', 'combo25', 'combo50', 'combo100', 'combo200',
   'untouched', 'elite', 'boss', 'meterFull', 'levelUp', 'split', 'megaCrit', 'closeCall'] as const;
@@ -32,7 +33,6 @@ const FEAT = {
 
 // Flavor der Meldungen = Flavor der Zahlen (wie UI-Flavor oder fest)
 const msgFlavor = () => uiSettings.numFlavor === 'flavor' ? activeFlavor() : flavorById(uiSettings.numFlavor);
-const fmtTime = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
 
 // ---------- Anzeige und Warteschlange ----------
 const box = $('hudFeats');
@@ -110,7 +110,7 @@ function check() {
   const splits = Object.keys(run.splits ?? {}).map(Number).sort((a, b) => a - b);
   for (const lvl of splits.slice(splitsSeen)) {
     const mine = run.splits[lvl], best = bestAtStart[lvl];
-    if (typeof best === 'number' && mine < best) feat('split', `−${fmtTime(best - mine)}`);
+    if (typeof best === 'number' && mine < best) feat('split', fmtDiff(mine - best));
   }
   splitsSeen = splits.length;
   // Knapp überlebt

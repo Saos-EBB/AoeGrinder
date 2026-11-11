@@ -13,7 +13,8 @@ import { setAch } from './skins';
 import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit, mainOf, type MainValue } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
-import { t, locale } from './i18n';
+import { t } from './i18n';
+import { fmtInt } from './ui/fmt';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
@@ -104,7 +105,7 @@ export function lookSource(id: string) {
   if (!L) return '';
   if (L.unlock) return t('hw.lookUnlock', { set: t(`look.magier.${L.unlock}.name`) });
   if (L.ach) {
-    const p = MS_PROGRESS[L.ach]?.(), f = (n: number) => Math.floor(n).toLocaleString(locale);
+    const p = MS_PROGRESS[L.ach]?.(), f = (n: number) => fmtInt(Math.floor(n));
     return t('hw.lookMs', { name: t(`ach.ms.${L.ach}`) }) + (p ? ` · ${f(Math.min(p[0], p[1]))}/${f(p[1])}` : '');
   }
   return t('hw.lookBox');

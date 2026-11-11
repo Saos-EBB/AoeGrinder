@@ -13,6 +13,7 @@ import { uiSettings } from './uiSettings';
 import { activeFlavor, flavorById } from './flavors';
 import { feat, noteHurt } from './messages';
 import './numbers.css';
+import { fmtInt } from './fmt';
 
 const MEGA = 10;   // Mega-Crit ab 10× Grundschaden des Spells // PH
 
@@ -26,7 +27,6 @@ const sizeOf = dmg => {
   const k = clamp(Math.log(Math.max(1, dmg) / UI.dmg.refLow) / Math.log(UI.dmg.refHigh / UI.dmg.refLow), 0, 1);
   return (UI.dmg.minPx + (UI.dmg.maxPx - UI.dmg.minPx) * k) * uiSettings.numSize / 100;
 };
-export const fmtInt = (n: number) => Math.round(n).toLocaleString('de-DE', { maximumFractionDigits: 0 });
 const label = (kind: string, n: number, count = 1) => numberFlavor().numbers.text(kind, fmtInt(n), count);
 
 function spawn(pos, height, kind: string, n: number, px: number, count = 1) {

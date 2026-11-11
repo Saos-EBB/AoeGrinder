@@ -11,7 +11,7 @@ import { zoneIdOf } from '../mapgen/registry';
 import { ORDER, themeOpen, UNLOCK_LEVEL, devMapsOpen, setDevMapsOpen } from '../mapgen/progress';
 import { mapSeed, seedPinned, setMapSeed, unpinSeed } from '../mapgen/rng';
 import { byTime, comboRuns } from '../leaderboard';
-import { fmtTime } from './hud';
+import { fmtTime } from './fmt';
 import { selectMap, menuOpen, renderMenu } from './mainMenu';
 import { t } from '../i18n';
 import type { ThemeId } from '../mapgen/types';

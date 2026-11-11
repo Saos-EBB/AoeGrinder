@@ -8,6 +8,7 @@ import { META } from '../meta';
 import { byTime, comboRuns } from '../leaderboard';
 import { TIPS } from './tips';
 import { t } from '../i18n';
+import { fmtTime } from './fmt';
 
 const LOAD_MS = 1100;   // PH
 
@@ -20,13 +21,11 @@ document.body.insertAdjacentHTML('beforeend', `<div id="loadModal" class="modal"
   <div class="loadMods"></div>
 </div>`);
 
-const fmt = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${Math.floor(ms / 100) % 10}`;
-
 export function showLoad(done: () => void) {
   const m = $('loadModal');
   m.querySelector('.loadZone').textContent = zone.name;
   const best = byTime(comboRuns())[0]?.timeTo100;
-  m.querySelector('.loadBest b').textContent = typeof best === 'number' ? fmt(best) : '—';
+  m.querySelector('.loadBest b').textContent = typeof best === 'number' ? fmtTime(best, true) : '—';
   m.querySelector('.loadTip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
   const mods = MODIFIERS.filter(x => activeModIds().includes(x.id) && !META.charMods.includes(x.id));
   m.querySelector('.loadMods').innerHTML = mods.map((x, i) => `<span class="${i ? '' : 'on'}"></span>`).join('');

@@ -16,7 +16,7 @@ import { makerOf, groupOf, SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearN
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
-import { fmtInt } from './dmgNumbers';
+import { fmtInt } from './fmt';
 import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
 import { attachWeaponCard, weaponCardData } from './weaponCard';

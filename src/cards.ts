@@ -131,6 +131,9 @@ function luckCards() {
   }];
 }
 
+// Spell-Rang aus den gewählten Karten (state.cardPicks); Charakterfenster und Spell-Karte zeigen ihn
+export const rankOf = (id: string) => Object.entries<any>(state.cardPicks ?? {}).reduce((n, [cid, k]) => cid.startsWith(`${id}-`) ? n + k : n, 0);
+
 // Vorschau: echter Wert vorher → nachher. Die Karte selbst wird nicht angewendet, nur ihr Faktor nachgerechnet.
 export function spellValue(id, dmgBonus = 0) {
   const base = baseHit(SPELLS[id]);

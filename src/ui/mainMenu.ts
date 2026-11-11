@@ -13,9 +13,9 @@ import { THEME_ZONES } from '../mapgen/registry';
 import { themeOpen } from '../mapgen/progress';
 import { switchZone } from '../player';
 import { uiSettings, setUi } from './uiSettings';
-import { fmtInt } from './dmgNumbers';
+import { fmtInt, fmtTime, fmtMult } from './fmt';
 import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
-import { byScore, byTime, comboRuns } from '../leaderboard';
+import { byScore, byTime, comboRuns, sameSet } from '../leaderboard';
 import { meta, pickSkin, skinUnlocked } from '../meta';
 import { figurOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
@@ -24,7 +24,6 @@ import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from
 import { applyRunGear, forcedLook, isMagierSkin } from '../gear';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
-import { fmtTime } from './hud';
 import { resetGame, die, newRunMap } from '../player';
 import { resetSpells, stopChannel } from '../spells/core';
 import { renderActionbar } from './hud';
@@ -36,7 +35,7 @@ import { renderKit, currentKit } from './spellCard';
 import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openHero, toggleHero } from './heroWindow';
-import { t, fmtNum, locale } from '../i18n';
+import { t } from '../i18n';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
@@ -53,8 +52,6 @@ const STICK = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="v
 let boardMode: 'time' | 'score' = 'time';
 const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
-const fmtMult = v => `×${fmtNum(v)}`;
-const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
 
 let charIdx = 0, picked = [];
 export const currentFigure = () => CHARS[charIdx];   // Name und Untertitel der gewählten Figur (HUD, Spielerrahmen)

@@ -7,7 +7,7 @@ import { SPELLS, CARDS } from '../config';
 import { manaCost, spellCd, dmgMult, baseHit } from '../formulas';
 import { modFactor } from '../modifiers';
 import { paysLife, rune, runesOf, stat } from '../spells/core';
-import { spellValue } from '../cards';
+import { spellValue, rankOf } from '../cards';
 import { batteryMode } from '../battery';
 import { run } from '../score';
 import { ICONS } from './icons';
@@ -24,7 +24,6 @@ const sec = ms => `${fmtNum(Math.round(ms / 10) / 100)} s`;
 const unit = id => paysLife(id) ? t('cost.life') : batteryMode() ? t('res.charge') : player.rageMax === 1 ? '' : player.rageMax ? t('res.rage') : t('cost.mana');
 
 // Rang = gewählte Rang-Karten dieses Spells (ids „spell-wert“)
-const rankOf = id => Object.entries<any>(state.cardPicks ?? {}).reduce((n, [cid, k]) => cid.startsWith(`${id}-`) ? n + k : n, 0);
 function runShare(id) {
   const all = Object.values<any>(run.dmgBySource ?? {}).reduce((a, b) => a + b, 0), mine = run.dmgBySource?.[id] ?? 0;
   return all ? `${Math.round(mine / all * 100)} %` : '—';
