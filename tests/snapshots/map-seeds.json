@@ -1,0 +1,2442 @@
+{
+ "wald/offen": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 16,
+   "objects": 4,
+   "portals": 1,
+   "deco": 115,
+   "hash": "2b4f8c869e048f0b"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 152,
+   "hash": "501b263f5a640bc5"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 122,
+   "hash": "fbd959b2de574fb2"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 131,
+   "hash": "af2740ec8f3722ec"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 319,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 128,
+   "hash": "2529d974011d8c84"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 132,
+   "hash": "97d30e632362a71f"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 318,
+   "packs": 20,
+   "objects": 4,
+   "portals": 3,
+   "deco": 100,
+   "hash": "8a36be732ad34501"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 319,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 142,
+   "hash": "fff75402c58e3182"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 133,
+   "hash": "ebb79f996b1e6634"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 17,
+   "objects": 4,
+   "portals": 3,
+   "deco": 125,
+   "hash": "813914aff3fdec57"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 133,
+   "hash": "2981f2863c6a8a33"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 118,
+   "hash": "d6f16cf9f2f440b0"
+  }
+ },
+ "wald/kanaele (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 199,
+   "packs": 9,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "788a315dd65d47f4"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 226,
+   "packs": 16,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "9f859ce3672ff9d0"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 222,
+   "packs": 12,
+   "objects": 1,
+   "portals": 3,
+   "deco": 30,
+   "hash": "6b21cfff875a9440"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 253,
+   "packs": 15,
+   "objects": 1,
+   "portals": 3,
+   "deco": 32,
+   "hash": "2fcbccc39037043a"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 220,
+   "packs": 16,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "c26753249627dddb"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 204,
+   "packs": 11,
+   "objects": 1,
+   "portals": 2,
+   "deco": 27,
+   "hash": "f5422cf4eca6d6ed"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 216,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 28,
+   "hash": "0b44823020155494"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 219,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 31,
+   "hash": "3063a685fdd6f06b"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 210,
+   "packs": 11,
+   "objects": 1,
+   "portals": 3,
+   "deco": 26,
+   "hash": "d3dc9a14a5aebc8a"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 239,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "8118933ef8218d90"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 221,
+   "packs": 10,
+   "objects": 1,
+   "portals": 3,
+   "deco": 26,
+   "hash": "5af40d4c1ab7e1c4"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 229,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 32,
+   "hash": "913488983dba8c4c"
+  }
+ },
+ "wald/raeume (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 257,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 47,
+   "hash": "514b9c4b8066cdee"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 231,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 45,
+   "hash": "f18403085695643b"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 193,
+   "packs": 10,
+   "objects": 3,
+   "portals": 3,
+   "deco": 37,
+   "hash": "20f561ae110059d3"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 260,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 56,
+   "hash": "46f88f8d54d13c83"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 253,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 51,
+   "hash": "3825a6812eeefb03"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 272,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 57,
+   "hash": "910ff99630f21a83"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 265,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 59,
+   "hash": "d03650fd264e1fc8"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 289,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 64,
+   "hash": "7b2e711f567f63a4"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 269,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 57,
+   "hash": "46d9592f24157daa"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 274,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 64,
+   "hash": "0a9e9289d774066a"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 255,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 62,
+   "hash": "385925f94a669d6e"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 36,
+   "hash": "9ecc9fc6116a749b"
+  }
+ },
+ "wald/hallen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 202,
+   "packs": 19,
+   "objects": 6,
+   "portals": 1,
+   "deco": 93,
+   "hash": "bf2c4dc19371ff1f"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 190,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 81,
+   "hash": "5ccac63aa7151299"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 160,
+   "packs": 14,
+   "objects": 4,
+   "portals": 1,
+   "deco": 62,
+   "hash": "d0fa3fa51b484dcb"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 166,
+   "packs": 13,
+   "objects": 2,
+   "portals": 2,
+   "deco": 76,
+   "hash": "254585deb917a163"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 193,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 87,
+   "hash": "2b57d388853a8b60"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 185,
+   "packs": 16,
+   "objects": 2,
+   "portals": 2,
+   "deco": 84,
+   "hash": "afb5b514c8a6eb3e"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 169,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 57,
+   "hash": "c63c93714df22884"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 158,
+   "packs": 12,
+   "objects": 1,
+   "portals": 2,
+   "deco": 58,
+   "hash": "b356fba7de2d1e9e"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 192,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 91,
+   "hash": "01f4a7a0039c70ed"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 160,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 63,
+   "hash": "c16c313991882c3a"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 163,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 68,
+   "hash": "5a609fbbcda6af7f"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 176,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 69,
+   "hash": "82186806d2581c2c"
+  }
+ },
+ "wueste/offen": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 311,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 136,
+   "hash": "5c29316561868fbf"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 139,
+   "hash": "80ee96b2b54f838a"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 124,
+   "hash": "5cf8f9b316ed6a5b"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 135,
+   "hash": "2e5c84b90451dd2f"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 135,
+   "hash": "bf691aa3ff891d59"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 130,
+   "hash": "8d2b942f251b22ba"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 15,
+   "objects": 4,
+   "portals": 1,
+   "deco": 117,
+   "hash": "8dd6896b8725890a"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 15,
+   "objects": 4,
+   "portals": 1,
+   "deco": 132,
+   "hash": "53d305b06a12d442"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 313,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 131,
+   "hash": "4bed7c8cfdd6405d"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 123,
+   "hash": "b2c89e5a20efdd08"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 13,
+   "objects": 4,
+   "portals": 1,
+   "deco": 152,
+   "hash": "e3fdd7808baeb91e"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 126,
+   "hash": "6a5ccb61868faf53"
+  }
+ },
+ "wueste/kanaele (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 235,
+   "packs": 16,
+   "objects": 1,
+   "portals": 3,
+   "deco": 29,
+   "hash": "2a89923e27733b03"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 201,
+   "packs": 11,
+   "objects": 0,
+   "portals": 2,
+   "deco": 27,
+   "hash": "281b429f7ad2be14"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 191,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "900933ef0d55af53"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 223,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "b84c4de1b45cfe69"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 233,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 30,
+   "hash": "088dac7ec3a9d890"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 198,
+   "packs": 11,
+   "objects": 1,
+   "portals": 3,
+   "deco": 27,
+   "hash": "2d26dcc0ab42b215"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 226,
+   "packs": 14,
+   "objects": 1,
+   "portals": 3,
+   "deco": 22,
+   "hash": "8c416186cd116c8d"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 196,
+   "packs": 8,
+   "objects": 1,
+   "portals": 3,
+   "deco": 31,
+   "hash": "1a9e840e6e63610b"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 204,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "b6d71e6d80724cb9"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 223,
+   "packs": 13,
+   "objects": 1,
+   "portals": 2,
+   "deco": 27,
+   "hash": "6883b10c36b64ebb"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 219,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 31,
+   "hash": "9d90fe2a56bd6d12"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 222,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 25,
+   "hash": "8c433934eab3477a"
+  }
+ },
+ "wueste/raeume (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 264,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 54,
+   "hash": "7b912ebb350b6bf3"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 224,
+   "packs": 17,
+   "objects": 3,
+   "portals": 3,
+   "deco": 49,
+   "hash": "d23bcd0fd84a9015"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 263,
+   "packs": 17,
+   "objects": 3,
+   "portals": 3,
+   "deco": 54,
+   "hash": "be4f925e452a48cd"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 239,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 50,
+   "hash": "2b2820182506f0d9"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 219,
+   "packs": 12,
+   "objects": 3,
+   "portals": 3,
+   "deco": 41,
+   "hash": "93de5a19e7555905"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 265,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 53,
+   "hash": "0f806bbfac602bc4"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 263,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 52,
+   "hash": "49536b52692d6059"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 236,
+   "packs": 10,
+   "objects": 3,
+   "portals": 3,
+   "deco": 46,
+   "hash": "efa8a315da4a3d0c"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 254,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 39,
+   "hash": "f1d7baa0f1440b12"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 253,
+   "packs": 12,
+   "objects": 3,
+   "portals": 3,
+   "deco": 42,
+   "hash": "1da9e16178215f9d"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 261,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 49,
+   "hash": "d1ce65dea063039f"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 235,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 53,
+   "hash": "8052a6c6636c1cb4"
+  }
+ },
+ "wueste/hallen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 179,
+   "packs": 16,
+   "objects": 2,
+   "portals": 2,
+   "deco": 79,
+   "hash": "a01b47e1fe4ac9c6"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 161,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 56,
+   "hash": "27bd6ed857fe2531"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 155,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 61,
+   "hash": "781f350d4526cd18"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 161,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 63,
+   "hash": "84a36ac28a564c68"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 206,
+   "packs": 20,
+   "objects": 6,
+   "portals": 2,
+   "deco": 104,
+   "hash": "318b4110edcd841e"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 158,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 58,
+   "hash": "e5a6de627d8646e2"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 183,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 91,
+   "hash": "8f8ab83731511d0f"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 190,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 87,
+   "hash": "9ffc397426f02af0"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 170,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 70,
+   "hash": "514f026691989708"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 176,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 58,
+   "hash": "804b628b91f5db52"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 178,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 80,
+   "hash": "e22419d44786e29d"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 186,
+   "packs": 17,
+   "objects": 3,
+   "portals": 2,
+   "deco": 63,
+   "hash": "1c9d6dc8ace4e3fd"
+  }
+ },
+ "kanaele/offen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 319,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 136,
+   "hash": "15c0dfa27c7cfad0"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 134,
+   "hash": "f97f1518dc3350f7"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 313,
+   "packs": 14,
+   "objects": 4,
+   "portals": 2,
+   "deco": 135,
+   "hash": "7294446c6834b008"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 139,
+   "hash": "864832afc4b50d1a"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 311,
+   "packs": 18,
+   "objects": 4,
+   "portals": 3,
+   "deco": 117,
+   "hash": "bb417ee793ba746b"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 127,
+   "hash": "02cee5da9cfad9c0"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 143,
+   "hash": "81e48f3697019022"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 148,
+   "hash": "ff7ed3728352b1f6"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 318,
+   "packs": 19,
+   "objects": 4,
+   "portals": 2,
+   "deco": 118,
+   "hash": "10818308b5d81731"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 319,
+   "packs": 14,
+   "objects": 4,
+   "portals": 2,
+   "deco": 114,
+   "hash": "5b63337928b4107a"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 127,
+   "hash": "f13a98e7d669363c"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 16,
+   "objects": 4,
+   "portals": 1,
+   "deco": 101,
+   "hash": "caab23162ae530f9"
+  }
+ },
+ "kanaele/kanaele": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 219,
+   "packs": 12,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "82bf433a0c1eee32"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 227,
+   "packs": 14,
+   "objects": 1,
+   "portals": 3,
+   "deco": 27,
+   "hash": "7217d6d039f936f0"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 207,
+   "packs": 14,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "98aca5b0249b1b84"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 229,
+   "packs": 15,
+   "objects": 0,
+   "portals": 3,
+   "deco": 28,
+   "hash": "5307a58f0aff0524"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 200,
+   "packs": 12,
+   "objects": 1,
+   "portals": 3,
+   "deco": 28,
+   "hash": "dae51b30454d74a7"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 226,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "86456e8b15517856"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 212,
+   "packs": 9,
+   "objects": 2,
+   "portals": 3,
+   "deco": 29,
+   "hash": "aa0453466173c10d"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 196,
+   "packs": 11,
+   "objects": 0,
+   "portals": 2,
+   "deco": 24,
+   "hash": "40a7cdbd72472b41"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 236,
+   "packs": 16,
+   "objects": 0,
+   "portals": 3,
+   "deco": 30,
+   "hash": "4db242de69cc4c6e"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 218,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 33,
+   "hash": "bbe1c72212c3a41e"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 242,
+   "packs": 15,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "e91bd82a8d370c52"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 226,
+   "packs": 16,
+   "objects": 1,
+   "portals": 2,
+   "deco": 28,
+   "hash": "da87d93ef9a477e4"
+  }
+ },
+ "kanaele/raeume (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 276,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 48,
+   "hash": "942601548af125ba"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 245,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 54,
+   "hash": "ec8b222f89f3e87d"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 239,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 48,
+   "hash": "caae97c5bfb572fc"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 244,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 50,
+   "hash": "60506856eed7cf9c"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 257,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 59,
+   "hash": "e6cdddbae7d63cbb"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 263,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 70,
+   "hash": "05728de23802b374"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 237,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 48,
+   "hash": "67d5e4dbf129fe4b"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 270,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 49,
+   "hash": "766f6579c6fa30f7"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 221,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 43,
+   "hash": "861e0c57f1b88365"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 228,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 49,
+   "hash": "5a208c190f1387f8"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 224,
+   "packs": 10,
+   "objects": 3,
+   "portals": 3,
+   "deco": 41,
+   "hash": "9cd20674b29d3a99"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 244,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 40,
+   "hash": "ecc8ff20402f81f1"
+  }
+ },
+ "kanaele/hallen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 162,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 67,
+   "hash": "be30a4563f1ed9ea"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 170,
+   "packs": 13,
+   "objects": 2,
+   "portals": 2,
+   "deco": 67,
+   "hash": "ac78d0c770ecddeb"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 182,
+   "packs": 16,
+   "objects": 2,
+   "portals": 2,
+   "deco": 68,
+   "hash": "69e48a4ab52b191b"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 184,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 79,
+   "hash": "89be8220a4a5c5e9"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 174,
+   "packs": 16,
+   "objects": 2,
+   "portals": 2,
+   "deco": 65,
+   "hash": "9f408e0de0ab0a93"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 192,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 84,
+   "hash": "e59b50f37fe5e9b2"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 210,
+   "packs": 19,
+   "objects": 4,
+   "portals": 3,
+   "deco": 100,
+   "hash": "01b9c8f513311015"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 198,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 84,
+   "hash": "50d63851f755c371"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 170,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 59,
+   "hash": "eafc25abfc09fbe1"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 87,
+   "hash": "d440235fca618001"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 73,
+   "hash": "8db13d4ad88918d6"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 174,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 63,
+   "hash": "77d5dd5ca8a10865"
+  }
+ },
+ "kathedrale/offen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 120,
+   "hash": "921d15ea4d0308c0"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 318,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 147,
+   "hash": "11eebf5e1d86bf51"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 309,
+   "packs": 17,
+   "objects": 4,
+   "portals": 3,
+   "deco": 136,
+   "hash": "2fc5e4cd694fc741"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 312,
+   "packs": 19,
+   "objects": 4,
+   "portals": 1,
+   "deco": 136,
+   "hash": "8eeca15812ab1dda"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 311,
+   "packs": 17,
+   "objects": 4,
+   "portals": 4,
+   "deco": 119,
+   "hash": "385c7a571b01334b"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 18,
+   "objects": 4,
+   "portals": 3,
+   "deco": 113,
+   "hash": "0ef17b53064e47fd"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 122,
+   "hash": "68f6014b16b3990f"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 135,
+   "hash": "3633c07014f18d6d"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 129,
+   "hash": "e952fd637a4c84a5"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 314,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 108,
+   "hash": "85d77f839f271967"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 313,
+   "packs": 13,
+   "objects": 4,
+   "portals": 2,
+   "deco": 132,
+   "hash": "bd2737c7cea971eb"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 17,
+   "objects": 4,
+   "portals": 3,
+   "deco": 143,
+   "hash": "8bdc299a1d090def"
+  }
+ },
+ "kathedrale/kanaele (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 240,
+   "packs": 16,
+   "objects": 1,
+   "portals": 3,
+   "deco": 28,
+   "hash": "9c0c535893d46631"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 196,
+   "packs": 8,
+   "objects": 1,
+   "portals": 3,
+   "deco": 30,
+   "hash": "0600fe911cf6d384"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 221,
+   "packs": 10,
+   "objects": 0,
+   "portals": 3,
+   "deco": 24,
+   "hash": "ca641662850d8007"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 209,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "5985c3f4d52d3827"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 222,
+   "packs": 15,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "70fdb4f3a5bfd63a"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 219,
+   "packs": 15,
+   "objects": 1,
+   "portals": 2,
+   "deco": 27,
+   "hash": "dff8c1aa128d0e1a"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 220,
+   "packs": 14,
+   "objects": 0,
+   "portals": 2,
+   "deco": 26,
+   "hash": "b44e403f2cedb660"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 215,
+   "packs": 14,
+   "objects": 0,
+   "portals": 3,
+   "deco": 29,
+   "hash": "84964755a6ad7a5c"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 250,
+   "packs": 14,
+   "objects": 0,
+   "portals": 3,
+   "deco": 29,
+   "hash": "439d23f742f788de"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 230,
+   "packs": 15,
+   "objects": 0,
+   "portals": 3,
+   "deco": 29,
+   "hash": "f33783113f811058"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 201,
+   "packs": 13,
+   "objects": 0,
+   "portals": 3,
+   "deco": 26,
+   "hash": "86baeb0ba63d4ba1"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 224,
+   "packs": 12,
+   "objects": 1,
+   "portals": 3,
+   "deco": 30,
+   "hash": "b6df57f82dee12b4"
+  }
+ },
+ "kathedrale/raeume (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 230,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 37,
+   "hash": "3c81c9289ebde25e"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 257,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 51,
+   "hash": "6bc74051fd71b779"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 227,
+   "packs": 12,
+   "objects": 3,
+   "portals": 3,
+   "deco": 44,
+   "hash": "381fdcf288552647"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 251,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 52,
+   "hash": "56b0364117d9bd52"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 255,
+   "packs": 12,
+   "objects": 3,
+   "portals": 3,
+   "deco": 55,
+   "hash": "24524d2af634a560"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 243,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 48,
+   "hash": "9556ac27f56e5be3"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 271,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 50,
+   "hash": "3f9750636f24df08"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 221,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 35,
+   "hash": "f6026a58318d4d6d"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 246,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 53,
+   "hash": "b1dab0dad9ea09e5"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 248,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 56,
+   "hash": "89778517d4190010"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 245,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 49,
+   "hash": "49d65ce682db3745"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 230,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 47,
+   "hash": "6bc598f33d1d3726"
+  }
+ },
+ "kathedrale/hallen": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 182,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 87,
+   "hash": "07c05bb5c11f6fdf"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 193,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 81,
+   "hash": "f85b9e1e7e5292c3"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 202,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 84,
+   "hash": "daba9fcffb5c754d"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 197,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 87,
+   "hash": "424dafecc8875c2f"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 198,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 92,
+   "hash": "f847354dc385c8f6"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 184,
+   "packs": 19,
+   "objects": 4,
+   "portals": 3,
+   "deco": 68,
+   "hash": "165f991777127cb6"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 176,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 62,
+   "hash": "5cf0b40ea2ba38d9"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 186,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 73,
+   "hash": "1114e4bfc39a134c"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 172,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 65,
+   "hash": "1f2bf9fa253b7896"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 179,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 73,
+   "hash": "30a8d8cf329d4dc5"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 192,
+   "packs": 17,
+   "objects": 4,
+   "portals": 1,
+   "deco": 86,
+   "hash": "86ffa65837e61396"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 166,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 55,
+   "hash": "a912d46be8c16a52"
+  }
+ },
+ "hoelle/offen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 16,
+   "objects": 4,
+   "portals": 3,
+   "deco": 126,
+   "hash": "d7bcbdaff442d926"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 16,
+   "objects": 4,
+   "portals": 1,
+   "deco": 126,
+   "hash": "1bad316c1833ee10"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 313,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 106,
+   "hash": "a0b69cb4ded76e1f"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 127,
+   "hash": "7070f37f66c05dd5"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 319,
+   "packs": 14,
+   "objects": 4,
+   "portals": 2,
+   "deco": 151,
+   "hash": "92d222dfd5f3f956"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 318,
+   "packs": 17,
+   "objects": 4,
+   "portals": 3,
+   "deco": 124,
+   "hash": "418d6827e530529b"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 321,
+   "packs": 16,
+   "objects": 4,
+   "portals": 2,
+   "deco": 161,
+   "hash": "56863d1a4a3e934b"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 315,
+   "packs": 15,
+   "objects": 4,
+   "portals": 1,
+   "deco": 139,
+   "hash": "91bca7bf0035bddb"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 318,
+   "packs": 16,
+   "objects": 4,
+   "portals": 4,
+   "deco": 119,
+   "hash": "8b5fac6939292694"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 317,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 120,
+   "hash": "e35813a24dd49b01"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 313,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 143,
+   "hash": "08b0e539a533a66b"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 316,
+   "packs": 17,
+   "objects": 4,
+   "portals": 2,
+   "deco": 126,
+   "hash": "9bcc0f5959769b8a"
+  }
+ },
+ "hoelle/kanaele (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 232,
+   "packs": 16,
+   "objects": 1,
+   "portals": 3,
+   "deco": 28,
+   "hash": "2de9f2e1c771a70e"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 199,
+   "packs": 12,
+   "objects": 1,
+   "portals": 3,
+   "deco": 25,
+   "hash": "01529f22f254a9c6"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 241,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 29,
+   "hash": "885a35639ed16c80"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 202,
+   "packs": 9,
+   "objects": 1,
+   "portals": 3,
+   "deco": 27,
+   "hash": "977685deb9e9819d"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 232,
+   "packs": 14,
+   "objects": 0,
+   "portals": 3,
+   "deco": 31,
+   "hash": "a7de957a535f1d43"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 237,
+   "packs": 14,
+   "objects": 1,
+   "portals": 3,
+   "deco": 23,
+   "hash": "bbc5e04c2d62f7da"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 202,
+   "packs": 13,
+   "objects": 1,
+   "portals": 3,
+   "deco": 26,
+   "hash": "96b6c698ac5fa7f3"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 213,
+   "packs": 12,
+   "objects": 1,
+   "portals": 3,
+   "deco": 26,
+   "hash": "a628c829f8cfa4bc"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 231,
+   "packs": 16,
+   "objects": 0,
+   "portals": 3,
+   "deco": 27,
+   "hash": "41952699613cd543"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 201,
+   "packs": 13,
+   "objects": 1,
+   "portals": 2,
+   "deco": 25,
+   "hash": "c4b6274adb554052"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 217,
+   "packs": 10,
+   "objects": 2,
+   "portals": 3,
+   "deco": 28,
+   "hash": "ec84e6d696ba0f84"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 239,
+   "packs": 15,
+   "objects": 0,
+   "portals": 3,
+   "deco": 32,
+   "hash": "bd476eb1b5ce9019"
+  }
+ },
+ "hoelle/raeume": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 283,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 59,
+   "hash": "c916749f8ca58123"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 230,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 35,
+   "hash": "a1eefeecd93e2097"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 229,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 52,
+   "hash": "d60e719646ed4fc2"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 249,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 51,
+   "hash": "8c40c1abeece6b1f"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 247,
+   "packs": 14,
+   "objects": 3,
+   "portals": 3,
+   "deco": 31,
+   "hash": "f8018302ad5bccd3"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 255,
+   "packs": 12,
+   "objects": 3,
+   "portals": 3,
+   "deco": 56,
+   "hash": "decea8e291b81dd6"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 245,
+   "packs": 13,
+   "objects": 3,
+   "portals": 3,
+   "deco": 51,
+   "hash": "50bd637d91e01284"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 262,
+   "packs": 15,
+   "objects": 3,
+   "portals": 3,
+   "deco": 60,
+   "hash": "124bda89fc061557"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 241,
+   "packs": 11,
+   "objects": 3,
+   "portals": 3,
+   "deco": 47,
+   "hash": "ce5029d29c0394a6"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 261,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 57,
+   "hash": "683084422a86c64b"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 245,
+   "packs": 16,
+   "objects": 3,
+   "portals": 3,
+   "deco": 48,
+   "hash": "6c750ec98fe34d62"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 199,
+   "packs": 9,
+   "objects": 3,
+   "portals": 3,
+   "deco": 37,
+   "hash": "80ac2014cb6f068c"
+  }
+ },
+ "hoelle/hallen (nicht im Spiel)": {
+  "1": {
+   "tries": 1,
+   "problem": null,
+   "floor": 171,
+   "packs": 14,
+   "objects": 2,
+   "portals": 3,
+   "deco": 64,
+   "hash": "c3b19fd181645a51"
+  },
+  "2": {
+   "tries": 1,
+   "problem": null,
+   "floor": 210,
+   "packs": 21,
+   "objects": 6,
+   "portals": 3,
+   "deco": 92,
+   "hash": "60805bb776ca243b"
+  },
+  "7": {
+   "tries": 1,
+   "problem": null,
+   "floor": 166,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 70,
+   "hash": "1b11e2228435aeb7"
+  },
+  "42": {
+   "tries": 1,
+   "problem": null,
+   "floor": 168,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 62,
+   "hash": "c2cdbfede0e57513"
+  },
+  "1337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 192,
+   "packs": 19,
+   "objects": 4,
+   "portals": 3,
+   "deco": 78,
+   "hash": "86022bd5412a2892"
+  },
+  "4242": {
+   "tries": 1,
+   "problem": null,
+   "floor": 178,
+   "packs": 18,
+   "objects": 4,
+   "portals": 2,
+   "deco": 67,
+   "hash": "719fbdbf0eb0ec56"
+  },
+  "9999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 200,
+   "packs": 18,
+   "objects": 3,
+   "portals": 3,
+   "deco": 85,
+   "hash": "c2077f58688924c8"
+  },
+  "31337": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 16,
+   "objects": 2,
+   "portals": 2,
+   "deco": 78,
+   "hash": "f85c90bef4a020c7"
+  },
+  "123456": {
+   "tries": 1,
+   "problem": null,
+   "floor": 190,
+   "packs": 19,
+   "objects": 4,
+   "portals": 3,
+   "deco": 81,
+   "hash": "88654a416bbaec51"
+  },
+  "500000": {
+   "tries": 1,
+   "problem": null,
+   "floor": 162,
+   "packs": 13,
+   "objects": 2,
+   "portals": 2,
+   "deco": 61,
+   "hash": "6dba7bd3e76031da"
+  },
+  "777777": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 17,
+   "objects": 2,
+   "portals": 3,
+   "deco": 81,
+   "hash": "6545b78fb0623fe5"
+  },
+  "999999": {
+   "tries": 1,
+   "problem": null,
+   "floor": 180,
+   "packs": 15,
+   "objects": 4,
+   "portals": 2,
+   "deco": 71,
+   "hash": "cdd4174ea4ceaac1"
+  }
+ }
+}
