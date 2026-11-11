@@ -6,14 +6,14 @@ import { KEYS, readRaw, writeRaw, remove } from './storage';
 import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS, SLOT } from './config';
-import { mage, onWarriorHit } from './models/mage';
+import { mage } from './models/mage';
 import { hitstopActive, hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
 import { DG, consumeCombo } from './dodge';
 import { STRICH_TIMING as TIMING } from './models/strichKrieger';
 import { pad, padBinds } from './gamepad';
 import { showError, combatText } from './ui/hud';
-import { applyRoot, pullMob, knockbackMob, enterCombat, startLeap, onMobDeath } from './mobs';
+import { applyRoot, pullMob, knockbackMob, enterCombat, startLeap } from './mobs';
 import { resolve } from './collision';
 import { act, pickGround, mouse } from './input';
 import { die } from './player';
@@ -28,6 +28,7 @@ import { $, rand, clamp } from './util';
 
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward, stepForward } from './melee';
 import { t } from './i18n';
+import { onMobDeath, onWarriorHit } from './hooks';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
 const REALMEN = {

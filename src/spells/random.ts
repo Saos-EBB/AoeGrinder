@@ -9,10 +9,11 @@ import { maxHp, maxMana } from '../formulas';
 import { particles } from '../fx/particles';
 import { showError, combatText } from '../ui/hud';
 import { addBuff, buffs } from '../buffs';
-import { castSpell, cdEnd, startCd, stat, isGround, mobsInRadius, applySlow, makeCtx, schedule, onCastStart } from './core';
+import { castSpell, cdEnd, startCd, stat, isGround, mobsInRadius, applySlow, makeCtx, schedule } from './core';
 import { flame } from './flame';
 import { FIRE, EMBER } from './fx';
 import { t } from '../i18n';
+import { onCastStart } from '../hooks';
 
 const R = RANDOM_MAGE, CATS = R.cats;
 

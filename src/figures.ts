@@ -4,9 +4,10 @@
 import { state, player } from './state';
 import { mods, SLOT } from './config';
 import { modValue } from './modifiers';
-import { onAnyHit, mobsInRadius, applySlow } from './spells/core';
+import { mobsInRadius, applySlow } from './spells/core';
 import { renderActionbar } from './ui/hud';
 import { t } from './i18n';
+import { onAnyHit } from './hooks';
 
 const figure = () => modValue('onlyTag');
 

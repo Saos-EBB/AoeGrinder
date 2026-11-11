@@ -7,12 +7,13 @@ import { combatText } from '../ui/hud';
 import { particles } from '../fx/particles';
 import { zone } from '../world';
 import { spawnKind } from '../mobKinds';
-import { enterCombat, onMobDeath } from '../mobs';
+import { enterCombat } from '../mobs';
 import { dropDust, dropWeapon, dropGear } from '../loot';
 import { colored } from '../mapgen/build';
 import { registerKind, planObjects, redraw, removeObj, addDevButton, devAhead, spawnObj, OBJ, type Obj } from './objects';
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
+import { onMobDeath } from '../hooks';
 
 export const CHEST = { perMap: 4, openMs: 1000, mimic: 0.1, dust: [15, 30], weapon: 0.5, gear: 0.35, mimicLevel: 1 };   // gear: Kevin 10.11. „Truhen auch Gear“; weapon/gear 10.11. ~+40 % (vorher 0.35 / 0.25), Chance PH
 

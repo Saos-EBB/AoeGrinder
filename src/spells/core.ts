@@ -1,5 +1,6 @@
 // Spell-Kern: Slots, Tags, cast, Channel. Die Spells selbst liegen je in einer Datei, Registrierung in index.ts.
 
+import { hooks } from '../hooks';
 import { spellAtAction } from '../hotbar';
 import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
@@ -105,12 +106,6 @@ export const paysLife = id => supported('blood', id) || !!modValue('lifeCost'); 
 export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
-// Feuer-Treffer (auch Brand-Ticks) melden sich hier: Benzin zündet (gasoline.ts). Liste an einer Funktion: Import-Kreis
-function fireHooks(): any[] { return (fireHooks as any).list ??= []; }
-export function onFireHit(fn) { fireHooks().push(fn); }
-// Jeder Treffer, der landet: fn(mob, spellId, Schaden, war eingefroren). figures.ts zählt damit Eissplitter
-function anyHooks(): any[] { return (anyHooks as any).list ??= []; }
-export function onAnyHit(fn) { anyHooks().push(fn); }
 
 // Pro Wirkung ein Kontext; Wiederholungen tragen ihren eigenen Faktor, aber die ID ihres Casts
 let inTick = false;   // Ticks von Kanälen und Flächen zählen als Schaden über Zeit (Wirksamkeit)
@@ -147,8 +142,8 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       if (landed && hasTag(id, 'Blitz')) { batteryHit(); if (c.over && !m.dead) applyRoot(m, BATTERY.stunMs); }   // Batterie: Ladung pro Treffer, überladen betäubt
       if (landed && !inTick && hasTag(id, 'Feuer')) meterHeatHit();       // Hitze: jeder Feuer-Treffer, Brand-Ticks nicht
       if (landed && inTick && !m.dead && hasTag(id, 'Feuer')) m.burn = { dps: dmg, until: Math.min(tickEnd, state.now + BURN_STICK) };
-      if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of fireHooks()) fn(m, id, dmg);
-      if (landed) for (const fn of anyHooks()) fn(m, id, dmg, frozen);
+      if (landed && hasTag(id, 'Feuer') && id !== 'gasoline') for (const fn of hooks.fireHit.fns) fn(m, id, dmg);   // Benzin zündet (hooks.ts)
+      if (landed) for (const fn of hooks.anyHit.fns) fn(m, id, dmg, frozen);   // Eissplitter, Netz (hooks.ts)
       return landed;
     },
     // Geschoss-Treffer: Support "Kette" springt zu den 2 nächsten
@@ -179,12 +174,10 @@ export function bounceShot(target) {
 // Flächen treffen nur nahe der Wirkfläche: der Boden unter center, damit ein Sprung die Fläche nicht mit anhebt.
 // height = Infinity für Zielzauber, die nur ein Ziel im Umkreis suchen.
 // Map-Objekte (objects/): jede Wirkfläche (endliche Höhe = Schaden, Infinity = nur Zielsuche) meldet sich mit dem Spell, der gerade wirkt.
-// areaSpell: zuletzt erzeugter oder treffender Kontext bzw. tickende Fläche; Kegel zählen als Kreis. Liste an einer Funktion: Import-Kreis
-function areaHooks(): any[] { return (areaHooks as any).list ??= []; }
-export function onSpellArea(fn: (center, r: number, spellId: string | null) => void) { areaHooks().push(fn); }
+// areaSpell: zuletzt erzeugter oder treffender Kontext bzw. tickende Fläche; Kegel zählen als Kreis (hooks.ts spellArea)
 let areaSpell: string | null = null;
 export function mobsInRadius(center, r, height = SPELL_AOE_HEIGHT) {
-  if (height !== Infinity) for (const fn of areaHooks()) fn(center, r, areaSpell);
+  if (height !== Infinity) for (const fn of hooks.spellArea.fns) fn(center, r, areaSpell);
   const y = groundAt(center.x, center.z, center.y);
   return state.mobs.filter(m => !m.dead && dist2d(m.pos, center) <= r && Math.abs(m.pos.y - y) < height);
 }
@@ -245,10 +238,8 @@ export function castSpell(id, point?) {
   noteCastStart(id);
 }
 
-// Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts). Liste an einer Funktion: Import-Kreis
-function castStartHooks(): any[] { return (castStartHooks as any).list ??= []; }
-export function onCastStart(fn) { castStartHooks().push(fn); }
-export function noteCastStart(id) { meterCast(SPELLS[id].tags); for (const fn of castStartHooks()) fn(id); }   // meterCast: Frost kühlt die Hitze
+// Ein Spell fängt an (Zauberzeit, Kanal oder sofort). Der ?-Magier würfelt dann neu (random.ts, hooks.ts castStart)
+export function noteCastStart(id) { meterCast(SPELLS[id].tags); for (const fn of hooks.castStart.fns) fn(id); }   // meterCast: Frost kühlt die Hitze
 
 // Der Zauber wird wirksam: Kosten, Abklingzeit, Wirkung
 function release(id, point, opts: any = {}) {

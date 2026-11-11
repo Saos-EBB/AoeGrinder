@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 import { state, player } from './state';
-import { onMobDeath } from './mobs';
+import { onMobDeath } from './hooks';
 import { particles } from './fx/particles';
 import { combatText } from './ui/hud';
 import { mage } from './models/mage';

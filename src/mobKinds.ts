@@ -8,7 +8,7 @@ import { state, player } from './state';
 import { $, rand, randInt, pick, clamp, dist2d } from './util';
 import { CFG, LEVEL_UNLOCKS, LEVEL_PACK_SPREAD } from './config';
 import { camera } from './render';
-import { spawnMob, enterCombat, onMobDeath, removeMob, damageMob, hitPlayer, rollPackSize } from './mobs';
+import { spawnMob, enterCombat, removeMob, damageMob, hitPlayer, rollPackSize } from './mobs';
 import { zone } from './world';
 import { ABILITIES, ZUSATZ, breakShield, telegraph } from './abilities';
 import { rollChampionPack, makeChampion, rollAffixes } from './champions';
@@ -19,6 +19,7 @@ import { strichMob } from './models/strichMob';
 import { SKINS, TEST_SKINS } from './models/mobSkins';
 import { t } from './i18n';
 import type { PackSpot, ThemeId, ThemeInfo } from './mapgen/types';
+import { onMobDeath } from './hooks';
 
 // Kategorien relativ zu Normal: Leben, Schaden, Tempo, XP, Fähigkeit (abilities.ts). flee: Hexer und Zauberer fliehen (abilities.ts flee)
 export const KINDS: Record<string, { hp: number; dmg: number; spd: number; xp: number; ability: string | null; flee?: boolean }> = {

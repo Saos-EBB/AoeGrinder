@@ -10,7 +10,7 @@ import { maxHp } from './formulas';
 import { meta, saveMeta, earnDust } from './meta';
 import { camera, scene } from './render';
 import { mage } from './models/mage';
-import { applyRoot, enterCombat, startLeap, knockbackMob, onMobDeath } from './mobs';
+import { applyRoot, enterCombat, startLeap, knockbackMob } from './mobs';
 import { mobsInRadius, makeCtx, addField } from './spells/core';
 import { runChain } from './spells/chain';
 import { igniteMob } from './spells/firestorm';
@@ -20,6 +20,7 @@ import { combatText, showError } from './ui/hud';
 import { forward } from './melee';
 import { warLegendary, NOXUS } from './realMen';
 import { t } from './i18n';
+import { onMobDeath } from './hooks';
 
 export const LEG = {
   combo: { keys: ['KeyQ', 'KeyE', 'Digit1'], labels: ['Q', 'E', '1'], windowMs: 1500, cdMs: 60000 },

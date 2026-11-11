@@ -2,9 +2,10 @@
 
 import { state } from '../state';
 import { UNIT } from '../config';
-import { mobsInRadius, applySlow, addField, onFireHit } from './core';
+import { mobsInRadius, applySlow, addField } from './core';
 import { canisterLook, oilField, igniteLook } from '../vfx/fireLook';
 import { t } from '../i18n';
+import { onFireHit } from '../hooks';
 
 // PH: Lache 6 yd 8 s, 30 % Slow; gezündet 6 s Brand mit 1,5 Einheiten pro Sekunde
 const G = { radius: 6, ms: 8000, slow: 0.3, burnMs: 6000, burn: 1.5, slowTickMs: 500 };

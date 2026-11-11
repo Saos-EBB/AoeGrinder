@@ -1,3 +1,4 @@
+import { hooks } from './hooks';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
@@ -406,12 +407,8 @@ export function burnMob(mob, amount) {
   if (mob.hp <= 0) killMob(mob);
 }
 
-// Tod eines Mobs melden (loot.ts, mobKinds.ts, legends.ts, realMen.ts). Liste an einer Funktion: Import-Kreis
-function deathHooks(): any[] { return (deathHooks as any).list ??= []; }
-export function onMobDeath(fn) { deathHooks().push(fn); }
-
 function killMob(mob) {
-  for (const fn of deathHooks()) fn(mob);
+  for (const fn of hooks.mobDeath.fns) fn(mob);   // Tod melden (hooks.ts): Seuche, Krieger-Legende, Loot, Pack-Arten, Kuh, Mimic, Schatzdieb
   mob.dead = true;
   mob.deathAt = state.now;
   mob.hp = 0;

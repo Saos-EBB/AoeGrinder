@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { state, player } from '../state';
 import { zone } from '../world';
 import { spawnKind } from '../mobKinds';
-import { moveMob, faceMob, removeMob, onMobDeath } from '../mobs';
+import { moveMob, faceMob, removeMob } from '../mobs';
 import { dropDust, dropWeapon } from '../loot';
 import { ringFx } from '../fx/spellFx';
 import { particles } from '../fx/particles';
@@ -13,6 +13,7 @@ import { combatText } from '../ui/hud';
 import { onMapObjects, addDevButton, devAhead } from './objects';
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
+import { onMobDeath } from '../hooks';
 
 export const THIEF = { chance: 0.3, escapeMs: 15000, speed: 0.95, dust: [60, 100], repickMs: 1500, sparkMs: 120 };
 const GOLD = [2.6, 2.0, 0.6];

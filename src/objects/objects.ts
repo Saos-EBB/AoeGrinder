@@ -11,7 +11,7 @@ import { scene } from '../render';
 import { zone, heightAt } from '../world';
 import { SPELLS } from '../config';
 import { toonMat } from '../toon';
-import { onSpellArea } from '../spells/core';
+import { onSpellArea } from '../hooks';
 import { makeRng, mixSeed, type Rng } from '../mapgen/rng';
 import { addUseSource, updateUseHint } from '../useKey';
 import { binds, keyText } from '../input';
