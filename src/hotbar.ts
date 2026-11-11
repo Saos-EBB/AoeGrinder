@@ -4,17 +4,17 @@
 // Reihenfolge und Modi bleiben pro Figur im localStorage.
 
 import { state } from './state';
+import { KEYS, read, write } from './storage';
 import { SPELL_ACTIONS } from './config';
 import { activeModIds } from './modifiers';
 import { t } from './i18n';
 
 export type CastMode = 'instant' | 'release' | 'click';
 export const MODE_NAMES: Record<CastMode, string> = { instant: t('cast.mode.instant'), release: t('cast.mode.release'), click: t('cast.mode.click') };
-const STORE = 'frostgrind.hotbar';
 const N = SPELL_ACTIONS.length;
 
-let store: Record<string, { order: number[]; mode: (CastMode | null)[] }> = (() => { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } })();
-const save = () => { try { localStorage.setItem(STORE, JSON.stringify(store)); } catch { /* egal */ } };
+let store: Record<string, { order: number[]; mode: (CastMode | null)[] }> = read(KEYS.hotbar, {});
+const save = () => { write(KEYS.hotbar, store); };
 const figKey = () => activeModIds().slice().sort().join('+') || 'normal';
 function bar() {
   const b = store[figKey()] ??= { order: [...Array(N).keys()], mode: Array(N).fill(null) };

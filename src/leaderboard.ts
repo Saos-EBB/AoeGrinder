@@ -1,6 +1,7 @@
 // Lokale Rangliste. Nur im Browser des Spielers, Lesen und Schreiben dürfen fehlschlagen.
 
 import { state, player } from './state';
+import { KEYS, read, write } from './storage';
 import { SCORE_VERSION } from './config';
 import { MODES, modeId, mobMode, siegeGoal, activeModIds, scoreMult } from './modifiers';
 import { META } from './meta';
@@ -12,16 +13,13 @@ import { ZONES } from './zones';
 import { t } from './i18n';
 import { mapSeed, seedPinned } from './mapgen/rng';
 
-const STORE = 'frostgrind.runs.v1';
-
+// Einzige Stelle für KEYS.runs (auch spells/core.ts saveRunBuild und ui/saveCode.ts gehen hierüber)
 export function loadRuns() {
-  try {
-    const list = JSON.parse(localStorage.getItem(STORE) || '[]');
-    return Array.isArray(list) ? list : [];
-  } catch { return []; }
+  const list = read(KEYS.runs, []);
+  return Array.isArray(list) ? list : [];
 }
-function saveRuns(list) {
-  try { localStorage.setItem(STORE, JSON.stringify(list)); } catch { /* kein Storage */ }
+export function saveRuns(list) {
+  write(KEYS.runs, list);
 }
 
 export const byScore = list => [...list].sort((a, b) => b.score - a.score);
@@ -81,11 +79,10 @@ export const byTime = list => list.filter(r => typeof r.timeTo100 === 'number').
 // Splits gegen den schnellsten Run derselben Kombination, grün heißt schneller
 const fmtDiff = ms => { const t = Math.abs(ms) / 1000; return `${ms < 0 ? '−' : '+'}${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`; };
 // Bestwert pro Split, auch aus Runs, die Level 100 nicht erreicht haben. Schlüssel wie comboRuns: Figur + Mods + Mob-Modus + Map
-const SPLIT_STORE = 'frostgrind.splits.v1';
 const oldSplitKey = () => `${[...activeModIds()].sort().join(',')}|${mobMode}|${siegeGoal ?? 0}`;   // bis ui-mix ohne Map, gilt als Tirisfal
 const splitKey = () => `${oldSplitKey()}|${zoneId}`;
 function loadSplitBests() {
-  try { const all = JSON.parse(localStorage.getItem(SPLIT_STORE) || '{}'); return all && typeof all === 'object' ? all : {}; } catch { return {}; }
+  const all = read(KEYS.splits, {}); return all && typeof all === 'object' ? all : {};
 }
 export const bestSplits = (): Record<number, number> => { const all = loadSplitBests(); return all[splitKey()] ?? (zoneId === 'tirisfal' ? all[oldSplitKey()] : null) ?? {}; };
 function saveSplitBest(lvl, ms) {
@@ -93,7 +90,7 @@ function saveSplitBest(lvl, ms) {
   const all = loadSplitBests(), mine = all[splitKey()] ?? (all[splitKey()] = {});
   if (typeof mine[lvl] === 'number' && mine[lvl] <= ms) return;
   mine[lvl] = ms;
-  try { localStorage.setItem(SPLIT_STORE, JSON.stringify(all)); } catch { /* kein Storage */ }
+  write(KEYS.splits, all);
 }
 
 export function noteSplits(fromLevel) {

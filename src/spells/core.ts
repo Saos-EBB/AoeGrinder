@@ -21,7 +21,7 @@ import { BATTERY } from '../config';
 import { dodgeRecovery, comboReady, consumeCombo, pdDmgMul, pdRateMul } from '../dodge';
 import { berserkMul } from '../realMen';
 import { legendDmgMul } from '../legends';
-import { loadRuns } from '../leaderboard';
+import { loadRuns, saveRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
 import { t } from '../i18n';
@@ -380,7 +380,7 @@ export function saveRunBuild() {
   const runs = loadRuns(), last = runs[runs.length - 1];
   if (!last) return;
   last.build = buildText();
-  try { localStorage.setItem('frostgrind.runs.v1', JSON.stringify(runs)); } catch { /* kein Storage */ }
+  saveRuns(runs);
 }
 
 export function learnSpell(id, slot) {

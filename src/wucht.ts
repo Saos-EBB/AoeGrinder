@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { KEYS, readRaw, writeRaw } from './storage';
 import { cameraKick } from './fx/impact';
 import { scene } from './render';
 import { groundAt } from './collision';
@@ -24,13 +25,12 @@ export const W = {
 };
 
 // Einstellung „Bildschirmwackeln“: an, aus, stark
-const SHAKE_STORE = 'frostgrind.shake.v1';
 export const SHAKE_MODES = ['an', 'aus', 'stark'];
-let shakeMode = (() => { try { const v = localStorage.getItem(SHAKE_STORE); return SHAKE_MODES.includes(v) ? v : 'an'; } catch { return 'an'; } })();
+let shakeMode = (() => { const v = readRaw(KEYS.shake); return SHAKE_MODES.includes(v) ? v : 'an'; })();
 export const shakeModeNow = () => shakeMode;
 export function setShakeMode(m) {
   shakeMode = m;
-  try { localStorage.setItem(SHAKE_STORE, m); } catch { /* egal */ }
+  writeRaw(KEYS.shake, m);
 }
 
 let trauma = 0, frameAdd = 0, clock = 0;

@@ -7,9 +7,9 @@ import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
 import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type Figur, type SkinId } from './skins';
+import { KEYS, readRaw, writeRaw, write, remove, keysWith } from './storage';
 
 export const META = {
-  store: 'frostgrind.meta.v1',
   backups: 3,                                          // so viele Sicherungen eines unlesbaren Stands bleiben liegen
   splits: [15, 30, 45, 60, 75, 90, 100],
   dust: { perLevel: 1, doneBonusAtTier3: 50 },         // Abschluss-Bonus wächst mit der Shop-Stufe
@@ -32,25 +32,23 @@ const RANK = ['grün', 'blau', 'lila', 'orange'];
 const FREE = ['grün'];
 
 // skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen.
-// Nie einen echten Stand durch einen leeren ersetzen: Ist der Text kein JSON-Objekt, wird er unter META.store + '.backup-<Zeit>' gesichert (höchstens
+// Nie einen echten Stand durch einen leeren ersetzen: Ist der Text kein JSON-Objekt, wird er unter KEYS.metaBackup + <ISO-Zeit> gesichert (höchstens
 // META.backups Stück), dann Start mit Standard. Die Säuberung läuft Schritt für Schritt: schlägt einer fehl, fällt nur sein Feld auf Standard, der Rest bleibt.
 const metaDefaults = () => ({ dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 });
 let saveBlocked = false;   // Backup ließ sich nicht schreiben: dann den alten Text im Speicher nicht überschreiben
 function backupMeta(raw: string, why: string) {
-  const prefix = META.store + '.backup-', key = prefix + new Date().toISOString();
-  try {
-    localStorage.setItem(key, raw);
-    const old = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort();
-    for (const k of old.slice(0, Math.max(0, old.length - META.backups))) localStorage.removeItem(k);
-    console.warn(`[meta] Spielstand ${why}, Rohtext gesichert unter ${key}`);
-  } catch (e) {
+  const key = KEYS.metaBackup + new Date().toISOString();
+  if (!writeRaw(key, raw)) {
     saveBlocked = true;
-    console.error(`[meta] Spielstand ${why}, Sicherung fehlgeschlagen. Der gespeicherte Stand wird in dieser Sitzung nicht überschrieben.`, e);
+    console.error(`[meta] Spielstand ${why}, Sicherung fehlgeschlagen. Der gespeicherte Stand wird in dieser Sitzung nicht überschrieben.`);
+    return;
   }
+  const old = keysWith(KEYS.metaBackup);
+  for (const k of old.slice(0, Math.max(0, old.length - META.backups))) remove(k);
+  console.warn(`[meta] Spielstand ${why}, Rohtext gesichert unter ${key}`);
 }
 function load() {
-  let raw: string | null = null;
-  try { raw = localStorage.getItem(META.store); } catch { /* kein Storage */ }
+  const raw = readRaw(KEYS.meta);
   let saved: any = {}, backedUp = false;
   const backup = (why: string) => { if (!backedUp && raw) backupMeta(raw, why); backedUp = true; };
   if (raw) {
@@ -96,7 +94,7 @@ export function fixWeapon(w) {
   return w;
 }
 export const meta = load();
-export const saveMeta = () => { if (saveBlocked) return; try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
+export const saveMeta = () => { if (!saveBlocked) write(KEYS.meta, meta); };
 
 // ---------- Erfolge ----------
 export const hasAch = (id: string) => meta.achievements.includes(id);

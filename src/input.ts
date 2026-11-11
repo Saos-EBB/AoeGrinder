@@ -1,6 +1,7 @@
 // Tastenbelegung wird in localStorage gespeichert, falls verfügbar.
 
 import * as THREE from 'three';
+import { KEYS, read, write } from './storage';
 import { state, player } from './state';
 import { $, clamp } from './util';
 import { SPELLS, SPELL_ACTIONS } from './config';
@@ -45,11 +46,9 @@ export const ACTIONS = [
   { id: 'blink', label: t('bind.blink'),         code: 'Digit5', key: '5', spell: true },
   { id: 'slot8', label: t('bind.slot8'),           code: 'Digit8', key: '8', spell: true },
 ];
-const BIND_STORE = 'frostgrind.binds.v1';
 export let binds = loadBinds();
 // Der Strichkrieger hat eine eigene Belegung der Slots: Q, E, R, Maus 4, Maus 5, 1, 2, 3. Was sie belegt (Seitwärts, Autorun), ist in diesem Modus frei.
 // Der Speicher-Name stammt vom Klingenstrich (geparkt in maybeLater/) und bleibt, damit gespeicherte Tasten gelten
-const MELEE_BIND_STORE = 'frostgrind.binds.klinge.v1';
 const MELEE_SLOTS = { nova: ['KeyQ', 'Q'], ae: ['KeyE', 'E'], bliz: ['KeyR', 'R'], coc: ['Mouse3', 'Maus 4'], blink: ['Mouse4', 'Maus 5'], drink: ['Digit1', '1'], slot7: ['Digit2', '2'], slot8: ['Digit3', '3'] };
 let meleeBinds = false, normalBinds = binds;
 function meleeDefaults() {
@@ -63,7 +62,7 @@ export function useMeleeBinds(on) {
   if (on) {
     normalBinds = binds;
     binds = meleeDefaults();
-    try { Object.assign(binds, JSON.parse(localStorage.getItem(MELEE_BIND_STORE) || '{}')); } catch { /* kein Storage */ }
+    Object.assign(binds, read(KEYS.bindsMelee, {}));
   } else binds = normalBinds;
   meleeBinds = on;
 }
@@ -75,11 +74,11 @@ function defaultBinds() {
 }
 function loadBinds() {
   const b = defaultBinds();
-  try { Object.assign(b, JSON.parse(localStorage.getItem(BIND_STORE) || '{}')); } catch { /* kein Storage */ }
+  Object.assign(b, read(KEYS.binds, {}));
   return b;
 }
 export function saveBinds() {
-  try { localStorage.setItem(meleeBinds ? MELEE_BIND_STORE : BIND_STORE, JSON.stringify(binds)); } catch { /* egal */ }
+  write(meleeBinds ? KEYS.bindsMelee : KEYS.binds, binds);
 }
 // Tastennamen werden so gespeichert (Leertaste, Maus 4); keyText übersetzt sie nur für die Anzeige
 export const keyText = (k: string) => k === 'Leertaste' ? t('key.space') : k?.startsWith('Maus ') ? `${t('key.mouse')} ${k.slice(5) === 'Mitte' ? t('key.middle') : k.slice(5)}` : k;

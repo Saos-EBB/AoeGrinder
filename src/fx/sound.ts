@@ -1,11 +1,12 @@
 // Synthetische Sounds über WebAudio, kein Download: Einschlag, Frost-Klirren, Blitzknistern, Feuer-Wumms. Alle Werte PH.
 import { t } from '../i18n';
+import { KEYS, readRaw, writeRaw } from '../storage';
 
-const VOLUME_KEY = 'frostgrind.volume.v1', DEFAULT_VOLUME = 0.6;
+const DEFAULT_VOLUME = 0.6;
 const MIN_GAP = { impact: 70, frost: 90, zap: 60, fire: 90 };   // ms je Art, sonst türmt sich ein 50er-Kettenblitz auf
 
 let volume = DEFAULT_VOLUME;
-try { const v = parseFloat(localStorage.getItem(VOLUME_KEY)); if (v >= 0 && v <= 1) volume = v; } catch { /* kein Storage */ }
+{ const v = parseFloat(readRaw(KEYS.volume)); if (v >= 0 && v <= 1) volume = v; }
 
 let ctx = null, master = null, noiseBuf = null;
 function audio() {
@@ -25,7 +26,7 @@ export const getVolume = () => volume;
 function setVolume(v) {
   volume = v;
   if (master) master.gain.value = v;
-  try { localStorage.setItem(VOLUME_KEY, String(v)); } catch { /* kein Storage */ }
+  writeRaw(KEYS.volume, String(v));
 }
 
 function envelope(t, peak, attack, decay) {
