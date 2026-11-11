@@ -55,7 +55,6 @@ document.head.insertAdjacentHTML('beforeend', `<style>
   #boardDetail b { color: #f2c94c; font-weight: 600; }
   #boardIo { width: 100%; height: 70px; margin: 8px 0 4px; font: 12px monospace; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 3px; }
   #boardMsg { min-height: 18px; font-size: 13px; color: #9cc4ff; }
-  #runNote { width: 100%; font: 13px system-ui, sans-serif; padding: 4px; background: #000a; color: #fff; border: 1px solid #6b5426; border-radius: 3px; }
 </style>`);
 // Tippen in Textfeldern darf nicht beim Spiel ankommen
 function ownKeys(el) { el.addEventListener('keydown', e => e.stopPropagation()); }

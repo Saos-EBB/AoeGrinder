@@ -140,7 +140,7 @@ export const en: Record<string, string> = {
   'bind.bliz': "Attack 3",
   'bind.camBehind': "Camera behind figure",
   'bind.charWin': "Character window",
-  'bind.gearWin': "Equipment window",
+  'bind.gearWin': "Character window (alt.)",
   'bind.coc': "Attack 4",
   'bind.dodge': "Dodge",
   'bind.drink': "Drink / Eat",
@@ -2440,4 +2440,5 @@ export const en: Record<string, string> = {
   'gear.form.koerper.leben': "Wide Robe",
   'gear.form.koerper.mana': "Rune Robe",
   'gear.form.koerper.radius': "Wide Hem",
+  'school.plague': "Plague",
 };

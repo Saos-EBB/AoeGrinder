@@ -17,7 +17,8 @@ import { attachTip, hideTip, TipData } from './tooltip';
 import { t, fmtNum } from '../i18n';
 
 const RELIC_GOLD = '#e3c27a';
-const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'nature', 'shadow', 'blood', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k}`)]));
+// cls 'nature' sind die Seuche-Spells (spells/plague.ts): Anzeige „Seuche“, die ID selbst bleibt vorerst
+const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'nature', 'shadow', 'blood', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k === 'nature' ? 'plague' : k}`)]));
 const BASE_HIT = s => s.tickDmg ?? (s.min ? (s.min + s.max) / 2 : s.dmg ?? s.pulse ?? s.showDmg);
 const num = (v: number) => fmtNum(Math.round(v * 100) / 100);
 const sec = ms => `${fmtNum(Math.round(ms / 10) / 100)} s`;
