@@ -1,9 +1,9 @@
 # Credits
 
 ## Spell-Icons
-Im Spiel seit der Optik-Phase 11: eigene SVGs aus dem Spell-Viewer (`src/ui/spellIcons.ts`). Die PNGs unten liegen noch in `src/assets/icons/`, werden aber nicht mehr angezeigt.
+Im Spiel seit der Optik-Phase 11: eigene SVGs aus dem Spell-Viewer (`src/ui/spellIcons.ts`). Die PNGs aus den Packs unten wurden am 11.11.2026 gelöscht (nicht mehr angezeigt; in der Git-History unter `src/assets/icons/`).
 
-Früher: von HiveWorkshop, laut Kevin selbstgemachte CC0-Packs der Autoren. In `src/assets/icons/` als PNG umgewandelt, sonst unverändert.
+Früher: von HiveWorkshop, laut Kevin selbstgemachte CC0-Packs der Autoren. Lagen bis 11.11.2026 als PNG umgewandelt in `src/assets/icons/`, sonst unverändert.
 
 | Pack | Autor | Quelle |
 |---|---|---|
