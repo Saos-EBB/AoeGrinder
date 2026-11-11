@@ -23,8 +23,10 @@ const ENTRIES = ['main.ts', 'vfxLab.ts'];
 // Nach E10 Schritt 5 (ARCH-11: models/heroModel.ts ohne weaponRolls/realMen, fx/frostFx.ts ohne heroModel): beide 53/6/4/3/2 (68).
 // E10 Schritt 2 (player.ts → run.ts + player/move, damage, xp): +4 Module im Kreis ohne neue Kante (die Teile hängen wie vorher player.ts drin), 57/72;
 // nach dem Umstellen der Aufrufer (Übergangs-player.ts weg) 56/71.
+// E10 Schritt 3 (ui/heroWindow.ts → ui/heroWindow/ state, left, inventory, filter, tree, keys, index): Fenster-Kreis 6 → 11 (sechs Teile statt einer Datei,
+// keine neue Kante nach außen; state.ts liegt außerhalb), also 56/11/4/3/2 (76).
 // Darf nur sinken; nach jedem Umbau, der Kreise auflöst, hier nachziehen. Ausnahme: ein Datei-Schnitt im Kreis zählt jedes Teil einzeln.
-const LIMIT = { static: { largest: 56, inCycles: 71 }, dynamic: { largest: 56, inCycles: 71 } };
+const LIMIT = { static: { largest: 56, inCycles: 76 }, dynamic: { largest: 56, inCycles: 76 } };
 let NO_DYN = false;
 
 // Kommentare entfernen, Strings behalten (Regex-Literale grob erkannt, damit // darin nicht als Kommentar gilt)
