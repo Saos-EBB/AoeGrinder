@@ -23,6 +23,7 @@ import { renderDevMapGen } from '../mapgen/devMap';
 import { mountVolume, getVolume } from '../fx/sound';
 import { PAD_ACTIONS, padBinds, padLabel, resetPadBinds, savePadBinds } from '../gamepad';
 import { t, fmtNum } from '../i18n';
+import { html } from './dom';
 
 const KIND_LOOK = { rang: { name: t('cardui.kind.rang'), icon: '▲' }, spell: { name: t('cardui.kind.spell'), icon: '✦' }, rune: { name: t('cardui.kind.rune'), icon: '✧' }, support: { name: t('cardui.kind.support'), icon: '◆' }, relic: { name: t('cardui.kind.relic'), icon: '♛' }, talent: { name: t('cardui.kind.talent'), icon: '★' }, luck: { name: t('cardui.kind.luck'), icon: '♣' } };
 // Level-Up-Karten: bis 3 Karten groß (Mockup K2), 4–10 kompakt in 2 Reihen à 5 (L2). F1–F12 wählen (nicht die Zahlentasten: die zaubern, wer
@@ -217,18 +218,20 @@ $('devForce').addEventListener('click', () => {
 $('devLuck').addEventListener('click', () => { player.luck += 25; });
 
 // Dev: legendäre Waffe des Strichkriegers (realMen.ts LEGENDARY). Wechsel startet den Run neu, damit Kit und Kette stimmen
-$('devCards').insertAdjacentHTML('afterend', `<select class="bindBtn" id="devLegend" style="width:100%;margin-bottom:4px"></select>`);
-setTimeout(() => {   // erst nach dem Laden aller Module: realMen.ts und legends.ts hängen im Import-Kreis
-  for (const [id, name] of [['', 'keine'], ...WAR_LEGENDARIES.map(id => [id, LEGENDS[id]?.name ?? id])]) $('devLegend').insertAdjacentHTML('beforeend', `<option value="${id}">${name}</option>`);
-  ($('devLegend') as HTMLSelectElement).value = warLegendary() ?? '';
-});
-$('devLegend').addEventListener('change', e => {
-  setWarLegendary((e.target as HTMLSelectElement).value || null);
-  stopChannel(true);
-  resetGame();
-  resetSpells();
-  renderActionbar();
-});
+// Block für ui/devGame.ts (mountDev läuft, wenn alle Module geladen sind)
+export function devLegendBlock() {
+  const sel = html(`<select class="bindBtn" id="devLegend" style="width:100%;margin-bottom:4px"></select>`) as HTMLSelectElement;
+  for (const [id, name] of [['', 'keine'], ...WAR_LEGENDARIES.map(id => [id, LEGENDS[id]?.name ?? id])]) sel.insertAdjacentHTML('beforeend', `<option value="${id}">${name}</option>`);
+  sel.value = warLegendary() ?? '';
+  sel.addEventListener('change', e => {
+    setWarLegendary((e.target as HTMLSelectElement).value || null);
+    stopChannel(true);
+    resetGame();
+    resetSpells();
+    renderActionbar();
+  });
+  return sel;
+}
 
 mountVolume($('settingsVol'), 'beforeend');
 Object.assign($('bindList').parentElement.style, { maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' });

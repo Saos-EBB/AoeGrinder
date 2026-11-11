@@ -15,7 +15,7 @@ import { fmtTime } from './fmt';
 import { selectMap, menuOpen, renderMenu } from './mainMenu';
 import { t } from '../i18n';
 import type { ThemeId } from '../mapgen/types';
-import { esc, hex } from './dom';
+import { esc, hex, html } from './dom';
 
 // Lage der Orte auf der Karte (viewBox 800 × 470) // PH
 const SPOT: Record<ThemeId, [number, number]> = { wald: [110, 350], wueste: [270, 220], kanaele: [440, 310], kathedrale: [580, 170], hoelle: [700, 70] };
@@ -145,8 +145,11 @@ const showPauseSeed = () => { const el = document.getElementById('pauseSeed'); i
 document.getElementById('pauseSeedCopy')?.addEventListener('click', () => copySeed(document.getElementById('pauseSeed')));
 new MutationObserver(showPauseSeed).observe($('pauseModal'), { attributes: true, attributeFilter: ['class'] });
 
-// Dev: alle Maps offen
-$('devZones').insertAdjacentHTML('afterend', `<div id="devWorld"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="devMapsOpen"${devMapsOpen() ? ' checked' : ''}> Weltkarte: alles offen</label></div>`);
-$('devMapsOpen').addEventListener('change', e => { setDevMapsOpen((e.target as HTMLInputElement).checked); if (worldOpen()) render(); });
+// Dev: alle Maps offen (Block für ui/devGame.ts)
+export function devWorldBlock() {
+  const box = html(`<div id="devWorld"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="devMapsOpen"${devMapsOpen() ? ' checked' : ''}> Weltkarte: alles offen</label></div>`);
+  box.querySelector('#devMapsOpen').addEventListener('change', e => { setDevMapsOpen((e.target as HTMLInputElement).checked); if (worldOpen()) render(); });
+  return box;
+}
 
 (window as any).__world = { open: openWorld, close: closeWorld, render };

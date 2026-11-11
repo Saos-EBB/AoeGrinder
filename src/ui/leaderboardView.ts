@@ -19,7 +19,7 @@ import { copySeed } from './worldMap';
 import { t, locale } from '../i18n';
 import { findsHtml, bindFinds } from './lootView';
 import { fmtTime, fmtDiff, fmtInt, fmtMult } from './fmt';
-import { esc } from './dom';
+import { esc, html } from './dom';
 
 const $ = id => document.getElementById(id);
 
@@ -259,21 +259,27 @@ $('menuBoardBtn').append(boardButton('smallBtn', 'display:block;width:auto;margi
 $('restartBtn').after(boardButton('smallBtn', 'display:block;width:auto;margin:10px auto 0;padding:6px 14px'));
 document.querySelector('#bindModal .row2').prepend(boardButton('smallBtn', 'width:auto;padding:6px 14px'));
 
-// Dev: Level setzen
-$('devZones').insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin-bottom:6px">Dev: Level setzen</div><div id="devLevels"></div>`);
-for (const level of [1, 15, 16, 30, 31, 45, 46, 60, 61, 100]) {
-  const b = document.createElement('button');
-  b.className = 'bindBtn';
-  b.textContent = String(level);
-  b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('settingsClose').click(); });
-  $('devLevels').appendChild(b);
+// Dev: Level setzen (Block für ui/devGame.ts)
+export function devLevelsBlock() {
+  const box = html('<div id="devLevels"></div>');
+  for (const level of [1, 15, 16, 30, 31, 45, 46, 60, 61, 100]) {
+    const b = document.createElement('button');
+    b.className = 'bindBtn';
+    b.textContent = String(level);
+    b.addEventListener('click', () => { stopChannel(true); clearSpellEffects(); setLevel(level); $('settingsClose').click(); });
+    box.appendChild(b);
+  }
+  return box;
 }
 
-// Dev: Collider anzeigen
-$('devLevels').insertAdjacentHTML('afterend', `<button class="bindBtn" id="devColliders" style="width:100%;margin-bottom:4px">Collider anzeigen: aus</button>`);
+// Dev: Collider anzeigen (Block für ui/devGame.ts)
 let collidersOn = false;
-$('devColliders').addEventListener('click', () => {
-  collidersOn = !collidersOn;
-  showColliders(collidersOn);
-  $('devColliders').textContent = `Collider anzeigen: ${collidersOn ? 'an' : 'aus'}`;
-});
+export function devCollidersBlock() {
+  const btn = html(`<button class="bindBtn" id="devColliders" style="width:100%;margin-bottom:4px">Collider anzeigen: aus</button>`);
+  btn.addEventListener('click', () => {
+    collidersOn = !collidersOn;
+    showColliders(collidersOn);
+    btn.textContent = `Collider anzeigen: ${collidersOn ? 'an' : 'aus'}`;
+  });
+  return btn;
+}

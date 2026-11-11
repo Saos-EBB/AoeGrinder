@@ -142,14 +142,16 @@ function frame() {
 }
 requestAnimationFrame(frame);
 
-// Dev: jede Meldung einmal auslösen (F10 → Anzeige)
-const dev = document.createElement('div');
-dev.id = 'devFeat';
-dev.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px';
-const pick = document.createElement('select');
-pick.className = 'bindBtn';
-for (const id of FEATS) pick.add(new Option(t(`feat.${id}.hoellenfeste`) + ` (${id})`, id));
-const fire = Object.assign(document.createElement('button'), { className: 'bindBtn', textContent: t('feat.dev') });
-fire.addEventListener('click', () => { const id = pick.value as FeatId; feat(id, id === 'boss' ? 'Boss' : id.startsWith('multi') ? `×${id.slice(5)}` : id.startsWith('combo') ? id.slice(5) : ''); });
-dev.append(pick, fire);
-$('devPerf').before(dev);
+// Dev: jede Meldung einmal auslösen (F10 → Anzeige, Block für ui/devGame.ts)
+export function devFeatBlock() {
+  const dev = document.createElement('div');
+  dev.id = 'devFeat';
+  dev.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px';
+  const pick = document.createElement('select');
+  pick.className = 'bindBtn';
+  for (const id of FEATS) pick.add(new Option(t(`feat.${id}.hoellenfeste`) + ` (${id})`, id));
+  const fire = Object.assign(document.createElement('button'), { className: 'bindBtn', textContent: t('feat.dev') });
+  fire.addEventListener('click', () => { const id = pick.value as FeatId; feat(id, id === 'boss' ? 'Boss' : id.startsWith('multi') ? `×${id.slice(5)}` : id.startsWith('combo') ? id.slice(5) : ''); });
+  dev.append(pick, fire);
+  return dev;
+}

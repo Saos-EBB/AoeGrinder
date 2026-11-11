@@ -57,9 +57,8 @@ const openList = () => box().open ?? ['spieler'];
 function sortGroups() {
   sorted = true;
   for (const t of [...body.querySelectorAll(':scope > .title')]) t.remove();
-  const WRAPPED = new Set(['devGearSet']);   // Übergang: Block = umgebendes Element (bis registerDev)
   const found = new Map<string, HTMLElement | null>();   // vor dem Leeren suchen: danach hängen die Blöcke nicht mehr im Dokument
-  for (const [, , items] of DEV_LAYOUT) for (const [id] of items) found.set(id, blocks.get(id) ?? (WRAPPED.has(id) ? document.getElementById(id)?.parentElement : document.getElementById(id)));
+  for (const [, , items] of DEV_LAYOUT) for (const [id] of items) found.set(id, blocks.get(id) ?? document.getElementById(id));
   const rest = [...body.children];
   body.innerHTML = '';
   const section = (key: string, name: string, els: HTMLElement[]) => {

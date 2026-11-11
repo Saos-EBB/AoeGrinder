@@ -2,9 +2,16 @@
 // Logik-Dateien bauen keine Dev-UI selbst, sie liefern hier nur Funktionen. Wo der Block im Panel steht, sagt DEV_LAYOUT in devPanel.ts.
 
 import { $ } from '../util';
+import { html } from './dom';
 import { state, player } from '../state';
 import { registerDev } from './devPanel';
-import { renderDevZones } from './menus';
+import { renderDevZones, devLegendBlock } from './menus';
+import { devWorldBlock } from './worldMap';
+import { devGearSetBlock } from './lootView';
+import { devLevelsBlock, devCollidersBlock } from './leaderboardView';
+import { devFeatBlock } from './messages';
+import { mountForge } from './devForge';
+import { devKosmetikBlock } from './devKosmetik';
 import { THEME_DIFF, KIND_IDS, ZUSATZ_IDS, devSpawn } from '../mobKinds';
 import { C, AFFIX_IDS, rollAffixes } from '../champions';
 import { spawnChampionPack } from '../mobs';
@@ -14,8 +21,6 @@ import { startBoss } from '../boss';
 import { TIERS, BOSSES, poolOf } from '../bosses/roster';
 import { DG } from '../dodge';
 
-// HTML eines Blocks → Element (erstes Element des Schnipsels)
-const html = (s: string) => { const d = document.createElement('div'); d.innerHTML = s; return d.firstElementChild as HTMLElement; };
 const val = (id: string) => ($(id) as HTMLSelectElement).value;
 const opt = (v, label) => `<option value="${v}">${label}</option>`;
 
@@ -88,6 +93,14 @@ function devObjects() {
 
 export function mountDev() {
   registerDev('devZones', $('devZones'), renderDevZones);   // Zonen-Knöpfe bei jedem Öffnen neu (aktuelle Zone markiert)
+  registerDev('devLevels', devLevelsBlock());
+  registerDev('devColliders', devCollidersBlock());
+  registerDev('devWorld', devWorldBlock());
+  registerDev('devGearSet', devGearSetBlock());
+  registerDev('devLegend', devLegendBlock());
+  registerDev('devFeat', devFeatBlock());
+  mountForge();   // #devForge aus index.html
+  registerDev('devKosmetik', devKosmetikBlock());
   devPortalBlock();
   devObjects();
   devChamp();
