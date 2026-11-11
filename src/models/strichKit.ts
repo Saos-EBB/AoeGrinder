@@ -15,7 +15,7 @@ export const TINTS = { slow: new THREE.Color(0x5f86c8), dead: new THREE.Color(0x
 // Kapsel, die vom Gelenk nach unten hängt (Ober-/Unterarm, Bein)
 export const capDown = (r: number, len: number, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
 
-// Lichtrand der Magier und Mobs: bleibt im Dunkeln sichtbar (wie Klingenstrich) // PH
+// Lichtrand: bleibt im Dunkeln sichtbar (wie Klingenstrich). Eine Farbe für Magier, Krieger und Mobs (der Krieger hatte bis E9 [0.62, 0.62, 0.68], keine Absicht) // PH
 export const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };
 // GLSL-Ausdruck für outgoingLight (MeshToonMaterial, onBeforeCompile); Faktoren davor (Glühen, Eis) setzt der Aufrufer
 export const rimChunk = (color: number[], power: number) =>
