@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { limbFrame, flip, litCol, FIT } from './gearParts';
 import { t } from '../i18n';
+import { ELEMENTS } from './weapons/baukasten';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
@@ -429,7 +430,8 @@ function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B
 }
 
 // Schul-Farbe, wenn die Waffe kein Element hat (Element-Rucksack)
-const SCHOOL_COL = { base: 0xd8d4e0, fire: 0xff7a22, ice: 0x9fe4ff, arcane: 0xd070ff, qm: 0xffd23a, blitz: 0xffe866, plague: 0x7dff3a };
+// Skin → Element (ELEMENTS in baukasten.ts ist die Farbquelle); base und qm (?-Magier) haben kein Element
+const SCHOOL_COL = { base: 0xd8d4e0, fire: ELEMENTS.feuer.color, ice: ELEMENTS.frost.color, arcane: ELEMENTS.arkan.color, qm: 0xffd23a, blitz: ELEMENTS.blitz.color, plague: ELEMENTS.seuche.color };
 export interface KosBuilt {
   pieces: KosPiece[]; glass: KosGlass[]; flag: Handle | null; ids: string[];
   ticks: ((K: KosFrame) => void)[]; ons: ((e: KosEvent, K: KosFrame) => void)[];

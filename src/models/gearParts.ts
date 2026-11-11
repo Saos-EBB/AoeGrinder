@@ -8,6 +8,7 @@
 
 import * as THREE from 'three';
 import { SPELLS } from '../config';
+import { ELEMENTS } from './weapons/baukasten';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g: 0 | 1; ds?: boolean } | null;   // g = 1: leuchtet (Glüh-Teil), ds: beidseitig, null: nicht bauen
@@ -26,8 +27,9 @@ const MAKER_COL = {   // Viewer MAKERS: main Ornament-Material, acc Akzent, trim
   vey: { main: 0xc8ecff, acc: 0xffffff, trim: 0x4f7eb0, cloth: 0xdfe9f5 },   // Kristall: im Spiel ohne Transparenz, nur hell
   brandt: { main: 0x3e6490, acc: 0x1c2638, trim: 0x1c2232, cloth: 0x22324e },
 };
-const EL_COL = { none: 0xd8d4e0, frost: 0x9fe4ff, feuer: 0xff7a22, blitz: 0xffe866, seuche: 0x7dff3a, arkan: 0xd070ff };
-const FOCUS_COL = { frost: 0x9fe4ff, feuer: 0xff7a22, blitz: 0xffe866, seuche: 0x7dff3a };
+// Elementfarben aus ELEMENTS (baukasten.ts, einzige Quelle); none = helles Grau statt Schwarz
+const EL_COL = { none: 0xd8d4e0, ...Object.fromEntries(['frost', 'feuer', 'blitz', 'seuche', 'arkan'].map(k => [k, ELEMENTS[k].color])) };
+const FOCUS_COL = Object.fromEntries(['frost', 'feuer', 'blitz', 'seuche'].map(k => [k, ELEMENTS[k].color]));
 const SCHOOL_OF_TAG = { Frost: 'frost', Feuer: 'feuer', Blitz: 'blitz', Seuche: 'seuche' };
 
 const lit = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 0 });
