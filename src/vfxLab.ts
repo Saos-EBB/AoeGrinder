@@ -1,5 +1,14 @@
 // VFX-Labor: echter Spell-Code und echte Render-Kette auf flachem Boden, ohne KI-Bewegung, Menüs und HUD.
 
+// Seit E10 kommen die Fenster nicht mehr über player.ts mit (hooks.ui): ausdrücklich laden wie vorher, CSS in der Reihenfolge von damals (Build-CSS gleich)
+import './ui/cards.css';
+import './ui/flavors/base.css';
+import './ui/flavors/hoellenfeste.css';
+import './ui/flavors/schlachtbank.css';
+import './ui/flavors/krypta.css';
+import './ui/heroWindow.css';
+import './ui/numbers.css';
+import './ui/hud/hud.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { state, player } from './state';
@@ -18,6 +27,28 @@ import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune 
 import { resetGame, switchZone } from './player';
 import { MOB_TYPES } from './mobTypes';
 import { ZONES } from './zones';
+import { connectUi } from './ui/connect';
+import { mount as mountMainMenu } from './ui/mainMenu';
+import { mount as mountHeroWindow } from './ui/heroWindow';
+import { mount as mountMessages } from './ui/messages';
+import { mount as mountMenus } from './ui/menus';
+import { mount as mountShop } from './ui/shop';
+import { mount as mountWorldMap } from './ui/worldMap';
+import { mount as mountBoard } from './ui/leaderboardView';
+import { mount as mountScoreHud } from './ui/scoreHud';
+import { mount as mountPortal } from './portal';
+
+// Fenster wie im Spiel anbinden (main.ts, gleiche Reihenfolge)
+connectUi();
+mountMainMenu();
+mountHeroWindow();
+mountMessages();
+mountMenus();
+mountShop();
+mountWorldMap();
+mountBoard();
+mountScoreHud();
+mountPortal();
 
 const TARGETS = 8, PACK_CENTER = new THREE.Vector3(0, 0, 7);   // PH: alle Ziele in 10 yd, damit Kegel und Flächen sie treffen
 
