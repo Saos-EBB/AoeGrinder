@@ -17,7 +17,7 @@ body {
 .hBar { position: relative; overflow: hidden; margin: 0; background: var(--h-bar-bg); border: var(--h-bar-bd); border-radius: var(--h-bar-r); box-sizing: border-box; }
 .hBar > .fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--v, 0)); }
 .hBar > span { position: relative; display: block; text-align: center; font-weight: 700; color: #fff; white-space: nowrap; }
-.hPanelBox, #hudSplits, #hudUnit { background: var(--h-panel-bg); border: var(--h-panel-bd); border-top: var(--h-panel-bt); border-radius: var(--h-panel-r); box-shadow: var(--h-panel-sh); box-sizing: border-box; }
+#hudSplits, #hudUnit { background: var(--h-panel-bg); border: var(--h-panel-bd); border-top: var(--h-panel-bt); border-radius: var(--h-panel-r); box-shadow: var(--h-panel-sh); box-sizing: border-box; }
 
 /* ---------- Zeit und Kopfzeile ---------- */
 #hudTimer { display: flex; align-items: baseline; gap: calc(8 * var(--hu)); white-space: nowrap; }

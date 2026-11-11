@@ -22,12 +22,6 @@ body.font-fraktur[data-flavor], body.font-fraktur .hudEl[data-flavor] { --font-t
 .fg-btn:hover:not(:disabled) { filter: brightness(1.18); }
 .fg-btn:disabled { opacity: .45; cursor: not-allowed; }
 
-.fg-card { box-sizing: border-box; background: var(--fg-card); border: 2px solid var(--rc, var(--fg-line)); }
-
-.fg-chip { padding: 4px 10px; font: 700 14px var(--font-body); color: var(--fg-muted); background: transparent; border: 1px solid var(--fg-line); cursor: pointer; }
-.fg-chip[aria-pressed=true], .fg-chip.on { color: var(--fg-text); border-color: var(--fg-accent); background: color-mix(in srgb, var(--fg-accent) 13%, transparent); }
-.fg-chip:disabled { opacity: .4; cursor: not-allowed; }
-
 /* Schalter: <input type=checkbox class=fg-toggle> */
 .fg-toggle { appearance: none; position: relative; flex: none; width: 48px; height: 24px; margin: 0; border-radius: 12px; cursor: pointer;
   background: rgba(255, 255, 255, .08); border: 1px solid var(--fg-line); box-shadow: 0 0 0 1px #000; transition: background .15s; }
