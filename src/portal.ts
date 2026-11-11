@@ -14,7 +14,7 @@ import { collectAll } from './loot';
 import { addXpMul } from './xpBonus';
 import { t } from './i18n';
 import { portalMapSeed } from './mapgen/rng';
-import { hooks } from './hooks';
+import { hooks, onRunReset } from './hooks';
 
 export const PORTAL = {
   levels: [25, 50, 75],       // PH: Packs
@@ -135,6 +135,7 @@ export function resetPortal() {
   done = 0; taken = 0; wasBoss = false; fading = false;
   veil.style.opacity = '0';
 }
+onRunReset(resetPortal, 160);   // Run-Reset (hooks.ts runReset)
 
 // Dev-Knöpfe (Block in ui/devGame.ts): öffnen, hin und durch, 2 min vorspulen
 export function devPortal(a: string) {

@@ -17,7 +17,7 @@ import { zapLook } from '../vfx/boltLook';
 import { sludgeLook, slimeTrapField, slimeWaveLook, blackHoleField, holeImpact, poisonCloudField, webLook, contractLook, drainLook, burstLook, meltField, pestilenceLook } from '../vfx/plagueLook';
 import { mark, markStacks, popMark, poison, poisoned } from '../plagueMarks';
 import { t } from '../i18n';
-import { onMobDeath, onAnyHit } from '../hooks';
+import { onMobDeath, onAnyHit, onRunReset } from '../hooks';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
 const heal = v => { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + v); };
@@ -47,6 +47,7 @@ export function meltScale() {
 }
 export const plagueRooted = () => liquid.end > state.now;
 export function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUntil = 0; }
+onRunReset(resetPlague, 140);   // Run-Reset (hooks.ts runReset)
 
 // Jeden Frame aus updatePlayer: Gift-Ticks
 export function updatePlague() {

@@ -13,6 +13,7 @@ import { ZONES } from './zones';
 import { t } from './i18n';
 import { mapSeed, seedPinned } from './mapgen/rng';
 import { fmtDiff } from './ui/fmt';
+import { onRunReset } from './hooks';
 
 // Einzige Stelle für KEYS.runs (auch spells/core.ts saveRunBuild und ui/saveCode.ts gehen hierüber)
 export function loadRuns() {
@@ -105,3 +106,4 @@ export function noteSplits(fromLevel) {
   }
 }
 export function resetSplits() { const el = $('hSplit'); el.textContent = '–'; el.style.color = ''; }
+onRunReset(resetSplits, 180);   // Run-Reset (hooks.ts runReset)

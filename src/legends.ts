@@ -20,7 +20,7 @@ import { combatText, showError } from './feedback';
 import { forward } from './melee';
 import { warLegendary, NOXUS } from './realMen';
 import { t } from './i18n';
-import { onMobDeath } from './hooks';
+import { onMobDeath, onRunReset } from './hooks';
 
 export const LEG = {
   combo: { keys: ['KeyQ', 'KeyE', 'Digit1'], labels: ['Q', 'E', '1'], windowMs: 1500, cdMs: 60000 },
@@ -61,6 +61,7 @@ function activeLegend() {
 // ---------- Combo ----------
 const combo = { step: 0, until: 0, readyAt: 0 };
 export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; egg.mesh && (egg.mesh.visible = false); }
+onRunReset(resetLegends, 90);   // Run-Reset (hooks.ts runReset)
 addEventListener('keydown', e => {
   if (e.repeat || state.paused || player.dead || !activeLegend()) return;
   const C = LEG.combo;

@@ -15,48 +15,55 @@ import { rankAllSpells } from './cards';
 import { mouseBtn, act, useMeleeBinds } from './input';
 import { fillPacks, removeMob, announceNewMobs, burnMob, pullMob } from './mobs';
 import { clearAbilities } from './abilities';
-import { resetScore } from './score';
+import './score';   // resetScore meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
 import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
 import { heroModel, startHeroRun, endHeroRun } from './models/heroModel';
-import { resetWaves } from './waves';
-import { noteSplits, resetSplits } from './leaderboard';
+import './waves';   // resetWaves meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
+import { noteSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue, isWarrior } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
-import { resetDodge, tryDodge, dodgeMove, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
+import { tryDodge, dodgeMove, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
 import { mobsInRadius } from './spells/core';
 import { applyRoot } from './mobs';
 import { novaFx } from './fx/spellFx';
 import { updateWeaponAura } from './weaponRolls';
 import { W, addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
-import { resetRealMen, warriorRevive, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
+import { warriorRevive, rageOnHit, moveMul, rooted, takenMul, warriorUntouchable, warriorUndying, cancelWarriorMove } from './realMen';
 import { phoenixRevive } from './spells/phoenix';
-import { resetMeter, updateMeter } from './schoolMeter';
-import { resetFigures } from './figures';
-import { resetLegends, eggRevive } from './legends';
-import { resetBuffs, buffSpeedMul, buffRegenMul } from './buffs';
-import { resetBattery, updateBattery } from './battery';
-import { resetPlague, updatePlague, plagueRooted } from './spells/plague';
+import { updateMeter } from './schoolMeter';
+import './figures';   // resetFigures meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
+import { eggRevive } from './legends';
+import { buffSpeedMul, buffRegenMul } from './buffs';
+import { updateBattery } from './battery';
+import { updatePlague, plagueRooted } from './spells/plague';
 import { updateRandomMage } from './spells/random';
 import { t } from './i18n';
-import { resetLoot } from './loot';
-import { resetPortal } from './portal';
+import './loot';   // resetLoot meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
+import './portal';   // resetPortal meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
 import { milestone, MILESTONES } from './meta';
-import { hooks, emit } from './hooks';
+import { hooks, emit, onRunReset } from './hooks';
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
 
+// Neuer Run: alle Teile, die sich per onRunReset (hooks.ts runReset) angemeldet haben, in rank-Reihenfolge (ARCH-05).
+// Die Ränge stehen in hooks.ts; die Teile von player.ts selbst folgen hier.
 export function resetGame() {
+  for (const fn of hooks.runReset.fns) fn();
+}
+onRunReset(() => {
   startHeroRun();
   for (const m of state.mobs) removeMob(m);
   clearAbilities();
   state.mobs = [];
-  resetMods();
-  resetScore();
+}, 10);
+onRunReset(resetMods, 20);
+// 30 score.ts resetScore
+onRunReset(() => {
   state.cardRanks = {};
   state.cardPicks = {};
   state.now = 0;
@@ -76,25 +83,18 @@ export function resetGame() {
   cam.offset = 0;
   player.hp = maxHp();
   player.mana = maxMana();
-  resetRealMen();
-  resetDodge();
-  resetMeter();
-  resetFigures();
-  resetLegends();
-  player.shield = 0;
-  resetBuffs();
-  useMeleeBinds(isWarrior());
-  resetBattery();
-  resetPlague();
-  resetLoot();
-  resetPortal();
-  resetWaves();
-  resetSplits();
+}, 40);
+// 50 realMen.ts, 60 dodge.ts, 70 schoolMeter.ts, 80 figures.ts, 90 legends.ts
+onRunReset(() => { player.shield = 0; }, 100);
+// 110 buffs.ts
+onRunReset(() => useMeleeBinds(isWarrior()), 120);
+// 130 battery.ts, 140 spells/plague.ts, 150 loot.ts, 160 portal.ts, 170 waves.ts, 180 leaderboard.ts resetSplits
+onRunReset(() => {
   state.devUsed = false;   // Dev-Panel markiert den Run (ui/devPanel.ts)
   groundCursor.visible = false;
   stopChannel();
   fillPacks();
-}
+}, 190);
 
 // Dev: Zone wechseln. Mobs weg, Welt neu, Spieler in die Mitte; Level und Karten bleiben
 export function switchZone(id) {

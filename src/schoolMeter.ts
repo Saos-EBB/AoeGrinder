@@ -4,6 +4,7 @@
 import { state } from './state';
 import { SCHOOL_METER, mods } from './config';
 import { modValue } from './modifiers';
+import { onRunReset } from './hooks';
 
 const M = SCHOOL_METER, H = M.Feuer;
 const meter = { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0 };
@@ -20,6 +21,7 @@ export const meterStage = () => { if (!meterSchool()) return -1; const v = meter
 const full = school => meter.value >= 1 && meterSchool() === school;
 
 export function resetMeter() { Object.assign(meter, { value: 0, lastKill: -1e9, heat: 0, lastHeat: -1e9, over: false, nextSelf: 0 }); }
+onRunReset(resetMeter, 70);   // Run-Reset (hooks.ts runReset)
 export function meterKill(champion) {
   if (!meterSchool() || fire()) return;
   meter.value = Math.min(1, meter.value + (champion ? M.perChampion : M.perKill));

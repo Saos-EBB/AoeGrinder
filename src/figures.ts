@@ -7,7 +7,7 @@ import { currentFigure } from './modifiers';
 import { mobsInRadius, applySlow } from './spells/core';
 import { renderActionbar } from './feedback';
 import { t } from './i18n';
-import { onAnyHit } from './hooks';
+import { onAnyHit, onRunReset } from './hooks';
 
 const figure = () => currentFigure().tag;
 
@@ -35,6 +35,7 @@ export function resetFigures() {
   state.keeper = 0; state.chainCount = 0;
   player.iceGroundUntil = 0;
 }
+onRunReset(resetFigures, 80);   // Run-Reset (hooks.ts runReset)
 
 export function updateFigures() {
   if (figure() === 'Frost') {

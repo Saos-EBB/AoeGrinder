@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 import { state, player } from './state';
-import { onMobDeath } from './hooks';
+import { onMobDeath, onRunReset } from './hooks';
 import { particles } from './fx/particles';
 import { combatText } from './feedback';
 import { heroModel } from './models/heroModel';
@@ -149,4 +149,5 @@ export function resetLoot() {
   drops = [];
   state.finds = [];
 }
+onRunReset(resetLoot, 150);   // Run-Reset (hooks.ts runReset)
 (window as any).__loot = { DROP, drops: () => drops, bossDrops, spawnDrop, dropDust, dropWeapon, collectAll };
