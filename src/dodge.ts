@@ -10,7 +10,7 @@ import { groundAt, resolve, STEP } from './collision';
 import { addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
 import { combatText } from './feedback';
-import { activeModIds } from './modifiers';
+import { currentFigure } from './modifiers';
 import { mods } from './config';
 import { t } from './i18n';
 
@@ -35,11 +35,8 @@ export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframe
 export const dodgeRecovery = () => state.now < lastEnd + DG.recoveryMs;
 const dodgeCharges = () => charges.filter(t => t <= state.now).length;
 
-// Modus für die Kombo-Regel: Normal, Fire only, Frost only, Strichkrieger
-export function dodgeMode() {
-  const ids = activeModIds();
-  return ids.includes('fire') ? 'feuer' : ids.includes('frost') ? 'frost' : ids.includes('realmen') ? 'krieger' : 'normal';
-}
+// Modus für die Kombo-Regel je Figur (figureTable.ts FIGURES.dodge): normal, frost, feuer, krieger
+export const dodgeMode = () => currentFigure().dodge;
 // Kombo: welche Regel gerade gilt und bis wann. consumeCombo(kind) löst sie genau einmal aus
 const KIND = { normal: 'freeMana', feuer: 'fireCrit', krieger: 'smash' };
 let combo = null;

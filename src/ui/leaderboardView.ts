@@ -1,7 +1,7 @@
 // Modus-Auswahl, Run-Ergebnis und Ranglisten-Ansicht. Hängt sich selbst ein, damit menus.ts und index.html unberührt bleiben.
 
 import { afterRun } from './shop';
-import { currentFigure } from './mainMenu';
+import { charCard } from './mainMenu';
 import { run } from '../score';
 import { SPELLS } from '../config';
 import { spellColor } from './colors';
@@ -71,7 +71,7 @@ export function showRunResult() {
   const same = loadRuns().filter(r => sameBoard(r, entry));   // pro Map getrennt (leaderboard.ts)
   const best = same.filter(r => r !== entry && r.date !== entry.date && typeof r.timeTo100 === 'number').reduce((m, r) => Math.min(m, r.timeTo100), Infinity);
   $('endTitle').textContent = player.won && player.level >= 100 ? t('end.lv100') : player.won ? t('end.done') : player.lastHitBy === t('mod.time.name') ? t('end.timeUp', { n: player.level }) : t('end.fell', { n: player.level });
-  const fig = currentFigure()?.name;
+  const fig = charCard()?.name;
   $('endSub').textContent = [fig, entry.zone, entry.modeName !== fig ? entry.modeName : ''].filter(Boolean).join(' · ');
   const t100 = entry.timeTo100;
   const diff = typeof t100 === 'number' && Number.isFinite(best) ? t100 - best : null;

@@ -2,7 +2,7 @@ import { hooks, emit } from './hooks';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
-import { CFG, SPELLS, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL, PACK_STALE_LEVELS, PACK_STALE_DIST } from './config';
+import { CFG, SPELLS, spellElement, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL, PACK_STALE_LEVELS, PACK_STALE_DIST } from './config';
 import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
 import { zone } from './world';
@@ -21,7 +21,8 @@ import type { PackSpot } from './mapgen/types';
 import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
 import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
-const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
+const ATLAS = { feuer: 0, frost: 1, arkan: 2 };   // Kacheln im Wucht-Atlas (wucht.ts), Rest 3
+const schoolOf = source => ATLAS[spellElement(source)] ?? 3;
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
 import { combatText, damageNumber } from './feedback';

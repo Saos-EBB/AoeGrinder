@@ -9,7 +9,7 @@ import { state, player } from '../state';
 import { dist2d } from '../util';
 import { scene } from '../render';
 import { zone, heightAt } from '../world';
-import { SPELLS } from '../config';
+import { spellElement } from '../config';
 import { toonMat } from '../toon';
 import { onSpellArea } from '../hooks';
 import { makeRng, mixSeed, type Rng } from '../mapgen/rng';
@@ -162,11 +162,8 @@ function buildMap() {
 }
 
 // ---------- Treffer, Benutzen, Berühren ----------
-const TAG_EL: [string, Element][] = [['Feuer', 'feuer'], ['Frost', 'frost'], ['Blitz', 'blitz'], ['Seuche', 'seuche']];
-export const elementOf = (spellId: string | null): Element => {
-  const tags: string[] = (spellId && SPELLS[spellId]?.tags) || [];
-  return TAG_EL.find(([tag]) => tags.includes(tag))?.[1] ?? 'nah';
-};
+// Element des Treffers (config.ts spellElement); ohne Schul-Tag und Arkan (keine Objekt-Reaktion): 'nah'
+export const elementOf = (spellId: string | null): Element => { const e = spellElement(spellId); return e === 'none' || e === 'arkan' ? 'nah' : e; };
 onSpellArea((center, r, spellId) => {
   if (!objs.length) return;
   for (const o of objs) if (o.alive && o.kind.onHit && dist2d(center, o) <= r + o.kind.radius) o.kind.onHit(o, elementOf(spellId), spellId);

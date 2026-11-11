@@ -7,7 +7,8 @@
 // Weniger Segmente als im Viewer (die Figur ist Low-Poly), keine Inverted-Hull-Outline (toon.ts-Rand), Kristall ohne Transparenz.
 
 import * as THREE from 'three';
-import { SPELLS } from '../config';
+import { spellElement } from '../config';
+import { FIGURE_LIST } from '../figureTable';
 import { ELEMENTS } from './weapons/baukasten';
 import { V } from '../util';
 
@@ -29,8 +30,8 @@ const MAKER_COL = {   // Viewer MAKERS: main Ornament-Material, acc Akzent, trim
 };
 // Elementfarben aus ELEMENTS (baukasten.ts, einzige Quelle); none = helles Grau statt Schwarz
 const EL_COL = { none: 0xd8d4e0, ...Object.fromEntries(['frost', 'feuer', 'blitz', 'seuche', 'arkan'].map(k => [k, ELEMENTS[k].color])) };
-const FOCUS_COL = Object.fromEntries(['frost', 'feuer', 'blitz', 'seuche'].map(k => [k, ELEMENTS[k].color]));
-const SCHOOL_OF_TAG = { Frost: 'frost', Feuer: 'feuer', Blitz: 'blitz', Seuche: 'seuche' };
+// Fokus-Schulen = Elemente der Figuren (figureTable.ts), Arkan hat kein Emblem
+const FOCUS_COL = Object.fromEntries(FIGURE_LIST.filter(f => f.element).map(f => [f.element, ELEMENTS[f.element].color]));
 
 const lit = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 0 });
 const glow = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 1 });
@@ -40,7 +41,7 @@ export interface GearLookItem { r: number; s: { maker?: string; element?: string
 // Materialien eines Teils wie matsOf im Viewer
 function matsOf(item: GearLookItem) {
   const mk = MAKER_COL[item.s.maker] ?? MAKER_COL.stern, rar = item.r, el = item.s.element in EL_COL ? item.s.element : 'none', elCol = EL_COL[el];
-  const tags: string[] = SPELLS[item.s.focus]?.tags ?? [], school = tags.map(t => SCHOOL_OF_TAG[t]).find(Boolean) ?? 'none';
+  const fe = spellElement(item.s.focus), school = fe in FOCUS_COL ? fe : 'none';
   const dim = (c: number, k: number) => new THREE.Color(c).multiplyScalar(k).getHex();
   return {
     main: lit(rar <= 1 ? dim(mk.main, rar === 0 ? 0.55 : 0.8) : mk.main), acc: lit(mk.acc), trim: lit(mk.trim),

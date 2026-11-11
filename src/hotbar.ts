@@ -7,6 +7,7 @@ import { state } from './state';
 import { KEYS, read, write } from './storage';
 import { SPELL_ACTIONS } from './config';
 import { activeModIds } from './modifiers';
+import { FIGURES } from './figureTable';
 import { t } from './i18n';
 
 export type CastMode = 'instant' | 'release' | 'click';
@@ -15,7 +16,7 @@ const N = SPELL_ACTIONS.length;
 
 let store: Record<string, { order: number[]; mode: (CastMode | null)[] }> = read(KEYS.hotbar, {});
 const save = () => { write(KEYS.hotbar, store); };
-const figKey = () => activeModIds().slice().sort().join('+') || 'normal';
+const figKey = () => activeModIds().slice().sort().join('+') || FIGURES.zufall.hotbarKey;   // ?-Magier: gespeicherter Key 'normal'
 function bar() {
   const b = store[figKey()] ??= { order: [...Array(N).keys()], mode: Array(N).fill(null) };
   if (b.order.length !== N || [...b.order].sort((x, y) => x - y).some((v, i) => v !== i)) b.order = [...Array(N).keys()];   // kaputt oder altes Format

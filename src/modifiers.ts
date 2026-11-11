@@ -2,6 +2,7 @@
 // Figuren (v31): startKit im Raster aus SLOT (config.ts): 5 Attacken, Trinken, Bewegung, Relikt. pool: 9 Fähigkeiten für „Neuer Spell“-Karten, relics: Relikt der Figur
 // Wirkung: hp, mana, dmg, speed, packSize als Faktor, timeLimit in ms.
 import { t } from './i18n';
+import { figureOfMods, type Figure } from './figureTable';
 
 export const MODIFIERS = [
   { id: 'half', name: t('mod.half.name'), desc: t('mod.half.desc'), scoreMult: 2, excludes: [], hp: 0.5, mana: 0.5, dmg: 0.5 },
@@ -50,6 +51,9 @@ let customMods = [];
 
 export const activeModIds = () => MODES.find(m => m.id === modeId).mods ?? customMods;
 const active = () => MODIFIERS.filter(m => activeModIds().includes(m.id));
+// Gespielte Figur (figureTable.ts) aus den aktiven Mods. Eine Stelle für „welche Figur?“ und „ist Krieger?“ (KOMP-05)
+export const currentFigure = (): Figure => figureOfMods(activeModIds());
+export const isWarrior = () => currentFigure().heroClass === 'krieger';
 
 export function setMode(id) { modeId = id; }
 // Unabhängig vom Modus: 'packs' wie gehabt, 'waves' siehe waves.ts

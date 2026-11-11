@@ -14,6 +14,7 @@ import { ELEMENTS } from './weapons/baukasten';
 import { state } from '../state';
 import { markStacks } from '../plagueMarks';
 import { gearPieces, animateGear } from './gearParts';
+import { paletteOf } from '../figureTable';
 import { kosmetikPieces, glassGeo, makeKillFlag, KOS, type KosEvent, type KosFrame } from './kosmetikParts';
 
 const EASE = { io: inOut, out: outC, back: outBack, lin: t => t, sine };
@@ -24,8 +25,7 @@ const bump = (t, a, b, f = .15) => clamp(Math.min((t - a) / f, (b - t) / f), 0, 
 const CAST_MS = 700;
 const CAST_HOLD = 0.55;       // Hier wartet die Pose, solange ein längerer Zauber läuft
 const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
-// Skin-IDs im Spiel → Skins des Viewers
-const SKIN_OF = { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'qm', blitz: 'blitz', blut: 'plague' };   // alle: Kevins Zuhälter-Look, im Menü nicht mehr wählbar
+// Skin-IDs im Spiel → Skins des Viewers: paletteOf (figureTable.ts, dort auch alle = Kevins Zuhälter-Look und arkan)
 
 const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
 grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
@@ -511,7 +511,7 @@ const qGeo = () => mergeGeometries([
 // ───────────────────────── Skins (src/skins.ts): Teile an Bones ins Körper-Mesh, Leuchtteile ins Glühen, Gag-Teile auf eigenen Bones
 const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, r, 4);
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
-// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF).
+// Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (paletteOf).
 // Kevin: fertige Skins müssen nicht alles zulassen, mit Skin keine Hüte, Hochspannung keine Rückenteile. Angelegt bleibt das Teil trotzdem (Werte zählen)
 const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
   look: { seuche: ['kopf'],        // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
@@ -1055,7 +1055,7 @@ const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchtei
 // opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
 // opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14, glut), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
 export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
-  const skin = SKIN_OF[gameSkin] ?? 'base', A = ANIM[skin];
+  const skin = paletteOf(gameSkin), A = ANIM[skin];
   const look: string = opts.look ?? 'standard';
   const S = SKINS[skin];
   const LK = LOOKS[look] ?? null;   // null = Standard: Schul-Look wie bisher

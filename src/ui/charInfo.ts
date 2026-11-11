@@ -2,8 +2,7 @@
 
 import { state, player } from '../state';
 import { SPELLS, SCHOOL_METER, BATTERY, PLAGUE, RANDOM_MAGE, mods } from '../config';
-import { modValue, randomMode } from '../modifiers';
-import { mage } from '../models/mage';
+import { modValue, randomMode, isWarrior } from '../modifiers';
 import { meterSchool, meterValue, meterHeat, meterOverheated, meterDmgMul, meterFrostFull } from '../schoolMeter';
 import { batteryMode, batteryMax, overcharged, batteryCost } from '../battery';
 import { shardMax } from '../figures';
@@ -75,7 +74,7 @@ function random() {
 
 // name, color: Überschrift; rows: Stand jetzt (nur im Lauf); rules: Regeln, auch fürs Hauptmenü
 function figure() {
-  if (mage.skin === 'krieger') return warrior();
+  if (isWarrior()) return warrior();
   if (batteryMode()) return battery();
   if (modValue('lifeCost')) return plague();
   const school = meterSchool();

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { KEYS, readRaw, writeRaw } from '../storage';
 import { PERF } from '../config';
 import { scene } from '../render';
-import { activeModIds } from '../modifiers';
+import { currentFigure } from '../modifiers';
 import { buildStrichMagier } from './strichMagier';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
@@ -160,7 +160,7 @@ function wield() {
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);
 }
 
-const skinForRun = () => { const ids = activeModIds(); return ids.includes('frost') ? 'frost' : ids.includes('fire') ? 'feuer' : ids.includes('blitz') ? 'blitz' : ids.includes('plague') ? 'blut' : ids.includes('realmen') ? 'krieger' : 'zufall'; };   // Zuhälter-Look 'alle' bleibt im Code, Kevins Skin
+const skinForRun = () => currentFigure().id;   // figureTable.ts; Zuhälter-Look 'alle' bleibt im Code (paletteOf), Kevins Skin
 
 // Run-Start: gleicher Skin ohne Spuren bleibt stehen, sonst neu bauen (leert auch alte Spuren)
 export function startMageRun() {

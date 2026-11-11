@@ -23,7 +23,7 @@ import { pad, rumble } from './gamepad';
 import { mage, startMageRun, endMageRun } from './models/mage';
 import { resetWaves } from './waves';
 import { noteSplits, resetSplits } from './leaderboard';
-import { mobMode, cardPaceId, modValue } from './modifiers';
+import { mobMode, cardPaceId, modValue, isWarrior } from './modifiers';
 import { iceBlocked, updateIceBlock } from './spells/iceblock';
 import { resetDodge, tryDodge, dodgeMove, dodgeIframes, perfectDodge, dodgeMode, DG } from './dodge';
 import { mobsInRadius } from './spells/core';
@@ -83,7 +83,7 @@ export function resetGame() {
   resetLegends();
   player.shield = 0;
   resetBuffs();
-  useMeleeBinds(mage.skin === 'krieger');
+  useMeleeBinds(isWarrior());
   resetBattery();
   resetPlague();
   resetLoot();

@@ -18,7 +18,7 @@ import { resolve } from './collision';
 import { act, pickGround, mouse } from './input';
 import { die } from './player';
 import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow } from './spells/core';
-import { activeModIds } from './modifiers';
+import { isWarrior } from './modifiers';
 import { UNIT, mods } from './config';
 import { pdRateMul } from './dodge';
 import { maxHp } from './formulas';
@@ -147,7 +147,6 @@ const WP = (): any => R.weapons[weaponId()];
 const WT = () => TIMING.weapons[weaponId()] ?? TIMING.weapons.sword;
 const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`] || 1 : 0;
 
-const isWarrior = () => mage.skin === 'krieger';
 
 // Taste oder Pad-Knopf des Slots, in dem die Attacke liegt
 export function held(id) {
@@ -171,7 +170,7 @@ export function setWarLegendary(id: string | null) {
 // Combo „Für Noxus!“ (legends.ts): so lange ist der Vernichtende Hieb sofort voll geladen, dazu mehr Schaden // PH
 export const NOXUS = { ms: 8000, dmg: 0.4 };
 const NOXUS_DMG = NOXUS.dmg;
-const LG = (): any => (legendary && activeModIds().includes('realmen') ? LEGENDARY[legendary] : null);
+const LG = (): any => (legendary && isWarrior() ? LEGENDARY[legendary] : null);
 hooks.spellSwap.set(id => LG()?.swap[id] ?? id);
 let stunImmuneUntil = 0, chickenUntil = 0;
 // Sions Axt: untot, Vernichtender Hieb (Laden), Seelenofen, Bowling-Mob, Ansturm

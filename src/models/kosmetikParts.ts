@@ -13,6 +13,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { limbFrame, flip, litCol, FIT } from './gearParts';
 import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
+import { FIGURE_LIST } from '../figureTable';
 import { V } from '../util';
 
 type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
@@ -430,8 +431,9 @@ function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B
 }
 
 // Schul-Farbe, wenn die Waffe kein Element hat (Element-Rucksack)
-// Skin → Element (ELEMENTS in baukasten.ts ist die Farbquelle); base und qm (?-Magier) haben kein Element
-const SCHOOL_COL = { base: 0xd8d4e0, fire: ELEMENTS.feuer.color, ice: ELEMENTS.frost.color, arcane: ELEMENTS.arkan.color, qm: 0xffd23a, blitz: ELEMENTS.blitz.color, plague: ELEMENTS.seuche.color };
+// Viewer-Skin → Element über figureTable.ts (ELEMENTS in baukasten.ts ist die Farbquelle); base und qm (?-Magier) haben kein Element
+const SCHOOL_COL: Record<string, number> = { base: 0xd8d4e0, qm: 0xffd23a, arcane: ELEMENTS.arkan.color,
+  ...Object.fromEntries(FIGURE_LIST.filter(f => f.element && f.palette).map(f => [f.palette, ELEMENTS[f.element].color])) };
 export interface KosBuilt {
   pieces: KosPiece[]; glass: KosGlass[]; flag: Handle | null; ids: string[];
   ticks: ((K: KosFrame) => void)[]; ons: ((e: KosEvent, K: KosFrame) => void)[];
@@ -439,7 +441,7 @@ export interface KosBuilt {
   spawns: { space: Space; p: THREE.Vector3; v: THREE.Vector3; col: number; size: number; life: number; grav: number }[];
 }
 // F: Figur aus buildStrichMagier (Bones head, chest, hips, armL/armR mit ua/fa/hand, legL/legR mit th/sh/ft), B(parent, x, y, z) legt einen Bone an.
-// sel: Look-ID je Slot. A1/A2 Arm-, L1/L2 Beinlängen, wel: Farbe des Waffen-Elements oder null, skin: Schul-Look (SKIN_OF)
+// sel: Look-ID je Slot. A1/A2 Arm-, L1/L2 Beinlängen, wel: Farbe des Waffen-Elements oder null, skin: Schul-Look (paletteOf in figureTable.ts)
 export function kosmetikPieces(F, B, sel: Record<string, string>, A1: number, A2: number, L1: number, L2: number, wel: number | null, skin: string): KosBuilt {
   const out: KosBuilt = { pieces: [], glass: [], flag: null, ids: [], ticks: [], ons: [], space: null, hop: 0, says: [], spawns: [] };
   const body = new THREE.Group(), head = new THREE.Group(), neck = new THREE.Group();   // neck: Körper-Raum der Hals-Teile (KOS.neckUp)

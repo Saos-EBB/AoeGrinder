@@ -1,6 +1,7 @@
 // Werte aus docs/mechanics-spec.md (VMaNGOS-Code + Wowhead-Tooltips).
 // "PH" = Platzhalter, nicht belegt.
 import { t } from './i18n';
+import { elementOfTags, type ElementId } from './figureTable';
 
 
 // Kartengröße: Radius-Faktor, 2 = vierfache Fläche. Bauwerke bleiben in der Mitte, Gelände und Streu wachsen mit. // PH
@@ -76,6 +77,8 @@ export const CFG = {
 
 // SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie hier.
 export const SPELLS: any = {};
+// Element eines Spells aus seinen Tags (figureTable.ts), 'none' ohne Schul-Tag (DUP-05: eine Stelle für gearParts, objects, mobs)
+export const spellElement = (id: string | null | undefined): ElementId | 'none' => elementOfTags(id ? SPELLS[id]?.tags : null) ?? 'none';
 // Dunkel-Schaden (Tag Dunkel): trifft immer, ignoriert die Schadensreduktion der Mobs, heilt um diesen Anteil // PH
 export const DARK_HEAL = 0.2;
 export const SPELL_AOE_HEIGHT = 3;   // PH: yd Höhenunterschied zur Wirkfläche, ab dem Flächen-Spells nicht mehr treffen

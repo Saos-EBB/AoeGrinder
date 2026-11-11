@@ -7,7 +7,7 @@ import { maxHp, maxMana } from '../../formulas';
 import { cam } from '../../camera';
 import { META } from '../../meta';
 import { modeId } from '../../modifiers';
-import { currentFigure, openPause } from '../mainMenu';
+import { charCard, openPause } from '../mainMenu';
 import { toggleHero } from '../heroWindow';
 import { openBinds } from '../menus';
 import { t } from '../../i18n';
@@ -19,7 +19,7 @@ import { fmtTime, fmtDiff } from '../fmt';
 const put = (el: Element, text: string) => { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } };
 const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } };
 const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
-const figureName = () => currentFigure()?.name ?? '';
+const figureName = () => charCard()?.name ?? '';
 
 // Beim ersten Frame, wenn alle Module ihr Markup eingehängt haben: Tracker übernimmt #siegeHud (waves.ts schreibt hinein)
 let ready = false;

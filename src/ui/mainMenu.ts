@@ -3,7 +3,7 @@
 
 import { state, player } from '../state';
 import { $ } from '../util';
-import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, scoreMult, cardPaceId, setCardPace } from '../modifiers';
+import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, isWarrior, scoreMult, cardPaceId, setCardPace } from '../modifiers';
 import { CARD_PACES } from '../config';
 import { mage } from '../models/mage';
 import { cam, autoCamOn, setAutoCam } from '../camera';
@@ -36,16 +36,17 @@ import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openHero, toggleHero } from './heroWindow';
 import { t } from '../i18n';
+import { FIGURES } from '../figureTable';
 import { hex } from './dom';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
-  { mod: null, name: t('char.normal.name'), sub: t('char.normal.sub'), color: '#f2e9e4', stats: [3, 3, 3] },
-  { mod: 'frost', name: t('char.frost.name'), sub: t('char.frost.sub'), color: '#7dd3fc', stats: [3, 5, 3] },
-  { mod: 'fire', name: t('char.fire.name'), sub: t('char.fire.sub'), color: '#fb923c', stats: [5, 1, 2] },
-  { mod: 'blitz', name: t('char.blitz.name'), sub: t('char.blitz.sub'), color: '#fde047', stats: [4, 3, 2] },
-  { mod: 'plague', name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
-  { mod: 'realmen', name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
+  { mod: FIGURES.zufall.mod, name: t('char.normal.name'), sub: t('char.normal.sub'), color: '#f2e9e4', stats: [3, 3, 3] },
+  { mod: FIGURES.frost.mod, name: t('char.frost.name'), sub: t('char.frost.sub'), color: '#7dd3fc', stats: [3, 5, 3] },
+  { mod: FIGURES.feuer.mod, name: t('char.fire.name'), sub: t('char.fire.sub'), color: '#fb923c', stats: [5, 1, 2] },
+  { mod: FIGURES.blitz.mod, name: t('char.blitz.name'), sub: t('char.blitz.sub'), color: '#fde047', stats: [4, 3, 2] },
+  { mod: FIGURES.blut.mod, name: t('char.plague.name'), sub: t('char.plague.sub'), color: '#a3e635', stats: [3, 4, 2] },
+  { mod: FIGURES.krieger.mod, name: t('char.realmen.name'), sub: t('char.realmen.sub'), color: '#f87171', stats: [4, 2, 5] },
 ];
 const STAT_NAMES = [t('stat.dmg'), t('stat.control'), t('stat.survive')], STAT_MAX = 5;
 // Strichfigur für die Figurenleiste (gen4.py charsel), Farbe über --fc
@@ -55,7 +56,7 @@ const CHAR_MODS = CHARS.map(c => c.mod).filter(Boolean);
 const chips = MODIFIERS.filter(m => !CHAR_MODS.includes(m.id));
 
 let charIdx = 0, picked = [];
-export const currentFigure = () => CHARS[charIdx];   // Name und Untertitel der gewählten Figur (HUD, Spielerrahmen)
+export const charCard = () => CHARS[charIdx];   // Karte der gewählten Figur: Name und Untertitel (HUD, Spielerrahmen)
 
 // Figur und Mods ergeben den Modus: passt ein fester Modus, gilt der, sonst die eigene Mischung. Darauf baut die Rangliste auf.
 function applySelection() {
@@ -128,10 +129,10 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  const hasWeapons = !!mage.weapon || mage.skin === 'krieger';
+  const hasWeapons = !!mage.weapon || isWarrior();
   $('menuWeaponsBtn').hidden = !hasWeapons;
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
-  if (mage.skin === 'krieger') {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
+  if (isWarrior()) {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
     const pickWar = (id, leg) => { setWarLegendary(leg); mage.setWarWeapon(id); applySelection(); };
     for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))
       weapons.appendChild(button('chip' + (id === mage.warWeapon && !warLegendary() ? ' selected' : ''), name, () => pickWar(id, null)));
@@ -163,8 +164,8 @@ export function renderMenu() {
   $('menuRole').textContent = fig.sub;
   $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b><i style="width:${fig.stats[i] / STAT_MAX * 100}%;background:${fig.color}"></i></b></div>`).join('');
   const w = equipped(), wn = $('menuWeaponName');   // Waffe der Figur: Magier aus dem Inventar, Strichkrieger feste Wahl
-  wn.textContent = mage.skin === 'krieger' ? (warLegendary() ? LEGENDS[warLegendary()]?.name : WAR_WEAPON_NAMES[mage.warWeapon]) ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
-  wn.style.color = mage.skin !== 'krieger' && w ? rarityOf(w).color : '';
+  wn.textContent = isWarrior() ? (warLegendary() ? LEGENDS[warLegendary()]?.name : WAR_WEAPON_NAMES[mage.warWeapon]) ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
+  wn.style.color = !isWarrior() && w ? rarityOf(w).color : '';
   $('startModal').style.setProperty('--fc', fig.color);
   renderMap();
   renderSkin();

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { state } from '../state';
 import { scene } from '../render';
 import { markStacks, poisoned } from '../plagueMarks';
-import { activeModIds } from '../modifiers';
+import { isWarrior } from '../modifiers';
 import { eMat, PAL, EU, sparks } from './energy';
 import { V } from '../util';
 
@@ -38,7 +38,7 @@ function put(mesh, i, x, y, z, sx, sy = sx, sz = sx, ry = 0) {
 
 export function updateMobStatus(dt: number) {
   if (!L) build();
-  const now = state.now, T = EU.uTime.value, warrior = activeModIds().includes('realmen');
+  const now = state.now, T = EU.uTime.value, warrior = isWarrior();
   const n: Record<string, number> = { burn: 0, mark: 0, stun: 0, pl: 0, glue: 0 };
   const stun = warrior ? L.stunW : L.stun;
   for (const m of state.mobs) {

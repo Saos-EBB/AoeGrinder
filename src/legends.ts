@@ -9,7 +9,7 @@ import { UNIT } from './config';
 import { maxHp } from './formulas';
 import { meta, saveMeta, earnDust } from './meta';
 import { camera, scene } from './render';
-import { mage } from './models/mage';
+import { isWarrior } from './modifiers';
 import { applyRoot, enterCombat, startLeap, knockbackMob } from './mobs';
 import { mobsInRadius, makeCtx, addField } from './spells/core';
 import { runChain } from './spells/chain';
@@ -53,7 +53,7 @@ export const pickLegend = element => pick(Object.keys(LEGENDS).filter(id => LEGE
 
 // Aktive Legende des Runs: Magier über die angelegte Waffe, Nahkampf über die Waffenwahl
 function activeLegend() {
-  if (mage.skin === 'krieger') return LEGENDS[warLegendary()] ? warLegendary() : null;   // legendäre Waffe des Kriegers (realMen.ts)
+  if (isWarrior()) return LEGENDS[warLegendary()] ? warLegendary() : null;   // legendäre Waffe des Kriegers (realMen.ts)
   const w = meta.inv.find(x => x.id === meta.equipped);
   return LEGENDS[w?.s?.legend] ? w.s.legend : null;   // geparkte Legende (Achtfacher Stern) zählt nicht
 }

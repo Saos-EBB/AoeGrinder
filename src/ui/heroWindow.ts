@@ -18,7 +18,7 @@ import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
 import { fmtInt } from './fmt';
 import { mountFigPreview, setFigPreview } from './figPreview';
-import { currentFigure } from './mainMenu';
+import { charCard } from './mainMenu';
 import { attachWeaponCard, weaponCardData } from './weaponCard';
 import { mainDelta, mainStrength, fmtDelta, deltaColor, fmtMain } from './compare';
 import { COLORS } from './colors';
@@ -30,6 +30,8 @@ import { figureInfo } from './charInfo';
 import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
 import { t } from '../i18n';
+import { elementOfTag } from '../figureTable';
+import { isWarrior } from '../modifiers';
 import './heroWindow.css';
 import { el } from './dom';
 
@@ -132,7 +134,7 @@ function slotEl(slot: Slot | 'waffe') {
   if (color) b.style.setProperty('--rc', color);
   if (w) { const src = weaponThumb(w); b.innerHTML = src ? `<img src="${src}" alt="">` : typeSvg(typeOf(w), color); }
   else if (g) b.innerHTML = gearThumbHtml(g, slotSvg(slot, color));
-  else if (isW && mage.skin === 'krieger') b.innerHTML = '<span class="hwSlotEmpty"></span>';
+  else if (isW && isWarrior()) b.innerHTML = '<span class="hwSlotEmpty"></span>';
   else if (isW) { const src = weaponThumb(pilger()); b.innerHTML = `<span class="hwSlotEmpty pilger">${src ? `<img src="${src}" alt="">` : tabSvg(slot)}</span>`; }   // kein Stab: die Figur trägt den Pilgerast, gedimmt
   else b.innerHTML = `<span class="hwSlotEmpty">${tabSvg(slot)}</span>`;   // leer: Umriss gedimmt
   b.append(el('small', '', isW ? t('cw.weapon') : slotName(slot)));
@@ -238,7 +240,7 @@ function renderStats() {
 }
 
 function renderLeft() {
-  const fig = currentFigure();
+  const fig = charCard();
   $('hwName').textContent = fig?.name ?? '';
   $('hwLevel').textContent = inRun() ? t('hw.level', { n: player.level ?? 1 }) : t('hw.level', { n: '—' });
   const L = $('hwSlotsL'), R = $('hwSlotsR');
@@ -259,7 +261,7 @@ type Opt = { id: string; name: string; color?: string; sub?: string };
 // Material-Farbe des Herstellers (gen10.py MAKERS) // PH
 const MAT_COLOR = { bronze: '#b07a3a', gold: '#e3c27a', darkwood: '#6b4a2a', crystal: '#9fd8ff', blueiron: '#5a7aa8' };
 const isNewW = w => w.v === 2;
-const schoolKey = (school: string) => school?.toLowerCase();
+const schoolKey = (school: string) => elementOfTag(school);   // HEADS-Schule ('Frost') → Element (figureTable.ts)
 const W_ATTR: Record<string, (w) => string | null> = {
   type: w => typeOf(w),
   school: w => isNewW(w) ? schoolKey(HEADS[w.s.head]?.[1]) ?? null : null,

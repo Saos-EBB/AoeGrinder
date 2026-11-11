@@ -3,13 +3,13 @@
 
 import { state, player } from './state';
 import { mods, SLOT } from './config';
-import { modValue } from './modifiers';
+import { currentFigure } from './modifiers';
 import { mobsInRadius, applySlow } from './spells/core';
 import { renderActionbar } from './feedback';
 import { t } from './i18n';
 import { onAnyHit } from './hooks';
 
-const figure = () => modValue('onlyTag');
+const figure = () => currentFigure().tag;
 
 // ---------- Frost: Eissplitter ----------
 // Jeder Treffer auf einen eingefrorenen Gegner gibt 1 Splitter. Maximum 15, Splitterhagel hebt es, nie über 50 // PH
