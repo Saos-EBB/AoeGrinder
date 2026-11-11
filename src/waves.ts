@@ -10,7 +10,7 @@ import { mobMode, setMobMode, setSiegeGoal } from './modifiers';
 import { zone } from './world';
 import { spawnMob, enterCombat, pickMobType } from './mobs';
 import { run } from './score';
-import { resetGame, completeRun } from './player';
+import { resetGame, completeRun } from './run';
 import { t } from './i18n';
 import { hooks, onRunReset } from './hooks';
 const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
@@ -61,7 +61,7 @@ export function updateWaves(dt) {
   } else if (step === 'clear' && waveLeft() === 0) {
     step = hooks.boss.fn.start() ? 'boss' : 'pause';   // ohne passenden Boss gleich weiter
     stepAt = state.now;
-  } else if (step === 'boss' && !hooks.boss.fn.active()) {   // Boss-Anbindung über hooks.ts (sonst Import-Kreis über player.ts)
+  } else if (step === 'boss' && !hooks.boss.fn.active()) {   // Boss-Anbindung über hooks.ts (sonst Import-Kreis über run.ts)
     if (run.wave >= WAVES.goal) return completeRun(t('cause.wave', { n: WAVES.goal }));
     step = 'pause';
     stepAt = state.now;

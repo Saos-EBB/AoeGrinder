@@ -24,7 +24,7 @@ import { hitstopDt, impact, onMultiKill } from './fx/impact';
 import { shakeOffset } from './wucht';
 import { spawnMob, updateMob, removeMob } from './mobs';
 import { makeCtx, stopChannel, clearSpellEffects, updateChannel, isGround, rune } from './spells';
-import { resetGame, switchZone } from './player';
+import { resetGame, switchZone } from './run';
 import { MOB_TYPES } from './mobTypes';
 import { ZONES } from './zones';
 import { connectUi } from './ui/connect';

@@ -22,7 +22,7 @@ onAnyHit((m, id, dmg, frozen) => {
 }, 10);   // rank: Reihenfolge im Kanal (hooks.ts)
 
 // ---------- Frost: gefrorener Boden (Eiszeit) ----------
-// Spieler darauf +20 % Tempo (player.ts liest iceGroundUntil), Gegner −40 % // PH
+// Spieler darauf +20 % Tempo (player/move.ts liest iceGroundUntil), Gegner −40 % // PH
 export const ICE_GROUND = { playerSpeed: 1.2, mobSlow: 0.4 };
 export const iceAge = () => !!mods.iceAge && figure() === 'Frost';
 export function frozenGroundTick(f) {

@@ -7,7 +7,7 @@ import { SPELLS } from '../config';
 import { spellColor } from './colors';
 import { META, meta } from '../meta';
 import { MODES, MODIFIERS } from '../modifiers';
-import { setLevel } from '../player';
+import { setLevel } from '../run';
 import { stopChannel, clearSpellEffects } from '../spells/core';
 import { player } from '../state';
 import { showColliders } from '../world';

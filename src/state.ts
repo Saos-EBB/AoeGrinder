@@ -36,7 +36,7 @@ export interface Mob {
   state: MobState;
   assistAt: number;             // Social Aggro: hilft ab (ms), 0 = nicht gerufen
   nextSwing: number;            // nächster Nahkampfschlag (ms)
-  attackAt: number;             // letzter Angriff (ms), player.ts liest die Todesursache daraus
+  attackAt: number;             // letzter Angriff (ms), player/damage.ts liest die Todesursache daraus
   hitAt?: number;               // zuletzt getroffen (ms)
   moving: boolean;
   leap: any;                    // laufender Sprung { x0, y0, z0, x1 … } oder null (abilities.ts) (unklar)
@@ -94,7 +94,7 @@ export interface GameState {
   // --- Zeit und Pause ---
   now: number;                  // Spielzeit in ms (läuft nur, wenn nicht pausiert)
   paused: boolean;              // Pause (Fenster offen, Karten, tot); ui/menus.ts syncPause
-  runNo?: number;               // zählt Runs hoch (player.ts resetGame), objects/ baut damit neu
+  runNo?: number;               // zählt Runs hoch (run.ts resetGame), objects/ baut damit neu
 
   // --- Mobs und Packs ---
   mobs: Mob[];                  // alle Mobs der Zone (mobs.ts spawnMob), tote bleiben bis removeMob drin
@@ -165,7 +165,7 @@ export interface GameState {
 }
 
 // ---------- Roguelike-Modifikatoren (Karten, Waffe, Gear verändern sie im Run) ----------
-// Seit E8 hier statt in config.ts (ARCH-05). Startwerte für jeden Run: resetMods() (player.ts resetGame)
+// Seit E8 hier statt in config.ts (ARCH-05). Startwerte für jeden Run: resetMods() (run.ts resetGame)
 const MODS_START = {
     dmg: 1, shatter: 0, novaCd: 0, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
     fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
@@ -196,7 +196,7 @@ export interface PlayerChannel { id: string; c: any; point: any; start: number; 
 export interface PlayerBuff { id: string; name?: string; until: number; speed?: number; crit?: number; dmg?: number; cd?: number; regen?: number; xp?: number; [k: string]: any }
 
 export interface PlayerState {
-  // --- Ort und Bewegung (player.ts) ---
+  // --- Ort und Bewegung (player/move.ts) ---
   pos: Vector3;                 // Position in der Welt
   vel: Vector3;                 // Geschwindigkeit (Sprung, Fall)
   grounded: boolean;            // steht auf dem Boden
@@ -277,5 +277,5 @@ export const state: GameState = {
   padAim: null,
 };
 
-// Leer bis zum ersten resetGame (player.ts), das die Pflichtfelder setzt
+// Leer bis zum ersten resetGame (run.ts), das die Pflichtfelder setzt
 export const player = {} as PlayerState;

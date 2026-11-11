@@ -2,7 +2,7 @@
 
 import { state, player } from '../state';
 import { timeLimit } from '../modifiers';
-import { die } from '../player';
+import { die } from '../run';
 import { run, tickScore } from '../score';
 import { put } from './hud';
 import { SCORE_COMBO_WINDOW, LEVEL_NEW_MOB_BANNER } from '../config';

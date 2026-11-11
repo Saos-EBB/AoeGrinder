@@ -112,7 +112,7 @@ export function tryDodge(before) {
   return true;
 }
 
-// Ein Angriff oder Geschoss hätte in den i-Frames getroffen (player.ts damagePlayer): höchstens einmal pro Dodge
+// Ein Angriff oder Geschoss hätte in den i-Frames getroffen (player/damage.ts damagePlayer): höchstens einmal pro Dodge
 export function perfectDodge() {
   if (!dodge || dodge.perfect) return;
   dodge.perfect = true;

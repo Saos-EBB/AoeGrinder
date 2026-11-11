@@ -13,7 +13,7 @@ import { resolve, groundAt } from './collision';
 import { addEffect } from './fx/spellFx';
 import { shakeCamera } from './camera';
 import { scene, camera } from './render';
-import { damagePlayer } from './player';
+import { damagePlayer } from './player/damage';
 import { particles } from './fx/particles';
 import { combatText } from './feedback';
 import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat, burnMob } from './mobs';
@@ -218,7 +218,7 @@ export const ABILITIES: any = {
       }
     },
   },
-  // Gift stapelt bis 5×, Ticks laufen in player.ts und brechen Trinken nicht
+  // Gift stapelt bis 5×, Ticks laufen in player/move.ts und brechen Trinken nicht
   poison: {
     onHit() {
       const stacks = Math.min(5, (player.poison?.stacks ?? 0) + 1);    // PH

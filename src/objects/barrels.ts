@@ -8,7 +8,7 @@ import { mobMaxHp, maxHp } from '../formulas';
 import { hpMulOf } from '../mapgen/difficulty';
 import { zone } from '../world';
 import { burnMob, knockbackMob } from '../mobs';
-import { damagePlayer } from '../player';
+import { damagePlayer } from '../player/damage';
 import { applySlow, schedule } from '../spells/core';
 import { burstFx, boltFx } from '../spells/fx';
 import { ringFx } from '../fx/spellFx';

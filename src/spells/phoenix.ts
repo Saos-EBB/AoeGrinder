@@ -1,4 +1,4 @@
-// Phönix: passiver Slot. Stirbt der Spieler und der Phönix ist bereit, explodiert er stattdessen und steht wieder auf (player.ts, damagePlayer).
+// Phönix: passiver Slot. Stirbt der Spieler und der Phönix ist bereit, explodiert er stattdessen und steht wieder auf (player/damage.ts, damagePlayer).
 
 import { rand } from '../util';
 import { state, player } from '../state';

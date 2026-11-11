@@ -2,7 +2,7 @@
 
 import { spellAtAction } from './hotbar';
 import { KEYS, read, write } from './storage';
-import { startDodge } from './player';
+import { startDodge } from './player/move';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';

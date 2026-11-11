@@ -16,7 +16,7 @@ import { manaCost, spellCd, maxHp } from '../formulas';
 import { groundCursor, crystalBurst } from '../fx/spellFx';
 import { showError, renderActionbar } from '../feedback';
 import { damageMob, applyRoot } from '../mobs';
-import { spendMana } from '../player';
+import { spendMana } from '../player/damage';
 import { boltFx, ICE_WHITE } from './fx';
 import { MODIFIERS, activeModIds, modValue, randomMode } from '../modifiers';
 import { buffDmgMul } from '../buffs';
@@ -249,7 +249,7 @@ function release(id, point, opts: any = {}) {
 }
 
 // damagePlayer trägt diese Quellen ein, wenn der letzte Schaden ein Tick war
-const DOT_SOURCES = [t('fx.poison'), t('cause.lava'), t('meter.Feuer.full')];   // Ursachen-Texte wie in player.ts
+const DOT_SOURCES = [t('fx.poison'), t('cause.lava'), t('meter.Feuer.full')];   // Ursachen-Texte wie in player/damage.ts und player/move.ts
 
 // Zauber läuft: Bewegung bricht ab, Treffer schieben auf (Spec §7: maximal bis zur vollen Castzeit)
 function updateCast() {
@@ -352,7 +352,7 @@ function buildText() {
   return [spells.join(', '), supports.join(', '), relic && `${t('hw.relic')}: ${SPELLS[relic].name}`, (state.runWeapon || state.heroWeapon) && `${t('hw.weapon')}: ${state.runWeapon || state.heroWeapon}`].filter(Boolean).join(' · ');
 }
 
-// recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und player.ts Blau gehören: der Frame nach dem Tod trägt es nach.
+// recordRun speichert beim Tod mit leerem build. Pro Frame geprüft, weil leaderboard.ts und run.ts Blau gehören: der Frame nach dem Tod trägt es nach.
 let buildSaved = false;
 export function saveRunBuild() {
   if (!player.dead) { buildSaved = false; return; }

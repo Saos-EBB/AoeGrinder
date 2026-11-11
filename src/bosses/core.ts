@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { state, player } from '../state';
 import { maxHp } from '../formulas';
 import { groundAt, resolve } from '../collision';
-import { damagePlayer } from '../player';
+import { damagePlayer } from '../player/damage';
 import { scene } from '../render';
 import { addTrauma, decal, debris } from '../wucht';
 import { hitstop } from '../fx/impact';

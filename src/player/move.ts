@@ -14,6 +14,7 @@ import { pad } from '../gamepad';
 import { heroModel } from '../models/heroModel';
 import { modValue } from '../modifiers';
 import { iceBlocked, updateIceBlock } from '../spells/iceblock';
+import '../useKey';   // Lade-Reihenfolge wie vor E10 (input.ts → player.ts): Hinweis useHint vor der Dodge-Blende im body, beide z-index 2
 import { tryDodge, dodgeMove, dodgeMode, DG } from '../dodge';
 import { mobsInRadius } from '../spells/core';
 import { novaFx } from '../fx/spellFx';

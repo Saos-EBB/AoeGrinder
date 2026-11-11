@@ -1,4 +1,4 @@
-// Kurze Buffs auf dem Spieler (Getränke des ?-Magiers). Ohne Import aus spells/: core.ts, formulas.ts, mobs.ts und player.ts lesen von hier.
+// Kurze Buffs auf dem Spieler (Getränke des ?-Magiers). Ohne Import aus spells/: core.ts, formulas.ts, mobs.ts und player/ lesen von hier.
 
 import { state, player } from './state';
 import { onRunReset } from './hooks';

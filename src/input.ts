@@ -13,7 +13,7 @@ import { cast } from './spells';
 import { isGround } from './spells/core';
 import { spellAtAction, modeAt } from './hotbar';
 import { refreshKeyLabels } from './feedback';
-import { startDodge } from './player';
+import { startDodge } from './player/move';
 import { t } from './i18n';
 import { doUse } from './useKey';
 import { hooks } from './hooks';

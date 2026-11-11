@@ -1,7 +1,7 @@
 // Portale im Run (map-umbau-2 Phase 1). Nur auf generierten Maps (zone.gen).
 // Packs: bei Level 25 / 50 / 75 öffnet sich ein Portal auf einem portalSpot des Layouts (Index 0 liegt bei der Landmarke).
 // Wellen: nach jedem Boss. Betreten = gleiches Theme, neue Map, Seed aus dem Start-Seed abgeleitet (rng.ts portalMapSeed),
-// Mobs neu gewürfelt; Level, Karten, Ausrüstung bleiben (player.ts switchZone). Kurze Blende, kein Ladebildschirm.
+// Mobs neu gewürfelt; Level, Karten, Ausrüstung bleiben (run.ts switchZone). Kurze Blende, kein Ladebildschirm.
 // Wer das Portal liegen lässt: nach 2 min sinkt die XP pro Kill um 25 %, bis man durchgeht. Alle Zahlen // PH
 
 import * as THREE from 'three';
@@ -27,7 +27,7 @@ export const PORTAL = {
   landmarkPulse: 2.2,         // PH: Landmarke leuchtet so viel heller, solange das Portal offen ist
 };
 
-// Zonenwechsel und Boss über hooks.ts (sonst Import-Kreis über player.ts / boss.ts)
+// Zonenwechsel und Boss über hooks.ts (sonst Import-Kreis über run.ts / boss.ts)
 
 type Portal = { pos: THREE.Vector3; at: number; warned?: boolean; zone: any; seed: number; group: THREE.Group; glow: { mesh: THREE.Mesh; base: THREE.Color } | null };
 let portal: Portal | null = null, done = 0, wasBoss = false, fading = false, taken = 0;

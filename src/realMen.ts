@@ -16,7 +16,7 @@ import { showError, combatText, renderActionbar } from './feedback';
 import { applyRoot, pullMob, knockbackMob, enterCombat, startLeap } from './mobs';
 import { resolve } from './collision';
 import { act, pickGround, mouse } from './input';
-import { die } from './player';
+import { die } from './run';
 import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow } from './spells/core';
 import { isWarrior } from './modifiers';
 import { UNIT, mods } from './config';
@@ -505,11 +505,11 @@ function pressBerserk() {
   player.slowUntil = 0;
   heroModel.hero.fx.ring(player.pos, 0xd8121c, 4, 0.6, 0.15);
 }
-// Berserker: Schaden obendrauf (core.ts), kein Slow (player.ts)
+// Berserker: Schaden obendrauf (core.ts), kein Slow (run.ts)
 // ---------- Sions Axt ----------
 const SN = LEGENDARY.sion;
 const lerpN = (a, b, k) => a + (b - a) * k;
-// Ruhm im Tod: aus player.ts beim Tod. true = der Tod ist abgefangen
+// Ruhm im Tod: aus player/damage.ts beim Tod. true = der Tod ist abgefangen
 export function warriorRevive() {
   if (!isWarrior() || legendary !== 'sion' || state.now < undeadReadyAt) return false;
   undeadUntil = state.now + SN.undead.ms; undeadReadyAt = state.now + SN.undead.cd;

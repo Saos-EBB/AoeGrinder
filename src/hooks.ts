@@ -9,7 +9,7 @@
 type Fn = (...a: any[]) => any;
 // Fenster und Menüs, die Spiel und Eingabe öffnen oder fragen (ARCH-02 Rest, E10). ui/connect.ts setzt die Umsetzung aus ui/* ein (main.ts, vor allem anderen).
 export type UiApi = {
-  showCards(): void; showRunResult(): void;                              // ui/menus.ts, ui/leaderboardView.ts (player.ts)
+  showCards(): void; showRunResult(): void;                              // ui/menus.ts, ui/leaderboardView.ts (run.ts)
   renderMenu(): void; openPause(): void; closePause(): void; pauseOpen(): boolean; menuOpen(): boolean;
   cycleChar(step: number): void; cycleMap(step: number): void;             // ui/mainMenu.ts (input, gamepad, mobile, waves)
   heroOpen(): boolean; toggleHero(): void; closeHero(): void; heroCommand(cmd: string): void;   // ui/heroWindow.ts (input, gamepad)
@@ -48,27 +48,27 @@ export const hooks = {
   castStart: channel<(id: string) => void>(),
   // Treffer-Moment der Nahkampf-Animation (models/heroModel.ts): realMen.ts
   warriorHit: channel<(kind: string, x: number, z: number, i: number) => void>(),
-  // Run-Reset (player.ts resetGame ruft alle in rank-Reihenfolge, ARCH-05). Wer pro Run Zustand hat, meldet sich hier an.
-  // rank (Reihenfolge wie vor E8 in resetGame): 10 player.ts (Held-Modell, Mobs weg), 20 player.ts (resetMods), 30 score.ts,
-  // 40 player.ts (Run-Felder in state, Spieler neu, Kamera, Leben/Mana), 50 realMen.ts, 60 dodge.ts, 70 schoolMeter.ts, 80 figures.ts,
-  // 90 legends.ts, 100 player.ts (Schild 0), 110 buffs.ts, 120 player.ts (Nahkampf-Belegung), 130 battery.ts, 140 spells/plague.ts,
-  // 150 loot.ts, 160 portal.ts, 170 waves.ts, 180 leaderboard.ts (Split-Anzeige), 190 player.ts (Dev-Marke, Zielkreis, Kanal, Packs füllen)
+  // Run-Reset (run.ts resetGame ruft alle in rank-Reihenfolge, ARCH-05). Wer pro Run Zustand hat, meldet sich hier an.
+  // rank (Reihenfolge wie vor E8 in resetGame): 10 run.ts (Held-Modell, Mobs weg), 20 run.ts (resetMods), 30 score.ts,
+  // 40 run.ts (Run-Felder in state, Spieler neu, Kamera, Leben/Mana), 50 realMen.ts, 60 dodge.ts, 70 schoolMeter.ts, 80 figures.ts,
+  // 90 legends.ts, 100 run.ts (Schild 0), 110 buffs.ts, 120 run.ts (Nahkampf-Belegung), 130 battery.ts, 140 spells/plague.ts,
+  // 150 loot.ts, 160 portal.ts, 170 waves.ts, 180 leaderboard.ts (Split-Anzeige), 190 run.ts (Dev-Marke, Zielkreis, Kanal, Packs füllen)
   runReset: channel<() => void>(),
 
   // Plätze: genau eine Umsetzung
-  // Fenster und Menüs für Spiel und Eingabe (ui/connect.ts setzt, player.ts/input.ts/gamepad.ts/mobile.ts/waves.ts rufen). Logik importiert so kein ui/-Fenster
+  // Fenster und Menüs für Spiel und Eingabe (ui/connect.ts setzt, run.ts, player/xp.ts, input.ts/gamepad.ts/mobile.ts/waves.ts rufen). Logik importiert so kein ui/-Fenster
   ui: slot<UiApi>(UI_NONE),
   // Legendäre Krieger-Waffe ersetzt Spells in Start-Kit und Pool (realMen.ts setzt, spells/core.ts fragt)
   spellSwap: slot<(id: string) => string | undefined>(id => id),
   // Legendäre Krieger-Waffe, Feld legendary (realMen.ts setzt beim Laden, models/heroModel.ts fragt: Waffe und Skin des Kriegers; ARCH-11)
   warLegendary: slot<() => string | null>(() => null),
-  // true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod (boss.ts setzt, player.ts gainXp fragt)
+  // true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod (boss.ts setzt, player/xp.ts gainXp fragt)
   runEnd: slot<() => boolean>(() => false),
-  // true = XP wird gesammelt und erst nach dem Bosskampf gutgeschrieben (boss.ts setzt, player.ts gainXp fragt)
+  // true = XP wird gesammelt und erst nach dem Bosskampf gutgeschrieben (boss.ts setzt, player/xp.ts gainXp fragt)
   xpHold: slot<() => boolean>(() => false),
   // Boss-Anbindung für Wellen, Portal und die Arena (#boss) (boss.ts setzt; waves.ts, portal.ts, mapgen/arena.ts fragen)
   boss: slot<{ start: () => boolean; active: () => boolean; busy: () => boolean }>({ start: () => false, active: () => false, busy: () => false }),
-  // Zonenwechsel durchs Portal (main.ts setzt player.ts switchZone ein, portal.ts ruft)
+  // Zonenwechsel durchs Portal (main.ts setzt run.ts switchZone ein, portal.ts ruft)
   switchZone: slot<(id: string) => void>(() => {}),
   // Sprechblasen der Kosmetik (main.ts setzt die schwebende Schrift ein, figEvents.ts figSay ruft)
   figSay: slot<(text: string) => void>(() => {}),
@@ -84,8 +84,8 @@ export type BusEvents = {
   kill: [mob: any];        // mobs.ts killMob → figEvents.ts (Figur: Kill, Kill-Serie)
   crit: [mob: any];        // mobs.ts damageMob → figEvents.ts
   cast: [id: string];      // spells/core.ts release (ohne Trinken) → figEvents.ts
-  hit: [];                 // player.ts damagePlayer (Leben verloren) → figEvents.ts
-  level: [level: number];  // player.ts gainXp (neues Level) → figEvents.ts
+  hit: [];                 // player/damage.ts damagePlayer (Leben verloren) → figEvents.ts
+  level: [level: number];  // player/xp.ts gainXp (neues Level) → figEvents.ts
   ach: [id: string];       // neuer Erfolg: meta.ts milestone, gear/inventory.ts checkUnlocks (Set 5/5) → ui/achievements.ts (Einblendung)
 };
 type Listener<K extends keyof BusEvents> = (...a: BusEvents[K]) => void;

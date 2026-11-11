@@ -65,7 +65,7 @@ export const fullHp = () => Math.round(baseHp() * mods.hpMult * modFactor('hp') 
 export const maxHp = () => Math.round(fullHp() * (1 - (player.hpCut ?? 0)));   // hpCut: Zerstörung (Maliketh, bosses/rules.ts), grauer Teil im Leben-Balken
 export const maxMana = () => player.rageMax ?? Math.round(baseHp() * MANA_PER_HP * mods.manaMult * modFactor('mana'));
 export const spirit = () => 45 + 2 * (player.level - 20);
-// Mana pro Regen-Tick (CFG.regenTick) ohne Boni; player.ts (regenerate) und heroStats.ts (Anzeige) nutzen beide diese Formel
+// Mana pro Regen-Tick (CFG.regenTick) ohne Boni; player/damage.ts (regenerate) und heroStats.ts (Anzeige) nutzen beide diese Formel
 export const manaRegenPerTick = () => spirit() / 4 + 12.5;
 // Grundschaden eines Spells: Kartenvorschau (cards.ts), Formel im Tooltip (spellCard.ts) und Mega-Crit-Schwelle (dmgNumbers.ts)
 export const baseHit = s => s?.tickDmg ?? (s?.min ? (s.min + s.max) / 2 : s?.dmg ?? s?.pulse ?? s?.showDmg);

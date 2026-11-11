@@ -4,7 +4,7 @@ import { player } from '../state';
 import { $ } from '../util';
 import { CARD_RARITIES } from '../config';
 import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf, devSetDust, devUnlockAll, devReset } from '../meta';
-import { completeRun } from '../player';
+import { completeRun } from '../run';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
 import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip, mainValue } from '../weaponRolls';

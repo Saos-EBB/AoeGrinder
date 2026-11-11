@@ -27,7 +27,7 @@ function segmentHitsCircle(a, b, c, r) {
   return t >= 0 && t <= 1 ? t : 1;
 }
 
-// Auto-Kamera: Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen. Ohne sie geht sie nur hinter die Blickrichtung (player.ts).
+// Auto-Kamera: Die Kamera dreht sich mit der Laufrichtung, auch beim Seitwärtslaufen. Ohne sie geht sie nur hinter die Blickrichtung (player/move.ts).
 // Ziehen mit der linken Maustaste hat Vorrang, rückwärts bleibt sie hinter der Figur.
 const AUTO_CAM_RATE = 3;   // PH: 1/s
 let autoCam = readRaw(KEYS.autoCam) === '1';

@@ -28,7 +28,9 @@ import { updateTrailEffects } from './trailEffects';
 import { updateRealMen, realMenAnim, warTimeScale } from './realMen';
 import { updateWaves } from './waves';
 import { cast } from './spells';
-import { resetGame, updatePlayer, switchZone, updateCardQueue } from './player';
+import { resetGame, switchZone } from './run';
+import { updateCardQueue } from './player/xp';
+import { updatePlayer } from './player/move';
 import { pad, pollGamepad, updatePadCamera } from './gamepad';
 import './ui/uiSettings';
 import './ui/flavors';
@@ -40,7 +42,10 @@ import { mount as mountAchievements } from './ui/achievements';
 import * as coreMod from './spells/core';
 import * as configMod from './config';
 import * as formulasMod from './formulas';
-import * as playerMod from './player';
+import * as runMod from './run';
+import * as xpMod from './player/xp';
+import * as damageMod from './player/damage';
+import * as moveMod from './player/move';
 import * as cardsMod from './cards';
 import * as weaponMod from './weaponRolls';
 import * as metaMod from './meta';
@@ -232,4 +237,4 @@ requestAnimationFrame(loop);
 
 // Für Tests
 (window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage: heroModel, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
-  m: { menu: menuMod, cardsUi: cardsUiMod, core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };
+  m: { menu: menuMod, cardsUi: cardsUiMod, core: coreMod, config: configMod, formulas: formulasMod, player: { ...runMod, ...xpMod, ...damageMod, ...moveMod }, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };

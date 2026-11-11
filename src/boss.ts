@@ -24,7 +24,8 @@ import { run } from './score';
 import { meta, saveMeta, earnDust, milestone } from './meta';
 import { combatText } from './feedback';
 import { fmtTime } from './ui/fmt';
-import { completeRun, releaseXp } from './player';
+import { completeRun } from './run';
+import { releaseXp } from './player/xp';
 import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
 import { shockwave, lightFlash, hitstop } from './fx/impact';
@@ -537,7 +538,7 @@ export function updateBossVisuals(dt) {
   if (barSub.textContent !== sub) barSub.textContent = sub;
 }
 
-// Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
+// Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player/xp.ts gainXp fragt hier nach)
 hooks.runEnd.set(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
 // Wellen: nach jeder Welle ein Boss, die Welle wartet auf sein Ende
 hooks.boss.set({ start: () => startBoss(), active: bossActive, busy: bossBusy });

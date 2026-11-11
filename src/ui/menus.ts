@@ -11,7 +11,7 @@ import './cards.css';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
 import { resetSpells, learnSpell, stopChannel, clearSpellEffects } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, keyText, actionForCode, resetBinds } from '../input';
-import { resetGame, switchZone, newRunMap } from '../player';
+import { resetGame, switchZone, newRunMap } from '../run';
 import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
 import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';

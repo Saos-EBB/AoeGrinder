@@ -70,7 +70,7 @@ const DEFS: Record<string, Def> = {
   dur: { id: 'dur', label: () => t('hw.st.dur'), v: () => mods.durMul - 1, fmt: pctSigned, dfmt: pctSigned },
   proj: { id: 'proj', label: () => t('hw.st.proj'), v: () => mods.fbExtra ?? 0, fmt: v => `+${fmtInt(v)}`, dfmt: intSigned },
   hp: { id: 'hp', label: () => t('hw.life'), v: () => maxHp(), fmt: fmtInt, dfmt: intSigned },
-  // Leben-Regeneration aus player.ts regenerate(): CFG.hpRegen vom max. Leben je Tick (CFG.regenTick), nur außer Kampf; Seuchenmagier gar nicht
+  // Leben-Regeneration aus player/damage.ts regenerate(): CFG.hpRegen vom max. Leben je Tick (CFG.regenTick), nur außer Kampf; Seuchenmagier gar nicht
   regen: { id: 'regen', label: () => t('hw.st.regen'), v: () => maxHp() * CFG.hpRegen / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
     show: () => !modValue('lifeCost') },
   dr: { id: 'dr', label: () => t('hw.st.dr'), v: () => 1 - takenMul(), fmt: pctAbs, dfmt: pctSigned },
