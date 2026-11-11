@@ -13,7 +13,7 @@ import { closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus'
 import { cast } from './spells';
 import { isGround } from './spells/core';
 import { spellAtAction, modeAt } from './hotbar';
-import { refreshKeyLabels } from './ui/hud';
+import { refreshKeyLabels } from './feedback';
 import { heroOpen, toggleHero, closeHero } from './ui/heroWindow';
 import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';

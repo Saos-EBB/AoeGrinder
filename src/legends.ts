@@ -16,7 +16,7 @@ import { runChain } from './spells/chain';
 import { igniteMob } from './spells/firestorm';
 import { blinkTo } from './spells/blink';
 import { boltFx, burstFx, orbVisual, areaParticles, FIRE, EMBER, ICE, ICE_WHITE } from './spells/fx';
-import { combatText, showError } from './ui/hud';
+import { combatText, showError } from './feedback';
 import { forward } from './melee';
 import { warLegendary, NOXUS } from './realMen';
 import { t } from './i18n';

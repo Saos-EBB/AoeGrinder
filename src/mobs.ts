@@ -1,7 +1,7 @@
 import { hooks } from './hooks';
 import * as THREE from 'three';
 import { state, player } from './state';
-import { rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
+import { $, rand, randInt, pick, clamp, dist2d, lerpTo } from './util';
 import { CFG, SPELLS, DARK_HEAL, mods, WORLD_K, LEVEL_MAX, LEVEL_UNLOCKS, LEVEL_MIN_MOBS, LEVEL_PACK_MIN, LEVEL_PACK_MAX, LEVEL_PACK_SPREAD, PACK_SIZE_MUL, PACK_STALE_LEVELS, PACK_STALE_DIST } from './config';
 import { maxHp, aggroRadius, hitChance, xpForKill, paceXpMul, dmgMult, mobDmgTaken, mobMaxHp, mobHitDmg } from './formulas';
 import { scene } from './render';
@@ -24,7 +24,7 @@ import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, cham
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
 import { shakeCamera } from './camera';
 import { rumble } from './gamepad';
-import { overlay, combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { damagePlayer, gainXp } from './player';
 import { damageNumber } from './ui/dmgNumbers';
 import { meterKill, meterKillHeal } from './schoolMeter';
@@ -183,7 +183,7 @@ export function spawnMob(typeId, pos, level, packId, typeOverride = null) {
   const plate = document.createElement('div');
   plate.className = 'plate';
   plate.innerHTML = `<span class="lv"></span> ${type.name}<div class="hp"><div></div></div>`;
-  overlay.appendChild(plate);
+  $('overlay').appendChild(plate);   // Namensschild über der schwebenden Schrift (#overlay, ui/hud.ts)
   const hp = Math.round(mobMaxHp(level) * (type.hpMul ?? 1) * hpMulOf(zone.theme));   // hpMulOf: Theme-Schwierigkeit (mapgen/difficulty.ts)
   const mob = {
     type, ability: ABILITIES[type.ability] ?? null, model, plate, plateHp: plate.querySelector('.hp div'), plateLv: plate.querySelector('.lv'),

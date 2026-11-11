@@ -13,7 +13,7 @@ import { cam } from './camera';
 import { groundAt, SKY } from './collision';
 import { blizCursor } from './fx/spellFx';
 import { castSpell, isGround } from './spells';
-import { showError, refreshKeyLabels } from './ui/hud';
+import { showError, refreshKeyLabels } from './feedback';
 import { pressSpell } from './input';
 import { closeBinds, renderBinds } from './ui/menus';
 import { touch, updateTouch } from './mobile';

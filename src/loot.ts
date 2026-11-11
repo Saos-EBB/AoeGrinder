@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { state, player } from './state';
 import { onMobDeath } from './hooks';
 import { particles } from './fx/particles';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { mage } from './models/mage';
 import { rollDrop, takeGear, gearName, gearRarity, isMagierSkin, type GearItem } from './gear';
 import { dist2d, rand } from './util';

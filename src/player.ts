@@ -8,7 +8,7 @@ import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam, autoCamOn, MOBILE_YAW } from './camera';
 import { device } from './device';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { fmtTime } from './ui/fmt';
 import { showCards } from './ui/menus';
 import { rankAllSpells } from './cards';

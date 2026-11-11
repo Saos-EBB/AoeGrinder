@@ -30,10 +30,13 @@ import { batteryMode } from '../battery';
 import { BATTERY } from '../config';
 import { t, fmtNum } from '../i18n';
 import { fmtTime } from './fmt';
+import { connectFeedback } from '../feedback';
 
 document.documentElement.style.setProperty('--slot', `${UI.slotPx}px`);
 
 export const overlay = $('overlay');
+// Logik-Dateien melden sich über feedback.ts (ohne Import-Kreis), hier steckt die Umsetzung
+connectFeedback({ combatText, showError, renderActionbar, refreshKeyLabels });
 
 export function screenPos(pos, height) {
   const p = new THREE.Vector3(pos.x, pos.y + height, pos.z).project(camera);

@@ -15,7 +15,7 @@ import { shakeCamera } from './camera';
 import { scene, camera } from './render';
 import { damagePlayer } from './player';
 import { particles } from './fx/particles';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { moveMob, faceMob, hitPlayer, startLeap, spawnMob, enterCombat, burnMob } from './mobs';
 import { stopChannel, stopDrink } from './spells';
 import { maxMana } from './formulas';

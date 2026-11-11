@@ -9,7 +9,7 @@ import { particles } from './fx/particles';
 import { groundAt, resolve, STEP } from './collision';
 import { addTrauma } from './wucht';
 import { hitstop } from './fx/impact';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { activeModIds } from './modifiers';
 import { mods } from './config';
 import { t } from './i18n';

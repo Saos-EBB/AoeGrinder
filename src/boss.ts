@@ -22,7 +22,7 @@ import { mobMode, scoreMult } from './modifiers';
 import { C } from './champions';
 import { run } from './score';
 import { meta, saveMeta, earnDust, milestone } from './meta';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { fmtTime } from './ui/fmt';
 import { completeRun, releaseXp } from './player';
 import { particles } from './fx/particles';

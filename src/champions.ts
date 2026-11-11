@@ -4,7 +4,7 @@
 import { state, player } from './state';
 import { $, pick, dist2d } from './util';
 import { maxHp } from './formulas';
-import { combatText } from './ui/hud';
+import { combatText } from './feedback';
 import { ringFx } from './fx/spellFx';
 import { burstFx, FIRE, EMBER } from './spells/fx';
 import { schedule } from './spells/core';
