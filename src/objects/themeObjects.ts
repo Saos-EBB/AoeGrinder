@@ -14,7 +14,7 @@ import { burstFx } from '../spells/fx';
 import { ringFx, addEffect } from '../fx/spellFx';
 import { particles } from '../fx/particles';
 import { addTrauma } from '../wucht';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { colored, plain } from '../mapgen/build';
 import { registerKind, planObjects, redraw, removeObj, onMapObjects, type Obj } from './objects';
 import { dist2d, rand } from '../util';

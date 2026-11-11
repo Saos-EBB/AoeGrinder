@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { state, player } from '../state';
 import { addBuff, buffXpMul } from '../buffs';
 import { addXpMul } from '../xpBonus';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { ringFx } from '../fx/spellFx';
 import { particles } from '../fx/particles';
 import { zone } from '../world';

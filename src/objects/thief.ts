@@ -9,7 +9,7 @@ import { moveMob, faceMob, removeMob } from '../mobs';
 import { dropDust, dropWeapon } from '../loot';
 import { ringFx } from '../fx/spellFx';
 import { particles } from '../fx/particles';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { onMapObjects, addDevButton, devAhead } from './objects';
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';

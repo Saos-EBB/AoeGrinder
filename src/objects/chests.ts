@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { state, player } from '../state';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { particles } from '../fx/particles';
 import { zone } from '../world';
 import { spawnKind } from '../mobKinds';
