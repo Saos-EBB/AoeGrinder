@@ -30,12 +30,12 @@ onMobDeath(m => {
   const left = m.poison.dps * (m.poison.until - state.now) / 1000;
   const next = mobsInRadius(m.pos, 8, Infinity).filter(o => o !== m && !poisoned(o)).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, mods.contagion);
   for (const o of next) { zapLook(m.pos, o.pos, 'slime'); poison(o, left); }
-});
+}, 10);   // rank: Reihenfolge im Kanal (hooks.ts)
 // Klebefaden: Schaden geht zu share auf die Angeketteten über (burnMob löst keine Treffer-Haken aus, also keine Schleife)
 onAnyHit((m, id, dmg) => {
   if (!m.web || m.web.until <= state.now) return;
   for (const o of m.web.links) if (!o.dead) burnMob(o, Math.max(1, Math.round(dmg * P.web.share)));
-});
+}, 20);   // rank: Reihenfolge im Kanal (hooks.ts)
 
 // ---------- Zerfließen (Bewegung) ----------
 const liquid = { start: -1e9, end: -1e9 };

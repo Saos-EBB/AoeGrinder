@@ -49,7 +49,7 @@ function mimic(o: Obj) {
   m.plate.style.color = '#ff8a6a';
   enterCombat(m, false);
 }
-onMobDeath(m => { if (m.mimic) loot(m.pos.clone(), 2); });
+onMobDeath(m => { if (m.mimic) loot(m.pos.clone(), 2); }, 60);
 
 function finish(o: Obj) {
   o.data.opening = null;

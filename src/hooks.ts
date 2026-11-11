@@ -1,17 +1,22 @@
 // Rückwege ohne Import-Kreis (ARCH-03). Eigenes Modul ohne Imports (Vorbild device.ts): Es wird immer vor jedem Modul
 // ausgewertet, das es importiert, darum sind die Kanäle beim Laden schon da, egal in welcher Reihenfolge der Kreis läuft.
 // Wer reagieren will, meldet sich hier an; wer etwas auslöst, ruft hier. Beide importieren nur dieses Modul, nicht einander.
-//   Kanal (channel): beliebig viele Abonnenten, Aufruf in Anmelde-Reihenfolge (= Lade-Reihenfolge der Module).
+//   Kanal (channel): beliebig viele Abonnenten. Mit rank feste Reihenfolge (kleiner zuerst), unabhängig davon, in welcher
+//   Reihenfolge die Module laden; ohne rank hinten an, in Anmelde-Reihenfolge. Zählt die Reihenfolge, immer rank geben.
 //   Platz (slot): genau eine Umsetzung, die ein anderes Modul einsetzt; bis dahin gilt der Ersatz.
 // Neue Rückwege kommen hierher, keine neuen Listen an Funktionen, Setter oder setTimeout-Tricks.
 
 type Fn = (...a: any[]) => any;
-export type Channel<F extends Fn> = { readonly fns: F[]; on(fn: F): void };
+export type Channel<F extends Fn> = { readonly fns: F[]; on(fn: F, rank?: number): void };
 export type Slot<F> = { fn: F; set(fn: F): void };
 
 function channel<F extends Fn>(): Channel<F> {
-  const fns: F[] = [];
-  return { fns, on: fn => { fns.push(fn); } };
+  const fns: F[] = [], ranks: number[] = [];
+  return { fns, on: (fn, rank = Infinity) => {
+    let i = ranks.length;
+    while (i > 0 && ranks[i - 1] > rank) i--;   // stabil: gleicher rank bleibt in Anmelde-Reihenfolge
+    fns.splice(i, 0, fn); ranks.splice(i, 0, rank);
+  } };
 }
 function slot<F>(fallback: F): Slot<F> {
   const s: Slot<F> = { fn: fallback, set: fn => { s.fn = fn; } };
@@ -19,9 +24,10 @@ function slot<F>(fallback: F): Slot<F> {
 }
 
 export const hooks = {
-  // Tod eines Mobs, vor allem anderen in killMob (mobs.ts): spells/plague, realMen, loot, mobKinds, legends, objects/chests, objects/thief
+  // Tod eines Mobs, vor allem anderen in killMob (mobs.ts). rank: 10 spells/plague (Ansteckung), 20 realMen (Sions Axt),
+  // 30 loot (Drops), 40 mobKinds (Platzt, Teilt), 50 legends (Kuh), 60 objects/chests (Mimic), 70 objects/thief (Schatzdieb)
   mobDeath: channel<(mob: any) => void>(),
-  // Jeder Treffer, der landet (spells/core.ts hitMobs): figures.ts (Eissplitter), spells/plague.ts (Netz)
+  // Jeder Treffer, der landet (spells/core.ts hitMobs). rank: 10 figures.ts (Eissplitter), 20 spells/plague.ts (Netz)
   anyHit: channel<(mob: any, spellId: string, dmg: number, frozen: boolean) => void>(),
   // Feuer-Treffer, auch Brand-Ticks: spells/gasoline.ts (Benzin zündet)
   fireHit: channel<(mob: any, spellId: string, dmg: number) => void>(),

@@ -3,7 +3,7 @@
 import { state, player } from './state';
 import { rand, clamp } from './util';
 import { CFG, SPELLS, mods, LEVEL_HP_AT_20, LEVEL_HP_STEP, LEVEL_DMG_STEP, LEVEL_MOB_HP, LEVEL_MOB_DEF_STEP, LEVEL_MOB_DEF_MAX, LEVEL_MAX, LEVEL_PACE, LEVEL_KILLS } from './config';
-import { stat, rune, echoCost, radiusMult } from './spells/core';
+import { stat, rune, echoCost, radiusMult } from './spells/stats';
 import { modFactor, timeLimit, modValue } from './modifiers';
 import { meterCdMul } from './schoolMeter';
 import { buffCdMul } from './buffs';

@@ -660,7 +660,7 @@ onMobDeath(() => {
   if (!isWarrior() || legendary !== 'sion') return;
   player.bonusHp = Math.min(SN.hpMax, (player.bonusHp ?? 0) + SN.hpPerKill);
   if (sw) { const add = maxHp() * SN.w.perKill; player.shield = Math.max(0, player.shield) + add; sw.given += add; }
-});
+}, 20);   // rank: Reihenfolge im Kanal (hooks.ts)
 export const berserkMul = () => isWarrior() && player.berserkUntil > state.now ? 1 + R.berserk.dmg : 1;
 
 function updateWhirl(s) {

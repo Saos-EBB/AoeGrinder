@@ -19,7 +19,7 @@ export function takeShards() { const n = state.shards ?? 0; state.shards = 0; re
 onAnyHit((m, id, dmg, frozen) => {
   if (figure() !== 'Frost' || !frozen) return;
   state.shards = Math.min(shardMax(), (state.shards ?? 0) + 1);
-});
+}, 10);   // rank: Reihenfolge im Kanal (hooks.ts)
 
 // ---------- Frost: gefrorener Boden (Eiszeit) ----------
 // Spieler darauf +20 % Tempo (player.ts liest iceGroundUntil), Gegner −40 % // PH

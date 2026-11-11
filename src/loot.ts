@@ -78,7 +78,7 @@ onMobDeath(m => {
   if (!canDrop()) return;
   if (Math.random() < DROP.kill) spawnDrop(m.pos);
   if (lastChamp && Math.random() < DROP.champ) spawnDrop(m.pos);
-});
+}, 30);   // rank: Reihenfolge im Kanal (hooks.ts)
 // Gear-Teil auf den Boden (Truhen, objects/chests.ts), nur Magier wie alle Gear-Drops
 export function dropGear(at: THREE.Vector3) {
   if (canDrop()) spawnDrop(at);

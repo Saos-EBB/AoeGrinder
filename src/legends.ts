@@ -149,7 +149,7 @@ const EFFECTS = {
 export const legendDmgMul = () => state.leeroyUntil > state.now ? 1 + LEG.leeroy.dmg : 1;
 
 // Cow Level: tote Kühe geben Staub
-onMobDeath(m => { if (m.cow) { earnDust(LEG.cow.dust); saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } });
+onMobDeath(m => { if (m.cow) { earnDust(LEG.cow.dust); saveMeta(); combatText(m.pos, t('msg.dust', { n: LEG.cow.dust }), 'xp', 2.2); } }, 50);
 
 // ---------- Murky-Ei ----------
 const egg: any = { pos: null, until: 0, mesh: null };

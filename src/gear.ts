@@ -16,6 +16,7 @@ import { pick } from './util';
 import { t } from './i18n';
 import { fmtInt } from './ui/fmt';
 import { emit } from './hooks';
+import { stat } from './spells/stats';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
@@ -49,7 +50,6 @@ export const GIANT_FB = { every: 10, size: 3, dmg: 3 };
 export const SHARD_NEEDLE = { len: 1.5 };
 // Hochspannung: jeder Sprung des Kettenblitzes gabelt sich mit fork in 2 Ketten; cap: höchstens so viele Sprünge pro Wurf, alle Äste zusammen (spells/chain.ts)
 export const HV_FORK = { fork: 0.2, cap: 400 };
-const stat = (id: string) => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };   // wie spells/core.ts stat, ohne Import-Kreis
 const PERFECT: Record<string, (v: number) => void> = {
   crit: v => { mods.crit += v; },
   fbExtra: v => { mods.fbExtra += v; },

@@ -63,7 +63,7 @@ onMobDeath(m => {
   dropDust(m.pos, Math.round(rand(THIEF.dust[0], THIEF.dust[1])));
   dropWeapon(m.pos);
   stats.killed++;
-});
+}, 70);   // rank: Reihenfolge im Kanal (hooks.ts)
 
 // Goldene Funken, damit man ihn sieht (aus objects-Update)
 let sparkAt = 0;

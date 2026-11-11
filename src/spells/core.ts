@@ -1,6 +1,9 @@
 // Spell-Kern: Slots, Tags, cast, Channel. Die Spells selbst liegen je in einer Datei, Registrierung in index.ts.
 
 import { hooks, emit } from '../hooks';
+// Werte je Spell (stat, rune, supported …) liegen in stats.ts, hier weitergereicht, damit die Aufrufer bleiben
+import { hasTag, stat, runesOf, rune, hasRune, supported, echoCost, radiusMult, baseCharges } from './stats';
+export { hasTag, stat, runesOf, rune, hasRune, supported, echoCost, radiusMult } from './stats';
 import { spellAtAction } from '../hotbar';
 import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
@@ -69,18 +72,10 @@ export function clearSpellEffects() {
   state.scheduled = [];
 }
 
-export const hasTag = (id, tag) => SPELLS[id].tags.includes(tag);
-export const stat = id => state.spellStats[id] ??= { dmg: 1, mana: 1, radius: 1 };
 export const hasSpell = id => state.slots.includes(id);
-// Arcane only läuft ohnehin beim Zaubern: Runen „Laufen erlaubt, halber Schaden“ werden dort zu +1 Ladung
-const WALK_CHARGE = { name: t('rune.walkCharge.name'), desc: t('rune.walkCharge.desc') };
-export const runesOf = id => modValue('castWhileMoving') ? SPELLS[id].runes?.map(r => r.id === 'walk' ? { ...WALK_CHARGE, id: 'walk', charges: (baseCharges(id) ?? 1) + 1 } : r) : SPELLS[id].runes;
-export const rune = id => runesOf(id)?.find(r => r.id === state.runes[id]);
-export const hasRune = (id, runeId) => state.runes[id] === runeId;
 export const isGround = id => !!(SPELLS[id].ground || rune(id)?.ground);
 
 // Wann der Spell wieder geht; mit Ladungen zählt die zuerst fertige
-const baseCharges = id => SPELLS[id].charges ?? (id === 'blink' ? modValue('blinkCharges') : undefined);   // Arcane only: Blink mit 2 Ladungen
 export const chargesOf = id => { const n = rune(id)?.charges ?? baseCharges(id), bonus = (state.bonusCharges?.[id] ?? 0);
   return bonus ? (n ?? 1) + bonus : n; };   // bonus: Buch
 export function cdEnd(id) {
@@ -98,10 +93,7 @@ export function startCd(id) {
   c[c.indexOf(Math.min(...c))] = state.now + cd;
 }
 
-export const supported = (key, id) => !!state.supports[key] && SUPPORTS.find(x => x.id === key).tags.some(t => hasTag(id, t));
-export const echoCost = id => supported('echo', id) && !SPELLS[id].channel;
 export const paysLife = id => supported('blood', id) || !!modValue('lifeCost');   // Blutopfer oder Seuchenmagier
-export const radiusMult = id => stat(id).radius * mods.radius * (supported('focus', id) ? 0.7 : 1) * (supported('wide', id) ? 1.3 : 1);
 export const damageMult = id => (supported('focus', id) ? 1.4 : 1) * (supported('wide', id) ? 0.9 : 1);
 
 

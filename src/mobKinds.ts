@@ -222,7 +222,7 @@ onMobDeath(m => {
     }
   });
   if (cat === 'gross') lightPillar(pos);
-});
+}, 40);   // rank: Reihenfolge im Kanal (hooks.ts)
 function lightPillar(pos) {
   const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.3, 30, 16, 1, true),
     new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 2.0, 1.1), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
