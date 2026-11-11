@@ -18,7 +18,7 @@ import { zoneId } from '../world';
 import { copySeed } from './worldMap';
 import { t, locale } from '../i18n';
 import { findsHtml, bindFinds } from './lootView';
-import { fmtTime, fmtInt, fmtMult } from './fmt';
+import { fmtTime, fmtDiff, fmtInt, fmtMult } from './fmt';
 import { esc } from './dom';
 
 const $ = id => document.getElementById(id);
@@ -81,7 +81,7 @@ export function showRunResult() {
   const award = afterRun(!!player.won);
   $('runResult').innerHTML = `
     <div class="endTime">${fmtT(entry.time)}</div>
-    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${t('end.best', { d: `${diff <= 0 ? '−' : '+'}${fmtT(Math.abs(diff))}` })}</span> · ` : typeof t100 === 'number' ? `<span style="color:#6ee7a0">${t('end.firstTime')}</span> · ` : ''}${t('end.rank', { a: rank, b: same.length })}${rank === 1 && entry.score > 0 ? ` · <b>${t('end.record')}</b>` : ''}</div>
+    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${t('end.best', { d: fmtDiff(diff) })}</span> · ` : typeof t100 === 'number' ? `<span style="color:#6ee7a0">${t('end.firstTime')}</span> · ` : ''}${t('end.rank', { a: rank, b: same.length })}${rank === 1 && entry.score > 0 ? ` · <b>${t('end.record')}</b>` : ''}</div>
     <div class="endStats">${stat(fmt(entry.kills), t('end.kills'))}${stat(fmt(b.total), t('end.points'))}${stat(fmt(entry.bestCombo), t('end.combo'))}${stat(`×${entry.bestMulti}`, t('end.multi'))}${stat(player.won ? 0 : 1, t('end.deaths'))}</div>
     <div class="endPoints">${t('end.breakdown', { kills: fmt(b.kills), mult: fmtMult(entry.mult), pull: fmt(entry.bestPull), pullPts: fmt(b.pull), time: fmt(b.time), cause: esc(entry.cause) })}</div>
     <div class="endCols">
