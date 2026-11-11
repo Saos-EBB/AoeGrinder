@@ -8,7 +8,9 @@ Welche Datei was macht, steht in der Code-Karte von [handoff.md](handoff.md#code
 ## Ordner (Ist-Stand 11.11.2026)
 | Ordner | Inhalt |
 |---|---|
-| `src/*.ts` (~60 Dateien) | Kern und Spielsysteme: `state`, `util`, `config`, `storage`, `formulas`, `player`, `mobs`/`mobTypes`/`mobKinds`/`abilities`, `cards`, `modifiers`, `meta`/`metaNormalize`, `gear`, `weaponRolls`, `loot`, `skins`, `waves`, `boss`, Zonen (`world`, `zones`, `winterquell`, `mondsee`, …), `render`, `camera`, `input`/`gamepad`/`mobile` |
+| `src/*.ts` (~60 Dateien) | Kern und Spielsysteme: `state`, `util`, `config`, `storage`, `formulas`, `run` (Run-Lebenszyklus), `mobs`/`mobTypes`/`mobKinds`/`abilities`, `cards`, `modifiers`, `meta`/`metaNormalize`, `weaponRolls` (Tabellen in `rollTables`, Waffe/Modell in `equipped`), `loot`, `skins`, `waves`, `boss`, Zonen (`world`, `zones`, `winterquell`, `mondsee`, …), `render`, `camera`, `input`/`gamepad`/`mobile` |
+| `src/player/` (3) | Spieler: `move.ts` (Bewegung, Dodge), `damage.ts` (Schaden, Mana, Regeneration), `xp.ts` (XP, Level-ups, Kartentakt) |
+| `src/gear/` (9) | Gear und Kosmetik: `data` (Tabellen, ohne Imports), `sets`, `clean` (Säubern, rein) + `rules`, `inventory`, `roll`, `shown`, `text`, `apply` |
 | `src/spells/` (40) | ein Spell pro Datei, `core.ts` (Casts, Treffer, Felder), `fx.ts`, `relics.ts`, `supports.ts`, `random.ts` |
 | `src/bosses/` (6) | Boss-Kern, Angriffe, Liste, Regeln, Modelle |
 | `src/mapgen/` (16) | Karten-Generator, seed-fest über `rng.ts` (Reihenfolge der `rng()`-Aufrufe nicht ändern), `layouts/` |
@@ -16,29 +18,30 @@ Welche Datei was macht, steht in der Code-Karte von [handoff.md](handoff.md#code
 | `src/models/` (15) | Figuren (`strichMagier`, `strichKrieger`, Hülle `heroModel.ts`), Gear-/Kosmetik-Teile, Mobs, `weapons/` (Baukasten) |
 | `src/fx/` (10) | alte Spell-Optik, Partikel, Licht/Hitstop, Sound (bleibt neben `vfx/`, Schalter `vfxOld`) |
 | `src/vfx/` (8) | Energie-Shader und Looks pro Schule |
-| `src/ui/` (44, dazu `hud/`, `flavors/`) | Fenster, HUD, Menüs, Shop, Karten, Einstellungen, Dev-Panel; CSS in 10 `.css`-Dateien plus `<style>` in `index.html` und einigen TS-Dateien |
+| `src/ui/` (45, dazu `hud/`, `flavors/`, `heroWindow/`) | Fenster, HUD, Menüs, Shop, Karten, Einstellungen, Dev-Panel; CSS in 10 `.css`-Dateien plus `<style>` in `index.html` und einigen TS-Dateien |
 | `src/i18n/` | `de.ts` (zugleich Rückfall), `en.ts`, `t()`; Prüfung `npm run check:i18n` |
 | `scripts/` | `i18n-check.mjs`, `cycles.mjs` (Import-Kreise, ohne Pakete), `strict.mjs` (`noImplicitAny` für die Liste in `tsconfig.strict.json`) |
-| `tests/` | vitest (nur Tests, nicht im Build): `rng`, `grid`, `meta`, `metaSchema`, `binds`, `figureTable`, Seed-Snapshot `mapSeeds`, Browser-Ersatz `setup/browserStub.ts` |
+| `tests/` | vitest (nur Tests, nicht im Build): `rng`, `grid`, `meta`, `metaSchema`, `metaNormalize`, `gearClean`, `binds`, `figureTable`, Seed-Snapshot `mapSeeds`, Browser-Ersatz `setup/browserStub.ts` |
 
 ## Schichten und Import-Kreise
 Heute gibt es keine durchgesetzte Schichtregel: Logik, Modelle und UI importieren sich gegenseitig. `npm run check:cycles` misst das ab `main.ts` und `vfxLab.ts`:
 
 - Ausgang (Audit, E4): statisch **88/4/2** (94 Module in Kreisen), mit `import()` **102/2** (104)
 - nach E6: statisch und mit `import()` **84/4/2** (90 Module in Kreisen)
+- nach E10: statisch und mit `import()` **56/11/4/3/2** (76 Module in Kreisen). Logik → UI über `hooks.ui` (65), Modell ohne Spiellogik (ARCH-11, 53), dann die Datei-Schnitte: `player.ts` → 4 Teile im Kreis (56), `heroWindow.ts` → 6 Teile im Fenster-Kreis (11). Der große Kreis ist jetzt reine Spiellogik (Spells, Mobs, Spieler, Waffen-Wirkung, Krieger, Bosse-Anbindung); die Fenster bilden einen eigenen Kreis, `fx/frostFx`/`prims`/`spellFx` einen 3er.
 
-Die Werte stehen als Grenze in `scripts/cycles.mjs` (exit 1, wenn größer) und dürfen nur sinken.
+Die Werte stehen als Grenze in `scripts/cycles.mjs` (exit 1, wenn größer) und dürfen nur sinken. Ausnahme mit Begründung im Skript: ein Datei-Schnitt im Kreis zählt jedes Teil einzeln, ohne neue Kante.
 
 ### Rückwege (E6): ein Muster
 Ein Modul weiter unten, das ein Modul weiter oben braucht, importiert es nicht, sondern geht über ein Modul **ohne Imports** (Vorbild `device.ts`). Solche Module werden immer vor ihren Importeuren ausgewertet, die Kanäle stehen also beim Laden, egal wie der Kreis läuft.
-- `src/hooks.ts`: **Kanäle** (`hooks.mobDeath`, `anyHit`, `fireHit`, `spellArea`, `castStart`, `warriorHit`; viele Abonnenten, feste Reihenfolge über `rank`, nicht über die Import-Reihenfolge), **Plätze** (`hooks.spellSwap`, `runEnd`, `xpHold`, `boss`, `switchZone`, `figSay`, `envHook`, `camOverride`; genau eine Umsetzung, `set`/`fn`) und der **Bus** `emit`/`on` für Optik, UI und Erfolge (`kill`, `crit`, `cast`, `hit`, `level`, `ach`). Spielrelevante Folgen (XP, Punkte, Staub, Loot) laufen nie über den Bus, sondern als direkte Aufrufe in fester Reihenfolge.
+- `src/hooks.ts`: **Kanäle** (`hooks.mobDeath`, `anyHit`, `fireHit`, `spellArea`, `castStart`, `warriorHit`; viele Abonnenten, feste Reihenfolge über `rank`, nicht über die Import-Reihenfolge), **Plätze** (`hooks.spellSwap`, `runEnd`, `xpHold`, `boss`, `switchZone`, `figSay`, `envHook`, `camOverride`, `ui` (E10), `warLegendary` (E10); genau eine Umsetzung, `set`/`fn`) und der **Bus** `emit`/`on` für Optik, UI und Erfolge (`kill`, `crit`, `cast`, `hit`, `level`, `ach`). Spielrelevante Folgen (XP, Punkte, Staub, Loot) laufen nie über den Bus, sondern als direkte Aufrufe in fester Reihenfolge.
 - `src/feedback.ts`: Rückmeldung aus der Logik (`combatText`, `showError`, `renderActionbar`, `refreshKeyLabels`, `damageNumber`, `hurtNumber`); `ui/hud.ts` setzt die Umsetzung ein (`connectFeedback`). Logik-Dateien importieren nie `ui/hud`.
-- Run-Reset (E8): `onRunReset(fn, rank)` = Kanal `hooks.runReset`. Jedes System mit Run-Zustand meldet seinen Reset selbst an, `player.ts` `resetGame` ruft nur die Liste; die Ränge (heute 10 … 190, Reihenfolge wie vor E8) stehen in `hooks.ts`. Ein neues System trägt dort seinen Rang ein, nicht in `resetGame`.
+- Run-Reset (E8): `onRunReset(fn, rank)` = Kanal `hooks.runReset`. Jedes System mit Run-Zustand meldet seinen Reset selbst an, `run.ts` `resetGame` ruft nur die Liste; die Ränge (heute 10 … 190, Reihenfolge wie vor E8) stehen in `hooks.ts`. Ein neues System trägt dort seinen Rang ein, nicht in `resetGame`.
 - `src/spells/stats.ts`: Spell-Werte für Formeln und Gear (`stat`, `rune`, `supported`, `echoCost`, `radiusMult` …) ohne Rückimporte; `spells/core.ts` reicht sie weiter.
-- Start in fester Reihenfolge: Module mit DOM beim Laden bekommen `mount()`, `main.ts` ruft sie ausdrücklich (`saveCode`, `achievements`, `settingsView`, `devPanel`, danach `ui/devGame.ts` `mountDev`). Dev-Blöcke melden sich mit `registerDev(key, el)`, Gruppen und Reihenfolge stehen in `DEV_LAYOUT` (`ui/devPanel.ts`); Logik-Dateien bauen keine Dev-UI.
+- Start in fester Reihenfolge: Module mit DOM beim Laden bekommen `mount()`, `main.ts` ruft sie ausdrücklich (`saveCode`, `achievements`, `settingsView`, `devPanel`, danach `ui/devGame.ts` `mountDev`; seit E10 davor die Fenster, siehe unten). Das Charakterfenster (`ui/heroWindow/`) baut sein DOM-Gerüst erst in `mount()`. Dev-Blöcke melden sich mit `registerDev(key, el)`, Gruppen und Reihenfolge stehen in `DEV_LAYOUT` (`ui/devPanel.ts`); Logik-Dateien bauen keine Dev-UI.
 - Keine neuen Listen an Funktionen, Setter, `setTimeout`- oder `import()`-Tricks mehr.
 - CSS-Reihenfolge (Kaskade) steht oben in `main.ts` (alle `.css`-Imports in der Build-Reihenfolge von vor E6); neue `.css`-Dateien dort eintragen, sonst hängt die Kaskade wieder an der Modul-Reihenfolge.
-- Offen: Logik → UI über `player.ts` (`showCards`, `showRunResult`, `ui/scoreHud`), `waves.ts` (`renderMenu`) und `input.ts`/`gamepad.ts`/`mobile.ts` (Pause, Charakterfenster, Belegung). Das Kappen bringt den Kreis auf 66, ändert aber die Lade-Reihenfolge der UI-Module und damit die Reihenfolge von 9 Capture-Keydown-Listenern mit `stopImmediatePropagation`, die CSS-Kaskade (`cards.css`, `heroWindow.css`), rAF-Reihenfolge und den Stapel `loadModal`/`portalVeil`. Erst wenn diese UI-Module ihre Listener und ihr DOM in `mount()` anlegen (feste Reihenfolge in `main.ts`), ist das ein kleiner Schritt.
+- Logik → UI (E10): Spiel und Eingabe öffnen oder fragen Fenster und Menüs nur über den Platz `hooks.ui` (Typ `UiApi` in `hooks.ts`: Kartenwahl, Run-Ergebnis, Hauptmenü/Pause, Charakterfenster, Tastenbelegung). `ui/connect.ts` setzt die Umsetzung ein, `main.ts` ruft `connectUi()` als Erstes (vor jedem Ereignis). Damit die Lade-Reihenfolge nichts mehr bestimmt, legen die Fenster ihre Fenster-Listener, rAF-Schleifen und Blenden in `mount()` an; `main.ts` ruft sie in der Reihenfolge von vorher: `mainMenu`, `heroWindow`, `messages`, `menus`, `shop`, `worldMap`, `leaderboardView`, `scoreHud`, `portal`, `boss` (Escape-Kette der Capture-Keydown-Listener mit `stopImmediatePropagation`, rAF Menü-Schwenk → Meldungen → Punkte → Loop, Stapel Ladebildschirm/Blende z 30 und Punkte/Boss-Leiste z 2). Neue Fenster-Listener mit `stopImmediatePropagation` gehören in `mount()` und in diese Liste. `vfxLab.ts` ruft dieselben `mount()` und lädt die CSS-Dateien in der Reihenfolge von vorher. Noch beim Laden (Reihenfolge ohne Wirkung, geprüft): Bubble-Listener von tooltip, input, legends, figEvents, boss, hud/layout; DOM von tooltip, confirm, lootView, useKey, dodge, realMen, legends, flavors, hud/layout, loadScreen, worldMap, leaderboardView, scoreHud, waves.
 
 Ziel (aus [audit/gesamt.md](audit/gesamt.md) und ARCH-01 in [audit/arch.md](audit/arch.md)): gerichteter Graph `base` (state, util, config, i18n, storage) → `core` (formulas, rng, Daten-Tabellen) → `sim` (mobs, spells, player, gear …) → `view` (fx, vfx, models) → `ui` → `main`, Kanten nur nach unten, Rückwege über Events. Der Fahrplan dorthin (E6, E10) steht in `docs/audit/gesamt.md`.
 
@@ -58,7 +61,7 @@ Ein Begriff pro Konzept. Gespeicherte IDs bleiben, wie sie sind, und werden übe
 | Schule/Element | `ElementId` = `ELEMENTS`-Keys (`frost│feuer│blitz│seuche│arkan`), `elementOfFigure()`, `elementOfTag()`, `spellElement(id)` (`config.ts`) | Element-IDs in Waffen/Gear |
 | Spielermodell | `heroModel` (`models/heroModel.ts`), `heroModel.figureId`, `heroModel.skinId` | – |
 | Skin (Set-Skin, Krieger-Skin) | `skinId`, `forcedSkin`, `refreshSkin`; in den Viewer-Modellen (`strichMagier`/`strichKrieger`) intern weiter `look` | `meta.skins` |
-| Kosmetik-Teil | `KOSMETIK`, `kosmetikIn`, `wearKosmetik`, `hasKosmetik`, `kosmetikShown` (`gear.ts`) | `meta.looks`, `meta.lookWear`, Code-Felder `lk`/`lw` |
+| Kosmetik-Teil | `KOSMETIK`, `kosmetikIn`, `wearKosmetik`, `hasKosmetik`, `kosmetikShown` (`gear/inventory.ts`, `gear/shown.ts`) | `meta.looks`, `meta.lookWear`, Code-Felder `lk`/`lw` |
 | Spell-Optik | `*Look` (`vfx/*Look.ts`) – nur hier heißt etwas „Look“ | – |
 | Viewer-Skin der Strichmagier | `palette` (`fire/ice/blitz/plague/qm`, `paletteOf()`) | – |
 | Spell-Schule (Karte, Farbe) | Feld `cls` (`frost/fire/lightning/plague/arcane/…`) | – |
@@ -67,7 +70,7 @@ Ein Begriff pro Konzept. Gespeicherte IDs bleiben, wie sie sind, und werden übe
 | Tasten-Aktion | Bind-IDs `nova/ae/bliz/coc/slot7/blink/drink/slot8`, Klartext `BIND_LABEL` und `BIND_SLOT` (`config.ts`) | `frostgrind.binds.v1`, Hotbar-/Pad-Store |
 | Bodenzauber-Zielkreis | `groundCursor` (`fx/spellFx.ts`) | – |
 | Map freigeschaltet | `isThemeUnlocked` (`mapgen/progress.ts`), `isMapUnlocked` (Hauptmenü); „Open“ heißt nur „Fenster offen“ | `meta.maps` (Theme-IDs) |
-| Säubern beim Laden | `clean*` (`cleanWeapon`, `cleanGearItem`, `cleanGear`, `cleanSkins` …), Prüfen `isValid*` | – |
+| Säubern beim Laden | `clean*` (`cleanWeapon`, `cleanGearItem`/`cleanGearWith` in `gear/clean.ts`, `cleanGear`, `cleanMaps` in `mapgen/mapOrder.ts`, `cleanSkins` …), Prüfen `isValid*` | – |
 | Spuren-Regeln | `trailEffects.ts` (`updateTrailEffects`): Feuerspur Schaden, Frostspur Slow | – |
 
 ## Entscheidungen
@@ -81,3 +84,6 @@ Ein Begriff pro Konzept. Gespeicherte IDs bleiben, wie sie sind, und werden übe
 
 ## Bausätze der Modelle (Audit E9)
 `models/strichKit.ts`: was alle Strich-Figuren gleich brauchen (Toon-Verlauf `grad`, Status-Tönungen `TINTS`, `capDown`, `prep` für Vertex-Farben, Lichtrand `RIM`/`rimChunk`, Zwei-Knochen-`ik`), genutzt von `strichMagier`, `strichKrieger`, `strichMob` und `creatures` (nur `TINTS`). `models/partKit.ts`: Material-Beschreibung `Mat`, Geometrie-Helfer, Viewer-Maße `VP`/`FIT` und `convert()` (Teilbaum → Teile am Körper-Mesh, Bone-Hook je Aufrufer) für `gearParts`, `kosmetikParts` und `ui/itemThumb.ts`; Segmentzahlen bleiben je Aufrufer. `fx/pointPool.ts`: Punkt-Partikelpool einer Figur (`makePointPool`), ohne `render.ts`, damit `/strich.html` ohne Spiel-Module bleibt. Die Zahlen sind die der Viewer: eine Änderung dort trifft alle Figuren.
+
+## Modell ohne Spiellogik (E10, ARCH-11)
+`models/heroModel.ts` importiert keine Spiellogik mehr: die ausgerüstete Waffe und ihr Modell kommen aus `equipped.ts` (nur `meta`, `rollTables`, Modell-Bau), die legendäre Krieger-Waffe über den Platz `hooks.warLegendary` (`realMen.ts` setzt ihn beim Laden). `fx/frostFx.ts` `coneNew` bekommt die Hand als Parameter statt `heroModel` zu importieren. Gear und Kosmetik an der Figur liefert `gear/shown.ts` (außerhalb des Kreises). Neue Daten fürs Modell kommen über solche reinen Module oder einen Platz in `hooks.ts`, nicht über einen Import von `weaponRolls`, `realMen` oder anderer Spiellogik.
