@@ -7,6 +7,89 @@ import type { Vector3 } from 'three';
 // Faktoren je Spell aus Karten und Gear (spells/stats.ts stat()): dmg, mana, radius, dazu cast, cd, dur …
 export interface SpellStat { dmg: number; mana: number; radius: number; [k: string]: number }
 
+// ---------- Mob (mobs.ts spawnMob) ----------
+// Aggro-Zustand eines Mobs: idle → combat (enterCombat), evade (zurück nach Hause), flee (Panik, mobs.ts startFlee / realMen.ts Schrei)
+export type MobState = 'idle' | 'combat' | 'evade' | 'flee';
+
+// Die häufigen Felder (KOMP-01/09). Mobs tragen gut 200 verschiedene Felder (Fähigkeiten, Bosse, Objekte, Spells setzen eigene),
+// der Rest läuft über die Index-Signatur. …Until = aktiv bis Spielzeit in ms.
+export interface Mob {
+  // --- Grundwerte beim Spawn ---
+  type: any;                    // Mob-Typ aus MOB_TYPES (mobTypes.ts) oder Ersatz-Typ (Boss, Kind) (unklar)
+  ability: any;                 // Fähigkeit aus ABILITIES (abilities.ts) oder null (unklar)
+  model: any;                   // Modell mit root (Object3D), update, setMood … (models/) (unklar)
+  plate: HTMLDivElement;        // Namensschild im #overlay
+  plateHp: HTMLElement;         // Lebensbalken im Namensschild
+  plateLv: HTMLElement;         // Level im Namensschild
+  plateInf?: HTMLElement;       // Zusatz im Namensschild (Champion-Affixe, Kind)
+  pos: Vector3;                 // = model.root.position
+  home: Vector3;                // Spawnpunkt (Evade läuft dorthin zurück)
+  packId: number;
+  level: number;
+  hp: number;
+  maxHp: number;
+  speedMul: number;             // Tempo-Faktor des Typs (Pack-Tote erhöhen ihn, abilities.ts)
+  dmgMulT: number;              // Schadensfaktor des Themes (mapgen/difficulty.ts)
+  speed?: number;               // aktuelles Tempo (Eis-Gleiten, Winterquell)
+
+  // --- Aggro und Bewegung ---
+  state: MobState;
+  assistAt: number;             // Social Aggro: hilft ab (ms), 0 = nicht gerufen
+  nextSwing: number;            // nächster Nahkampfschlag (ms)
+  attackAt: number;             // letzter Angriff (ms), player.ts liest die Todesursache daraus
+  hitAt?: number;               // zuletzt getroffen (ms)
+  moving: boolean;
+  leap: any;                    // laufender Sprung { x0, y0, z0, x1 … } oder null (abilities.ts) (unklar)
+  fleeRolled: boolean;          // Flucht-Wurf schon gemacht
+  fleeTarget: Mob | null;       // Helfer, zu dem der Mob flieht
+  fleeUntil: number;
+  flies?: boolean;              // ignoriert Wände (mobs.ts, collision.ts)
+  noKnock?: boolean;            // kein Rückstoß
+
+  // --- Tod und Sichtbarkeit ---
+  dead: boolean;
+  deathAt: number;              // Todeszeit (ms), main.ts räumt Leichen nach 4 s weg
+  hidden: boolean;              // getarnt (stealth), Modell unsichtbar
+  keep?: boolean;               // wird beim Pack-Auffüllen nicht ersetzt (Dieb, Objekte)
+  animDt?: number;              // gesammelte Zeit für die Modell-Animation (gedrosselt)
+
+  // --- Kontrolle und Dauereffekte ---
+  rootUntil: number;
+  rootLook?: any;               // Optik der Wurzel/des Eises (unklar)
+  slowUntil: number;
+  slowPct: number;
+  shockUntil?: number;          // Blitz: Rüstung runter
+  wetUntil?: number;
+  sheepUntil?: number;          // Legende: Schaf
+  cagedUntil?: number;          // Käfig-Fläche
+  hasteUntil?: number;          // Zone: Eile
+  shieldUntil?: number;         // Fähigkeit: Schild
+  markUntil?: number;
+  absorbed?: boolean;           // Kind-Schild hat einen Treffer gehalten
+  kindShield?: any;             // Schild des Kinds (mobKinds.ts) oder null (unklar)
+  poison?: { dps: number; until: number; next: number; step: number } | null;
+  burn?: { dps: number; until: number } | null;
+  plague?: { stacks: number; until: number; popped?: boolean; [k: string]: any } | null;   // Seuche-Mal (plagueMarks.ts)
+  web?: { links: any; until: number; [k: string]: any } | null;   // Netz (abilities.ts), Form von links (unklar)
+  sandAcc?: number;             // Sandsturm-Schaden, gesammelt bis ganze Punkte
+  lavaAcc?: number;             // Lava-Schaden, gesammelt
+  trailTickAt?: number;         // Feuerspur: nächster Tick
+
+  // --- Sonderrollen ---
+  boss?: boolean;
+  bossTint?: string;            // Färbung des Boss-Namens ('boss', 'boss2' …)
+  champion?: { affixes: any } | null;   // Champion mit Affixen (champions.ts)
+  kind?: { theme: string; cat: string; zus: any };   // Mob-Kind (mobKinds.ts) (zus unklar)
+  thief?: boolean;              // Schatzdieb (objects/thief.ts)
+  mimic?: boolean;              // Mimic (objects/)
+  cow?: boolean;
+  wave?: number;                // Welle, aus der der Mob stammt (waves.ts)
+  xpMul?: number;               // Faktor auf XP, 0 = keine
+  qCounted?: boolean;           // Krieger: Kill für Q schon gezählt
+
+  [k: string]: any;             // übrige Felder (Fähigkeiten, Bosse, Spells)
+}
+
 export interface GameState {
   // --- Zeit und Pause ---
   now: number;                  // Spielzeit in ms (läuft nur, wenn nicht pausiert)
@@ -14,7 +97,7 @@ export interface GameState {
   runNo?: number;               // zählt Runs hoch (player.ts resetGame), objects/ baut damit neu
 
   // --- Mobs und Packs ---
-  mobs: any[];                  // alle Mobs der Zone (mobs.ts spawnMob), tote bleiben bis removeMob drin
+  mobs: Mob[];                  // alle Mobs der Zone (mobs.ts spawnMob), tote bleiben bis removeMob drin
   packCounter: number;          // letzte vergebene Pack-ID (++ beim Spawnen)
   packDeaths: Record<number, number>;   // Tote je Pack-ID (abilities.ts: Rest des Packs wird schneller)
   newMob?: { text: string; at: number } | null;   // Banner „Neuer Gegner“/Portal (ui/messages)

@@ -319,7 +319,7 @@ export function updateHud() {
     m.plate.style.left = `${p.x}px`;
     m.plate.style.top = `${p.y - 24}px`;
     m.plateHp.style.width = `${m.hp / m.maxHp * 100}%`;
-    m.plateLv.textContent = m.level;
+    m.plateLv.textContent = String(m.level);
     m.plateLv.style.color = xpColor(m.level);
     const inf = markStacks(m);   // Seuchen-Mal: Stapel am Namensschild
     if (inf || m.plateInf) {
