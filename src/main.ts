@@ -61,7 +61,7 @@ import { poisoned } from './plagueMarks';
 import { phoenixRise } from './spells/phoenix';
 import { updateFigures } from './figures';
 import { updateLoot } from './loot';
-import { updatePortal, connectPortal } from './portal';
+import { updatePortal } from './portal';
 import { updateMapProgress } from './mapgen/progress';
 import './ui/worldMap';
 import { syncObjects, updateObjects } from './objects';
@@ -69,11 +69,12 @@ import { updateLegends } from './legends';
 import { meltScale } from './spells/plague';
 import { meterStage, meterOverheated, meterSchool, meterValue } from './schoolMeter';
 import { batteryMode, batteryMax } from './battery';
-import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale, bossActive } from './boss';
-import { updateFigEvents, setFigSay } from './figEvents';
+import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
+import { updateFigEvents } from './figEvents';
+import { hooks } from './hooks';
 initGear(normalizeMeta);   // gespeicherten Stand säubern, sobald alle Module geladen sind
-setFigSay(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
-connectPortal({ switchZone, bossActive });
+hooks.figSay.set(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
+hooks.switchZone.set(switchZone);   // Portal (portal.ts)
 
 function update(dt) {
   updatePadCamera(dt);

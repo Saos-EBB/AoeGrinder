@@ -3,14 +3,14 @@
 // Hier: Auswahl, Arena, Kamera und Lock-on, Boss-Leiste, Körper und ihre Steuerung, Phase 2, Ende. Angriffe in bosses/attacks.ts, Regeln in bosses/rules.ts.
 
 import * as THREE from 'three';
-import { connectBoss } from './waves';
+import { hooks } from './hooks';
 import { device } from './device';
 import { state, player } from './state';
 import { $, clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
 import { mobMaxHp, maxHp, xpForKill } from './formulas';
 import { scene, camera } from './render';
-import { cam, setCamOverride } from './camera';
+import { cam } from './camera';
 import { pad } from './gamepad';
 import { mouse, mouseBtn } from './input';
 import { zone } from './world';
@@ -24,7 +24,7 @@ import { run } from './score';
 import { meta, saveMeta, earnDust, milestone } from './meta';
 import { combatText } from './ui/hud';
 import { fmtTime } from './ui/fmt';
-import { completeRun, setRunEndHook, setXpHold, releaseXp } from './player';
+import { completeRun, releaseXp } from './player';
 import { particles } from './fx/particles';
 import { ringFx } from './fx/spellFx';
 import { shockwave, lightFlash, hitstop } from './fx/impact';
@@ -65,7 +65,7 @@ let lastLevel = 1;
 let lockOn = true;
 
 // ---------- Kamera: blendet in B.cam.blendMs in die Boss-Sicht und zurück ----------
-// Hängt sich über setCamOverride in updateCamera (camera.ts), Wackeln und Kamera-Ruck laufen danach wie immer
+// Hängt sich über hooks.camOverride in updateCamera (camera.ts), Wackeln und Kamera-Ruck laufen danach wie immer
 let camK = 0, camIn = false, camYaw = 0, baseFov = 55, saved = null;
 const camBoss = new THREE.Vector3(), _pos = new THREE.Vector3(), _look = new THREE.Vector3();
 function bossCam(c, target) {
@@ -86,13 +86,13 @@ function camStart() {
   if (!camIn && camK === 0) { baseFov = camera.fov; saved = { dist: cam.dist, pitch: cam.pitch }; }
   camIn = true;
   camYaw = player.facing + cam.offset;
-  setCamOverride(bossCam);
+  hooks.camOverride.set(bossCam);
 }
 function camEnd(instant = false) {
   camIn = false;
   if (saved) { Object.assign(cam, saved); saved = null; }   // Zoom und Neigung waren im Kampf gesperrt
   if (instant) camK = 0;
-  if (camK === 0) { setCamOverride(null); camera.fov = baseFov; camera.updateProjectionMatrix(); }
+  if (camK === 0) { hooks.camOverride.set(null); camera.fov = baseFov; camera.updateProjectionMatrix(); }
 }
 function updateCam(dt) {
   if (!camIn && camK === 0) return;
@@ -523,7 +523,7 @@ function cleanup(instant = false) {
 
 // Läuft der Kampf? Dann pausiert der Mob-Spawn (main.ts)
 export const bossBusy = () => !!boss;
-setXpHold(bossBusy);
+hooks.xpHold.set(bossBusy);
 
 // Aus updateVisuals in main.ts, vor den Mob-Modellen: Blickrichtung, Leiste. Neuer Run oder Zonenwechsel räumt den Kampf ab
 export function updateBossVisuals(dt) {
@@ -558,9 +558,9 @@ export function updateBossVisuals(dt) {
   $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(($('devBossPick') as HTMLSelectElement).value); });
 }
 // Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
-setRunEndHook(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
+hooks.runEnd.set(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
 // Wellen: nach jeder Welle ein Boss, die Welle wartet auf sein Ende
-connectBoss({ start: () => startBoss(), active: bossActive });
+hooks.boss.set({ start: () => startBoss(), active: bossActive });
 
 // Für Tests
 (window as any).__boss = {

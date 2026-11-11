@@ -14,6 +14,7 @@ import { collectAll } from './loot';
 import { addXpMul } from './xpBonus';
 import { t } from './i18n';
 import { portalMapSeed } from './mapgen/rng';
+import { hooks } from './hooks';
 
 export const PORTAL = {
   levels: [25, 50, 75],       // PH: Packs
@@ -26,9 +27,7 @@ export const PORTAL = {
   landmarkPulse: 2.2,         // PH: Landmarke leuchtet so viel heller, solange das Portal offen ist
 };
 
-// Anbindung aus main.ts (sonst Import-Kreis über player.ts / boss.ts)
-let api = { switchZone: (_id: string) => {}, bossActive: () => false };
-export function connectPortal(a: typeof api) { api = a; }
+// Zonenwechsel und Boss über hooks.ts (sonst Import-Kreis über player.ts / boss.ts)
 
 type Portal = { pos: THREE.Vector3; at: number; warned?: boolean; zone: any; seed: number; group: THREE.Group; glow: { mesh: THREE.Mesh; base: THREE.Color } | null };
 let portal: Portal | null = null, done = 0, wasBoss = false, fading = false, taken = 0;
@@ -95,7 +94,7 @@ function enter() {
     collectAll();          // Boden-Drops kommen mit (loot.ts)
     closePortal();
     portalMapSeed();       // Seed der nächsten Map folgt aus dem Start-Seed des Runs (mapgen/rng.ts)
-    api.switchZone(zoneId);    // gleiches Theme, neue Map, Packs neu
+    hooks.switchZone.fn(zoneId);    // gleiches Theme, neue Map, Packs neu
     player.invulnUntil = state.now + PORTAL.safeMs;
     taken++;
     state.newMob = { text: t('portal.through', { n: taken }), at: state.now };
@@ -108,7 +107,7 @@ function enter() {
 export function updatePortal() {
   if (portal && (portal.zone !== zone || portal.seed !== zone.seed)) closePortal();   // Dev: Zone gewechselt
   if (!zone.gen || player.dead) return;
-  const boss = api.bossActive();
+  const boss = hooks.boss.fn.active();
   if (mobMode === 'waves') { if (wasBoss && !boss) openPortal(); }
   else if (!portal && done < PORTAL.levels.length && player.level >= PORTAL.levels[done]) {
     if (openPortal()) done = PORTAL.levels.filter(l => player.level >= l).length;

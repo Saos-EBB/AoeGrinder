@@ -18,7 +18,7 @@ import { resolve } from './collision';
 import { act, pickGround, mouse } from './input';
 import { die } from './player';
 import { renderActionbar } from './ui/hud';
-import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow, setSpellSwap } from './spells/core';
+import { makeCtx, mobsInRadius, hasRune, stat, cdEnd, startCd, stopDrink, supported, applySlow } from './spells/core';
 import { activeModIds } from './modifiers';
 import { UNIT, mods } from './config';
 import { pdRateMul } from './dodge';
@@ -28,7 +28,7 @@ import { $, rand, clamp } from './util';
 
 import { after, updateMelee, clearMelee, moveInWindow, inWindow, mobsOnLine, forward, stepForward } from './melee';
 import { t } from './i18n';
-import { onMobDeath, onWarriorHit } from './hooks';
+import { hooks, onMobDeath, onWarriorHit } from './hooks';
 
 // Alle Zahlen hier, auch die der Runen. Wirbelwind [Classic]-Radius: docs/handoff.md; alles andere ist // PH
 const REALMEN = {
@@ -173,7 +173,7 @@ export function setWarLegendary(id: string | null) {
 export const NOXUS = { ms: 8000, dmg: 0.4 };
 const NOXUS_DMG = NOXUS.dmg;
 const LG = (): any => (legendary && activeModIds().includes('realmen') ? LEGENDARY[legendary] : null);
-setSpellSwap(id => LG()?.swap[id] ?? id);
+hooks.spellSwap.set(id => LG()?.swap[id] ?? id);
 let stunImmuneUntil = 0, chickenUntil = 0;
 // Sions Axt: untot, Vernichtender Hieb (Laden), Seelenofen, Bowling-Mob, Ansturm
 let undeadUntil = 0, undeadReadyAt = 0, rushBuffUntil = 0, sq = null, sw = null, bowl = null, rush = null;

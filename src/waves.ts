@@ -13,6 +13,7 @@ import { run } from './score';
 import { resetGame, completeRun } from './player';
 import { renderMenu } from './ui/mainMenu';
 import { t } from './i18n';
+import { hooks } from './hooks';
 
 // Gegner pro Welle = base + perWave × (Welle − 1); kommen mit perSecond pro Sekunde, höchstens maxPerFrame pro Frame
 export const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
@@ -22,9 +23,6 @@ const CHOICES = [
   { name: t('mobmode.waves'), mode: 'waves', title: t('mobmode.wavesTip', { n: WAVES.goal }) },
 ];
 
-// Boss-Anbindung: boss.ts meldet sich hier an (sonst Import-Kreis über player.ts)
-let bossApi = { start: () => false, active: () => false };
-export function connectBoss(api: typeof bossApi) { bossApi = api; }
 
 // step: spawn (Gegner kommen), clear (alle da, Rest töten), boss (Boss läuft), pause (kurz bis zur nächsten Welle)
 let step = 'pause', toSpawn = 0, due = 0, stepAt = 0, fps = 60, lastFrame = performance.now();
@@ -61,9 +59,9 @@ export function updateWaves(dt) {
     for (let n = 0; n < WAVES.maxPerFrame && due >= 1 && toSpawn > 0; n++, due--) if (spawnFromEdge()) toSpawn--;
     if (toSpawn <= 0) step = 'clear';
   } else if (step === 'clear' && waveLeft() === 0) {
-    step = bossApi.start() ? 'boss' : 'pause';   // ohne passenden Boss gleich weiter
+    step = hooks.boss.fn.start() ? 'boss' : 'pause';   // ohne passenden Boss gleich weiter
     stepAt = state.now;
-  } else if (step === 'boss' && !bossApi.active()) {
+  } else if (step === 'boss' && !hooks.boss.fn.active()) {   // Boss-Anbindung über hooks.ts (sonst Import-Kreis über player.ts)
     if (run.wave >= WAVES.goal) return completeRun(t('cause.wave', { n: WAVES.goal }));
     step = 'pause';
     stepAt = state.now;

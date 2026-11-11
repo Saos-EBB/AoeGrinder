@@ -6,6 +6,7 @@ import { heightAt, obstacles } from './world';
 import { addTrauma, shakeOffset } from './wucht';
 import { device } from './device';
 import { wrap } from './util';
+import { hooks } from './hooks';
 
 // Kamera wie in WoW: Orbit um den Spieler
 export const cam = { offset: 0, pitch: 0.45, dist: 16 };
@@ -42,9 +43,6 @@ export function updateAutoCam(dt, dragging) {
   cam.offset = now + wrap(target - now) * (1 - Math.exp(-AUTO_CAM_RATE * dt / 1000));
 }
 
-// Fremde Kamera (boss.ts): bekommt die fertige normale Position und das Ziel, setzt Position und Blick selbst
-let override = null;
-export function setCamOverride(fn) { override = fn; }
 
 let lastShake = performance.now();
 export function updateCamera() {
@@ -64,6 +62,7 @@ export function updateCamera() {
   if (nearest < 1) camera.position.lerpVectors(target, camera.position, Math.max(0.15, nearest - 0.05));
   const minY = heightAt(camera.position.x, camera.position.z) + 0.5;   // nicht unter den Boden
   if (camera.position.y < minY) camera.position.y = minY;
+  const override = hooks.camOverride.fn;   // Fremde Kamera (boss.ts)
   if (override) override(camera, target); else camera.lookAt(target);
   const sh = shakeOffset(performance.now() - lastShake);
   lastShake = performance.now();

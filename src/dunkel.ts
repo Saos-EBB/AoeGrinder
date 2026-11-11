@@ -5,12 +5,13 @@ import { state, player } from './state';
 import { rand, clamp } from './util';
 import { PERF } from './config';
 import { device } from './device';
-import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv, setEnvHook } from './render';
+import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv } from './render';
 import { cam } from './camera';
 import { zone, terrain } from './world';
 import { mage } from './models/mage';
 import { blizCursor } from './fx/spellFx';
 import { uiSettings } from './ui/uiSettings';
+import { hooks } from './hooks';
 
 // Alle Zahlen des Modus. Alles // PH
 const D = {
@@ -47,7 +48,7 @@ function darken() {
 
 export function initDunkel() {
   scene.fog = fog;
-  setEnvHook(darken);
+  hooks.envHook.set(darken);
   setEnv(zone.env);
   addEventListener('uisettings', darken);   // Helligkeit im Einstellungs-Menü wirkt sofort
   renderer.shadowMap.enabled = true;

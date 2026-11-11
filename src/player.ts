@@ -47,6 +47,7 @@ import { resetLoot } from './loot';
 import { resetPortal } from './portal';
 import { milestone, MILESTONES } from './meta';
 import { figEvent } from './figEvents';
+import { hooks } from './hooks';
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
@@ -199,19 +200,15 @@ function regenerate(dt) {
   }
 }
 
-// boss.ts: true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod
-let runEndHook = () => false;
-export const setRunEndHook = fn => { runEndHook = fn; };
-// boss.ts: im Bosskampf wird XP gesammelt und erst nach dem Kampf gutgeschrieben (kein Level-up mitten im Kampf)
-let xpHold = () => false, heldXp = 0;
-export const setXpHold = fn => { xpHold = fn; };
+// boss.ts (hooks.ts xpHold): im Bosskampf wird XP gesammelt und erst nach dem Kampf gutgeschrieben (kein Level-up mitten im Kampf)
+let heldXp = 0;
 export function releaseXp() { const xp = heldXp; heldXp = 0; if (xp > 0) gainXp(xp); }
 export function levelRefill() {       // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
   player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
   if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
 }
 export function gainXp(xp) {
-  if (xpHold()) { heldXp += xp; return; }
+  if (hooks.xpHold.fn()) { heldXp += xp; return; }
   const fromLevel = player.level;
   player.xp += xp;
   while (player.level < LEVEL_MAX && player.xp >= xpNeeded()) {
@@ -225,7 +222,7 @@ export function gainXp(xp) {
   if (player.level >= MILESTONES.lvl100) milestone('lvl100');   // Meilenstein: Level 100 in einem Run
   announceNewMobs(fromLevel);
   noteSplits(fromLevel);
-  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return runEndHook() ? undefined : completeRun(t('cause.lv100'));   // #boss: erst der finale Boss (boss.ts)
+  if (mobMode === 'packs' && player.level >= LEVEL_MAX && fromLevel < LEVEL_MAX) return hooks.runEnd.fn() ? undefined : completeRun(t('cause.lv100'));   // #boss: erst der finale Boss (boss.ts, hooks.ts runEnd)
   if (player.level > fromLevel) { levelUpFx(); figEvent('level'); }
   updateCardQueue();
 }

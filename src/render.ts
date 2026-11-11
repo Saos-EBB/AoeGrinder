@@ -6,6 +6,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { PERF } from './config';
 import { viewW, viewH } from './device';
+import { hooks } from './hooks';
 
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, PERF.maxPixelRatio));
@@ -17,9 +18,7 @@ document.body.prepend(renderer.domElement);
 
 export const scene = new THREE.Scene();
 const fog = scene.fog = new THREE.Fog(0xffffff, 45, 185);
-// Läuft nach jeder Änderung an Nebel und Himmel. dunkel.ts setzt ihn, das VFX-Labor läuft ohne.
-let envHook = null;
-export function setEnvHook(fn) { envHook = fn; }
+// Nach jeder Änderung an Nebel und Himmel läuft hooks.envHook (dunkel.ts setzt ihn, das VFX-Labor läuft ohne).
 
 export const camera = new THREE.PerspectiveCamera(55, viewW() / viewH(), 0.3, 700);
 
@@ -87,7 +86,7 @@ export function blendFog(e, k, color, near, far) {
   skyUniforms.horizon.value.copy(fog.color);
   skyUniforms.top.value.set(e.top).lerp(tmpColor, k);
   skyUniforms.mid.value.set(e.mid).lerp(tmpColor, k);
-  envHook?.();
+  hooks.envHook.fn?.();
 }
 const tmpColor = new THREE.Color();
 
@@ -100,7 +99,7 @@ export function setEnv(e) {
   sun.color.set(e.sun); sun.intensity = e.sunPower; sun.position.set(...(e.sunPos as [number, number, number]));
   skyUniforms.top.value.set(e.top); skyUniforms.mid.value.set(e.mid); skyUniforms.horizon.value.set(e.fog);
   skyUniforms.sunDir.value.copy(sun.position).normalize(); skyUniforms.sunAmt.value = e.sunDisc;
-  envHook?.();
+  hooks.envHook.fn?.();
 }
 
 addEventListener('resize', () => {

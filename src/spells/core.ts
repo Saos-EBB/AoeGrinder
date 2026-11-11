@@ -36,9 +36,8 @@ export function modRule(key): any { return activeMods().find(m => m[key])?.[key]
 export const spellAllowed = id => tagsAllowed(SPELLS[id].tags) || !!state.poolExtra?.includes(id);
 // Pool der Figur (modifiers.ts pool): nur daraus kommen „Neuer Spell“-Karten. Ohne Pool gilt die Schule wie bisher
 export const figurePool = (): string[] | undefined => modRule('pool')?.map(swapSpell);
-// Legendäre Krieger-Waffe (realMen.ts): ersetzt einzelne Spells in Start-Kit und Pool. Ablage an der Funktion: realMen.ts meldet sich im Import-Kreis vor dem Rest dieser Datei an
-function swapSpell(id: string): string { return (swapSpell as any).fn?.(id) ?? id; }
-export function setSpellSwap(fn: (id: string) => string) { (swapSpell as any).fn = fn; }
+// Legendäre Krieger-Waffe (realMen.ts, hooks.ts spellSwap): ersetzt einzelne Spells in Start-Kit und Pool
+function swapSpell(id: string): string { return hooks.spellSwap.fn(id) ?? id; }
 export function tagsAllowed(tags) { return activeMods().every(m => !m.onlyTag || tags.includes(m.onlyTag)); }
 
 export function startKit() {

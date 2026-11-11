@@ -6,6 +6,7 @@
 import { state, player } from './state';
 import { maxMana } from './formulas';
 import { run } from './score';
+import { hooks } from './hooks';
 
 export type FigEvent = 'kill' | 'crit' | 'cast' | 'hit' | 'level' | 'streak' | 'idle' | 'sprint';
 const FIG_EV = {   // PH
@@ -27,9 +28,7 @@ export function figEvent(e: FigEvent, on?: boolean) {
 }
 
 // Sprechblasen der Kosmetik (Määäh!, MUUUH!, *gääähn*): über die schwebende Schrift (main.ts setzt combatText ein)
-let sayFn: (text: string) => void = () => {};
-export const setFigSay = (fn: (text: string) => void) => { sayFn = fn; };
-export const figSay = (text: string) => sayFn(text);
+export const figSay = (text: string) => hooks.figSay.fn(text);
 
 // Kill: zählt für die Serie jeden Kill, meldet aber höchstens einen je gap.kill
 let streakAt: number[] = [];

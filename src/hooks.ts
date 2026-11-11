@@ -13,6 +13,10 @@ function channel<F extends Fn>(): Channel<F> {
   const fns: F[] = [];
   return { fns, on: fn => { fns.push(fn); } };
 }
+function slot<F>(fallback: F): Slot<F> {
+  const s: Slot<F> = { fn: fallback, set: fn => { s.fn = fn; } };
+  return s;
+}
 
 export const hooks = {
   // Tod eines Mobs, vor allem anderen in killMob (mobs.ts): spells/plague, realMen, loot, mobKinds, legends, objects/chests, objects/thief
@@ -27,6 +31,24 @@ export const hooks = {
   castStart: channel<(id: string) => void>(),
   // Treffer-Moment der Nahkampf-Animation (models/mage.ts): realMen.ts
   warriorHit: channel<(kind: string, x: number, z: number, i: number) => void>(),
+
+  // Plätze: genau eine Umsetzung
+  // Legendäre Krieger-Waffe ersetzt Spells in Start-Kit und Pool (realMen.ts setzt, spells/core.ts fragt)
+  spellSwap: slot<(id: string) => string | undefined>(id => id),
+  // true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod (boss.ts setzt, player.ts gainXp fragt)
+  runEnd: slot<() => boolean>(() => false),
+  // true = XP wird gesammelt und erst nach dem Bosskampf gutgeschrieben (boss.ts setzt, player.ts gainXp fragt)
+  xpHold: slot<() => boolean>(() => false),
+  // Boss-Anbindung für Wellen und Portal (boss.ts setzt, waves.ts und portal.ts fragen)
+  boss: slot<{ start: () => boolean; active: () => boolean }>({ start: () => false, active: () => false }),
+  // Zonenwechsel durchs Portal (main.ts setzt player.ts switchZone ein, portal.ts ruft)
+  switchZone: slot<(id: string) => void>(() => {}),
+  // Sprechblasen der Kosmetik (main.ts setzt die schwebende Schrift ein, figEvents.ts figSay ruft)
+  figSay: slot<(text: string) => void>(() => {}),
+  // Läuft nach jeder Änderung an Nebel und Himmel (dunkel.ts setzt, render.ts ruft; das VFX-Labor läuft ohne)
+  envHook: slot<(() => void) | null>(null),
+  // Fremde Kamera: bekommt die fertige normale Position und das Ziel, setzt Position und Blick selbst (boss.ts setzt/löscht, camera.ts ruft)
+  camOverride: slot<((camera: any, target: any) => void) | null>(null),
 };
 
 // Die bisherigen Namen, damit die Aufrufer gleich bleiben
