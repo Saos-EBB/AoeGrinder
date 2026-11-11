@@ -26,6 +26,7 @@ import { meterSchool, meterValue, meterHeat, meterOverheated } from '../schoolMe
 import { SCHOOL_METER, RANDOM_MAGE } from '../config';
 import { markStacks } from '../plagueMarks';
 import { buffs } from '../buffs';
+import { lastText, lastVar } from './dom';
 import { batteryMode } from '../battery';
 import { BATTERY } from '../config';
 import { t, fmtNum } from '../i18n';
@@ -68,8 +69,8 @@ export function showError(msg) {
 }
 
 // HUD-DOM nur bei Änderung anfassen: Text und Füllstand (--v, 0..1) merken
-export function put(el: HTMLElement, text: string) { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } }
-export function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } }
+export function put(el: HTMLElement, text: string) { if (lastText.get(el) !== text) { lastText.set(el, text); el.textContent = text; } }
+export function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if (lastVar.get(el) !== s) { lastVar.set(el, s); el.style.setProperty('--v', s); } }
 const $q = (sel: string) => document.querySelector(sel) as HTMLElement;
 
 
@@ -201,17 +202,26 @@ function showNext(sl, pid) {
 }
 
 // Links die Effekte und Runen mit Stacks, rechts die Relikte. Nur neu bauen, wenn sich der Inhalt ändert.
-let chipKey = '', relicKey = '';
+// Schlüssel aus IDs und Zahlen statt JSON der fertigen Liste (KOMP-13): Namen von Supports und Karten hängen nur an der ID
+// (Sprachwechsel lädt die Seite neu), die Liste mit den Namen entsteht erst, wenn der Schlüssel sich ändert.
+let chipKey: string | null = null, relicKey = '';   // null: beim ersten Aufruf immer bauen (wie vorher mit JSON '[]')
+const SEP = '\u0001';
 function updateBuildChips() {
-  const chips = [];
-  if (player.poison) chips.push([t('fx.poison'), player.poison.stacks]);
-  for (const b of buffs()) chips.push([b.name, Math.ceil((b.until - state.now) / 1000), b.color]);   // Getränke des ?-Magiers, Schreine (Farbe), Zahl = Sekunden
-  for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) chips.push([def.name, 0]); }
-  for (const id of Object.keys(state.supports ?? {})) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
-  for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
-  const key = JSON.stringify(chips);
+  let key = player.poison ? `p${SEP}${player.poison.stacks}` : '';
+  const bs = buffs(), rs: string[] = [];
+  for (const b of bs) key += `|b${SEP}${b.name}${SEP}${Math.ceil((b.until - state.now) / 1000)}${SEP}${b.color ?? ''}`;
+  for (const [id, r] of Object.entries<any>(state.runes ?? {})) { const def = rune(id); if (r && def) { rs.push(def.name); key += `|r${SEP}${def.name}`; } }
+  const sups = Object.keys(state.supports ?? {}), cards = Object.entries<any>(state.cardRanks ?? {}).filter(([, n]) => n);
+  for (const id of sups) key += `|s${SEP}${id}`;
+  for (const [id, n] of cards) key += `|c${SEP}${id}${SEP}${n}`;
   if (key !== chipKey) {
     chipKey = key;
+    const chips = [];
+    if (player.poison) chips.push([t('fx.poison'), player.poison.stacks]);
+    for (const b of bs) chips.push([b.name, Math.ceil((b.until - state.now) / 1000), b.color]);   // Getränke des ?-Magiers, Schreine (Farbe), Zahl = Sekunden
+    for (const name of rs) chips.push([name, 0]);
+    for (const id of sups) chips.push([SUPPORTS.find(x => x.id === id)?.name ?? id, 0]);
+    for (const [id, n] of cards) chips.push([CARDS.find(c => c.id === id)?.name ?? id, n]);
     $('hudEffects').innerHTML = chips.map(([name, n, color]) => `<span class="fxChip"${color ? ` style="border-color:${color};color:${color}"` : ''}>${name}${n ? `<b>${n}</b>` : ''}</span>`).join('');
   }
   const relics = state.slots.filter(id => id && SPELLS[id].relic), rk = relics.join();

@@ -125,7 +125,7 @@ export function makeCtx(id, scale = 1, radiusScale = 1, castKey = ++castCounter)
       dmg *= buffDmgMul() * pdDmgMul() * berserkMul() * legendDmgMul();     // Getränke des ?-Magiers, Perfekter Dodge, Berserker, Leeroy Jenkins
       if (modValue('lowHpDmg')) dmg *= 1 + modValue('lowHpDmg') * (1 - Math.max(0, player.hp) / maxHp());   // weniger Leben, mehr Schaden (kein Modus nutzt es seit v31)
       if (c.over) dmg *= BATTERY.overMul;                                    // Batterie überladen
-      const landed = damageMob(m, dmg, id, castKey, false, hasTag(id, 'Dunkel'), c.forceCrit);
+      const landed = damageMob(m, dmg, id, castKey, { dark: hasTag(id, 'Dunkel'), forceCrit: c.forceCrit });
       const slow = modValue('hitSlow');                                      // Frost only: jeder Frost-Treffer verlangsamt
       if (landed && slow && !m.dead && hasTag(id, 'Frost')) applySlow(m, slow.pct, slow.ms);
       if (landed && !m.dead && meterFrostFull()) applySlow(m, 0, slow?.ms ?? 2000);   // Kill-Anzeige Frost voll: jeder Treffer, applySlow legt den Bonus drauf

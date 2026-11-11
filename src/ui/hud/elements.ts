@@ -15,9 +15,10 @@ import { run } from '../../score';
 import { bestSplits } from '../../leaderboard';
 import { placementOf } from './layout';
 import { fmtTime, fmtDiff } from '../fmt';
+import { lastText, lastVar } from '../dom';
 
-const put = (el: Element, text: string) => { if ((el as any)._t !== text) { (el as any)._t = text; el.textContent = text; } };
-const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if ((el as any)._v !== s) { (el as any)._v = s; el.style.setProperty('--v', s); } };
+const put = (el: Element, text: string) => { if (lastText.get(el) !== text) { lastText.set(el, text); el.textContent = text; } };
+const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if (lastVar.get(el) !== s) { lastVar.set(el, s); el.style.setProperty('--v', s); } };
 const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
 const figureName = () => charCard()?.name ?? '';
 

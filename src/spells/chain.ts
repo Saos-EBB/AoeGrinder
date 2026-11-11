@@ -60,7 +60,9 @@ export const chain = {
     if (!first) return;
     const k = (state.keeper ?? 0) > 0 ? KEEPER_MUL : 1;
     if (k > 1) state.keeper--;
-    if (modValue('onlyTag') === 'Blitz' && (state.chainCount = (state.chainCount ?? 0) + 1) > TEMPEST.every) {
+    const tempest = modValue('onlyTag') === 'Blitz';   // Blitz only: jeder TEMPEST.every-te Kettenblitz löst den Sturm aus
+    if (tempest) state.chainCount = (state.chainCount ?? 0) + 1;
+    if (tempest && state.chainCount > TEMPEST.every) {
       state.chainCount = 0;
       const r = c.radius(TEMPEST.radius);
       for (const m of mobsInRadius(player.pos, r)) {

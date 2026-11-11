@@ -35,7 +35,7 @@ export function zap(a: THREE.Vector3, b: THREE.Vector3, life = rnd(.08, .16), w 
 }
 const _cd = V(), _sd = V(), _bd = V();
 export function updateBolts(dt: number) {
-  if (dt > 0) list = list.filter(x => (x.life -= dt) > 0);
+  if (dt > 0) { for (const x of list) x.life -= dt; list = list.filter(x => x.life > 0); }
   mesh.visible = list.length > 0;
   if (!list.length) return;
   camera.getWorldDirection(_cd);

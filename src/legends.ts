@@ -60,7 +60,7 @@ function activeLegend() {
 
 // ---------- Combo ----------
 const combo = { step: 0, until: 0, readyAt: 0 };
-export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; egg.mesh && (egg.mesh.visible = false); }
+export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; if (egg.mesh) egg.mesh.visible = false; }
 onRunReset(resetLegends, 90);   // Run-Reset (hooks.ts runReset)
 addEventListener('keydown', e => {
   if (e.repeat || state.paused || player.dead || !activeLegend()) return;

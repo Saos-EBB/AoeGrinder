@@ -356,7 +356,9 @@ export function applyRoot(mob: Mob, dur, look: 'stun' | 'ice' | 'glue' = 'stun')
 // Gibt true zurück, wenn der Zauber getroffen hat
 // noRoll: fester Schaden ohne Treffer- und Crit-Wurf (Feuerspur), sonst wie jeder Spielerschaden
 // dark: Dunkel-Schaden ohne Trefferwurf und ohne Schadensreduktion, heilt den Spieler
-export function damageMob(mob: Mob, amount, source, castKey?, noRoll = false, dark = false, forceCrit = false) {
+// Optionen (KOMP-10): noRoll, dark, forceCrit, alle Standard false
+export type DamageOpts = { noRoll?: boolean; dark?: boolean; forceCrit?: boolean };
+export function damageMob(mob: Mob, amount, source, castKey?, { noRoll = false, dark = false, forceCrit = false }: DamageOpts = {}) {
   if (mob.dead) return false;
   if (mob.state === 'evade') { combatText(mob.pos, t('msg.evaded'), 'miss'); return false; }
   if (mob.state === 'idle') enterCombat(mob, true);

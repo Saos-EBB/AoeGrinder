@@ -352,7 +352,7 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
 // Dauerschaden am Spieler: frac max. Leben pro Sekunde über s Sekunden, ignoriert Dodge
 function dot(f, frac, s, name) {
   let t = 0, n = 0;
-  const fn = dt => { t += dt; if (t < 1) return; t -= 1; burnPlayer(frac, name); if (++n >= s) f.hooks.tick.splice(f.hooks.tick.indexOf(fn), 1); };
+  const fn = dt => { t += dt; if (t < 1) return; t -= 1; burnPlayer(frac, name); n++; if (n >= s) f.hooks.tick.splice(f.hooks.tick.indexOf(fn), 1); };
   f.hooks.tick.push(fn);   // in Boss-Zeit: Pause und Zeitstopp halten ihn an
   textAt(player.pos, name, 'hurt', 2.6);
 }
