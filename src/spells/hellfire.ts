@@ -1,7 +1,7 @@
 import { player } from '../state';
 import { maxHp } from '../formulas';
 import { mods } from '../config';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { mobsInRadius, startChannel, stopChannel, hasRune } from './core';
 import { hellfireLook } from '../vfx/fireLook';
 import { t } from '../i18n';

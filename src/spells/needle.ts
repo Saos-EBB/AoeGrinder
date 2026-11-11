@@ -4,7 +4,7 @@ import { player } from '../state';
 import { UNIT } from '../config';
 import { mobsOnLine, forward } from '../melee';
 import { takeShards } from '../figures';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { needleLook } from '../vfx/frostLook';
 import { t } from '../i18n';
 import { state } from '../state';

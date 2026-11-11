@@ -7,7 +7,7 @@ import { state, player } from '../state';
 import { SPELLS, RANDOM_MAGE } from '../config';
 import { maxHp, maxMana } from '../formulas';
 import { particles } from '../fx/particles';
-import { showError, combatText } from '../ui/hud';
+import { showError, combatText } from '../feedback';
 import { addBuff, buffs } from '../buffs';
 import { castSpell, cdEnd, startCd, stat, isGround, mobsInRadius, applySlow, makeCtx, schedule } from './core';
 import { flame } from './flame';

@@ -6,7 +6,7 @@ import { maxHp } from '../formulas';
 import { hitstop, lightFlash, cameraKick } from '../fx/impact';
 import { shakeCamera } from '../camera';
 import { knockbackMob } from '../mobs';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { mobsInRadius, addField, hasRune, hasSpell, cdEnd, startCd, makeCtx } from './core';
 import { meteor } from './meteor';
 import { phoenixLook, fireField } from '../vfx/fireLook';

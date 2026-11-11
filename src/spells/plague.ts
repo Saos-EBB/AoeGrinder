@@ -8,7 +8,7 @@ import { maxHp } from '../formulas';
 import { burnMob, knockbackMob, pullMob, applyRoot, startLeap } from '../mobs';
 import { particles } from '../fx/particles';
 import { shakeCamera } from '../camera';
-import { showError, combatText } from '../ui/hud';
+import { showError, combatText } from '../feedback';
 import { modValue } from '../modifiers';
 import { forward, mobsOnLine } from '../melee';
 import { mobsInRadius, addField, makeCtx, cdEnd, startCd, noteCastStart, stopChannel, stopDrink } from './core';

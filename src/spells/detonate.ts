@@ -2,7 +2,7 @@
 
 import { player } from '../state';
 import { maxHp } from '../formulas';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { mobsInRadius, addField, hasRune, burnLeft } from './core';
 import { detonateLook, fireField } from '../vfx/fireLook';
 import { t } from '../i18n';

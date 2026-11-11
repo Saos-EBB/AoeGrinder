@@ -5,7 +5,7 @@ import { maxHp } from '../formulas';
 import { novaFx } from '../fx/spellFx';
 import { barrierLook } from '../vfx/frostLook';
 import { applyRoot } from '../mobs';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { mobsInRadius } from './core';
 import { t } from '../i18n';
 

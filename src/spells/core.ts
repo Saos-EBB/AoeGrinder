@@ -11,7 +11,7 @@ import { particles } from '../fx/particles';
 import { mods, SPELLS, SPELL_AOE_HEIGHT, SPELL_SLOTS, SPELL_START, SPELL_ACTIONS, RANDOM_MAGE } from '../config';
 import { manaCost, spellCd, maxHp } from '../formulas';
 import { blizCursor, crystalBurst } from '../fx/spellFx';
-import { showError, renderActionbar } from '../ui/hud';
+import { showError, renderActionbar } from '../feedback';
 import { damageMob, applyRoot } from '../mobs';
 import { spendMana } from '../player';
 import { boltFx, ICE_WHITE } from './fx';

@@ -2,7 +2,7 @@
 
 import { state, player } from '../state';
 import { BATTERY } from '../config';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { batteryCharge } from '../battery';
 import { t } from '../i18n';
 

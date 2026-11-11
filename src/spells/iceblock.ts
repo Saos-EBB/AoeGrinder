@@ -3,7 +3,7 @@
 import { state, player } from '../state';
 import { novaFx } from '../fx/spellFx';
 import { iceBlockLook } from '../vfx/frostLook';
-import { showError } from '../ui/hud';
+import { showError } from '../feedback';
 import { cdEnd, startCd, stopChannel, stopDrink, noteCastStart } from './core';
 import { t } from '../i18n';
 
