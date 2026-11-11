@@ -7,7 +7,7 @@ import { state, player } from '../state';
 import { registerDev } from './devPanel';
 import { renderDevZones, devLegendBlock } from './menus';
 import { devWorldBlock } from './worldMap';
-import { devGearSetBlock } from './lootView';
+import { devGearSetBlock } from './devGear';
 import { devLevelsBlock, devCollidersBlock } from './leaderboardView';
 import { devFeatBlock } from './messages';
 import { mountForge } from './devForge';

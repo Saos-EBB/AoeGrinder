@@ -15,7 +15,7 @@ import { resetGame, switchZone, newRunMap } from '../player';
 import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
 import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';
-import { applyRunGear } from '../gear';
+import { applyRunGear } from '../gear/apply';
 import { heroModel } from '../models/heroModel';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';

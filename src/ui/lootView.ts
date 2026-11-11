@@ -9,31 +9,9 @@ import { meta, saveMeta, earnDust } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 import type { Find } from '../loot';
-import { SETS, devWearSet, devSetAch } from '../gear';
-import { heroModel } from '../models/heroModel';
-import { renderMenu } from './mainMenu';
 import { gearThumbHtml } from './itemThumb';
-import { esc, html } from './dom';
+import { esc } from './dom';
 
-// Dev: Set 5/5 oder 4/5 anlegen, Set-Erfolg setzen (Block für ui/devGame.ts)
-export function devGearSetBlock() {
-  const box = html(`<div><select class="bindBtn" id="devGearSet">${Object.keys(SETS).map(id => `<option value="${id}">${t(`look.magier.${id}.name`)}</option>`).join('')}</select>
-  <button class="bindBtn" id="devGearSet5">5/5 anlegen</button><button class="bindBtn" id="devGearSet4">4/5 anlegen</button>
-  <button class="bindBtn" id="devGearAchOn">Skin frei</button><button class="bindBtn" id="devGearAchOff">Skin sperren</button></div>`);
-  const q = (id: string) => box.querySelector<HTMLElement>(`#${id}`);
-  for (const n of [5, 4] as number[]) q(`devGearSet${n}`).addEventListener('click', () => {
-    devWearSet((q('devGearSet') as HTMLSelectElement).value, n);
-    heroModel.refreshSkin();
-    renderMenu();
-  });
-  // Set-Erfolg (= Set-Skin frei) setzen oder entfernen, ohne Gear anzulegen. Sperren lässt die Wahl stehen, skinOf zeigt dann Standard
-  for (const [id, on] of [['devGearAchOn', true], ['devGearAchOff', false]] as [string, boolean][]) q(id).addEventListener('click', () => {
-    devSetAch((q('devGearSet') as HTMLSelectElement).value, on);
-    heroModel.refreshSkin();
-    renderMenu();
-  });
-  return box;
-}
 
 
 // HTML für das Run-Ende (leaderboardView.ts showRunResult). Leer, wenn es nichts gab
