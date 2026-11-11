@@ -10,7 +10,7 @@ import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
 import { meta, saveMeta, grantAch, hasAch, earnDust, MILESTONES } from './meta';
 import { setAch } from './skins';
-import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit } from './weaponRolls';
+import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit, mainOf, type MainValue } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
 import { t, locale } from './i18n';
@@ -307,6 +307,8 @@ export function gearRows(g: GearItem): { kind: string; text: string; color?: str
   return rows;
 }
 export const gearLines = (g: GearItem) => gearRows(g).map(r => r.text);
+// Hauptwert als Zahl (wie die Zeile 'value' oben), für ▲/▼ und Sortierung im Charakterfenster
+export const gearMainValue = (g: GearItem): MainValue => mainOf(valueKey(g), ROLLS.values[valueKey(g)] * factor(g.r) * GEAR.mul);
 
 // ---------- Wirkung ----------
 // Run-Start nach applyRunWeapon (mods frisch aus resetMods, spellStats aus resetSpells): Werte über mods/stat, Element-Proc über den Treffer-Hook

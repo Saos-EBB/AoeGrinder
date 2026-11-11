@@ -10,10 +10,10 @@ import type { Find } from '../loot';
 import { meta, hasAch } from '../meta';
 import { ACHIEVEMENTS, setAch } from '../skins';
 import { mage } from '../models/mage';
-import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows } from '../weaponRolls';
+import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows, mainValue, valueText } from '../weaponRolls';
 import * as GEARMOD from '../gear';
 import { SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
-  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, lookSource, lookHint, type Slot, type GearItem } from '../gear';
+  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, lookSource, lookHint, gearMainValue, type Slot, type GearItem } from '../gear';
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
@@ -21,6 +21,8 @@ import { fmtInt } from './dmgNumbers';
 import { mountFigPreview, setFigPreview } from './figPreview';
 import { currentFigure } from './mainMenu';
 import { attachWeaponCard, weaponCardData } from './weaponCard';
+import { mainDelta, mainStrength, fmtDelta, deltaColor, fmtMain } from './compare';
+import { COLORS } from './colors';
 import { weaponThumb } from './weaponThumb';
 import { gearThumbHtml, lookThumbHtml, weaponThumbHtml, warmThumbs } from './itemThumb';
 import { attachTip, hideTip, tipAt, type TipData } from './tooltip';
@@ -28,7 +30,7 @@ import { heroStats, type StatRow } from './heroStats';
 import { figureInfo } from './charInfo';
 import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
-import { t, fmtNum } from '../i18n';
+import { t } from '../i18n';
 import './heroWindow.css';
 
 export type Tab = 'waffen' | Slot | 'kosmetik';
@@ -71,26 +73,21 @@ export const gearGroup = (g: GearItem) => optCall('groupOf', g);
 const makerName = (id: string | null) => id ? MAKERS[id]?.name ?? id : '—';
 const groupName = (id: string | null) => id ? t(`hw.group.${id}`) : '—';
 
-// Hauptwert eines Gear-Teils („+4 % Schaden“) für ▲/▼: nur gegen dasselbe Wert-Wort
-const pctOf = (s: string) => { const m = s?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
-export const gearMain = (g: GearItem) => pctOf(gearRows(g).find(r => r.kind === 'value')?.text ?? '');
+// ▲/▼ eines Gear-Teils gegenüber dem angelegten im selben Slot (Regel in compare.ts)
 export function gearDelta(g: GearItem): number | null {
   const on = worn(g.slot);
-  if (!on || on === g) return null;
-  const a = gearMain(g), b = gearMain(on);
-  if (a && b && a.label === b.label) return Math.round((a.v - b.v) * 10) / 10;
-  return null;
+  return !on || on === g ? null : mainDelta(gearMainValue(g), gearMainValue(on));
 }
 // Hover-Karte eines Gear-Teils wie die Waffen-Karte (weaponCard.ts): Hauptwert groß, ▲/▼ gegenüber dem angelegten, Zeilen, Set, Hersteller, Gruppe
 export function gearTip(g: GearItem, compare = true): TipData {
-  const rar = gearRarity(g), rows = gearRows(g), main = gearMain(g), on = worn(g.slot), d = gearDelta(g);
+  const rar = gearRarity(g), rows = gearRows(g), main = gearMainValue(g), on = worn(g.slot), d = gearDelta(g);
   const lines = rows.filter(r => r.kind !== 'value').map(r => `<span class="tAffix"${r.color ? ` style="color:${r.color}"` : ''}>◆ ${r.text}</span>`);
   lines.push(`<span class="tAffix">◆ ${t('wm.maker')}: ${makerName(gearMaker(g))} · ${t('hw.group')}: ${groupName(gearGroup(g))}</span>`);
   if (g.s.setId) lines.push(`<span class="tLegend">◆ SET ${t(`look.magier.${g.s.setId}.name`)} · 5/5: ${perfectText(g.s.setId, g.slot)}</span>`);
   const tip: TipData = {
     title: gearName(g), color: rar.color, border: rar.color, sub: `${rar.name} · ${slotName(g.slot)}`,
-    big: main ? { value: `${main.v > 0 ? '+' : ''}${fmtNum(main.v)} %`, label: main.label, delta: on === g ? t('wcard.equippedLow') : d === null ? undefined : `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))} %`,
-      deltaColor: on === g ? '#f87171' : d > 0 ? '#6ee7a0' : '#f87171' } : undefined,
+    big: main ? { value: fmtMain(main), label: valueText(main.key), delta: on === g ? t('wcard.equippedLow') : d === null ? undefined : fmtDelta(d),
+      deltaColor: on === g ? COLORS.down : d === null ? undefined : deltaColor(d) } : undefined,
     short: main ? lines.shift() ?? '' : lines.shift() ?? '', rows: lines,
     footer: [t('wcard.salvage'), t('shop.refund', { n: ROLLS.refund[g.r] })],
   };
@@ -293,8 +290,8 @@ function options(k: Kind, g: string): Opt[] {
   return [];
 }
 const GROUP_NAME = (g: string) => ({ type: t('inv.type'), school: t('wm.school'), el: t('inv.element'), maker: t('wm.maker'), val: t('wm.values'), focus: t('hw.focus'), set: t('hw.set') })[g] ?? g;
-const mainW = w => { const p = pctOf(effectRows(w).find(r => r.kind === 'value')?.text ?? ''); return Math.abs(p?.v ?? 0); };
-const mainG = (g: GearItem) => Math.abs(gearMain(g)?.v ?? 0);
+const mainW = w => mainStrength(mainValue(w));
+const mainG = (g: GearItem) => mainStrength(gearMainValue(g));
 const SORTS: Record<string, [() => string, (k: Kind) => (a, b) => number]> = {
   rar: [() => t('inv.sort.rar'), () => (a, b) => b.r - a.r || b.id - a.id],
   neu: [() => t('inv.sort.neu'), () => (a, b) => b.id - a.id],
@@ -330,14 +327,12 @@ const rarColor = (e: Entry) => e.kind === 'w' ? rarityOf(e.item).color : e.kind 
 const entryName = (e: Entry) => e.kind === 'k' ? t(LOOKS[e.item].name) : nameOf(e.kind, e.item);
 let seenW = 0, seenG = 0;
 const isNewEntry = (e: Entry) => e.kind === 'w' ? e.item.id > seenW : e.kind === 'g' ? e.item.id > seenG : false;
-// ▲/▼ gegenüber dem Ausgerüsteten (Hauptwert, nur bei gleichem Wert-Wort)
+// ▲/▼ gegenüber dem Ausgerüsteten (Hauptwert, nur bei gleichem Wert-Wort, Regel in compare.ts)
 export function deltaOf(e: Entry): number | null {
   if (e.kind === 'g') return gearDelta(e.item);
   if (e.kind !== 'w') return null;
   const eq = equipped();
-  if (!eq || eq === e.item) return null;
-  const a = pctOf(effectRows(e.item).find(r => r.kind === 'value')?.text ?? ''), b = pctOf(effectRows(eq).find(r => r.kind === 'value')?.text ?? '');
-  return a && b && a.label === b.label && a.v !== b.v ? Math.round((Math.abs(a.v) - Math.abs(b.v)) * 10) / 10 : null;
+  return !eq || eq === e.item ? null : mainDelta(mainValue(e.item), mainValue(eq));
 }
 
 let sel: string | null = null;   // gewählter Eintrag im aktiven Tab (Tastatur/Pad, Klick)
@@ -573,7 +568,7 @@ function renderTree() {
       if (e.kind === 'g' || e.kind === 'k' && !e.dim) ic.classList.add('hwTThumb');
       row.append(ic, name);
       if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
-      if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))}`));
+      if (d !== null) row.append(el('span', d > 0 ? 'hwUp' : 'hwDown', fmtDelta(d, false)));
       if (isOn(e)) row.append(el('b', 'hwE', 'E'));
       if (isNewEntry(e)) row.append(el('b', 'hwNew', t('shop.new')));
       row.setAttribute('role', 'treeitem');
@@ -599,7 +594,7 @@ function renderSel(list: Entry[]) {
   const sub = shift && show !== e ? t('wm.compare') : e.kind === 'k' ? t('hw.cosmetic') : (e.kind === 'w' ? effectRows(e.item) : gearRows(e.item)).find(r => r.kind === 'value')?.text ?? '';
   const d = show === e ? deltaOf(e) : null;
   const subEl = el('small', '', sub);
-  if (d !== null) { const s = el('span', d > 0 ? 'up' : 'down', ` ${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))} %`); subEl.append(s); }
+  if (d !== null) subEl.append(el('span', d > 0 ? 'up' : 'down', ` ${fmtDelta(d)}`));
   if (isOn(e)) subEl.append(el('span', 'hwOn', ` · ${t('shop.equipped')}`));
   info.append(subEl);
   box.append(info);

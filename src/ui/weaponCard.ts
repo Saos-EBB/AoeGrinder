@@ -1,9 +1,10 @@
 // Waffen-Werte: Block für den Dev-Baukasten und Hover-Karte für Inventar, Shop und Hauptmenü.
 
-import { weaponName, effectRows, rarityOf, equipped, ROLLS } from '../weaponRolls';
+import { weaponName, effectRows, rarityOf, equipped, ROLLS, mainValue, valueText } from '../weaponRolls';
 import { attachTip, TipData } from './tooltip';
 import { COLORS } from './colors';
-import { t, fmtNum } from '../i18n';
+import { mainDelta, fmtDelta, deltaColor, fmtMain } from './compare';
+import { t } from '../i18n';
 
 // Werte-Block: jede Schicht in fester Zeile, links farbiges Etikett, Zahlen in derselben Farbe. Fehlende Schichten bleiben als „—“ stehen.
 export function weaponStats(w) {
@@ -33,10 +34,9 @@ export function weaponStats(w) {
 
 // Hover-Karte einer Waffe (Mockup T1): Name in Seltenheitsfarbe, großer Hauptwert, ▲/▼ gegenüber der ausgerüsteten Waffe,
 // Affixe blau (Element in seiner Farbe), Legendär-Effekt orange, Combo-Zeile, „Zerlegen +x Staub“. Vergleich: diese Waffe links, ausgerüstete rechts.
-const pctOf = (s: string) => { const m = s?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 function weaponTip(w): TipData {
   const rar = rarityOf(w), rows = effectRows(w), byKind = Object.fromEntries(rows.map(r => [r.kind, r]));
-  const main = pctOf(byKind.value?.text?.replace(/^[^:]*: /, '') ?? byKind.value?.text);
+  const main = mainValue(w);
   const lines: string[] = [];
   if (byKind.type?.text) lines.push(`<span style="color:${COLORS.dim}">${byKind.type.text}</span>`);
   for (const k of ['focus', 'element', 'maker', 'extra']) if (byKind[k]?.text) lines.push(`<span class="tAffix"${k === 'element' ? ` style="color:${byKind[k].color}"` : ''}>◆ ${byKind[k].text}</span>`);   // Element in seiner Farbe
@@ -46,13 +46,12 @@ function weaponTip(w): TipData {
     lines.push(`<span class="tLegend">◆ ${effect}</span>`);
     if (combo) lines.push(`<span class="tCombo">◆ <b>Combo ${combo}</b></span>`);
   }
-  const eq = equipped(), other = eq && eq !== w ? pctOf(effectRows(eq).find(r => r.kind === 'value')?.text ?? '') : null;
-  const delta = main && other && other.label === main.label && other.v !== main.v ? main.v - other.v : null;
+  const eq = equipped(), delta = eq && eq !== w ? mainDelta(main, mainValue(eq)) : null;
   return {
     title: weaponName(w), color: rar.color, border: rar.color, sub: `${rar.name}${byKind.type?.text ? ` · ${byKind.type.text.split(':')[0]}` : ''}`,
-    big: main ? { value: `${main.v > 0 ? '+' : ''}${fmtNum(main.v)} %`, label: main.label,
-      delta: eq === w ? t('wcard.equippedLow') : delta === null ? undefined : `${delta > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(Math.round(delta * 10) / 10))} %`,
-      deltaColor: eq === w ? '#f87171' : delta > 0 ? '#6ee7a0' : '#f87171' } : undefined,
+    big: main ? { value: fmtMain(main), label: valueText(main.key),
+      delta: eq === w ? t('wcard.equippedLow') : delta === null ? undefined : fmtDelta(delta),
+      deltaColor: eq === w ? COLORS.down : delta === null ? undefined : deltaColor(delta) } : undefined,
     short: lines.shift() ?? '', rows: lines,
     footer: [t('wcard.salvage'), t('shop.refund', { n: ROLLS.refund[w.r] })],
   };

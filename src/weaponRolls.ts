@@ -53,6 +53,14 @@ const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`w
 export const factor = tier => CARD_RARITIES[tier].mult;
 export const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
 const isNew = w => w.v === 2;
+// Hauptwert als Zahl für ▲/▼ und Sortierung (ui/compare.ts): v in Prozent wie angezeigt (auf 0,1 gerundet), Abklingzeit negativ
+export type MainValue = { key: string; v: number };
+export const mainOf = (key: string, raw: number): MainValue => ({ key, v: (key === 'cd' ? -1 : 1) * Math.round(raw * 1000) / 10 });
+export const valueText = (key: string) => VALUE_TEXT[key] ?? key;
+export function mainValue(w): MainValue | null {
+  const k = isNew(w) ? VALUE_KEY[w.s.value] : w.e?.startsWith('f:') ? null : w.e;
+  return k && ROLLS.values[k] != null ? mainOf(k, ROLLS.values[k] * factor(w.r)) : null;
+}
 
 export function rollTier() {
   let r = Math.random() * ROLLS.weights.reduce((a, b) => a + b, 0);

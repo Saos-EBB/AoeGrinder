@@ -7,15 +7,16 @@ import { meta, awardDust, rollShop, keepOffer, menuOffer, menuTier, buy, priceOf
 import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
-import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip } from '../weaponRolls';
+import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip, mainValue } from '../weaponRolls';
 import { mage } from '../models/mage';
 import { attachWeaponCard } from './weaponCard';
+import { mainDelta, fmtDelta, deltaColor } from './compare';
 import { askConfirm } from './confirm';
 import { openHero } from './heroWindow';
 import { weaponThumb } from './weaponThumb';
 import { gearThumb, lookThumb } from './itemThumb';
 import { pick } from '../util';
-import { t, fmtNum } from '../i18n';
+import { t } from '../i18n';
 import { BOX, KOSMETIK_POOL, LOOKS, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
@@ -39,7 +40,6 @@ let spinning = false, lastPull = null, lastIsNew = false;   // lastPull: Ergebni
 const el = (tag: string, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
 const CHEST_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3 10h18v10H3zM3 10l2-5h14l2 5M10 13h4v3h-4z"/></svg>';
 const STAFF_SVG = '<svg viewBox="0 0 12 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 46V10"/><circle cx="6" cy="6" r="4"/></svg>';
-const pctOf = (t: string) => { const m = t?.match(/^([+−-]?\d+(?:[,.]\d+)?) %\s*(.*)$/); return m ? { v: parseFloat(m[1].replace('−', '-').replace(',', '.')), label: m[2] } : null; };
 
 function chestCol(resultName: HTMLElement, result: HTMLElement) {
   const col = el('div', 'gPanel fg-panel shopCol');
@@ -93,15 +93,12 @@ function resultCol() {
   const lines = el('div', 'resLines');
   for (const r of rows) if (r.text && r.kind !== 'type') lines.append(el('div', r.kind === 'unique' ? 'tLegend' : r.kind === 'value' ? '' : 'tAffix', r.text));
   col.append(lines, el('i', 'tSep'));
-  const eq = equipped(), mine = pctOf(rows.find(r => r.kind === 'value')?.text ?? ''), other = eq && eq !== w ? pctOf(effectRows(eq).find(r => r.kind === 'value')?.text ?? '') : null;
+  const eq = equipped(), d = eq && eq !== w ? mainDelta(mainValue(w), mainValue(eq)) : null;
   const cmp = el('div', 'resCmp');
   if (eq === w) cmp.textContent = t('shop.equipped');
   else if (eq) {
     cmp.textContent = t('shop.current', { name: weaponName(eq) });
-    if (mine && other && mine.label === other.label && mine.v !== other.v) {
-      const d = Math.round((mine.v - other.v) * 10) / 10;
-      cmp.append(' · ', Object.assign(el('b', '', `${d > 0 ? '▲ +' : '▼ −'}${fmtNum(Math.abs(d))} %`), { style: `color:${d > 0 ? '#6ee7a0' : '#f87171'}` }));
-    }
+    if (d !== null) cmp.append(' · ', Object.assign(el('b', '', fmtDelta(d)), { style: `color:${deltaColor(d)}` }));
   } else cmp.textContent = t('shop.noneEquipped');
   const btns = el('div', 'resBtns');
   const equipB = el('button', 'btn fg-btn', t(eq === w ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
