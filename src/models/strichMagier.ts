@@ -17,6 +17,7 @@ import { gearPieces, animateGear } from './gearParts';
 import { paletteOf } from '../figureTable';
 import { kosmetikPieces, glassGeo, makeKillFlag, KOS, type KosEvent, type KosFrame } from './kosmetikParts';
 import { grad, capDown, prep as kitPrep, RIM, rimChunk, ik } from './strichKit';
+import { makePointPool } from '../fx/pointPool';
 
 const EASE = { io: inOut, out: outC, back: outBack, lin: t => t, sine };
 const TAU = Math.PI * 2;
@@ -1226,33 +1227,16 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   updateKos(0);
 
   // Partikel in Weltkoordinaten
-  const PN = 400, pGeo = new THREE.BufferGeometry();
-  const pPos = new Float32Array(PN * 3).fill(-1000), pCol = new Float32Array(PN * 3), pVel = new Float32Array(PN * 3), pLife = new Float32Array(PN), pG = new Float32Array(PN);
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3)); pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-  const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .06, vertexColors: true })); pts.frustumCulled = false;
-  world.add(pts);
-  let pNext = 0, pLive = 0;
+  const pool = makePointPool(400, .06);   // fx/pointPool.ts
+  world.add(pool.points);
   function emit(p, n, v, color, g = 0, life = 1, spread = .3) {
     const c = new THREE.Color(color);
     for (let i = 0; i < n; i++) {
-      const j = pNext++ % PN;
-      if (pLife[j] <= 0) pLive++;
-      pPos.set([p.x + (Math.random() - .5) * spread, p.y + (Math.random() - .5) * spread, p.z + (Math.random() - .5) * spread], j * 3); pCol.set([c.r, c.g, c.b], j * 3);
-      pVel.set([v.x + (Math.random() - .5) * .6, v.y + (Math.random() - .5) * .4, v.z + (Math.random() - .5) * .6], j * 3);
-      pLife[j] = life * (.6 + Math.random() * .6); pG[j] = g;
+      pool.put(p.x + (Math.random() - .5) * spread, p.y + (Math.random() - .5) * spread, p.z + (Math.random() - .5) * spread, c,
+        v.x + (Math.random() - .5) * .6, v.y + (Math.random() - .5) * .4, v.z + (Math.random() - .5) * .6, life * (.6 + Math.random() * .6), g);
     }
   }
-  function updateParts(dt) {
-    pts.visible = pLive > 0;
-    if (!pLive) return;
-    for (let j = 0; j < PN; j++) {
-      if (pLife[j] <= 0) continue;
-      pLife[j] -= dt; if (pLife[j] <= 0) { pPos[j * 3 + 1] = -1000; pLive--; continue; }
-      pVel[j * 3 + 1] -= pG[j] * dt;
-      for (let k = 0; k < 3; k++) pPos[j * 3 + k] += pVel[j * 3 + k] * dt;
-    }
-    pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
-  }
+  const updateParts = pool.update;
 
   const trail = opts.trail ?? (SKIN_FX[gameSkin]?.trail ? makeTrail(SKIN_FX[gameSkin].trail) : null);
   const watch = stepWatcher({ root: F.root, legL: { ankle: F.legL.ft }, legR: { ankle: F.legR.ft } });

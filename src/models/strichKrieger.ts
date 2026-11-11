@@ -9,6 +9,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { eMat, PAL, fx as efx, em, uK as setK, arc as eArc, ring as eRing, lay } from '../vfx/energy';
 import { grad, capDown, prep as kitPrep, RIM, rimChunk, ik } from './strichKit';
+import { makePointPool } from '../fx/pointPool';
 
 // Dauern in ms. Die Spielregeln stehen in REALMEN (realMen.ts)
 export const STRICH_TIMING = {
@@ -497,35 +498,16 @@ function updateFx(dt) {
   }
 }
 // Partikel: Staub (grau) und Glut (rot) in einem Pool, Farbe pro Punkt
-const PN = 600;
-const pGeo = new THREE.BufferGeometry();
-const pPos = new Float32Array(PN * 3).fill(-1000), pCol = new Float32Array(PN * 3), pVel = new Float32Array(PN * 3), pLife = new Float32Array(PN), pGrav = new Float32Array(PN);
-pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .08, vertexColors: true }));
-pts.frustumCulled = false; fxGroup.add(pts);
-let pNext = 0;
+const pool = makePointPool(600, .08, { floor: () => gy() + .03 });   // fx/pointPool.ts, Punkte bleiben auf dem Boden liegen
+fxGroup.add(pool.points);
 function emit(p, n, spd, col, grav = 9, life = 1) {
   const c = new THREE.Color(col);
   for (let i = 0; i < n; i++) {
-    const j = pNext++ % PN;
-    pPos.set([p.x, p.y, p.z], j * 3); pCol.set([c.r, c.g, c.b], j * 3);
     const a = Math.random() * TAU, h = Math.random();
-    pVel.set([Math.cos(a) * spd * (1 - h * .5), spd * (.3 + h), Math.sin(a) * spd * (1 - h * .5)], j * 3);
-    pLife[j] = life * (.6 + Math.random() * .6); pGrav[j] = grav;
+    pool.put(p.x, p.y, p.z, c, Math.cos(a) * spd * (1 - h * .5), spd * (.3 + h), Math.sin(a) * spd * (1 - h * .5), life * (.6 + Math.random() * .6), grav);
   }
 }
-function updateParts(dt) {
-  const floor = gy() + .03;
-  for (let j = 0; j < PN; j++) {
-    if (pLife[j] <= 0) continue;
-    pLife[j] -= dt; if (pLife[j] <= 0) { pPos[j * 3 + 1] = -1000; continue; }
-    pVel[j * 3 + 1] -= pGrav[j] * dt;
-    for (let k = 0; k < 3; k++) pPos[j * 3 + k] += pVel[j * 3 + k] * dt;
-    if (pPos[j * 3 + 1] < floor) { pPos[j * 3 + 1] = floor; pVel[j * 3] *= .5; pVel[j * 3 + 2] *= .5; pVel[j * 3 + 1] = 0; }
-  }
-  pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
-}
+const updateParts = pool.update;
 // Wirbel-Sicheln
 const windG = new THREE.Group(); fxGroup.add(windG); windG.visible = false;
 const windArcs = [];
