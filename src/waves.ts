@@ -11,9 +11,9 @@ import { zone } from './world';
 import { spawnMob, enterCombat, pickMobType } from './mobs';
 import { run } from './score';
 import { resetGame, completeRun } from './player';
-import { renderMenu } from './ui/mainMenu';
 import { t } from './i18n';
 import { hooks, onRunReset } from './hooks';
+const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 // Gegner pro Welle = base + perWave × (Welle − 1); kommen mit perSecond pro Sekunde, höchstens maxPerFrame pro Frame
 export const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
@@ -94,7 +94,7 @@ function renderMobPick() {
     b.textContent = c.name;
     b.dataset.nav = c.name;
     b.title = c.title;
-    b.addEventListener('click', () => { setMobMode(c.mode); setSiegeGoal(0); resetGame(); renderMobPick(); renderMenu(); });
+    b.addEventListener('click', () => { setMobMode(c.mode); setSiegeGoal(0); resetGame(); renderMobPick(); ui.fn.renderMenu(); });
     box.appendChild(b);
   }
 }

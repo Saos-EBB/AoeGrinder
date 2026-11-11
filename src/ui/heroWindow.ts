@@ -705,8 +705,6 @@ $('hwChest').addEventListener('click', () => {
   closeHero();
   if (!fromShop && $('startModal').classList.contains('show')) $('menuShop').click();
 });
-addEventListener('keydown', e => { if (e.key === 'Shift' && !shift && heroOpen()) { shift = true; renderSel(entries(tab)); } }, true);
-addEventListener('keyup', e => { if (e.key === 'Shift' && shift) { shift = false; if (heroOpen()) renderSel(entries(tab)); } });
 
 function render() {
   hideTip();
@@ -806,12 +804,18 @@ export function heroCommand(cmd: HeroCmd) {
 const KEYS: Record<string, HeroCmd> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'enter', NumpadEnter: 'enter', Delete: 'delete',
   KeyQ: 'prevTab', KeyE: 'nextTab', PageUp: 'prevTab', PageDown: 'nextTab', Tab: 'view', Slash: 'search', NumpadDivide: 'search', Escape: 'close' };
 $('hwClose').addEventListener('click', closeHero);
-addEventListener('keydown', e => {
-  if (!heroOpen() || askOpen() || e.target instanceof HTMLInputElement) return;
-  const cmd = e.key === '/' ? 'search' : KEYS[e.code];
-  if (!cmd || e.ctrlKey || e.altKey || e.metaKey) return;
-  if (cmd === 'enter' && document.activeElement instanceof HTMLButtonElement && document.activeElement.closest('#heroModal') && !document.activeElement.closest('.hwGrid, .hwTree')) return;   // fokussierter Knopf: der Browser klickt
-  e.preventDefault();
-  e.stopImmediatePropagation();
-  heroCommand(cmd);
-}, true);
+
+// Fenster-Listener (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener)
+export function mount() {
+  addEventListener('keydown', e => { if (e.key === 'Shift' && !shift && heroOpen()) { shift = true; renderSel(entries(tab)); } }, true);
+  addEventListener('keyup', e => { if (e.key === 'Shift' && shift) { shift = false; if (heroOpen()) renderSel(entries(tab)); } });
+  addEventListener('keydown', e => {
+    if (!heroOpen() || askOpen() || e.target instanceof HTMLInputElement) return;
+    const cmd = e.key === '/' ? 'search' : KEYS[e.code];
+    if (!cmd || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (cmd === 'enter' && document.activeElement instanceof HTMLButtonElement && document.activeElement.closest('#heroModal') && !document.activeElement.closest('.hwGrid, .hwTree')) return;   // fokussierter Knopf: der Browser klickt
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    heroCommand(cmd);
+  }, true);
+}

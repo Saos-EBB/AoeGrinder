@@ -36,4 +36,8 @@ function frame() {
   newMob.style.opacity = showNew ? '1' : '0';
   requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
+
+// Bild-Schleife (E10): main.ts ruft mount() in der rAF-Reihenfolge von früher
+export function mount() {
+  requestAnimationFrame(frame);
+}

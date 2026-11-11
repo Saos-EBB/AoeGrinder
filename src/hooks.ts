@@ -7,6 +7,17 @@
 // Neue Rückwege kommen hierher, keine neuen Listen an Funktionen, Setter oder setTimeout-Tricks.
 
 type Fn = (...a: any[]) => any;
+// Fenster und Menüs, die Spiel und Eingabe öffnen oder fragen (ARCH-02 Rest, E10). ui/connect.ts setzt die Umsetzung aus ui/* ein (main.ts, vor allem anderen).
+export type UiApi = {
+  showCards(): void; showRunResult(): void;                              // ui/menus.ts, ui/leaderboardView.ts (player.ts)
+  renderMenu(): void; openPause(): void; closePause(): void; pauseOpen(): boolean; menuOpen(): boolean;
+  cycleChar(step: number): void; cycleMap(step: number): void;             // ui/mainMenu.ts (input, gamepad, mobile, waves)
+  heroOpen(): boolean; toggleHero(): void; closeHero(): void; heroCommand(cmd: string): void;   // ui/heroWindow.ts (input, gamepad)
+  closeBinds(): void; closeResetConfirm(): void; renderBinds(): void; setBind(id: string, e: { code: string; key: string }): void;   // ui/menus.ts (input, gamepad)
+};
+const no = () => {}, nein = () => false;
+const UI_NONE: UiApi = { showCards: no, showRunResult: no, renderMenu: no, openPause: no, closePause: no, pauseOpen: nein, menuOpen: nein, cycleChar: no, cycleMap: no,
+  heroOpen: nein, toggleHero: no, closeHero: no, heroCommand: no, closeBinds: no, closeResetConfirm: no, renderBinds: no, setBind: no };
 export type Channel<F extends Fn> = { readonly fns: F[]; on(fn: F, rank?: number): void };
 export type Slot<F> = { fn: F; set(fn: F): void };
 
@@ -45,6 +56,8 @@ export const hooks = {
   runReset: channel<() => void>(),
 
   // Plätze: genau eine Umsetzung
+  // Fenster und Menüs für Spiel und Eingabe (ui/connect.ts setzt, player.ts/input.ts/gamepad.ts/mobile.ts/waves.ts rufen). Logik importiert so kein ui/-Fenster
+  ui: slot<UiApi>(UI_NONE),
   // Legendäre Krieger-Waffe ersetzt Spells in Start-Kit und Pool (realMen.ts setzt, spells/core.ts fragt)
   spellSwap: slot<(id: string) => string | undefined>(id => id),
   // true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod (boss.ts setzt, player.ts gainXp fragt)

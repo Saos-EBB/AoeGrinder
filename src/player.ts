@@ -10,14 +10,11 @@ import { cam, autoCamOn, MOBILE_YAW } from './camera';
 import { device } from './device';
 import { combatText, hurtNumber } from './feedback';
 import { fmtTime } from './ui/fmt';
-import { showCards } from './ui/menus';
 import { rankAllSpells } from './cards';
 import { mouseBtn, act, useMeleeBinds } from './input';
 import { fillPacks, removeMob, announceNewMobs, burnMob, pullMob } from './mobs';
 import { clearAbilities } from './abilities';
 import './score';   // resetScore meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
-import './ui/scoreHud';
-import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
 import { heroModel, startHeroRun, endHeroRun } from './models/heroModel';
@@ -46,6 +43,7 @@ import './loot';   // resetLoot meldet sich per onRunReset an; Import bleibt fü
 import './portal';   // resetPortal meldet sich per onRunReset an; Import bleibt für die Lade-Reihenfolge
 import { milestone, MILESTONES } from './meta';
 import { hooks, emit, onRunReset } from './hooks';
+const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 // Neuer Run auf einer generierten Map: Map mit neuem Seed neu bauen (vor resetGame, das den Spieler auf zone.spawn setzt)
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
@@ -235,7 +233,7 @@ export function updateCardQueue() {
   if (state.pendingLevelUps <= 0) { state.cardRush = false; return; }
   if ((state.now < state.nextCardAt && !state.cardRush) || player.dead || $('cardModal').classList.contains('show')) return;
   state.nextCardAt = state.now + cardPace().gap;
-  showCards();
+  ui.fn.showCards();
 }
 
 // Abschluss: Level 100 bei Packs, Zeitziel in der Belagerung. Läuft durch den normalen Ergebnis-Screen.
@@ -252,7 +250,7 @@ export function die() {
   player.dead = true;
   player.hp = 0;
   endHeroRun();
-  showRunResult();
+  ui.fn.showRunResult();
   stopChannel(); stopDrink();
   state.paused = true;
   setTimeout(() => {

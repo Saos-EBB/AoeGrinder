@@ -132,11 +132,6 @@ export function openWorld() { render(); $('worldModal').classList.add('show'); }
 export function closeWorld() { $('worldModal').classList.remove('show'); renderMenu(); }
 $('worldClose').addEventListener('click', closeWorld);
 $('menuMap').addEventListener('click', openWorld);
-addEventListener('keydown', e => {
-  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || state.rebinding) return;
-  if (worldOpen() && e.code === 'Escape') { e.stopImmediatePropagation(); closeWorld(); return; }
-  if (e.code === 'KeyM' && menuOpen() && !document.querySelector('.modal.show:not(#startModal)')) { e.preventDefault(); openWorld(); }
-}, true);
 
 // Seed im Run: Pause-Menü (Zeile mit Kopieren); das Run-Ende zeigt ihn in leaderboardView.ts
 const pauseBox = document.querySelector('#pauseModal .pauseBox');
@@ -153,3 +148,12 @@ export function devWorldBlock() {
 }
 
 (window as any).__world = { open: openWorld, close: closeWorld, render };
+
+// Fenster-Listener (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener)
+export function mount() {
+  addEventListener('keydown', e => {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || state.rebinding) return;
+    if (worldOpen() && e.code === 'Escape') { e.stopImmediatePropagation(); closeWorld(); return; }
+    if (e.code === 'KeyM' && menuOpen() && !document.querySelector('.modal.show:not(#startModal)')) { e.preventDefault(); openWorld(); }
+  }, true);
+}

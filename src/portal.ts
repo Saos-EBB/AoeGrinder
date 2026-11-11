@@ -84,7 +84,6 @@ function closePortal() {
 const veil = document.createElement('div');
 veil.id = 'portalVeil';
 veil.style.cssText = `position: fixed; inset: 0; background: #07020c; opacity: 0; pointer-events: none; z-index: 30; transition: opacity ${PORTAL.fadeMs}ms ease;`;
-document.body.appendChild(veil);
 
 function enter() {
   fading = true;
@@ -145,3 +144,8 @@ export function devPortal(a: string) {
 }
 
 (window as any).__portal = { PORTAL, open: openPortal, get portal() { return portal; }, get taken() { return taken; }, get done() { return done; }, lazy };
+
+// Blende einhängen (E10): main.ts ruft mount() nach dem Ladebildschirm (gleicher z-index 30, Stapel wie früher)
+export function mount() {
+  document.body.appendChild(veil);
+}

@@ -83,16 +83,6 @@ function cardTip(el, c, r, kind, stage, rep, color) {
     short: markWords(c.desc(r.mult)),
     rows: [stage ? `<span class="tGood">${t('cardui.up', { a: stage, b: stage + 1 })}</span>` : '', prev ? `<span class="tGood">${prev}</span>` : '', rep ? `<span class="tRune">⇄ ${rep.label}: ${rep.name}</span>` : ''].filter(Boolean) }));
 }
-// F1–F12 wählen eine Karte. Solange die Kartenwahl offen ist, gehören alle F-Tasten ihr: kein Browser (F1 Hilfe, F5 Neu laden, F11 Vollbild;
-// F12 lässt sich nicht immer abfangen) und kein Dev-Panel (F10), auch ohne Karte unter der Taste. Capture vor devPanel.ts
-addEventListener('keydown', e => {
-  if (!$('cardModal').classList.contains('show') || state.rebinding) return;
-  const i = CARD_KEYS.indexOf(e.code);
-  if (i < 0) return;
-  e.preventDefault(); e.stopImmediatePropagation();
-  if (e.repeat || $('heroModal')?.classList.contains('show')) return;
-  $('cards').querySelectorAll<HTMLElement>('.card')[i]?.click();
-}, true);
 
 function pickCard(card) {
   state.cardPicks[card.id] = (state.cardPicks[card.id] || 0) + 1;
@@ -273,3 +263,17 @@ $('bindsClose').addEventListener('click', closeBinds);
 $('bindsReset').addEventListener('click', () => { state.rebinding = null; state.padRebinding = null; renderBinds(); $('resetModal').classList.add('show'); $('resetNo').focus(); });
 $('resetNo').addEventListener('click', closeResetConfirm);
 $('resetYes').addEventListener('click', () => { resetBinds(); resetPadBinds(); saveBinds(); savePadBinds(); refreshKeyLabels(); renderBinds(); closeResetConfirm(); });
+
+// Fenster-Listener (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener)
+export function mount() {
+  // F1–F12 wählen eine Karte. Solange die Kartenwahl offen ist, gehören alle F-Tasten ihr: kein Browser (F1 Hilfe, F5 Neu laden, F11 Vollbild;
+  // F12 lässt sich nicht immer abfangen) und kein Dev-Panel (F10), auch ohne Karte unter der Taste. Capture vor devPanel.ts
+  addEventListener('keydown', e => {
+    if (!$('cardModal').classList.contains('show') || state.rebinding) return;
+    const i = CARD_KEYS.indexOf(e.code);
+    if (i < 0) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (e.repeat || $('heroModal')?.classList.contains('show')) return;
+    $('cards').querySelectorAll<HTMLElement>('.card')[i]?.click();
+  }, true);
+}

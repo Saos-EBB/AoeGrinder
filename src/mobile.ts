@@ -8,7 +8,6 @@ import { KEYS, readRaw, writeRaw } from './storage';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS } from './config';
 import { ICONS } from './ui/icons';
-import { openPause, menuOpen } from './ui/mainMenu';
 import { device, goFullscreen, toView } from './device';
 import { groundCursor } from './fx/spellFx';
 import { groundAt, SKY } from './collision';
@@ -18,6 +17,8 @@ import { manaCost, spellCd } from './formulas';
 import { cam, MOBILE_YAW } from './camera';
 import * as THREE from 'three';
 import { t } from './i18n';
+import { hooks } from './hooks';
+const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 export const touch = {
   move: { x: 0, y: 0 },        // wie pad.move: x rechts, y vorwärts (auf dem Bildschirm nach oben)
@@ -225,7 +226,7 @@ function build() {
   const menu = document.createElement('div');
   menu.id = 'tMenu';
   menu.textContent = '☰';
-  menu.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); openPause(); }, { passive: false });
+  menu.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); ui.fn.openPause(); }, { passive: false });
   layer.appendChild(menu);
   document.body.appendChild(layer);
   addEventListener('touchend', goFullscreen, { capture: true });
@@ -242,7 +243,7 @@ function releaseAll() {
 // Einmal pro Frame aus pollGamepad: Sichtbarkeit und Icons der Tasten
 export function updateTouch() {
   if (!layer) return;
-  const show = !state.paused && !menuOpen() && !player.dead;
+  const show = !state.paused && !ui.fn.menuOpen() && !player.dead;
   if (layer.hidden === show) { layer.hidden = !show; if (!show) releaseAll(); }
   if (!show) return;
   cam.dist = zoomDist;                                 // Menü und dunkel.ts setzen eigene Abstände, im Run gilt der Zoom aus den Einstellungen

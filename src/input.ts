@@ -9,16 +9,15 @@ import { renderer, camera } from './render';
 import { groundAt } from './collision';
 import { groundCursor } from './fx/spellFx';
 import { cam } from './camera';
-import { closeBinds, closeResetConfirm, renderBinds, setBind } from './ui/menus';
 import { cast } from './spells';
 import { isGround } from './spells/core';
 import { spellAtAction, modeAt } from './hotbar';
 import { refreshKeyLabels } from './feedback';
-import { heroOpen, toggleHero, closeHero } from './ui/heroWindow';
-import { openPause, closePause, pauseOpen } from './ui/mainMenu';
 import { startDodge } from './player';
 import { t } from './i18n';
 import { doUse } from './useKey';
+import { hooks } from './hooks';
+const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 export const ACTIONS = [
   { group: t('bind.group.move') },
@@ -101,22 +100,22 @@ addEventListener('keydown', e => {
   if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }
   if (state.rebinding) {
     e.preventDefault();
-    if (e.code !== 'Escape') setBind(state.rebinding, e);
+    if (e.code !== 'Escape') ui.fn.setBind(state.rebinding, e);
     state.rebinding = null;
-    renderBinds();
+    ui.fn.renderBinds();
     return;
   }
   if ($('resetModal').classList.contains('show')) {   // Fenster fängt alle Tasten ab, Enter löst den fokussierten Knopf aus
-    if (e.code === 'Escape') closeResetConfirm();
+    if (e.code === 'Escape') ui.fn.closeResetConfirm();
     return;
   }
   if (e.code === 'Escape') {
-    if (heroOpen()) closeHero();
+    if (ui.fn.heroOpen()) ui.fn.closeHero();
     else if ($('settingsModal').classList.contains('show')) $('settingsClose').click();
-    else if (pauseOpen() && !$('bindModal').classList.contains('show')) closePause();
+    else if (ui.fn.pauseOpen() && !$('bindModal').classList.contains('show')) ui.fn.closePause();
     else if (player.targeting) { player.targeting = false; groundCursor.visible = false; }
-    else if ($('bindModal').classList.contains('show')) closeBinds();
-    else if (!state.paused) openPause();
+    else if ($('bindModal').classList.contains('show')) ui.fn.closeBinds();
+    else if (!state.paused) ui.fn.openPause();
     return;
   }
   const id = actionForCode(e.code);
@@ -153,7 +152,7 @@ function spellUp(code) {
 function runAction(id, code = '') {
   if (SPELL_ACTIONS.includes(id)) spellDown(id, code);
   else if (SPELLS[id]) pressSpell(id);
-  if (id === 'charWin' || id === 'gearWin') toggleHero();
+  if (id === 'charWin' || id === 'gearWin') ui.fn.toggleHero();
   if (id === 'jump') state.jumpQueued = true;
   if (id === 'dodge') startDodge();
   if (id === 'use' && !state.paused) doUse();
@@ -169,9 +168,9 @@ addEventListener('mousedown', e => {
   e.preventDefault();
   const code = `Mouse${e.button}`;
   if (state.rebinding) {
-    setBind(state.rebinding, { code, key });
+    ui.fn.setBind(state.rebinding, { code, key });
     state.rebinding = null;
-    renderBinds();
+    ui.fn.renderBinds();
     return;
   }
   if (state.lastInput !== 'key') { state.lastInput = 'key'; refreshKeyLabels(); }

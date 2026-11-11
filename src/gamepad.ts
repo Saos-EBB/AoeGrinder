@@ -3,8 +3,6 @@
 import { spellAtAction } from './hotbar';
 import { KEYS, read, write } from './storage';
 import { startDodge } from './player';
-import { heroOpen, toggleHero, heroCommand } from './ui/heroWindow';
-import { openPause, closePause, cycleChar, cycleMap } from './ui/mainMenu';
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
@@ -15,10 +13,11 @@ import { groundCursor } from './fx/spellFx';
 import { castSpell, isGround } from './spells';
 import { showError, refreshKeyLabels } from './feedback';
 import { pressSpell } from './input';
-import { closeBinds, renderBinds } from './ui/menus';
 import { touch, updateTouch } from './mobile';
 import { t } from './i18n';
 import { doUse } from './useKey';
+import { hooks } from './hooks';
+const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 export const pad = {
   move: { x: 0, y: 0 },    // linker Stick: x rechts, y vorwärts, Länge 0..1
@@ -72,7 +71,7 @@ const PAD_EFFECTS = {
   dodge() { startDodge(); },
   use() { doUse(); },
   autorun() { state.autorun = !state.autorun; },
-  charWin() { toggleHero(); },
+  charWin() { ui.fn.toggleHero(); },
   camBehind() { cam.offset = 0; },
   zoomIn() { cam.dist = clamp(cam.dist - 1.5, 3, 35); },
   zoomOut() { cam.dist = clamp(cam.dist + 1.5, 3, 35); },
@@ -105,7 +104,7 @@ function moveAim(s) {
 }
 
 function gameButtons() {
-  if (pressed(padBinds.menu)) return openPause();
+  if (pressed(padBinds.menu)) return ui.fn.openPause();
   const cancelled = player.targeting && pressed(CANCEL_BTN);
   if (cancelled) cancelAim();
   const b = padBinds[aimAction];
@@ -152,7 +151,7 @@ function bindMenuButtons(step) {
   const row = moveSelection([...document.querySelectorAll('#bindList .padBtn')], step.y);
   if (step.y) row?.scrollIntoView({ block: 'nearest' });
   if (pressed(CONFIRM_BTN)) row?.click();
-  else if (pressed(CANCEL_BTN)) closeBinds();
+  else if (pressed(CANCEL_BTN)) ui.fn.closeBinds();
 }
 
 function captureRebind() {
@@ -161,7 +160,7 @@ function captureRebind() {
   const id = state.padRebinding;
   state.padRebinding = null;
   setPadBind(id, btn);
-  renderBinds();
+  ui.fn.renderBinds();
   refreshKeyLabels();
 }
 
@@ -169,17 +168,17 @@ function menuButtons() {
   const step = navStep();
   if (isOpen('bindModal')) return bindMenuButtons(step);
   // Fenster heroWindow.ts: Steuerkreuz/Stick wie Pfeile, A ausrüsten, X zerlegen, LB/RB Tabs, Y Raster/Baum, B schließt. Rückfrage: A ja, B nein
-  if (heroOpen()) {
+  if (ui.fn.heroOpen()) {
     const ask = document.querySelector<HTMLElement>('.modal.show #askYes');
     if (ask) { if (pressed(CONFIRM_BTN)) ask.click(); else if (pressed(CANCEL_BTN)) $('askNo').click(); return; }
-    if (step.y) heroCommand(step.y > 0 ? 'down' : 'up');
-    if (step.x) heroCommand(step.x > 0 ? 'right' : 'left');
-    if (pressed(CONFIRM_BTN)) heroCommand('enter');
-    if (pressed(2)) heroCommand('delete');
-    if (pressed(4)) heroCommand('prevTab');
-    if (pressed(5)) heroCommand('nextTab');
-    if (pressed(3)) heroCommand('view');
-    if (pressed(CANCEL_BTN)) heroCommand('close');
+    if (step.y) ui.fn.heroCommand(step.y > 0 ? 'down' : 'up');
+    if (step.x) ui.fn.heroCommand(step.x > 0 ? 'right' : 'left');
+    if (pressed(CONFIRM_BTN)) ui.fn.heroCommand('enter');
+    if (pressed(2)) ui.fn.heroCommand('delete');
+    if (pressed(4)) ui.fn.heroCommand('prevTab');
+    if (pressed(5)) ui.fn.heroCommand('nextTab');
+    if (pressed(3)) ui.fn.heroCommand('view');
+    if (pressed(CANCEL_BTN)) ui.fn.heroCommand('close');
     return;
   }
   if (isOpen('cardModal') && !isOpen('bindModal')) {
@@ -193,14 +192,14 @@ function menuButtons() {
   } else if (isOpen('pauseModal')) {
     const b = moveSelection([...document.querySelectorAll('#pauseModal button')], step.y, 'navSel');
     if (pressed(CONFIRM_BTN)) (b as any)?.click();
-    else if (pressed(CANCEL_BTN) || pressed(padBinds.menu)) closePause();
+    else if (pressed(CANCEL_BTN) || pressed(padBinds.menu)) ui.fn.closePause();
   } else if (isOpen('settingsModal')) {
     if (pressed(CANCEL_BTN)) $('settingsClose').click();
   } else if (isOpen('startModal')) {
-    if (pressed(4)) cycleChar(-1);                // L1, R1 wechseln die Figur
-    if (pressed(5)) cycleChar(1);
-    if (pressed(6)) cycleMap(-1);                 // L2, R2 wechseln die Map (Tastatur Q / E)
-    if (pressed(7)) cycleMap(1);
+    if (pressed(4)) ui.fn.cycleChar(-1);                // L1, R1 wechseln die Figur
+    if (pressed(5)) ui.fn.cycleChar(1);
+    if (pressed(6)) ui.fn.cycleMap(-1);                 // L2, R2 wechseln die Map (Tastatur Q / E)
+    if (pressed(7)) ui.fn.cycleMap(1);
     const b = moveSelection([...document.querySelectorAll<HTMLElement>('#startModal button:not(:disabled)')].filter(el => el.offsetParent), step.x || step.y, 'navSel');   // nur sichtbare (zugeklapptes „Mehr“, Ausrüstung nur Magier)
     if (pressed(CONFIRM_BTN)) (b as any)?.click();
   }
@@ -251,8 +250,8 @@ export function pollGamepad() {
   }
   if (state.padRebinding) captureRebind();
   else if (!state.paused) gameButtons();
-  else if (pressed(padBinds.menu) && isOpen('bindModal')) closeBinds();
-  else if (pressed(padBinds.charWin)) toggleHero();
+  else if (pressed(padBinds.menu) && isOpen('bindModal')) ui.fn.closeBinds();
+  else if (pressed(padBinds.charWin)) ui.fn.toggleHero();
   else menuButtons();
 }
 

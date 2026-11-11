@@ -140,7 +140,6 @@ function frame() {
   tickQueue(now);
   requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
 
 // Dev: jede Meldung einmal auslösen (F10 → Anzeige, Block für ui/devGame.ts)
 export function devFeatBlock() {
@@ -154,4 +153,9 @@ export function devFeatBlock() {
   fire.addEventListener('click', () => { const id = pick.value as FeatId; feat(id, id === 'boss' ? 'Boss' : id.startsWith('multi') ? `×${id.slice(5)}` : id.startsWith('combo') ? id.slice(5) : ''); });
   dev.append(pick, fire);
   return dev;
+}
+
+// Bild-Schleife (E10): main.ts ruft mount() in der rAF-Reihenfolge von früher
+export function mount() {
+  requestAnimationFrame(frame);
 }

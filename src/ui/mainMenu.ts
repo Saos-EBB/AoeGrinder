@@ -258,7 +258,6 @@ function pan() {
   panAt = now;
   requestAnimationFrame(pan);
 }
-requestAnimationFrame(pan);
 // Knopf oben rechts schaltet den Schwenk an und aus (gemerkt)
 function paintPanBtn() {
   const b = $('menuPanBtn');
@@ -277,12 +276,6 @@ function showMore(open: boolean) {
 }
 $('menuMore').addEventListener('click', () => showMore(!!moreList.hidden));
 moreList.addEventListener('click', e => { if ((e.target as HTMLElement).closest('button')) showMore(false); });
-addEventListener('pointerdown', e => { if (!moreList.hidden && !(e.target as HTMLElement).closest('#menuMoreWrap')) showMore(false); }, true);
-addEventListener('keydown', e => {
-  if (e.code !== 'Escape' || moreList.hidden) return;
-  e.stopImmediatePropagation();
-  showMore(false);
-}, true);
 
 // Kamera nah an der Figur, solange das Menü offen ist
 let camSaved = null;
@@ -307,12 +300,6 @@ $('menuWeaponsBtn').addEventListener('click', () => {
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
 });
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
-addEventListener('pointermove', e => {
-  if (turning === null) return;
-  menuTurn += (e.clientX - turning) * UI.menuCam.turnPerPx;
-  turning = e.clientX;
-});
-addEventListener('pointerup', () => { turning = null; });
 $('startModal').addEventListener('wheel', e => {
   if (e.target !== $('startModal')) return;           // In den Listen scrollt das Rad weiter
   const { minDist, maxDist, zoomStep } = UI.menuCam;
@@ -403,15 +390,30 @@ $('pauseGiveUp').addEventListener('click', () => {
   die();
 });
 
-// Tastatur: A/D wechselt die Figur, Q/E die Map, Enter startet (oder löst den fokussierten Knopf aus), Esc beendet das Bearbeiten
-addEventListener('keydown', e => {
-  if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Fenster heroWindow.ts tippen
-  if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
-  if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'heroModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
-  if (e.code === 'KeyA') cycleChar(-1);
-  if (e.code === 'KeyD') cycleChar(1);
-  if (e.code === 'KeyQ') cycleMap(-1);
-  if (e.code === 'KeyE') cycleMap(1);
-  if (e.code === 'Enter' && !(document.activeElement instanceof HTMLButtonElement) && !document.querySelector('#startModal .navSel')) { e.preventDefault(); startRun(); }
-}, true);
-
+// Fenster-Listener und Kameraschwenk (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener, rAF-Reihenfolge)
+export function mount() {
+  requestAnimationFrame(pan);
+  addEventListener('pointerdown', e => { if (!moreList.hidden && !(e.target as HTMLElement).closest('#menuMoreWrap')) showMore(false); }, true);
+  addEventListener('keydown', e => {
+    if (e.code !== 'Escape' || moreList.hidden) return;
+    e.stopImmediatePropagation();
+    showMore(false);
+  }, true);
+  addEventListener('pointermove', e => {
+    if (turning === null) return;
+    menuTurn += (e.clientX - turning) * UI.menuCam.turnPerPx;
+    turning = e.clientX;
+  });
+  addEventListener('pointerup', () => { turning = null; });
+  // Tastatur: A/D wechselt die Figur, Q/E die Map, Enter startet (oder löst den fokussierten Knopf aus), Esc beendet das Bearbeiten
+  addEventListener('keydown', e => {
+    if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;   // Spielstand-Code, Suche im Fenster heroWindow.ts tippen
+    if (hudEditing()) { if (e.code === 'Escape') { e.stopImmediatePropagation(); stopHudEdit(); } return; }
+    if (!menuOpen() || state.rebinding || ['bindModal', 'settingsModal', 'boardModal', 'shopModal', 'heroModal', 'gearKeepModal'].some(id => $(id)?.classList.contains('show'))) return;
+    if (e.code === 'KeyA') cycleChar(-1);
+    if (e.code === 'KeyD') cycleChar(1);
+    if (e.code === 'KeyQ') cycleMap(-1);
+    if (e.code === 'KeyE') cycleMap(1);
+    if (e.code === 'Enter' && !(document.activeElement instanceof HTMLButtonElement) && !document.querySelector('#startModal .navSel')) { e.preventDefault(); startRun(); }
+  }, true);
+}

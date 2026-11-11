@@ -239,12 +239,6 @@ $('boardImport').addEventListener('click', () => {
     $('boardMsg').textContent = t('board.badJson');
   }
 });
-// Esc schließt nur die Rangliste, nicht das Menü darunter
-addEventListener('keydown', e => {
-  if (e.code !== 'Escape' || !boardOpen()) return;
-  e.stopImmediatePropagation();
-  closeBoard();
-}, true);
 
 // Aufruf aus Start-, Esc- und Todesbildschirm
 const boardButton = (cls, style) => {
@@ -282,4 +276,14 @@ export function devCollidersBlock() {
     btn.textContent = `Collider anzeigen: ${collidersOn ? 'an' : 'aus'}`;
   });
   return btn;
+}
+
+// Fenster-Listener (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener)
+export function mount() {
+  // Esc schließt nur die Rangliste, nicht das Menü darunter
+  addEventListener('keydown', e => {
+    if (e.code !== 'Escape' || !boardOpen()) return;
+    e.stopImmediatePropagation();
+    closeBoard();
+  }, true);
 }

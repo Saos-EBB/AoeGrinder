@@ -257,13 +257,6 @@ $('shopClose').addEventListener('click', () => {
   toMainMenu();
 });
 
-// Esc schließt den Shop wie der Knopf (nicht, solange das Fenster aus heroWindow.ts oder eine Rückfrage darüber liegen)
-addEventListener('keydown', e => {
-  if (e.code !== 'Escape' || !$('shopModal').classList.contains('show') || document.querySelector('#heroModal.show, .modal.show:has(#askTitle)')) return;
-  e.stopImmediatePropagation();
-  $('shopClose').click();
-}, true);
-
 // Dev
 const refresh = () => { renderMenu(); };
 $('devDust').addEventListener('click', () => { devSetDust(meta.dust + 500); refresh(); });
@@ -282,3 +275,13 @@ $('devInvTopUp').addEventListener('click', () => {
 });
 $('devInvClear').addEventListener('click', () => { devClearInventory(); refreshInv(); });
 $('devComplete').addEventListener('click', () => { $('settingsClose').click(); $('pauseModal').classList.remove('show'); if (!player.dead) completeRun('Dev'); });
+
+// Fenster-Listener (E10): main.ts ruft mount() in der Reihenfolge von früher (Escape-Kette der Capture-Listener)
+export function mount() {
+  // Esc schließt den Shop wie der Knopf (nicht, solange das Fenster aus heroWindow.ts oder eine Rückfrage darüber liegen)
+  addEventListener('keydown', e => {
+    if (e.code !== 'Escape' || !$('shopModal').classList.contains('show') || document.querySelector('#heroModal.show, .modal.show:has(#askTitle)')) return;
+    e.stopImmediatePropagation();
+    $('shopClose').click();
+  }, true);
+}
