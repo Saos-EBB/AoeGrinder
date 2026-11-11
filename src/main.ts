@@ -43,8 +43,8 @@ import * as buffsMod from './buffs';
 import { menuYaw, enterMenu, menuShowcase } from './ui/mainMenu';
 import { renderFigPreview } from './ui/figPreview';
 import * as menuMod from './ui/mainMenu';
-import './ui/settingsView';
-import './ui/devPanel';
+import { mount as mountSettings } from './ui/settingsView';
+import { mount as mountDevPanel } from './ui/devPanel';
 import * as cardsUiMod from './ui/menus';
 import { updateWucht } from './wucht';
 import { updateEnergy, figureLook } from './vfx/energy';
@@ -74,6 +74,8 @@ import { mountDev } from './ui/devGame';
 // Start in fester Reihenfolge, wenn alle Module geladen sind (keine Seiteneffekt-Imports mehr für diese Teile)
 mountSaveCode();       // Spielstand-Code: Fenster und Einträge im „Mehr“-Menü
 mountAchievements();   // Einblendung neuer Erfolge, vor initGear (dort können Erfolge entstehen)
+mountSettings();       // Einstellungsfenster
+mountDevPanel();       // Dev-Panel (F10), Blöcke danach mit mountDev
 initGear(normalizeMeta);   // gespeicherten Stand säubern
 hooks.figSay.set(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
 hooks.switchZone.set(switchZone);   // Portal (portal.ts)

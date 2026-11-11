@@ -17,7 +17,6 @@ function showTab(id) {
   for (const s of $('settingsBox').querySelectorAll<HTMLElement>('section[data-tab]')) s.hidden = s.dataset.tab !== id;
   $('setFootLeft').hidden = id !== 'interface';
 }
-for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.addEventListener('click', () => showTab(b.dataset.tab));
 
 // ---------- Bausteine: Zeile, Schalter, Slider, Segment-Knöpfe ----------
 function row(label: string, control: HTMLElement) {
@@ -155,33 +154,38 @@ function buildInterface() {
 
 // ---------- Tab Grafik: Helligkeit (dunkel.ts), 0 % = dunkelster Look; wird beim Öffnen neu gebaut, damit Abbrechen den Regler mitnimmt ----------
 const brightBox = document.createElement('div');
-$('setGrafik').querySelector('h2').after(brightBox);
 const buildGrafik = () => brightBox.replaceChildren(slider('brightness', t('set.brightness'), 0, 100));
 
-// Knöpfe unten links (nur im Tab Interface)
-$('setFootLeft').append(
-  button(t('set.editUi'), 'fg-btn alt', () => {
-    const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
+let opened: Partial<UiSettings> | null = null;   // Stand beim Öffnen (Abbrechen)
+
+// Einstellungsfenster: Reiter, Regler, Knöpfe; main.ts ruft das einmal beim Start
+export function mount() {
+  $('setGrafik').querySelector('h2').after(brightBox);
+  for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.addEventListener('click', () => showTab(b.dataset.tab));
+  // Knöpfe unten links (nur im Tab Interface)
+  $('setFootLeft').append(
+    button(t('set.editUi'), 'fg-btn alt', () => {
+      const backdrop = menuOpen() ? 'startModal' : 'pauseModal';
+      $('settingsClose').click();
+      editHud(backdrop);
+    }),
+    button(t('set.resetLayout'), 'fg-btn alt', () => $('hudEditReset').click()),
+  );
+
+  // Abbrechen: Stand vom Öffnen zurück. Der Stand wird gemerkt, sobald das Fenster aufgeht
+  new MutationObserver(() => {
+    const show = $('settingsModal').classList.contains('show');
+    if (show && !opened) { opened = structuredClone(uiSettings); buildInterface(); buildGrafik(); showTab(tab); }
+    if (!show) opened = null;
+  }).observe($('settingsModal'), { attributes: true, attributeFilter: ['class'] });
+  $('settingsCancel').addEventListener('click', () => {
+    const back = opened;
+    if (back) for (const k of Object.keys(UI_DEFAULTS) as (keyof UiSettings)[]) if (k !== 'devPanel' && k !== 'profiles' && JSON.stringify(uiSettings[k]) !== JSON.stringify(back[k])) setUi(k, back[k] as never);
     $('settingsClose').click();
-    editHud(backdrop);
-  }),
-  button(t('set.resetLayout'), 'fg-btn alt', () => $('hudEditReset').click()),
-);
+  });
 
-// Abbrechen: Stand vom Öffnen zurück. Der Stand wird gemerkt, sobald das Fenster aufgeht
-let opened: Partial<UiSettings> | null = null;
-new MutationObserver(() => {
-  const show = $('settingsModal').classList.contains('show');
-  if (show && !opened) { opened = structuredClone(uiSettings); buildInterface(); buildGrafik(); showTab(tab); }
-  if (!show) opened = null;
-}).observe($('settingsModal'), { attributes: true, attributeFilter: ['class'] });
-$('settingsCancel').addEventListener('click', () => {
-  const back = opened;
-  if (back) for (const k of Object.keys(UI_DEFAULTS) as (keyof UiSettings)[]) if (k !== 'devPanel' && k !== 'profiles' && JSON.stringify(uiSettings[k]) !== JSON.stringify(back[k])) setUi(k, back[k] as never);
-  $('settingsClose').click();
-});
-
-buildInterface();
-buildGrafik();
-showTab(tab);
-$('setBinds').addEventListener('click', openBinds);
+  buildInterface();
+  buildGrafik();
+  showTab(tab);
+  $('setBinds').addEventListener('click', openBinds);
+}

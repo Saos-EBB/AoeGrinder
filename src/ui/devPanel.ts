@@ -32,7 +32,7 @@ export function registerDev(key: DevKey, el: HTMLElement, refresh?: () => void) 
   if (refresh) onOpen.push(refresh);
 }
 
-// Kopf, Inhalt, Griff; die vorhandenen Kinder wandern in .devBody
+// Kopf, Inhalt, Griff; die vorhandenen Kinder wandern in mount() in .devBody
 const icon = d => `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${d}</svg>`;
 const head = document.createElement('div');
 head.className = 'devTitle';
@@ -46,9 +46,6 @@ fps.textContent = 'FPS – · Calls – · Mobs –';
 const grip = document.createElement('div');
 grip.className = 'devResize';
 grip.setAttribute('aria-label', 'Größe ändern');
-panel.querySelector('.devHead')?.remove();
-body.append(...panel.children);
-panel.append(head, body, fps, grip);
 
 // Sektionen als Akkordeon: Kopfzeile ▸/▾ klappt auf/zu, offene Sektionen in frostgrind.ui.v1 (devPanel.open). Standard: nur die erste offen.
 // Die alten „Dev: …“-Überschriften fallen weg, kleine Unterzeilen sagen, was ein Block tut
@@ -132,14 +129,6 @@ grip.addEventListener('pointerdown', e => {
   drag = { mode: 'size', x: e.clientX, y: e.clientY, b: { ...box() } };
   grip.setPointerCapture(e.pointerId);
 });
-addEventListener('pointermove', e => {
-  if (!drag) return;
-  const dx = e.clientX - drag.x, dy = e.clientY - drag.y, b = box();
-  if (drag.mode === 'move') { b.x = drag.b.x + dx; b.y = drag.b.y + dy; } else { b.w = drag.b.w + dx; b.h = drag.b.h + dy; }
-  place();
-});
-addEventListener('pointerup', () => { if (drag) { drag = null; save(); } });
-addEventListener('resize', place);
 
 head.querySelector('.devBtns').addEventListener('click', e => {
   const a = (e.target as HTMLElement).closest('button')?.dataset.a, b = box();
@@ -150,13 +139,27 @@ head.querySelector('.devBtns').addEventListener('click', e => {
   save();
 });
 
-addEventListener('keydown', e => {
-  if (e.code !== 'F10' || state.rebinding) return;
-  e.preventDefault();
-  panel.hidden = !panel.hidden;
-  if (panel.hidden) return;
-  if (!sorted) sortGroups();
-  for (const fn of onOpen) fn();   // z. B. Zonen-Knöpfe neu (ui/menus.ts renderDevZones)
-  showSub();
-  place();
-});
+// Kopf, Inhalt, Griff ins Panel, Fenster-Listener (Ziehen, Größe, F10); main.ts ruft das einmal beim Start, vor mountDev
+export function mount() {
+  panel.querySelector('.devHead')?.remove();
+  body.append(...panel.children);
+  panel.append(head, body, fps, grip);
+  addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y, b = box();
+    if (drag.mode === 'move') { b.x = drag.b.x + dx; b.y = drag.b.y + dy; } else { b.w = drag.b.w + dx; b.h = drag.b.h + dy; }
+    place();
+  });
+  addEventListener('pointerup', () => { if (drag) { drag = null; save(); } });
+  addEventListener('resize', place);
+  addEventListener('keydown', e => {
+    if (e.code !== 'F10' || state.rebinding) return;
+    e.preventDefault();
+    panel.hidden = !panel.hidden;
+    if (panel.hidden) return;
+    if (!sorted) sortGroups();
+    for (const fn of onOpen) fn();   // z. B. Zonen-Knöpfe neu (ui/menus.ts renderDevZones)
+    showSub();
+    place();
+  });
+}
