@@ -1,7 +1,7 @@
 // Ein Fenster für Waffen, Charakter und Ausrüstung (Handoff docs/handoffs/fenster.md, Vorlage docs/ref/charakterfenster/, Layout A).
 // Links Figur mit Slots und Werten, rechts das Inventar. X und I öffnen und schließen es (input.ts charWin/gearWin), Esc schließt.
 // Pausiert (menus.ts BLOCKING), geht auch während der Kartenwahl und aus dem Pause-Menü. Im Run nur ansehen, im Hauptmenü voll.
-// Gear-Teile können Hersteller und Gruppe tragen (gear.ts makerOf/groupOf, sobald es die gibt): gelesen nur über optionale Aufrufe, sonst „—“.
+// Gear-Teile tragen Hersteller und Gruppe (gear.ts makerOf/groupOf), fehlt eins → „—“.
 
 import { $ } from '../util';
 import { state, player } from '../state';
@@ -11,8 +11,7 @@ import { meta, hasAch } from '../meta';
 import { ACHIEVEMENTS, setAch } from '../skins';
 import { mage } from '../models/mage';
 import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows, mainValue, valueText } from '../weaponRolls';
-import * as GEARMOD from '../gear';
-import { SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
+import { makerOf, groupOf, SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
   hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, lookSource, lookHint, gearMainValue, type Slot, type GearItem } from '../gear';
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
@@ -66,10 +65,9 @@ const viewOnly = inRun;
 warmThumbs(() => !inRun());   // Bild-Renderer im Hauptmenü vorab anlegen
 const mageGear = () => isMagierSkin(mage.skin);
 
-// ---------- Gear: Hersteller und Gruppe (optional, gear.ts makerOf/groupOf) ----------
-const optCall = (name: string, g: GearItem): string | null => { try { const f = (GEARMOD as any)[name]; return typeof f === 'function' ? f(g) ?? null : null; } catch { return null; } };
-export const gearMaker = (g: GearItem) => optCall('makerOf', g);
-export const gearGroup = (g: GearItem) => optCall('groupOf', g);
+// ---------- Gear: Hersteller und Gruppe (gear.ts makerOf/groupOf) ----------
+const gearMaker = (g: GearItem) => makerOf(g);
+const gearGroup = (g: GearItem) => groupOf(g);
 const makerName = (id: string | null) => id ? MAKERS[id]?.name ?? id : '—';
 const groupName = (id: string | null) => id ? t(`hw.group.${id}`) : '—';
 

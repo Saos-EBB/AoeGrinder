@@ -190,7 +190,6 @@ function setPhase(i, announce) {
   state.fogExtra = P.fog;
   if (announce) state.newMob = { text: P.text, at: state.now };
 }
-export const moonPhase = () => MS.phases[Math.max(0, phaseIdx)];
 
 export const mondsee = {
   name: t('zone.mondsee.name'),

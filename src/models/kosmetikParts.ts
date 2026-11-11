@@ -394,8 +394,7 @@ const COS: Record<string, { slot: string; build: (ctx: Ctx) => void }> = {
     ctx.on(e => { if (e === 'streak') ctx.say('cos.say.muh'); });
     ctx.tick(K => { th.rot(Math.sin(K.t * 2.5) * 0.3, 0, Math.sin(K.t * 1.7) * 0.4); const k = K.since('streak') / 0.5; ctx.hop(k < 1 ? Math.sin(Math.PI * k) * 0.08 : 0); }); } },
 };
-export const KOS_IDS = Object.keys(COS);
-export const kosSlot = (id: string) => COS[id]?.slot ?? null;
+const KOS_IDS = Object.keys(COS);
 
 // ---------------- Viewer-Raum → Bones der Figur ----------------
 export interface KosPiece { bone: THREE.Bone; geo: THREE.BufferGeometry; color: any; m: THREE.Matrix4; glow: boolean; noShell: boolean }

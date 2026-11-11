@@ -11,8 +11,8 @@ export function pt(anchor: Anchor, ax: number, ay: number, scale = 1, variant?: 
   const [fx, fy] = FRAC[anchor];
   return { anchor, x: r2((ax - W * fx) / W * 100), y: r2((ay - H * fy) / H * 100), scale: r2(scale), ...(variant ? { variant } : {}) };
 }
-// Grundgrößen der Elemente in hud.css: Zauberplatz 52, Minimap 150, Combo-Zahl 64
-export const SLOT = 52, MAP = 150, COMBO = 64;
+// Grundgröße der Minimap in hud.css (Zauberplatz 52 und Combo-Zahl 64 stehen nur dort)
+export const MAP = 150;
 
 // Handy: Sticks und Tasten liegen unten in den Ecken, das HUD oben. Gilt über jedem Layout, Leben und Mana dort als schlichte Balken // PH
 export const MOBILE: Partial<Record<HudElementId, Placement>> = {

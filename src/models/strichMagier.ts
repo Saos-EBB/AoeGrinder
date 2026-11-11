@@ -530,7 +530,7 @@ const tubeGeo = (pts, r) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pt
 const zigPts = (x, y0, y1, amp, n) => Array.from({ length: n + 1 }, (_, i) => V(x, lerp(y0, y1, i / n), i % 2 ? amp : -amp));
 // Gear-Teile (gearParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. look = Skin (skins.ts), skin = Schul-Look (SKIN_OF).
 // Kevin: fertige Skins müssen nicht alles zulassen, mit Skin keine Hüte, Hochspannung keine Rückenteile. Angelegt bleibt das Teil trotzdem (Werte zählen)
-export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
+const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
   look: { seuche: ['kopf'],        // Pestmaske mit Hut: kein Hut/Kapuze/Diadem/Halo darüber
     frost14: ['kopf'],             // Platin-Perücke mit hoher Welle
     blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken
@@ -538,7 +538,7 @@ export const GEAR_HIDE: { look: Record<string, string[]>; skin: Record<string, s
   skin: { base: ['kopf'] },        // Zuhälter-Look (nur Dev): Fedora
 };
 // Kosmetik-Teile (kosmetikParts.ts), die zu einem Skin oder Schul-Look nicht passen: ausgeblendet. Einträge sind Slots oder Look-IDs. Gleiche Regel wie oben
-export const KOS_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
+const KOS_HIDE: { look: Record<string, string[]>; skin: Record<string, string[]> } = {
   look: { seuche: ['kopf'],        // Pestmaske mit Hut: nichts auf dem Kopf
     frost14: ['kopf'],             // Platin-Perücke
     blitz: ['kopf', 'ruecken'],    // Haar mit Sonnenbrille; Flasche mit Strom auf dem Rücken (auch Element-Rucksack, Limo-Jetpack, Kill-Flagge …)

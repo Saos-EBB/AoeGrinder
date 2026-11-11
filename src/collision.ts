@@ -18,7 +18,6 @@ const found = [];
 // Kartenrand: generierte Maps (src/mapgen) setzen ein Rechteck, alte Zonen behalten den Kreis CFG.playRadius
 let bounds: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
 export function setBounds(b) { bounds = b; }
-export const mapBounds = () => bounds;
 // Punkt in die Karte holen: Rechteck der generierten Map, sonst Kreis
 export function clampToMap(pos) {
   if (bounds) {

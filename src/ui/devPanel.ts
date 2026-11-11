@@ -138,7 +138,6 @@ head.querySelector('.devBtns').addEventListener('click', e => {
   save();
 });
 
-export const devOpen = () => !panel.hidden;
 addEventListener('keydown', e => {
   if (e.code !== 'F10' || state.rebinding) return;
   e.preventDefault();

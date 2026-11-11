@@ -8,7 +8,7 @@ import { maxMana } from './formulas';
 import { run } from './score';
 
 export type FigEvent = 'kill' | 'crit' | 'cast' | 'hit' | 'level' | 'streak' | 'idle' | 'sprint';
-export const FIG_EV = {   // PH
+const FIG_EV = {   // PH
   streak: { n: 10, ms: 2000 },   // Kill-Serie: so viele Kills in so vielen ms (Spielzeit)
   idle: { ms: 10000 },           // so lange ohne Eingabe und ohne Bewegung (echte Zeit, läuft auch im Hauptmenü)
   gap: { kill: 120, crit: 200, hit: 250, cast: 0, level: 0, streak: 0, idle: 0, sprint: 0 } as Record<FigEvent, number>,   // höchstens ein Ereignis je so viele ms (AoE-Crits, Gift-Ticks), echte Zeit

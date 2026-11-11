@@ -149,5 +149,4 @@ export function resetLoot() {
   drops = [];
   state.finds = [];
 }
-export const groundDrops = () => drops.length;
 (window as any).__loot = { DROP, drops: () => drops, bossDrops, spawnDrop, dropDust, dropWeapon, collectAll };

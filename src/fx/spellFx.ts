@@ -126,19 +126,6 @@ function softDisc(g, r, inner, outer) {
   grd.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = grd; g.fillRect(0, 0, 2 * r, 2 * r);
 }
-// Spiralarme, die zur Mitte laufen
-function spiral(g, r, arms, turns, width) {
-  for (let i = 0; i < arms; i++) {
-    const a0 = i / arms * Math.PI * 2;
-    g.lineWidth = width * rand(0.6, 1.2);
-    g.beginPath();
-    for (let t = 0; t <= 1; t += 0.02) {
-      const a = a0 + t * turns * Math.PI * 2, d = r * 0.97 * (1 - t);
-      g.lineTo(r + Math.cos(a) * d, r + Math.sin(a) * d);
-    }
-    g.stroke();
-  }
-}
 export const burnTex = canvasTex((g, r) => {              // Glut mit hellen Rissen und Brandflecken
   softDisc(g, r, 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0.25)');
   g.fillStyle = 'rgba(255,255,255,0.3)';
@@ -148,22 +135,6 @@ export const burnTex = canvasTex((g, r) => {              // Glut mit hellen Ris
   }
   g.strokeStyle = 'rgba(255,255,255,0.95)';
   cracks(g, r, 22, 34);
-});
-export const galeTex = canvasTex((g, r) => {              // Wind: viele dünne Spiralen
-  softDisc(g, r, 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)');
-  g.strokeStyle = 'rgba(255,255,255,0.7)';
-  spiral(g, r, 14, 1.1, 5);
-});
-export const voidTex = canvasTex((g, r) => {              // Leere: breite Arme, Mitte leuchtet nicht
-  softDisc(g, r, 'rgba(255,255,255,0)', 'rgba(255,255,255,0.25)');
-  g.strokeStyle = 'rgba(255,255,255,0.75)';
-  spiral(g, r, 5, 0.8, 16);
-  g.globalCompositeOperation = 'destination-out';
-  const hole = g.createRadialGradient(r, r, r * 0.08, r, r, r * 0.35);
-  hole.addColorStop(0, 'rgba(0,0,0,1)');
-  hole.addColorStop(1, 'rgba(0,0,0,0)');
-  g.fillStyle = hole; g.fillRect(0, 0, 2 * r, 2 * r);
-  g.globalCompositeOperation = 'source-over';
 });
 export const blightTex = canvasTex((g, r) => {            // Entweihter Boden: Siegel und Risse
   softDisc(g, r, 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.2)');

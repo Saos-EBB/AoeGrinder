@@ -13,7 +13,6 @@ export const TAU = Math.PI * 2;
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const outC = t => 1 - Math.pow(1 - t, 3);
 export const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
-export const sine = t => .5 - .5 * Math.cos(Math.PI * t);
 export const rnd = (a, b) => a + Math.random() * (b - a);
 // 0 → 1 → 0: Einblenden über a, Ausblenden über b (Anteile der Dauer)
 export const env = (k, a = .15, b = .35) => clamp(Math.min(k / a, (1 - k) / b), 0, 1);
@@ -209,10 +208,7 @@ export function em(e: Fx, name: GeoName, pal: Pal, o: EOpts = {}) {
   e.ms.push(m);
   return m;
 }
-// Fremdes Mesh (z. B. Hülle auf der Körper-Geometrie) an einen Effekt hängen; dispose läuft am Ende
-export function own(e: Fx, m: THREE.Mesh, dispose?: () => void) { m.userData.owner = e; m.userData.dispose = dispose; e.ms.push(m); return m; }
 export const killFx = (e: Fx) => release(e);
-export const fxAlive = (e: Fx) => !!e && !e.dead;
 
 export function updateEnergy(dt: number) {
   EU.uTime.value += dt;
@@ -245,7 +241,6 @@ export function field(make: (e: Fx) => void, step: (e: Fx, fade: number, dt: num
 const clearHooks: (() => void)[] = [];
 export const onClearEnergy = (fn: () => void) => clearHooks.push(fn);   // weitere Effekt-Listen (Blitze) leeren mit
 export function clearEnergy() { for (const e of FX.slice()) release(e); figureLook.meter = null; for (const fn of clearHooks) fn(); }
-export const energyCount = () => FX.length;
 
 // ───────────────────────── Funken über das Partikelsystem des Spiels (HDR-Farben für Bloom)
 export function sparks(p: THREE.Vector3, n: number, pal: Pal, { v = [0, 2.5, 0], grav = 5, life = .7, spread = .5, band = 3, glow = 1.6 } = {}) {

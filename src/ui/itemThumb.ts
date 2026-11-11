@@ -11,7 +11,7 @@ import { kosmetikTree } from '../models/kosmetikParts';
 import { groupOf, makerOf, LOOKS, type GearItem } from '../gear';
 import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot } from './weaponThumb';
 
-export const THUMB = { px: 128, yaw: 0.5, pitch: 0.22, pad: 1.1, splinter: 0.85, budget: 6, batch: 8 };   // Bildgröße, Blick leicht schräg von vorn und oben, Rand; Nachladen: ms Aufbau und Bilder pro Frame // PH
+const THUMB = { px: 128, yaw: 0.5, pitch: 0.22, pad: 1.1, splinter: 0.85, budget: 6, batch: 8 };   // Bildgröße, Blick leicht schräg von vorn und oben, Rand; Nachladen: ms Aufbau und Bilder pro Frame // PH
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
 

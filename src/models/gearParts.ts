@@ -270,7 +270,6 @@ const BUILD = {
       emblem(b, M.focus, 0, 1.3, 0.14, 1); rarityExtras(b, M, 0, 0.6, 0, 0.5); },
   },
 };
-export const GEAR_FORMS = Object.fromEntries(Object.entries(BUILD).map(([slot, b]) => [slot, Object.keys(b)]));
 
 // Baut ein Teil im Viewer-Raum. Kopf: Kopf-Mitte = Ursprung. Arme: { L: Arm −x, R: Arm +x } in Körper-Koordinaten. Sonst Körper-Koordinaten (Boden = 0)
 export function buildGearTree(slot: string, group: string, item: GearLookItem): THREE.Object3D | { L: THREE.Object3D; R: THREE.Object3D } | null {

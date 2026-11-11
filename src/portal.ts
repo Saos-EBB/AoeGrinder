@@ -129,7 +129,6 @@ const lazy = () => !!portal && state.now - portal.at > PORTAL.lazyMs;
 addXpMul(() => lazy() ? PORTAL.lazyXp : 1);
 
 export const portalPos = () => portal?.pos ?? null;
-export const portalLazy = lazy;
 
 // Run-Start (resetGame)
 export function resetPortal() {

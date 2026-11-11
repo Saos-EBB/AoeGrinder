@@ -15,7 +15,7 @@ import { impact, lightFlash } from '../fx/impact';
 import { waveFx, shellFx, flareFx, sparksFx, groundDisc } from '../fx/prims';
 
 export const FIRE = [2.4, 0.9, 0.15], EMBER = [2.2, 0.45, 0.08], SHADOW = [0.8, 0.15, 1.5], VOID = [0.35, 0.05, 0.9];
-export const NATURE = [0.5, 2, 0.8], BOLT = [1.3, 1.7, 2.8];
+export const BOLT = [1.3, 1.7, 2.8];
 const BOLT_WHITE = [2.2, 2.4, 2.8];
 export const ICE = [0.35, 1, 2.1], ICE_WHITE = [1.1, 1.5, 2.1];
 

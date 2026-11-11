@@ -73,7 +73,6 @@ export const perfectText = (setId: string, slot: Slot) => { const [k, v] = SETS[
 // Wertgruppe = Schaft-Gruppe des Werts (SHAFTS, wie rollWeapon) → Form am Modell (Gruppen des Viewers, models/gearParts.ts)
 export const GROUP_OF_SHAFT = { gerade: 'off', gedreht: 'tempo', geknotet: 'leben', segmentiert: 'mana', umwickelt: 'radius' } as const;
 export type GearGroup = typeof GROUP_OF_SHAFT[keyof typeof GROUP_OF_SHAFT];
-export const GEAR_GROUPS = Object.values(GROUP_OF_SHAFT);
 const shaftOf = (value: string) => Object.keys(SHAFTS).find(k => SHAFTS[k].values.includes(value)) ?? null;
 // Für Fenster und Modell: fehlt der Wert oder der Hersteller (sollte nach cleanGear nicht vorkommen) → null
 export const groupOf = (g: GearItem | null): GearGroup | null => { const sh = g?.s?.value != null ? shaftOf(g.s.value) : null; return sh ? GROUP_OF_SHAFT[sh] : null; };
@@ -126,7 +125,6 @@ const wearMap = () => { if (!meta.wear || typeof meta.wear !== 'object') meta.we
 export const overflow = (): GearItem[] => { if (!Array.isArray(meta.gearOver)) meta.gearOver = []; return meta.gearOver; };
 export const worn = (slot: Slot): GearItem | null => gearInv(slot).find(g => g.id === wearMap()[slot]) ?? null;
 export const slotFull = (slot: Slot) => gearInv(slot).length >= GEAR.invMax;
-export const sortedGear = (slot: Slot) => [...gearInv(slot)].sort((a, b) => b.r - a.r || b.id - a.id);
 
 // Gespeichertes Feld säubern (localStorage, Spielstand-Code): unbekannte Slots, kaputte Teile und tote Verweise fallen weg
 const okItem = (g: any, slot: string) => g && typeof g === 'object' && Number.isInteger(g.r) && g.r >= 0 && g.r < CARD_RARITIES.length && g.s && typeof g.s === 'object'

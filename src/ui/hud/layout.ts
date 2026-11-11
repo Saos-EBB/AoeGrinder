@@ -65,7 +65,6 @@ export function registerHudElement(id: HudElementId, inner: HTMLElement) {
   place(id);
   return w;
 }
-export const hudWrapper = (id: HudElementId) => wrappers.get(id);
 
 function place(id: HudElementId) {
   const w = wrappers.get(id), p = placementOf(id);

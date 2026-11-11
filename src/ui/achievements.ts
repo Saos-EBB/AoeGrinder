@@ -9,7 +9,7 @@ const ACH_TOAST = { showMs: 4500 };   // PH
 const setOf = (ach: string) => ach.slice(4);   // 'set:glut' → 'glut'
 const setName = (ach: string) => t(`look.magier.${setOf(ach)}.name`);
 // Meilenstein (meta.ts MILESTONES): Name und das Kosmetik-Teil, das er freischaltet
-export const achText = (ach: string) => MILESTONE_LOOK[ach] ? t('ach.msDone', { name: t(`ach.ms.${ach}`), look: t(`look.${MILESTONE_LOOK[ach]}.name`) }) : t('ach.setDone', { set: setName(ach), skin: setName(ach) });
+const achText = (ach: string) => MILESTONE_LOOK[ach] ? t('ach.msDone', { name: t(`ach.ms.${ach}`), look: t(`look.${MILESTONE_LOOK[ach]}.name`) }) : t('ach.setDone', { set: setName(ach), skin: setName(ach) });
 
 const box = document.createElement('div');
 box.id = 'achToasts';
@@ -17,7 +17,7 @@ box.setAttribute('aria-live', 'polite');
 box.style.cssText = 'position:fixed;left:50%;top:calc(var(--fg-safe, 60px) + 8px);transform:translateX(-50%);z-index:9;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none';
 document.body.append(box);
 
-export function showAch(ach: string) {
+function showAch(ach: string) {
   const el = document.createElement('div');
   el.className = 'gPanel fg-panel';
   el.style.cssText = 'padding:calc(12 * var(--hu)) calc(22 * var(--hu));font:700 calc(18 * var(--hu)) var(--font-body);color:var(--fg-text);white-space:nowrap';

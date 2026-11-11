@@ -10,7 +10,7 @@ import { scene } from '../render';
 import { addTrauma, decal, debris } from '../wucht';
 import { hitstop } from '../fx/impact';
 import { combatText } from '../ui/hud';
-import { fx, em, uK, killFx, boom, ring as eRing, sparks, PAL } from '../vfx/energy';
+import { fx, em, killFx, boom, ring as eRing, sparks, PAL } from '../vfx/energy';
 
 export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const TAU = Math.PI * 2;
@@ -165,12 +165,6 @@ export async function gap(run, b, s) {
   await wait(run, s);
   b.mob.bossTint = fight.phase === 2 ? 'boss2' : 'boss';
 }
-// Zum Heimatpunkt in der Arena zurück
-export async function goHome(run, b, d = .55) {
-  const p0 = b.mob.pos.clone(), h = b.home;
-  if (dist2(p0, h) < .3) return;
-  await tw(run, d, k => { b.mob.pos.lerpVectors(p0, h, ease(k)); b.mob.pos.y = gy(b.mob.pos); b.yaw = yawTo(b.mob.pos, h); });
-}
 // Boss bewegen: nie aus der Arena, nie in den Spieler
 export function moveBody(b, p) {
   b.mob.pos.x = p.x; b.mob.pos.z = p.z;
@@ -228,4 +222,3 @@ export function lob(run, from, t, color, dur) {
     remove: () => killFx(e),
   }));
 }
-export const uk = uK;
