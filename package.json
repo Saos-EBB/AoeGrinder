@@ -10,6 +10,7 @@
     "check": "tsc --noEmit",
     "check:i18n": "node scripts/i18n-check.mjs",
     "check:cycles": "node scripts/cycles.mjs",
+    "check:strict": "node scripts/strict.mjs",
     "test": "vitest run"
   },
   "dependencies": {

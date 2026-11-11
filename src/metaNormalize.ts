@@ -22,7 +22,7 @@ export function normalizeMeta(m: any) {
   step('stats', () => { m.stats = cleanStats(m.stats); }, () => { m.stats = cleanStats(null); });
   step('maps', () => { m.maps = cleanMaps(m.maps); }, () => { m.maps = cleanMaps(null); });
   step('gear', () => cleanGear(m), () => {
-    m.gear = Object.fromEntries(SLOTS.map(s => [s, []])); m.wear = Object.fromEntries(SLOTS.map(s => [s, null])); m.gearOver = []; m.looks = []; m.lookWear = {};
+    m.gear = Object.fromEntries(SLOTS.map((s): [string, unknown[]] => [s, []])); m.wear = Object.fromEntries(SLOTS.map((s): [string, null] => [s, null])); m.gearOver = []; m.looks = []; m.lookWear = {};
     if (!Number.isInteger(m.nextGear)) m.nextGear = 0;
   });
   // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
