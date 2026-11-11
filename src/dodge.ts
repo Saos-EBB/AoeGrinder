@@ -173,12 +173,5 @@ export function updateDodgeHud() {
   dots.innerHTML = charges.map((t, i) => `<span style="width:8px;height:8px;border-radius:50%;border:1px solid #e8d8a8;background:${i < dodgeCharges() ? '#e8d8a8' : 'transparent'}"></span>`).join('');
 }
 
-// Dev: Mob-Angriffe sichtbar verlangsamen (Einstellungen)
-const devBtn = document.createElement('button');
-devBtn.className = 'bindBtn';
-devBtn.id = 'devMobAtk';
-const showDev = () => { devBtn.textContent = `Dev: Mob-Angriffe ×${String(DG.devMobSlow).replace('.', ',')}: ${state.devMobSlow ? 'an' : 'aus'}`; };
-devBtn.addEventListener('click', () => { state.devMobSlow = !state.devMobSlow; showDev(); });
-$('devPerf').after(devBtn);
-showDev();
+// Dev: Mob-Angriffe sichtbar verlangsamen (Knopf in ui/devGame.ts, state.devMobSlow)
 export const mobAttackSlow = () => state.devMobSlow ? DG.devMobSlow : 1;

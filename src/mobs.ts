@@ -19,7 +19,7 @@ import { mobAttackSlow } from './dodge';
 import { spawnPack as spawnThemePack, newKindNames } from './mobKinds';   // neue Mob-Kategorien (Phase 7): ein Aufruf pro Pack, Packgröße und Champion würfelt mobKinds.ts
 import type { PackSpot } from './mapgen/types';
 import { hpMulOf, dmgMulOf } from './mapgen/difficulty';
-import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied, devChampionUi } from './champions';
+import { C, rollChampionPack, rollAffixes, makeChampion, championHitPlayer, championDied } from './champions';
 // Schule für Boden-Spuren: 0 Feuer, 1 Frost, 2 Arkan, 3 Krieger und alles andere
 const schoolOf = source => { const t = SPELLS[source]?.tags ?? []; return t.includes('Feuer') ? 0 : t.includes('Frost') ? 1 : t.includes('Arkan') ? 2 : 3; };
 import { shakeCamera } from './camera';
@@ -470,4 +470,3 @@ export function knockbackMob(mob, center, dist, dur = 450) {
   startLeap(mob, target, dur, () => {});
 }
 
-devChampionUi(spawnChampionPack);

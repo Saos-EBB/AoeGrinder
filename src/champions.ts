@@ -2,7 +2,7 @@
 // Belohnung nur über XP und Punkte. Spawn in mobs.ts (spawnPack), Werte und Affixe hier in C. Kill: Wucht aus wucht.ts.
 
 import { state, player } from './state';
-import { $, pick, dist2d } from './util';
+import { pick, dist2d } from './util';
 import { maxHp } from './formulas';
 import { combatText } from './feedback';
 import { ringFx } from './fx/spellFx';
@@ -26,7 +26,7 @@ export const C = {
     stone: { name: t('affix.stone.name'), taken: 0.7 },                 // erhaltener Schaden, dazu immun gegen Knockback
   },
 };
-const AFFIX_IDS = Object.keys(C.affixes);
+export const AFFIX_IDS = Object.keys(C.affixes);
 
 // Würfelt beim Pack-Spawn: null oder die Affixe des Packs
 export function rollChampionPack() {
@@ -80,14 +80,3 @@ export function championDied(m, damagePlayer) {
   if (pack.every(o => o.dead)) combatText(pos, t('msg.champsDown'), 'info', 3);
 }
 
-// Dev: Champion-Pack neben dem Spieler, Affix wählbar
-export function devChampionUi(spawnAt) {
-  $('devZones').insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin:10px 0 6px">Dev: Champions</div>
-    <div><select class="bindBtn" id="devChampAffix"><option value="">Zufall</option>${AFFIX_IDS.map(a => `<option value="${a}">${C.affixes[a].name}</option>`).join('')}</select>
-    <button class="bindBtn" id="devChamp">Champion-Pack spawnen</button></div>`);
-  $('devChamp').addEventListener('click', () => {
-    const a = ($('devChampAffix') as HTMLSelectElement).value;
-    spawnAt(player.pos.x + 8, player.pos.z + 8, a ? [a] : rollAffixes());
-    $('settingsClose').click();
-  });
-}

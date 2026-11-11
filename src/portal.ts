@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import { state, player } from './state';
-import { $, dist2d } from './util';
+import { dist2d } from './util';
 import { scene } from './render';
 import { zone, zoneId, heightAt } from './world';
 import { mobMode } from './modifiers';
@@ -136,13 +136,11 @@ export function resetPortal() {
   veil.style.opacity = '0';
 }
 
-// Dev-Knopf (Gruppe Map-Objekte)
-$('devZones').insertAdjacentHTML('afterend', `<div id="devPortal" style="display:flex;gap:6px;flex-wrap:wrap"><button class="bindBtn" data-a="open">Portal öffnen</button><button class="bindBtn" data-a="go">Hin + durch</button><button class="bindBtn" data-a="lazy">2 min vorspulen</button></div>`);
-$('devPortal').addEventListener('click', e => {
-  const a = (e.target as HTMLElement).closest('button')?.dataset.a;
+// Dev-Knöpfe (Block in ui/devGame.ts): öffnen, hin und durch, 2 min vorspulen
+export function devPortal(a: string) {
   if (a === 'open') openPortal();
   if (a === 'go' && (portal || openPortal())) { player.pos.set(portal.pos.x, portal.pos.y, portal.pos.z); }
   if (a === 'lazy' && portal) portal.at -= PORTAL.lazyMs;
-});
+}
 
 (window as any).__portal = { PORTAL, open: openPortal, get portal() { return portal; }, get taken() { return taken; }, get done() { return done; }, lazy };

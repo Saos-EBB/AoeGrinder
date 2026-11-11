@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import { state, player } from '../state';
-import { $, dist2d } from '../util';
+import { dist2d } from '../util';
 import { scene } from '../render';
 import { zone, heightAt } from '../world';
 import { SPELLS } from '../config';
@@ -207,25 +207,12 @@ const devFns: [string, () => void][] = [];
 export const addDevButton = (label: string, fn: () => void) => { devFns.push([label, fn]); };
 const ahead = (d = 6) => { const f = player.facing; return { x: player.pos.x + Math.sin(f) * d, z: player.pos.z + Math.cos(f) * d }; };
 export const devAhead = ahead;
-function renderDev() {
-  const box = document.getElementById('devObjects');
-  if (!box) return;
-  box.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap"><select class="bindBtn" id="devObjKind">${kindList().map(k => `<option value="${k.id}">${k.name}</option>`).join('')}</select>
-    <button class="bindBtn" data-a="spawn">Spawnen</button><button class="bindBtn" data-a="trigger">Auslösen</button></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${devFns.map(([l], i) => `<button class="bindBtn" data-f="${i}">${l}</button>`).join('')}</div>`;
+// Block in ui/devGame.ts: Art wählen, spawnen, nächstes Objekt dieser Art auslösen, Knöpfe der Arten (addDevButton)
+export const devButtons = () => devFns.map(([label]) => label);
+export const devButton = (i: number) => devFns[i][1]();
+export function devTrigger(kind: string) {
+  const o = objs.filter(x => x.alive && x.kind.id === kind).sort((a, b) => dist2d(a, player.pos) - dist2d(b, player.pos))[0];
+  if (o) o.kind.devTrigger ? o.kind.devTrigger(o) : o.kind.onUse ? o.kind.onUse(o) : o.kind.onHit?.(o, 'feuer', null);
 }
-$('devZones').insertAdjacentHTML('afterend', '<div id="devObjects"></div>');
-$('devObjects').addEventListener('click', ev => {
-  const btn = (ev.target as HTMLElement).closest('button');
-  if (!btn) return;
-  const kind = ($('devObjKind') as HTMLSelectElement).value;
-  if (btn.dataset.a === 'spawn') { const p = ahead(); spawnObj(kind, p.x, p.z); }
-  if (btn.dataset.a === 'trigger') {
-    const o = objs.filter(x => x.alive && x.kind.id === kind).sort((a, b) => dist2d(a, player.pos) - dist2d(b, player.pos))[0];
-    if (o) o.kind.devTrigger ? o.kind.devTrigger(o) : o.kind.onUse ? o.kind.onUse(o) : o.kind.onHit?.(o, 'feuer', null);
-  }
-  if (btn.dataset.f) devFns[+btn.dataset.f][1]();
-});
-setTimeout(renderDev);   // nach dem Laden aller Arten
 
 (window as any).__objects = { get list() { return objs; }, kinds: KINDS, spawn: spawnObj, remove: removeObj, OBJ, rebuild: buildMap, elementOf, batches };

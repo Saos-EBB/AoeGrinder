@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { hooks } from './hooks';
 import { device } from './device';
 import { state, player } from './state';
-import { $, clamp, dist2d, rand } from './util';
+import { clamp, dist2d, rand } from './util';
 import { LEVEL_UNLOCKS } from './config';
 import { mobMaxHp, maxHp, xpForKill } from './formulas';
 import { scene, camera } from './render';
@@ -549,14 +549,6 @@ export function updateBossVisuals(dt) {
   if (barSub.textContent !== sub) barSub.textContent = sub;
 }
 
-// ---------- Dev: alle Bosse nach Stufe, Starten ----------
-{
-  const group = (label, list) => `<optgroup label="${label}">${list.map(b => `<option value="${b.id}">${b.evil ? 'V · ' : ''}${b.name}</option>`).join('')}</optgroup>`;
-  const opts = TIERS.map(([t, label]) => group(label, poolOf(t))).join('') + group('Verdorbene', BOSSES.filter(b => b.evil))
-    + group('nicht im Pool', BOSSES.filter(b => b.tier === 'aus')) + '<option value="prototyp">Prototyp-Boss</option>';
-  $('devPerf').insertAdjacentHTML('afterend', `<div style="display:flex;gap:6px;margin-bottom:14px"><select id="devBossPick" class="bindBtn" style="flex:1">${opts}</select><button class="bindBtn" id="devBoss">Starten</button></div>`);
-  $('devBoss').addEventListener('click', () => { $('settingsClose').click(); startBoss(($('devBossPick') as HTMLSelectElement).value); });
-}
 // Level 100 in Packs: erst der finale Boss, dann das Ergebnis (player.ts fragt hier nach)
 hooks.runEnd.set(() => { if (mobMode !== 'packs') return false; finalPending = true; return true; });
 // Wellen: nach jeder Welle ein Boss, die Welle wartet auf sein Ende

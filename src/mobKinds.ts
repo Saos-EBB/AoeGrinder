@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { state, player } from './state';
-import { $, rand, randInt, pick, clamp, dist2d } from './util';
+import { rand, randInt, pick, clamp, dist2d } from './util';
 import { CFG, LEVEL_UNLOCKS, LEVEL_PACK_SPREAD } from './config';
 import { camera } from './render';
 import { spawnMob, enterCombat, removeMob, damageMob, hitPlayer, rollPackSize } from './mobs';
@@ -230,17 +230,7 @@ function lightPillar(pos) {
   addEffect(mesh, P.pillarMs, k => { mesh.material.opacity = 0.7 * (1 - k); mesh.scale.set(1 + k * 0.6, 1, 1 + k * 0.6); });
 }
 
-// ───────── Dev: Pack spawnen, Kategorie × Zusatz × Theme (Theme nur als Skin-Wahl, die Map bleibt)
-const opt = (v, label) => `<option value="${v}">${label}</option>`;
-const DE = { normal: 'Normal', schnell: 'Schnell', stark: 'Stark', aoe: 'AoE', zauberer: 'Zauberer', werfer: 'Werfer', hexer: 'Hexer', gross: 'Groß', lauerer: 'Lauerer' };
-const ZDE = { heal: 'Heilen', shield: 'Schild', haste: 'Tempo', fliegt: 'Fliegt', platzt: 'Platzt', teilt: 'Teilt' };
-$('devZones').insertAdjacentHTML('afterend', `<div id="devKinds">
-  <select class="bindBtn" id="devKTheme">${Object.keys(THEME_DIFF).map(k => opt(k, k)).join('')}${opt('test', 'test')}</select>
-  <select class="bindBtn" id="devKCat">${opt('regeln', 'Pack nach Regeln')}${KIND_IDS.map(k => opt(k, DE[k])).join('')}</select>
-  <select class="bindBtn" id="devKZus">${opt('zufall', 'Zusatz: Regeln')}${opt('none', 'kein Zusatz')}${ZUSATZ_IDS.map(k => opt(k, ZDE[k])).join('')}</select>
-  <select class="bindBtn" id="devKN">${[1, 3, 6].map(n => opt(n, `× ${n}`)).join('')}</select>
-  <button class="bindBtn" id="devKSpawn">Pack spawnen</button></div>`);
-const val = id => ($(id) as HTMLSelectElement).value;
+// ───────── Dev: Pack spawnen (Block in ui/devGame.ts)
 // Vor dem Spieler (Blickrichtung der Kamera), 12 yd
 export function devSpot(dist = 12): PackSpot {
   const fx = player.pos.x - camera.position.x, fz = player.pos.z - camera.position.z, l = Math.hypot(fx, fz) || 1;
@@ -253,5 +243,4 @@ export function devSpawn(theme: string, cat: string, zus: string, n = 1, spot = 
   const cats = Array(n).fill(cat), z = zus === 'zufall' ? rollZusatz(cats) : cats.map(() => zus);
   return placeGroup(spot, theme, player.level, cats, z);
 }
-$('devKSpawn').addEventListener('click', () => devSpawn(val('devKTheme'), val('devKCat'), val('devKZus'), +val('devKN')));
 (window as any).__kinds = { spawnMob, removeMob, damageMob, enterCombat, camera, spawnPack, spawnKind, spawnLurker, devSpawn, devSpot, rollPackCats, rollZusatz, KINDS, big, lurk, history, P, CFG };
