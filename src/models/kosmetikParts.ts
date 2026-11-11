@@ -10,13 +10,11 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { limbFrame, flip, litCol, FIT } from './gearParts';
+import { type Mat, type PartPiece, type PartGlass, lit, glow as glowM, ds, mesh, seg, torso, tube, helix, plate, spike, alongArm, VP as P, FIT, limbFrame, litCol, convert as kitConvert } from './partKit';
 import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
 import { FIGURE_LIST } from '../figureTable';
 import { V } from '../util';
-
-type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
 
 export const KOS = {   // Optik-Zahlen // PH
   puffSize: 2.4,      // Partikelgröße × (Viewer-Sprites sind für die Nahansicht, die Spielkamera ist weit weg)
@@ -29,43 +27,14 @@ export const KOS = {   // Optik-Zahlen // PH
 };
 
 // ---------------- Material (Farben des Viewers) ----------------
-const lit = (c: number, o: Partial<NonNullable<Mat>> = {}): Mat => ({ c: new THREE.Color(c), g: 0, ...o });
-const glowM = (c: number): Mat => ({ c: new THREE.Color(c), g: 1 });
 const glassM = (c: number, a = KOS.glassAlpha): Mat => ({ c: new THREE.Color(c), glass: a });
-const ds = (m: Mat): Mat => (m ? { ...m, ds: true } : m);
 const MAT = { schwarz: lit(0x18161c), weiss: lit(0xf4f1ea), gold: lit(0xe8b23a), stahl: lit(0xb8bcc8), holz: lit(0x8a5a32), haut: lit(0xf1dcc6) };
 // Fest gestreut, damit ein Teil bei jedem Neubau gleich aussieht
 let SEED = 1;
 const srnd = () => (SEED = (SEED * 9301 + 49297) % 233280) / 233280;
 const rnd = (a: number, b: number) => a + srnd() * (b - a);
 
-// ---------------- Geometrie-Helfer (Viewer, weniger Segmente) ----------------
-function mesh(geo: THREE.BufferGeometry, mat: Mat, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
-  const o = new THREE.Object3D(); o.position.set(x, y, z); o.userData.geo = geo; o.userData.mat = mat; parent.add(o); return o;
-}
-function seg(a: THREE.Vector3, b: THREE.Vector3, r1: number, r2: number, mat: Mat, parent: THREE.Object3D, joint = true, hs = 1) {
-  const d = b.clone().sub(a), len = d.length(); const m = mesh(new THREE.CylinderGeometry(r2, r1, len, hs > 1 ? 12 : 8, hs), mat, parent);
-  m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize());
-  if (joint) mesh(new THREE.SphereGeometry(r1, 8, 6), mat, parent).position.copy(a);
-  return m;
-}
-function torso(parent, mat: Mat, yTop, yBot, rTop, rBot, depth = 0.62, hs = 1) {
-  const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, hs > 1 ? 20 : 14, hs), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
-  const cap = mesh(new THREE.SphereGeometry(rTop, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2), mat, parent, 0, yTop, 0); cap.scale.set(1, 0.35, depth); return m;
-}
-const tube = (pts: THREE.Vector3[], r: number, mat: Mat, parent, closed = false, n = 24) => mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, closed), n, r, 5, closed), mat, parent);
-const helix = (r, h, turns, y0 = 0) => { const p = []; for (let i = 0; i <= 40; i++) { const a = i / 40 * turns * Math.PI * 2; p.push(V(Math.cos(a) * r, y0 + i / 40 * h, Math.sin(a) * r)); } return p; };
-function plate(pts: number[][], depth: number, mat: Mat, parent, x = 0, y = 0, z = 0) {
-  const sh = new THREE.Shape(); pts.forEach(([px, py], i) => (i ? sh.lineTo(px, py) : sh.moveTo(px, py))); sh.closePath();
-  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: true, bevelSize: 0.004, bevelThickness: 0.004, bevelSegments: 1, curveSegments: 4 }); g.translate(0, 0, -depth / 2);
-  return mesh(g, mat, parent, x, y, z);
-}
-const spike = (l, w) => [[-w / 2, 0], [w / 2, 0], [0, l]];
-const alongArm = (g: THREE.Object3D, el: THREE.Vector3, wr: THREE.Vector3, t = 0.55) => { g.position.copy(el).lerp(wr, t); g.quaternion.setFromUnitVectors(V(0, 1, 0), wr.clone().sub(el).normalize()); };
-// Manga-Proportionen des Viewers (Körper-Koordinaten, Boden = 0)
-const P = { head: V(0, 1.67, 0), shL: V(-0.19, 1.44, 0), elL: V(-0.24, 1.14, -0.01), wrL: V(-0.26, 0.88, 0.02), haL: V(-0.265, 0.83, 0.02),
-  shR: V(0.19, 1.44, 0), elR: V(0.24, 1.14, 0), wrR: V(0.26, 0.9, 0.06), haR: V(0.265, 0.85, 0.07),
-  hipL: V(-0.09, 0.9, 0), knL: V(-0.1, 0.49, 0.01), anL: V(-0.105, 0.08, 0), hipR: V(0.09, 0.9, 0), knR: V(0.1, 0.49, 0.01), anR: V(0.105, 0.08, 0) };
+// ---------------- Geometrie-Helfer: partKit.ts (seg, torso, tube, plate …), Viewer-Maße P = VP ----------------
 // Halskurve: Kette um den Hals, vorne tiefer
 const neckLoop = (yFront, rx = 0.15, rz = 0.145, yBack = 1.46) => { const p = []; for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2, f = ((1 + Math.cos(a)) / 2) ** 2; p.push(V(Math.sin(a) * rx * (0.75 + 0.25 * (1 - f)), yBack - (yBack - yFront) * f, Math.cos(a) * rz)); } return p; };
 const foot = (o: THREE.Object3D) => { o.userData.foot = true; return o; };
@@ -399,35 +368,20 @@ const COS: Record<string, { slot: string; build: (ctx: Ctx) => void }> = {
 const KOS_IDS = Object.keys(COS);
 
 // ---------------- Viewer-Raum → Bones der Figur ----------------
-export interface KosPiece { bone: THREE.Bone; geo: THREE.BufferGeometry; color: any; m: THREE.Matrix4; glow: boolean; noShell: boolean }
-export interface KosGlass { bone: THREE.Bone; geo: THREE.BufferGeometry; color: THREE.Color; alpha: number; m: THREE.Matrix4 }
+export type KosPiece = PartPiece;
+export type KosGlass = PartGlass;
+// Wandelt einen Teilbaum (partKit.ts convert): eigener Bone für Gruppen mit Handle (key()), free = im Raum der Figur (Reaktion setzt die Lage selbst)
 function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B, out: { pieces: KosPiece[]; glass: KosGlass[] }, pick: (o: THREE.Object3D) => boolean, figRoot: THREE.Object3D) {
-  tree.updateMatrixWorld(true);
-  const inv = frame.clone().invert();
-  const walk = (o: THREE.Object3D, bone: THREE.Bone, base: THREE.Matrix4, moving: boolean) => {
-    let b = bone, bs = base, mv = moving;
-    const h = o.userData.kb as Handle | undefined;
-    if (h) {   // eigener Bone: Lage relativ zum Eltern-Bone (free: im Raum der Figur, Reaktion setzt die Lage selbst)
-      const local = bs.clone().multiply(o.matrixWorld), pos = V(), quat = new THREE.Quaternion(), scl = V();
-      local.decompose(pos, quat, scl);
+  kitConvert(tree, frame, root, out, pick, {
+    own: o => !!o.userData.kb,
+    bone: (o, parent, pos, quat, scl) => {
+      let b: THREE.Bone;
       if (o.userData.free) b = B(figRoot);
-      else { b = B(bone, pos.x, pos.y, pos.z); b.quaternion.copy(quat); b.scale.copy(scl); }
-      Object.assign(h, { bone: b, pos, quat, scl });
-      bs = o.matrixWorld.clone().invert(); mv = true;
-    }
-    const mat = o.userData.mat as Mat;
-    if (o.userData.geo && mat) {
-      const m = bs.clone().multiply(o.matrixWorld);
-      if (mat.glass != null) out.glass.push({ bone: b, geo: o.userData.geo, color: mat.c, alpha: mat.glass, m });
-      else {
-        const color = mat.g ? mat.c : mat.fn ? { fn: (p: THREE.Vector3) => litCol(mat.fn(p)) } : litCol(mat.c);
-        out.pieces.push({ bone: b, geo: o.userData.geo, color, m, glow: !!mat.g, noShell: mv });
-        if (mat.ds) out.pieces.push({ bone: b, geo: flip(o.userData.geo), color, m, glow: !!mat.g, noShell: mv });
-      }
-    }
-    for (const c of o.children) walk(c, b, bs, mv);
-  };
-  for (const c of tree.children) if (pick(c)) walk(c, root, inv, false);
+      else { b = B(parent, pos.x, pos.y, pos.z); b.quaternion.copy(quat); b.scale.copy(scl); }
+      Object.assign(o.userData.kb as Handle, { bone: b, pos, quat, scl });
+      return b;
+    },
+  });
 }
 
 // Schul-Farbe, wenn die Waffe kein Element hat (Element-Rucksack)

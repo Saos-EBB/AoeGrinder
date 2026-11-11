@@ -11,13 +11,10 @@ import { spellElement } from '../config';
 import { FIGURE_LIST } from '../figureTable';
 import { ELEMENTS } from './weapons/baukasten';
 import { V } from '../util';
-
-type Mat = { c: THREE.Color; g: 0 | 1; ds?: boolean } | null;   // g = 1: leuchtet (Glüh-Teil), ds: beidseitig, null: nicht bauen
+import { type Mat, type PartPiece, lit, glow, ds, mesh, torso as kitTorso, tube as kitTube, helix, plate, spike, alongArm, VP, FIT, limbFrame, convert as kitConvert } from './partKit';
 
 // ---------------- Daten aus dem Viewer ----------------
-export const GP = {   // Optik-Zahlen // PH
-  lit: 0.45,        // beleuchtete Teile dunkler als im Viewer: die Lampe (dunkel.ts) und der Rand heben sie sonst über die Bloom-Schwelle
-  cap: 0.36,        // hellster Kanal beleuchteter Teile (linear), sonst blüht Kristall/Gold weiß aus
+export const GP = {   // Optik-Zahlen // PH (Helligkeit beleuchteter Teile: PART_LIGHT in partKit.ts)
   ghost: 0.6,       // Geisterklingen: im Viewer additiv mit 55 % Deckkraft, hier opakes Glühen in Elementfarbe × ghost
   line: 0.85,       // Linien des Runenkreises (Viewer 85 % Deckkraft)
 };
@@ -32,10 +29,6 @@ const MAKER_COL = {   // Viewer MAKERS: main Ornament-Material, acc Akzent, trim
 const EL_COL = { none: 0xd8d4e0, ...Object.fromEntries(['frost', 'feuer', 'blitz', 'seuche', 'arkan'].map(k => [k, ELEMENTS[k].color])) };
 // Fokus-Schulen = Elemente der Figuren (figureTable.ts), Arkan hat kein Emblem
 const FOCUS_COL = Object.fromEntries(FIGURE_LIST.filter(f => f.element).map(f => [f.element, ELEMENTS[f.element].color]));
-
-const lit = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 0 });
-const glow = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 1 });
-const ds = (m: Mat): Mat => (m ? { ...m, ds: true } : m);
 
 export interface GearShownItem { r: number; s: { maker?: string; element?: string; focus?: string } }
 // Materialien eines Teils wie matsOf im Viewer
@@ -52,23 +45,9 @@ function matsOf(item: GearShownItem) {
 type M = ReturnType<typeof matsOf>;
 const edge = (M: M) => (M.rar >= 3 ? M.el : M.trim);   // Leuchtkante ab Blau
 
-// ---------------- Geometrie-Helfer (wie im Viewer, Teile ohne echtes Material) ----------------
-function mesh(geo: THREE.BufferGeometry, mat: Mat, parent: THREE.Object3D, x = 0, y = 0, z = 0) {
-  const o = new THREE.Object3D(); o.position.set(x, y, z); o.userData.geo = geo; o.userData.mat = mat; parent.add(o); return o;
-}
-function seg(a, b, r1, r2, mat, parent) { const d = b.clone().sub(a), len = d.length(); const m = mesh(new THREE.CylinderGeometry(r2, r1, len, 8), mat, parent);
-  m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); return m; }
-void seg;
-function torso(parent, mat, yTop, yBot, rTop, rBot, depth = 0.62) {
-  const m = mesh(new THREE.CylinderGeometry(rTop, rBot, yTop - yBot, 12), mat, parent, 0, (yTop + yBot) / 2, 0); m.scale.z = depth;
-  const cap = mesh(new THREE.SphereGeometry(rTop, 12, 5, 0, Math.PI * 2, 0, Math.PI / 2), mat, parent, 0, yTop, 0); cap.scale.set(1, 0.35, depth); return m;
-}
-const tube = (pts, r, mat, parent, closed = false, n = 20) => mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, closed), n, r, 5, closed), mat, parent);
-const helix = (r, h, turns, y0 = 0) => { const p = []; for (let i = 0; i <= 40; i++) { const a = i / 40 * turns * Math.PI * 2; p.push(V(Math.cos(a) * r, y0 + i / 40 * h, Math.sin(a) * r)); } return p; };
-const alongArm = (g, el, wr, t = 0.55) => { g.position.copy(el).lerp(wr, t); g.quaternion.setFromUnitVectors(V(0, 1, 0), wr.clone().sub(el).normalize()); };
-// Manga-Proportionen des Viewers; die Figur im Spiel ist größer, gearPieces bildet die Viewer-Maße auf die Bones ab
-export const VP = { head: V(0, 1.67, 0), shL: V(-0.19, 1.44, 0), elL: V(-0.24, 1.14, -0.01), wrL: V(-0.26, 0.88, 0.02),
-  shR: V(0.19, 1.44, 0), elR: V(0.24, 1.14, 0), wrR: V(0.26, 0.9, 0.06) };
+// ---------------- Geometrie-Helfer: partKit.ts, hier mit weniger Segmenten als die Kosmetik ----------------
+const torso = (parent, mat: Mat, yTop, yBot, rTop, rBot, depth = 0.62) => kitTorso(parent, mat, yTop, yBot, rTop, rBot, depth, 1, 12, 12);
+const tube = (pts, r, mat: Mat, parent, closed = false, n = 20) => kitTube(pts, r, mat, parent, closed, n);
 
 function emblem(parent, focus, x, y, z, s = 1) {   // Fokus-Schule als Emblem: Frost Kristall, Feuer Flamme, Blitz Zickzack, Seuche Phiole
   if (focus === 'none') return;
@@ -84,14 +63,8 @@ function rarityExtras(parent, M: M, x, y, z, r = 0.12) {   // ab Lila: 2 schwebe
   if (M.rar >= 4) for (let k = 0; k < 2; k++) { const o = mesh(new THREE.OctahedronGeometry(0.02), M.el, parent, x, y, z); o.userData.orbit = { a: k * Math.PI, r, y }; }
   if (M.rar >= 5) { const a = new THREE.Object3D(); a.position.set(x, y, z); a.userData.aura = r * 4; parent.add(a); }
 }
-function plate(pts, depth, mat, parent, x = 0, y = 0, z = 0) {
-  const sh = new THREE.Shape(); pts.forEach(([px, py], i) => (i ? sh.lineTo(px, py) : sh.moveTo(px, py))); sh.closePath();
-  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: true, bevelSize: 0.004, bevelThickness: 0.004, bevelSegments: 1, curveSegments: 4 }); g.translate(0, 0, -depth / 2);
-  return mesh(g, mat, parent, x, y, z);
-}
 const leaf = (l, w) => [[0, 0], [w * 0.5, l * 0.25], [w * 0.35, l * 0.7], [0, l], [-w * 0.2, l * 0.6], [-w * 0.3, l * 0.2]];
 const blade = (l, w) => [[-w / 2, 0], [w / 2, 0], [w * 0.3, l * 0.75], [0, l], [-w * 0.15, l * 0.7]];
-const spike = (l, w) => [[-w / 2, 0], [w / 2, 0], [0, l]];
 const spikeDown = (l, w) => [[-w / 2, 0], [0, -l], [w / 2, 0]];
 const diamond = (h, w) => [[0, -h / 2], [w / 2, 0], [0, h / 2], [-w / 2, 0]];
 const crescent = (r, t, n = 10) => { const a = [], b = []; for (let i = 0; i <= n; i++) { const u = Math.PI * (0.15 + 0.7 * i / n); a.push([Math.cos(u) * r, Math.sin(u) * r]); b.unshift([Math.cos(u) * (r - t), Math.sin(u) * (r - t) + t * 0.4]); } return a.concat(b); };
@@ -292,50 +265,24 @@ export const orbitPos = (u, t: number, out = V()) => { const a = u.a + t * 1.2;
 function orbitStart(root: THREE.Object3D) { root.traverse(o => { if (o.userData.orbit) orbitPos(o.userData.orbit, 0, o.position); }); }
 
 // ---------------- Viewer-Raum → Bones der Figur (strichMagier.ts) ----------------
-// Maße der Figur im Spiel: Kopf-Mitte 0,16 über dem Kopf-Bone und etwa 1,5 × so groß wie im Viewer; Rumpf ab Hüfte (y 1,0) etwa 1,15 × höher;
-// Arme über Rahmen je Ober-/Unterarm (Ursprung Schulter bzw. Ellbogen, y zum Gelenk darüber), Länge auf A1/A2 skaliert.
-export const FIT = { head: { y: 0.16, s: 1.5 }, body: { waist: 0.98, s: 1.15, hipSy: 1.05 } };   // PH
+// Maße (FIT), Arm-Rahmen (limbFrame) und Umwandlung (convert) in partKit.ts. Arme über Rahmen je Ober-/Unterarm (Ursprung Schulter bzw. Ellbogen,
+// y zum Gelenk darüber), Länge auf A1/A2 skaliert. Bewegte Gruppen (ANIM_KEYS) und Aura-Anker bekommen eigene Bones.
 const ANIM_KEYS = ['orbit', 'spinZ', 'spinY', 'sway', 'bob', 'tail', 'wobble'];
 const isAnim = (o: THREE.Object3D) => ANIM_KEYS.some(k => o.userData[k] !== undefined);
-export interface GearPiece { bone: THREE.Bone; geo: THREE.BufferGeometry; color: THREE.Color; m: THREE.Matrix4; glow: boolean; noShell?: boolean }
+export type GearPiece = PartPiece;
 export interface GearAnim { bone: THREE.Bone; u: any; pos: THREE.Vector3; quat: THREE.Quaternion; slot: string; z0?: number }
 export interface GearFx { bone: THREE.Bone; aura?: number; slot: string }
-// Rahmen eines Arm-Segments im Viewer: Ursprung a, y zeigt von b nach a (zum Gelenk darüber), z möglichst nach vorn
-export function limbFrame(a: THREE.Vector3, b: THREE.Vector3) {
-  const y = a.clone().sub(b).normalize(), z0 = V(0, 0, 1), z = z0.sub(y.clone().multiplyScalar(y.dot(z0))).normalize(), x = y.clone().cross(z);
-  return new THREE.Matrix4().makeBasis(x, y, z).setPosition(a);
-}
-export const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen (Viewer DoubleSide): Dreiecke umdrehen, Normalen umkehren
-  const f = (g.index ? g.toNonIndexed() : g.clone()), p = f.attributes.position, n = f.attributes.normal;
-  for (let i = 0; i < p.count; i += 3) for (const a of [p, n]) { if (!a) continue; const t = [a.getX(i + 1), a.getY(i + 1), a.getZ(i + 1)]; a.setXYZ(i + 1, a.getX(i + 2), a.getY(i + 2), a.getZ(i + 2)); a.setXYZ(i + 2, t[0], t[1], t[2]); }
-  if (n) for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
-  return f;
-};
-export const litCol = (c: THREE.Color) => { const o = c.clone().multiplyScalar(GP.lit), k = Math.max(o.r, o.g, o.b); return k > GP.cap ? o.multiplyScalar(GP.cap / k) : o; };
-// Wandelt einen Teilbaum: frame = Viewer-Matrix des Rahmens, root = Bone, der den Rahmen im Spiel trägt (Lage + Größe)
+// Wandelt einen Teilbaum (partKit.ts convert): eigener Bone für bewegte Gruppen (Animation) und Aura-Anker (Partikel)
 function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B, slot: string, out: { pieces: GearPiece[]; anim: GearAnim[]; fx: GearFx[] }, pick: (o: THREE.Object3D) => boolean = () => true) {
-  tree.updateMatrixWorld(true);
-  const inv = frame.clone().invert();
-  const walk = (o: THREE.Object3D, bone: THREE.Bone, base: THREE.Matrix4, moving: boolean) => {   // base: Viewer-Matrix, an der bone hängt (invertiert)
-    let b = bone, bs = base, mv = moving;
-    if (isAnim(o) || o.userData.aura) {   // eigener Bone: Lage relativ zum Eltern-Bone
-      const local = bs.clone().multiply(o.matrixWorld), pos = V(), quat = new THREE.Quaternion(), scl = V();
-      local.decompose(pos, quat, scl);
-      b = B(bone, pos.x, pos.y, pos.z); b.quaternion.copy(quat); b.scale.copy(scl);
-      bs = o.matrixWorld.clone().invert(); mv = true;
+  kitConvert(tree, frame, root, out, pick, {
+    own: o => isAnim(o) || !!o.userData.aura,
+    bone: (o, parent, pos, quat, scl) => {
+      const b = B(parent, pos.x, pos.y, pos.z); b.quaternion.copy(quat); b.scale.copy(scl);
       if (isAnim(o)) out.anim.push({ bone: b, u: o.userData, pos: pos.clone(), quat: quat.clone(), slot, z0: o.rotation.z });
       if (o.userData.aura) out.fx.push({ bone: b, aura: o.userData.aura, slot });
-    }
-    const mat = o.userData.mat as Mat;
-    if (o.userData.geo && mat) {
-      const m = bs.clone().multiply(o.matrixWorld);
-      const color = mat.g ? mat.c : litCol(mat.c);
-      out.pieces.push({ bone: b, geo: o.userData.geo, color, m, glow: !!mat.g, noShell: mv });
-      if (mat.ds) out.pieces.push({ bone: b, geo: flip(o.userData.geo), color, m, glow: !!mat.g, noShell: mv });
-    }
-    for (const c of o.children) walk(c, b, bs, mv);
-  };
-  for (const c of tree.children) if (pick(c)) walk(c, root, inv, false);
+      return b;
+    },
+  });
 }
 // F: Figur aus buildStrichMagier (Bones head, chest, hips, armL/armR mit ua/fa), B(parent, x, y, z) legt einen Bone an. A1/A2: Längen Ober-/Unterarm
 export function gearPieces(F, B, slot: string, group: string, item: GearShownItem, A1: number, A2: number) {
