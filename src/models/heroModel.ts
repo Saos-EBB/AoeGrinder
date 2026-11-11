@@ -16,7 +16,8 @@ import { particles } from '../fx/particles';
 import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { classOf, STANDARD } from '../skins';
-import { forcedSkin, kosmetikWeapon, gearShown, gearKey, kosmetikShown } from '../gear';
+import { forcedSkin, kosmetikWeapon } from '../gear/inventory';
+import { gearShown, gearKey, kosmetikShown } from '../gear/shown';
 import { onFigEvent, figVals, figSay } from '../figEvents';
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
@@ -56,9 +57,9 @@ function tintWeapon(w, hw) {
 }
 let cur = null, figureId = null, weapon = null, heroWeapon = null, mount = null, clock = 0;
 // look: Skin aus skins.ts (Standard, Hochspannung, Ausbrecher …), getrennt vom Schul-Look skin. Krieger-Skins hängen an der Waffe (legendär oder Basis)
-let skinId = STANDARD, gk = '';   // gk: angelegtes Gear, nach dem gebaut wurde (gear.ts gearKey)
+let skinId = STANDARD, gk = '';   // gk: angelegtes Gear, nach dem gebaut wurde (gear/shown.ts gearKey)
 const skinNeedOf = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : id);   // Magier: Skins hängen an der Schule (= Skin-ID)
-const skinOfFigure = id => forcedSkin(id) ?? skinOf(classOf(id), skinNeedOf(id));   // Set 5/5 angelegt: Set-Skin erzwungen (gear.ts), die Wahl bleibt gespeichert
+const skinOfFigure = id => forcedSkin(id) ?? skinOf(classOf(id), skinNeedOf(id));   // Set 5/5 angelegt: Set-Skin erzwungen (gear/), die Wahl bleibt gespeichert
 
 // Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
 const SPARK = { vy: .5, life: [.42, .84], size: .14, grav: -.3, spread: .12, bright: 1.6 };   // Werte der Viewer-Partikel, bright wie die Relikt-Aura // PH
@@ -154,7 +155,7 @@ function wield() {
   if (MELEE_MODELS[figureId]) return;                   // Nahkämpfer tragen ihre Waffen fest
   recolor();
   weapon?.dispose();
-  const wl = !preview && kosmetikWeapon();   // Kosmetik-Slot Waffe (gear.ts): nur das Modell, die Werte bleiben bei der ausgerüsteten Waffe
+  const wl = !preview && kosmetikWeapon();   // Kosmetik-Slot Waffe (gear/): nur das Modell, die Werte bleiben bei der ausgerüsteten Waffe
   weapon = wl ? buildWeapon(wl) : buildWeaponOf(shownWeapon());
   mount.add(weapon.root);
   mount.rotation.set(weapon.pitch, weapon.yaw, 0);

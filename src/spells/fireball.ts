@@ -6,7 +6,8 @@ import { nearestTarget } from './target';
 import { fireballLook, sprayJet } from '../vfx/fireLook';
 import { t } from '../i18n';
 import { state } from '../state';
-import { GIANT_FB, kosmetikWeapon } from '../gear';
+import { GIANT_FB } from '../gear/data';
+import { kosmetikWeapon } from '../gear/inventory';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
@@ -24,7 +25,7 @@ export const fireball = {
     const target = nearestTarget(fireball.range);
     if (!target) return;
     if (kosmetikWeapon() === 'haarspray') sprayJet(target.pos);   // Kosmetik: nur die Wurf-Animation
-    // Glutprophet 5/5 (gear.ts): jeder 10. Feuerball ist ein Riesen-Feuerball, alle Runen und Talente wirken mit
+    // Glutprophet 5/5 (gear/): jeder 10. Feuerball ist ein Riesen-Feuerball, alle Runen und Talente wirken mit
     const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;
     const giant = state.gearSet === 'glut' && n % GIANT_FB.every === 0, size = giant ? GIANT_FB.size : 1;
     const k = (hasRune('fireball', 'swift') ? SWIFT_DMG : 1) * (giant ? GIANT_FB.dmg : 1), r = c.radius(fireball.radius) * (hasRune('fireball', 'big') ? BIG : 1) * size;

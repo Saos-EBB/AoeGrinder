@@ -45,7 +45,7 @@ export function fireballLook(to: THREE.Vector3, r: number, big = 1) {
   const a = castFrom(), b = to.clone().setY(to.y + 1.1);
   shot(a, b, 0, PAL.fire, { r: .3 * big, tail: 3.2, dur: flight(a, b), hit: p => boom(p, r * .85, PAL.fire, .55, { ground: gy(p), n: 20 }) });
 }
-// Waffen-Look Haarspray + Feuerzeug (gear.ts): beim Feuerball faucht ein Flammenstoß aus der Düse Richtung Ziel. Nur Partikel, kein Draw Call extra // PH
+// Waffen-Look Haarspray + Feuerzeug (gear/): beim Feuerball faucht ein Flammenstoß aus der Düse Richtung Ziel. Nur Partikel, kein Draw Call extra // PH
 const JET = { n: 18, speed: [9, 15], spread: .22, life: [.16, .3], size: [.25, .5] };
 export function sprayJet(to: THREE.Vector3) {
   const a = castFrom(), d = to.clone().setY(to.y + 1.1).sub(a).normalize();

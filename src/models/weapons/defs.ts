@@ -511,7 +511,7 @@ def({ id: 'sionaxt', gripY: 0.3, cane: false, pitch: 0.75, name: t('wmodel.siona
       spawn: (R, p, v) => { p.set(.15 + R() * .35, 1.15 + R() * .4, (R() - .5) * .05); v.set(R() * .3, .3 + R() * .5, 0); } });
   } });
 
-// Waffen-Look „Haarspray + Feuerzeug“ (gear.ts, Kosmetik-Slot Waffe): nur Aussehen, frei bei Glutprophet 5/5. Pinke Dose, weiße Kappe, blaues Feuerzeug daneben,
+// Waffen-Look „Haarspray + Feuerzeug“ (gear/, Kosmetik-Slot Waffe): nur Aussehen, frei bei Glutprophet 5/5. Pinke Dose, weiße Kappe, blaues Feuerzeug daneben,
 // kleine Zündflamme an der Düse. Kein Unikat, kein Kistenmodell (ROLLS.notForMages). Maße und Farben // PH
 def({ id: 'haarspray', gripY: .09, cane: false, pitch: .25, name: t('wmodel.haarspray.name'), school: 'Feuer', arch: 'Haarspray und Feuerzeug',
   story: t('wmodel.haarspray.story'),

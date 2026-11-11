@@ -11,7 +11,7 @@ export function mark(m, n = 1) {
   m.plague = { stacks: Math.min(M.max, markStacks(m) + n), until: state.now + M.ms };
 }
 export function clearMark(m) { m.plague = null; }
-// Verbraucher (Zusammenziehen, Entziehen, Platzen): Mal weg. Pestbringer 5/5 (gear.ts, state.gearSet): jedes Mal hält 2 Verbraucher aus, erst der zweite löscht es
+// Verbraucher (Zusammenziehen, Entziehen, Platzen): Mal weg. Pestbringer 5/5 (gear/, state.gearSet): jedes Mal hält 2 Verbraucher aus, erst der zweite löscht es
 export function popMark(m) {
   if (state.gearSet === 'seuche' && m.plague && !m.plague.popped) { m.plague.popped = true; return; }
   clearMark(m);

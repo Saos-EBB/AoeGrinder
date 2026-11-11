@@ -10,7 +10,7 @@ import { tempestLook } from '../vfx/boltLook';
 const TEMPEST = { every: 6, radius: 8, angle: Math.PI, dmg: 5, stunMs: 1000 }, KEEPER_MUL = 2, KILL_DMG = 0.005;
 import { boltFx } from './fx';
 import { t } from '../i18n';
-import { HV_FORK } from '../gear';
+import { HV_FORK } from '../gear/data';
 
 const STEP_DELAY = 45, MORE = 40, KILL = 10;   // MORE: Rune Überschlag, KILL: Rune Entladung (v30 verdoppelt)   // PH: ms je Sprung, damit man die Kette sieht
 
@@ -71,7 +71,7 @@ export const chain = {
       }
       return tempestLook(r, TEMPEST.angle);
     }
-    const hv = state.gearSet === 'blitz';   // Hochspannung 5/5 (gear.ts): Gabelung mit 20 % pro Sprung, Obergrenze HV_FORK.cap
+    const hv = state.gearSet === 'blitz';   // Hochspannung 5/5 (gear/): Gabelung mit 20 % pro Sprung, Obergrenze HV_FORK.cap
     runChain(c, first, { jumps: (chain.jumps + mods.chainJumps + (hasRune('chain', 'more') ? MORE : 0)) * mods.jumpMul, range: chain.jumpRange, dmg: chain.dmg * k, killDmg: KILL_DMG + (mods.chainKill ?? 0),
       forkChance: hv ? HV_FORK.fork : 0, cap: hv ? HV_FORK.cap : Infinity,
       repeat: hasRune('chain', 'repeat'), killBonus: hasRune('chain', 'kill') ? KILL : 0, forkEvery: hasRune('chain', 'fork') ? 10 : 0 });

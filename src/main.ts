@@ -44,7 +44,7 @@ import * as playerMod from './player';
 import * as cardsMod from './cards';
 import * as weaponMod from './weaponRolls';
 import * as metaMod from './meta';
-import { initGear } from './gear';
+import { initGear } from './gear/inventory';
 import { normalizeMeta } from './metaNormalize';
 import * as modifiersMod from './modifiers';
 import * as supportsMod from './spells/supports';

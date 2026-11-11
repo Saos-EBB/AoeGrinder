@@ -222,7 +222,7 @@ export function castSpell(id, point?) {
   groundCursor.visible = false;
   // Dodge-Kombos: Normal kein Mana, Fire only Feuerball crittet
   const opts = { free: freeOk && consumeCombo('freeMana'), crit: id === 'fireball' && consumeCombo('fireCrit') };
-  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul * (stat(id).cast ?? 1) / pdRateMul();   // stat.cast: Wurfzeit je Spell (Set Glutprophet, gear.ts)   // Perfekter Dodge: schneller zaubern   // castMul: Waffen-Typ und Hersteller
+  let castTime = s.instantCast?.() ? 0 : s.castTime * mods.castMul * (stat(id).cast ?? 1) / pdRateMul();   // stat.cast: Wurfzeit je Spell (Set Glutprophet, gear/apply.ts)   // Perfekter Dodge: schneller zaubern   // castMul: Waffen-Typ und Hersteller
   if (!castTime) { noteCastStart(id); return release(id, point, opts); }
   player.casting = { id, point, start: state.now, end: state.now + castTime, total: castTime, delays: 0, hp: player.hp, opts };
   noteCastStart(id);

@@ -21,7 +21,7 @@ import { classOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
-import { forcedSkin, isMageFigure } from '../gear';
+import { forcedSkin, isMageFigure } from '../gear/inventory';
 import { applyRunGear } from '../gear/apply';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
@@ -190,7 +190,7 @@ const skinChoice = () => {
   return { list, i: Math.max(0, list.findIndex(s => s.id === (peek?.id ?? heroModel.skinId))) };
 };
 function renderSkin() {
-  const { list, i } = skinChoice(), forced = forcedSkin(heroModel.figureId);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear.ts)
+  const { list, i } = skinChoice(), forced = forcedSkin(heroModel.figureId);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear/)
   const locked = !forced && !!peek, name = t(list[i].name);
   $('skinName').textContent = forced ? t('gear.skinForced', { name: t(`look.magier.${forced}.name`) }) : locked ? t('look.locked', { name }) : name;
   $('skinName').classList.toggle('locked', locked);

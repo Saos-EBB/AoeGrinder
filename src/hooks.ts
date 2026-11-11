@@ -71,7 +71,7 @@ export type BusEvents = {
   cast: [id: string];      // spells/core.ts release (ohne Trinken) → figEvents.ts
   hit: [];                 // player.ts damagePlayer (Leben verloren) → figEvents.ts
   level: [level: number];  // player.ts gainXp (neues Level) → figEvents.ts
-  ach: [id: string];       // neuer Erfolg: meta.ts milestone, gear.ts checkUnlocks (Set 5/5) → ui/achievements.ts (Einblendung)
+  ach: [id: string];       // neuer Erfolg: meta.ts milestone, gear/inventory.ts checkUnlocks (Set 5/5) → ui/achievements.ts (Einblendung)
 };
 type Listener<K extends keyof BusEvents> = (...a: BusEvents[K]) => void;
 const subs: { [K in keyof BusEvents]: Listener<K>[] } = { kill: [], crit: [], cast: [], hit: [], level: [], ach: [] };

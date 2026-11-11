@@ -17,7 +17,10 @@ import { weaponThumb } from './weaponThumb';
 import { gearThumb, kosmetikThumb } from './itemThumb';
 import { pick } from '../util';
 import { t } from '../i18n';
-import { BOX, KOSMETIK_POOL, KOSMETIK, buyGearBox, buyKosmetikBox, kosmetikBoxLeft, anySlotFull, rollDrop, gearName, gearRows, slotName, wearGear, worn, isMageFigure } from '../gear';
+import { BOX, KOSMETIK_POOL, KOSMETIK } from '../gear/data';
+import { kosmetikBoxLeft, anySlotFull, wearGear, worn, isMageFigure } from '../gear/inventory';
+import { buyGearBox, buyKosmetikBox, rollDrop } from '../gear/roll';
+import { gearName, gearRows, slotName } from '../gear/text';
 import { el } from './dom';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
@@ -116,7 +119,7 @@ function resultCol() {
   return { col, name };
 }
 
-// Ergebnis der Gear-Box: Teil mit Werten; unter Blau wurde es schon zu Staub (gear.ts takeGear)
+// Ergebnis der Gear-Box: Teil mit Werten; unter Blau wurde es schon zu Staub (gear/inventory.ts takeGear)
 function gearResult(col: HTMLElement, name: HTMLElement) {
   const { g, res } = lastPull, rar = rarityOf(g);
   col.style.setProperty('--rc', rar.color);

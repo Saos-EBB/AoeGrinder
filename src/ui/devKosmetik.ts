@@ -2,7 +2,7 @@
 // Meilenstein-Erfolg vergeben/entfernen, Figur-Ereignisse auslösen (figEvents.ts window.__fig). Nur Dev, ändert keine Werte im Spiel.
 
 import { meta, saveMeta, milestone, devSetStats } from '../meta';
-import { KOSMETIK, KOSMETIK_POOL } from '../gear';
+import { KOSMETIK, KOSMETIK_POOL } from '../gear/data';
 import { MILESTONE_ACH } from '../skins';
 import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';

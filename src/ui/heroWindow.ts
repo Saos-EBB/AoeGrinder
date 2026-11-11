@@ -1,7 +1,7 @@
 // Ein Fenster für Waffen, Charakter und Ausrüstung (Handoff docs/handoffs/fenster.md, Vorlage docs/ref/charakterfenster/, Layout A).
 // Links Figur mit Slots und Werten, rechts das Inventar. X und I öffnen und schließen es (Bind-IDs charWin/gearWin in input.ts), Esc schließt.
 // Pausiert (menus.ts BLOCKING), geht auch während der Kartenwahl und aus dem Pause-Menü. Im Run nur ansehen, im Hauptmenü voll.
-// Gear-Teile tragen Hersteller und Gruppe (gear.ts makerOf/groupOf), fehlt eins → „—“.
+// Gear-Teile tragen Hersteller und Gruppe (gear/shown.ts makerOf/groupOf), fehlt eins → „—“.
 
 import { $ } from '../util';
 import { state, player } from '../state';
@@ -11,8 +11,11 @@ import { meta, hasAch } from '../meta';
 import { ACHIEVEMENTS, setAch } from '../skins';
 import { heroModel } from '../models/heroModel';
 import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows, mainValue, valueText } from '../weaponRolls';
-import { makerOf, groupOf, SLOTS, KOSMETIK_SLOTS, KOSMETIK, SETS, worn, wearGear, gearName, gearRows, slotName, setOfFigure, setCount, fullSet, perfectText, isMageFigure,
-  hasKosmetik, kosmetikIn, wearKosmetik, gearInv, deleteGear, overflow, GEAR, kosmetikSource, kosmetikHint, gearMainValue, type Slot, type GearItem } from '../gear';
+import { SLOTS, KOSMETIK_SLOTS, KOSMETIK, GEAR, type Slot, type GearItem } from '../gear/data';
+import { SETS } from '../gear/sets';
+import { worn, wearGear, setOfFigure, setCount, fullSet, isMageFigure, hasKosmetik, kosmetikIn, wearKosmetik, gearInv, deleteGear, overflow } from '../gear/inventory';
+import { makerOf, groupOf } from '../gear/shown';
+import { gearName, gearRows, slotName, perfectText, kosmetikSource, kosmetikHint, gearMainValue } from '../gear/text';
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
@@ -67,7 +70,7 @@ const viewOnly = inRun;
 warmThumbs(() => !inRun());   // Bild-Renderer im Hauptmenü vorab anlegen
 const mageGear = () => isMageFigure(heroModel.figureId);
 
-// ---------- Gear: Hersteller und Gruppe (gear.ts makerOf/groupOf) ----------
+// ---------- Gear: Hersteller und Gruppe (gear/shown.ts makerOf/groupOf) ----------
 const gearMaker = (g: GearItem) => makerOf(g);
 const gearGroup = (g: GearItem) => groupOf(g);
 const makerName = (id: string | null) => id ? MAKERS[id]?.name ?? id : '—';

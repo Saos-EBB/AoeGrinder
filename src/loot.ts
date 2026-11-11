@@ -1,7 +1,7 @@
 // Gear-Drops im Run (Handoff docs/handoffs/items.md Schritt 2), nur Magier. Ziel war ~25 Drops pro vollem Run (Level 100), seit 10.11. ~40 % mehr.
 // Boss: 3 Teile sicher (boss.ts endBoss), Champion-Pack: 1 Teil mit 70 % beim letzten Champion, normale Kills: DROP.kill pro Kill.
 // Optik: Lichtsäule aus Partikeln in Seltenheitsfarbe (vorhandenes Partikel-System, kein Draw Call extra), Aufheben beim Drüberlaufen.
-// Aufgehobene Teile landen sofort im Spielstand (gear.ts takeGear), bleiben also auch beim Tod. Liste der Funde: state.finds, gezeigt im Run-Ende.
+// Aufgehobene Teile landen sofort im Spielstand (gear/inventory.ts takeGear), bleiben also auch beim Tod. Liste der Funde: state.finds, gezeigt im Run-Ende.
 // Map-Umbau Teil 2 (Phase 3) baut hierauf auf, kein zweites Drop-System: Staub-Haufen (Aufheben im Lauf-Radius DROP.dustR) und Waffen
 // (weaponRolls.ts rollWeapon, Seltenheit nach Theme-Schwierigkeit, Aufheben per Taste „Benutzen“, Inventar wie heute ROLLS.invMax), beide mit Lichtsäule.
 // Quellen: Truhen, Mimic, Schatzdieb (objects/), Champions (Staub sicher), Große (Staub sicher + DROP.bigWeapon Waffe). Normale Kills unverändert (DROP.dustKill 0).
@@ -12,7 +12,10 @@ import { onMobDeath, onRunReset } from './hooks';
 import { particles } from './fx/particles';
 import { combatText } from './feedback';
 import { heroModel } from './models/heroModel';
-import { rollDrop, takeGear, gearName, isMageFigure, type GearItem } from './gear';
+import { type GearItem } from './gear/data';
+import { takeGear, isMageFigure } from './gear/inventory';
+import { rollDrop } from './gear/roll';
+import { gearName } from './gear/text';
 import { dist2d, rand } from './util';
 import { t } from './i18n';
 import { meta, saveMeta, earnDust } from './meta';

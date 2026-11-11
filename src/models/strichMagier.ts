@@ -1126,7 +1126,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     glow(staff, new THREE.OctahedronGeometry(.055, 0), E, [0, WEL_STONE_Y, 0], [0, 0, 0], [1, 1.5, 1]);   // Stein über dem Knauf
     if (!LK?.eyes) for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH (Skins tragen sie in Brille/Maske/Blick)
   }
-  // Gear (models/gearParts.ts, opts.gear aus gear.ts gearShown): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
+  // Gear (models/gearParts.ts, opts.gear aus gear/shown.ts gearShown): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
   F.gear = { anim: [], fx: [], hidden: [] as string[], el: null as number | null, rar: 0 };
   const hide = gearHide;
   for (const [slot, it] of Object.entries(opts.gear ?? {}) as [string, any][]) {
@@ -1137,7 +1137,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     F.gear.anim.push(...o.anim); F.gear.fx.push(...o.fx.map(f => ({ ...f, color: ELEMENTS[it.s.element] && it.s.element !== 'none' ? ELEMENTS[it.s.element].color : 0xd8d4e0 })));
     if (it.r >= 3 && it.s.element !== 'none' && ELEMENTS[it.s.element] && it.r >= F.gear.rar) { F.gear.el = ELEMENTS[it.s.element].color; F.gear.rar = it.r; }   // Funken: Element des seltensten Teils ab Blau (Viewer elAny)
   }
-  // Kosmetik (models/kosmetikParts.ts, opts.kosmetik aus gear.ts kosmetikShown): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
+  // Kosmetik (models/kosmetikParts.ts, opts.kosmetik aus gear/shown.ts kosmetikShown): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
   // Kill-Flagge als Textur-Mesh am Flaggen-Bone. Reaktionen auf Ereignisse (onEvent, figEvents.ts) drehen/skalieren nur eigene Bones
   F.kosHidden = [] as string[];
   const kHide = kosHide;

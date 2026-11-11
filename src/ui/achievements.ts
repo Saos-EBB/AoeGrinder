@@ -1,4 +1,4 @@
-// Erfolge (schlicht): Liste in meta.achievements (skins.ts ACHIEVEMENTS): „Set <Name> 5/5 angelegt“ (gear.ts checkUnlocks), jeder schaltet den
+// Erfolge (schlicht): Liste in meta.achievements (skins.ts ACHIEVEMENTS): „Set <Name> 5/5 angelegt“ (gear/inventory.ts checkUnlocks), jeder schaltet den
 // Set-Skin frei, dazu die Meilensteine (skins.ts MILESTONE_ACH, meta.ts milestone), jeder schaltet ein Kosmetik-Teil frei. Neuer Erfolg → Einblendung oben in der Mitte, auch über Fenstern. Liste im Fenster heroWindow.ts (unter dem Set-Fortschritt).
 
 import { t } from '../i18n';
@@ -25,7 +25,7 @@ function showAch(ach: string) {
   box.append(el);
   setTimeout(() => el.remove(), ACH_TOAST.showMs);
 }
-// Einblendungs-Fläche und Abo auf neue Erfolge (hooks.ts Bus: meta.ts milestone, gear.ts checkUnlocks); main.ts ruft das einmal beim Start
+// Einblendungs-Fläche und Abo auf neue Erfolge (hooks.ts Bus: meta.ts milestone, gear/inventory.ts checkUnlocks); main.ts ruft das einmal beim Start
 export function mount() {
   box = document.createElement('div');
   box.id = 'achToasts';

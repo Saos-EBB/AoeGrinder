@@ -103,11 +103,11 @@ export const hasAch = (id: string) => meta.achievements.includes(id);
 // true, wenn neu (dann zeigt der Aufrufer die Einblendung)
 export function grantAch(id: string) { if (hasAch(id)) return false; meta.achievements.push(id); saveMeta(); return true; }
 
-// ---------- Meilensteine (Kosmetik ⭐, gear.ts KOSMETIK ach) ----------
+// ---------- Meilensteine (Kosmetik ⭐, gear/data.ts KOSMETIK ach) ----------
 // Vorhanden war: meta.dust (nur Kontostand), player.kills und run.kills (nur im Run), boss.stats.hits (Treffer im Bosskampf, bosses/core.ts).
 // Neu: meta.stats.kills (Kills gesamt, mobs.ts killMob) und meta.stats.dust (erspielter Staub gesamt, earnDust). Grenzen alle // PH
 export const MILESTONES = { dust10k: 10000, kills1k: 1000, lvl100: 100 };   // lvl100 = LEVEL_MAX (config.ts), hier als Zahl: meta.ts läuft in Import-Kreisen vor config.ts
-// Neuer Meilenstein → Bus ach (hooks.ts) → Einblendung (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasKosmetik)
+// Neuer Meilenstein → Bus ach (hooks.ts) → Einblendung (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear/inventory.ts hasKosmetik)
 export function milestone(id: string, quiet = false) { if (grantAch(id) && !quiet) emit('ach', id); }
 export function checkMilestones(quiet = false) {
   const s = meta.stats;

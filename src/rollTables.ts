@@ -7,7 +7,7 @@ import { fmtNum } from './i18n';
 
 // Alle Zahlen PH. Seltenheit: Index in CARD_RARITIES (grau 0 … orange 5), der Faktor kommt von dort (×0,5 … ×5)
 export const ROLLS = {
-  price: 120, invMax: 25, devInvMax: 50,   // invMax 15 → 25 mit den Gear-Slots (gear.ts) // PH          // devInvMax: Dev-Füllen geht über das normale Limit
+  price: 120, invMax: 25, devInvMax: 50,   // invMax 15 → 25 mit den Gear-Slots (gear/data.ts) // PH          // devInvMax: Dev-Füllen geht über das normale Limit
   weights: [5, 20, 35, 25, 11, 4],                     // grau, weiß, grün, blau, lila, orange
   refund: [5, 10, 15, 25, 40, 60],
   types: ['staff', 'wand', 'book', 'relic'],          // alle vier Typen, ohne Nebenhand liegen Buch und Relikt in der Waffenhand (Kevin 2026-11-03)
@@ -20,7 +20,7 @@ export const ROLLS = {
   element: { slow: 0.2, slowMs: 2000, burn: 0.3, burnTicks: 3, mana: 0.02, chainMul: 0.4, chainN: 3, chainYd: 6,
     infectStacks: 1 },
   maker: { grab: { dmg: 0.1, cast: 0.1 }, stern: { crit: 0.05, critMana: 0.01 }, morra: { dur: 0.15, random: 0.05 }, vey: { cd: -0.05, mana: 0.1 }, brandt: { hp: 0.1, lifesteal: 0.02 } },
-  notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt', 'haarspray'],   // Waffen des Strichkriegers (Standard und legendär), Haarspray ist nur Kosmetik (gear.ts)
+  notForMages: ['schlachtblech', 'leeroyklinge', 'sionaxt', 'haarspray'],   // Waffen des Strichkriegers (Standard und legendär), Haarspray ist nur Kosmetik (gear/)
   fallback: 'pilgerast',                               // leeres Inventar: Pilgerast ohne Effekt
 };
 // Die Magier-Spells für den Kopf-Fokus, je Schule (Seuche seit 2026-11-08: die Köpfe Speischädel und Phiolen brauchen Seuchen-Spells)

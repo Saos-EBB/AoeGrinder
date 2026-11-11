@@ -15,7 +15,7 @@ export interface Figure {
   tag: string | null;      // Spell-Tag = onlyTag der Mod ('Frost' …), Krieger 'Krieger'
   palette: string | null;  // Viewer-Skin der Strichmagier (strichMagier.ts ANIM/PAL), Krieger: eigenes Modell
   cls: string | null;      // Spell-Feld cls der Schule (spellCard SCHOOL_NAME, COLORS.school)
-  set: string | null;      // Set-ID in gear.ts SETS = Skin-ID des Set-Skins
+  set: string | null;      // Set-ID in gear/sets.ts SETS = Skin-ID des Set-Skins
   heroClass: HeroClass;    // Klasse = Präfix der Skin-IDs (look.<klasse>.<id>.name) und Key in meta.skins
   hotbarKey: string;       // Key im Hotbar-Store, wenn nur die Figur gewählt ist (hotbar.ts figKey)
   dodge: DodgeMode;        // Kombo-Variante nach dem Dodge (dodge.ts)

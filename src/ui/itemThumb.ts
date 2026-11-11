@@ -9,7 +9,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildGearTree } from '../models/gearParts';
 import { kosmetikTree } from '../models/kosmetikParts';
 import type { Mat } from '../models/partKit';
-import { groupOf, makerOf, KOSMETIK, type GearItem } from '../gear';
+import { KOSMETIK, type GearItem } from '../gear/data';
+import { groupOf, makerOf } from '../gear/shown';
 import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot } from './weaponThumb';
 import { V } from '../util';
 

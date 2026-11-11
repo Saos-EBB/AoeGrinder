@@ -1,9 +1,9 @@
-// Spielstand-Code: Staub, Freischaltungen, Inventar, Gear (gear.ts), offene Maps der Weltkarte, Ranglisten (mit Seed) und Version als kompaktes JSON → Base64, dazu 4 Zeichen Prüfsumme gegen Tippfehler.
+// Spielstand-Code: Staub, Freischaltungen, Inventar, Gear (gear/), offene Maps der Weltkarte, Ranglisten (mit Seed) und Version als kompaktes JSON → Base64, dazu 4 Zeichen Prüfsumme gegen Tippfehler.
 // Kein Schutz gegen Cheaten, Einzelspieler. Eingabe ersetzt den Spielstand nach Rückfrage.
 
 import { $ } from '../util';
 import { meta, saveMeta, cleanWeapon, cleanSkinState } from '../meta';
-import { checkUnlocks } from '../gear';
+import { checkUnlocks } from '../gear/inventory';
 import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
 import { loadRuns, saveRuns } from '../leaderboard';   // nach mainMenu: das lädt leaderboard schon, Reihenfolge der Module bleibt

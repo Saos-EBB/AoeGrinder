@@ -1,5 +1,5 @@
 // ▲/▼ gegenüber dem Ausgerüsteten: eine Regel für Waffen und Gear (Charakterfenster, Hover-Karte, Shop).
-// Rechnet auf den Zahlen aus mainValue (weaponRolls.ts) / gearMainValue (gear.ts), nie auf dem Anzeigetext.
+// Rechnet auf den Zahlen aus mainValue (weaponRolls.ts) / gearMainValue (gear/text.ts), nie auf dem Anzeigetext.
 
 import type { MainValue } from '../weaponRolls';
 import { COLORS } from './colors';

@@ -4,7 +4,9 @@
 
 import { state } from '../state';
 import { ROLLS, rarityOf } from '../weaponRolls';
-import { SLOTS, GEAR, gearInv, overflow, worn, gearName, gearLines, slotName, type Slot } from '../gear';
+import { SLOTS, GEAR, type Slot } from '../gear/data';
+import { gearInv, overflow, worn } from '../gear/inventory';
+import { gearName, gearLines, slotName } from '../gear/text';
 import { meta, saveMeta, earnDust } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
