@@ -9,7 +9,7 @@ import { damagePlayer } from '../player';
 import { scene } from '../render';
 import { addTrauma, decal, debris } from '../wucht';
 import { hitstop } from '../fx/impact';
-import { combatText } from '../ui/hud';
+import { combatText } from '../feedback';
 import { fx, em, killFx, boom, ring as eRing, sparks, PAL, gy as groundY } from '../vfx/energy';
 import { V, clamp, outC as ease, rand as rnd, wrap, dist2d as dist2 } from '../util';
 
