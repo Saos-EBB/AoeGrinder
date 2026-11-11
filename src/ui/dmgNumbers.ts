@@ -5,6 +5,7 @@
 import { state } from '../state';
 import { rand, clamp } from '../util';
 import { SPELLS } from '../config';
+import { baseHit } from '../formulas';
 import { onCrit } from '../fx/impact';
 import { overlay, screenPos } from './hud';
 import { UI } from './uiConfig';
@@ -14,7 +15,6 @@ import { feat, noteHurt } from './messages';
 import './numbers.css';
 
 const MEGA = 10;   // Mega-Crit ab 10× Grundschaden des Spells // PH
-const BASE_HIT = s => s?.tickDmg ?? (s?.min ? (s.min + s.max) / 2 : s?.dmg ?? s?.pulse ?? s?.showDmg);
 
 const live = [];
 const merging = new WeakMap();
@@ -57,7 +57,7 @@ export function damageNumber(mob, dmg, crit, source, tick = false) {
     open.el.style.fontSize = `${sizeOf(open.total) * (numberFlavor().numbers.size.merged ?? 1)}px`;
     return;
   }
-  const base = BASE_HIT(SPELLS[source]);
+  const base = baseHit(SPELLS[source]);
   const kind = crit ? (base && dmg >= base * MEGA ? 'mega' : 'crit') : tick ? 'tick' : 'hit';
   if (kind === 'mega') feat('megaCrit', fmtInt(dmg));
   const el = spawn(mob.pos, 2, kind, dmg, sizeOf(dmg) * (tick ? 0.65 : 1));

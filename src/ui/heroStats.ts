@@ -5,7 +5,7 @@
 
 import { state, player } from '../state';
 import { CFG, SPELLS, CARDS, mods, resetMods } from '../config';
-import { maxHp, maxMana, spirit, dmgMult } from '../formulas';
+import { maxHp, maxMana, dmgMult, manaRegenPerTick } from '../formulas';
 import { modFactor, modValue } from '../modifiers';
 import { mage } from '../models/mage';
 import { run } from '../score';
@@ -78,7 +78,7 @@ const DEFS: Record<string, Def> = {
   dodge: { id: 'dodge', label: () => t('hw.st.dodge'), v: () => DG.charges + (mods.dodgeCharges ?? 0), fmt: fmtInt, dfmt: intSigned },
   speed: { id: 'speed', label: () => t('cw.speed'), v: () => CFG.runSpeed * (mods.moveMul ?? 1) * moveMul(), fmt: v => `${de1(v)} yd/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))} yd/s` },
   mana: { id: 'mana', label: () => player.rageMax ? t('res.rage') : 'Mana', v: () => maxMana(), fmt: fmtInt, dfmt: intSigned },
-  manaS: { id: 'manaS', label: () => t('hw.st.manaS'), v: () => (spirit() / 4 + 12.5) / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
+  manaS: { id: 'manaS', label: () => t('hw.st.manaS'), v: () => manaRegenPerTick() / (CFG.regenTick / 1000), fmt: v => `${de1(v)}/s`, dfmt: v => `${v < 0 ? '−' : '+'}${de1(Math.abs(v))}/s`,
     show: () => !player.rageMax && !modValue('lifeCost') },
   regenCombat: { id: 'regenCombat', label: () => t('hw.st.regenCombat'), v: () => mods.castRegen, fmt: pctAbs, dfmt: pctSigned, show: () => !player.rageMax },
   cost: { id: 'cost', label: () => t('hw.st.cost'), v: () => 1 - mods.manaCostMul * modFactor('manaCost'), fmt: pctAbs, dfmt: pctSigned },

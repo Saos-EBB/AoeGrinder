@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import { state, player } from './state';
 import { $, clamp } from './util';
-import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_PACES } from './config';
-import { xpNeeded, maxHp, maxMana, spirit } from './formulas';
+import { CFG, SPELLS, mods, resetMods, LEVEL_START, LEVEL_MAX, CARD_CLASSIC_EVERY, CARD_PACES, LEVEL_UP_HEAL } from './config';
+import { xpNeeded, maxHp, maxMana, manaRegenPerTick } from './formulas';
 import { heightAt, zone, zoneId, buildWorld } from './world';
 import { groundAt, resolve, STEP } from './collision';
 import { blizCursor, levelUpFx } from './fx/spellFx';
 import { cam, autoCamOn, MOBILE_YAW } from './camera';
 import { device } from './device';
 import { combatText, fmtTime } from './ui/hud';
-import { showCards, levelRefill } from './ui/menus';
+import { showCards } from './ui/menus';
 import { rankAllSpells } from './cards';
 import { mouseBtn, act, useMeleeBinds } from './input';
 import { fillPacks, removeMob, announceNewMobs, burnMob, pullMob } from './mobs';
@@ -182,7 +182,7 @@ export function spendMana(cost) {
 function regenerate(dt) {
   if (state.now >= player.nextRegen) {         // Tick alle 2 s
     player.nextRegen += CFG.regenTick;
-    let mana = spirit() / 4 + 12.5;
+    let mana = manaRegenPerTick();
     if (state.now - player.lastManaUse < CFG.fiveSecRule) mana *= mods.castRegen;
     mana *= buffRegenMul();   // Schrein des Manas (objects/shrines.ts)
     if (!player.rageMax) player.mana = Math.min(maxMana(), player.mana + mana);   // Wut regeneriert nicht
@@ -205,6 +205,10 @@ export const setRunEndHook = fn => { runEndHook = fn; };
 let xpHold = () => false, heldXp = 0;
 export const setXpHold = fn => { xpHold = fn; };
 export function releaseXp() { const xp = heldXp; heldXp = 0; if (xp > 0) gainXp(xp); }
+export function levelRefill() {       // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
+  player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
+  if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
+}
 export function gainXp(xp) {
   if (xpHold()) { heldXp += xp; return; }
   const fromLevel = player.level;

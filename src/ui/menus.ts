@@ -1,16 +1,15 @@
 import { state, player } from '../state';
 import { showLoad } from './loadScreen';
 import { $ } from '../util';
-import { SPELLS, CARD_RARITIES, LEVEL_UP_HEAL, SLOT } from '../config';
+import { SPELLS, CARD_RARITIES, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
 import { COLORS } from './colors';
 import { markWords } from './keywords';
 import { ICONS } from './icons';
 import { attachTip } from './tooltip';
 import './cards.css';
-import { maxHp, maxMana } from '../formulas';
 import { refreshKeyLabels, renderActionbar, showError, togglePerf, perfEnabled } from '../ui/hud';
-import { resetSpells, learnSpell, stopChannel, clearSpellEffects, modRule } from '../spells/core';
+import { resetSpells, learnSpell, stopChannel, clearSpellEffects } from '../spells/core';
 import { ACTIONS, binds, saveBinds, keyName, keyText, actionForCode, resetBinds } from '../input';
 import { resetGame, switchZone, newRunMap } from '../player';
 import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
@@ -123,11 +122,6 @@ function chooseReplacement(id) {
     el.addEventListener('click', () => { learnSpell(id, slot); finishCard(); });
     $('cards').appendChild(el);
   });
-}
-
-export function levelRefill() {       // Ding heilt wenig und füllt Mana auf, außer bei Kein Trinken (nur Regeneration) und Wut
-  player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
-  if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
 }
 
 function finishCard() {

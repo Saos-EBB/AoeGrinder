@@ -2,7 +2,7 @@
 
 import { state, player } from './state';
 import { pick } from './util';
-import { dmgMult, manaCost, spellCd } from './formulas';
+import { dmgMult, manaCost, spellCd, baseHit } from './formulas';
 import { modFactor, randomMode } from './modifiers';
 import { SPELLS, CARDS, CARD_RARITIES, CARD_KIND_WEIGHTS, CARD_RANK, CARD_SPELL_DMG, CARD_LUCK, CARD_COUNT, CARD_RELIC_LEVEL, FIG_RELIC, SLOT } from './config';
 import { stat, hasSpell, hasTag, tagsAllowed, spellAllowed, modRule, runesOf, figurePool } from './spells/core';
@@ -132,9 +132,8 @@ function luckCards() {
 }
 
 // Vorschau: echter Wert vorher → nachher. Die Karte selbst wird nicht angewendet, nur ihr Faktor nachgerechnet.
-const BASE_HIT = s => s.tickDmg ?? (s.min ? (s.min + s.max) / 2 : s.dmg ?? s.pulse ?? s.showDmg);
 export function spellValue(id, dmgBonus = 0) {
-  const base = BASE_HIT(SPELLS[id]);
+  const base = baseHit(SPELLS[id]);
   return base ? Math.round(base * (stat(id).dmg + dmgBonus) * dmgMult() * modFactor('dmg')) : 0;
 }
 const hitUnit = s => s.tickDmg ? t('cardui.perTick') : '';

@@ -4,7 +4,7 @@
 
 import { state, player } from '../state';
 import { SPELLS, CARDS } from '../config';
-import { manaCost, spellCd, dmgMult } from '../formulas';
+import { manaCost, spellCd, dmgMult, baseHit } from '../formulas';
 import { modFactor } from '../modifiers';
 import { paysLife, rune, runesOf, stat } from '../spells/core';
 import { spellValue } from '../cards';
@@ -19,7 +19,6 @@ import { t, fmtNum } from '../i18n';
 const RELIC_GOLD = '#e3c27a';
 // cls 'nature' sind die Seuche-Spells (spells/plague.ts): Anzeige „Seuche“, die ID selbst bleibt vorerst
 const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'nature', 'shadow', 'blood', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k === 'nature' ? 'plague' : k}`)]));
-const BASE_HIT = s => s.tickDmg ?? (s.min ? (s.min + s.max) / 2 : s.dmg ?? s.pulse ?? s.showDmg);
 const num = (v: number) => fmtNum(Math.round(v * 100) / 100);
 const sec = ms => `${fmtNum(Math.round(ms / 10) / 100)} s`;
 const unit = id => paysLife(id) ? t('cost.life') : batteryMode() ? t('res.charge') : player.rageMax === 1 ? '' : player.rageMax ? t('res.rage') : t('cost.mana');
@@ -54,7 +53,7 @@ export function spellTip(id: string, label?: string): TipData | null {
     const c: any = CARDS.find(x => x.id === cid);
     if (n && c && (c.spell === id || c.needs === id)) rows.push(`<span class="tTalent">${c.name} ${n}:</span> ${typeof c.desc === 'function' ? c.desc(1) : c.desc ?? ''}`);
   }
-  const rank = rankOf(id), base = BASE_HIT(s);
+  const rank = rankOf(id), base = baseHit(s);
   return {
     label: label ?? t(relic ? 'cardui.relic' : 'sc.spell'), title: s.name, icon: ICONS[id], color, relic, border: color,
     right: relic ? t('cardui.relic') : rank ? t('sc.rank', { n: rank + 1 }) : '',
