@@ -1,15 +1,36 @@
 // Dev-Panel (F10, Mockup Dev.dc.html): schwebendes Fenster. Titelleiste zieht, Ecke unten rechts ändert die Größe,
 // Knöpfe durchsichtig / einklappen / schließen. Position und Größe in frostgrind.ui.v1.
-// Der Inhalt sind die Dev-Knöpfe, die andere Module in #devPanel einhängen; beim ersten Öffnen werden sie in Gruppen sortiert.
+// Inhalt: die Dev-Blöcke aus index.html (#devPanel) und die, die andere Module mit registerDev(key, el) anmelden (main.ts mountDev).
+// Beim ersten Öffnen kommen sie in Gruppen; Gruppen, Reihenfolge und Unterzeilen stehen fest in DEV_LAYOUT, nicht in der Import-Reihenfolge.
 
 import { $ } from '../util';
 import { state } from '../state';
 import { SCORE_VERSION } from '../config';
 import { uiSettings, setUi } from './uiSettings';
-import { renderDevZones } from './menus';
 
 const MIN = 300;   // kleinste Breite und Höhe in px
 const panel = $('devPanel');
+
+// Feste Ordnung: Gruppe, Name, Blöcke [Schlüssel, Unterzeile]. Schlüssel = ID des Blocks (index.html) oder Schlüssel aus registerDev
+const DEV_LAYOUT = [
+  ['spieler', 'Spieler & Level', [['devLevels', 'Level setzen'], ['devCards', 'Karte erzwingen'], ['devLuck', ''], ['devComplete', '']]],
+  ['zone', 'Zone & Map', [['devZones', 'Zone'], ['devWorld', 'Weltkarte'], ['devPortal', 'Portal'], ['devObjects', 'Objekte']]],
+  ['mobs', 'Mobs & Bosse', [['devChamp', 'Champion-Pack'], ['devBoss', 'Boss'], ['devKinds', 'Pack: Kategorie × Zusatz × Theme'], ['devMobAtk', '']]],
+  ['waffen', 'Waffen', [['devInv', 'Inventar'], ['devForge', 'Waffen-Baukasten'], ['devLegend', 'Krieger-Legende']]],
+  ['gear', 'Gear', [['devGearSet', 'Sets']]],
+  ['kosmetik', 'Kosmetik', [['devKosmetik', '']]],
+  ['meta', 'Meta & Staub', [['devMeta', '']]],
+  ['anzeige', 'Anzeige', [['devPerf', ''], ['devColliders', ''], ['devFeat', 'Erfolgs-Meldung']]],
+] as const;
+type DevKey = (typeof DEV_LAYOUT)[number][2][number][0];
+const blocks = new Map<string, HTMLElement>();
+const onOpen: (() => void)[] = [];
+// Block anmelden: el kommt sofort ins Panel (IDs darin sind gleich auffindbar), refresh läuft bei jedem Öffnen (F10)
+export function registerDev(key: DevKey, el: HTMLElement, refresh?: () => void) {
+  blocks.set(key, el);
+  (panel.querySelector(':scope > .devBody') ?? panel).append(el);
+  if (refresh) onOpen.push(refresh);
+}
 
 // Kopf, Inhalt, Griff; die vorhandenen Kinder wandern in .devBody
 const icon = d => `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${d}</svg>`;
@@ -36,18 +57,9 @@ const openList = () => box().open ?? ['spieler'];
 function sortGroups() {
   sorted = true;
   for (const t of [...body.querySelectorAll(':scope > .title')]) t.remove();
-  const byId = id => document.getElementById(id);
-  const parentOf = id => byId(id)?.parentElement;
-  const groups: [string, string, [string, HTMLElement | null | undefined][]][] = [
-    ['spieler', 'Spieler & Level', [['Level setzen', byId('devLevels')], ['Karte erzwingen', byId('devCards')], ['', byId('devLuck')], ['', byId('devComplete')]]],
-    ['zone', 'Zone & Map', [['Zone', byId('devZones')], ['Weltkarte', byId('devWorld')], ['Portal', byId('devPortal')], ['Objekte', byId('devObjects')]]],
-    ['mobs', 'Mobs & Bosse', [['Champion-Pack', parentOf('devChamp')], ['Boss', parentOf('devBoss')], ['Pack: Kategorie × Zusatz × Theme', byId('devKinds')], ['', byId('devMobAtk')]]],
-    ['waffen', 'Waffen', [['Inventar', byId('devInv')], ['Waffen-Baukasten', byId('devForge')], ['Krieger-Legende', byId('devLegend')]]],
-    ['gear', 'Gear', [['Sets', parentOf('devGearSet')]]],
-    ['kosmetik', 'Kosmetik', [['', byId('devKosmetik')]]],
-    ['meta', 'Meta & Staub', [['', byId('devMeta')]]],
-    ['anzeige', 'Anzeige', [['', byId('devPerf')], ['', byId('devColliders')], ['Erfolgs-Meldung', byId('devFeat')]]],
-  ];
+  const WRAPPED = new Set(['devChamp', 'devBoss', 'devGearSet']);   // Übergang: Block = umgebendes Element (bis registerDev)
+  const found = new Map<string, HTMLElement | null>();   // vor dem Leeren suchen: danach hängen die Blöcke nicht mehr im Dokument
+  for (const [, , items] of DEV_LAYOUT) for (const [id] of items) found.set(id, blocks.get(id) ?? (WRAPPED.has(id) ? document.getElementById(id)?.parentElement : document.getElementById(id)));
   const rest = [...body.children];
   body.innerHTML = '';
   const section = (key: string, name: string, els: HTMLElement[]) => {
@@ -63,9 +75,10 @@ function sortGroups() {
     setOpen(sec, openList().includes(key));
     body.append(sec);
   };
-  for (const [key, name, items] of groups) {
+  for (const [key, name, items] of DEV_LAYOUT) {
     const els: HTMLElement[] = [];
-    for (const [label, el] of items) {
+    for (const [id, label] of items) {
+      const el = found.get(id);
       if (!el) continue;
       if (label) els.push(Object.assign(document.createElement('h3'), { textContent: label }));
       els.push(el);
@@ -144,7 +157,7 @@ addEventListener('keydown', e => {
   panel.hidden = !panel.hidden;
   if (panel.hidden) return;
   if (!sorted) sortGroups();
-  renderDevZones();
+  for (const fn of onOpen) fn();   // z. B. Zonen-Knöpfe neu (ui/menus.ts renderDevZones)
   showSub();
   place();
 });

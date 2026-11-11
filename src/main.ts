@@ -72,9 +72,11 @@ import { batteryMode, batteryMax } from './battery';
 import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
 import { updateFigEvents } from './figEvents';
 import { hooks } from './hooks';
+import { mountDev } from './ui/devGame';
 initGear(normalizeMeta);   // gespeicherten Stand säubern, sobald alle Module geladen sind
 hooks.figSay.set(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
 hooks.switchZone.set(switchZone);   // Portal (portal.ts)
+mountDev();   // Dev-Panel-Blöcke (ui/devGame.ts)
 
 function update(dt) {
   updatePadCamera(dt);
