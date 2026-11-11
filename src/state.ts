@@ -181,6 +181,8 @@ export const mods = {} as Mods;
 export function resetMods() {
   Object.assign(mods, MODS_START);
 }
+// Frische Kopie der Startwerte, ohne die echten mods anzufassen (ui/heroStats.ts computeModLayers)
+export const freshMods = (): Mods => ({ ...MODS_START });
 
 // Gift auf dem Spieler (abilities.ts)
 export interface PlayerPoison { stacks: number; until: number; nextTick: number; [k: string]: any }

@@ -4,6 +4,7 @@
 // Wirkung über vorhandene Wege: mods, stat(id), Pool, ein Treffer-Hook in damageMob. Nur Magier-Modi. Grundregel: nur erspielter Staub.
 
 import { state, player } from './state';
+import type { Mods, SpellStat, GameState } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
 import { meta, saveMeta, cleanWeapon } from './meta';
 import { stat, tagsAllowed, applySlow, schedule } from './spells/core';
@@ -169,8 +170,14 @@ export function devClearInventory() {
   saveMeta();
 }
 
+// Ziel der Werte (E8, ARCH-05): Der Run-Start schreibt in die echten mods/stat()/state, das Charakterfenster (ui/heroStats.ts
+// computeModLayers) in eine Kopie. Von state nur die Felder, die Waffe und Gear setzen (poolExtra, runWeapon, weaponHit, bonusCharges, weaponAura, gearSet)
+export type ModTarget = { mods: Mods; stat: (id: string) => SpellStat; state: Partial<GameState> };
+export const runTarget = (): ModTarget => ({ mods, stat, state });
+
 // Werte auf mods/stat. cd und cast sind Anteile (−0,05 = 5 % weniger)
-export function applyValue(key, v) {
+export function applyValue(key, v, to: ModTarget = runTarget()) {
+  const mods = to.mods;
   if (key === 'dmg') mods.dmg += v;
   if (key === 'crit') mods.crit += v;
   if (key === 'cd') mods.cdMul = Math.max(0.1, mods.cdMul - v);
@@ -181,50 +188,51 @@ export function applyValue(key, v) {
   if (key === 'radius') mods.radius += v;
   if (key === 'dur') mods.durMul += v;
 }
-export function applyFocus(raw, f, w) {
-  const id = focusId(raw, w), s = stat(id);
+export function applyFocus(raw, f, w, to: ModTarget = runTarget()) {
+  const id = focusId(raw, w), s = to.stat(id);
   s.dmg += ROLLS.focus.dmg * f;
   s.radius += ROLLS.focus.radius * f;
-  if (!tagsAllowed(SPELLS[id].tags)) state.poolExtra.push(id);   // für diesen Run in den Pool
+  if (!tagsAllowed(SPELLS[id].tags)) to.state.poolExtra.push(id);   // für diesen Run in den Pool
 }
 
 // Run-Start, nach resetSpells: Waffe anwenden. Nahkämpfer tragen keine.
-export function applyRunWeapon(magier) {
-  state.poolExtra = [];
-  state.runWeapon = '';
-  state.weaponHit = null;
-  state.bonusCharges = {};
-  state.weaponAura = null;
+export function applyRunWeapon(magier, to: ModTarget = runTarget()) {
+  const mods = to.mods, st = to.state;   // state.now liest weiter den echten Zustand
+  st.poolExtra = [];
+  st.runWeapon = '';
+  st.weaponHit = null;
+  st.bonusCharges = {};
+  st.weaponAura = null;
   const w = magier ? equipped() : null;
   if (!w) return;
   const f = factor(w.r);
-  state.runWeapon = `${weaponName(w)} (${rarityOf(w).name})`;
+  st.runWeapon = `${weaponName(w)} (${rarityOf(w).name})`;
   if (!isNew(w)) {                                              // alte Waffe: ein Effekt
-    if (w.e.startsWith('f:')) applyFocus(w.e.slice(2), f, w);
-    else applyValue(w.e, ROLLS.values[w.e] * f * (w.e === 'cd' ? 1 : 1));
+    if (w.e.startsWith('f:')) applyFocus(w.e.slice(2), f, w, to);
+    else applyValue(w.e, ROLLS.values[w.e] * f * (w.e === 'cd' ? 1 : 1), to);
     return;
   }
   const s = w.s, T = ROLLS.typeRule[s.type], M = ROLLS.maker[s.maker];
   if (T.radius) mods.radius += T.radius;
   if (T.cast) mods.castMul += T.cast;
-  if (T.cd) applyValue('cd', -T.cd);
-  if (T.charges && w.r >= 1) state.bonusCharges = { [focusId(s.focus, w)]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
+  if (T.cd) applyValue('cd', -T.cd, to);
+  if (T.charges && w.r >= 1) st.bonusCharges = { [focusId(s.focus, w)]: T.charges };   // Buch: +1 Ladung auf den Fokus-Spell
   if (T.manaCost) mods.manaCostMul += T.manaCost;
   if (T.dur) mods.durMul += T.dur;
-  if (T.aura && s.element !== 'none') state.weaponAura = { el: s.element, f, next: state.now + ROLLS.aura.everyMs, M };
-  if (w.r >= 1) applyFocus(s.focus, f, w);
-  applyValue(VALUE_KEY[s.value], ROLLS.values[VALUE_KEY[s.value]] * f);
-  if (s.extra !== 'none') applyValue(VALUE_KEY[s.value2], ROLLS.values[VALUE_KEY[s.value2]] * f / 2);
+  if (T.aura && s.element !== 'none') st.weaponAura = { el: s.element, f, next: state.now + ROLLS.aura.everyMs, M };
+  if (w.r >= 1) applyFocus(s.focus, f, w, to);
+  applyValue(VALUE_KEY[s.value], ROLLS.values[VALUE_KEY[s.value]] * f, to);
+  if (s.extra !== 'none') applyValue(VALUE_KEY[s.value2], ROLLS.values[VALUE_KEY[s.value2]] * f / 2, to);
   if (M.dmg) mods.dmg += M.dmg;
   if (M.cast) mods.castMul += M.cast;
   if (M.crit) mods.crit += M.crit;
   if (M.dur) mods.durMul += M.dur;
-  if (M.random) applyValue(pick(Object.values(VALUE_KEY)), M.random);
-  if (M.cd) applyValue('cd', -M.cd);
+  if (M.random) applyValue(pick(Object.values(VALUE_KEY)), M.random, to);
+  if (M.cd) applyValue('cd', -M.cd, to);
   if (M.mana) mods.manaMult += M.mana;
   if (M.hp) mods.hpMult += M.hp;
   const chance = s.element === 'none' ? 0 : ROLLS.procChance * f;
-  if (chance || M.lifesteal || M.critMana) state.weaponHit = (m, dmg, crit, api) => weaponHit(m, dmg, crit, api, s.element, chance, M);
+  if (chance || M.lifesteal || M.critMana) st.weaponHit = (m, dmg, crit, api) => weaponHit(m, dmg, crit, api, s.element, chance, M);
 }
 
 // Treffer-Hook aus damageMob (nur Spell-Treffer des Spielers). api: Funktionen aus mobs.ts, damit hier kein Import-Kreis entsteht

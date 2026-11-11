@@ -1,10 +1,10 @@
 // Werte für das Fenster aus heroWindow.ts: 6 Hauptwerte und „Alle Werte“ in Gruppen, jeder Wert mit Aufschlüsselung Basis + Waffe + Gear + Karten/Relikte.
-// Quelle sind nur mods, stat() und die Formeln (formulas.ts), nichts doppelt gerechnet: Für die Aufschlüsselung werden die mods einmal frisch gesetzt
-// (resetMods), dann Waffe (applyRunWeapon) und Gear (applyRunGear) angewendet wie beim Run-Start, und danach alles zurückgelegt. Im Run ist der Rest
+// Quelle sind nur mods, stat() und die Formeln (formulas.ts), nichts doppelt gerechnet: Für die Aufschlüsselung rechnet computeModLayers die mods
+// frisch, dann mit Waffe (applyRunWeapon) und Gear (applyRunGear) wie beim Run-Start, aber in eine Kopie. Im Run ist der Rest
 // bis zum echten Wert Karten/Relikte, im Hauptmenü gibt es den nicht. Fehlt ein Wert im Spiel (z. B. Regeneration beim Seuchenmagier), steht „—“. Werte der Figur: charInfo.ts.
 
-import { state, player } from '../state';
-import { CFG, SPELLS, CARDS, mods, resetMods } from '../config';
+import { state, player, freshMods } from '../state';
+import { CFG, SPELLS, CARDS, mods } from '../config';
 import { maxHp, maxMana, dmgMult, manaRegenPerTick } from '../formulas';
 import { modFactor, modValue } from '../modifiers';
 import { heroModel } from '../models/heroModel';
@@ -14,7 +14,7 @@ import { rune } from '../spells/core';
 import { takenMul, moveMul } from '../realMen';
 import { DG } from '../dodge';
 import { meterSchool, meterDmgMul, meterValue } from '../schoolMeter';
-import { ROLLS, equipped, factor, applyRunWeapon, weaponName } from '../weaponRolls';
+import { ROLLS, equipped, factor, applyRunWeapon, weaponName, type ModTarget } from '../weaponRolls';
 import { applyRunGear, fullSet, worn, SLOTS, GEAR, isMageFigure } from '../gear';
 import { ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { fmtInt } from './fmt';
@@ -38,27 +38,23 @@ function withMods<T>(snap: Snap, fn: () => T): T {
   Object.assign(mods, snap);
   try { return fn(); } finally { for (const k of Object.keys(mods)) delete mods[k]; Object.assign(mods, keep); }
 }
-// mods nach Basis, nach Waffe und nach Gear. Alles, was der Run-Start dabei anfasst, wird zurückgelegt. Schlägt etwas fehl: keine Aufschlüsselung
-const STATE_KEYS = ['poolExtra', 'runWeapon', 'weaponHit', 'bonusCharges', 'weaponAura', 'gearSet', 'spellStats'];
-function layers(): { base: Snap; weapon: Snap; gear: Snap } | null {
-  const keepMods = { ...mods }, keepState = Object.fromEntries(STATE_KEYS.map(k => [k, state[k]]));
+// mods nach Basis, nach Waffe und nach Gear als reine Rechnung (E8, ARCH-05): Waffe und Gear schreiben wie beim Run-Start,
+// aber in eine Kopie (frische mods, Kopie der spellStats, eigenes state-Stück), die echten mods/state bleiben unberührt.
+// Schlägt etwas fehl: keine Aufschlüsselung
+export function computeModLayers(weaponOn: boolean, figureId: string | null): { base: Snap; weapon: Snap; gear: Snap } | null {
   try {
-    state.spellStats = structuredClone(state.spellStats ?? {});
-    state.poolExtra = [];
-    resetMods();
-    const base = { ...mods };
-    applyRunWeapon(!!heroModel.weapon);
-    const weapon = { ...mods };
-    applyRunGear(heroModel.figureId);
-    return { base, weapon, gear: { ...mods } };
+    const stats = structuredClone(state.spellStats ?? {});
+    const to: ModTarget = { mods: freshMods(), stat: id => stats[id] ??= { dmg: 1, mana: 1, radius: 1 }, state: { poolExtra: [] } };
+    const base = { ...to.mods };
+    applyRunWeapon(weaponOn, to);
+    const weapon = { ...to.mods };
+    applyRunGear(figureId, to);
+    return { base, weapon, gear: { ...to.mods } };
   } catch {
     return null;
-  } finally {
-    for (const k of Object.keys(mods)) delete mods[k];
-    Object.assign(mods, keepMods);
-    Object.assign(state, keepState);
   }
 }
+const layers = () => computeModLayers(!!heroModel.weapon, heroModel.figureId);
 
 // Ein Wert aus den mods: v rechnet, fmt zeigt den Wert, dfmt einen Anteil (Differenz zweier Stufen)
 type Def = { id: string; label: () => string; v: () => number; fmt: (v: number) => string; dfmt: (d: number) => string; show?: () => boolean };
