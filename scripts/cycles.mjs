@@ -18,6 +18,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
 const ENTRIES = ['main.ts', 'vfxLab.ts'];
 // Ausgangswert 11.11.2026 (Audit, E4): statisch Kreise 88/4/2 (94 Module in Kreisen), mit import() 102/2 (104).
+// Nach E6 (hooks.ts, feedback.ts, spells/stats.ts, arena ohne import()): beide 84/4/2 (90).
 // Darf nur sinken; nach jedem Umbau, der Kreise auflöst, hier nachziehen.
 const LIMIT = { static: { largest: 84, inCycles: 90 }, dynamic: { largest: 84, inCycles: 90 } };
 let NO_DYN = false;
