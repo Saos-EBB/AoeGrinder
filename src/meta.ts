@@ -10,6 +10,7 @@ import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type Figur,
 
 export const META = {
   store: 'frostgrind.meta.v1',
+  backups: 3,                                          // so viele Sicherungen eines unlesbaren Stands bleiben liegen
   splits: [15, 30, 45, 60, 75, 90, 100],
   dust: { perLevel: 1, doneBonusAtTier3: 50 },         // Abschluss-Bonus wächst mit der Shop-Stufe
   price: { 'grün': 40, blau: 70, lila: 120, orange: 200, perBuy: 1.15 },
@@ -30,10 +31,42 @@ export const META = {
 const RANK = ['grün', 'blau', 'lila', 'orange'];
 const FREE = ['grün'];
 
-// skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen
+// skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen.
+// Nie einen echten Stand durch einen leeren ersetzen: Ist der Text kein JSON-Objekt, wird er unter META.store + '.backup-<Zeit>' gesichert (höchstens
+// META.backups Stück), dann Start mit Standard. Die Säuberung läuft Schritt für Schritt: schlägt einer fehl, fällt nur sein Feld auf Standard, der Rest bleibt.
+const metaDefaults = () => ({ dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 });
+let saveBlocked = false;   // Backup ließ sich nicht schreiben: dann den alten Text im Speicher nicht überschreiben
+function backupMeta(raw: string, why: string) {
+  const prefix = META.store + '.backup-', key = prefix + new Date().toISOString();
+  try {
+    localStorage.setItem(key, raw);
+    const old = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort();
+    for (const k of old.slice(0, Math.max(0, old.length - META.backups))) localStorage.removeItem(k);
+    console.warn(`[meta] Spielstand ${why}, Rohtext gesichert unter ${key}`);
+  } catch (e) {
+    saveBlocked = true;
+    console.error(`[meta] Spielstand ${why}, Sicherung fehlgeschlagen. Der gespeicherte Stand wird in dieser Sitzung nicht überschrieben.`, e);
+  }
+}
 function load() {
-  try { const m = { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, ...JSON.parse(localStorage.getItem(META.store) || '{}') }; cleanSkinState(m); m.stats = cleanStats(m.stats); return m; }
-  catch { return { dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0, skins: {}, achievements: [], stats: cleanStats(null) }; }
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(META.store); } catch { /* kein Storage */ }
+  let saved: any = {}, backedUp = false;
+  const backup = (why: string) => { if (!backedUp && raw) backupMeta(raw, why); backedUp = true; };
+  if (raw) {
+    try { saved = JSON.parse(raw); } catch { saved = null; }
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) { backup('nicht lesbar'); saved = {}; }
+  }
+  const m: any = { ...metaDefaults(), ...saved };
+  const step = (name: string, fn: () => void, reset: () => void) => {
+    try { fn(); } catch (e) { console.warn(`[meta] Säubern „${name}“ fehlgeschlagen, Feld auf Standard`, e); backup(`Feld ${name} kaputt`); reset(); }
+  };
+  step('skins', () => cleanSkinState(m), () => { m.skins = {}; try { m.achievements = cleanAch(m.achievements); } catch { m.achievements = []; } });
+  step('stats', () => { m.stats = cleanStats(m.stats); }, () => { m.stats = cleanStats(null); });
+  // Waffen einzeln: eine kaputte fällt raus (steht im Backup), die anderen bleiben
+  if (!Array.isArray(m.inv)) step('inv', () => { throw new TypeError('inv ist keine Liste'); }, () => { m.inv = []; });
+  m.inv = m.inv.filter((w, i) => { let ok = true; step(`inv[${i}]`, () => fixWeapon(w), () => { ok = false; }); return ok; });
+  return m;
 }
 // Zähler über alle Runs (Meilensteine): kills, dust = erspielter Staub gesamt (nicht der Kontostand). Fehlt in alten Ständen → 0
 export const cleanStats = (raw: any) => ({ kills: Math.max(0, Math.floor(Number(raw?.kills) || 0)), dust: Math.max(0, Math.floor(Number(raw?.dust) || 0)) });
@@ -63,8 +96,7 @@ export function fixWeapon(w) {
   return w;
 }
 export const meta = load();
-meta.inv.forEach(fixWeapon);
-export const saveMeta = () => { try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
+export const saveMeta = () => { if (saveBlocked) return; try { localStorage.setItem(META.store, JSON.stringify(meta)); } catch { /* egal */ } };
 
 // ---------- Erfolge ----------
 export const hasAch = (id: string) => meta.achievements.includes(id);

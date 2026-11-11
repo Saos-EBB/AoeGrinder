@@ -2,6 +2,10 @@
 
 Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/build-log.md](docs/build-log.md), der Stand pro Spielversion in [docs/handoff.md](docs/handoff.md#stand).
 
+## 2026-11-11
+
+- fix(save): Ein kaputter Spielstand wird nicht mehr still durch einen leeren ersetzt: ist der gespeicherte Text kein lesbares JSON, liegt er danach unter `frostgrind.meta.v1.backup-<Zeit>` (höchstens 3 Sicherungen), Hinweis in der Konsole, Start mit leerem Stand. Ist nur ein Teil kaputt (z. B. eine Waffe), fällt nur dieser Teil weg, Staub, Gear, Skins und Erfolge bleiben; vorher startete das Spiel bei einer kaputten Waffe gar nicht
+
 ## 2026-11-10
 
 - fix(ui): Kartenwahl mit vielen Karten passt ins Bild: bis 10 Karten wieder 5 je Reihe (es waren nur 4, dadurch bei 10 Karten drei Reihen und die unterste abgeschnitten bzw. zum Scrollen), 11–12 Karten etwas schmaler 6 je Reihe. 4–12 Karten passen ohne Scrollen bei 1920 × 1080, 1600 × 900 und 1263 × 638 in allen drei UI-Flavors
