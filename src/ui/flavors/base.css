@@ -3,7 +3,7 @@
 
 body {
   --font-title: 'Cinzel', serif; --font-title-weight: 900; --font-body: 'Barlow', sans-serif; --font-num: 'Barlow Condensed', 'Barlow', sans-serif; --font-btn: var(--font-title);
-  --rar-grau: #9d9d9d; --rar-weiss: #e8e8e8; --rar-gruen: #2ecc40; --rar-blau: #3a8cff; --rar-lila: #b05cff; --rar-orange: #ff8a1a; --rar-relikt: #e3c27a;
+  /* --rar-grau … --rar-orange und --rar-relikt setzt ui/flavors/index.ts beim Start aus CARD_RARITIES (config.ts) und COLORS.relic (ui/colors.ts), hier keine eigenen Werte */
 }
 /* Fraktur: nur Titel und Namen, Fließtext bleibt */
 body.font-fraktur[data-flavor], body.font-fraktur .hudEl[data-flavor] { --font-title: 'UnifrakturCook', serif; --font-title-weight: 700; }

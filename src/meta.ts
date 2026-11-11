@@ -2,7 +2,7 @@
 // Alle Zahlen in META, alles // PH außer den Entscheidungen von Kevin. Seltenheiten und Startset: docs/pool-liste.md
 
 import { state, player } from './state';
-import { SPELLS } from './config';
+import { SPELLS, CARD_RARITIES } from './config';
 import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
@@ -28,7 +28,7 @@ export const META = {
     rune: ['grün', 'blau', 'lila'],                    // nach Position im Spell
   },
 };
-const RANK = ['grün', 'blau', 'lila', 'orange'];
+const RANK = CARD_RARITIES.slice(2).map(r => r.id);   // grün … orange
 const FREE = ['grün'];
 
 // skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen.

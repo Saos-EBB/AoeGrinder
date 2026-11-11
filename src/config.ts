@@ -153,13 +153,16 @@ export const SCHOOL_METER = {
 };
 
 // CARD_*: Zahlen fürs Kartensystem, alles PH (docs/spells-spec.md)
+// Seltenheiten: einzige Quelle für Karten, Waffen (baukasten.ts RARITY), Gear und die Meta-Ränge (meta.ts RANK).
+// color ist auch die CSS-Variable --rar-<css> (ui/flavors/index.ts setzt sie beim Start, base.css hat keine eigenen Werte mehr).
+// Farben = die früheren CSS-Werte aus base.css (Kevin 2026-11-11, Entscheidung 3)
 export const CARD_RARITIES = [
-  { id: 'grau', name: t('rarity.grau'),   color: '#b0b0b0', mult: 0.5, weight: 30 },
-  { id: 'weiß', name: t('rarity.weiß'),   color: '#ffffff', mult: 1,   weight: 35 },
-  { id: 'grün', name: t('rarity.grün'),   color: '#3fe05a', mult: 2,   weight: 20 },
-  { id: 'blau', name: t('rarity.blau'),   color: '#4aa3ff', mult: 3,   weight: 10 },
-  { id: 'lila', name: t('rarity.lila'),   color: '#c573ff', mult: 4,   weight: 4 },
-  { id: 'orange', name: t('rarity.orange'), color: '#ff9a2e', mult: 5,   weight: 1 },
+  { id: 'grau', css: 'grau', name: t('rarity.grau'),   color: '#9d9d9d', mult: 0.5, weight: 30 },
+  { id: 'weiß', css: 'weiss', name: t('rarity.weiß'),   color: '#e8e8e8', mult: 1,   weight: 35 },
+  { id: 'grün', css: 'gruen', name: t('rarity.grün'),   color: '#2ecc40', mult: 2,   weight: 20 },
+  { id: 'blau', css: 'blau', name: t('rarity.blau'),   color: '#3a8cff', mult: 3,   weight: 10 },
+  { id: 'lila', css: 'lila', name: t('rarity.lila'),   color: '#b05cff', mult: 4,   weight: 4 },
+  { id: 'orange', css: 'orange', name: t('rarity.orange'), color: '#ff8a1a', mult: 5,   weight: 1 },
 ];
 export const CARD_KIND_WEIGHTS = { rang: 35, spell: 20, rune: 15, support: 10, relic: 5, talent: 10, luck: 5 };   // PH: Spec nennt keine Verteilung
 export const CARD_RANK = { dmg: 0.15, mana: 0.10, radius: 0.10, tempo: 0.10, cd: 0.10, range: 3, dur: 0.10 };   // PH: tempo nur Nahkampf (Dauer der Aktion), cd = Abklingzeit, range in yd (nur Blink), dur = Dauer und Radius (?-Magier Defensiv)

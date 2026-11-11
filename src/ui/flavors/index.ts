@@ -6,9 +6,15 @@
 import { uiSettings } from '../uiSettings';
 import type { HudElementId, Placement } from '../hud/layout';
 import './base.css';
+import { CARD_RARITIES } from '../../config';
+import { COLORS } from '../colors';
 import { hoellenfeste } from './hoellenfeste';
 import { schlachtbank } from './schlachtbank';
 import { krypta } from './krypta';
+
+// Seltenheitsfarben als CSS-Variablen (--rar-grau … --rar-orange, --rar-relikt) für base.css, theme.css, heroWindow.css. Quelle: CARD_RARITIES (config.ts)
+for (const r of CARD_RARITIES) document.documentElement.style.setProperty(`--rar-${r.css}`, r.color);
+document.documentElement.style.setProperty('--rar-relikt', COLORS.relic);
 
 export type FlavorId = 'hoellenfeste' | 'schlachtbank' | 'krypta';
 export type Flavor = {

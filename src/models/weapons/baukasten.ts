@@ -7,11 +7,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { t, lang } from '../../i18n';
 import { toonMat } from '../../toon';
 import { hex } from '../../ui/dom';
+import { CARD_RARITIES } from '../../config';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
-const RARITY = [
-  { name: 'grau', color: '#b0b0b0', mult: 0.5 }, { name: 'weiß', color: '#ffffff', mult: 1 }, { name: 'grün', color: '#3fe05a', mult: 2 },
-  { name: 'blau', color: '#4aa3ff', mult: 3 }, { name: 'lila', color: '#c573ff', mult: 4 }, { name: 'orange', color: '#ff9a2e', mult: 5 }];
+const RARITY = CARD_RARITIES;   // Seltenheitsfarbe am Modell, Quelle config.ts
 // Kopf = Schule des Fokus-Spells, zwei Formen je Schule (Kevin 2026-11-08). Jeder Kopf geht an jedem Typ
 export const ALL_HEADS = ['frostorb', 'sichel', 'glutschaedel', 'dreizack', 'wolke', 'spulen', 'speischaedel', 'phiole', 'ring', 'auge'];
 export const TYPES = {
