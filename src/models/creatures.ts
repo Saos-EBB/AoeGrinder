@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rand, lerpTo, part, joint, mergeByJoint } from '../util';
+import { TINTS as TINT } from './strichKit';
 
 const cache = new Map();
 const memo = (key, make) => { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); };
@@ -11,9 +12,8 @@ const Box = (w, h, d) => memo(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, 
 const Cyl = (r1, r2, h) => memo(`c${r1},${r2},${h}`, () => new THREE.CylinderGeometry(r1, r2, h, 6));
 const Cone = (r, h) => memo(`n${r},${h}`, () => new THREE.ConeGeometry(r, h, 5));
 const Ball = r => memo(`s${r}`, () => new THREE.SphereGeometry(r, 8, 6));
-const SLOW = new THREE.Color(0x5f86c8), DEAD = new THREE.Color(0x5a5048), POISON = new THREE.Color(0x4a8a1a), FEAR = new THREE.Color(0x6a3a7a);   // Spell-Viewer: verlangsamt blau, Gift grün, Fliehen lila
 const SLOW_GLOW = new THREE.Color(0, 0.03, 0.12);   // PH: blaues Leuchten beim Verlangsamen
-const TINTS = [null, SLOW, DEAD, POISON, FEAR], FLASH_STEPS = 4;
+const TINTS = [null, TINT.slow, TINT.dead, TINT.poison, TINT.fear], FLASH_STEPS = 4;   // Status-Tönungen aus strichKit.ts, Index = tint
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);   // PH
 const GLOW = { true: CHAMP_GLOW, boss: new THREE.Color(0.45, 0.06, 0.03), boss2: new THREE.Color(0.8, 0.16, 0.06), gap: new THREE.Color(0.75, 0.75, 0.75), evil: new THREE.Color(0.3, 0.02, 0.02) };   // PH: Boss rot, Phase 2 heller, Lücke weiß (boss.ts)
 

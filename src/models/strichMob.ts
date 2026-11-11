@@ -6,16 +6,12 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { lerpTo as lerp, V } from '../util';
+import { grad, TINTS, capDown as capGeo, RIM, rimChunk } from './strichKit';
 
 // Alles // PH
-const RIM = [0.5, 0.55, 0.65], RIM_POW = 2.6;       // Lichtrand wie strichMagier
 const GLOW_K = 1.6;                                   // Leuchtfarben über die Bloom-Schwelle
-const TINTS = { slow: new THREE.Color(0x5f86c8), dead: new THREE.Color(0x5a5048), poison: new THREE.Color(0x4a8a1a), fear: new THREE.Color(0x6a3a7a) };   // wie creatures.ts
 const CHAMP_GLOW = new THREE.Color(0.16, 0.3, 0.55);
 const ZUS_COLOR = { heal: 0x60ff70, shield: 0x6aa8ff, haste: 0xffd040, platzt: 0xff3020, teilt: 0xc070ff };
-
-const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
-grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
 
 // Grundformen einmal pro Maß bauen und teilen: Nach dem ersten Mob eines Typs werden sie nur noch fürs Rig gebraucht,
 // nie gezeichnet (bakeGeo kopiert sie). Spart beim Spawn das Neubauen von ~60 Formen pro Mob.
@@ -26,7 +22,7 @@ const mk = (G: new (...a: any[]) => THREE.BufferGeometry, ...a: (number | boolea
   if (!ctorId.has(G)) ctorId.set(G, ctorId.size);
   return memo(`#${ctorId.get(G)}:${a.join(',')}`, () => new G(...a));
 };
-const capDown = (r, len, rs = 6) => memo(`capDown${r},${len},${rs}`, () => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; });
+const capDown = (r, len, rs = 6) => memo(`capDown${r},${len},${rs}`, () => capGeo(r, len, rs));
 const ico = (r, d = 0) => mk(THREE.IcosahedronGeometry, r, d);
 const lathe = (pts, seg = 8) => memo(`lathe${pts.join(';')},${seg}`, () => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg));
 const cone = (r, h, seg = 5) => mk(THREE.ConeGeometry, r, h, seg);
@@ -71,7 +67,7 @@ function mobMat(soft: boolean, opacity = 1) {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         diffuseColor.rgb = mix(diffuseColor.rgb, uTint.rgb, uTint.a * (1. - vGlow));
         totalEmissiveRadiance += vGlow * uGlowK * diffuseColor.rgb; diffuseColor.rgb *= 1. - vGlow;`)
-      .replace('#include <opaque_fragment>', soft ? '#include <opaque_fragment>' : `outgoingLight += (1. - vGlow) * vec3(${RIM.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM_POW.toFixed(1)});\n#include <opaque_fragment>`);
+      .replace('#include <opaque_fragment>', soft ? '#include <opaque_fragment>' : `outgoingLight += (1. - vGlow) * ${rimChunk(RIM.color, RIM.power)};\n#include <opaque_fragment>`);
   };
   m.customProgramCacheKey = () => soft ? 'strichMobSoft' : 'strichMob';   // Häute ohne Lichtrand: flach von der Seite gesehen wären sie sonst weiß
   m.U = U;

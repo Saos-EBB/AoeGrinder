@@ -8,6 +8,7 @@ import { clamp, lerpTo as lerp, inOut, outC, V } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { eMat, PAL, fx as efx, em, uK as setK, arc as eArc, ring as eRing, lay } from '../vfx/energy';
+import { grad, capDown, prep as kitPrep, rimChunk, ik } from './strichKit';
 
 // Dauern in ms. Die Spielregeln stehen in REALMEN (realMen.ts)
 export const STRICH_TIMING = {
@@ -28,23 +29,11 @@ const TAU = Math.PI * 2;
 const RIM = { color: [0.62, 0.62, 0.68], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
 const FX_LIGHT = 0xf2efe6, FX_DARK = 0x0c0a08;          // Tusche des Viewers wäre auf dunklem Boden unsichtbar, nur die Risse bleiben dunkel
 
-const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
-grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
 const L1 = .5, L2 = .48, A1 = .35, A2 = .33;
 const C = { ink: new THREE.Color(0x2b2b33), plate: new THREE.Color(0x5a1a14), cloth: new THREE.Color(0xa3151b),
   iron: new THREE.Color(0x4a4d54), edge: new THREE.Color(0xc4c8cd), wrap: new THREE.Color(0x7a1a14), guard: new THREE.Color(0x26231f) };
-// flat: harte Kanten (Low-Poly-Look der Skins)
-function prep(geo, color, m?, flat = false) {
-  let g = geo.index ? geo.toNonIndexed() : geo.clone();
-  if (g.attributes.uv) g.deleteAttribute('uv');
-  if (flat && g.attributes.normal) g.deleteAttribute('normal');
-  if (!g.attributes.normal) g.computeVertexNormals();
-  if (m) g.applyMatrix4(m);
-  const n = g.attributes.position.count, col = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) col.set([color.r, color.g, color.b], i * 3);
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  return g;
-}
+// flat: harte Kanten (Low-Poly-Look der Skins), strichKit.ts prep
+const prep = (geo, color, m?, flat = false) => kitPrep(geo, color, m, { flat });
 function mix(a, b, u) {
   const o: any = {};
   for (const k of KEYS) o[k] = Array.isArray(a[k]) ? a[k].map((v, i) => lerp(v, b[k][i], u)) : lerp(a[k], b[k], u);
@@ -70,7 +59,7 @@ export function buildStrichKrieger({ bloom = false, weapon = 'sword', skinId: lo
   const VMAT = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad });
   VMAT.onBeforeCompile = s => {
     s.fragmentShader = s.fragmentShader.replace('#include <opaque_fragment>',
-      `outgoingLight += vec3(${RIM.color.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM.power.toFixed(1)});\n#include <opaque_fragment>`);
+      `outgoingLight += ${rimChunk(RIM.color, RIM.power)};\n#include <opaque_fragment>`);
   };
   let lift = 0, spinAng = 0, rage = 0, flare = 0, qPal = null, fin = { s: 1, tor: 0 };
   const gy = () => root.position.y - lift;             // Boden unter der Figur
@@ -82,7 +71,6 @@ function part(bone, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1
   const e: any = { bone, geo, color, m: pm ? pm.clone().multiply(M4(pos, rot, scl)) : M4(pos, rot, scl) };
   parts.push(e); return e;
 }
-const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
 const root = new THREE.Group();
 const hips = B(root, 0, 1.04, 0);
 const pHips = part(hips, new THREE.SphereGeometry(.19, 7, 4), C.ink, [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
@@ -419,24 +407,6 @@ clothGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SN 
 const cloth = new THREE.Mesh(clothGeo, new THREE.MeshBasicMaterial({ color: cloth0.color, side: THREE.DoubleSide }));
 cloth.frustumCulled = false;
 function clothReset() { const p = clothAnchor.getWorldPosition(V()); for (let i = 0; i < SN; i++) { sP[i] = p.clone().add(V(0, -i * SEG, 0)); sO[i] = sP[i].clone(); } }
-const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
-const DOWN = V(0, -1, 0);
-function ik(upper, lower, l1, l2, targetW, poleW) {
-  const par = upper.parent;
-  const T = par.worldToLocal(_a.copy(targetW));
-  const pole = par.worldToLocal(_b.copy(poleW));
-  const P = upper.position;
-  const d = _c.subVectors(T, P); const L = clamp(d.length(), 1e-3, l1 + l2 - 1e-3); d.normalize();
-  const al = Math.acos(clamp((l1 * l1 + L * L - l2 * l2) / (2 * l1 * L), -1, 1));
-  const pp = _d.subVectors(pole, P); pp.addScaledVector(d, -pp.dot(d));
-  if (pp.lengthSq() < 1e-8) pp.set(0, 0, 1); pp.normalize();
-  const eDir = _e.copy(d).multiplyScalar(Math.cos(al)).addScaledVector(pp, Math.sin(al));
-  upper.quaternion.setFromUnitVectors(DOWN, eDir);
-  const E = _b.copy(P).addScaledVector(eDir, l1);
-  const lDir = _a.copy(P).addScaledVector(d, L).sub(E).normalize();
-  _q.setFromUnitVectors(DOWN, lDir);
-  lower.quaternion.copy(_q2.copy(upper.quaternion).invert().multiply(_q));
-}
 const _w = V(), _pw = V(), _rq = new THREE.Quaternion(), _sq = new THREE.Quaternion();
 function legIK(l, f) {
   root.localToWorld(_w.set(f[0], f[1], f[2]));

@@ -16,6 +16,7 @@ import { markStacks } from '../plagueMarks';
 import { gearPieces, animateGear } from './gearParts';
 import { paletteOf } from '../figureTable';
 import { kosmetikPieces, glassGeo, makeKillFlag, KOS, type KosEvent, type KosFrame } from './kosmetikParts';
+import { grad, capDown, prep as kitPrep, RIM, rimChunk, ik } from './strichKit';
 
 const EASE = { io: inOut, out: outC, back: outBack, lin: t => t, sine };
 const TAU = Math.PI * 2;
@@ -24,40 +25,13 @@ const bump = (t, a, b, f = .15) => clamp(Math.min((t - a) / f, (b - t) / f), 0, 
 // Im Spiel: Zaubern dauert höchstens so lang, sonst hinkt die Figur dem schnellen Zaubern hinterher. Der Viewer zeigt 1,0–2,2 s. // PH
 const CAST_MS = 700;
 const CAST_HOLD = 0.55;       // Hier wartet die Pose, solange ein längerer Zauber läuft
-const RIM = { color: [0.5, 0.55, 0.65], power: 2.6 };   // wie Klingenstrich: bleibt im Dunkeln sichtbar // PH
 // Skin-IDs im Spiel → Skins des Viewers: paletteOf (figureTable.ts, dort auch alle = Kevins Zuhälter-Look und arkan)
 
-const grad = new THREE.DataTexture(new Uint8Array([80, 80, 80, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1);
-grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
-
-function prep(geo, color, m?, flick = false) {
-  let g = geo.index ? geo.toNonIndexed() : geo.clone();
-  if (g.attributes.uv) g.deleteAttribute('uv');
-  if (!g.attributes.normal) g.computeVertexNormals();
-  const n = g.attributes.position.count;
-  if (flick) { // 0 an der Basis, 1 an der Spitze (lokales y vor der Transformation)
-    g.computeBoundingBox(); const b = g.boundingBox, f = new Float32Array(n);
-    for (let i = 0; i < n; i++) f[i] = (g.attributes.position.getY(i) - b.min.y) / Math.max(1e-4, b.max.y - b.min.y);
-    g.setAttribute('flick', new THREE.BufferAttribute(f, 1));
-  }
-  if (m) g.applyMatrix4(m);
-  const col = new Float32Array(n * 3);
-  // Muster (Kosmetik: Kuh-Flecken, Karo): color.fn(Mitte des Dreiecks in Bind-Lage) → Farbe je Dreieck
-  const tri = color.fn ? Array.from({ length: n / 3 | 0 }, (_, k) => { const p = g.attributes.position; _tc.set(0, 0, 0); for (let j = 0; j < 3; j++) _tc.add(_tv.fromBufferAttribute(p, k * 3 + j)); return color.fn(_tc.multiplyScalar(1 / 3)); }) : null;
-  const c2 = flick && color.tip ? color.tip : null;
-  for (let i = 0; i < n; i++) {
-    const c = tri ? tri[i / 3 | 0] : c2 ? color.base.clone().lerp(c2, g.attributes.flick.array[i]) : color.pal ? color.pal[Math.floor(facetPick(i / 3 | 0, n) * color.pal.length)] : (color.base || color);
-    col.set([c.r, c.g, c.b], i * 3);
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  if (!g.attributes.flick) g.setAttribute('flick', new THREE.BufferAttribute(new Float32Array(n), 1));
-  return g;
-}
-const _tc = new THREE.Vector3(), _tv = new THREE.Vector3();
+// Geometrie fürs Körper-Mesh (strichKit.ts prep): flick = Flammen-Verlauf, Attribut flick immer, Facetten-Muster der Skins
+const prep = (geo, color, m?, flick = false) => kitPrep(geo, color, m, { flick, flickAttr: true, facet: facetPick });
 // Facetten-Muster (Skin Splitterkönig): jedes Dreieck eine Farbe aus color.pal, fest gestreut
 let FACET = 1;
 const facetPick = (tri, salt) => { const x = Math.sin((tri + 1) * 12.9898 + salt * 78.233 + FACET * 3.7) * 43758.5453; return x - Math.floor(x); };
-const capDown = (r, len, rs = 6) => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; };
 const col = h => new THREE.Color(h);
 
 const L1 = .46, L2 = .46, A1 = .31, A2 = .29;
@@ -101,7 +75,7 @@ function bodyHook(U) {
       `#include <emissivemap_fragment>
        totalEmissiveRadiance += vGlow * diffuseColor.rgb + vIce * vec3(.016, .04, .058); diffuseColor.rgb *= 1. - vGlow;`)
       .replace('#include <opaque_fragment>',
-        `outgoingLight += (1. - vGlow) * (1. - vIce) * vec3(${RIM.color.join(',')}) * pow(1.0 - saturate(dot(normalize(normal), normalize(vViewPosition))), ${RIM.power.toFixed(1)});\n#include <opaque_fragment>`);
+        `outgoingLight += (1. - vGlow) * (1. - vIce) * ${rimChunk(RIM.color, RIM.power)};\n#include <opaque_fragment>`);
   };
 }
 // Schatten: Eiszapfen und versteckte Requisiten wachsen auch in der Schatten-Tiefe mit
@@ -740,19 +714,6 @@ function updateGearFx(F, s, sp) {
     f.bone.getWorldPosition(_gfp); const r = f.aura * .25 * f.bone.getWorldScale(_lq).x;
     sp(_gfp.add(_lq.set(rnd(-r, r), rnd(-r, r), rnd(-r, r))), f.color);
   }
-}
-const _a = V(), _b = V(), _c = V(), _d = V(), _e = V(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = V(0, -1, 0);
-function ik(upper, lower, l1, l2, targetW, poleW) {
-  const par = upper.parent;
-  const T = par.worldToLocal(_a.copy(targetW)), pole = par.worldToLocal(_b.copy(poleW)), P = upper.position;
-  const d = _c.subVectors(T, P); const L = clamp(d.length(), 1e-3, l1 + l2 - 1e-3); d.normalize();
-  const al = Math.acos(clamp((l1 * l1 + L * L - l2 * l2) / (2 * l1 * L), -1, 1));
-  const pp = _d.subVectors(pole, P); pp.addScaledVector(d, -pp.dot(d)); if (pp.lengthSq() < 1e-8) pp.set(0, 0, 1); pp.normalize();
-  const eDir = _e.copy(d).multiplyScalar(Math.cos(al)).addScaledVector(pp, Math.sin(al));
-  upper.quaternion.setFromUnitVectors(DOWN, eDir);
-  const E = _b.copy(P).addScaledVector(eDir, l1);
-  const lDir = _a.copy(P).addScaledVector(d, L).sub(E).normalize();
-  _q.setFromUnitVectors(DOWN, lDir); lower.quaternion.copy(_q2.copy(upper.quaternion).invert().multiply(_q));
 }
 const _w = V(), _pw = V(), _rq = new THREE.Quaternion(), _sq = new THREE.Quaternion(), _hp = V();
 function applyPose(F, p) {
