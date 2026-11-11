@@ -20,6 +20,8 @@ import { mark } from './plagueMarks';
 import { rollLegend, LEGENDS, LEG } from './legends';
 import { t } from './i18n';
 import { ROLLS, FOCUS_SPELLS, VALUE_KEY, factor, pct, mainOf, rollRarity, type MainValue } from './rollTables';
+import { isNew, elementOf, typeOf, equipped, buildWeaponOf, buildEquipped } from './equipped';
+export { elementOf, typeOf, equipped, buildWeaponOf, buildEquipped };   // in equipped.ts (ohne Spiellogik, für models/heroModel.ts)
 export { ROLLS, FOCUS_SPELLS, VALUE_KEY, factor, pct, mainOf, rollRarity, type MainValue };   // Tabellen und reine Helfer in rollTables.ts
 
 // Entfernte Spells: alte Waffen behalten ihren gespeicherten Fokus, gelesen wird der Ersatz (auch aus Spielstand-Codes).
@@ -31,7 +33,6 @@ export const focusId = (id, w?) => { const f = w?.s?.fv ? id : FOCUS_REPLACE[id]
 const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
 const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`wval.${k}`)]));   // die deutschen Schlüssel oben stehen so in gespeicherten Waffen
 
-const isNew = w => w.v === 2;
 export const valueText = (key: string) => VALUE_TEXT[key] ?? key;
 export function mainValue(w): MainValue | null {
   const k = isNew(w) ? VALUE_KEY[w.s.value] : w.e?.startsWith('f:') ? null : w.e;
@@ -83,18 +84,6 @@ export const effectText = w => effectLines(w).join(' · ');
 export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : LEGENDS[w.s.legend] ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
 // Seltenheit eines Gegenstands (Waffe oder Gear): Feld r (gespeichert, Index 0–5) → CARD_RARITIES. Einziger Zugriff (NAME-07)
 export const rarityOf = (item: { r: number }) => CARD_RARITIES[item.r];
-// Für Filter und Sortierung im Inventar: alte Waffen haben kein Element und keinen Baukasten-Typ
-export const elementOf = w => isNew(w) ? w.s.element : 'none';
-export const typeOf = w => isNew(w) ? w.s.type : 'alt';
-
-export const equipped = () => meta.inv.find(w => w.id === meta.equipped) ?? null;
-// Modell der gewählten Waffe: neue aus dem Baukasten, Unikate und alte Waffen aus models/weapons
-export function buildWeaponOf(w) {
-  if (!w) return buildWeapon(ROLLS.fallback);
-  if (!isNew(w)) return buildWeapon(w.m);
-  return w.s.unique ? buildWeapon(w.s.unique) : buildBaukastenWeapon(w.s);
-}
-export const buildEquipped = () => buildWeaponOf(equipped());
 export const inventoryFull = () => meta.inv.length >= ROLLS.invMax;
 // Inventar zum Anzeigen: höchste Seltenheit zuerst, darin die neueste zuerst
 export const sortedInv = () => [...meta.inv].sort((a, b) => b.r - a.r || b.id - a.id);

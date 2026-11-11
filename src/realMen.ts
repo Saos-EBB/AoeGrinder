@@ -162,6 +162,7 @@ const moveLog = [];
 // Feld legendary: null oder Waffen-ID aus LEGENDARY. Zum Testen im Dev-Panel, gespeichert wie die Waffenwahl
 let legendary: string | null = (() => { const v = readRaw(KEYS.warLegendary); return LEGENDARY[v] ? v : null; })();
 export const warLegendary = () => legendary;
+hooks.warLegendary.set(warLegendary);   // für models/heroModel.ts (ohne Import von realMen.ts)
 export const WAR_LEGENDARIES = Object.keys(LEGENDARY);
 export function setWarLegendary(id: string | null) {
   legendary = LEGENDARY[id] ? id : null;

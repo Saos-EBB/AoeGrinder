@@ -60,6 +60,8 @@ export const hooks = {
   ui: slot<UiApi>(UI_NONE),
   // Legendäre Krieger-Waffe ersetzt Spells in Start-Kit und Pool (realMen.ts setzt, spells/core.ts fragt)
   spellSwap: slot<(id: string) => string | undefined>(id => id),
+  // Legendäre Krieger-Waffe, Feld legendary (realMen.ts setzt beim Laden, models/heroModel.ts fragt: Waffe und Skin des Kriegers; ARCH-11)
+  warLegendary: slot<() => string | null>(() => null),
   // true = Level 100 startet erst den finalen Boss, das Ergebnis kommt nach seinem Tod (boss.ts setzt, player.ts gainXp fragt)
   runEnd: slot<() => boolean>(() => false),
   // true = XP wird gesammelt und erst nach dem Bosskampf gutgeschrieben (boss.ts setzt, player.ts gainXp fragt)

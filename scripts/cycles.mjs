@@ -20,8 +20,9 @@ const ENTRIES = ['main.ts', 'vfxLab.ts'];
 // Ausgangswert 11.11.2026 (Audit, E4): statisch Kreise 88/4/2 (94 Module in Kreisen), mit import() 102/2 (104).
 // Nach E6 (hooks.ts, feedback.ts, spells/stats.ts, arena ohne import()): beide 84/4/2 (90).
 // Nach E10 Schritt 4 (Logik → UI über hooks.ui, ui/connect.ts; mount() für Fenster-Listener): beide 65/6/4/2 (77), die Fenster bilden einen eigenen 6er-Kreis.
+// Nach E10 Schritt 5 (ARCH-11: models/heroModel.ts ohne weaponRolls/realMen, fx/frostFx.ts ohne heroModel): beide 53/6/4/3/2 (68).
 // Darf nur sinken; nach jedem Umbau, der Kreise auflöst, hier nachziehen.
-const LIMIT = { static: { largest: 65, inCycles: 77 }, dynamic: { largest: 65, inCycles: 77 } };
+const LIMIT = { static: { largest: 53, inCycles: 68 }, dynamic: { largest: 53, inCycles: 68 } };
 let NO_DYN = false;
 
 // Kommentare entfernen, Strings behalten (Regex-Literale grob erkannt, damit // darin nicht als Kommentar gilt)

@@ -12,7 +12,6 @@ import { impact } from './impact';
 import { playSound } from './sound';
 import { addEffect, iceTex, FROST, FROST_WHITE, MIST } from './spellFx';
 import { waveFx, markFx, shellFx, flareFx, iceSpikesFx, sparksFx, groundDisc } from './prims';
-import { heroModel } from '../models/heroModel';
 import { blizRadius } from '../formulas';
 
 export function novaNew(pos, radius) {
@@ -26,9 +25,10 @@ export function novaNew(pos, radius) {
   sparksFx(pos, 26, [MIST], 8, { up: 0.5, life: 1.8, size: 3.4, drag: 1.4, grow: 1.1 });
 }
 
-export function coneNew(range, angle) {
+// handL: linke Hand der Figur (heroModel.anchors.handL), vom Aufrufer (ARCH-11: fx/ importiert kein Modell)
+export function coneNew(range, angle, handL: THREE.Object3D) {
   const hand = new THREE.Vector3();
-  heroModel.anchors.handL.getWorldPosition(hand);
+  handL.getWorldPosition(hand);
   const f = player.facing, start = f - Math.PI / 2 - angle / 2;
   // Fächer: scrollendes Rauschen läuft von der Hand weg, die Form entsteht im Shader
   const geo = new THREE.RingGeometry(0.02, 1, 64, 10, start, angle).rotateX(-Math.PI / 2);

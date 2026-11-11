@@ -10,15 +10,15 @@ import { currentFigure } from '../modifiers';
 import { buildStrichMagier } from './strichMagier';
 import { buildStrichKrieger } from './strichKrieger';
 import { buildWeapon } from './weapons/index';
-import { buildWeaponOf, equipped, elementOf } from '../weaponRolls';
+import { buildWeaponOf, equipped, elementOf } from '../equipped';
 import { ELEMENTS } from './weapons/baukasten';
 import { particles } from '../fx/particles';
-import { warLegendary } from '../realMen';
 import { skinOf } from '../meta';
 import { classOf, STANDARD } from '../skins';
 import { forcedSkin, kosmetikWeapon } from '../gear/inventory';
 import { gearShown, gearKey, kosmetikShown } from '../gear/shown';
 import { onFigEvent, figVals, figSay } from '../figEvents';
+const warLegendary = () => hooks.warLegendary.fn();   // realMen.ts setzt (hooks.ts), kein Import der Spiellogik (ARCH-11)
 
 // Nahkämpfer: Treffer-Moment geht an realMen.ts
 // Strichkrieger: Waffe vor dem Run (Riesenschwert, Holzfälleraxt, Streitkolben), bleibt gespeichert
