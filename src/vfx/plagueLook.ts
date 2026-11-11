@@ -7,8 +7,8 @@ import { player, state } from '../state';
 import { fx, em, uK, lay, field, boom, shot, sparks, env, outC, outBack, rnd, TAU, PAL, EU, after } from './energy';
 import { gy, onGround, castFrom } from './fireLook';
 import { surgeLook } from './arcaneLook';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const UP = V(0, 1, 0);
 const chest = (p: { x: number; y: number; z: number }) => V(p.x, p.y + 1.1, p.z);
 

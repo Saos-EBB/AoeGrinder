@@ -8,8 +8,8 @@ import { player, state } from '../state';
 import { groundAt } from '../collision';
 import { onClearEnergy, fx, em, uK, lay, field, boom, arc, spark, sparks, env, outC, outBack, rnd, clamp, TAU, PAL, EU, type Pal } from './energy';
 import { gy, onGround, castFrom } from './fireLook';
+import { V, jag } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
 // ───────────────────────── Bänder
 const MAX = 2400;   // Segmente (Glow + Kern)
@@ -25,19 +25,7 @@ const PALS: Record<string, [number[], number[]]> = {
   blitz: [[...new THREE.Color(0x3d7bff).toArray(), .22], [...new THREE.Color(0x9ff3ff).toArray(), 1]],
   slime: [[...new THREE.Color(0x3f8f2a).toArray(), .25], [...new THREE.Color(0xc8ff8a).toArray(), 1]],
 };
-export function jag(a: THREE.Vector3, b: THREE.Vector3, depth = 4, amp = .22) {
-  let pts = [a.clone(), b.clone()];
-  for (let d = 0; d < depth; d++) {
-    const out = [pts[0]];
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p = pts[i], q = pts[i + 1], mid = p.clone().lerp(q, .5), len = p.distanceTo(q);
-      mid.add(V(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).multiplyScalar(len * amp));
-      out.push(mid, q);
-    }
-    pts = out;
-  }
-  return pts;
-}
+export { jag };   // Quelle util.ts (auch strichMagier nutzt sie)
 // Ein Blitz von a nach b, mit 60 % ein Ast. life in s, w Breite
 export function zap(a: THREE.Vector3, b: THREE.Vector3, life = rnd(.08, .16), w = 1, branch = true, pal: 'blitz' | 'slime' = 'blitz') {
   if (list.length > 300) list.shift();

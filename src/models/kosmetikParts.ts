@@ -13,8 +13,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { limbFrame, flip, litCol, FIT } from './gearParts';
 import { t } from '../i18n';
 import { ELEMENTS } from './weapons/baukasten';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g?: 0 | 1; ds?: boolean; glass?: number; fn?: (p: THREE.Vector3) => THREE.Color } | null;
 
 export const KOS = {   // Optik-Zahlen // PH

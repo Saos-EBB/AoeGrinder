@@ -5,8 +5,8 @@ import * as THREE from 'three';
 import { player } from '../state';
 import { fx, em, uK, lay, boom, sparks, env, outC, rnd, clamp, PAL, EU, after } from './energy';
 import { gy, onGround } from './fireLook';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const chestOf = (p: THREE.Vector3) => V(p.x, p.y + 1.1, p.z);
 
 // Arkane Woge: Wellen-Segment läuft nach vorn

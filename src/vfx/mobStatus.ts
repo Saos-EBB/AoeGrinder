@@ -8,9 +8,9 @@ import { scene } from '../render';
 import { markStacks, poisoned } from '../plagueMarks';
 import { activeModIds } from '../modifiers';
 import { eMat, PAL, EU, sparks } from './energy';
+import { V } from '../util';
 
 const S = { max: 128, burnY: [.35, .7, .45], markY: .45, stunY: .15, plY: .35, bubbles: 5 };   // PH: höchstens so viele Mobs pro Anzeige, Höhen über dem Kopf in Mob-Höhen
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
 function inst(geo: THREE.BufferGeometry, pal, o, n) {
   const m = new THREE.InstancedMesh(geo, eMat(pal, o), n);

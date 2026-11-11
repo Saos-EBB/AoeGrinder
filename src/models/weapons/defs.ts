@@ -6,8 +6,8 @@ import * as THREE from 'three';
 import { rng } from './textures';
 import { rndDir } from './fx';
 import { t } from '../../i18n';
+import { V } from '../../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
 // Materialien: nur Beschreibungen, index.ts mergt sie in ein Lambert-Mesh mit Atlas. Rauheit und Bump fallen weg (Vanilla-Look).
 const KINDS = {

@@ -7,13 +7,19 @@ import * as THREE from 'three';
 import { scene } from '../render';
 import { particles } from '../fx/particles';
 import { groundAt } from '../collision';
+import { player } from '../state';
+import { V, clamp, outC, outBack, rand as rnd } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const TAU = Math.PI * 2;
-export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-export const outC = t => 1 - Math.pow(1 - t, 3);
-export const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
-export const rnd = (a, b) => a + Math.random() * (b - a);
+// clamp, outC, outBack, rnd kommen aus util.ts und werden hier nur weitergereicht (alte Importe aus energy bleiben gültig)
+export { clamp, outC, outBack, rnd };
+// Bodenhöhe unter p, gesucht ab p.y + up (Treppen, Brücken); bosses/core.ts nimmt up = 2
+export const gy = (p, up = 1) => groundAt(p.x, p.z, (p.y ?? 0) + up);
+export const onGround = (p, up = 1) => V(p.x, gy(p, up), p.z);
+// Flugzeit eines Geschosses von a nach b in s
+export const flight = (a: THREE.Vector3, b: THREE.Vector3, speed = 60, max = .35) => Math.min(max, Math.max(.06, a.distanceTo(b) / speed));
+// Blickrichtung der Figur am Boden
+export const fwd = () => V(Math.sin(player.facing), 0, Math.cos(player.facing));
 // 0 → 1 → 0: Einblenden über a, Ausblenden über b (Anteile der Dauer)
 export const env = (k, a = .15, b = .35) => clamp(Math.min(k / a, (1 - k) / b), 0, 1);
 

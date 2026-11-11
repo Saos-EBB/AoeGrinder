@@ -10,18 +10,16 @@ import { scene } from '../render';
 import { addTrauma, decal, debris } from '../wucht';
 import { hitstop } from '../fx/impact';
 import { combatText } from '../ui/hud';
-import { fx, em, killFx, boom, ring as eRing, sparks, PAL } from '../vfx/energy';
+import { fx, em, killFx, boom, ring as eRing, sparks, PAL, gy as groundY } from '../vfx/energy';
+import { V, clamp, outC as ease, rand as rnd, wrap, dist2d as dist2 } from '../util';
 
-export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+// V, clamp, ease (= outC), rnd, wrap, dist2 (= dist2d) aus util.ts, hier nur weitergereicht (bosses/* importieren von hier)
+export { V, clamp, ease, rnd, wrap, dist2 };
 export const TAU = Math.PI * 2;
-export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-export const ease = k => 1 - Math.pow(1 - k, 3);
 export const easeIn = k => k * k;
-export const rnd = (a, b) => a + Math.random() * (b - a);
-export const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 export const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
-export const dist2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-export const gy = p => groundAt(p.x, p.z, (p.y ?? 0) + 2);
+// Boden für Boss-Effekte: Probe 2 über p (vfx/energy.ts gy mit up = 2)
+export const gy = p => groundY(p, 2);
 export const onGround = p => V(p.x, gy(p), p.z);
 
 // Zahlen der Boss-Kämpfe, alle PH

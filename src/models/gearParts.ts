@@ -9,8 +9,8 @@
 import * as THREE from 'three';
 import { SPELLS } from '../config';
 import { ELEMENTS } from './weapons/baukasten';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 type Mat = { c: THREE.Color; g: 0 | 1; ds?: boolean } | null;   // g = 1: leuchtet (Glüh-Teil), ds: beidseitig, null: nicht bauen
 
 // ---------------- Daten aus dem Viewer ----------------

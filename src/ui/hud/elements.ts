@@ -2,7 +2,7 @@
 // Alle anderen Elemente füllt ui/hud.ts. Aktualisiert wird nur, was sich ändert; Kompass und Splits höchstens 10× pro Sekunde.
 
 import { state, player } from '../../state';
-import { $ } from '../../util';
+import { $, wrap } from '../../util';
 import { maxHp, maxMana } from '../../formulas';
 import { cam } from '../../camera';
 import { META } from '../../meta';
@@ -65,7 +65,6 @@ const cmp = $('hudCompass');
 cmp.innerHTML = `${DIRS.map(([d]) => `<span class="cDir${d.length > 1 ? ' small' : ''}">${d}</span>`).join('')}<i class="cMid"></i>`;
 const dirEls = [...cmp.querySelectorAll<HTMLElement>('.cDir')];
 const marks: HTMLElement[] = [];
-const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 // Rechts im Bild liegt, was yaw − Winkel > 0 hat (wie die Minimap: rechts = Kamera-rechts)
 const xOf = (a, yaw) => { const d = wrap(yaw - a); return Math.abs(d) > COMPASS.span / 2 ? null : 50 + d / COMPASS.span * 100; };
 let cmpAt = -1e9;

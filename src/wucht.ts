@@ -5,6 +5,7 @@ import { scene } from './render';
 import { groundAt } from './collision';
 import { state } from './state';
 import { particles } from './fx/particles';
+import { rand as rnd } from './util';
 
 // Wucht: Treffer fühlen sich über Timing und Wirkung auf die Umgebung an. Screenshake (Trauma), Hitstop-Anlässe, Kamera-Ruck,
 // Boden-Spuren, Trümmer und Knockback. Alle Zahlen in W. Hitstop, Kamera-Ruck und Lichtblitz selbst liegen in fx/impact.ts.
@@ -63,7 +64,6 @@ export function bigHit(mob, school) {
   decal(mob.pos, school, W.decal.size);
   debris(mob.pos);
 }
-const rnd = (a, b) => a + Math.random() * (b - a);
 export function debris(pos) {
   const D = W.debris, n = Math.round(rnd(D.min, D.max));
   for (let i = 0; i < n; i++) {

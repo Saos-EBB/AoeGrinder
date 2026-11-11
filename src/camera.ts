@@ -5,6 +5,7 @@ import { camera } from './render';
 import { heightAt, obstacles } from './world';
 import { addTrauma, shakeOffset } from './wucht';
 import { device } from './device';
+import { wrap } from './util';
 
 // Kamera wie in WoW: Orbit um den Spieler
 export const cam = { offset: 0, pitch: 0.45, dist: 16 };
@@ -36,7 +37,6 @@ export function setAutoCam(on) {
 }
 export function updateAutoCam(dt, dragging) {
   if (!autoCam || state.paused || player.moveState === 'idle' || dragging) return;
-  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const target = player.moveState === 'back' || !player.grounded ? 0 : wrap(Math.atan2(player.vel.x, player.vel.z) - player.facing);
   const now = wrap(cam.offset);
   cam.offset = now + wrap(target - now) * (1 - Math.exp(-AUTO_CAM_RATE * dt / 1000));

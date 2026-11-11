@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
+// Kleinhelfer, einzige Quelle (Mathe, Easing, Vektoren). vfx/energy.ts und bosses/core.ts reichen einige davon weiter.
 export const $ = id => document.getElementById(id);
 export const rand = (a, b) => a + Math.random() * (b - a);
 export const randInt = (a, b) => Math.floor(rand(a, b + 1));
@@ -10,6 +11,11 @@ export const lerpTo = (cur, target, k) => cur + (target - cur) * k;
 // Easing für Posen-Keyframes der Figuren
 export const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 export const outC = t => 1 - Math.pow(1 - t, 3);
+export const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+export const sine = t => .5 - .5 * Math.cos(Math.PI * t);
+// Winkel auf −π … π
+export const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
 export function part(geo, mat, x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(geo, mat);
@@ -49,4 +55,19 @@ export function mergeByJoint(root, keep) {
       g.add(new THREE.Mesh(mergeGeometries(geos), mat));
     }
   }
+}
+
+// Zickzack-Linie von a nach b für Blitze: depth-mal halbieren, Mitte um len × amp zufällig versetzen (vfx/boltLook.ts, models/strichMagier.ts)
+export function jag(a: THREE.Vector3, b: THREE.Vector3, depth = 4, amp = .22) {
+  let pts = [a.clone(), b.clone()];
+  for (let d = 0; d < depth; d++) {
+    const out = [pts[0]];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p = pts[i], q = pts[i + 1], mid = p.clone().lerp(q, .5), len = p.distanceTo(q);
+      mid.add(V(rand(-1, 1), rand(-1, 1), rand(-1, 1)).multiplyScalar(len * amp));
+      out.push(mid, q);
+    }
+    pts = out;
+  }
+  return pts;
 }

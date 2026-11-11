@@ -4,13 +4,11 @@
 import * as THREE from 'three';
 import { groundAt } from '../collision';
 import { player, state } from '../state';
-import { fx, em, uK, lay, field, boom, shot, ring, sparks, env, outC, outBack, rnd, clamp, TAU, PAL, EU, after, type Pal } from './energy';
+import { fx, em, uK, lay, field, boom, shot, ring, sparks, env, outC, outBack, rnd, clamp, TAU, PAL, EU, after, fwd, flight, type Pal } from './energy';
 import { gy, onGround, castFrom } from './fireLook';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const UP = V(0, 1, 0);
-const fwd = () => V(Math.sin(player.facing), 0, Math.cos(player.facing));
-const flight = (a: THREE.Vector3, b: THREE.Vector3, speed = 60, max = .35) => Math.min(max, Math.max(.06, a.distanceTo(b) / speed));
 
 // Frost Nova: Eisring und Bodenfläche, Eiszacken wachsen nach außen
 export function novaLook(pos: THREE.Vector3, r: number) {

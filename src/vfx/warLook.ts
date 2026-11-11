@@ -4,12 +4,11 @@
 import * as THREE from 'three';
 import { player, state } from '../state';
 import { mage } from '../models/mage';
-import { fx, em, uK, ring, spark, sparks, outC, TAU, PAL, EU } from './energy';
+import { fx, em, uK, ring, spark, sparks, outC, TAU, PAL, EU, fwd } from './energy';
 import { gy, onGround } from './fireLook';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const UP = V(0, 1, 0);
-const fwd = () => V(Math.sin(player.facing), 0, Math.cos(player.facing));
 
 // Ansturm: Schweif-Kegel hinter der Figur und Nachbilder, solange sie rennt
 export function chargeLook(ms: number) {

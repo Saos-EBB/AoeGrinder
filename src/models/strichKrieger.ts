@@ -4,7 +4,7 @@
 // Schlagfolge Version E (realMen.ts): 'fs' Finisher-Spin, 'fm' Sprung-Smash; anim.fin = { s: Größe, tor: Tornado }, anim.qPal = Hieb-Farbe ('staub' | 'wut' | 'donner')
 
 import * as THREE from 'three';
-import { clamp, lerpTo as lerp, inOut, outC } from '../util';
+import { clamp, lerpTo as lerp, inOut, outC, V } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { eMat, PAL, fx as efx, em, uK as setK, arc as eArc, ring as eRing, lay } from '../vfx/energy';
@@ -22,7 +22,6 @@ export const STRICH_TIMING = {
 // Form der Waffen: Spitze (Treffer) und linke Hand ab dem Griff. Das Schwert ersetzt im Spiel das Schlachtblech (models/mage.ts)
 const WEAPON_SHAPE = { sword: { tip: 1.95, grip: .24 }, axe: { tip: 1.75, grip: .34 }, mace: { tip: 1.6, grip: .3 } };   // PH
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const inC = t => t * t * t;
 const EASE = { io: inOut, out: outC, in: inC, lin: t => t };
 const TAU = Math.PI * 2;

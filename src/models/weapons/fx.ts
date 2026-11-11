@@ -5,8 +5,8 @@
 import * as THREE from 'three';
 import { scene, camera, renderer } from '../../render';
 import { PTILE, particleAtlas } from './textures';
+import { V } from '../../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export function rndDir(R, v) { const u = R() * 2 - 1, a = R() * 6.2832, s = Math.sqrt(1 - u * u); return v.set(s * Math.cos(a), u, s * Math.sin(a)); }
 
 const FX_IDLE = 0.5;       // Viewer-Rate halbiert, // PH

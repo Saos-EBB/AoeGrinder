@@ -5,7 +5,7 @@
 // Effekte in Weltkoordinaten (Flammen, Blitze, Tropfen, Partikel) hängen in `scarf`, models/mage.ts legt die Gruppe in die Szene.
 
 import * as THREE from 'three';
-import { clamp, lerpTo as lerp, inOut, outC } from '../util';
+import { clamp, lerpTo as lerp, inOut, outC, V, outBack, sine, rand as rnd, jag } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeTrail, stepWatcher, SKIN_FX } from './trail';
 import { eMat, PAL } from '../vfx/energy';
@@ -16,13 +16,9 @@ import { markStacks } from '../plagueMarks';
 import { gearPieces, animateGear } from './gearParts';
 import { kosmetikPieces, glassGeo, makeKillFlag, KOS, type KosEvent, type KosFrame } from './kosmetikParts';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-const outBack = t => { const c = 2.2; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
-const sine = t => .5 - .5 * Math.cos(Math.PI * t);
 const EASE = { io: inOut, out: outC, back: outBack, lin: t => t, sine };
 const TAU = Math.PI * 2;
 const bump = (t, a, b, f = .15) => clamp(Math.min((t - a) / f, (b - t) / f), 0, 1); // 0→1→0 im Fenster
-const rnd = (a, b) => a + Math.random() * (b - a);
 
 // Im Spiel: Zaubern dauert höchstens so lang, sonst hinkt die Figur dem schnellen Zaubern hinterher. Der Viewer zeigt 1,0–2,2 s. // PH
 const CAST_MS = 700;
@@ -359,19 +355,6 @@ function makeBolts() {
   const B = { mesh: m, list: [], MAX, camDir: V(0, 0, -1) };
   m.onBeforeRender = (_r, _s, cam) => cam.getWorldDirection(B.camDir);   // Bänder zeigen zur Kamera (ein Bild Verzug)
   return B;
-}
-export function jag(a, b, depth = 4, amp = .22) {
-  let pts = [a.clone(), b.clone()];
-  for (let d = 0; d < depth; d++) {
-    const out = [pts[0]];
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p = pts[i], q = pts[i + 1], mid = p.clone().lerp(q, .5), len = p.distanceTo(q);
-      mid.add(V(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)).multiplyScalar(len * amp));
-      out.push(mid, q);
-    }
-    pts = out;
-  }
-  return pts;
 }
 function bolt(B, a, b, life = rnd(.05, .12), w = 1, branch = true) {
   const pts = jag(a, b);

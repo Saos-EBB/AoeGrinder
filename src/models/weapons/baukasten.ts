@@ -8,6 +8,7 @@ import { t, lang } from '../../i18n';
 import { toonMat } from '../../toon';
 import { hex } from '../../ui/dom';
 import { CARD_RARITIES } from '../../config';
+import { V, rand as rnd } from '../../util';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
 const RARITY = CARD_RARITIES;   // Seltenheitsfarbe am Modell, Quelle config.ts
@@ -63,7 +64,6 @@ function canvasTex(size, draw, rep = [1, 1]) {
   const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); draw(g, size);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep[0], rep[1]); t.anisotropy = 4; return t;
 }
-const rnd = (a, b) => a + Math.random() * (b - a);
 function strokes(g, s, n, cols, vertical, w = [1, 3], a = [0.1, 0.3]) {
   for (let i = 0; i < n; i++) { g.strokeStyle = cols[i % cols.length]; g.globalAlpha = rnd(a[0], a[1]); g.lineWidth = rnd(w[0], w[1]); g.beginPath();
     const x = rnd(0, s), y = rnd(0, s), l = rnd(8, 40); vertical ? (g.moveTo(x, y), g.lineTo(x + rnd(-2, 2), y + l)) : (g.moveTo(x, y), g.lineTo(x + l, y + rnd(-2, 2))); g.stroke(); }
@@ -120,7 +120,6 @@ function makeMats(spec) {
   return { main: lit(M.main), accent: lit(M.accent), detail: lit(M.detail), glass: lit('glass'), paper: lit('paper'), gem, bone: shade({ color: 0xe8dcc0 }), dark: shade({ color: 0x15121a }) };
 }
 
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
 function mesh(geo, mat, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; }
 function tubeAlong(pts, r, radial, mat, parent, closed = false, segs = 24) {
   const c = new THREE.CatmullRomCurve3(pts, closed); return mesh(new THREE.TubeGeometry(c, segs, r, radial, closed), mat, parent);

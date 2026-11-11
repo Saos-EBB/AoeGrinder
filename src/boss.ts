@@ -34,7 +34,7 @@ import { buildBossModel } from './bosses/models';
 import { buildEvil } from './bosses/evil';
 import { ATT, RANGE } from './bosses/attacks';
 import { ruleOf } from './bosses/rules';
-import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo as yawOf, BK } from './bosses/core';
+import { fight, setFight, tickTasks, tickObjs, clearObjs, newRun, impactFx, textAt, yawTo, wrap, BK } from './bosses/core';
 import { t } from './i18n';
 import { bossDrops, collectAll } from './loot';
 
@@ -63,8 +63,6 @@ let boss: any = null;
 export const bossActive = () => !!boss;
 let lastLevel = 1;
 let lockOn = true;
-const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
-const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
 
 // ---------- Kamera: blendet in B.cam.blendMs in die Boss-Sicht und zurück ----------
 // Hängt sich über setCamOverride in updateCamera (camera.ts), Wackeln und Kamera-Ruck laufen danach wie immer
@@ -314,7 +312,7 @@ export function awaken(b, intro = false) {
   const level = player.level;
   if (!b.mob) {
     b.mob = spawnBody(boss.def, b.spec, b.home, b.hp, level);
-    b.mob.model.root.rotation.y = b.yaw = yawOf(b.home, player.pos);
+    b.mob.model.root.rotation.y = b.yaw = yawTo(b.home, player.pos);
     b.ground = b.mob.pos.y;
     if (intro && b.state === 'active') { b.mob.pos.y += B.intro.height; b.falling = true; }
   }

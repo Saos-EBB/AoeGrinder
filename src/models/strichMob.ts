@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { lerpTo as lerp } from '../util';
+import { lerpTo as lerp, V } from '../util';
 
 // Alles // PH
 const RIM = [0.5, 0.55, 0.65], RIM_POW = 2.6;       // Lichtrand wie strichMagier
@@ -26,7 +26,6 @@ const mk = (G: new (...a: any[]) => THREE.BufferGeometry, ...a: (number | boolea
   if (!ctorId.has(G)) ctorId.set(G, ctorId.size);
   return memo(`#${ctorId.get(G)}:${a.join(',')}`, () => new G(...a));
 };
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const capDown = (r, len, rs = 6) => memo(`capDown${r},${len},${rs}`, () => { const g = new THREE.CapsuleGeometry(r, len, 2, rs); g.translate(0, -len / 2, 0); return g; });
 const ico = (r, d = 0) => mk(THREE.IcosahedronGeometry, r, d);
 const lathe = (pts, seg = 8) => memo(`lathe${pts.join(';')},${seg}`, () => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg));

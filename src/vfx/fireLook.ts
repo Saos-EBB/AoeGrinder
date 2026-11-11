@@ -5,17 +5,15 @@ import * as THREE from 'three';
 import { groundAt } from '../collision';
 import { mage } from '../models/mage';
 import { particles } from '../fx/particles';
-import { fx, em, uK, lay, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, type Pal } from './energy';
+import { fx, em, uK, lay, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, gy, onGround, flight, type Pal } from './energy';
+import { V } from '../util';
 
-const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-export const gy = (p: THREE.Vector3) => groundAt(p.x, p.z, p.y + 1);
-export const onGround = (p: THREE.Vector3) => V(p.x, gy(p), p.z);
+export { gy, onGround };   // Quelle vfx/energy.ts (frost/bolt/war/plague/arcaneLook importieren von hier)
 // Ausgangspunkt der Zauber: Glüh-Punkt der Waffe, sonst Brusthöhe
 export function castFrom() {
   const a = mage.anchors?.crystal;
   return a ? a.getWorldPosition(V()) : V();
 }
-const flight = (a: THREE.Vector3, b: THREE.Vector3, speed = 60, max = .35) => Math.min(max, Math.max(.06, a.distanceTo(b) / speed));
 
 // Brandfläche: Glut-Scheibe und Flammenzungen, Anzahl nach Radius. tongues: 0 = nur Zungen-frei, pal wechselbar (Benzin)
 export function fireField(o: { tongues?: number; disk?: boolean; h?: number; pal?: Pal } = {}) {
