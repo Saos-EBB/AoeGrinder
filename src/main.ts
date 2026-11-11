@@ -24,8 +24,8 @@ import './ui/uiSettings';
 import './ui/flavors';
 import './ui/menus';
 import './mobile';
-import './ui/saveCode';
-import './ui/achievements';   // Einblendung neuer Erfolge (fg:ach); der Import fiel mit dem alten Ausrüstungsfenster weg
+import { mount as mountSaveCode } from './ui/saveCode';
+import { mount as mountAchievements } from './ui/achievements';
 // Für Tests: dieselben Modul-Instanzen wie im Spiel
 import * as coreMod from './spells/core';
 import * as configMod from './config';
@@ -71,7 +71,10 @@ import { updateBoss, updateBossVisuals, bossBusy, bossTimeScale } from './boss';
 import { updateFigEvents } from './figEvents';
 import { hooks } from './hooks';
 import { mountDev } from './ui/devGame';
-initGear(normalizeMeta);   // gespeicherten Stand säubern, sobald alle Module geladen sind
+// Start in fester Reihenfolge, wenn alle Module geladen sind (keine Seiteneffekt-Imports mehr für diese Teile)
+mountSaveCode();       // Spielstand-Code: Fenster und Einträge im „Mehr“-Menü
+mountAchievements();   // Einblendung neuer Erfolge, vor initGear (dort können Erfolge entstehen)
+initGear(normalizeMeta);   // gespeicherten Stand säubern
 hooks.figSay.set(text => combatText(player.pos, text, 'info', 3.2));   // Sprechblasen der Kosmetik über der Figur
 hooks.switchZone.set(switchZone);   // Portal (portal.ts)
 mountDev();   // Dev-Panel-Blöcke (ui/devGame.ts)

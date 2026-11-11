@@ -50,22 +50,8 @@ function importCode(code, replace = true) {
   return null;
 }
 
-// Fenster: Textfeld, Kopieren oder Laden
-const modal = document.createElement('div');
-modal.id = 'codeModal';
-modal.className = 'modal';
-modal.style.zIndex = '5';
-modal.innerHTML = `<div class="frame panel" style="width:min(640px,94vw);max-width:none">
-  <h1 class="title" style="font-size:24px" id="codeTitle"></h1>
-  <p id="codeHint"></p>
-  <textarea id="codeText" spellcheck="false" style="width:100%;height:140px;box-sizing:border-box;font:12px monospace;background:#000a;color:#efe0b8;border:1px solid #6b5426;border-radius:4px;padding:6px;word-break:break-all"></textarea>
-  <p id="codeMsg" style="min-height:1.4em;color:#ff8a7a"></p>
-  <div class="row2">
-    <button class="smallBtn" id="codeAction" style="width:auto;padding:6px 14px"></button>
-    <button class="smallBtn" id="codeClose" style="width:auto;padding:6px 14px">${t('ui.close')}</button>
-  </div>
-</div>`;
-document.body.appendChild(modal);
+// Fenster: Textfeld, Kopieren oder Laden. Gebaut in mount (main.ts)
+let modal: HTMLElement;
 let mode = 'show';
 function open(m) {
   mode = m;
@@ -80,29 +66,47 @@ function open(m) {
   text.focus();
   if (m === 'show') text.select();
 }
-$('codeClose').addEventListener('click', () => modal.classList.remove('show'));
-$('codeAction').addEventListener('click', async () => {
-  const text = $('codeText') as HTMLTextAreaElement;
-  if (mode === 'show') {
-    try { await navigator.clipboard.writeText(text.value); $('codeMsg').textContent = t('code.copied'); }
-    catch { text.select(); $('codeMsg').textContent = t('code.copyFail'); }
-    return;
+// Fenster und die zwei Einträge im „Mehr“-Menü; main.ts ruft das einmal beim Start
+export function mount() {
+  modal = document.createElement('div');
+  modal.id = 'codeModal';
+  modal.className = 'modal';
+  modal.style.zIndex = '5';
+  modal.innerHTML = `<div class="frame panel" style="width:min(640px,94vw);max-width:none">
+    <h1 class="title" style="font-size:24px" id="codeTitle"></h1>
+    <p id="codeHint"></p>
+    <textarea id="codeText" spellcheck="false" style="width:100%;height:140px;box-sizing:border-box;font:12px monospace;background:#000a;color:#efe0b8;border:1px solid #6b5426;border-radius:4px;padding:6px;word-break:break-all"></textarea>
+    <p id="codeMsg" style="min-height:1.4em;color:#ff8a7a"></p>
+    <div class="row2">
+      <button class="smallBtn" id="codeAction" style="width:auto;padding:6px 14px"></button>
+      <button class="smallBtn" id="codeClose" style="width:auto;padding:6px 14px">${t('ui.close')}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  $('codeClose').addEventListener('click', () => modal.classList.remove('show'));
+  $('codeAction').addEventListener('click', async () => {
+    const text = $('codeText') as HTMLTextAreaElement;
+    if (mode === 'show') {
+      try { await navigator.clipboard.writeText(text.value); $('codeMsg').textContent = t('code.copied'); }
+      catch { text.select(); $('codeMsg').textContent = t('code.copyFail'); }
+      return;
+    }
+    const err = importCode(text.value, false);
+    if (err) { $('codeMsg').textContent = err; return; }
+    if (!await askConfirm(t('code.replaceTitle'), t('code.replaceText'), t('code.replace'))) return;
+    importCode(text.value);
+    modal.classList.remove('show');
+    mage.refreshWeapon();
+    mage.refreshLook();
+    renderMenu();
+  });
+  for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCodeLoad', t('code.enter'), 'load']]) {
+    const b = document.createElement('button');
+    b.className = 'fg-btn alt';
+    b.id = id;
+    b.textContent = label;
+    b.addEventListener('click', () => open(m));
+    $('menuMoreList').appendChild(b);   // seltene Einträge im „Mehr“-Menü oben rechts (mainMenu.ts)
   }
-  const err = importCode(text.value, false);
-  if (err) { $('codeMsg').textContent = err; return; }
-  if (!await askConfirm(t('code.replaceTitle'), t('code.replaceText'), t('code.replace'))) return;
-  importCode(text.value);
-  modal.classList.remove('show');
-  mage.refreshWeapon();
-  mage.refreshLook();
-  renderMenu();
-});
-for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCodeLoad', t('code.enter'), 'load']]) {
-  const b = document.createElement('button');
-  b.className = 'fg-btn alt';
-  b.id = id;
-  b.textContent = label;
-  b.addEventListener('click', () => open(m));
-  $('menuMoreList').appendChild(b);   // seltene Einträge im „Mehr“-Menü oben rechts (mainMenu.ts)
 }
 (window as any).__save = { exportCode, importCode };

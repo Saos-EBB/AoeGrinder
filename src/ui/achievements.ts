@@ -12,11 +12,7 @@ const setName = (ach: string) => t(`look.magier.${setOf(ach)}.name`);
 // Meilenstein (meta.ts MILESTONES): Name und das Kosmetik-Teil, das er freischaltet
 const achText = (ach: string) => MILESTONE_LOOK[ach] ? t('ach.msDone', { name: t(`ach.ms.${ach}`), look: t(`look.${MILESTONE_LOOK[ach]}.name`) }) : t('ach.setDone', { set: setName(ach), skin: setName(ach) });
 
-const box = document.createElement('div');
-box.id = 'achToasts';
-box.setAttribute('aria-live', 'polite');
-box.style.cssText = 'position:fixed;left:50%;top:calc(var(--fg-safe, 60px) + 8px);transform:translateX(-50%);z-index:9;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none';
-document.body.append(box);
+let box: HTMLElement;
 
 function showAch(ach: string) {
   const el = document.createElement('div');
@@ -29,4 +25,12 @@ function showAch(ach: string) {
   box.append(el);
   setTimeout(() => el.remove(), ACH_TOAST.showMs);
 }
-on('ach', showAch);   // neuer Erfolg (hooks.ts Bus: meta.ts milestone, gear.ts checkUnlocks)
+// Einblendungs-Fläche und Abo auf neue Erfolge (hooks.ts Bus: meta.ts milestone, gear.ts checkUnlocks); main.ts ruft das einmal beim Start
+export function mount() {
+  box = document.createElement('div');
+  box.id = 'achToasts';
+  box.setAttribute('aria-live', 'polite');
+  box.style.cssText = 'position:fixed;left:50%;top:calc(var(--fg-safe, 60px) + 8px);transform:translateX(-50%);z-index:9;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none';
+  document.body.append(box);
+  on('ach', showAch);
+}
