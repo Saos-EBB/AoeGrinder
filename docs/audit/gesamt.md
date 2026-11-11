@@ -120,3 +120,4 @@ Laufend statt als Etappe: `strict` pro Modul einschalten, wenn eine Datei ohnehi
 
 ## Nachträge
 Neue Funde aus späteren Sessions hier anhängen (Datum, ID-Kürzel, Beleg).
+- 2026-11-11 E1 erledigt: DUP-01, DUP-02, ARCH-09c (9e66981) · NAME-02 nur Anzeige, cls `nature` bleibt bis E7 (727fcc5) · DEAD-26, NAME-11 (f4e68ee) · DUP-12 nur `#runNote` (43d9021). Offen aus E1: Key `school.nature` ungenutzt (E3/E7), `wm.better`/`wm.worse` ungenutzt (E3)
