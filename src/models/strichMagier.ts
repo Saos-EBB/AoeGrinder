@@ -1243,6 +1243,118 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   const fl = FLOAT[skin] || 0;
   let loco = 'idle', mode = 'idle', castT = -1, castKeys = null, runT = 0, wasCast = false, chargeT = -1;
   const _o = new THREE.Object3D(), _om = new THREE.Matrix4();
+  // ---------- Pro Frame (update), in Schritten (KOMP-03). Reihenfolge in update wie im Viewer ----------
+  // Zaubern: startet, sobald anim.cast steigt. Im Laufen läuft die Laufpose weiter, die Bewegung wird nie gesperrt. Rückgabe castU 0 … 1, −1 = kein Zauber
+  function stepCast(s: number, casting: boolean, moving: boolean, charging: boolean) {
+    if (casting && !wasCast && !moving) { castT = 0; castKeys = A.cast.keys(); }
+    wasCast = casting;
+    if (moving || loco === 'sit' || loco === 'dead' || loco === 'air' || charging) castT = -1;
+    let castU = -1;
+    const dur = A.cast.dur;
+    if (castT >= 0) {
+      castU = castT / Math.min(dur, CAST_MS);
+      if (!(castU >= CAST_HOLD && casting)) castT += s * 1000;
+      if (castU >= 1) { castT = -1; castU = -1; F.blendFrom = F.last; F.blendT = .2; }
+    }
+    return castU;
+  }
+  // Modus der Figur: Zustand vor Bewegung vor Aufladen vor Kanal vor Zauber
+  const nextMode = (moving: boolean, charging: boolean, channel: boolean, castU: number) =>
+    loco === 'sit' ? 'sit' : loco === 'dead' ? 'dead' : loco === 'air' ? 'air' : moving ? 'run' : charging ? 'charge' : channel ? 'chan' : castU >= 0 ? 'cast' : 'idle';
+  // Pose des Modus (ANIM der Schule; ?-Magier trinkt mit den Bewegungen des gewürfelten Getränks)
+  function poseFor(s: number, anim: any, castU: number) {
+    let p;
+    if (mode === 'cast') p = kf(castKeys, castU);
+    else if (mode === 'run') p = A.run(runT);
+    else if (mode === 'chan') p = A.chan(F.t);
+    else if (mode === 'charge') { chargeT += s; p = A.sit(chargeT); }
+    else if (mode === 'sit') {
+      const drinkA = skin === 'qm' && ANIM[anim.drinkSkin] ? ANIM[anim.drinkSkin] : A;
+      if (skin === 'qm') F.prop = F.props[anim.drinkSkin] ?? F.props.base;
+      p = drinkA.sit ? drinkA.sit(F.t) : ANIM.base.sit(F.t);
+    }
+    else if (mode === 'dead') p = cp(DEAD);
+    else if (mode === 'air') p = airOf(A, F.t);
+    else p = A.idle(F.t);
+    return p;
+  }
+  // Funken (Skin, Gear) ins Partikel-System des Spiels, ohne opts.spark in die eigenen Partikel
+  const sparkOr = (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12));
+  // Schul-Effekte nach der Anzeige m (Stufen-Effekte)
+  function fireFx(m: number, s: number, anim: any) {   // Flammen, Hülle, Glühen, Rauch beim Überhitzen, Funken über dem Kopf
+    updateFlames(F, m, F.t);
+    U.uK.value = clamp((m - .5) / .5, 0, 1); F.shell.visible = m > .5 && !LK;   // Skin (z. B. Glutprophet): keine Flammen-Hülle und kein Glühen über dem Körper, die Hitze zeigt der Skin selbst (Augen-Feuer)
+    if (!LK) F.mat.emissive.setRGB(.5 * Math.max(0, m - .6), .12 * Math.max(0, m - .6), 0);
+    if ((m >= .98 || anim.smoke) && !F.dead) { const n = rate(STAGE_FX.smoke * s); for (let i = 0; i < n; i++) emit(F.chest.getWorldPosition(V()).add(V(0, .7, 0)), 1, V(rnd(-.2, .2), 1.2, rnd(-.2, .2)), Math.random() < .5 ? 0x3a3330 : 0x5a504a, -.3, 1.4, .4); }
+    if (Math.random() < s * 14 && !F.dead) emit(F.head.getWorldPosition(V()).add(V(0, .4, 0)), 1, V(0, 1.4, 0), Math.random() < .5 ? 0xff7a1a : 0xffd04a, -.5, .7, .2);
+  }
+  function iceFx(m: number, s: number, castU: number) {   // Eisschicht beim Zaubern, Reif, Atemwolke
+    U.uM.value = m;
+    const fr = A.cast.freeze;
+    let target = mode === 'chan' ? .35 : 0;
+    if (castU > fr[0] && castU < fr[1]) target = 1;
+    F.freeze = lerp(F.freeze, target, Math.min(1, s * (target > F.freeze ? 10 : 4)));
+    if (!LK) F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);   // Skin: kein weißes Aufleuchten über dem ganzen Körper
+    else if (iceTint) { const [r, g, b] = ICE_TINT.emissive; F.mat.emissive.setRGB(r * F.freeze, g * F.freeze, b * F.freeze); }   // Splitterkönig: nur ein Hauch Blau beim Zaubern
+    if (castU > fr[1] && castU < fr[1] + .05) emit(F.chest.getWorldPosition(V()).add(V(0, .3, 0)), 25, V(0, 1, 0), 0xdff6ff, 4, .6, .6);
+    if (F.freeze > .5 && Math.random() < s * 30) emit(F.chest.getWorldPosition(V()).add(V(0, .2, .1)), 1, V(0, .3, 0), 0xe8f8ff, -.2, .9, .8);
+    if (m > .5) { const n = rate(STAGE_FX.frost * (m - .5) * s); for (let i = 0; i < n; i++) emit(pickBone(F).getWorldPosition(V()), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18); }
+    if (mode === 'idle' && (F.t % 2.6) < s) emit(F.head.getWorldPosition(V()).add(V(0, .12, .2)), 10, V(0, .15, .5), 0xffffff, -.1, 1, .08);
+  }
+  function arcaneFx(m: number) {   // Runen-Stufe, Glühen bei 4 Ladungen, Ladungs-Kugeln
+    U.uLvl.value = Math.floor(m * 4 + 1e-6) / 4;
+    const g = m >= .999 ? .1 + .04 * Math.sin(F.t * 8) : 0; F.mat.emissive.setRGB(g * .8, g * .3, g);   // Körper glüht nur bei 4 Ladungen
+    // Ladungs-Kugeln über dem Kopf
+    const n = Math.round(m * 4), h = F.head.getWorldPosition(V());
+    F.orbs.visible = n > 0 && !F.dead;
+    if (F.orbs.visible) {
+      for (let i = 0; i < 4; i++) {
+        const a = F.t * 1.5 + i / 4 * TAU;
+        _o.position.set(h.x + Math.cos(a) * .42, h.y + .55 + .04 * Math.sin(F.t * 3 + i), h.z + Math.sin(a) * .42); _o.scale.setScalar(i < n ? .09 : .035); _o.updateMatrix();
+        F.orbs.setMatrixAt(i, _om.copy(_o.matrix));
+      }
+      F.orbs.instanceMatrix.needsUpdate = true;
+    }
+  }
+  function blitzFx(m: number, s: number, anim: any) {   // Blitz aus dem Himmel beim Aufladen, Blitze am Körper, Glühen
+    const mm = mode === 'chan' ? Math.max(m, .6) : anim.over ? 1 : m;
+    if (mode === 'charge') {   // Aufladen: nach 3 s schlägt ein Blitz aus dem Himmel in die Hand
+      const k = chargeT % 4.4;
+      if (k >= 3 && k - s < 3) {
+        const hp = F.armR.hand.getWorldPosition(V());
+        bolt(F.bolts, hp.clone().add(V(rnd(-1.5, 1.5), 12, rnd(-1, 1))), hp, .3, 3.5); bolt(F.bolts, hp.clone().add(V(rnd(-1, 1), 9, 0)), hp, .2, 2.2);
+        emit(hp, 40, V(0, 0, 0), 0x8ff1ff, 3, .6, .2);
+      }
+    }
+    updateBolts(F, mm, s);
+    const k = m * m, f = m >= .98 ? .08 * Math.random() : 0; if (!LK) F.mat.emissive.setRGB(.12 * k + f, .42 * k + f, .75 * k + f);   // Skin (Hochspannung): Körper bleibt in seinen Farben, die Ladung zeigen Blitze und Flasche
+  }
+  function plagueFx(s: number, castU: number) {   // Pfütze, Tropfen schleudern beim Zaubern, Fäden an den Füßen
+    F.melt = F.root.scale.y < .9 ? 1 + (1 - F.root.scale.y) : 1;   // Zerfließen (main.ts skaliert die Figur): Pfütze wächst
+    F.goo.rate = mode === 'chan' ? 5 : mode === 'cast' ? 2 : 1;
+    if (mode === 'cast' && castU >= A.cast.fling && castU - s * 1000 / Math.min(A.cast.dur, CAST_MS) < A.cast.fling) {
+      const hp = F.armL.hand.getWorldPosition(V()), fw = V(0, 0, 1).transformDirection(F.root.matrixWorld);
+      F.goo.st.filter(d => d.ph === 'wait').slice(0, 8).forEach(d => { d.ph = 'fall'; d.p.copy(hp); d.v.copy(fw).multiplyScalar(rnd(3, 6)).add(V(rnd(-1, 1), rnd(1, 3), rnd(-1, 1))); });
+    }
+    updateGoo(F, s, F.t);
+    // Füße kleben: Faden vom Boden-Klebepunkt zum Fuß, solange der Fuß in der ersten Schwungphase ist
+    [F.legL, F.legR].forEach((l, si) => {
+      const fp = l.ft.getWorldPosition(V()), G = F.goo;
+      if (mode === 'run' && fp.y > F.groundY + .075) { if (G.stick[si] == null) G.stick[si] = fp.clone().setY(F.groundY + .02); }
+      else G.stick[si] = null;
+      const a = G.stick[si];
+      if (a && fp.distanceTo(a) > .32) { const d = G.st.find(x => x.ph === 'wait'); if (d) Object.assign(d, { ph: 'splat', t: 1.5, p: a.clone() }); G.stick[si] = false; }
+      setStrand(G, si, G.stick[si] || null, fp, .018);
+    });
+  }
+  function welSparks(s: number) {
+    if (F.wel != null && !F.dead && Math.random() < s * WEL_SPARK) {   // Funken in Element-Farbe, steigen leicht auf
+      let p;
+      if (Math.random() < .5) p = (Math.random() < .5 ? F.armL : F.armR).hand.getWorldPosition(V());
+      else { F.staff.updateWorldMatrix(true, false); p = F.staff.localToWorld(V(0, WEL_STONE_Y, 0)); }
+      if (opts.spark) opts.spark(p, F.wel); else emit(p, 1, V(0, .5, 0), F.wel, -.3, .7, .12);
+    }
+  }
   return {
     root: F.root,
     look,                                         // Skin, nach dem gebaut wurde
@@ -1285,35 +1397,12 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       F.dead = loco === 'dead';
       const moving = loco === 'run' || loco === 'back';
       const charging = skin === 'blitz' && !!anim.charge && !moving;
-      // Zaubern: startet, sobald anim.cast steigt. Im Laufen läuft die Laufpose weiter, die Bewegung wird nie gesperrt.
-      const casting = (anim.cast || 0) > 0;
-      if (casting && !wasCast && !moving) { castT = 0; castKeys = A.cast.keys(); }
-      wasCast = casting;
-      if (moving || loco === 'sit' || loco === 'dead' || loco === 'air' || charging) castT = -1;
-      let castU = -1;
-      const dur = A.cast.dur;
-      if (castT >= 0) {
-        castU = castT / Math.min(dur, CAST_MS);
-        if (!(castU >= CAST_HOLD && casting)) castT += s * 1000;
-        if (castU >= 1) { castT = -1; castU = -1; F.blendFrom = F.last; F.blendT = .2; }
-      }
-      const next = loco === 'sit' ? 'sit' : loco === 'dead' ? 'dead' : loco === 'air' ? 'air' : moving ? 'run' : charging ? 'charge' : anim.channel ? 'chan' : castU >= 0 ? 'cast' : 'idle';
+      const castU = stepCast(s, (anim.cast || 0) > 0, moving, charging);
+      const next = nextMode(moving, charging, anim.channel, castU);
       if (next !== mode) { F.blendFrom = F.last; F.blendT = .25; mode = next; if (mode === 'charge') chargeT = 0; }
       if (moving) runT += s * (anim.speed || 7) / 7 * (loco === 'back' ? -1 : 1);
       curM = skin === 'blitz' ? F.m : .5;
-      let p;
-      if (mode === 'cast') p = kf(castKeys, castU);
-      else if (mode === 'run') p = A.run(runT);
-      else if (mode === 'chan') p = A.chan(F.t);
-      else if (mode === 'charge') { chargeT += s; p = A.sit(chargeT); }
-      else if (mode === 'sit') {
-        const drinkA = skin === 'qm' && ANIM[anim.drinkSkin] ? ANIM[anim.drinkSkin] : A;
-        if (skin === 'qm') F.prop = F.props[anim.drinkSkin] ?? F.props.base;
-        p = drinkA.sit ? drinkA.sit(F.t) : ANIM.base.sit(F.t);
-      }
-      else if (mode === 'dead') p = cp(DEAD);
-      else if (mode === 'air') p = airOf(A, F.t);
-      else p = A.idle(F.t);
+      let p = poseFor(s, anim, castU);
       if (anim.squat) p.y -= anim.squat * .15;
       if (F.blendT > 0 && F.blendFrom) { F.blendT -= s; p = mix(F.blendFrom, p, 1 - clamp(F.blendT / .25, 0, 1)); }
       F.last = p;
@@ -1324,83 +1413,17 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       if (F.gear.anim.length) animateGear(F.gear.anim, F.t);   // Gear: wehen, drehen, kreisen (gearParts.ts)
       updateKos(s);   // Kosmetik: Reaktionen additiv auf die Pose (Arme, Kopf, Hüpfen), eigene Bones, Partikel
       F.root.getWorldPosition(F.groundPos); F.groundY = F.groundPos.y - (fl && mode !== 'dead' ? fl + .07 * Math.sin(F.t * 1.3) : 0);
-      if (F.lk) updateLook(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
-      if (!F.dead) updateGearFx(F, s, (p, c) => (opts.spark ? opts.spark(p, c) : emit(p, 1, V(0, .5, 0), c, -.3, .7, .12)));
+      if (F.lk) updateLook(F, s, sparkOr);
+      if (!F.dead) updateGearFx(F, s, sparkOr);
 
-      // Stufen-Effekte nach der Anzeige m
+      // Stufen-Effekte der Schule nach der Anzeige m
       const m = F.dead ? 0 : F.m;
-      if (F.flames) {
-        updateFlames(F, m, F.t);
-        U.uK.value = clamp((m - .5) / .5, 0, 1); F.shell.visible = m > .5 && !LK;   // Skin (z. B. Glutprophet): keine Flammen-Hülle und kein Glühen über dem Körper, die Hitze zeigt der Skin selbst (Augen-Feuer)
-        if (!LK) F.mat.emissive.setRGB(.5 * Math.max(0, m - .6), .12 * Math.max(0, m - .6), 0);
-        if ((m >= .98 || anim.smoke) && !F.dead) { const n = rate(STAGE_FX.smoke * s); for (let i = 0; i < n; i++) emit(F.chest.getWorldPosition(V()).add(V(0, .7, 0)), 1, V(rnd(-.2, .2), 1.2, rnd(-.2, .2)), Math.random() < .5 ? 0x3a3330 : 0x5a504a, -.3, 1.4, .4); }
-        if (Math.random() < s * 14 && !F.dead) emit(F.head.getWorldPosition(V()).add(V(0, .4, 0)), 1, V(0, 1.4, 0), Math.random() < .5 ? 0xff7a1a : 0xffd04a, -.5, .7, .2);
-      }
-      if (skin === 'ice') {
-        U.uM.value = m;
-        const fr = A.cast.freeze;
-        let target = mode === 'chan' ? .35 : 0;
-        if (castU > fr[0] && castU < fr[1]) target = 1;
-        F.freeze = lerp(F.freeze, target, Math.min(1, s * (target > F.freeze ? 10 : 4)));
-        if (!LK) F.mat.emissive.setRGB(.35 * F.freeze, .55 * F.freeze, .7 * F.freeze);   // Skin: kein weißes Aufleuchten über dem ganzen Körper
-        else if (iceTint) { const [r, g, b] = ICE_TINT.emissive; F.mat.emissive.setRGB(r * F.freeze, g * F.freeze, b * F.freeze); }   // Splitterkönig: nur ein Hauch Blau beim Zaubern
-        if (castU > fr[1] && castU < fr[1] + .05) emit(F.chest.getWorldPosition(V()).add(V(0, .3, 0)), 25, V(0, 1, 0), 0xdff6ff, 4, .6, .6);
-        if (F.freeze > .5 && Math.random() < s * 30) emit(F.chest.getWorldPosition(V()).add(V(0, .2, .1)), 1, V(0, .3, 0), 0xe8f8ff, -.2, .9, .8);
-        if (m > .5) { const n = rate(STAGE_FX.frost * (m - .5) * s); for (let i = 0; i < n; i++) emit(pickBone(F).getWorldPosition(V()), 1, V(0, -.2, 0), Math.random() < .5 ? 0xe8f8ff : 0x9fd8ff, .4, .9, .18); }
-        if (mode === 'idle' && (F.t % 2.6) < s) emit(F.head.getWorldPosition(V()).add(V(0, .12, .2)), 10, V(0, .15, .5), 0xffffff, -.1, 1, .08);
-      }
-      if (F.runeMesh) {
-        U.uLvl.value = Math.floor(m * 4 + 1e-6) / 4;
-        const g = m >= .999 ? .1 + .04 * Math.sin(F.t * 8) : 0; F.mat.emissive.setRGB(g * .8, g * .3, g);   // Körper glüht nur bei 4 Ladungen
-        // Ladungs-Kugeln über dem Kopf
-        const n = Math.round(m * 4), h = F.head.getWorldPosition(V());
-        F.orbs.visible = n > 0 && !F.dead;
-        if (F.orbs.visible) {
-          for (let i = 0; i < 4; i++) {
-            const a = F.t * 1.5 + i / 4 * TAU;
-            _o.position.set(h.x + Math.cos(a) * .42, h.y + .55 + .04 * Math.sin(F.t * 3 + i), h.z + Math.sin(a) * .42); _o.scale.setScalar(i < n ? .09 : .035); _o.updateMatrix();
-            F.orbs.setMatrixAt(i, _om.copy(_o.matrix));
-          }
-          F.orbs.instanceMatrix.needsUpdate = true;
-        }
-      }
-      if (F.bolts) {
-        const mm = mode === 'chan' ? Math.max(m, .6) : anim.over ? 1 : m;
-        if (mode === 'charge') {   // Aufladen: nach 3 s schlägt ein Blitz aus dem Himmel in die Hand
-          const k = chargeT % 4.4;
-          if (k >= 3 && k - s < 3) {
-            const hp = F.armR.hand.getWorldPosition(V());
-            bolt(F.bolts, hp.clone().add(V(rnd(-1.5, 1.5), 12, rnd(-1, 1))), hp, .3, 3.5); bolt(F.bolts, hp.clone().add(V(rnd(-1, 1), 9, 0)), hp, .2, 2.2);
-            emit(hp, 40, V(0, 0, 0), 0x8ff1ff, 3, .6, .2);
-          }
-        }
-        updateBolts(F, mm, s);
-        const k = m * m, f = m >= .98 ? .08 * Math.random() : 0; if (!LK) F.mat.emissive.setRGB(.12 * k + f, .42 * k + f, .75 * k + f);   // Skin (Hochspannung): Körper bleibt in seinen Farben, die Ladung zeigen Blitze und Flasche
-      }
-      if (F.goo) {
-        F.melt = F.root.scale.y < .9 ? 1 + (1 - F.root.scale.y) : 1;   // Zerfließen (main.ts skaliert die Figur): Pfütze wächst
-        F.goo.rate = mode === 'chan' ? 5 : mode === 'cast' ? 2 : 1;
-        if (mode === 'cast' && castU >= A.cast.fling && castU - s * 1000 / Math.min(A.cast.dur, CAST_MS) < A.cast.fling) {
-          const hp = F.armL.hand.getWorldPosition(V()), fw = V(0, 0, 1).transformDirection(F.root.matrixWorld);
-          F.goo.st.filter(d => d.ph === 'wait').slice(0, 8).forEach(d => { d.ph = 'fall'; d.p.copy(hp); d.v.copy(fw).multiplyScalar(rnd(3, 6)).add(V(rnd(-1, 1), rnd(1, 3), rnd(-1, 1))); });
-        }
-        updateGoo(F, s, F.t);
-        // Füße kleben: Faden vom Boden-Klebepunkt zum Fuß, solange der Fuß in der ersten Schwungphase ist
-        [F.legL, F.legR].forEach((l, si) => {
-          const fp = l.ft.getWorldPosition(V()), G = F.goo;
-          if (mode === 'run' && fp.y > F.groundY + .075) { if (G.stick[si] == null) G.stick[si] = fp.clone().setY(F.groundY + .02); }
-          else G.stick[si] = null;
-          const a = G.stick[si];
-          if (a && fp.distanceTo(a) > .32) { const d = G.st.find(x => x.ph === 'wait'); if (d) Object.assign(d, { ph: 'splat', t: 1.5, p: a.clone() }); G.stick[si] = false; }
-          setStrand(G, si, G.stick[si] || null, fp, .018);
-        });
-      }
-      if (F.wel != null && !F.dead && Math.random() < s * WEL_SPARK) {   // Funken in Element-Farbe, steigen leicht auf
-        let p;
-        if (Math.random() < .5) p = (Math.random() < .5 ? F.armL : F.armR).hand.getWorldPosition(V());
-        else { F.staff.updateWorldMatrix(true, false); p = F.staff.localToWorld(V(0, WEL_STONE_Y, 0)); }
-        if (opts.spark) opts.spark(p, F.wel); else emit(p, 1, V(0, .5, 0), F.wel, -.3, .7, .12);
-      }
+      if (F.flames) fireFx(m, s, anim);
+      if (skin === 'ice') iceFx(m, s, castU);
+      if (F.runeMesh) arcaneFx(m);
+      if (F.bolts) blitzFx(m, s, anim);
+      if (F.goo) plagueFx(s, castU);
+      welSparks(s);
       updateParts(s);
       if (trail && moving) { F.root.updateMatrixWorld(true); watch((x, y, z, a, side) => trail.add(x, y, z, a, side)); }
     },
