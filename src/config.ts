@@ -2,6 +2,8 @@
 // "PH" = Platzhalter, nicht belegt.
 import { t } from './i18n';
 import { elementOfTags, type ElementId } from './figureTable';
+import { SPELLS } from './spells/registry';
+import { mods, resetMods } from './state';
 
 
 // Kartengröße: Radius-Faktor, 2 = vierfache Fläche. Bauwerke bleiben in der Mitte, Gelände und Streu wachsen mit. // PH
@@ -75,8 +77,9 @@ export const CFG = {
   padYaw: 2.5, padPitch: 1.5,                       // PH: Kamera am Pad (rad/s bei vollem Ausschlag)
 };
 
-// SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie hier.
-export const SPELLS: any = {};
+// SPELL_*: Die Werte pro Spell stehen in src/spells/<id>.ts, index.ts registriert sie in spells/registry.ts (seit E8, ARCH-05/10).
+// Re-Export für den Übergang, neue Importe direkt aus './spells/registry'
+export { SPELLS };
 // Element eines Spells aus seinen Tags (figureTable.ts), 'none' ohne Schul-Tag (DUP-05: eine Stelle für gearParts, objects, mobs)
 export const spellElement = (id: string | null | undefined): ElementId | 'none' => elementOfTags(id ? SPELLS[id]?.tags : null) ?? 'none';
 // Dunkel-Schaden (Tag Dunkel): trifft immer, ignoriert die Schadensreduktion der Mobs, heilt um diesen Anteil // PH
@@ -96,19 +99,8 @@ export const UNIT = 36;
 // Relikt der Figur (modifiers.ts relics): Seltenheit blau, nur eins pro Run, ab diesem Level im Angebot // PH
 export const FIG_RELIC = { rarity: 3, level: 10 };
 
-// Roguelike-Modifikatoren (werden von Karten verändert)
-export const mods: any = {};
-export function resetMods() {
-  Object.assign(mods, { dmg: 1, shatter: 0, novaCd: 0, blizSlow: 0, blizRadius: 0, castRegen: 0, manaMult: 1, hpMult: 1, crit: 0, cdMul: 1, moveMul: 1, radius: 1, durMul: 1, castMul: 1, manaCostMul: 1, dodgeCharges: 0, comboWindow: 1, chainJumps: 0, arcJumps: 0, jumpMul: 1, strikeExtra: 0, stormBolts: 0, ballZaps: 0,   // chainJumps …: Talente des Blitzmagiers
-    fbExtra: 0, fbFreeEvery: 0, emberCore: 0, soulFire: 0, starfall: 0, wildfire: 0,   // Feuer-Talente (v31)
-    iceAge: 0, permafrost: 0, coldBurn: 0, stormEye: 0, frostEye: 0, shardMax: 0,   // Frost-Talente (v31)
-    needleShard: 0, frozenDmg: 0,   // Set Splitterkönig (gear.ts)
-    chainKill: 0,   // Set Hochspannung (gear.ts)
-    burstDmg: 0, burstTick: 0,   // Set Pestbringer (gear.ts)
-    condenser: 0, boltLeap: 0,   // Blitz-Talente (v31)
-    toughSlime: 0, leech: 0, contagion: 0, wreckingBall: 0,   // Seuchen-Talente (v31)
-    annihilator: 0, bladeMaster: 0 });   // Krieger-Talente (v31)
-}
+// Roguelike-Modifikatoren: Laufzeit-Zustand, liegt seit E8 in state.ts (ARCH-05). Re-Export für den Übergang, neue Importe direkt aus './state'
+export { mods, resetMods };
 
 // ?-Magier (Modus normal, spells/random.ts): 4 Tasten würfeln aus Kategorien. Seuchen-Spells kosten hier Mana statt Leben (ihr mana-Wert). Der eigene CD der Spells zählt nicht, nur der der Kategorie. Alles PH
 export const RANDOM_MAGE = {
