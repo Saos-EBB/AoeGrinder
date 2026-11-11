@@ -50,7 +50,7 @@ describe('figureTable', () => {
     for (const ids of MOD_SETS) {
       const f = figureOfMods(ids);
       expect(f.id).toBe(NEW_ID(OLD.skinForRun(ids)));
-      expect(f.dodge).toBe(OLD.dodgeMode(ids));
+      expect(f.dodge).toBe(ids.includes('blitz') ? 'blitz' : ids.includes('plague') ? 'seuche' : OLD.dodgeMode(ids));   // E7 Schritt 3: eigene Variante (Entscheidung 4)
       expect(f.tag ?? undefined).toBe(ids.map(i => OLD.onlyTag[i]).find(Boolean));
       expect(f.heroClass === 'krieger').toBe(ids.includes('realmen'));
       if (ids.length === 1 && f.mod) expect(f.hotbarKey).toBe(ids[0]);

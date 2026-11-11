@@ -6,7 +6,7 @@
 export type FigureId = 'frost' | 'feuer' | 'blitz' | 'seuche' | 'zufall' | 'krieger';
 export type ElementId = 'frost' | 'feuer' | 'blitz' | 'seuche' | 'arkan';   // Keys von ELEMENTS (ohne none)
 export type HeroClass = 'magier' | 'krieger';
-export type DodgeMode = 'normal' | 'frost' | 'feuer' | 'krieger';
+export type DodgeMode = 'normal' | 'frost' | 'feuer' | 'blitz' | 'seuche' | 'krieger';
 
 export interface Figure {
   id: FigureId;            // Spielmodell (mage.skin), nicht gespeichert
@@ -25,8 +25,8 @@ const fig = (f: Figure) => f;
 export const FIGURES: Record<FigureId, Figure> = {
   frost: fig({ id: 'frost', mod: 'frost', element: 'frost', tag: 'Frost', palette: 'ice', cls: 'frost', set: 'frost14', heroClass: 'magier', hotbarKey: 'frost', dodge: 'frost' }),
   feuer: fig({ id: 'feuer', mod: 'fire', element: 'feuer', tag: 'Feuer', palette: 'fire', cls: 'fire', set: 'glut', heroClass: 'magier', hotbarKey: 'fire', dodge: 'feuer' }),
-  blitz: fig({ id: 'blitz', mod: 'blitz', element: 'blitz', tag: 'Blitz', palette: 'blitz', cls: 'lightning', set: 'blitz', heroClass: 'magier', hotbarKey: 'blitz', dodge: 'normal' }),
-  seuche: fig({ id: 'seuche', mod: 'plague', element: 'seuche', tag: 'Seuche', palette: 'plague', cls: 'plague', set: 'seuche', heroClass: 'magier', hotbarKey: 'plague', dodge: 'normal' }),
+  blitz: fig({ id: 'blitz', mod: 'blitz', element: 'blitz', tag: 'Blitz', palette: 'blitz', cls: 'lightning', set: 'blitz', heroClass: 'magier', hotbarKey: 'blitz', dodge: 'blitz' }),
+  seuche: fig({ id: 'seuche', mod: 'plague', element: 'seuche', tag: 'Seuche', palette: 'plague', cls: 'plague', set: 'seuche', heroClass: 'magier', hotbarKey: 'plague', dodge: 'seuche' }),
   krieger: fig({ id: 'krieger', mod: 'realmen', element: null, tag: 'Krieger', palette: null, cls: null, set: null, heroClass: 'krieger', hotbarKey: 'realmen', dodge: 'krieger' }),
   zufall: fig({ id: 'zufall', mod: null, element: null, tag: null, palette: 'qm', cls: null, set: null, heroClass: 'magier', hotbarKey: 'normal', dodge: 'normal' }),   // ?-Magier „Der Leere“ (spells/random.ts)
 };

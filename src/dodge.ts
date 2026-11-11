@@ -1,5 +1,7 @@
 // Dodge für alle Modi: kurzer Sprung in Laufrichtung (ohne Eingabe nach hinten), i-Frames, 2 Ladungen. Perfekter Dodge, wenn ein Treffer in die i-Frames fällt.
 // Pro Modus genau eine Kombo-Regel im Fenster nach dem Dodge (combo*). Alle Zahlen in DG.
+// Varianten je Figur (figureTable.ts FIGURES.dodge): Normal nächster Spell ohne Mana, Frost Mini-Nova am Start, Feuer Feuerspur + Feuerball crittet,
+// Krieger Wucht-Schlag, Blitz und Seuche wie Normal (kein Mana), dazu eigene Optik: Funken im Zickzack bzw. Giftwolke (Entscheidung 4, keine neue Wirkung)
 
 import { state, player } from './state';
 import { $ } from './util';
@@ -22,7 +24,7 @@ export const DG = {
   perfect: { hitstopMs: 80, flashMs: 220, buffMs: 3000, dmg: 0.3, rate: 0.3, maxStacks: 3 },   // v31: 3 s +30 % Schaden und Angriffstempo, bis 3×
   devMobSlow: 0.3,                                     // Dev-Schalter: Mob-Angriffe so viel langsamer, zum Testen der i-Frames            // Treffer in den i-Frames: Ladung zurück, Hitstop, weißer Rand
   // Kombo pro Modus im Fenster nach dem Dodge-Ende (ms); ein perfekter Dodge verdoppelt es
-  combo: { normal: 1500, feuer: 2000, krieger: 1000, perfectMul: 2,
+  combo: { normal: 1500, feuer: 2000, krieger: 1000, blitz: 1500, seuche: 1500, perfectMul: 2,   // blitz/seuche = normal
     miniNova: { radius: 3, rootMs: 2000 }, trailStepYd: 0.6, smashMul: 1.5, smashTrauma: 0.5, smashDecal: 6 },
 };
 
@@ -35,10 +37,10 @@ export const dodgeIframes = () => !!dodge && state.now < dodge.start + DG.iframe
 export const dodgeRecovery = () => state.now < lastEnd + DG.recoveryMs;
 const dodgeCharges = () => charges.filter(t => t <= state.now).length;
 
-// Modus für die Kombo-Regel je Figur (figureTable.ts FIGURES.dodge): normal, frost, feuer, krieger
+// Modus für die Kombo-Regel je Figur (figureTable.ts FIGURES.dodge): normal, frost, feuer, blitz, seuche, krieger
 export const dodgeMode = () => currentFigure().dodge;
 // Kombo: welche Regel gerade gilt und bis wann. consumeCombo(kind) löst sie genau einmal aus
-const KIND = { normal: 'freeMana', feuer: 'fireCrit', krieger: 'smash' };
+const KIND = { normal: 'freeMana', feuer: 'fireCrit', krieger: 'smash', blitz: 'freeMana', seuche: 'freeMana' };
 let combo = null;
 const comboActive = () => !!combo && state.now < combo.until;
 export const comboReady = kind => comboActive() && combo.kind === kind;
@@ -132,11 +134,38 @@ export function dodgeMove(pos, vel, onStep?) {
   vel.x = vel.z = 0;
   if (u >= 1) { lastPerfect = dodge.perfect; dodge = null; lastEnd = state.now; startCombo(lastPerfect); return true; }
   const speed = DG.yd / (DG.ms / 1000);
-  if (onStep && state.now - (dodge.lastStep ?? -1e9) >= DG.combo.trailStepYd / speed * 1000) { dodge.lastStep = state.now; onStep(dodge); }   // Fire only: Feuerspur
+  const fx = STEP_FX[dodgeMode()];
+  if ((onStep || fx) && state.now - (dodge.lastStep ?? -1e9) >= DG.combo.trailStepYd / speed * 1000) { dodge.lastStep = state.now; onStep?.(dodge); fx?.(dodge, pos); }   // Fire only: Feuerspur; Blitz/Seuche: Optik
   player.moveState = 'run';
   player.moveSpeed = speed;
   return true;
 }
+
+// Optik der Varianten Blitz und Seuche, je Schritt der Dodge-Bahn (alle trailStepYd). Nur Partikel, keine Wirkung
+const SPARK = [[1.3, 1.7, 2.8], [2.2, 2.0, 0.7], [2.4, 2.4, 2.4]];          // Blitz: Weiß-Blau wie BOLT (spells/fx), Gelb wie ELEMENTS.blitz
+const GIFT = [[0.06, 0.55, 0.02], [0.02, 0.3, 0.0], [0.16, 0.02, 0.22]]; // Seuche: Giftgrün, dunkles Grün, etwas Violett (additiv, daher dunkel)
+const STEP_FX: Record<string, (d, pos) => void> = {
+  blitz(d, pos) {                                    // Zickzack vom letzten Schritt bis hier, dazu ein paar Funken
+    const from = d.lastFx ?? d.from, y = pos.y + 0.9, n = 4, px = -d.dz, pz = d.dx;
+    for (let i = 1; i <= n; i++) {
+      const u = i / n, side = (i % 2 ? 1 : -1) * (i < n ? 0.35 : 0);
+      particles.spawn({ x: from.x + (pos.x - from.x) * u + px * side, y: y + (Math.random() - 0.5) * 0.4, z: from.z + (pos.z - from.z) * u + pz * side,
+        life: 0.3, color: SPARK[i % 2], size: 0.45, grow: -0.5 });
+    }
+    for (let k = 0; k < 3; k++) {
+      const a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 3;
+      particles.spawn({ x: pos.x, y, z: pos.z, vx: Math.cos(a) * v, vy: 1 + Math.random() * 2, vz: Math.sin(a) * v, drag: 6, grav: 6, life: 0.35, color: SPARK[k % 3], size: 0.22 });
+    }
+    d.lastFx = { x: pos.x, z: pos.z };
+  },
+  seuche(d, pos) {                                   // Giftwolke: große, langsam steigende Schwaden
+    for (let k = 0; k < 4; k++) {
+      particles.spawn({ x: pos.x + (Math.random() - 0.5) * 0.9, y: pos.y + 0.2 + Math.random() * 0.6, z: pos.z + (Math.random() - 0.5) * 0.9,
+        vx: (Math.random() - 0.5) * 0.5, vy: 0.3 + Math.random() * 0.5, vz: (Math.random() - 0.5) * 0.5, drag: 1.5,
+        life: 1 + Math.random() * 0.6, color: GIFT[k % 3], size: 0.9 + Math.random() * 0.5, grow: 1.2 });
+    }
+  },
+};
 
 // Optik ohne Animation: Figur kippt in Dodge-Richtung und staucht sich kurz
 export function dodgeVisual(root) {

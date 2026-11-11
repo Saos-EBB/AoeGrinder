@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- feat(dodge): Blitz und Seuche haben eine eigene Dodge-Variante statt „Normal“: Blitz zieht Funken im Zickzack hinter sich her, Seuche eine Giftwolke. Die Kombo bleibt wie bisher (nächster Zauber ohne Mana, Fenster 1,5 s), nur die Optik ist neu
 - fix(ui): Seltenheitsfarben überall gleich (eine Quelle `CARD_RARITIES`): Karten, Waffen-/Gear-Namen, Rahmen im Inventar und der Seltenheitston am Waffenmodell nehmen jetzt die Farben, die die Oberfläche (CSS) schon hatte: grau `#9d9d9d`, weiß `#e8e8e8`, grün `#2ecc40`, blau `#3a8cff`, lila `#b05cff`, orange `#ff8a1a` (vorher `#b0b0b0`, `#ffffff`, `#3fe05a`, `#4aa3ff`, `#c573ff`, `#ff9a2e`), leicht dunkler/satter
 - fix(ui): Split-Abstand unter der Run-Uhr im HUD (`L15 +0:42`) zeigt jetzt auch Zehntel (`L15 +0:42.3`), wie die Split-Tabelle und die Meldung „Split“. Ganze Zahlen haben auf Englisch jetzt auch den Tausenderpunkt (Punkte-HUD `1.234` statt `1,234`, Fortschritt bei Meilenstein-Looks im Charakterfenster), wie Run-Ende und Schadenszahlen schon vorher
 - fix(ui): Tastenbelegung nennt Taste I „Charakterfenster (alternativ)“ (EN „Character window (alt.)“) statt „Ausrüstungsfenster“: I öffnet dasselbe Fenster wie X
