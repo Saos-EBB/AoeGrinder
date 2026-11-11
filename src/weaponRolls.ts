@@ -50,7 +50,7 @@ export const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana
 const TYPE_TEXT = Object.fromEntries(['staff', 'wand', 'book', 'relic'].map(k => [k, t(`wtype.${k}.text`)]));
 const VALUE_TEXT = Object.fromEntries(Object.values(VALUE_KEY).map(k => [k, t(`wval.${k}`)]));   // die deutschen Schlüssel oben stehen so in gespeicherten Waffen
 
-export const factor = tier => CARD_RARITIES[tier].mult;
+export const factor = rarity => CARD_RARITIES[rarity].mult;
 export const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
 const isNew = w => w.v === 2;
 // Hauptwert als Zahl für ▲/▼ und Sortierung (ui/compare.ts): v in Prozent wie angezeigt (auf 0,1 gerundet), Abklingzeit negativ
@@ -62,14 +62,14 @@ export function mainValue(w): MainValue | null {
   return k && ROLLS.values[k] != null ? mainOf(k, ROLLS.values[k] * factor(w.r)) : null;
 }
 
-export function rollTier() {
+export function rollRarity() {
   let r = Math.random() * ROLLS.weights.reduce((a, b) => a + b, 0);
   for (let t = 0; t < ROLLS.weights.length; t++) { r -= ROLLS.weights[t]; if (r < 0) return t; }
   return 0;
 }
-// Reihenfolge wie im Konzept: Seltenheit, Typ, Hersteller, Kopf (+ Fokus-Spell der Schule), Schaft, Element, Anhänger. tier: feste Seltenheit (Dev)
-export function rollWeapon(tier = null) {
-  const r = tier ?? rollTier(), t = pick(ROLLS.types), head = pick(TYPES[t].heads), school = HEADS[head][1];
+// Reihenfolge wie im Konzept: Seltenheit, Typ, Hersteller, Kopf (+ Fokus-Spell der Schule), Schaft, Element, Anhänger. rarity: feste Seltenheit (Dev)
+export function rollWeapon(rarity = null) {
+  const r = rarity ?? rollRarity(), t = pick(ROLLS.types), head = pick(TYPES[t].heads), school = HEADS[head][1];
   const value = pick(Object.keys(VALUE_KEY)), shaft = Object.keys(SHAFTS).find(k => SHAFTS[k].values.includes(value));
   const els = Object.keys(ELEMENTS).filter(e => e !== 'none');
   const s: any = {
@@ -110,7 +110,8 @@ export function effectRows(w) {
 export const effectLines = w => effectRows(w).filter(r => r.text).map(r => `${r.label}: ${r.text}`);
 export const effectText = w => effectLines(w).join(' · ');
 export const weaponName = w => !isNew(w) ? `${oldModelName(w.m)} · ${effectText(w)}` : LEGENDS[w.s.legend] ? LEGENDS[w.s.legend].name : w.s.unique ? `${oldModelName(w.s.unique)} ${MAKERS[w.s.maker].gen}` : weaponNameOf(w.s);
-export const rarityOf = w => CARD_RARITIES[w.r];
+// Seltenheit eines Gegenstands (Waffe oder Gear): Feld r (gespeichert, Index 0–5) → CARD_RARITIES. Einziger Zugriff (NAME-07)
+export const rarityOf = (item: { r: number }) => CARD_RARITIES[item.r];
 // Für Filter und Sortierung im Inventar: alte Waffen haben kein Element und keinen Baukasten-Typ
 export const elementOf = w => isNew(w) ? w.s.element : 'none';
 export const typeOf = w => isNew(w) ? w.s.type : 'alt';
@@ -144,15 +145,15 @@ export function deleteWeapon(id) {
   saveMeta();
 }
 export function equip(id) { meta.equipped = id; saveMeta(); }
-// Dev: Inventar neu mit devInvMax Waffen aus der Kiste füllen, ohne Staub (tier null = Zufall). Die angelegte Waffe bleibt. Leeren ohne Rückgabe
-export function devFillInventory(tier = null) {
+// Dev: Inventar neu mit devInvMax Waffen aus der Kiste füllen, ohne Staub (rarity null = Zufall). Die angelegte Waffe bleibt. Leeren ohne Rückgabe
+export function devFillInventory(rarity = null) {
   meta.inv = meta.inv.filter(w => w.id === meta.equipped);
-  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
+  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(rarity));
   saveMeta();
 }
 // Dev: Inventar bis devInvMax auffüllen, vorhandene Waffen bleiben (bei 5 kommen 45 dazu)
-export function devTopUpInventory(tier = null) {
-  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(tier));
+export function devTopUpInventory(rarity = null) {
+  while (meta.inv.length < ROLLS.devInvMax) meta.inv.push(rollWeapon(rarity));
   saveMeta();
 }
 // Dev: Waffe aus dem Baukasten (ui/devForge.ts) ins Inventar, ohne Staub und Limit

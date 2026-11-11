@@ -5,7 +5,7 @@ import { state, player } from '../state';
 import { $ } from '../util';
 import { MODIFIERS, MODES, mobMode, setMode, setCustomMods, activeModIds, isWarrior, scoreMult, cardPaceId, setCardPace } from '../modifiers';
 import { CARD_PACES } from '../config';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { cam, autoCamOn, setAutoCam } from '../camera';
 import { zone, zoneId } from '../world';
 import { ZONES } from '../zones';
@@ -17,11 +17,11 @@ import { fmtInt, fmtTime, fmtMult } from './fmt';
 import { SHAKE_MODES, shakeModeNow, setShakeMode } from '../wucht';
 import { byScore, byTime, comboRuns, sameSet } from '../leaderboard';
 import { meta, pickSkin, skinUnlocked } from '../meta';
-import { figurOf, skinsFor } from '../skins';
+import { classOf, skinsFor } from '../skins';
 import { WAR_WEAPON_NAMES, WAR_LEGENDARIES, warLegendary, setWarLegendary } from '../realMen';
 import { LEGENDS } from '../legends';
 import { equip, equipped, weaponName, rarityOf, applyRunWeapon, sortedInv } from '../weaponRolls';
-import { applyRunGear, forcedLook, isMagierSkin } from '../gear';
+import { applyRunGear, forcedSkin, isMageFigure } from '../gear';
 import { clearSpellEffects } from '../spells/core';
 import { attachWeaponCard } from './weaponCard';
 import { resetGame, die, newRunMap } from '../player';
@@ -129,19 +129,19 @@ export function renderMenu() {
   for (const c of CARD_PACES) cardRow.appendChild(button('chip' + (c.id === cardPaceId ? ' selected' : ''), c.name, () => { setCardPace(c.id); renderMenu(); }, c.title));
   const weapons = $('menuWeapons');
   weapons.innerHTML = '';
-  const hasWeapons = !!mage.weapon || isWarrior();
+  const hasWeapons = !!heroModel.weapon || isWarrior();
   $('menuWeaponsBtn').hidden = !hasWeapons;
   if (!hasWeapons) $('menuWeaponBox').hidden = true;
   if (isWarrior()) {   // Strichkrieger: feste Waffe vor dem Run, dazu die legendären (realMen.ts LEGENDARY, frei wählbar, kein Shop)
-    const pickWar = (id, leg) => { setWarLegendary(leg); mage.setWarWeapon(id); applySelection(); };
+    const pickWar = (id, leg) => { setWarLegendary(leg); heroModel.setWarWeapon(id); applySelection(); };
     for (const [id, name] of Object.entries(WAR_WEAPON_NAMES))
-      weapons.appendChild(button('chip' + (id === mage.warWeapon && !warLegendary() ? ' selected' : ''), name, () => pickWar(id, null)));
+      weapons.appendChild(button('chip' + (id === heroModel.warWeapon && !warLegendary() ? ' selected' : ''), name, () => pickWar(id, null)));
     for (const id of WAR_LEGENDARIES)
-      weapons.appendChild(button('chip' + (id === warLegendary() ? ' selected' : ''), LEGENDS[id]?.name ?? id, () => pickWar(mage.warWeapon, id), LEGENDS[id]?.desc ?? ''));
+      weapons.appendChild(button('chip' + (id === warLegendary() ? ' selected' : ''), LEGENDS[id]?.name ?? id, () => pickWar(heroModel.warWeapon, id), LEGENDS[id]?.desc ?? ''));
   }
   // Waffenwahl aus dem Inventar, nur Magier. Leer oder abgewählt: Pilgerast ohne Effekt
-  if (mage.weapon) {
-    const pickW = id => { equip(id); mage.refreshWeapon(); renderMenu(); };
+  if (heroModel.weapon) {
+    const pickW = id => { equip(id); heroModel.refreshWeapon(); renderMenu(); };
     weapons.appendChild(button('chip' + (!equipped() ? ' selected' : ''), t('menu.noWeapon'), () => pickW(null)));
     let group = null;
     for (const w of sortedInv()) {                     // nach Seltenheit gruppiert, damit auch 50 Waffen lesbar bleiben
@@ -164,7 +164,7 @@ export function renderMenu() {
   $('menuRole').textContent = fig.sub;
   $('menuStats').innerHTML = STAT_NAMES.map((n, i) => `<div class="menuStat" title="${t('menu.statOf', { a: fig.stats[i], b: STAT_MAX })}"><span>${n}</span><b><i style="width:${fig.stats[i] / STAT_MAX * 100}%;background:${fig.color}"></i></b></div>`).join('');
   const w = equipped(), wn = $('menuWeaponName');   // Waffe der Figur: Magier aus dem Inventar, Strichkrieger feste Wahl
-  wn.textContent = isWarrior() ? (warLegendary() ? LEGENDS[warLegendary()]?.name : WAR_WEAPON_NAMES[mage.warWeapon]) ?? '—' : mage.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
+  wn.textContent = isWarrior() ? (warLegendary() ? LEGENDS[warLegendary()]?.name : WAR_WEAPON_NAMES[heroModel.warWeapon]) ?? '—' : heroModel.weapon ? (w ? weaponName(w) : t('menu.noWeapon')) : '—';
   wn.style.color = !isWarrior() && w ? rarityOf(w).color : '';
   $('startModal').style.setProperty('--fc', fig.color);
   renderMap();
@@ -184,12 +184,12 @@ export function renderMenu() {
 // welcher gesperrte Skin gerade angezeigt wird (gilt nur für die Schule bzw. Waffe, bei der er angesehen wurde); die Figur zeigt weiter den gewählten
 let peek: { id: string; need: string } | null = null;
 const skinChoice = () => {
-  const list = skinsFor(figurOf(mage.skin), mage.lookWeapon);
-  if (peek && (peek.need !== mage.lookWeapon || !list.some(s => s.id === peek.id) || skinUnlocked(figurOf(mage.skin), peek.id))) peek = null;
-  return { list, i: Math.max(0, list.findIndex(s => s.id === (peek?.id ?? mage.look))) };
+  const list = skinsFor(classOf(heroModel.figureId), heroModel.skinNeed);
+  if (peek && (peek.need !== heroModel.skinNeed || !list.some(s => s.id === peek.id) || skinUnlocked(classOf(heroModel.figureId), peek.id))) peek = null;
+  return { list, i: Math.max(0, list.findIndex(s => s.id === (peek?.id ?? heroModel.skinId))) };
 };
 function renderSkin() {
-  const { list, i } = skinChoice(), forced = forcedLook(mage.skin);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear.ts)
+  const { list, i } = skinChoice(), forced = forcedSkin(heroModel.figureId);   // Set 5/5 angelegt: Set-Skin fest, Wechsel aus (gear.ts)
   const locked = !forced && !!peek, name = t(list[i].name);
   $('skinName').textContent = forced ? t('gear.skinForced', { name: t(`look.magier.${forced}.name`) }) : locked ? t('look.locked', { name }) : name;
   $('skinName').classList.toggle('locked', locked);
@@ -199,10 +199,10 @@ function renderSkin() {
   for (const id of ['skinPrev', 'skinNext']) ($(id) as HTMLButtonElement).disabled = list.length < 2 || !!forced;
 }
 function cycleSkin(step: number) {
-  const { list, i } = skinChoice(), next = list[(i + step + list.length) % list.length], figur = figurOf(mage.skin);
+  const { list, i } = skinChoice(), next = list[(i + step + list.length) % list.length], figur = classOf(heroModel.figureId);
   if (skinUnlocked(figur, next.id)) { peek = null; pickSkin(figur, next.id); }
-  else peek = { id: next.id, need: mage.lookWeapon };
-  mage.refreshLook();
+  else peek = { id: next.id, need: heroModel.skinNeed };
+  heroModel.refreshSkin();
   renderMenu();
 }
 $('skinPrev').addEventListener('click', () => cycleSkin(-1));
@@ -302,7 +302,7 @@ $('menuBoardTabs').addEventListener('click', e => {
 });
 // Magier: das Fenster aus heroWindow.ts (Waffen, Gear, Werte). Strichkrieger: feste Waffenwahl als Liste
 $('menuWeaponsBtn').addEventListener('click', () => {
-  if (mage.weapon) openHero({ tab: 'waffen', done: renderMenu });
+  if (heroModel.weapon) openHero({ tab: 'waffen', done: renderMenu });
   else $('menuWeaponBox').hidden = !$('menuWeaponBox').hidden;
 });
 $('startModal').addEventListener('pointerdown', e => { if (e.target === $('startModal')) turning = e.clientX; });
@@ -337,8 +337,8 @@ function leaveMenu() {
 function startRun() {
   leaveMenu();
   resetSpells();                       // erst jetzt steht der Modus fest und damit das Start-Kit
-  applyRunWeapon(!!mage.weapon);
-  applyRunGear(mage.skin);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
+  applyRunWeapon(!!heroModel.weapon);
+  applyRunGear(heroModel.figureId);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
   renderActionbar();
   showLoad(() => { syncPause(); ding(); });
   syncPause();

@@ -20,7 +20,7 @@ import './ui/scoreHud';
 import { showRunResult } from './ui/leaderboardView';
 import { updateChannel, stopChannel, stopDrink, modRule } from './spells';
 import { pad, rumble } from './gamepad';
-import { mage, startMageRun, endMageRun } from './models/mage';
+import { heroModel, startHeroRun, endHeroRun } from './models/heroModel';
 import { resetWaves } from './waves';
 import { noteSplits, resetSplits } from './leaderboard';
 import { mobMode, cardPaceId, modValue, isWarrior } from './modifiers';
@@ -51,7 +51,7 @@ import { hooks, emit } from './hooks';
 export function newRunMap() { if (zone.gen) buildWorld(zoneId); }
 
 export function resetGame() {
-  startMageRun();
+  startHeroRun();
   for (const m of state.mobs) removeMob(m);
   clearAbilities();
   state.mobs = [];
@@ -251,7 +251,7 @@ export function completeRun(reason) {
 export function die() {
   player.dead = true;
   player.hp = 0;
-  endMageRun();
+  endHeroRun();
   showRunResult();
   stopChannel(); stopDrink();
   state.paused = true;
@@ -276,7 +276,7 @@ export function startDodge() {
   novaFx(from, N.radius);
 }
 // Fire only: Der Dodge legt Feuerspur wie die Schritte der Figur
-const dodgeTrail = d => mage.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
+const dodgeTrail = d => heroModel.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
 
 // Bewegung wie in WoW: A/D drehen, Q/E (oder A/D mit rechter Maus) seitwärts,
 // kein Lenken in der Luft, Rückwärts langsamer.
@@ -312,7 +312,7 @@ export function updatePlayer(dt) {
     const len = Math.hypot(vx, vz);
     // Tastatur und Stick zusammen höchstens Länge 1: W plus Stick vorne ist nicht schneller
     const amount = Math.min(1, Math.hypot(fwd, strafe));
-    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (mage.fx.speedMul ?? 1) * moveMul() * mods.moveMul * buffSpeedMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
+    const speed = (amount < CFG.padWalkBelow ? CFG.walkSpeed : fwd < 0 ? CFG.backSpeed : CFG.runSpeed) * (heroModel.fx.speedMul ?? 1) * moveMul() * mods.moveMul * buffSpeedMul() * (player.speedBuff ?? 1) * (player.iceGroundUntil > state.now ? 1.2 : 1);   // speedBuff: Feuerspur, iceGroundUntil: gefrorener Boden (figures.ts)
     const slowed = (player.slowUntil > state.now && !(player.berserkUntil > state.now) ? speed * (1 - CFG.curseSlow) : speed) * (zone.moveMul?.(player.pos.x, player.pos.z) ?? 1);   // Berserker: kein Slow; moveMul: Wasserrinne (mapgen)
     player.vel.x = len ? vx / len * slowed : 0;
     player.vel.z = len ? vz / len * slowed : 0;

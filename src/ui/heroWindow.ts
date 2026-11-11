@@ -9,10 +9,10 @@ import { SPELLS, CARD_RARITIES } from '../config';
 import type { Find } from '../loot';
 import { meta, hasAch } from '../meta';
 import { ACHIEVEMENTS, setAch } from '../skins';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { ROLLS, VALUE_KEY, equipped, equip, deleteWeapon, weaponName, rarityOf, typeOf, elementOf, effectRows, mainValue, valueText } from '../weaponRolls';
-import { makerOf, groupOf, SLOTS, LOOK_SLOTS, LOOKS, SETS, worn, wearGear, gearName, gearRows, gearRarity, slotName, setOfSchool, setCount, fullSet, perfectText, isMagierSkin,
-  hasLook, lookIn, wearLook, gearInv, deleteGear, overflow, GEAR, lookSource, lookHint, gearMainValue, type Slot, type GearItem } from '../gear';
+import { makerOf, groupOf, SLOTS, KOSMETIK_SLOTS, KOSMETIK, SETS, worn, wearGear, gearName, gearRows, slotName, setOfFigure, setCount, fullSet, perfectText, isMageFigure,
+  hasKosmetik, kosmetikIn, wearKosmetik, gearInv, deleteGear, overflow, GEAR, kosmetikSource, kosmetikHint, gearMainValue, type Slot, type GearItem } from '../gear';
 import { MAKERS, TYPES, HEADS, SHAFTS, ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { askConfirm } from './confirm';
 import { openKeepChooser } from './lootView';
@@ -23,7 +23,7 @@ import { attachWeaponCard, weaponCardData } from './weaponCard';
 import { mainDelta, mainStrength, fmtDelta, deltaColor, fmtMain } from './compare';
 import { COLORS } from './colors';
 import { weaponThumb } from './weaponThumb';
-import { gearThumbHtml, lookThumbHtml, weaponThumbHtml, warmThumbs } from './itemThumb';
+import { gearThumbHtml, kosmetikThumbHtml, weaponThumbHtml, warmThumbs } from './itemThumb';
 import { attachTip, hideTip, tipAt, type TipData } from './tooltip';
 import { heroStats, type StatRow } from './heroStats';
 import { figureInfo } from './charInfo';
@@ -65,7 +65,7 @@ export const heroOpen = () => $('heroModal').classList.contains('show');
 export const inRun = () => !$('startModal').classList.contains('show');
 const viewOnly = inRun;
 warmThumbs(() => !inRun());   // Bild-Renderer im Hauptmenü vorab anlegen
-const mageGear = () => isMagierSkin(mage.skin);
+const mageGear = () => isMageFigure(heroModel.figureId);
 
 // ---------- Gear: Hersteller und Gruppe (gear.ts makerOf/groupOf) ----------
 const gearMaker = (g: GearItem) => makerOf(g);
@@ -80,7 +80,7 @@ export function gearDelta(g: GearItem): number | null {
 }
 // Hover-Karte eines Gear-Teils wie die Waffen-Karte (weaponCard.ts): Hauptwert groß, ▲/▼ gegenüber dem angelegten, Zeilen, Set, Hersteller, Gruppe
 export function gearTip(g: GearItem, compare = true): TipData {
-  const rar = gearRarity(g), rows = gearRows(g), main = gearMainValue(g), on = worn(g.slot), d = gearDelta(g);
+  const rar = rarityOf(g), rows = gearRows(g), main = gearMainValue(g), on = worn(g.slot), d = gearDelta(g);
   const lines = rows.filter(r => r.kind !== 'value').map(r => `<span class="tAffix"${r.color ? ` style="color:${r.color}"` : ''}>◆ ${r.text}</span>`);
   lines.push(`<span class="tAffix">◆ ${t('wm.maker')}: ${makerName(gearMaker(g))} · ${t('hw.group')}: ${groupName(gearGroup(g))}</span>`);
   if (g.s.setId) lines.push(`<span class="tLegend">◆ SET ${t(`look.magier.${g.s.setId}.name`)} · 5/5: ${perfectText(g.s.setId, g.slot)}</span>`);
@@ -121,7 +121,7 @@ const tabSvg = (x: string, color = 'currentColor') => x === 'waffen' || x === 'w
 // ---------- Links: Kopf, Figur mit Slots, Set, Werte ----------
 const LEFT: (Slot | 'waffe')[] = ['kopf', 'hals', 'ruecken'], RIGHT: (Slot | 'waffe')[] = ['arme', 'koerper', 'waffe'];
 // Nach jeder Änderung: Figur (Set-Skin, Waffen-Look) und Fenster neu
-function changed() { mage.refreshLook(); mage.refreshWeapon(); render(); }
+function changed() { heroModel.refreshSkin(); heroModel.refreshWeapon(); render(); }
 
 // Leeres Waffen-Inventar: die Figur trägt ROLLS.fallback (Pilgerast ohne Effekt). Als alte Waffe (ohne v: 2) baut buildWeaponOf das Modell m
 const pilger = () => ({ id: 'pilger', m: ROLLS.fallback, r: 0 });   // erst beim Zeichnen: ROLLS ist beim Laden des Moduls evtl. noch nicht da (Import-Zyklus)
@@ -129,8 +129,8 @@ function slotEl(slot: Slot | 'waffe') {
   const wrap = el('div', 'hwSlotWrap'), b = el('button', 'hwSlot'), isW = slot === 'waffe';
   b.type = 'button';
   b.dataset.slot = slot;
-  const w = isW && mage.weapon ? equipped() : null, g = !isW && mageGear() ? worn(slot as Slot) : null;
-  const color = w ? rarityOf(w).color : g ? gearRarity(g).color : '';
+  const w = isW && heroModel.weapon ? equipped() : null, g = !isW && mageGear() ? worn(slot as Slot) : null;
+  const color = w ? rarityOf(w).color : g ? rarityOf(g).color : '';
   if (color) b.style.setProperty('--rc', color);
   if (w) { const src = weaponThumb(w); b.innerHTML = src ? `<img src="${src}" alt="">` : typeSvg(typeOf(w), color); }
   else if (g) b.innerHTML = gearThumbHtml(g, slotSvg(slot, color));
@@ -154,20 +154,20 @@ function slotEl(slot: Slot | 'waffe') {
 }
 // Look-Feld oben rechts am Slot (Kosmetik). Regel: look[slot] ?? gear[slot]. Belegt: Klick leert; leer mit freiem Look: Klick legt ihn an
 function lookEl(slot: Slot | 'waffe') {
-  const on = lookIn(slot), free = Object.keys(LOOKS).filter(id => LOOKS[id].slot === slot && hasLook(id));
+  const on = kosmetikIn(slot), free = Object.keys(KOSMETIK).filter(id => KOSMETIK[id].slot === slot && hasKosmetik(id));
   const b = el('button', `hwLook${on ? ' on' : ''}`);
   b.type = 'button';
-  b.title = on ? `${t(LOOKS[on].name)} · ${t('hw.lookClear')}` : free.length ? t('hw.lookSet', { name: t(LOOKS[free[0]].name) }) : t('hw.lookNone');
+  b.title = on ? `${t(KOSMETIK[on].name)} · ${t('hw.lookClear')}` : free.length ? t('hw.lookSet', { name: t(KOSMETIK[free[0]].name) }) : t('hw.lookNone');
   b.setAttribute('aria-label', `${t('hw.look')} ${slot === 'waffe' ? t('cw.weapon') : slotName(slot)}: ${b.title}`);
-  if (on) b.innerHTML = lookThumbHtml(on, slotSvg('kosmetik', 'currentColor'));
+  if (on) b.innerHTML = kosmetikThumbHtml(on, slotSvg('kosmetik', 'currentColor'));
   b.disabled = viewOnly() || (!on && !free.length) || !mageGear();
-  b.addEventListener('click', () => { wearLook(slot, on ? null : free[0]); changed(); });
+  b.addEventListener('click', () => { wearKosmetik(slot, on ? null : free[0]); changed(); });
   return b;
 }
 
 // Set-Fortschritt des gespielten Magiers: „Glutprophet 3/5“, Mechanik, Look; inaktiv ausgegraut. Darunter die Erfolge
 function renderSet() {
-  const box = $('hwSet'), id = setOfSchool(mage.skin);
+  const box = $('hwSet'), id = setOfFigure(heroModel.figureId);
   box.textContent = '';
   if (!mageGear()) { box.append(el('p', 'hwMuted', t('gear.mageOnly'))); return; }
   if (!id) { box.append(el('p', 'hwMuted', t('gear.noSet')), achRow(null)); return; }
@@ -312,19 +312,19 @@ function matches(k: Kind, x) {
 
 // Inhalt eines Tabs: Waffen, Gear eines Slots, Kosmetik (alle Looks, gesperrte abgedunkelt)
 type Entry = { key: string; kind: Kind; item: any; dim: boolean };
-const LOOK_IDS = () => Object.keys(LOOKS);
-export const tabCount = (x: Tab) => x === 'waffen' ? meta.inv.length : x === 'kosmetik' ? LOOK_IDS().filter(hasLook).length : gearInv(x).length;
+const KOSMETIK_IDS = () => Object.keys(KOSMETIK);
+export const tabCount = (x: Tab) => x === 'waffen' ? meta.inv.length : x === 'kosmetik' ? KOSMETIK_IDS().filter(hasKosmetik).length : gearInv(x).length;
 export function entries(x: Tab): Entry[] {
   const k = kindOf(x);
-  if (k === 'k') return LOOK_IDS().sort((a, b) => Number(hasLook(b)) - Number(hasLook(a))).map(id => ({ key: `k${id}`, kind: k, item: id, dim: !hasLook(id) }));
+  if (k === 'k') return KOSMETIK_IDS().sort((a, b) => Number(hasKosmetik(b)) - Number(hasKosmetik(a))).map(id => ({ key: `k${id}`, kind: k, item: id, dim: !hasKosmetik(id) }));
   if (k === 'g' && !mageGear()) return [];
   const all = [...(k === 'w' ? meta.inv : gearInv(x as Slot))].sort(SORTS[F(k).sort]?.[1](k) ?? SORTS.rar[1](k));
   const hit = all.filter(i => matches(k, i)), miss = all.filter(i => !matches(k, i));
   return [...hit, ...miss].map(i => ({ key: `${k}${i.id}`, kind: k, item: i, dim: miss.includes(i) }));
 }
-const isOn = (e: Entry) => e.kind === 'w' ? equipped() === e.item : e.kind === 'g' ? worn(e.item.slot) === e.item : Object.values(LOOK_SLOTS).some(s => lookIn(s) === e.item);
-const rarColor = (e: Entry) => e.kind === 'w' ? rarityOf(e.item).color : e.kind === 'g' ? gearRarity(e.item).color : 'var(--fg-title)';
-const entryName = (e: Entry) => e.kind === 'k' ? t(LOOKS[e.item].name) : nameOf(e.kind, e.item);
+const isOn = (e: Entry) => e.kind === 'w' ? equipped() === e.item : e.kind === 'g' ? worn(e.item.slot) === e.item : Object.values(KOSMETIK_SLOTS).some(s => kosmetikIn(s) === e.item);
+const rarColor = (e: Entry) => e.kind === 'w' ? rarityOf(e.item).color : e.kind === 'g' ? rarityOf(e.item).color : 'var(--fg-title)';
+const entryName = (e: Entry) => e.kind === 'k' ? t(KOSMETIK[e.item].name) : nameOf(e.kind, e.item);
 let seenW = 0, seenG = 0;
 const isNewEntry = (e: Entry) => e.kind === 'w' ? e.item.id > seenW : e.kind === 'g' ? e.item.id > seenG : false;
 // ▲/▼ gegenüber dem Ausgerüsteten (Hauptwert, nur bei gleichem Wert-Wort, Regel in compare.ts)
@@ -344,7 +344,7 @@ function wearEntry(e: Entry) {
   if (viewOnly() || e.dim && e.kind === 'k') { render(); return; }
   if (e.kind === 'w') { if (equipped() !== e.item) equip(e.item.id); }
   else if (e.kind === 'g') { if (mageGear() && worn(e.item.slot) !== e.item) wearGear(e.item.slot, e.item.id); }
-  else wearLook(LOOKS[e.item].slot, lookIn(LOOKS[e.item].slot) === e.item ? null : e.item);   // Kosmetik: an/aus
+  else wearKosmetik(KOSMETIK[e.item].slot, kosmetikIn(KOSMETIK[e.item].slot) === e.item ? null : e.item);   // Kosmetik: an/aus
   changed();
 }
 async function salvageEntry(e: Entry) {
@@ -452,7 +452,7 @@ function activeChips(k: Kind) {
 const GRID = 25;   // wie ROLLS.invMax / GEAR.invMax; im Dev-Inventar (50) wachsen Reihen dazu
 function cellInner(e: Entry) {
   const c = rarColor(e);
-  if (e.kind === 'k') return lookThumbHtml(e.item, e.dim ? LOCK : slotSvg('kosmetik', c)) + (e.dim ? `<i class="hwLock">${LOCK}</i>` : '')   // gesperrt: Bild grau mit Schloss
+  if (e.kind === 'k') return kosmetikThumbHtml(e.item, e.dim ? LOCK : slotSvg('kosmetik', c)) + (e.dim ? `<i class="hwLock">${LOCK}</i>` : '')   // gesperrt: Bild grau mit Schloss
     + (isOn(e) ? `<b class="hwE" title="${t('shop.equipped')}">E</b>` : '');
   const i = e.item, elm = e.kind === 'w' ? elementOf(i) : i.s.element, mk = e.kind === 'w' ? W_ATTR.maker(i) : gearMaker(i);
   return (e.kind === 'w' ? weaponThumbHtml(i, typeSvg(typeOf(i), c)) : gearThumbHtml(i, slotSvg(i.slot, c)))
@@ -466,9 +466,9 @@ const LOCK = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="cu
 export function tipOf(e: Entry): TipData | null {
   if (e.kind === 'g') return gearTip(e.item);
   if (e.kind === 'k') {
-    const L = LOOKS[e.item];
+    const L = KOSMETIK[e.item];
     return { title: t(L.name), color: 'var(--fg-title)', sub: `${t('hw.cosmetic')} · ${L.slot === 'waffe' ? t('cw.weapon') : slotName(L.slot)}`,
-      short: [lookHint(e.item), hasLook(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : `🔒 ${lookSource(e.item)}`].filter(Boolean).join('<br>') };   // Reaktion, dann Zustand bzw. Quelle (Box, Set, ⭐ Meilenstein mit Fortschritt)
+      short: [kosmetikHint(e.item), hasKosmetik(e.item) ? t(isOn(e) ? 'hw.lookOnTip' : 'hw.lookOffTip') : `🔒 ${kosmetikSource(e.item)}`].filter(Boolean).join('<br>') };   // Reaktion, dann Zustand bzw. Quelle (Box, Set, ⭐ Meilenstein mit Fortschritt)
   }
   return null;
 }
@@ -487,7 +487,7 @@ function renderGrid(list: Entry[]) {
       cell.dataset.key = e.key;
       cell.style.setProperty('--rc', rarColor(e));
       cell.innerHTML = cellInner(e);
-      cell.setAttribute('aria-label', `${entryName(e)}${e.kind !== 'k' ? ` · ${CARD_RARITIES[e.item.r].name}` : ''}`);
+      cell.setAttribute('aria-label', `${entryName(e)}${e.kind !== 'k' ? ` · ${rarityOf(e.item).name}` : ''}`);
       attachEntryTip(cell, e);
       cell.addEventListener('click', () => wearEntry(e));
       cell.addEventListener('contextmenu', ev => { ev.preventDefault(); sel = e.key; render(); });
@@ -508,11 +508,11 @@ const tabName = (x: Tab) => x === 'waffen' ? t('wm.title') : x === 'kosmetik' ? 
 const tabFill = (x: Tab) => x === 'kosmetik' ? `${tabCount(x)}` : `${tabCount(x)}/${x === 'waffen' ? ROLLS.invMax : GEAR.invMax}`;
 const tabLabel = (x: Tab) => `${tabName(x)} ${tabFill(x)}`;
 const subOf = (e: Entry): string => {
-  if (e.kind === 'k') return LOOKS[e.item].slot;
+  if (e.kind === 'k') return KOSMETIK[e.item].slot;
   const elm = e.kind === 'w' ? elementOf(e.item) : e.item.s.element;
   return elm in ELEMENTS ? elm : 'none';
 };
-const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...LOOK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
+const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...KOSMETIK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
 const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('cw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
 const subColor = (x: Tab, sub: string) => x === 'kosmetik' || sub === 'none' ? '' : elementColor(sub);
 type TreeRow = { key: string; tab: Tab; depth: 0 | 1 | 2; parent?: string; folder?: string; sub?: string; n?: [number, number]; entry?: Entry };
@@ -564,7 +564,7 @@ function renderTree() {
       if (e.dim) row.classList.add('dim');
       const name = el('span', 'hwTName', entryName(e));
       name.style.color = c;
-      const ic = icon(e.kind === 'g' ? gearThumbHtml(e.item, entryIcon(e)) : e.kind === 'k' && !e.dim ? lookThumbHtml(e.item, entryIcon(e)) : entryIcon(e));   // Gear und freie Kosmetik mit Bild, Waffen (hochkant, zu dünn) und Gesperrtes mit Umriss
+      const ic = icon(e.kind === 'g' ? gearThumbHtml(e.item, entryIcon(e)) : e.kind === 'k' && !e.dim ? kosmetikThumbHtml(e.item, entryIcon(e)) : entryIcon(e));   // Gear und freie Kosmetik mit Bild, Waffen (hochkant, zu dünn) und Gesperrtes mit Umriss
       if (e.kind === 'g' || e.kind === 'k' && !e.dim) ic.classList.add('hwTThumb');
       row.append(ic, name);
       if (e.kind === 'g' && e.item.s.setId) row.append(el('b', 'hwSetMark', 'SET'));
@@ -620,7 +620,7 @@ function renderFinds() {
     const finds: Find[] = state.finds ?? [], kept = finds.filter(f => !f.dust), dust = finds.length - kept.length;
     box.append(el('b', '', `${t('loot.title', { n: finds.length })} `));
     if (!finds.length) box.append(el('span', 'hwMuted', t('gear.noFinds')));
-    for (const f of kept) { const c = el('span', 'hwFind', `${gearName(f.item)}${f.item.s.setId ? ' · SET' : ''} (${slotName(f.item.slot)})`); c.style.color = gearRarity(f.item).color; box.append(c); }
+    for (const f of kept) { const c = el('span', 'hwFind', `${gearName(f.item)}${f.item.s.setId ? ' · SET' : ''} (${slotName(f.item.slot)})`); c.style.color = rarityOf(f.item).color; box.append(c); }
     if (dust) box.append(el('span', 'hwMuted', t('gear.findsDust', { n: dust })));
     box.title = box.textContent;
   } else if (overflow().length) {
@@ -681,7 +681,7 @@ function renderInv() {
   $('hwCount').textContent = k === 'k' ? '' : t('wm.count', { a: list.filter(e => !e.dim).length, b: list.length });
   // Probe tragen: gewählte Waffe an der Figur
   const se = list.find(e => e.key === sel);
-  mage.previewWeapon(se?.kind === 'w' && se.item !== equipped() ? se.item : null);
+  heroModel.previewWeapon(se?.kind === 'w' && se.item !== equipped() ? se.item : null);
   if (tree) { $('hwGrid').textContent = ''; renderTree(); }
   else if (k === 'g' && !mageGear()) { $('hwTree').textContent = ''; $('hwGrid').textContent = ''; $('hwGrid').append(el('p', 'hwMuted', t('gear.mageOnly'))); }
   else { $('hwTree').textContent = ''; renderGrid(list); }
@@ -727,7 +727,7 @@ export function closeHero() {
   hideTip();
   $('heroModal').classList.remove('show');
   setFigPreview(false);
-  mage.previewWeapon(null);
+  heroModel.previewWeapon(null);
   closeLists();
   setUi('weaponSeen', Math.max(uiSettings.weaponSeen, ...meta.inv.map(w => w.id)));   // ab jetzt nicht mehr NEU
   setUi('gearSeen', Math.max(uiSettings.gearSeen, ...SLOTS.flatMap(s => gearInv(s).map(g => g.id))));

@@ -16,7 +16,7 @@ import { blizRadius, maxHp } from './formulas';
 import { composer, tickHeat, renderer, camera } from './render';
 import { drape, zone, updateZoneEvent } from './world';
 import { particles } from './fx/particles';
-import { mage } from './models/mage';
+import { heroModel } from './models/heroModel';
 import { blizCursor, updateBlizFx, ambientParticles, updateEffects } from './fx/spellFx';
 import { hitstopDt } from './fx/impact';
 import { cam, updateCamera, updateAutoCam } from './camera';
@@ -125,25 +125,25 @@ function updateVisuals(dt) {
   updateCamera();
   if (player.targeting && !state.padAim) pickGround();
 
-  mage.root.position.copy(player.pos);
-  mage.root.rotation.y = player.facing + menuYaw();
+  heroModel.root.position.copy(player.pos);
+  heroModel.root.rotation.y = player.facing + menuYaw();
   const rise = phoenixRise();                                      // Phönix: Figur wächst aus dem Boden hoch
   const melt = meltScale();                                        // Seuchenmagier: zerfließt
-  mage.root.scale.set(1, Math.min(0.15 + 0.85 * rise, melt), 1);
+  heroModel.root.scale.set(1, Math.min(0.15 + 0.85 * rise, melt), 1);
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
   const landT = clamp((state.now - player.landAt) / 300, 0, 1);    // Landung: kurz einknicken, im Lauf schwächer
   const squat = Math.sin(Math.min(1, landT * 2.4) * Math.PI / 2) * (1 - landT) * (player.moveState === 'idle' ? 0.95 : 0.5);
   const show = menuShowcase();   // Hauptmenü: Ladungsstufen durchlaufen
-  mage.setMeter(show ? show.meter : figureLook.meter ?? (batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0));
-  mage.update(dt, {
+  heroModel.setMeter(show ? show.meter : figureLook.meter ?? (batteryMode() ? player.mana / batteryMax() : meterSchool() ? (meterOverheated() ? 1 : meterValue()) : 0));
+  heroModel.update(dt, {
     state: player.dead && !player.won ? 'dead' : player.dead ? 'idle' : player.drink ? (player.drink.pose === 'charge' ? 'idle' : 'sit') : !player.grounded ? 'air' : state.paused ? 'idle' : player.moveState,   // Pause: keine Schritte, sonst entstehen Spuren
     speed: player.moveSpeed, vy: player.vel.y, squat,
     channel: !!player.channel, cast: Math.sin(castT * Math.PI), stage: show ? show.stage : meterStage(), smoke: meterOverheated(), charge: player.drink?.pose === 'charge', over: !!player.overcharged, drinkSkin: player.drink?.skin, lowHp: player.hp / Math.max(1, maxHp()), kills: run.kills, ...realMenAnim(), ...(show ? { rage: show.meter * (player.rageMax > 1 ? player.rageMax : 100), berserk: show.stage === 3, h3: show.stage === 3 } : {}),
   });
-  updateFigEvents(mage.hero?.element ?? null);   // Werte und Ereignisse für die Figur (Kosmetik)
-  dodgeVisual(mage.root);
+  updateFigEvents(heroModel.hero?.element ?? null);   // Werte und Ereignisse für die Figur (Kosmetik)
+  dodgeVisual(heroModel.root);
   updateDodgeHud();
-  if (state.paused && mage.trail) mage.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
+  if (state.paused && heroModel.trail) heroModel.trail.update(-Math.max(0, dt) / 1000);   // Spuren altern in der Pause nicht
 
   updateBossVisuals(dt);
   frameNo++;
@@ -207,5 +207,5 @@ refreshKeyLabels();
 requestAnimationFrame(loop);
 
 // Für Tests
-(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
+(window as any).__game = { player, get mobs() { return state.mobs; }, get mods() { return mods; }, cast, pressSpell, CFG, cam, binds: () => binds, pad, mage: heroModel, state, renderer, get zone() { return zone; }, switchZone, spawnMob, enterCombat,
   m: { menu: menuMod, cardsUi: cardsUiMod, core: coreMod, config: configMod, formulas: formulasMod, player: playerMod, cards: cardsMod, weapons: weaponMod, meta: metaMod, modifiers: modifiersMod, supports: supportsMod, meter: meterMod, buffs: buffsMod } };

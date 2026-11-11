@@ -19,7 +19,7 @@ export const STRICH_TIMING = {
     mace: { q: [450, 450, 450, 450], pose: [0, 1, 2, 0], e: 950, exec: 1100 },   // Tempo +30 % gibt das Spiel über anim.rate
   },
 };
-// Form der Waffen: Spitze (Treffer) und linke Hand ab dem Griff. Das Schwert ersetzt im Spiel das Schlachtblech (models/mage.ts)
+// Form der Waffen: Spitze (Treffer) und linke Hand ab dem Griff. Das Schwert ersetzt im Spiel das Schlachtblech (models/heroModel.ts)
 const WEAPON_SHAPE = { sword: { tip: 1.95, grip: .24 }, axe: { tip: 1.75, grip: .34 }, mace: { tip: 1.6, grip: .3 } };   // PH
 
 const inC = t => t * t * t;
@@ -63,8 +63,8 @@ const Q_END = [
 const SIT = { y: .32, h: [-.1, .15, 0], c: [.2, -.1, 0], n: [.1, 0, 0], hR: [-.55, 1.0, .25], b: [0, -1, .05], e: [0, 0, 1], hL: [.35, .75, .4], fL: [.42, .07, .75], fR: [-.3, .07, .45] };
 const DEAD = { y: .24, h: [-1.45, 0, 0], c: [-.05, .1, 0], n: [-.1, .3, 0], hR: [-.75, .18, -.2], hL: [.7, .14, -.6], b: [-.5, -.02, .85], e: [0, 1, 0], fL: [.32, .07, .98], fR: [-.3, .07, 1.02] };
 
-// look: Skin aus src/skins.ts (standard, klapse, classic, holz). Unbekannt oder noch nicht gebaut = Standard
-export function buildStrichKrieger({ bloom = false, weapon = 'sword', look = 'standard' } = {}) {
+// skinId: Skin aus src/skins.ts (standard, klapse, classic, holz). Unbekannt oder noch nicht gebaut = Standard. Intern heißt er look (Viewer-Code)
+export function buildStrichKrieger({ bloom = false, weapon = 'sword', skinId: look = 'standard' } = {}) {
   const W = STRICH_TIMING.weapons[weapon] ?? STRICH_TIMING.weapons.sword;
   const fxGroup = new THREE.Group();
   const VMAT = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: grad });

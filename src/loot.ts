@@ -11,13 +11,13 @@ import { state, player } from './state';
 import { onMobDeath } from './hooks';
 import { particles } from './fx/particles';
 import { combatText } from './feedback';
-import { mage } from './models/mage';
-import { rollDrop, takeGear, gearName, gearRarity, isMagierSkin, type GearItem } from './gear';
+import { heroModel } from './models/heroModel';
+import { rollDrop, takeGear, gearName, isMageFigure, type GearItem } from './gear';
 import { dist2d, rand } from './util';
 import { t } from './i18n';
 import { meta, saveMeta, earnDust } from './meta';
 import { CARD_RARITIES } from './config';
-import { rollWeapon, rollTier, weaponName, inventoryFull, ROLLS } from './weaponRolls';
+import { rollWeapon, rollRarity, weaponName, inventoryFull, ROLLS, rarityOf } from './weaponRolls';
 import { zone } from './world';
 import { addUseSource } from './useKey';
 
@@ -31,7 +31,7 @@ export const DROP = {
   dustR: 2,                           // yd: Staub-Haufen hebt man im Lauf-Radius auf (Handoff map-umbau-2)
   dustKill: 0,                        // Handoff: 2 % Staub pro normalem Kill. Kevin: Drop-Raten normaler Kills bleiben, er balanciert später → 0
   champDust: [6, 12], bigDust: [8, 16], bigWeapon: 0.35,   // Champion-Pack (letzter Champion) und Große: Staub sicher, Große 35 % Waffe (vorher 25 %) // PH
-  tierUp: 0.15,                       // Waffen: pro Theme-Schwierigkeit über 1 diese Chance auf eine Seltenheit höher
+  rarityUp: 0.15,                       // Waffen: pro Theme-Schwierigkeit über 1 diese Chance auf eine Seltenheit höher
   dustColor: '#e8d8a8', dustBeam: { vy: 1.6, life: 0.6, size: 0.35, bright: 1.4 },
 };
 export interface Find { item: GearItem; dust: number; over: boolean }
@@ -39,7 +39,7 @@ type Drop = { kind: 'gear' | 'dust' | 'weapon'; item?: GearItem; dust?: number; 
 let drops: Drop[] = [];
 
 const rgb = (hex: string, k = 1) => { const c = new THREE.Color(hex); return [c.r * k, c.g * k, c.b * k]; };
-const canDrop = () => isMagierSkin(mage.skin) && !player.dead;
+const canDrop = () => isMageFigure(heroModel.figureId) && !player.dead;
 
 function place(at: THREE.Vector3, d: Omit<Drop, 'pos' | 'next'>) {
   const a = rand(0, Math.PI * 2), r = rand(0, DROP.spread);
@@ -51,8 +51,8 @@ function place(at: THREE.Vector3, d: Omit<Drop, 'pos' | 'next'>) {
   }
 }
 function spawnDrop(at: THREE.Vector3) {
-  const item = rollDrop(mage.skin);
-  place(at, { kind: 'gear', item, color: rgb(gearRarity(item).color, DROP.beam.bright) });
+  const item = rollDrop(heroModel.figureId);
+  place(at, { kind: 'gear', item, color: rgb(rarityOf(item).color, DROP.beam.bright) });
 }
 // Staub-Haufen: n Knochenstaub, kleine Säule in Knochenfarbe
 export function dropDust(at: THREE.Vector3, n: number) {
@@ -60,11 +60,11 @@ export function dropDust(at: THREE.Vector3, n: number) {
 }
 // Waffe: Seltenheit wie die Waffen-Kiste, je Theme-Schwierigkeit über 1 mit DROP.tierUp eine Stufe höher. Nur Magier (Waffen-Baukasten), sonst Staub
 export function dropWeapon(at: THREE.Vector3) {
-  if (!isMagierSkin(mage.skin)) return dropDust(at, ROLLS.refund[rollTier()]);
-  let tier = rollTier();
-  for (let d = 1; d < (zone.theme?.difficulty ?? 1); d++) if (Math.random() < DROP.tierUp) tier = Math.min(CARD_RARITIES.length - 1, tier + 1);
-  const weapon = rollWeapon(tier);
-  place(at, { kind: 'weapon', weapon, color: rgb(CARD_RARITIES[weapon.r].color, DROP.beam.bright) });
+  if (!isMageFigure(heroModel.figureId)) return dropDust(at, ROLLS.refund[rollRarity()]);
+  let rarity = rollRarity();
+  for (let d = 1; d < (zone.theme?.difficulty ?? 1); d++) if (Math.random() < DROP.rarityUp) rarity = Math.min(CARD_RARITIES.length - 1, rarity + 1);
+  const weapon = rollWeapon(rarity);
+  place(at, { kind: 'weapon', weapon, color: rgb(rarityOf(weapon).color, DROP.beam.bright) });
 }
 const between = ([a, b]: number[]) => Math.round(rand(a, b));
 
@@ -116,17 +116,17 @@ function pickUp(d: Drop, auto = false, overfill = false) {
       if (!auto) { combatText(player.pos, t('loot.invFull', { n: ROLLS.invMax }), 'miss', 2.6); return false; }
       const n = ROLLS.refund[d.weapon.r];   // Portal: kein Platz → Staub statt Verlust
       earnDust(n); saveMeta();
-      combatText(player.pos, t('loot.dust', { name: weaponName(d.weapon), n }), 'info', 2.6, CARD_RARITIES[d.weapon.r].color);
+      combatText(player.pos, t('loot.dust', { name: weaponName(d.weapon), n }), 'info', 2.6, rarityOf(d.weapon).color);
       return true;
     }
     meta.inv.push(d.weapon);
     saveMeta();
-    combatText(player.pos, weaponName(d.weapon), 'info', 2.8, CARD_RARITIES[d.weapon.r].color);
+    combatText(player.pos, weaponName(d.weapon), 'info', 2.8, rarityOf(d.weapon).color);
     return true;
   }
   const res = takeGear(d.item);
   (state.finds ??= []).push({ item: d.item, dust: res.dust, over: res.over });
-  combatText(player.pos, res.kept ? gearName(d.item) : t('loot.dust', { name: gearName(d.item), n: res.dust }), 'info', 2.6, gearRarity(d.item).color);
+  combatText(player.pos, res.kept ? gearName(d.item) : t('loot.dust', { name: gearName(d.item), n: res.dust }), 'info', 2.6, rarityOf(d.item).color);
   return true;
 }
 // Waffe am Boden: Taste „Benutzen“

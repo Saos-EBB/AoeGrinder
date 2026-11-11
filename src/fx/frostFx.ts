@@ -12,7 +12,7 @@ import { impact } from './impact';
 import { playSound } from './sound';
 import { addEffect, iceTex, FROST, FROST_WHITE, MIST } from './spellFx';
 import { waveFx, markFx, shellFx, flareFx, iceSpikesFx, sparksFx, groundDisc } from './prims';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { blizRadius } from '../formulas';
 
 export function novaNew(pos, radius) {
@@ -28,7 +28,7 @@ export function novaNew(pos, radius) {
 
 export function coneNew(range, angle) {
   const hand = new THREE.Vector3();
-  mage.anchors.handL.getWorldPosition(hand);
+  heroModel.anchors.handL.getWorldPosition(hand);
   const f = player.facing, start = f - Math.PI / 2 - angle / 2;
   // Fächer: scrollendes Rauschen läuft von der Hand weg, die Form entsteht im Shader
   const geo = new THREE.RingGeometry(0.02, 1, 64, 10, start, angle).rotateX(-Math.PI / 2);

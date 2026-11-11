@@ -8,16 +8,16 @@ import { completeRun } from '../player';
 import { toMainMenu, renderMenu } from './mainMenu';
 import { syncPause } from './menus';
 import { ROLLS, buyChest, deleteWeapon, devFillInventory, devTopUpInventory, devClearInventory, inventoryFull, rollWeapon, weaponName, rarityOf, effectRows, equipped, equip, mainValue } from '../weaponRolls';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { attachWeaponCard } from './weaponCard';
 import { mainDelta, fmtDelta, deltaColor } from './compare';
 import { askConfirm } from './confirm';
 import { openHero } from './heroWindow';
 import { weaponThumb } from './weaponThumb';
-import { gearThumb, lookThumb } from './itemThumb';
+import { gearThumb, kosmetikThumb } from './itemThumb';
 import { pick } from '../util';
 import { t } from '../i18n';
-import { BOX, KOSMETIK_POOL, LOOKS, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
+import { BOX, KOSMETIK_POOL, KOSMETIK, buyGearBox, buyKosmetikBox, kosmetikBoxLeft, anySlotFull, rollDrop, gearName, gearRows, slotName, wearGear, worn, isMageFigure } from '../gear';
 import { el } from './dom';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
@@ -103,12 +103,12 @@ function resultCol() {
   const btns = el('div', 'resBtns');
   const equipB = el('button', 'btn fg-btn', t(eq === w ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
   equipB.disabled = eq === w;
-  equipB.addEventListener('click', () => { equip(w.id); mage.refreshWeapon(); lastIsNew = false; renderShop(); });
+  equipB.addEventListener('click', () => { equip(w.id); heroModel.refreshWeapon(); lastIsNew = false; renderShop(); });
   const dust = el('button', 'smallBtn fg-btn alt', t('shop.refund', { n: ROLLS.refund[w.r] })) as HTMLButtonElement;
   dust.title = t('shop.salvage');
   dust.addEventListener('click', async () => {
     if (spinning || !await askConfirm(t('shop.salvageTitle'), t('shop.salvageText', { name: weaponName(w), n: ROLLS.refund[w.r] }), t('shop.salvage'))) return;
-    deleteWeapon(w.id); mage.refreshWeapon(); lastPull = null; renderShop();
+    deleteWeapon(w.id); heroModel.refreshWeapon(); lastPull = null; renderShop();
   });
   btns.append(equipB, dust);
   col.append(cmp, btns);
@@ -118,7 +118,7 @@ function resultCol() {
 
 // Ergebnis der Gear-Box: Teil mit Werten; unter Blau wurde es schon zu Staub (gear.ts takeGear)
 function gearResult(col: HTMLElement, name: HTMLElement) {
-  const { g, res } = lastPull, rar = gearRarity(g);
+  const { g, res } = lastPull, rar = rarityOf(g);
   col.style.setProperty('--rc', rar.color);
   if (lastIsNew) col.append(el('span', 'resNew', t('shop.new')));
   const icon = el('div', 'resIcon'), img = gearThumb(g);   // Bild des echten Teils, sonst die Kiste
@@ -131,7 +131,7 @@ function gearResult(col: HTMLElement, name: HTMLElement) {
   if (!res.kept) { col.append(el('div', 'resCmp', t('box.toDust', { n: res.dust }))); return { col, name }; }
   const on = worn(g.slot) === g, b = el('button', 'btn fg-btn', t(on ? 'shop.equipped' : 'shop.equip')) as HTMLButtonElement;
   b.disabled = on;
-  b.addEventListener('click', () => { wearGear(g.slot, g.id); mage.refreshLook(); lastIsNew = false; renderShop(); });
+  b.addEventListener('click', () => { wearGear(g.slot, g.id); heroModel.refreshSkin(); lastIsNew = false; renderShop(); });
   const btns = el('div', 'resBtns');
   btns.append(b);
   col.append(el('div', 'resCmp', res.over ? t('box.over') : t('box.kept', { slot: slotName(g.slot) })), btns);
@@ -155,18 +155,18 @@ function boxRow(resultName: HTMLElement, result: HTMLElement) {
     col.append(el('div', 'shopHint', hint), b);
     return col;
   };
-  const mageNow = isMagierSkin(mage.skin), full = anySlotFull();
+  const mageNow = isMageFigure(heroModel.figureId), full = anySlotFull();
   const gearHint = !mageNow ? t('box.mageOnly') : full ? t('box.full') : meta.dust < BOX.gear ? t('shop.noDust') : t('box.gearHint');
   row.append(box(t('box.gear'), BOX.gear, t(full ? 'shop.invFull' : 'shop.open'), spinning || !mageNow || full || meta.dust < BOX.gear, gearHint, () => {
-    const got = buyGearBox(mage.skin);
+    const got = buyGearBox(heroModel.figureId);
     if (!got) return;
     spinning = true;
     result.classList.add('spinning');
     let i = 0;
     const step = () => {
-      const show = i < SPIN.steps ? { ...rollDrop(mage.skin), r: pick([0, 1, 2, 3, 4, 5]) } : got.g;
+      const show = i < SPIN.steps ? { ...rollDrop(heroModel.figureId), r: pick([0, 1, 2, 3, 4, 5]) } : got.g;
       resultName.textContent = gearName(show);
-      result.style.setProperty('--rc', gearRarity(show).color);
+      result.style.setProperty('--rc', rarityOf(show).color);
       if (i++ < SPIN.steps) { setTimeout(step, SPIN.startMs + SPIN.growMs * i); return; }
       spinning = false;
       lastPull = { gear: true, ...got };
@@ -175,15 +175,15 @@ function boxRow(resultName: HTMLElement, result: HTMLElement) {
     };
     step();
   }));
-  const left = lookBoxLeft().length, done = !left;   // alles aus der Box besessen: Knopf aus
-  const lookHintText = (lastLook ? `${t('box.lookGot', { name: t(LOOKS[lastLook].name) })} · ` : '') + (done ? t('box.lookDone') : `${t('box.lookHint')} ${t('box.lookLeft', { n: left, m: KOSMETIK_POOL.length })}`);
-  row.append(box(t('box.look'), BOX.look, t(done ? 'box.lookAll' : 'shop.open'), done || meta.dust < BOX.look, lookHintText, () => {
-    const id = buyLookBox();
+  const left = kosmetikBoxLeft().length, done = !left;   // alles aus der Box besessen: Knopf aus
+  const lookHintText = (lastLook ? `${t('box.lookGot', { name: t(KOSMETIK[lastLook].name) })} · ` : '') + (done ? t('box.lookDone') : `${t('box.lookHint')} ${t('box.lookLeft', { n: left, m: KOSMETIK_POOL.length })}`);
+  row.append(box(t('box.look'), BOX.kosmetik, t(done ? 'box.lookAll' : 'shop.open'), done || meta.dust < BOX.kosmetik, lookHintText, () => {
+    const id = buyKosmetikBox();
     if (!id) return;
     lastLook = id;
-    mage.refreshLook();
+    heroModel.refreshSkin();
     renderShop();
-  }, lastLook ? lookThumb(lastLook) : ''));
+  }, lastLook ? kosmetikThumb(lastLook) : ''));
   return row;
 }
 

@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildGearTree } from '../models/gearParts';
 import { kosmetikTree } from '../models/kosmetikParts';
-import { groupOf, makerOf, LOOKS, type GearItem } from '../gear';
+import { groupOf, makerOf, KOSMETIK, type GearItem } from '../gear';
 import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot } from './weaponThumb';
 import { V } from '../util';
 
@@ -94,10 +94,10 @@ function gearShot(g: GearItem): Shot | null {
   return shotOf('L' in t ? (freeTree(t.L), t.R) : t, g.slot === 'ruecken');
 }
 // Kosmetik-Teil je Look-id (Ruhelage, ohne Reaktion). Waffen-Looks (Haarspray) aus dem Waffen-Modell
-function lookShot(id: string): Shot | null {
-  if (LOOKS[id]?.slot === 'waffe') return weaponShot({ id: `look:${id}`, m: id });
+function kosmetikShot(id: string): Shot | null {
+  if (KOSMETIK[id]?.slot === 'waffe') return weaponShot({ id: `look:${id}`, m: id });
   const tree = kosmetikTree(id);
-  return tree ? shotOf(tree, LOOKS[id].slot === 'ruecken', o => !!o.userData.free) : null;
+  return tree ? shotOf(tree, KOSMETIK[id].slot === 'ruecken', o => !!o.userData.free) : null;
 }
 
 // Sofort (z. B. Shop-Ergebnis): Bild oder '' (dann bleibt das SVG)
@@ -110,7 +110,7 @@ function now(key: string, make: () => Shot | null) {
   return url;
 }
 export const gearThumb = (g: GearItem) => now(gearKey(g), () => gearShot(g));
-export const lookThumb = (id: string) => now(`k:${id}`, () => lookShot(id));
+export const kosmetikThumb = (id: string) => now(`k:${id}`, () => kosmetikShot(id));
 
 // ---------------- Nachladen: Bilder erst nach dem Aufbau des Fensters rechnen, verteilt auf Frames ----------------
 // thumbHtml gibt das fertige <img> zurück, wenn es schon gemerkt ist, sonst das SVG in einem Platzhalter. Ein Frame-Loop baut dann
@@ -150,7 +150,7 @@ function thumbHtml(key: string, make: () => Shot | null, fallback: string) {
 }
 // HTML fürs Feld: Bild des Teils bzw. Looks, bis es fertig ist (oder wenn das Rendern scheitert) das SVG. Waffen im Raster ebenso
 export const gearThumbHtml = (g: GearItem, fallback: string) => thumbHtml(gearKey(g), () => gearShot(g), fallback);
-export const lookThumbHtml = (id: string, fallback: string) => thumbHtml(`k:${id}`, () => lookShot(id), fallback);
+export const kosmetikThumbHtml = (id: string, fallback: string) => thumbHtml(`k:${id}`, () => kosmetikShot(id), fallback);
 export const weaponThumbHtml = (w, fallback: string) => thumbHtml(weaponKey(w), () => weaponShot(w), fallback);
 
 // Renderer und Shader vorab anlegen (im Hauptmenü, wenn der Browser Luft hat), damit das erste Öffnen des Fensters nicht stockt.

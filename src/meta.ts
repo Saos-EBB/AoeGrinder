@@ -6,7 +6,7 @@ import { SPELLS, CARD_RARITIES } from './config';
 import { activeModIds, scoreMult } from './modifiers';
 import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
-import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type Figur, type SkinId } from './skins';
+import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type HeroClass, type SkinId } from './skins';
 import { KEYS, readRaw, writeRaw, write, remove, keysWith } from './storage';
 import { emit } from './hooks';
 
@@ -74,7 +74,7 @@ export const cleanStats = (raw: any) => ({ kills: count(raw?.kills), dust: count
 export function cleanSkinState(m) {
   m.achievements = cleanAch(m.achievements);
   m.skins = cleanSkins(m.skins);
-  for (const f of Object.keys(m.skins) as Figur[]) { const lock = skinLock(f, m.skins[f]); if (lock && !m.achievements.includes(setAch(lock))) delete m.skins[f]; }
+  for (const f of Object.keys(m.skins) as HeroClass[]) { const lock = skinLock(f, m.skins[f]); if (lock && !m.achievements.includes(setAch(lock))) delete m.skins[f]; }
 }
 // Migration alter Baukasten-Waffen (Inventar beim Laden, Spielstand-Codes in ui/saveCode.ts, Dev-Schmied). Nie crashen: Unbekanntes fällt zurück.
 // v28: Elemente Gift → Seuche (über Blut), Void → Arkan. Rework 2026-11-08 (Toon, Köpfe je Schule): Blut → Seuche, Dunkel → Arkan (Vorschlag, Kevin entscheidet noch, Alternative none),
@@ -122,13 +122,13 @@ export function countKill() { meta.stats.kills++; if (meta.stats.kills === MILES
 export function devSetStats(o: { kills?: number; dust?: number }) { Object.assign(meta.stats, cleanStats({ ...meta.stats, ...o })); checkMilestones(); saveMeta(); }
 
 // ---------- Skins ----------
-export const skinUnlocked = (figur: Figur, id: SkinId) => { const lock = skinLock(figur, id); return !lock || hasAch(setAch(lock)); };
+export const skinUnlocked = (heroClass: HeroClass, id: SkinId) => { const lock = skinLock(heroClass, id); return !lock || hasAch(setAch(lock)); };
 // Gültiger Skin der Figur: gespeicherte Wahl, wenn sie zur Waffe (Krieger) bzw. Schule (Magier) passt und frei ist, sonst Standard
-export function skinOf(figur: Figur, need?: string | null): SkinId {
-  const id = meta.skins?.[figur];
-  return skinsFor(figur, need).some(s => s.id === id) && skinUnlocked(figur, id) ? id : STANDARD;
+export function skinOf(heroClass: HeroClass, need?: string | null): SkinId {
+  const id = meta.skins?.[heroClass];
+  return skinsFor(heroClass, need).some(s => s.id === id) && skinUnlocked(heroClass, id) ? id : STANDARD;
 }
-export function pickSkin(figur: Figur, id: SkinId) { if (!skinUnlocked(figur, id)) return; meta.skins = cleanSkins({ ...meta.skins, [figur]: id }); saveMeta(); }
+export function pickSkin(heroClass: HeroClass, id: SkinId) { if (!skinUnlocked(heroClass, id)) return; meta.skins = cleanSkins({ ...meta.skins, [heroClass]: id }); saveMeta(); }
 
 // ---------- Pool ----------
 export function catalog() {

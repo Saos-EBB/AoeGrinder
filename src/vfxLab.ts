@@ -7,7 +7,7 @@ import { $, clamp } from './util';
 import { CFG, SPELLS, PERF } from './config';
 import { camera, renderer, composer } from './render';
 import { particles } from './fx/particles';
-import { mage } from './models/mage';
+import { heroModel } from './models/heroModel';
 import { ambientParticles, updateBlizFx, updateEffects, clearEffects, fxClock } from './fx/spellFx';
 import { bolt } from './fx/bolts';
 import { mountVolume } from './fx/sound';
@@ -170,10 +170,10 @@ function loop(t) {
     updateMob(m, dt);
     m.nextSwing = state.now + 1e6;   // Ziele schlagen nicht zurück
   }
-  mage.root.position.copy(player.pos);
-  mage.root.rotation.y = player.facing;
+  heroModel.root.position.copy(player.pos);
+  heroModel.root.rotation.y = player.facing;
   const castT = clamp((player.castAnimUntil - state.now) / 450, 0, 1);
-  mage.update(dt, { state: player.drink ? 'sit' : 'idle', speed: CFG.runSpeed, vy: 0, squat: 0, channel: !!player.channel, cast: Math.sin(castT * Math.PI) });
+  heroModel.update(dt, { state: player.drink ? 'sit' : 'idle', speed: CFG.runSpeed, vy: 0, squat: 0, channel: !!player.channel, cast: Math.sin(castT * Math.PI) });
   for (const m of state.mobs) m.model.update(dt, { state: 'idle', speed: 0, frozen: false, slowed: false, attack: 0, flash: clamp(1 - (state.now - (m.hitAt ?? -1e9)) / 140, 0, 1) });
   updateBlizFx(fxDt);
   ambientParticles(fxDt);

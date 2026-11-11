@@ -7,7 +7,7 @@ import { state, player } from '../state';
 import { CFG, SPELLS, CARDS, mods, resetMods } from '../config';
 import { maxHp, maxMana, dmgMult, manaRegenPerTick } from '../formulas';
 import { modFactor, modValue } from '../modifiers';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { run } from '../score';
 import { SUPPORTS } from '../spells/supports';
 import { rune } from '../spells/core';
@@ -15,7 +15,7 @@ import { takenMul, moveMul } from '../realMen';
 import { DG } from '../dodge';
 import { meterSchool, meterDmgMul, meterValue } from '../schoolMeter';
 import { ROLLS, equipped, factor, applyRunWeapon, weaponName } from '../weaponRolls';
-import { applyRunGear, fullSet, worn, SLOTS, GEAR, isMagierSkin } from '../gear';
+import { applyRunGear, fullSet, worn, SLOTS, GEAR, isMageFigure } from '../gear';
 import { ELEMENTS, elementColor } from '../models/weapons/baukasten';
 import { fmtInt } from './fmt';
 import { t, fmtNum } from '../i18n';
@@ -47,9 +47,9 @@ function layers(): { base: Snap; weapon: Snap; gear: Snap } | null {
     state.poolExtra = [];
     resetMods();
     const base = { ...mods };
-    applyRunWeapon(!!mage.weapon);
+    applyRunWeapon(!!heroModel.weapon);
     const weapon = { ...mods };
-    applyRunGear(mage.skin);
+    applyRunGear(heroModel.figureId);
     return { base, weapon, gear: { ...mods } };
   } catch {
     return null;
@@ -100,7 +100,7 @@ function statRow(def: Def, L: ReturnType<typeof layers>, live: boolean): StatRow
 
 // Element: Anteil der Treffer mit Element-Effekt, aus Waffe und Gear (wie applyRunWeapon / applyRunGear). 5/5-Set: Gear ohne eigene Procs
 function elementRows(live: boolean): StatRow[] {
-  const w = equipped(), set = fullSet(mage.skin), mag = isMagierSkin(mage.skin);
+  const w = equipped(), set = fullSet(heroModel.figureId), mag = isMageFigure(heroModel.figureId);
   const fromW: Record<string, number> = {}, fromG: Record<string, number> = {};
   if (mag && w?.v === 2 && w.s.element !== 'none') fromW[w.s.element] = ROLLS.procChance * factor(w.r);
   if (mag && !set) for (const s of SLOTS) { const g = worn(s); if (g && g.s.element !== 'none') fromG[g.s.element] = (fromG[g.s.element] ?? 0) + ROLLS.procChance * factor(g.r) * GEAR.mul; }
@@ -143,7 +143,7 @@ function buildRows(): StatRow[] {
   for (const [id, n] of Object.entries<any>(state.cardRanks ?? {})) if (n) rows.push({ id: `tal.${id}`, label: CARDS.find(c => c.id === id)?.name ?? id, value: t('cw.stage', { n: roman(n) }) });
   for (const id of Object.keys(state.supports ?? {})) rows.push({ id: `sup.${id}`, label: SUPPORTS.find(x => x.id === id)?.name ?? id, value: t('cardui.kindName.support') });
   const w = equipped();
-  rows.push({ id: 'weapon', label: t('cw.weapon'), value: w && mage.weapon ? weaponName(w) : DASH });
+  rows.push({ id: 'weapon', label: t('cw.weapon'), value: w && heroModel.weapon ? weaponName(w) : DASH });
   return rows;
 }
 

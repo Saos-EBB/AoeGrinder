@@ -13,7 +13,7 @@ Welche Datei was macht, steht in der Code-Karte von [handoff.md](handoff.md#code
 | `src/bosses/` (6) | Boss-Kern, Angriffe, Liste, Regeln, Modelle |
 | `src/mapgen/` (16) | Karten-Generator, seed-fest über `rng.ts` (Reihenfolge der `rng()`-Aufrufe nicht ändern), `layouts/` |
 | `src/objects/` (7) | Fässer, Truhen, Schreine, Dieb, Theme-Objekte |
-| `src/models/` (15) | Figuren (`strichMagier`, `strichKrieger`, Hülle `mage.ts`), Gear-/Kosmetik-Teile, Mobs, `weapons/` (Baukasten) |
+| `src/models/` (15) | Figuren (`strichMagier`, `strichKrieger`, Hülle `heroModel.ts`), Gear-/Kosmetik-Teile, Mobs, `weapons/` (Baukasten) |
 | `src/fx/` (10) | alte Spell-Optik, Partikel, Licht/Hitstop, Sound (bleibt neben `vfx/`, Schalter `vfxOld`) |
 | `src/vfx/` (8) | Energie-Shader und Looks pro Schule |
 | `src/ui/` (44, dazu `hud/`, `flavors/`) | Fenster, HUD, Menüs, Shop, Karten, Einstellungen, Dev-Panel; CSS in 10 `.css`-Dateien plus `<style>` in `index.html` und einigen TS-Dateien |
@@ -40,6 +40,23 @@ Ein Modul weiter unten, das ein Modul weiter oben braucht, importiert es nicht, 
 - Offen: Logik → UI über `player.ts` (`showCards`, `showRunResult`, `ui/scoreHud`), `waves.ts` (`renderMenu`) und `input.ts`/`gamepad.ts`/`mobile.ts` (Pause, Charakterfenster, Belegung). Das Kappen bringt den Kreis auf 66, ändert aber die Lade-Reihenfolge der UI-Module und damit die Reihenfolge von 9 Capture-Keydown-Listenern mit `stopImmediatePropagation`, die CSS-Kaskade (`cards.css`, `heroWindow.css`), rAF-Reihenfolge und den Stapel `loadModal`/`portalVeil`. Erst wenn diese UI-Module ihre Listener und ihr DOM in `mount()` anlegen (feste Reihenfolge in `main.ts`), ist das ein kleiner Schritt.
 
 Ziel (aus [audit/gesamt.md](audit/gesamt.md) und ARCH-01 in [audit/arch.md](audit/arch.md)): gerichteter Graph `base` (state, util, config, i18n, storage) → `core` (formulas, rng, Daten-Tabellen) → `sim` (mobs, spells, player, gear …) → `view` (fx, vfx, models) → `ui` → `main`, Kanten nur nach unten, Rückwege über Events. Der Fahrplan dorthin (E6, E10) steht in `docs/audit/gesamt.md`.
+
+## Begriffe im Code (Glossar, E7)
+Ein Begriff pro Konzept. Gespeicherte IDs bleiben, wie sie sind, und werden über `src/figureTable.ts` abgebildet.
+
+| Konzept | Code | gespeichert (bleibt) |
+|---|---|---|
+| Klasse (Magier/Krieger) | `HeroClass` (`figureTable.ts`), `classOf()` (`skins.ts`) | Keys `magier`/`krieger` in `meta.skins` |
+| Figur (Frost, Feuer, Blitz, Seuche, ?-Magier, Krieger) | `figureId` (`frost│feuer│blitz│seuche│zufall│krieger`), Tabelle `FIGURES`, `currentFigure()`, `isWarrior()` (`modifiers.ts`) | Mod-IDs `frost/fire/blitz/plague/realmen` in Runs/Rangliste/Splits, Hotbar-Key `normal` |
+| Schule/Element | `ElementId` = `ELEMENTS`-Keys (`frost│feuer│blitz│seuche│arkan`), `elementOfFigure()`, `elementOfTag()`, `spellElement(id)` (`config.ts`) | Element-IDs in Waffen/Gear |
+| Spielermodell | `heroModel` (`models/heroModel.ts`), `heroModel.figureId`, `heroModel.skinId` | – |
+| Skin (Set-Skin, Krieger-Skin) | `skinId`, `forcedSkin`, `refreshSkin`; in den Viewer-Modellen (`strichMagier`/`strichKrieger`) intern weiter `look` | `meta.skins` |
+| Kosmetik-Teil | `KOSMETIK`, `kosmetikIn`, `wearKosmetik`, `hasKosmetik`, `kosmetikShown` (`gear.ts`) | `meta.looks`, `meta.lookWear`, Code-Felder `lk`/`lw` |
+| Spell-Optik | `*Look` (`vfx/*Look.ts`) – nur hier heißt etwas „Look“ | – |
+| Viewer-Skin der Strichmagier | `palette` (`fire/ice/blitz/plague/qm`, `paletteOf()`) | – |
+| Spell-Schule (Karte, Farbe) | Feld `cls` (`frost/fire/lightning/plague/arcane/…`) | – |
+| Seltenheit | `rarity` (Index 0–5), Zugriff `rarityOf(x)`, `rollRarity()`, Karten `rollCardRarity()` | Feld `r` in Waffen/Gear/Spielstand-Code |
+| Shop-Stufe / Boss-Stufe | „tier“ nur hier: `shopTier`, `bestTier`; Boss lokal `stage` (Roster-Feld `tier` bleibt) | `bestTier` |
 
 ## Entscheidungen
 - 2026-10-31: Lava schadet Mobs wie dem Spieler, kein Pathfinding; Kills dort zählen wie eigene. Gift bricht Trinken nicht, Schwärmlinge geben keine XP, der Panther bleibt nach Entdeckung sichtbar.

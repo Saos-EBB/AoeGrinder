@@ -23,7 +23,7 @@ export const MODIFIERS = [
   { id: 'plague', name: t('mod.plague.name'), desc: t('mod.plague.desc'), scoreMult: 1.4, excludes: ['frost', 'fire', 'blitz', 'realmen'],
     startKit: ['sludge', 'slimewave', 'contract', 'drain', 'burst', null, 'melt', null], onlyTag: 'Seuche', noDrink: true, lifeCost: true,
     pool: ['sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst'], relics: ['pestilence'] },
-  // Kein Magier: Skin in models/mage.ts, Regeln in realMen.ts
+  // Kein Magier: Skin in models/heroModel.ts, Regeln in realMen.ts
   { id: 'realmen', name: t('mod.realmen.name'), desc: t('mod.realmen.desc'), scoreMult: 1, excludes: ['frost', 'fire', 'blitz', 'plague'], startKit: ['wQ', 'wR', 'wCharge', 'wShout', 'wCry', 'wEat', 'wLeap', null], onlyTag: 'Krieger',
     pool: ['wQ', 'wE', 'wR', 'wExec', 'wCry', 'wLast', 'wCharge', 'wClap', 'wShout'], relics: ['wBerserk'] },
   { id: 'nodrink', name: t('mod.nodrink.name'), desc: t('mod.nodrink.desc'), scoreMult: 1.5, excludes: [], noDrink: true },

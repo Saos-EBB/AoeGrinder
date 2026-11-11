@@ -4,7 +4,7 @@
 import { $ } from '../util';
 import { meta, saveMeta, fixWeapon, cleanSkinState } from '../meta';
 import { checkUnlocks } from '../gear';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
 import { loadRuns, saveRuns } from '../leaderboard';   // nach mainMenu: das lädt leaderboard schon, Reihenfolge der Module bleibt
 import { normalizeMeta } from '../metaNormalize';
@@ -96,8 +96,8 @@ export function mount() {
     if (!await askConfirm(t('code.replaceTitle'), t('code.replaceText'), t('code.replace'))) return;
     importCode(text.value);
     modal.classList.remove('show');
-    mage.refreshWeapon();
-    mage.refreshLook();
+    heroModel.refreshWeapon();
+    heroModel.refreshSkin();
     renderMenu();
   });
   for (const [id, label, m] of [['menuCodeShow', t('code.show'), 'show'], ['menuCodeLoad', t('code.enter'), 'load']]) {

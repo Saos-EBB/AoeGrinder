@@ -1,7 +1,7 @@
-// Skin-Effekte auf Mobs: Spuren des Spielers (mage.trail) schaden oder verlangsamen. Werte kommen aus mage.fx.
+// Skin-Effekte auf Mobs: Spuren des Spielers (heroModel.trail) schaden oder verlangsamen. Werte kommen aus heroModel.fx.
 
 import { state, player } from './state';
-import { mage } from './models/mage';
+import { heroModel } from './models/heroModel';
 import { damageMob } from './mobs';
 import { applySlow } from './spells/core';
 import { modValue } from './modifiers';
@@ -10,9 +10,9 @@ import { meterHeat } from './schoolMeter';
 const FIRE_TICK = 1000;   // ms; mob.trailTickAt pro Mob, darum stapeln mehrere Spuren nicht
 
 export function updateSkinFx() {
-  const fx = mage.fx;
-  if (!mage.trail || player.dead) return;
-  const zones = mage.trail.zones();
+  const fx = heroModel.fx;
+  if (!heroModel.trail || player.dead) return;
+  const zones = heroModel.trail.zones();
   if (!zones.length) return;
   // Umriss aller Spuren: alles außerhalb ist schnell aussortiert
   let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;

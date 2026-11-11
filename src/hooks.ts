@@ -35,7 +35,7 @@ export const hooks = {
   spellArea: channel<(center: any, r: number, spellId: string | null) => void>(),
   // Ein Spell fängt an (Zauberzeit, Kanal oder sofort): spells/random.ts (?-Magier würfelt neu)
   castStart: channel<(id: string) => void>(),
-  // Treffer-Moment der Nahkampf-Animation (models/mage.ts): realMen.ts
+  // Treffer-Moment der Nahkampf-Animation (models/heroModel.ts): realMen.ts
   warriorHit: channel<(kind: string, x: number, z: number, i: number) => void>(),
 
   // Plätze: genau eine Umsetzung

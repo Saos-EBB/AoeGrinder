@@ -9,7 +9,7 @@ export type HeroClass = 'magier' | 'krieger';
 export type DodgeMode = 'normal' | 'frost' | 'feuer' | 'blitz' | 'seuche' | 'krieger';
 
 export interface Figure {
-  id: FigureId;            // Spielmodell (mage.skin), nicht gespeichert
+  id: FigureId;            // Spielmodell (heroModel.figureId), nicht gespeichert
   mod: string | null;      // Mod-ID in MODIFIERS (gespeichert in Runs/Rangliste), null = ?-Magier (Modus normal)
   element: ElementId | null;
   tag: string | null;      // Spell-Tag = onlyTag der Mod ('Frost' …), Krieger 'Krieger'

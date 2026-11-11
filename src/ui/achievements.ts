@@ -2,7 +2,7 @@
 // Set-Skin frei, dazu die Meilensteine (skins.ts MILESTONE_ACH, meta.ts milestone), jeder schaltet ein Kosmetik-Teil frei. Neuer Erfolg → Einblendung oben in der Mitte, auch über Fenstern. Liste im Fenster heroWindow.ts (unter dem Set-Fortschritt).
 
 import { t } from '../i18n';
-import { MILESTONE_LOOK } from '../skins';
+import { MILESTONE_KOSMETIK } from '../skins';
 import { on } from '../hooks';
 
 const ACH_TOAST = { showMs: 4500 };   // PH
@@ -10,7 +10,7 @@ const ACH_TOAST = { showMs: 4500 };   // PH
 const setOf = (ach: string) => ach.slice(4);   // 'set:glut' → 'glut'
 const setName = (ach: string) => t(`look.magier.${setOf(ach)}.name`);
 // Meilenstein (meta.ts MILESTONES): Name und das Kosmetik-Teil, das er freischaltet
-const achText = (ach: string) => MILESTONE_LOOK[ach] ? t('ach.msDone', { name: t(`ach.ms.${ach}`), look: t(`look.${MILESTONE_LOOK[ach]}.name`) }) : t('ach.setDone', { set: setName(ach), skin: setName(ach) });
+const achText = (ach: string) => MILESTONE_KOSMETIK[ach] ? t('ach.msDone', { name: t(`ach.ms.${ach}`), look: t(`look.${MILESTONE_KOSMETIK[ach]}.name`) }) : t('ach.setDone', { set: setName(ach), skin: setName(ach) });
 
 let box: HTMLElement;
 

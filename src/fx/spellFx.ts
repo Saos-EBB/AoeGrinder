@@ -7,7 +7,7 @@ import { scene } from '../render';
 import { terrainDecal, drape } from '../world';
 import { groundAt } from '../collision';
 import { glowSprite, particles } from '../fx/particles';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { shakeCamera } from '../camera';
 import { fxClock, fxUniforms, vfxOld } from './shaders';
 import { novaNew, coneNew, blizStartNew, blizMoveNew, blizStopNew, blizUpdateNew } from './frostFx';
@@ -199,7 +199,7 @@ export function novaFx(pos, radius) {
 export function coneOfColdFx(range, angle) {
   if (!vfxOld()) return coneLook(range, angle);
   const hand = new THREE.Vector3();
-  mage.anchors.handL.getWorldPosition(hand);
+  heroModel.anchors.handL.getWorldPosition(hand);
   for (let i = 0; i < 150; i++) {
     const a = player.facing + rand(-angle / 2, angle / 2), sp = rand(14, 24);
     particles.spawn({ x: hand.x, y: hand.y, z: hand.z, vx: Math.sin(a) * sp, vy: rand(-2, 1.5), vz: Math.cos(a) * sp,
@@ -241,7 +241,7 @@ export function hitSparkFx(pos, spellId) {
 
 export function crystalBurst(school) {
   const c = new THREE.Vector3();
-  mage.anchors.handR.getWorldPosition(c);   // gezaubert wird aus der rechten Hand, die den Stab hält
+  heroModel.anchors.handR.getWorldPosition(c);   // gezaubert wird aus der rechten Hand, die den Stab hält
   const color = SCHOOL_COLOR[school] || FROST;
   for (let i = 0; i < 25; i++) {
     const dir = new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize();
@@ -264,8 +264,8 @@ const tmpV = new THREE.Vector3();
 export function ambientParticles(dt) {
   if (!dt) return;
   const channeling = !!player.channel;
-  (channeling ? mage.anchors.handR : mage.anchors.crystal).getWorldPosition(tmpV);
-  for (let i = perFrame(channeling ? 45 : mage.weapon ? 5 : 0, dt); i > 0; i--) {
+  (channeling ? heroModel.anchors.handR : heroModel.anchors.crystal).getWorldPosition(tmpV);
+  for (let i = perFrame(channeling ? 45 : heroModel.weapon ? 5 : 0, dt); i > 0; i--) {
     const a = rand(0, Math.PI * 2), r = channeling ? 0.35 : 0.1;
     particles.spawn({ x: tmpV.x + Math.cos(a) * r, y: tmpV.y, z: tmpV.z + Math.sin(a) * r,
       vx: -Math.sin(a) * (channeling ? 2 : 0.2), vy: rand(0.5, channeling ? 4 : 1), vz: Math.cos(a) * (channeling ? 2 : 0.2),

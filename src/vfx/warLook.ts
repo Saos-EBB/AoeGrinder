@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { player, state } from '../state';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { fx, em, uK, ring, spark, sparks, outC, TAU, PAL, EU, fwd } from './energy';
 import { gy, onGround } from './fireLook';
 import { V } from '../util';
@@ -16,7 +16,7 @@ export function chargeLook(ms: number) {
   fx(ms / 1000 + .15, (k, _dt, e) => {
     if (!e.ms.length) em(e, 'cone', PAL.wut, { sc: 4, core: .3, tip: 1.1, flow: [0, 4, 0] });
     const m = e.ms[0]; m.position.copy(player.pos).add(V(0, 1, 0)); m.quaternion.setFromUnitVectors(UP, fwd().negate()); m.scale.set(.6, 3 * Math.sin(Math.PI * Math.min(1, k * 1.1)), .6); uK(m, 1 - k * .6);
-    const g = Math.floor(k * 6); if (g > gi && k < .95) { gi = g; mage.hero?.fx?.ghost?.(); sparks(onGround(player.pos).setY(gy(player.pos) + .1), 3, PAL.staub, { v: [0, 1, 0], grav: 6, life: .5, spread: .4, band: 2, glow: .6 }); }
+    const g = Math.floor(k * 6); if (g > gi && k < .95) { gi = g; heroModel.hero?.fx?.ghost?.(); sparks(onGround(player.pos).setY(gy(player.pos) + .1), 3, PAL.staub, { v: [0, 1, 0], grav: 6, life: .5, spread: .4, band: 2, glow: .6 }); }
   });
 }
 // Ansturm-Treffer: goldener Ring und Funken-Kugel am Ziel

@@ -16,7 +16,7 @@ import { warLegendary, setWarLegendary, WAR_LEGENDARIES } from '../realMen';
 import { LEGENDS } from '../legends';
 import { applyRunWeapon } from '../weaponRolls';
 import { applyRunGear } from '../gear';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { ZONES } from '../zones';
 import { zoneId } from '../world';
 import { renderDevMapGen } from '../mapgen/devMap';
@@ -46,7 +46,7 @@ export function showCards(offer?) {
   $('cards').innerHTML = '';
   $('cards').className = `cards ${big ? 'k2' : 'l2'}`;
   offer.forEach((c, i) => {
-    const r = CARD_RARITIES[c.tier], relic = c.kind === 'relic';
+    const r = CARD_RARITIES[c.rarity], relic = c.kind === 'relic';
     const el = document.createElement('div'), stage = cardStage(c), rep = cardReplaces(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
     const school = schoolColor(cardSpell(c));
     const col = relic ? COLORS.relic : r.color;
@@ -96,7 +96,7 @@ addEventListener('keydown', e => {
 
 function pickCard(card) {
   state.cardPicks[card.id] = (state.cardPicks[card.id] || 0) + 1;
-  card.apply(CARD_RARITIES[card.tier].mult);
+  card.apply(CARD_RARITIES[card.rarity].mult);
   if (!card.learn) return finishCard();
   if (card.learnSlot != null) { learnSpell(card.learn, card.learnSlot); return finishCard(); }   // Relikt der Figur: eigene Taste
   const free = state.slots.slice(0, SLOT.attacks).indexOf(null);   // nur die 5 Attacken-Slots
@@ -207,7 +207,7 @@ export function renderDevZones() {
 // Dev: Karte erzwingen, Glück
 const KIND_NAMES = Object.fromEntries(['rang', 'spell', 'rune', 'support', 'relic', 'talent', 'luck'].map(k => [k, t(`cardui.kindName.${k}`)]));
 for (const [id, name] of Object.entries(KIND_NAMES)) $('devKind').insertAdjacentHTML('beforeend', `<option value="${id}">${name}</option>`);
-CARD_RARITIES.forEach((r, tier) => $('devTier').insertAdjacentHTML('beforeend', `<option value="${tier}">${r.name}</option>`));
+CARD_RARITIES.forEach((r, rarity) => $('devTier').insertAdjacentHTML('beforeend', `<option value="${rarity}">${r.name}</option>`));
 $('devForce').addEventListener('click', () => {
   const offer = forcedOffer(($('devKind') as HTMLSelectElement).value, Number(($('devTier') as HTMLSelectElement).value));
   if (!offer.length) return showError(t('dev.noCard'));
@@ -260,8 +260,8 @@ $('restartBtn').addEventListener('click', () => {
   newRunMap();   // jeder Run eine neue Map (Seed, mapgen/rng.ts)
   resetGame();
   resetSpells();
-  applyRunWeapon(!!mage.weapon);
-  applyRunGear(mage.skin);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
+  applyRunWeapon(!!heroModel.weapon);
+  applyRunGear(heroModel.figureId);   // Gear nach der Waffe: hängt seinen Element-Proc an deren Treffer-Hook
   renderActionbar();
   showLoad(syncPause);
   syncPause();

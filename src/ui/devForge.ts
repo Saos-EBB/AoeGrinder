@@ -6,7 +6,7 @@ import { TYPES, HEADS, SHAFTS, ELEMENTS, MAKERS, EXTRAS } from '../models/weapon
 import { WEAPONS } from '../models/weapons/defs';
 import { ROLLS, FOCUS_SPELLS, devAddWeapon, weaponName, rarityOf } from '../weaponRolls';
 import { weaponStats } from './weaponCard';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
 import { LEGENDS } from '../legends';
 import { t } from '../i18n';
@@ -71,7 +71,7 @@ export function mountForge() {
     p.style.borderColor = rarityOf(w).color;
   }
   box.addEventListener('change', preview);
-  const add = equipIt => { devAddWeapon(build(), equipIt); mage.refreshWeapon(); renderMenu(); preview(); };
+  const add = equipIt => { devAddWeapon(build(), equipIt); heroModel.refreshWeapon(); renderMenu(); preview(); };
   $('forgeAdd').addEventListener('click', () => add(false));
   $('forgeEquip').addEventListener('click', () => add(true));
   preview();

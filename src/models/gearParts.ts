@@ -37,9 +37,9 @@ const lit = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g
 const glow = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as any), g: 1 });
 const ds = (m: Mat): Mat => (m ? { ...m, ds: true } : m);
 
-export interface GearLookItem { r: number; s: { maker?: string; element?: string; focus?: string } }
+export interface GearShownItem { r: number; s: { maker?: string; element?: string; focus?: string } }
 // Materialien eines Teils wie matsOf im Viewer
-function matsOf(item: GearLookItem) {
+function matsOf(item: GearShownItem) {
   const mk = MAKER_COL[item.s.maker] ?? MAKER_COL.stern, rar = item.r, el = item.s.element in EL_COL ? item.s.element : 'none', elCol = EL_COL[el];
   const fe = spellElement(item.s.focus), school = fe in FOCUS_COL ? fe : 'none';
   const dim = (c: number, k: number) => new THREE.Color(c).multiplyScalar(k).getHex();
@@ -275,7 +275,7 @@ const BUILD = {
 };
 
 // Baut ein Teil im Viewer-Raum. Kopf: Kopf-Mitte = Ursprung. Arme: { L: Arm −x, R: Arm +x } in Körper-Koordinaten. Sonst Körper-Koordinaten (Boden = 0)
-export function buildGearTree(slot: string, group: string, item: GearLookItem): THREE.Object3D | { L: THREE.Object3D; R: THREE.Object3D } | null {
+export function buildGearTree(slot: string, group: string, item: GearShownItem): THREE.Object3D | { L: THREE.Object3D; R: THREE.Object3D } | null {
   const fn = BUILD[slot]?.[group];
   if (!fn) return null;
   const M = matsOf(item);
@@ -338,7 +338,7 @@ function convert(tree: THREE.Object3D, frame: THREE.Matrix4, root: THREE.Bone, B
   for (const c of tree.children) if (pick(c)) walk(c, root, inv, false);
 }
 // F: Figur aus buildStrichMagier (Bones head, chest, hips, armL/armR mit ua/fa), B(parent, x, y, z) legt einen Bone an. A1/A2: Längen Ober-/Unterarm
-export function gearPieces(F, B, slot: string, group: string, item: GearLookItem, A1: number, A2: number) {
+export function gearPieces(F, B, slot: string, group: string, item: GearShownItem, A1: number, A2: number) {
   const out = { pieces: [] as GearPiece[], anim: [] as GearAnim[], fx: [] as GearFx[] };
   const tree = buildGearTree(slot, group, item);
   if (!tree) return out;

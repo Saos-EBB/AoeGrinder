@@ -6,7 +6,7 @@ import { KEYS, readRaw, writeRaw, remove } from './storage';
 import { chargeLook, chargeHit, clapLook, shoutLook, berserkLook, berserkOn } from './vfx/warLook';
 import { state, player } from './state';
 import { SPELLS, SPELL_ACTIONS, SLOT } from './config';
-import { mage } from './models/mage';
+import { heroModel } from './models/heroModel';
 import { hitstopActive, hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
 import { DG, consumeCombo } from './dodge';
@@ -53,7 +53,7 @@ const REALMEN = {
   clap: { radius: 6, dmg: 1.5, slow: 0.4, slowMs: 3000, rage: 10, cd: 6000 },
   shout: { radius: 8, fleeMs: 4000, cd: 30000 },
   berserk: { ms: 25000, dmg: 0.35, cd: 90000 },
-  // Waffe vor dem Run (models/mage.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert. Legendäre Waffen: LEGENDARY unten
+  // Waffe vor dem Run (models/heroModel.ts, Hauptmenü). Axt und Kolben sind raus (v31), es bleibt das Riesenschwert. Legendäre Waffen: LEGENDARY unten
   weapons: {
     sword: { name: t('weapon.sword.name'), dmgMul: 1, rate: 1, ragePerHit: 6 },
   },
@@ -142,7 +142,7 @@ for (const [id, s] of Object.entries<any>(SPELLS)) if (s.tags?.includes('Krieger
 }
 
 export const WAR_WEAPON_NAMES = Object.fromEntries(Object.entries(R.weapons).map(([id, w]) => [id, w.name]));
-const weaponId = () => R.weapons[mage.warWeapon] ? mage.warWeapon : 'sword';
+const weaponId = () => R.weapons[heroModel.warWeapon] ? heroModel.warWeapon : 'sword';
 const WP = (): any => R.weapons[weaponId()];
 const WT = () => TIMING.weapons[weaponId()] ?? TIMING.weapons.sword;
 const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`] || 1 : 0;
@@ -195,7 +195,7 @@ export function resetRealMen() {
   state.heroWeapon = on ? WP().name : '';
   if (on) {
     player.mana = 0; clearMelee();
-    mage.hero.setBladeScale?.(1);
+    heroModel.hero.setBladeScale?.(1);
   }
 }
 
@@ -249,8 +249,8 @@ function stageUp() {
   slowUntil = performance.now() + U.ms;
   combatText(player.pos, t('war.kills', { n: R.q.killsPerHit }), 'info', 2.6);
   showBanner(t('war.finStage', { n: stage - 3 }), t(`war.fin.${stage}`));
-  mage.hero.setBladeScale?.(bladeScale());
-  mage.hero.flareTip?.();
+  heroModel.hero.setBladeScale?.(bladeScale());
+  heroModel.hero.flareTip?.();
   combo = 0; autoQ = qLength(); autoAt = state.now + U.chainDelayMs;
 }
 export const warTimeScale = () => performance.now() < slowUntil ? R.q.unlock.slow : 1;
@@ -304,7 +304,7 @@ function strike(ctx, amount, targets, onMob?, rageK = 1) {
     landed++;
     onMob?.(m);
     if (undeadUntil > state.now) player.hp = Math.min(maxHp(), player.hp + maxHp() * LEGENDARY.sion.undead.heal);   // untot: Treffer heilen
-    mage.hero.fx.blood(m.pos.x, m.pos.y + 1.1, m.pos.z);
+    heroModel.hero.fx.blood(m.pos.x, m.pos.y + 1.1, m.pos.z);
   }
   if (landed) {
     gainRage(Math.min(R.rage.perSwingMax * rageK, landed * (W.ragePerHit ?? R.rage.perMobHit) * rageK));
@@ -358,7 +358,7 @@ function hitE(at) {
   for (let i = 0; i < waves; i++) after(i * E.stepMs, () => {
     if (!isWarrior()) return;
     const a = { x: at.x + f.x * E.stepYd * i, z: at.z + f.z * E.stepYd * i }, b = { x: a.x + f.x * E.stepYd, z: a.z + f.z * E.stepYd };
-    mage.hero.fx.crackAt(a.x, a.z, f.x, f.z);
+    heroModel.hero.fx.crackAt(a.x, a.z, f.x, f.z);
     const list = mobsOnLine(a, b, E.width).filter(m => !seen.has(m));
     for (const m of list) seen.add(m);
     const landed = event('wE', c, () => E.dmg, () => list, eHit, 0);   // Wut gedeckelt pro Bodenbrecher, nicht pro Welle
@@ -448,7 +448,7 @@ function pressChicken() {
   if (cdEnd('lChicken') > state.now) return showError(t('msg.notReady'));
   startCd('lChicken');
   chickenUntil = state.now + LEGENDARY.leeroy.chicken.ms;
-  mage.hero.fx.ring(player.pos, 0xe0141c, 2.5, 0.5, 0.1);
+  heroModel.hero.fx.ring(player.pos, 0xe0141c, 2.5, 0.5, 0.1);
 }
 function updateCharge() {
   const C: any = charge.leeroy ? LEGENDARY.leeroy.leeroy : R.charge, t = Math.min(1, (state.now - charge.start) / C.ms), to = charge.target.pos;
@@ -501,7 +501,7 @@ function pressBerserk() {
   player.berserkUntil = state.now + R.berserk.ms;
   berserkLook(berserkOn);
   player.slowUntil = 0;
-  mage.hero.fx.ring(player.pos, 0xd8121c, 4, 0.6, 0.15);
+  heroModel.hero.fx.ring(player.pos, 0xd8121c, 4, 0.6, 0.15);
 }
 // Berserker: Schaden obendrauf (core.ts), kein Slow (player.ts)
 // ---------- Sions Axt ----------
@@ -514,7 +514,7 @@ export function warriorRevive() {
   player.hp = maxHp();
   undeadSlot = state.slots[SLOT.move]; state.slots[SLOT.move] = 'sRush'; renderActionbar();
   combatText(player.pos, t('spell.sGlory.name'), 'info', 3);
-  mage.hero.fx.ring(player.pos, 0x7cff9a, 6, 0.8, 0.15);
+  heroModel.hero.fx.ring(player.pos, 0x7cff9a, 6, 0.8, 0.15);
   return true;
 }
 let undeadSlot = null;
@@ -550,7 +550,7 @@ function hitSionQ() {
   }));
   if (k < 1) return;
   const a = { x: player.pos.x + f.x * len, z: player.pos.z + f.z * len }, b = { x: a.x + f.x * Q.crackYd, z: a.z + f.z * Q.crackYd };   // Bodenspalte läuft weiter
-  for (let i = 0; i < 3; i++) after(i * 80, () => mage.hero.fx.crackAt(a.x + f.x * i * 2, a.z + f.z * i * 2, f.x, f.z));
+  for (let i = 0; i < 3; i++) after(i * 80, () => heroModel.hero.fx.crackAt(a.x + f.x * i * 2, a.z + f.z * i * 2, f.x, f.z));
   after(120, () => strike(c, () => Q.crackDmg * UNIT, () => mobsOnLine(a, b, 2.5), undefined, 0));
 }
 // Seelenofen: Schild, Kills füllen nach; Ablauf oder zweiter Druck: Explosion mit 2× dem Absorbierten
@@ -561,13 +561,13 @@ function pressSionW() {
   const amount = maxHp() * SN.w.shield;
   sw = { until: state.now + SN.w.ms, given: amount };
   player.shield = amount; player.shieldUntil = sw.until;
-  mage.hero.fx.ring(player.pos, 0x7cff9a, 2.5, 0.5, 0.1);
+  heroModel.hero.fx.ring(player.pos, 0x7cff9a, 2.5, 0.5, 0.1);
 }
 function detonateSionW() {
   const absorbed = Math.max(0, sw.given - Math.max(0, player.shield)), W = SN.w, c = makeCtx('sW'), r = c.radius(W.radius);
   sw = null; player.shield = 0; player.shieldUntil = 0;
   if (absorbed > 0) strike(c, () => absorbed * W.mul, () => mobsInRadius(player.pos, r), m => { if (!m.dead) knockbackMob(m, player.pos, 3); }, 0);
-  mage.hero.fx.ring(player.pos, 0x7cff9a, r, 0.6, 0.15);
+  heroModel.hero.fx.ring(player.pos, 0x7cff9a, r, 0.6, 0.15);
   shakeCamera(0.4);
 }
 // Brüllen des Schlächters: Schockwelle nach vorn, der erste Mob fliegt wie eine Bowlingkugel durch die anderen
@@ -579,7 +579,7 @@ function pressSionE() {
   startCd('sE');
   player.lastCombat = state.now;
   const E = SN.e, f = forward(), from = { x: player.pos.x, z: player.pos.z }, to = { x: from.x + f.x * E.len, z: from.z + f.z * E.len };
-  for (let i = 0; i < 5; i++) after(i * 50, () => mage.hero.fx.crackAt(from.x + f.x * i * E.len / 5, from.z + f.z * i * E.len / 5, f.x, f.z));
+  for (let i = 0; i < 5; i++) after(i * 50, () => heroModel.hero.fx.crackAt(from.x + f.x * i * E.len / 5, from.z + f.z * i * E.len / 5, f.x, f.z));
   shoutLook(3);
   const first = mobsOnLine(from, to, E.width).filter(m => !m.dead).sort((a, b) => Math.hypot(a.pos.x - from.x, a.pos.z - from.z) - Math.hypot(b.pos.x - from.x, b.pos.z - from.z))[0];
   if (!first) return;
@@ -598,7 +598,7 @@ function updateBowl(s) {
   if (o) {
     bowl.seen.add(o); bowl.hits++; bowl.left += E.perHitYd;
     strike(bowl.ctx, () => E.dmg * UNIT, () => [o], x => { if (!x.dead) knockbackMob(x, m.pos, 3); }, 0);
-    mage.hero.fx.blood(o.pos.x, o.pos.y + 1, o.pos.z);
+    heroModel.hero.fx.blood(o.pos.x, o.pos.y + 1, o.pos.z);
   }
   if (bowl.left <= 0) bowl = null;
 }
@@ -622,7 +622,7 @@ function updateRush(s) {
   const step = lerpN(Rr.speed[0], Rr.speed[1], clamp(tS / Rr.accelS, 0, 1)) * s;
   const blocked = !stepForward(step);   // stepForward: true, wenn der Schritt ging
   rush.dist += step;
-  if (Math.random() < 0.3) mage.hero.fx.ghost?.();
+  if (Math.random() < 0.3) heroModel.hero.fx.ghost?.();
   const f = forward();
   for (const m of mobsInRadius(player.pos, Rr.trample, Infinity)) {
     if (m.dead || rush.seen.has(m)) continue;
@@ -637,7 +637,7 @@ function endRush() {
   const Rr = SN.r, c = rush.ctx, r = c.radius(lerpN(Rr.r[0], Rr.r[1], clamp(rush.dist / Rr.rAtYd, 0, 1)));
   rush = null;
   smash(strike(c, () => Rr.dmg * UNIT, () => mobsInRadius(player.pos, r), m => { if (!m.dead) knockbackMob(m, player.pos, Rr.knock); }));
-  mage.hero.fx.ring(player.pos, 0xd8121c, r, 0.5, 0.15);
+  heroModel.hero.fx.ring(player.pos, 0xd8121c, r, 0.5, 0.15);
   chargeHit(player.pos);
   shakeCamera(0.6);
 }
@@ -649,7 +649,7 @@ function updateSion(dt) {
     if (player.hp <= 0 || state.now >= undeadUntil) return endUndead();
   }
   if (sq && (!held('sQ') || state.now - sq.start >= SN.q.maxMs)) releaseSionQ(state.now - sq.start);
-  if (sq && Math.floor((state.now - sq.start) / 300) !== sq.pulse) { sq.pulse = Math.floor((state.now - sq.start) / 300); mage.hero.fx.ring(player.pos, 0xd8121c, 1.5 + sq.pulse * 0.6, 0.3, 0.08); }
+  if (sq && Math.floor((state.now - sq.start) / 300) !== sq.pulse) { sq.pulse = Math.floor((state.now - sq.start) / 300); heroModel.hero.fx.ring(player.pos, 0xd8121c, 1.5 + sq.pulse * 0.6, 0.3, 0.08); }
   if (sw && state.now >= sw.until) detonateSionW();
   if (bowl) updateBowl(s);
   if (rush) updateRush(s);

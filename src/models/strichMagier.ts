@@ -2,7 +2,7 @@
 // Ein SkinnedMesh trägt Körper, Glüh-Teile (aGlow), Eiszapfen (icT/icB) und Trink-Requisiten (eigene Bones, icT = -2): 1 Draw Call plus Schatten.
 // Die Stufen-Effekte lesen nur einen Wert 0 … 1 (setMeter): Hitze, Kälte, Ladungen/4, Batterie. Die Spiellogik liest nichts aus dem Modell.
 // Gleiche Schnittstelle wie buildMage: anim = { state, speed, cast, channel, squat, frozen, smoke, charge, over, drinkSkin }, anchors.crystal hängt am Stabgelenk (dort sitzt die Waffe).
-// Effekte in Weltkoordinaten (Flammen, Blitze, Tropfen, Partikel) hängen in `scarf`, models/mage.ts legt die Gruppe in die Szene.
+// Effekte in Weltkoordinaten (Flammen, Blitze, Tropfen, Partikel) hängen in `scarf`, models/heroModel.ts legt die Gruppe in die Szene.
 
 import * as THREE from 'three';
 import { clamp, lerpTo as lerp, inOut, outC, V, outBack, sine, rand as rnd, jag } from '../util';
@@ -1051,12 +1051,12 @@ const WEL_SPARK = 14;      // Funken des Waffen-Elements pro Sekunde (≈ alle 0
 const rate = x => Math.floor(x) + (Math.random() < x % 1 ? 1 : 0);   // Bruchteile über die Frames verteilt
 
 // weaponElement: Element der ausgerüsteten Waffe (ELEMENTS in weapons/baukasten.ts), null oder unbekannt = kein Element.
-// opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/mage.ts), sonst eine neue nach dem Skin.
+// opts.trail: vorhandene Spur übernehmen (Neubau bei Waffenwechsel, models/heroModel.ts), sonst eine neue nach dem Skin.
 // opts.spark(p, color): Funken des Waffen-Elements ins Partikel-System des Spiels (kein eigener Draw Call), sonst in die eigenen Partikel
-// opts.look: Skin aus src/skins.ts (standard, blitz, seuche, frost14, glut), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
+// opts.skinId: Skin aus src/skins.ts (standard, blitz, seuche, frost14, glut), getrennt vom Schul-Look skin. Unbekannt oder noch nicht gebaut = Standard
 export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | null = null, opts: any = {}) {
   const skin = paletteOf(gameSkin), A = ANIM[skin];
-  const look: string = opts.look ?? 'standard';
+  const look: string = opts.skinId ?? 'standard';   // intern look wie im Viewer
   const S = SKINS[skin];
   const LK = LOOKS[look] ?? null;   // null = Standard: Schul-Look wie bisher
   const ink = k => LK?.[k] ?? S.ink;
@@ -1097,7 +1097,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   F.armL = arm(1); F.armR = arm(-1); F.legL = leg(1); F.legR = leg(-1);
   F.burnBones = [F.chest, F.chest, head, hips, F.armL.ua, F.armR.ua, F.armL.fa, F.armR.fa, F.legL.th, F.legR.th, F.legL.sh, F.legR.sh];
   const staff = F.staff = B(F.root);
-  // Der eingebaute Stab des Viewers weicht den Waffen: nur das Gelenk bleibt, models/mage.ts hängt die Waffe daran
+  // Der eingebaute Stab des Viewers weicht den Waffen: nur das Gelenk bleibt, models/heroModel.ts hängt die Waffe daran
   F.crystal = new THREE.Object3D(); F.crystal.position.set(0, .79, 0); staff.add(F.crystal);
 
   if (skin === 'base' && !LK) {
@@ -1144,8 +1144,8 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
       [hips, [.1, -.02, .12], .06, W], [hips, [-.09, -.05, -.12], .06, Y], [F.armL.ua, [0, -.12, .06], .05, Y], [F.armR.ua, [0, -.14, .06], .05, W], [F.armL.fa, [0, -.1, .05], .045, W], [F.armR.fa, [0, -.1, .05], .045, Y],
       [F.legL.th, [0, -.2, .08], .055, W], [F.legR.th, [0, -.15, .08], .055, Y], [head, [0, .2, .17], .05, Y]];
     // Körper-Teil an (Gear Körper, Kosmetik Onesie/Anzug/Rock): die Fragezeichen auf dem Körper fallen weg, sonst schauen sie durch den Stoff;
-    // Arm-Teil an: die auf den Armen. Kopf und die 3 schwebenden bleiben. Beim Wechsel baut mage.ts die Figur neu (gearKey)
-    const worn = (sl: string) => (!!opts.gear?.[sl] && !gearHide.includes(sl)) || (!!opts.cos?.[sl] && !kosHide.includes(sl) && !kosHide.includes(opts.cos[sl]));
+    // Arm-Teil an: die auf den Armen. Kopf und die 3 schwebenden bleiben. Beim Wechsel baut heroModel.ts die Figur neu (gearKey)
+    const worn = (sl: string) => (!!opts.gear?.[sl] && !gearHide.includes(sl)) || (!!opts.kosmetik?.[sl] && !kosHide.includes(sl) && !kosHide.includes(opts.kosmetik[sl]));
     const arms = [F.armL.ua, F.armR.ua, F.armL.fa, F.armR.fa], off = (b) => b !== head && (worn('koerper') || (worn('arme') && arms.includes(b)));
     if (!LK) for (const [b, p, sc, c] of deco) if (!off(b)) part(b, qGeo(), c, p, [0, 0, 0], [sc * 1.5, sc * 1.5, sc * .7]);
     for (let i = 0; i < 3; i++) { const a = i / 3 * TAU; glow(head, qGeo(), Y, [Math.sin(a) * .36, .52 + .06 * i, Math.cos(a) * .36], [0, a, 0], [.14, .14, .07]); }
@@ -1164,7 +1164,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     glow(staff, new THREE.OctahedronGeometry(.055, 0), E, [0, WEL_STONE_Y, 0], [0, 0, 0], [1, 1.5, 1]);   // Stein über dem Knauf
     if (!LK?.eyes) for (const sx of [-1, 1]) glow(head, new THREE.SphereGeometry(.022, 5, 4), E, [sx * .065, .18, .16], [0, 0, 0], [1.3, .7, .6]);   // Augen // PH (Skins tragen sie in Brille/Maske/Blick)
   }
-  // Gear (models/gearParts.ts, opts.gear aus gear.ts gearLook): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
+  // Gear (models/gearParts.ts, opts.gear aus gear.ts gearShown): Teile an Bones ins Körper-Mesh, Leuchtteile als Glühen, bewegte Teile auf eigenen Bones
   F.gear = { anim: [], fx: [], hidden: [] as string[], el: null as number | null, rar: 0 };
   const hide = gearHide;
   for (const [slot, it] of Object.entries(opts.gear ?? {}) as [string, any][]) {
@@ -1175,11 +1175,11 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     F.gear.anim.push(...o.anim); F.gear.fx.push(...o.fx.map(f => ({ ...f, color: ELEMENTS[it.s.element] && it.s.element !== 'none' ? ELEMENTS[it.s.element].color : 0xd8d4e0 })));
     if (it.r >= 3 && it.s.element !== 'none' && ELEMENTS[it.s.element] && it.r >= F.gear.rar) { F.gear.el = ELEMENTS[it.s.element].color; F.gear.rar = it.r; }   // Funken: Element des seltensten Teils ab Blau (Viewer elAny)
   }
-  // Kosmetik (models/kosmetikParts.ts, opts.cos aus gear.ts cosLook): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
+  // Kosmetik (models/kosmetikParts.ts, opts.kosmetik aus gear.ts kosmetikShown): wie Gear an Bones ins Körper-Mesh. Glas in einem eigenen transparenten Mesh,
   // Kill-Flagge als Textur-Mesh am Flaggen-Bone. Reaktionen auf Ereignisse (onEvent, figEvents.ts) drehen/skalieren nur eigene Bones
   F.kosHidden = [] as string[];
   const kHide = kosHide;
-  const kSel = Object.fromEntries(Object.entries(opts.cos ?? {}).filter(([slot, id]: [string, any]) => { const off = kHide.includes(slot) || kHide.includes(id); if (id && off) F.kosHidden.push(id); return id && !off; })) as Record<string, string>;
+  const kSel = Object.fromEntries(Object.entries(opts.kosmetik ?? {}).filter(([slot, id]: [string, any]) => { const off = kHide.includes(slot) || kHide.includes(id); if (id && off) F.kosHidden.push(id); return id && !off; })) as Record<string, string>;
   F.kos = Object.keys(kSel).length ? kosmetikPieces(F, B, kSel, A1, A2, L1, L2, F.wel, skin) : null;
   if (F.kos) for (const p of F.kos.pieces) (p.glow ? F.glow : F.parts).push({ bone: p.bone, geo: p.geo, color: p.color, m: p.m, noShell: p.noShell, gear: 1 });
   // Trink-Requisiten: je ein Bone, der ?-Magier hat alle 4 Getränke (anim.drinkSkin wählt)
@@ -1301,11 +1301,11 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
   return {
     root: F.root,
     look,                                         // Skin, nach dem gebaut wurde
-    element: F.wel != null ? weaponElement : null,   // Element der Waffe, nach dem gebaut wurde (models/mage.ts baut bei Wechsel neu)
+    element: F.wel != null ? weaponElement : null,   // Element der Waffe, nach dem gebaut wurde (models/heroModel.ts baut bei Wechsel neu)
     body: F.body,                                 // Körper-Mesh: Hüllen der Effekte (Archon) binden an sein Skelett
     anchors: { crystal: F.crystal, handL: F.armL.hand, handR: F.armR.hand },
     trail,
-    scarf: world,                                 // liegt in Weltkoordinaten, models/mage.ts legt es in die Szene
+    scarf: world,                                 // liegt in Weltkoordinaten, models/heroModel.ts legt es in die Szene
     fx: SKIN_FX[gameSkin] || SKIN_FX.alle,
     get tris() { return Math.round(F.body.geometry.attributes.position.count / 3); },
     // Anzeige der Figur 0 … 1: Hitze, Kälte, Ladungen/4, Batterie
@@ -1313,7 +1313,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     get meter() { return F.m; },
     // Gag-Werte des Skins (Tests): Pegel der Flasche, Größe des Müllbeutels, sichtbare Splitter
     get kosState() { return { ids: F.kos?.ids ?? [], hidden: F.kosHidden, glass: !!F.glass, flag: !!F.flag }; },   // Tests
-    // Ereignis fürs Modell (figEvents.ts über models/mage.ts): Zeit merken, Reaktionen der Kosmetik auslösen. sprint: on = an/aus
+    // Ereignis fürs Modell (figEvents.ts über models/heroModel.ts): Zeit merken, Reaktionen der Kosmetik auslösen. sprint: on = an/aus
     onEvent(e: KosEvent, on?: boolean) {
       if (!F.kos) return;
       if (e === 'sprint') kosSprint = !!on;
@@ -1323,7 +1323,7 @@ export function buildStrichMagier(gameSkin = 'alle', weaponElement: string | nul
     },
     get gearState() { return { hidden: F.gear.hidden, anim: F.gear.anim.length, fx: F.gear.fx.length, el: F.gear.el }; },   // Tests
     get lookState() { const L = F.lk; return L ? { look: L.look, lvl: L.lvl, bag: L.bag?.scale.x, marks: L.marks, shards: L.shown } : null; },
-    // Laufende Animation für den Neubau bei Waffenwechsel (models/mage.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
+    // Laufende Animation für den Neubau bei Waffenwechsel (models/heroModel.ts): Zeit, Modus, Zaubern, Laufphase, Überblendung, Anzeige
     get animState() { return { t: F.t, m: F.m, last: F.last, blendFrom: F.blendFrom, blendT: F.blendT, freeze: F.freeze, uTime: U.uTime.value, loco, mode, castT, castKeys, runT, wasCast, chargeT }; },
     adoptAnim(a) {
       Object.assign(F, { t: a.t, m: a.m, last: a.last, blendFrom: a.blendFrom, blendT: a.blendT, freeze: a.freeze });

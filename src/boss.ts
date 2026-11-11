@@ -250,17 +250,17 @@ const seen = new Set<string>();
 const pickOne = list => list[Math.floor(Math.random() * list.length)];
 // Boss für dieses Level: 5 Bosse der Stufe + 1 Platz „Verdorbener“. Fällt der Platz, eine verdorbene Figur, die im Run noch nicht dran war
 // (sind alle durch, ein Boss der Stufe). Kein Boss doppelt im Run
-function pickBoss(tier) {
+function pickBoss(stage) {
   const evil = BOSSES.filter(b => b.evil && !seen.has(b.id));
   if (evil.length && Math.random() < EVIL_CHANCE) return pickOne(evil);
-  const all = poolOf(tier), fresh = all.filter(b => !seen.has(b.id));
+  const all = poolOf(stage), fresh = all.filter(b => !seen.has(b.id));
   return pickOne(fresh.length ? fresh : all);
 }
 
 // Kampf starten. id: fester Boss (Dev), sonst nach Level gewürfelt
-export function startBoss(id?: string, tier?: string) {
+export function startBoss(id?: string, stage?: string) {
   if (boss || player.dead) return false;
-  const term = tier ?? TIER_OF_LEVEL(player.level), def = id ? bossById(id) : pickBoss(term);
+  const term = stage ?? TIER_OF_LEVEL(player.level), def = id ? bossById(id) : pickBoss(term);
   if (!def) return false;
   // Stärke: Stufe des Termins (Verdorbene, Prototyp, Bosse außerhalb des Pools nach Level)
   const tierNow = !def.evil && TIER[def.tier] ? def.tier : term, T = TIER[tierNow];

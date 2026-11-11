@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { groundAt } from '../collision';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { particles } from '../fx/particles';
 import { fx, em, uK, lay, field, boom, shot, blaze, blazeUp, ring, sparks, env, outC, rnd, TAU, PAL, EU, after, figureLook, gy, onGround, flight, type Pal } from './energy';
 import { V } from '../util';
@@ -11,7 +11,7 @@ import { V } from '../util';
 export { gy, onGround };   // Quelle vfx/energy.ts (frost/bolt/war/plague/arcaneLook importieren von hier)
 // Ausgangspunkt der Zauber: Glüh-Punkt der Waffe, sonst Brusthöhe
 export function castFrom() {
-  const a = mage.anchors?.crystal;
+  const a = heroModel.anchors?.crystal;
   return a ? a.getWorldPosition(V()) : V();
 }
 
@@ -136,7 +136,7 @@ export function igniteLook(f: ReturnType<typeof fireField>) {
 // Phönix: Feuervogel steigt auf, stürzt herab, große Explosion
 export function phoenixLook(pos: THREE.Vector3, r: number) {
   const o = onGround(pos), bird = new THREE.Group();
-  const scene = mage.root.parent;
+  const scene = heroModel.root.parent;
   scene?.add(bird);
   fx(1.4, (k, dt, e) => {
     if (!e.ms.length) {

@@ -51,7 +51,7 @@ let inputAt = performance.now(), idleFired = false, forceSprint: boolean | null 
 const touch = () => { inputAt = performance.now(); idleFired = false; };
 for (const ev of ['keydown', 'pointerdown', 'pointermove', 'wheel']) addEventListener(ev, touch, { passive: true });
 
-// Jeden Frame (main.ts updateVisuals). element: Element der Waffe, nach dem die Figur gebaut ist (models/mage.ts)
+// Jeden Frame (main.ts updateVisuals). element: Element der Waffe, nach dem die Figur gebaut ist (models/heroModel.ts)
 export function updateFigEvents(element: string | null) {
   const moving = forceSprint ?? (player.moveState === 'run' || player.moveState === 'back' || !player.grounded);
   figVals.mana = player.rageMax ? 0 : Math.max(0, Math.min(1, player.mana / Math.max(1, maxMana())));

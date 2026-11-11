@@ -1,5 +1,5 @@
 // Gear neben der Waffe (Handoff docs/handoffs/items.md): 5 Slots mit Werten, nur Magier. Der Strichkrieger bekommt nichts davon.
-// Kein zweites Roll-System: Seltenheit (rollTier), Werte (VALUE_KEY, ROLLS.values), Fokus (FOCUS_SPELLS), Element (ROLLS.elementChance) und der
+// Kein zweites Roll-System: Seltenheit (rollRarity), Werte (VALUE_KEY, ROLLS.values), Fokus (FOCUS_SPELLS), Element (ROLLS.elementChance) und der
 // Treffer-Hook kommen aus weaponRolls.ts. Gear wirkt halb so stark wie die Waffe (GEAR.mul). Grundregel: nur erspielter Staub.
 // Schichten je Teil (Gear-Baukasten v3, docs/ref/gear-baukasten.html): immer 1 Wert (→ Wertgruppe = Form am Modell), ab Blau mit focusShare ein Fokus (→ Emblem),
 // immer ein Hersteller (→ Material, Trait halb so stark wie bei der Waffe), Element wie bei der Waffe, Seltenheit (→ Glühen, Extras).
@@ -10,7 +10,7 @@ import { state } from './state';
 import { SPELLS, CARD_RARITIES, mods } from './config';
 import { meta, saveMeta, grantAch, hasAch, earnDust, MILESTONES } from './meta';
 import { setAch } from './skins';
-import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollTier, factor, pct, applyValue, applyFocus, weaponHit, mainOf, type MainValue } from './weaponRolls';
+import { ROLLS, VALUE_KEY, FOCUS_SPELLS, rollRarity, factor, pct, applyValue, applyFocus, weaponHit, mainOf, type MainValue } from './weaponRolls';
 import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukasten';
 import { pick } from './util';
 import { t } from './i18n';
@@ -65,12 +65,12 @@ const PERFECT: Record<string, (v: number) => void> = {
   contagion: v => { mods.contagion += v; },
   burstTick: v => { mods.burstTick += v; },
 };
-export const setOfSchool = (skin: string | null) => FIGURES[skin]?.set ?? null;
+export const setOfFigure = (skin: string | null) => FIGURES[skin]?.set ?? null;
 export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;
 // Aktives Set des gespielten Magiers: alle 5 Teile angelegt und die Schule passt
-export const fullSet = (skin: string | null) => { const id = setOfSchool(skin); return id && setCount(id) === SLOTS.length ? id : null; };
-// Set-Skin, solange 5/5 angelegt ist (mage.ts). Die gespeicherte Skin-Wahl bleibt
-export const forcedLook = (skin: string | null) => fullSet(skin);
+export const fullSet = (skin: string | null) => { const id = setOfFigure(skin); return id && setCount(id) === SLOTS.length ? id : null; };
+// Set-Skin, solange 5/5 angelegt ist (heroModel.ts). Die gespeicherte Skin-Wahl bleibt
+export const forcedSkin = (skin: string | null) => fullSet(skin);
 export const perfectText = (setId: string, slot: Slot) => { const [k, v] = SETS[setId].perfect[slot]; return t(`gear.perfect.${k}`, { n: Math.round(v * (v < 1 ? 1000 : 10)) / 10 }); };
 
 // Wertgruppe = Schaft-Gruppe des Werts (SHAFTS, wie rollWeapon) → Form am Modell (Gruppen des Viewers, models/gearParts.ts)
@@ -87,23 +87,23 @@ const halfMaker = (id: string) => Object.fromEntries(Object.entries(ROLLS.maker[
 // Freischalten: unlock = Set, dessen 5 Teile angelegt sein müssen (Haarspray + Feuerzeug, Glutprophet 5/5), ach = Meilenstein-Erfolg (meta.ts MILESTONES),
 // sonst aus der Kosmetik-Box (KOSMETIK_POOL). 25 Teile aus dem Kosmetik-Viewer (docs/ref/kosmetik-viewer.html), 5 je Slot, Modelle in models/kosmetikParts.ts.
 // Texte: look.<id>.name, look.<id>.hint (Reaktion auf ein Spiel-Ereignis)
-export const LOOK_SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper', 'waffe'] as const;
-type LookDef = { slot: typeof LOOK_SLOTS[number]; name: string; unlock?: string; ach?: string };
-const cos = (slot: Slot, id: string, ach?: string): [string, LookDef] => [id, { slot, name: `look.${id}.name`, ...(ach ? { ach } : {}) }];
-export const LOOKS: Record<string, LookDef> = {
+export const KOSMETIK_SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper', 'waffe'] as const;
+type KosmetikDef = { slot: typeof KOSMETIK_SLOTS[number]; name: string; unlock?: string; ach?: string };
+const kos = (slot: Slot, id: string, ach?: string): [string, KosmetikDef] => [id, { slot, name: `look.${id}.name`, ...(ach ? { ach } : {}) }];
+export const KOSMETIK: Record<string, KosmetikDef> = {
   haarspray: { slot: 'waffe', name: 'wmodel.haarspray.name', unlock: 'glut' },
   ...Object.fromEntries([
-    cos('kopf', 'pappkrone', 'boss1'), cos('kopf', 'fischglas'), cos('kopf', 'gluehbirne'), cos('kopf', 'bartbrille'), cos('kopf', 'fliegenpilz'),
-    cos('hals', 'goldkette', 'dust10k'), cos('hals', 'zahnkette'), cos('hals', 'kopfhoerer'), cos('hals', 'pizza'), cos('hals', 'schlangenschal'),
-    cos('ruecken', 'killflagge', 'kills1k'), cos('ruecken', 'elementrucksack'), cos('ruecken', 'schriftrolle'), cos('ruecken', 'gewitterwolke'), cos('ruecken', 'limojetpack'),
-    cos('arme', 'handschellen', 'bossNoHit'), cos('arme', 'krabbenscheren'), cos('arme', 'nietenhandschuhe'), cos('arme', 'marionette'), cos('arme', 'schlangenarmreif'),
-    cos('koerper', 'dreiteiler', 'lvl100'), cos('koerper', 'schottenrock'), cos('koerper', 'bademantel'), cos('koerper', 'schaf'), cos('koerper', 'kuh'),
+    kos('kopf', 'pappkrone', 'boss1'), kos('kopf', 'fischglas'), kos('kopf', 'gluehbirne'), kos('kopf', 'bartbrille'), kos('kopf', 'fliegenpilz'),
+    kos('hals', 'goldkette', 'dust10k'), kos('hals', 'zahnkette'), kos('hals', 'kopfhoerer'), kos('hals', 'pizza'), kos('hals', 'schlangenschal'),
+    kos('ruecken', 'killflagge', 'kills1k'), kos('ruecken', 'elementrucksack'), kos('ruecken', 'schriftrolle'), kos('ruecken', 'gewitterwolke'), kos('ruecken', 'limojetpack'),
+    kos('arme', 'handschellen', 'bossNoHit'), kos('arme', 'krabbenscheren'), kos('arme', 'nietenhandschuhe'), kos('arme', 'marionette'), kos('arme', 'schlangenarmreif'),
+    kos('koerper', 'dreiteiler', 'lvl100'), kos('koerper', 'schottenrock'), kos('koerper', 'bademantel'), kos('koerper', 'schaf'), kos('koerper', 'kuh'),
   ]),
 };
 // Quelle eines Looks fürs Fenster: Set 5/5, Meilenstein (mit Fortschritt, wo es einen Zähler gibt) oder Kosmetik-Box
 const MS_PROGRESS: Record<string, () => [number, number]> = { dust10k: () => [meta.stats?.dust ?? 0, MILESTONES.dust10k], kills1k: () => [meta.stats?.kills ?? 0, MILESTONES.kills1k] };
-export function lookSource(id: string) {
-  const L = LOOKS[id];
+export function kosmetikSource(id: string) {
+  const L = KOSMETIK[id];
   if (!L) return '';
   if (L.unlock) return t('hw.lookUnlock', { set: t(`look.magier.${L.unlock}.name`) });
   if (L.ach) {
@@ -112,11 +112,11 @@ export function lookSource(id: string) {
   }
   return t('hw.lookBox');
 }
-export const lookHint = (id: string) => (LOOKS[id]?.name.startsWith('look.') ? t(`look.${id}.hint`) : '');
+export const kosmetikHint = (id: string) => (KOSMETIK[id]?.name.startsWith('look.') ? t(`look.${id}.hint`) : '');
 
-// Schule des gespielten Magiers (mage.skin) → Tag der Spells für den Fokus (figureTable.ts). ?-Magier und Krieger: alle Schulen
+// Schule des gespielten Magiers (heroModel.figureId) → Tag der Spells für den Fokus (figureTable.ts). ?-Magier und Krieger: alle Schulen
 const schoolTag = (skin: string | null) => (FIGURES[skin]?.element ? FIGURES[skin].tag : undefined);
-export const isMagierSkin = (skin: string | null) => !!skin && skin !== 'krieger';
+export const isMageFigure = (skin: string | null) => !!skin && skin !== 'krieger';
 
 // ---------- Inventar ----------
 export const gearInv = (slot: Slot): GearItem[] => {
@@ -143,9 +143,9 @@ export function cleanGear(m: any) {
   }
   m.gear = gear;
   m.wear = wear;
-  m.looks = (Array.isArray(m.looks) ? m.looks : []).filter(id => LOOKS[id]);
-  const owns = id => m.looks.includes(id) || !!LOOKS[id]?.ach && Array.isArray(m.achievements) && m.achievements.includes(LOOKS[id].ach);
-  m.lookWear = Object.fromEntries(LOOK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, LOOKS[id]?.slot === s && owns(id) ? id : null]; }));
+  m.looks = (Array.isArray(m.looks) ? m.looks : []).filter(id => KOSMETIK[id]);
+  const owns = id => m.looks.includes(id) || !!KOSMETIK[id]?.ach && Array.isArray(m.achievements) && m.achievements.includes(KOSMETIK[id].ach);
+  m.lookWear = Object.fromEntries(KOSMETIK_SLOTS.map(s => { const id = m.lookWear?.[s]; return [s, KOSMETIK[id]?.slot === s && owns(id) ? id : null]; }));
   m.gearOver = (Array.isArray(m.gearOver) ? m.gearOver : []).filter(g => SLOTS.includes(g?.slot) && okItem(g, g.slot)).map(fixItem);
   for (const g of m.gearOver) maxId = Math.max(maxId, g.id);
   m.nextGear = maxId;
@@ -173,9 +173,9 @@ export function initGear(normalize: (m: any) => void) {
 }
 
 // ---------- Würfeln ----------
-// tier: feste Seltenheit (Dev, Tests), skin: gespielter Magier (Fokus aus seiner Schule)
-export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = null, skin: string | null = null): GearItem {
-  const r = tier ?? rollTier(), tag = schoolTag(skin);
+// rarity: feste Seltenheit (Dev, Tests), skin: gespielter Magier (Fokus aus seiner Schule)
+export function rollGear(slot: Slot = pick([...SLOTS]), rarity: number | null = null, skin: string | null = null): GearItem {
+  const r = rarity ?? rollRarity(), tag = schoolTag(skin);
   const els = Object.keys(ELEMENTS).filter(e => e !== 'none');
   const s: GearItem['s'] = { value: pick(Object.keys(VALUE_KEY)), maker: pick(Object.keys(MAKERS)), element: Math.random() < ROLLS.elementChance[r] ? pick(els) : 'none' };
   if (r >= GEAR.focusFrom && Math.random() < GEAR.focusShare) s.focus = pick(FOCUS_SPELLS.filter(id => SPELLS[id] && (!tag || SPELLS[id].tags.includes(tag))));
@@ -184,15 +184,15 @@ export function rollGear(slot: Slot = pick([...SLOTS]), tier: number | null = nu
 
 // Drop im Run und Gear-Box: zufälliger Slot
 export function rollDrop(skin: string | null) {
-  const g = rollGear(pick([...SLOTS]), null, skin), set = setOfSchool(skin);
+  const g = rollGear(pick([...SLOTS]), null, skin), set = setOfFigure(skin);
   if (set && g.r >= GEAR.keepFrom && Math.random() < GEAR.setChance) g.s.setId = set;
   return g;
 }
 
 // ---------- Boxen im Shop (Grundregel: nur erspielter Staub) ----------
-export const BOX = { gear: 120, look: 120 };   // PH
+export const BOX = { gear: 120, kosmetik: 120 };   // PH
 // Kosmetik-Pool der Kosmetik-Box: die 20 Teile ohne Set und ohne Meilenstein (Haarspray + Feuerzeug nur über Glutprophet 5/5, ⭐-Teile nur über ihren Erfolg)
-export const KOSMETIK_POOL: string[] = Object.keys(LOOKS).filter(id => !LOOKS[id].unlock && !LOOKS[id].ach);
+export const KOSMETIK_POOL: string[] = Object.keys(KOSMETIK).filter(id => !KOSMETIK[id].unlock && !KOSMETIK[id].ach);
 export const anySlotFull = () => SLOTS.some(slotFull);
 // Gear-Box: zufälliger Slot, gleiche Regeln wie ein Drop. Gesperrt, solange ein Slot-Tab voll ist (sonst müsste der Shop nach dem Behalten fragen)
 export function buyGearBox(skin: string | null) {
@@ -201,15 +201,15 @@ export function buyGearBox(skin: string | null) {
   const g = rollDrop(skin);
   return { g, res: takeGear(g, false) };
 }
-function looksOwned(): string[] { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; }
-export const lookBoxLeft = () => KOSMETIK_POOL.filter(id => !looksOwned().includes(id));
+function kosmetikOwned(): string[] { if (!Array.isArray(meta.looks)) meta.looks = []; return meta.looks; }
+export const kosmetikBoxLeft = () => KOSMETIK_POOL.filter(id => !kosmetikOwned().includes(id));
 // Kosmetik-Box: nie Duplikate
-export function buyLookBox() {
-  const left = lookBoxLeft();
-  if (!left.length || meta.dust < BOX.look) return null;
-  meta.dust -= BOX.look;
+export function buyKosmetikBox() {
+  const left = kosmetikBoxLeft();
+  if (!left.length || meta.dust < BOX.kosmetik) return null;
+  meta.dust -= BOX.kosmetik;
   const id = pick(left);
-  looksOwned().push(id);
+  kosmetikOwned().push(id);
   saveMeta();
   return id;
 }
@@ -239,42 +239,42 @@ export function wearGear(slot: Slot, id: number | null) {
 // Freischalten, sobald ein Set mit allen 5 Teilen angelegt ist (unabhängig von der Schule, die gerade gespielt wird): Kosmetik und der Erfolg
 // „Set <Name> 5/5“, der den Set-Skin dauerhaft frei macht (skins.ts skinLock). Neuer Erfolg → Bus ach (hooks.ts, ui/achievements.ts blendet ein). quiet: ohne Einblendung
 export function checkUnlocks(quiet = false) {
-  for (const [id, L] of Object.entries(LOOKS)) if ((L.unlock && setCount(L.unlock) === SLOTS.length || L.ach && hasAch(L.ach)) && !looksOwned().includes(id)) looksOwned().push(id);
+  for (const [id, L] of Object.entries(KOSMETIK)) if ((L.unlock && setCount(L.unlock) === SLOTS.length || L.ach && hasAch(L.ach)) && !kosmetikOwned().includes(id)) kosmetikOwned().push(id);
   for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) emit('ach', setAch(id));
 }
-const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
-export const hasLook = (id: string) => looksOwned().includes(id) || !!LOOKS[id]?.ach && hasAch(LOOKS[id].ach);   // Meilenstein-Teile: frei mit dem Erfolg
+const kosmetikWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
+export const hasKosmetik = (id: string) => kosmetikOwned().includes(id) || !!KOSMETIK[id]?.ach && hasAch(KOSMETIK[id].ach);   // Meilenstein-Teile: frei mit dem Erfolg
 // Getragener Look im Slot (nur wenn freigeschaltet), sonst null = die Figur zeigt das Gear
-export const lookIn = (slot: string) => { const id = lookWearMap()[slot]; return id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null; };
-export function wearLook(slot: string, id: string | null) {
-  lookWearMap()[slot] = id && LOOKS[id]?.slot === slot && hasLook(id) ? id : null;
+export const kosmetikIn = (slot: string) => { const id = kosmetikWearMap()[slot]; return id && KOSMETIK[id]?.slot === slot && hasKosmetik(id) ? id : null; };
+export function wearKosmetik(slot: string, id: string | null) {
+  kosmetikWearMap()[slot] = id && KOSMETIK[id]?.slot === slot && hasKosmetik(id) ? id : null;
   saveMeta();
 }
-// Gear an der Figur (models/gearParts.ts über mage.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
+// Gear an der Figur (models/gearParts.ts über heroModel.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.
 // Regel look[slot] ?? gear[slot]: ein getragener Kosmetik-Look ersetzt das Teil (Modell: models/kosmetikParts.ts).
 // Set 5/5 (forcedLook) hat Vorrang: der Set-Skin wird erzwungen, keine Gear-Teile darüber. Nicht-Magier: nichts
-export type GearLook = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
-export function gearLook(skin: string | null): GearLook | null {
-  if (!isMagierSkin(skin) || forcedLook(skin)) return null;
-  const out: GearLook = {};
+export type GearShown = Partial<Record<Slot, { group: GearGroup; r: number; s: { maker: string; element: string; focus?: string } }>>;
+export function gearShown(skin: string | null): GearShown | null {
+  if (!isMageFigure(skin) || forcedSkin(skin)) return null;
+  const out: GearShown = {};
   for (const slot of SLOTS) {
     const g = worn(slot), group = groupOf(g);
-    if (!g || !group || lookIn(slot)) continue;
+    if (!g || !group || kosmetikIn(slot)) continue;
     out[slot] = { group, r: g.r, s: { maker: makerOf(g) ?? 'stern', element: g.s.element, ...(g.s.focus ? { focus: g.s.focus } : {}) } };
   }
   return out;
 }
-// Kosmetik an der Figur (models/kosmetikParts.ts über mage.ts → buildStrichMagier opts.cos): getragener Look je Slot (ohne Waffe).
+// Kosmetik an der Figur (models/kosmetikParts.ts über heroModel.ts → buildStrichMagier opts.kosmetik): getragener Look je Slot (ohne Waffe).
 // Set 5/5 hat Vorrang wie beim Gear (keine Kosmetik über dem Set-Skin). Nicht-Magier: nichts
-export function cosLook(skin: string | null): Partial<Record<Slot, string>> | null {
-  if (!isMagierSkin(skin) || forcedLook(skin)) return null;
+export function kosmetikShown(skin: string | null): Partial<Record<Slot, string>> | null {
+  if (!isMageFigure(skin) || forcedSkin(skin)) return null;
   const out: Partial<Record<Slot, string>> = {};
-  for (const slot of SLOTS) { const id = lookIn(slot); if (id) out[slot] = id; }
+  for (const slot of SLOTS) { const id = kosmetikIn(slot); if (id) out[slot] = id; }
   return out;
 }
-export const gearKey = (skin: string | null) => JSON.stringify([gearLook(skin), cosLook(skin)]);   // mage.ts baut neu, wenn sich das ändert
-// Waffen-Look der Magier (mage.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
-export const weaponLook = () => lookIn('waffe');
+export const gearKey = (skin: string | null) => JSON.stringify([gearShown(skin), kosmetikShown(skin)]);   // heroModel.ts baut neu, wenn sich das ändert
+// Waffen-Look der Magier (heroModel.ts baut dann dieses Modell statt der Waffe, fireball.ts den Flammenstoß)
+export const kosmetikWeapon = () => kosmetikIn('waffe');
 // Löschen gibt Staub zurück wie bei der Waffe (deleteWeapon)
 export function deleteGear(slot: Slot, id: number) {
   const g = gearInv(slot).find(x => x.id === id);
@@ -295,7 +295,6 @@ export const gearName = (g: GearItem) => {
   return group ? t(`gear.form.${g.slot}.${group}`) : t(`gear.base.${g.slot}.${g.id % GEAR.baseNames}`);
 };
 export const slotName = (slot: string) => t(`gear.slot.${slot}`);
-export const gearRarity = (g: GearItem) => CARD_RARITIES[g.r];
 // Werte-Zeilen wie effectLines bei der Waffe: Wert, ggf. Fokus, Element, Hersteller
 export function gearRows(g: GearItem): { kind: string; text: string; color?: string }[] {
   const f = factor(g.r) * GEAR.mul, rows = [];
@@ -313,7 +312,7 @@ export const gearMainValue = (g: GearItem): MainValue => mainOf(valueKey(g), ROL
 // Run-Start nach applyRunWeapon (mods frisch aus resetMods, spellStats aus resetSpells): Werte über mods/stat, Element-Proc über den Treffer-Hook
 export function applyRunGear(skin: string | null) {
   state.gearSet = null;
-  if (!isMagierSkin(skin)) return;
+  if (!isMageFigure(skin)) return;
   const procs: [string, number, Record<string, number>][] = [], set = fullSet(skin);
   state.gearSet = set;
   for (const slot of SLOTS) {
@@ -365,4 +364,4 @@ export function devSetAch(setId: string, on: boolean) {
 }
 
 // Dev / Tests
-(window as any).__gear = { lookSource, cosLook, LOOKS, KOSMETIK_POOL, buyLookBox, lookBoxLeft, hasLook, gearLook, groupOf, makerOf, devSetAch, checkUnlocks, wearLook, lookIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };
+(window as any).__gear = { lookSource: kosmetikSource, cosLook: kosmetikShown, LOOKS: KOSMETIK, KOSMETIK_POOL, buyLookBox: buyKosmetikBox, lookBoxLeft: kosmetikBoxLeft, hasLook: hasKosmetik, gearLook: gearShown, groupOf, makerOf, devSetAch, checkUnlocks, wearLook: wearKosmetik, lookIn: kosmetikIn, devWearSet, SETS, fullSet, setCount, SLOTS, GEAR, rollGear, takeGear, wearGear, deleteGear, gearRows, gearName, applyRunGear, cleanGear, worn, gearInv, overflow };

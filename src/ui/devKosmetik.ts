@@ -2,9 +2,9 @@
 // Meilenstein-Erfolg vergeben/entfernen, Figur-Ereignisse auslösen (figEvents.ts window.__fig). Nur Dev, ändert keine Werte im Spiel.
 
 import { meta, saveMeta, milestone, devSetStats } from '../meta';
-import { LOOKS, KOSMETIK_POOL } from '../gear';
+import { KOSMETIK, KOSMETIK_POOL } from '../gear';
 import { MILESTONE_ACH } from '../skins';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
 import { t } from '../i18n';
 
@@ -17,7 +17,7 @@ export function devKosmetikBlock() {
   const box = document.createElement('div');
   box.id = 'devKosmetik';
   box.innerHTML = `<h3>Look</h3>
-    <select class="bindBtn" id="devLook">${opts(Object.entries(LOOKS).map(([id, L]) => [id, `${t(L.name)} (${L.slot}${L.ach ? ', ⭐' : L.unlock ? ', Set' : ''})`]))}</select>
+    <select class="bindBtn" id="devLook">${opts(Object.entries(KOSMETIK).map(([id, L]) => [id, `${t(L.name)} (${L.slot}${L.ach ? ', ⭐' : L.unlock ? ', Set' : ''})`]))}</select>
     <div class="devRow"><button class="bindBtn" data-a="lookOn">Freischalten</button><button class="bindBtn" data-a="lookOff">Sperren</button></div>
     <div class="devRow"><button class="bindBtn" data-a="allOn">Box-Looks alle frei</button><button class="bindBtn" data-a="allOff">Alle Looks sperren</button></div>
     <h3>Meilenstein-Zähler (über alle Runs)</h3>
@@ -52,7 +52,7 @@ export function devKosmetikBlock() {
     if (a === 'fire' || a === 'sprint') return;
     saveMeta();
     fill();
-    mage.refreshLook();
+    heroModel.refreshSkin();
     renderMenu();
   });
   return box;

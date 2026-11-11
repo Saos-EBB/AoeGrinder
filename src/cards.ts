@@ -94,7 +94,7 @@ function supportCards() {
 function relicCards(forced = false) {
   if (!forced && (state.relicTaken || player.level < CARD_RELIC_LEVEL)) return [];
   return Object.keys(SPELLS).filter(id => SPELLS[id].relic && !SPELLS[id].figRelic && spellAllowed(id) && (forced || isUnlocked(`relic:${id}`) || state.poolExtra?.includes(id))).map(id => ({
-    kind: 'relic', id: `relic-${id}`, learn: id, minTier: 4, name: SPELLS[id].name, src: t('cardui.src.relic', { tags: tagList(SPELLS[id].tags) }),
+    kind: 'relic', id: `relic-${id}`, learn: id, minRarity: 4, name: SPELLS[id].name, src: t('cardui.src.relic', { tags: tagList(SPELLS[id].tags) }),
     desc: m => t('cardui.relicDesc', { desc: SPELLS[id].desc, cd: SPELLS[id].cd / 1000, v: pct(CARD_SPELL_DMG * m) }),
     apply: m => { state.relicTaken = true; stat(id).dmg += CARD_SPELL_DMG * m; },
   }));
@@ -104,7 +104,7 @@ function relicCards(forced = false) {
 function figRelicCards(forced = false) {
   if (!forced && (state.figRelicTaken || player.level < FIG_RELIC.level)) return [];
   return (modRule('relics') ?? []).filter(id => SPELLS[id] && !hasSpell(id)).map(id => ({
-    kind: 'relic', id: `relic-${id}`, learn: id, learnSlot: SLOT.relic, fixedTier: FIG_RELIC.tier, name: SPELLS[id].name, src: t('cardui.src.figRelic'),
+    kind: 'relic', id: `relic-${id}`, learn: id, learnSlot: SLOT.relic, fixedRarity: FIG_RELIC.rarity, name: SPELLS[id].name, src: t('cardui.src.figRelic'),
     desc: m => `${SPELLS[id].desc}${SPELLS[id].cd ? t('cardui.cd', { cd: SPELLS[id].cd / 1000 }) : ''}`,
     apply: () => { state.figRelicTaken = true; },
   }));
@@ -115,7 +115,7 @@ function talentCards() {
   return CARDS.filter(c => (state.cardRanks[c.id] || 0) < c.max && allowed(c) && (!c.needs || hasSpell(c.needs)) && (c.offerChance == null || Math.random() < c.offerChance)).map(c => {   // offerChance: seltene Karten
     const rank = state.cardRanks[c.id] || 0;
     return {
-      kind: 'talent', id: c.id, name: c.name, src: t('cardui.src.talent', { a: rank + 1, b: c.max }), minTier: c.minTier,   // minTier 5: immer orange
+      kind: 'talent', id: c.id, name: c.name, src: t('cardui.src.talent', { a: rank + 1, b: c.max }), minRarity: c.minRarity,   // minRarity 5: immer orange
       desc: m => c.desc(rank, m),
       apply: m => { c.apply(rank, m); state.cardRanks[c.id] = rank + 1; },
     };
@@ -184,11 +184,11 @@ export function rankAllSpells() {
 }
 
 // Gewicht je Stufe: grundgewicht × (1 + luck/100) ^ stufe
-export function rollRarity(minTier = 0) {
-  const tiers = CARD_RARITIES.map((r, tier) => ({ tier, w: tier < minTier ? 0 : r.weight * (1 + player.luck / 100) ** tier }));
-  let roll = Math.random() * tiers.reduce((sum, t) => sum + t.w, 0);
-  for (const t of tiers) { roll -= t.w; if (roll < 0) return t.tier; }
-  return minTier;
+export function rollCardRarity(minRarity = 0) {
+  const weights = CARD_RARITIES.map((r, rarity) => ({ rarity, w: rarity < minRarity ? 0 : r.weight * (1 + player.luck / 100) ** rarity }));
+  let roll = Math.random() * weights.reduce((sum, t) => sum + t.w, 0);
+  for (const t of weights) { roll -= t.w; if (roll < 0) return t.rarity; }
+  return minRarity;
 }
 
 export const cardCount = () => Math.min(CARD_COUNT.max, CARD_COUNT.base + Math.floor(player.luck / CARD_COUNT.luckPerCard));
@@ -211,17 +211,17 @@ export function rollOffer() {
     if (!kind) break;
     const card = pick(pools[kind]);
     pools[kind] = pools[kind].filter(c => c !== card);
-    offer.push({ ...card, tier: card.fixedTier ?? rollRarity(card.minTier) });
+    offer.push({ ...card, rarity: card.fixedRarity ?? rollCardRarity(card.minRarity) });
   }
   if (!offer.some(concernsOwnedSpell)) {         // Mindestens eine Karte betrifft einen eigenen Spell
     const card = pick(rankCards());
-    offer[offer.length - 1] = { ...card, tier: rollRarity() };
+    offer[offer.length - 1] = { ...card, rarity: rollCardRarity() };
   }
   return offer;
 }
 
 // Dev: Angebot aus einer Art in fester Seltenheit. Relikte auch unter Level 30, aber nie unter lila.
-export function forcedOffer(kind, tier) {
+export function forcedOffer(kind, rarity) {
   const pool = kind === 'relic' ? [...figRelicCards(true), ...relicCards(true)] : POOLS[kind]();
-  return pool.sort(() => Math.random() - 0.5).slice(0, cardCount()).map(c => ({ ...c, tier: c.fixedTier ?? Math.max(tier, c.minTier ?? 0) }));
+  return pool.sort(() => Math.random() - 0.5).slice(0, cardCount()).map(c => ({ ...c, rarity: c.fixedRarity ?? Math.max(rarity, c.minRarity ?? 0) }));
 }

@@ -18,7 +18,7 @@ export const KEYS = {
   mobileZoom: 'frostgrind.mobilezoom.v1',     // Kameraabstand am Handy (mobile.ts)
   hotbar: 'frostgrind.hotbar',                // Reihenfolge und Modi der Leiste pro Figur (hotbar.ts)
   lang: 'frostgrind.lang',                    // 'de' / 'en' (i18n/index.ts)
-  warWeapon: 'frostgrind.warWeapon',          // gewählte Krieger-Waffe (models/mage.ts)
+  warWeapon: 'frostgrind.warWeapon',          // gewählte Krieger-Waffe (models/heroModel.ts)
   warLegendary: 'frostgrind.warLegendary',    // gewählte Krieger-Legende (realMen.ts)
   devMapsOpen: 'frostgrind.dev.mapsOpen',     // Dev: alle Maps offen, '1' / '0' (mapgen/progress.ts)
 } as const;

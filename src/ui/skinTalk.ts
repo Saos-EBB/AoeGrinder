@@ -1,9 +1,9 @@
 // Sprechblasen und Namensschild der Krieger-Skins als DOM-Overlay (wie die Nameplates), nicht als 3D: kein Draw Call.
-// Das Modell meldet mage.hero.talk = { kind: 'whisper' | 'shout', keys, plate?, anchor (Kopf-Bone), on }; Texte über i18n.
+// Das Modell meldet heroModel.hero.talk = { kind: 'whisper' | 'shout', keys, plate?, anchor (Kopf-Bone), on }; Texte über i18n.
 // Ausbrecher flüstert (Blasen tauchen um den Kopf auf), Classic-Krieger 55 ruft der Reihe nach und trägt ein Namensschild. Blasen nur im Run, nicht im Hauptmenü.
 
 import * as THREE from 'three';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { screenPos } from './hud';
 import { t } from '../i18n';
 import './skinTalk.css';
@@ -26,13 +26,13 @@ const hideAll = () => { for (const w of whispers) { w.t = -1; w.d.style.display 
 
 // dt in ms (Loop in main.ts)
 export function updateSkinTalk(dt: number) {
-  const tk = mage.hero?.talk ?? null;
+  const tk = heroModel.hero?.talk ?? null;
   if (tk !== talk) { talk = tk; hideAll(); clock = 0; next = 1; last = -1; shout.i = -1; if (talk?.plate) plate.textContent = t(talk.plate); }
   if (!talk) return;
   const s = Math.max(0, dt) / 1000;
   clock += s;
   talk.anchor.getWorldPosition(head);
-  const show = talk.on && mage.root.visible;
+  const show = talk.on && heroModel.root.visible;
   const at = (d: HTMLElement, up: number, x = 0, y = 0, op = 1, sc = 1) => {
     const p = show && screenPos(head, up);
     if (!p) { d.style.display = 'none'; return; }

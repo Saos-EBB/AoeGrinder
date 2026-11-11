@@ -6,7 +6,7 @@ import { nearestTarget } from './target';
 import { fireballLook, sprayJet } from '../vfx/fireLook';
 import { t } from '../i18n';
 import { state } from '../state';
-import { GIANT_FB, weaponLook } from '../gear';
+import { GIANT_FB, kosmetikWeapon } from '../gear';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
@@ -23,7 +23,7 @@ export const fireball = {
   effect(c) {
     const target = nearestTarget(fireball.range);
     if (!target) return;
-    if (weaponLook() === 'haarspray') sprayJet(target.pos);   // Kosmetik: nur die Wurf-Animation
+    if (kosmetikWeapon() === 'haarspray') sprayJet(target.pos);   // Kosmetik: nur die Wurf-Animation
     // Glutprophet 5/5 (gear.ts): jeder 10. Feuerball ist ein Riesen-Feuerball, alle Runen und Talente wirken mit
     const n = player.spellCounts.fireball = (player.spellCounts.fireball || 0) + 1;
     const giant = state.gearSet === 'glut' && n % GIANT_FB.every === 0, size = giant ? GIANT_FB.size : 1;

@@ -5,8 +5,7 @@
 import { state, player } from '../state';
 import { meta, saveMeta, earnDust } from '../meta';
 import { isWarrior } from '../modifiers';
-import { rollWeapon, rollTier, inventoryFull } from '../weaponRolls';
-import { CARD_RARITIES } from '../config';
+import { rollWeapon, rollRarity, inventoryFull, rarityOf } from '../weaponRolls';
 import { boom, PAL } from '../vfx/energy';
 import { addTrauma } from '../wucht';
 import { fx, em, killFx } from '../vfx/energy';
@@ -66,9 +65,9 @@ export const RULE: Record<string, (f: any, p: any) => void> = {
         textAt(pos, t('msg.dust', { n: dust }), 'xp', 4);
         return;
       }
-      const w = rollWeapon(Math.max(2, rollTier()));
+      const w = rollWeapon(Math.max(2, rollRarity()));
       meta.inv.push(w); saveMeta();
-      textAt(pos, t('msg.weapon', { r: CARD_RARITIES[w.r].name }), 'heal', 4);
+      textAt(pos, t('msg.weapon', { r: rarityOf(w).name }), 'heal', 4);
     });
   },
 

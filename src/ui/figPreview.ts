@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { renderer, scene } from '../render';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 
 const VIEW = { fov: 28, dist: 6.2, camY: 1.5, lookY: 1.15, turn: 0.35 };   // Kamera vor der Figur, leicht von der Seite // PH
 const cam = new THREE.PerspectiveCamera(VIEW.fov, 1, 0.1, 60);
@@ -39,14 +39,14 @@ export function renderFigPreview() {
   if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; }
 
   // Kamera vor die Figur (Modell schaut entlang +z)
-  const root = mage.root, a = root.rotation.y + VIEW.turn + spin;
+  const root = heroModel.root, a = root.rotation.y + VIEW.turn + spin;
   cam.aspect = w / h;
   cam.updateProjectionMatrix();
   cam.position.set(root.position.x + Math.sin(a) * VIEW.dist, root.position.y + VIEW.camY, root.position.z + Math.cos(a) * VIEW.dist);
   cam.lookAt(root.position.x, root.position.y + VIEW.lookY, root.position.z);
 
   // Nur Figur, Schal/Effekte der Figur und Lichter zeichnen; Hintergrund = Kartenfarbe des Flavors
-  const keep = new Set<THREE.Object3D>([root, mage.hero?.scarf, mage.hero?.fx?.group].filter(Boolean));
+  const keep = new Set<THREE.Object3D>([root, heroModel.hero?.scarf, heroModel.hero?.fx?.group].filter(Boolean));
   const hidden: THREE.Object3D[] = [];
   for (const o of scene.children) if (o.visible && !keep.has(o) && !(o as THREE.Light).isLight) { o.visible = false; hidden.push(o); }
   const { fog, background } = scene;

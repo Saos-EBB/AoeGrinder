@@ -3,14 +3,14 @@
 // Look: Klassen des Run-Endes (endRow, gPanel) und der Filterlisten im Fenster heroWindow.ts (hwKeepOpt in heroWindow.css).
 
 import { state } from '../state';
-import { ROLLS } from '../weaponRolls';
-import { SLOTS, GEAR, gearInv, overflow, worn, gearName, gearLines, gearRarity, slotName, type Slot } from '../gear';
+import { ROLLS, rarityOf } from '../weaponRolls';
+import { SLOTS, GEAR, gearInv, overflow, worn, gearName, gearLines, slotName, type Slot } from '../gear';
 import { meta, saveMeta, earnDust } from '../meta';
 import { askConfirm } from './confirm';
 import { t } from '../i18n';
 import type { Find } from '../loot';
 import { SETS, devWearSet, devSetAch } from '../gear';
-import { mage } from '../models/mage';
+import { heroModel } from '../models/heroModel';
 import { renderMenu } from './mainMenu';
 import { gearThumbHtml } from './itemThumb';
 import { esc, html } from './dom';
@@ -23,13 +23,13 @@ export function devGearSetBlock() {
   const q = (id: string) => box.querySelector<HTMLElement>(`#${id}`);
   for (const n of [5, 4] as number[]) q(`devGearSet${n}`).addEventListener('click', () => {
     devWearSet((q('devGearSet') as HTMLSelectElement).value, n);
-    mage.refreshLook();
+    heroModel.refreshSkin();
     renderMenu();
   });
   // Set-Erfolg (= Set-Skin frei) setzen oder entfernen, ohne Gear anzulegen. Sperren lässt die Wahl stehen, skinOf zeigt dann Standard
   for (const [id, on] of [['devGearAchOn', true], ['devGearAchOff', false]] as [string, boolean][]) q(id).addEventListener('click', () => {
     devSetAch((q('devGearSet') as HTMLSelectElement).value, on);
-    mage.refreshLook();
+    heroModel.refreshSkin();
     renderMenu();
   });
   return box;
@@ -41,8 +41,8 @@ export function findsHtml() {
   const finds: Find[] = state.finds ?? [];
   if (!finds.length && !overflow().length) return '';
   const kept = finds.filter(f => !f.dust), dust = finds.reduce((s, f) => s + f.dust, 0);
-  const thumb = (g) => `<i class="lootThumb" style="--rc:${gearRarity(g).color}">${gearThumbHtml(g, '◆')}</i>`;   // Bild des Teils (bis es da ist: Raute)
-  const rows = kept.map(f => `<div class="endRow"><span style="color:${gearRarity(f.item).color}">${thumb(f.item)}${esc(gearName(f.item))}${f.item.s.setId ? ' · SET' : ''}</span><b>${esc(slotName(f.item.slot))}</b></div>`).join('');
+  const thumb = (g) => `<i class="lootThumb" style="--rc:${rarityOf(g).color}">${gearThumbHtml(g, '◆')}</i>`;   // Bild des Teils (bis es da ist: Raute)
+  const rows = kept.map(f => `<div class="endRow"><span style="color:${rarityOf(f.item).color}">${thumb(f.item)}${esc(gearName(f.item))}${f.item.s.setId ? ' · SET' : ''}</span><b>${esc(slotName(f.item.slot))}</b></div>`).join('');
   return `<div class="gPanel fg-panel" style="margin-top:14px;padding:14px 20px 18px;text-align:left"><div class="fg-title" style="position:relative;z-index:2;font-size:17px;margin-bottom:8px">${t('loot.title', { n: finds.length })}</div>
     <div style="position:relative;z-index:2">${rows || `<p>${t('loot.noneKept')}</p>`}
     ${dust ? `<div class="endRow"><span>${t('loot.dustRow', { n: finds.length - kept.length })}</span><b>+${dust}</b></div>` : ''}
@@ -99,11 +99,11 @@ function render() {
       cb.disabled = worn(slot) === g;   // angelegt: bleibt
       cb.addEventListener('change', () => { pick[g.id] = cb.checked; render(); });
       name.textContent = `${gearName(g)}${g.s.setId ? ' · SET' : ''}${overflow().includes(g) ? ` · ${t('shop.new')}` : ''}`;
-      name.style.color = gearRarity(g).color;
+      name.style.color = rarityOf(g).color;
       sub.textContent = `${gearLines(g).join(' · ')} · +${ROLLS.refund[g.r]}`;
       const ic = document.createElement('i');
       ic.className = 'lootThumb';
-      ic.style.setProperty('--rc', gearRarity(g).color);
+      ic.style.setProperty('--rc', rarityOf(g).color);
       ic.innerHTML = gearThumbHtml(g, '◆');
       row.append(cb, ic, name, sub);
       box.append(row);

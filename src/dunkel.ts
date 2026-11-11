@@ -8,7 +8,7 @@ import { device } from './device';
 import { scene, camera, renderer, hemi, sun, skyUniforms, setEnv } from './render';
 import { cam } from './camera';
 import { zone, terrain } from './world';
-import { mage } from './models/mage';
+import { heroModel } from './models/heroModel';
 import { blizCursor } from './fx/spellFx';
 import { uiSettings } from './ui/uiSettings';
 import { hooks } from './hooks';
@@ -103,7 +103,7 @@ export function updateDunkel(dt) {
   fill.color.setHex(F.color).lerp(tmpColor.setHex(F.closeColor), close);
   fill.intensity = (F.power + (F.closePower - F.power) * close) * (1 + D.bright.fill * brightK());
   cam.dist = Math.min(cam.dist, D.cam.maxDist);
-  castShadows(mage.root);
+  castShadows(heroModel.root);
   for (const m of state.mobs) castShadows(m.model.root, Math.hypot(m.pos.x - p.x, m.pos.z - p.z) < PERF.mobShadowYd);
   if (D.flicker) updateFlicker(dt);
   else lamp.intensity = D.lamp.power * (1 + D.bright.lamp * brightK());

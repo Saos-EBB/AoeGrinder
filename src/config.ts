@@ -91,7 +91,7 @@ export const SPELL_ACTIONS = ['nova', 'ae', 'bliz', 'coc', 'slot7', 'drink', 'bl
 // Einheit für den Schaden neuer Spells: Arcane Explosion auf Level 1 (34–38). Alle neuen Spells rechnen in Vielfachen davon // PH
 export const UNIT = 36;
 // Relikt der Figur (modifiers.ts relics): Seltenheit blau, nur eins pro Run, ab diesem Level im Angebot // PH
-export const FIG_RELIC = { tier: 3, level: 10 };
+export const FIG_RELIC = { rarity: 3, level: 10 };
 
 // Roguelike-Modifikatoren (werden von Karten verändert)
 export const mods: any = {};
@@ -218,7 +218,7 @@ export const CARDS = [
   { id: 'wildfire', name: t('card.wildfire.name'), only: ['Feuer'], needs: 'firestorm', max: 5,
     desc: () => t('card.wildfire.desc'), apply: () => { mods.wildfire += 2; } },
   // Frost (v31). Eiszeit ist immer orange und einmal pro Run, sie legt sich auf die Bewegungs-Taste (figures.ts)
-  { id: 'iceage', name: t('card.iceage.name'), only: ['Frost'], max: 1, minTier: 5,
+  { id: 'iceage', name: t('card.iceage.name'), only: ['Frost'], max: 1, minRarity: 5,
     desc: () => t('card.iceage.desc'),
     apply: () => { mods.iceAge = 1; } },
   { id: 'permafrost', name: t('card.permafrost.name'), only: ['Frost'], max: 2,
@@ -261,7 +261,7 @@ export const CARDS = [
   { id: 'conduct', name: t('card.conduct.name'), only: ['Blitz'], max: 3,
     desc: (r, m) => t('card.conduct.desc', { a: Math.max(1, Math.round(20 * m)), b: Math.max(1, Math.round(4 * m)) }), apply: (r, m) => { mods.chainJumps += Math.max(1, Math.round(20 * m)); mods.arcJumps += Math.max(1, Math.round(4 * m)); } },   // v30 verdoppelt
   // Immer orange, selten im Angebot (offerChance), einmal pro Run
-  { id: 'jumps2', name: t('card.jumps2.name'), only: ['Blitz'], max: 1, minTier: 5, offerChance: 0.15,
+  { id: 'jumps2', name: t('card.jumps2.name'), only: ['Blitz'], max: 1, minRarity: 5, offerChance: 0.15,
     desc: () => t('card.jumps2.desc'), apply: () => { mods.jumpMul *= 2; } },
   { id: 'thunder', name: t('card.thunder.name'), only: ['Blitz'], needs: 'strike', max: 2,
     desc: () => t('card.thunder.desc'), apply: () => { mods.strikeExtra += 1; } },
