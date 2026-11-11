@@ -120,3 +120,4 @@ Laufend statt als Etappe: `strict` pro Modul einschalten, wenn eine Datei ohnehi
 
 ## Nachträge
 Neue Funde aus späteren Sessions hier anhängen (Datum, ID-Kürzel, Beleg).
+- 2026-11-11 (E4) Messwert Import-Kreise: `npm run check:cycles` (`scripts/cycles.mjs`, ohne Pakete, Einstiege main.ts und vfxLab.ts). Ausgangswert **statisch 88/4/2** (94 Module in Kreisen, wie Audit), **mit `import()` 102/2** (104): `mapgen/arena.ts:59` `import('../boss')` zieht boss, bosses/*, camera, kathedrale, world, zones, leaderboard und mapgen/* mit in den großen Kreis. Beide Werte stehen als Grenze im Skript (exit 1, wenn größer) und dürfen nur sinken.
