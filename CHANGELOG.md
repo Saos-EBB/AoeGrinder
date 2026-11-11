@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- fix(ui): Tastenbelegung nennt Taste I „Charakterfenster (alternativ)“ (EN „Character window (alt.)“) statt „Ausrüstungsfenster“: I öffnet dasselbe Fenster wie X
 - fix(ui): Spell-Karten der Seuche zeigen als Schule „Seuche“ (EN „Plague“) statt „Natur“
 - fix(ui): ▲/▼ „gegenüber ausgerüstet“ überall gleich: bei Abklingzeit zählt die stärkere Reduktion als besser (−6 % gegen −3 % ist ▲), in Hover-Karte, Shop, Liste und Auswahl gleich; vorher zeigten Hover-Karte und Shop bei Waffen und alle Gear-Ansichten ▼. Gleich starke Werte zeigen nichts mehr statt „▼ −0 %“
 
