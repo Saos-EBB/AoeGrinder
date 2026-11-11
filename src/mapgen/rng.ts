@@ -35,8 +35,13 @@ export function mixSeed(...parts: (string | number)[]): number {
 // (Map n = mixSeed(runSeed, 'portal', n)), gleicher Start-Seed → gleiche Maps, auch nach Portalen.
 // Jedes Betreten einer Map von außen (Map-Wechsel, neuer Run, Zurück ins Hauptmenü → buildWorld → prepare) würfelt einen neuen Start-Seed.
 // Fest bleibt er mit ?seed=<n>, „Seed setzen“ im Dev-Fenster oder dem Seed-Feld der Weltkarte (Speedrun: alle spielen dieselben Maps).
-const fromUrl = Number(new URLSearchParams(location.search).get('seed'));
-let pinned = Number.isFinite(fromUrl) && fromUrl > 0;
+// ?seed=<n> aus der Adresse: die Zahl, wenn sie endlich und > 0 ist, sonst 0 (kein fester Seed). Ohne location (Tests in Node) 0.
+export function seedFromUrl(search = typeof location === 'undefined' ? '' : location.search): number {
+  const n = Number(new URLSearchParams(search).get('seed'));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+const fromUrl = seedFromUrl();
+let pinned = fromUrl > 0;
 let seed = pinned ? Math.floor(fromUrl) : 1 + Math.floor(Math.random() * 999999);
 let keep = true;    // beim nächsten Bau keinen neuen Start-Seed würfeln (Start, „Neu würfeln“, Portal)
 let portalN = 0;    // wie viele Portale im Run genommen: 0 = Start-Map
