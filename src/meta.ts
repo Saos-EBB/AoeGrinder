@@ -8,6 +8,7 @@ import { SUPPORTS } from './spells/supports';
 import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
 import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type Figur, type SkinId } from './skins';
 import { KEYS, readRaw, writeRaw, write, remove, keysWith } from './storage';
+import { emit } from './hooks';
 
 export const META = {
   backups: 3,                                          // so viele Sicherungen eines unlesbaren Stands bleiben liegen
@@ -106,8 +107,8 @@ export function grantAch(id: string) { if (hasAch(id)) return false; meta.achiev
 // Vorhanden war: meta.dust (nur Kontostand), player.kills und run.kills (nur im Run), boss.stats.hits (Treffer im Bosskampf, bosses/core.ts).
 // Neu: meta.stats.kills (Kills gesamt, mobs.ts killMob) und meta.stats.dust (erspielter Staub gesamt, earnDust). Grenzen alle // PH
 export const MILESTONES = { dust10k: 10000, kills1k: 1000, lvl100: 100 };   // lvl100 = LEVEL_MAX (config.ts), hier als Zahl: meta.ts läuft in Import-Kreisen vor config.ts
-// Neuer Meilenstein → Einblendung fg:ach (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasLook)
-export function milestone(id: string, quiet = false) { if (grantAch(id) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: id })); }
+// Neuer Meilenstein → Bus ach (hooks.ts) → Einblendung (ui/achievements.ts); das Kosmetik-Teil ist damit frei (gear.ts hasLook)
+export function milestone(id: string, quiet = false) { if (grantAch(id) && !quiet) emit('ach', id); }
 export function checkMilestones(quiet = false) {
   const s = meta.stats;
   if (s.dust >= MILESTONES.dust10k) milestone('dust10k', quiet);

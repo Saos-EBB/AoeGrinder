@@ -6,7 +6,7 @@
 import { state, player } from './state';
 import { maxMana } from './formulas';
 import { run } from './score';
-import { hooks } from './hooks';
+import { hooks, on } from './hooks';
 
 export type FigEvent = 'kill' | 'crit' | 'cast' | 'hit' | 'level' | 'streak' | 'idle' | 'sprint';
 const FIG_EV = {   // PH
@@ -32,12 +32,19 @@ export const figSay = (text: string) => hooks.figSay.fn(text);
 
 // Kill: zählt für die Serie jeden Kill, meldet aber höchstens einen je gap.kill
 let streakAt: number[] = [];
-export function figKill() {
+function figKill() {
   figEvent('kill');
   streakAt.push(state.now);
   streakAt = streakAt.filter(t => state.now - t <= FIG_EV.streak.ms);
   if (streakAt.length >= FIG_EV.streak.n) { streakAt = []; figEvent('streak'); }
 }
+
+// Spiel-Stellen melden über den Bus (hooks.ts), die Drossel (gap) bleibt hier
+on('kill', () => figKill());
+on('crit', () => figEvent('crit'));
+on('cast', () => figEvent('cast'));
+on('hit', () => figEvent('hit'));
+on('level', () => figEvent('level'));
 
 // Eingabe: setzt den Idle-Zähler zurück (eigene Listener, input.ts bleibt unberührt)
 let inputAt = performance.now(), idleFired = false, forceSprint: boolean | null = null;   // forceSprint: Dev/Tests

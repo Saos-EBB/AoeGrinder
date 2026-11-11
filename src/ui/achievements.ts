@@ -3,6 +3,7 @@
 
 import { t } from '../i18n';
 import { MILESTONE_LOOK } from '../skins';
+import { on } from '../hooks';
 
 const ACH_TOAST = { showMs: 4500 };   // PH
 
@@ -28,4 +29,4 @@ function showAch(ach: string) {
   box.append(el);
   setTimeout(() => el.remove(), ACH_TOAST.showMs);
 }
-addEventListener('fg:ach', (e: Event) => showAch((e as CustomEvent).detail));
+on('ach', showAch);   // neuer Erfolg (hooks.ts Bus: meta.ts milestone, gear.ts checkUnlocks)

@@ -1,6 +1,6 @@
 // Spell-Kern: Slots, Tags, cast, Channel. Die Spells selbst liegen je in einer Datei, Registrierung in index.ts.
 
-import { hooks } from '../hooks';
+import { hooks, emit } from '../hooks';
 import { spellAtAction } from '../hotbar';
 import { clearEnergy } from '../vfx/energy';
 import { state, player } from '../state';
@@ -26,7 +26,6 @@ import { loadRuns, saveRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
 import { t } from '../i18n';
-import { figEvent } from '../figEvents';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -248,7 +247,7 @@ function release(id, point, opts: any = {}) {
   if (life) player.hp -= cost; else spendMana(cost);
   startCd(id);
   if (id !== 'drink' && !s.channel) { player.castAnimUntil = state.now + 450; crystalBurst(s.cls); }
-  if (id !== 'drink') figEvent('cast');   // Figur (figEvents.ts)
+  if (id !== 'drink') emit('cast', id);   // Figur (figEvents.ts)
   const c: any = makeCtx(id);
   c.cost = cost;
   c.over = consumeOvercharge(s.tags);   // Blitz only: volle Batterie macht diesen Zauber stärker und leert sie

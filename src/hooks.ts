@@ -51,6 +51,21 @@ export const hooks = {
   camOverride: slot<((camera: any, target: any) => void) | null>(null),
 };
 
+// Bus für Optik, UI und Erfolge (ARCH-07): emit(name, …) meldet, on(name, fn) reagiert, Aufruf sofort und in Anmelde-Reihenfolge.
+// Spielrelevante Folgen (XP, Punkte, Staub, Loot) laufen NICHT hierüber, sondern als direkte Aufrufe in fester Reihenfolge.
+export type BusEvents = {
+  kill: [mob: any];        // mobs.ts killMob → figEvents.ts (Figur: Kill, Kill-Serie)
+  crit: [mob: any];        // mobs.ts damageMob → figEvents.ts
+  cast: [id: string];      // spells/core.ts release (ohne Trinken) → figEvents.ts
+  hit: [];                 // player.ts damagePlayer (Leben verloren) → figEvents.ts
+  level: [level: number];  // player.ts gainXp (neues Level) → figEvents.ts
+  ach: [id: string];       // neuer Erfolg: meta.ts milestone, gear.ts checkUnlocks (Set 5/5) → ui/achievements.ts (Einblendung)
+};
+type Listener<K extends keyof BusEvents> = (...a: BusEvents[K]) => void;
+const subs: { [K in keyof BusEvents]: Listener<K>[] } = { kill: [], crit: [], cast: [], hit: [], level: [], ach: [] };
+export function on<K extends keyof BusEvents>(e: K, fn: Listener<K>) { subs[e].push(fn); }
+export function emit<K extends keyof BusEvents>(e: K, ...a: BusEvents[K]) { for (const fn of subs[e]) (fn as (...x: BusEvents[K]) => void)(...a); }
+
 // Die bisherigen Namen, damit die Aufrufer gleich bleiben
 export const onMobDeath = hooks.mobDeath.on;
 export const onAnyHit = hooks.anyHit.on;

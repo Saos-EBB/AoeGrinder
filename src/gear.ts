@@ -15,6 +15,7 @@ import { ELEMENTS, MAKERS, SHAFTS, elementColor } from './models/weapons/baukast
 import { pick } from './util';
 import { t } from './i18n';
 import { fmtInt } from './ui/fmt';
+import { emit } from './hooks';
 
 export const SLOTS = ['kopf', 'hals', 'ruecken', 'arme', 'koerper'] as const;
 export type Slot = typeof SLOTS[number];
@@ -235,10 +236,10 @@ export function wearGear(slot: Slot, id: number | null) {
 }
 // Meilenstein-Teile (ach): frei, sobald der Erfolg da ist (meta.ts checkMilestones vergibt ihn).
 // Freischalten, sobald ein Set mit allen 5 Teilen angelegt ist (unabhängig von der Schule, die gerade gespielt wird): Kosmetik und der Erfolg
-// „Set <Name> 5/5“, der den Set-Skin dauerhaft frei macht (skins.ts skinLock). Neuer Erfolg → Ereignis fg:ach (ui/achievements.ts blendet ein). quiet: ohne Einblendung
+// „Set <Name> 5/5“, der den Set-Skin dauerhaft frei macht (skins.ts skinLock). Neuer Erfolg → Bus ach (hooks.ts, ui/achievements.ts blendet ein). quiet: ohne Einblendung
 export function checkUnlocks(quiet = false) {
   for (const [id, L] of Object.entries(LOOKS)) if ((L.unlock && setCount(L.unlock) === SLOTS.length || L.ach && hasAch(L.ach)) && !looksOwned().includes(id)) looksOwned().push(id);
-  for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) dispatchEvent(new CustomEvent('fg:ach', { detail: setAch(id) }));
+  for (const id of Object.keys(SETS)) if (setCount(id) === SLOTS.length && grantAch(setAch(id)) && !quiet) emit('ach', setAch(id));
 }
 const lookWearMap = () => { if (!meta.lookWear || typeof meta.lookWear !== 'object') meta.lookWear = {}; return meta.lookWear; };
 export const hasLook = (id: string) => looksOwned().includes(id) || !!LOOKS[id]?.ach && hasAch(LOOKS[id].ach);   // Meilenstein-Teile: frei mit dem Erfolg
