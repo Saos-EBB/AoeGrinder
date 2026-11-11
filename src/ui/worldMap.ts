@@ -15,13 +15,12 @@ import { fmtTime } from './fmt';
 import { selectMap, menuOpen, renderMenu } from './mainMenu';
 import { t } from '../i18n';
 import type { ThemeId } from '../mapgen/types';
+import { esc, hex } from './dom';
 
 // Lage der Orte auf der Karte (viewBox 800 × 470) // PH
 const SPOT: Record<ThemeId, [number, number]> = { wald: [110, 350], wueste: [270, 220], kanaele: [440, 310], kathedrale: [580, 170], hoelle: [700, 70] };
 const ARENA: [number, number] = [705, 385];
-const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
 const glowHex = (c: { r: number; g: number; b: number }) => `rgb(${[c.r, c.g, c.b].map(v => Math.round(Math.min(1, v / 2.6) * 255)).join(',')})`;
-const esc = (s: string) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 document.head.insertAdjacentHTML('beforeend', `<style>
   #menuMap { cursor: pointer; }

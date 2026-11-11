@@ -13,6 +13,7 @@ import { SETS, devWearSet, devSetAch } from '../gear';
 import { mage } from '../models/mage';
 import { renderMenu } from './mainMenu';
 import { gearThumbHtml } from './itemThumb';
+import { esc } from './dom';
 
 // Dev: Set 5/5 oder 4/5 anlegen (Einstellungen → Dev)
 document.getElementById('devZones')?.insertAdjacentHTML('afterend', `<div class="title" style="text-align:left;margin:10px 0 6px">Dev: Gear-Sets</div>
@@ -32,7 +33,6 @@ for (const [id, on] of [['devGearAchOn', true], ['devGearAchOff', false]] as [st
   renderMenu();
 });
 
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // HTML für das Run-Ende (leaderboardView.ts showRunResult). Leer, wenn es nichts gab
 export function findsHtml() {

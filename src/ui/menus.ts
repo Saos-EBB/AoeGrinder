@@ -3,7 +3,7 @@ import { showLoad } from './loadScreen';
 import { $ } from '../util';
 import { SPELLS, CARD_RARITIES, SLOT } from '../config';
 import { rollOffer, forcedOffer, cardPreview, cardStage, cardReplaces } from '../cards';
-import { COLORS } from './colors';
+import { COLORS, schoolColor } from './colors';
 import { markWords } from './keywords';
 import { ICONS } from './icons';
 import { attachTip } from './tooltip';
@@ -29,7 +29,6 @@ const KIND_LOOK = { rang: { name: t('cardui.kind.rang'), icon: '▲' }, spell: {
 // beim Level-up Spell 1 spammt, nimmt sonst aus Versehen eine Karte), X öffnet das Charakterfenster.
 // Rahmen = Seltenheit, Kopfleiste = Typ, Relikt mit Goldrahmen und gewölbter Oberkante, Upgrade grün mit „Rang x → y“.
 const CARD_KEYS = Array.from({ length: 12 }, (_, i) => `F${i + 1}`);   // Karte n = Fn
-const RELIC_GOLD = '#e3c27a';
 let offerShown = [];
 const cardSpell = c => c.spell ?? c.learn;
 function cardIcon(c, kind) {
@@ -48,8 +47,8 @@ export function showCards(offer?) {
   offer.forEach((c, i) => {
     const r = CARD_RARITIES[c.tier], relic = c.kind === 'relic';
     const el = document.createElement('div'), stage = cardStage(c), rep = cardReplaces(c), kind = KIND_LOOK[c.kind] ?? KIND_LOOK.rang;
-    const spell = SPELLS[cardSpell(c)], school = COLORS.school[spell?.school ?? spell?.cls];
-    const col = relic ? RELIC_GOLD : r.color;
+    const school = schoolColor(cardSpell(c));
+    const col = relic ? COLORS.relic : r.color;
     el.className = `card lvCard${relic ? ' relicCard' : big ? ' fg-deco' : ''}${stage ? ' improves' : ''}`;   // fg-deco: Panel-Ornamente des Flavors (gen5 card_deco)
     el.style.setProperty('--rc', col);
     el.dataset.key = CARD_KEYS[i];

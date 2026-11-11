@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { t, lang } from '../../i18n';
 import { toonMat } from '../../toon';
+import { hex } from '../../ui/dom';
 
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
 const RARITY = [
@@ -43,7 +44,7 @@ export const ELEMENTS = {   // die aktiven Schulen + Arkan (nur über Gegenstän
   seuche: { name: t('element.seuche.name'), color: 0x7dff3a, adj: t('element.seuche.adj'), fx: t('element.seuche.fx') },
   arkan: { name: t('element.arkan.name'), color: 0xd070ff, adj: t('element.arkan.adj'), fx: t('element.arkan.fx') },
 };
-export const elementColor = el => `#${ELEMENTS[el].color.toString(16).padStart(6, '0')}`;   // CSS-Farbe für UI
+export const elementColor = el => hex(ELEMENTS[el].color);   // CSS-Farbe für UI
 export const MAKERS = {   // jeder Hersteller hat sein eigenes Material mit Textur (Kevin 2026-11-08), Namen in wmat.*
   grab: { name: t('maker.grab.name'), gen: t('maker.grab.gen'), trait: t('maker.grab.trait'), main: 'bronze', accent: 'bronze', detail: 'leather', thick: 1.35, radial: 7, bend: 0, float: false },
   stern: { name: t('maker.stern.name'), gen: t('maker.stern.gen'), trait: t('maker.stern.trait'), main: 'gold', accent: 'gold', detail: 'glass', thick: 0.75, radial: 12, bend: 0, float: false },

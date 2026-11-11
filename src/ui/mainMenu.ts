@@ -36,6 +36,7 @@ import { startKit } from '../spells/core';
 import { showLoad } from './loadScreen';
 import { openHero, toggleHero } from './heroWindow';
 import { t } from '../i18n';
+import { hex } from './dom';
 
 // color: Name in Schulfarbe (Phase 8, Mockup CharDiablo). stats: Schaden, Kontrolle, Überleben als Wertung 1–5 (Einschätzung, keine Rechnung)
 const CHARS = [
@@ -208,7 +209,6 @@ $('skinNext').addEventListener('click', () => cycleSkin(1));
 
 // ---------- Map-Wechsler (gen7.py map_selector): alle Maps aus zones.ts, Vorschau aus den Farben der Map, Bestzeit für Figur + Mods + Map ----------
 const MAPS = THEME_ZONES.filter(id => ZONES[id]);   // generierte Maps (mapgen); alte Zonen nur noch über Dev → Zone und ?zone=
-const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
 function mapThumb(id: string) {
   const e = ZONES[id].env ?? {};
   const ground = hex(e.ground ?? 0x333333), path = hex(e.fog ?? 0x666666), hi = hex(e.mid ?? e.top ?? 0x444444), sky = hex(e.sky ?? 0x888888);

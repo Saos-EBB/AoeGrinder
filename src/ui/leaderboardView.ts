@@ -4,7 +4,7 @@ import { afterRun } from './shop';
 import { currentFigure } from './mainMenu';
 import { run } from '../score';
 import { SPELLS } from '../config';
-import { COLORS } from './colors';
+import { spellColor } from './colors';
 import { META, meta } from '../meta';
 import { MODES, MODIFIERS } from '../modifiers';
 import { setLevel } from '../player';
@@ -19,6 +19,7 @@ import { copySeed } from './worldMap';
 import { t, locale } from '../i18n';
 import { findsHtml, bindFinds } from './lootView';
 import { fmtTime, fmtInt, fmtMult } from './fmt';
+import { esc } from './dom';
 
 const $ = id => document.getElementById(id);
 
@@ -65,7 +66,6 @@ const fmt = fmtInt;   // ganze Zahlen mit Tausenderpunkt (UI-Mix)
 // Beim Tod: speichern und Aufschlüsselung zeigen
 // Run-Ende (Mockups X?E, Look des UI-Flavors): Titel, Zeit groß mit Abstand zur Bestzeit und Rang, 5 Werte, Schaden nach Quelle (ganze Zahlen, Prozent klein), Staub-Rechnung
 const fmtT = (ms: number) => fmtTime(ms, true);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function showRunResult() {
   const { entry, rank } = recordRun(), b = entry.breakdown;
   const same = loadRuns().filter(r => sameBoard(r, entry));   // pro Map getrennt (leaderboard.ts)
@@ -86,7 +86,7 @@ export function showRunResult() {
     <div class="endPoints">${t('end.breakdown', { kills: fmt(b.kills), mult: fmtMult(entry.mult), pull: fmt(entry.bestPull), pullPts: fmt(b.pull), time: fmt(b.time), cause: esc(entry.cause) })}</div>
     <div class="endCols">
       <div class="gPanel fg-panel endDmg"><div class="endDmgHead"><span class="fg-title">${t('end.dmgBySource')}</span><b>${total ? fmt(total) : '—'}</b></div>${top.length ? top.map(([id, v]) => {
-        const s = SPELLS[id], c = s?.relic ? '#e3c27a' : COLORS.school[s?.school ?? s?.cls] ?? '#c4aea6', p = Math.round(v / total * 100);
+        const s = SPELLS[id], c = spellColor(id, '#c4aea6'), p = Math.round(v / total * 100);
         return `<div class="endBar"><span>${esc(s?.name ?? t('cw.env'))}</span><i style="width:${Math.max(2, v / top[0][1] * 100)}%;background:${c}"></i><b>${fmt(v)}</b><small>${p} %</small></div>`;
       }).join('') : '<p>—</p>'}</div>
       <div class="gPanel fg-panel endDust"><div class="fg-title">${t('res.dust')}</div>

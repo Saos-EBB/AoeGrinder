@@ -2,7 +2,7 @@
 // Fehlt ein Icon, steht der erste Buchstabe des Anzeigenamens in der Schulfarbe. Getränke des ?-Magiers stehen mit ihrer ID in ICON_KEY.
 import { SPELLS, RANDOM_MAGE } from '../config';
 import { SPELL_ICONS } from './spellIcons';
-import { COLORS } from './colors';
+import { COLORS, schoolColor } from './colors';
 
 // Spell-ID → Icon im Viewer (spellIcons.ts). Fest nach ID, damit Umbenennen und Übersetzen die Icons nicht verlieren
 const ICON_KEY: Record<string, string> = {
@@ -28,7 +28,7 @@ export function iconUrl(id: string): string | undefined {
   const s = SPELLS[id], name: string | undefined = s?.name ?? RANDOM_MAGE.drinks[id]?.name;
   if (!name) return undefined;   // SPELLS füllt sich erst beim Import von spells/index.ts
   const key = ICON_KEY[id];
-  return cache[id] = dataUrl(key ? SPELL_ICONS[key] : placeholder(name, COLORS.school[s?.school ?? s?.cls] ?? COLORS.text));
+  return cache[id] = dataUrl(key ? SPELL_ICONS[key] : placeholder(name, schoolColor(id) ?? COLORS.text));
 }
 
 export const ICONS: Record<string, string> = new Proxy({}, { get: (_, id) => typeof id === 'string' ? iconUrl(id) : undefined });

@@ -11,12 +11,11 @@ import { spellValue, rankOf } from '../cards';
 import { batteryMode } from '../battery';
 import { run } from '../score';
 import { ICONS } from './icons';
-import { COLORS } from './colors';
+import { spellColor } from './colors';
 import { markWords } from './keywords';
 import { attachTip, hideTip, TipData } from './tooltip';
 import { t, fmtNum } from '../i18n';
 
-const RELIC_GOLD = '#e3c27a';
 // cls 'nature' sind die Seuche-Spells (spells/plague.ts): Anzeige „Seuche“, die ID selbst bleibt vorerst
 const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'nature', 'shadow', 'blood', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k === 'nature' ? 'plague' : k}`)]));
 const num = (v: number) => fmtNum(Math.round(v * 100) / 100);
@@ -33,7 +32,7 @@ export function spellTip(id: string, label?: string): TipData | null {
   const s = SPELLS[id];
   if (!s) return null;
   const school = s.school ?? s.cls, relic = !!s.relic;
-  const color = relic ? RELIC_GOLD : COLORS.school[school] ?? COLORS.text;
+  const color = spellColor(id);
   const stats: [string, string][] = [];
   const cost = s.press && !s.random ? s.mana : manaCost(id), u = unit(id);
   stats.push([t('sc.cost'), cost > 0 && u ? `${cost} ${u}` : '—']);

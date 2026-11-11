@@ -18,6 +18,7 @@ import { gearThumb, lookThumb } from './itemThumb';
 import { pick } from '../util';
 import { t } from '../i18n';
 import { BOX, KOSMETIK_POOL, LOOKS, buyGearBox, buyLookBox, lookBoxLeft, anySlotFull, rollDrop, gearName, gearRarity, gearRows, slotName, wearGear, worn, isMagierSkin } from '../gear';
+import { el } from './dom';
 
 const rarityColor = name => CARD_RARITIES.find(r => r.id === name)?.color ?? '#fff';
 let offer = [], tierNow = 0, fromMenu = false;
@@ -37,7 +38,6 @@ export function afterRun(completed) {
 // Pity-Zähler, „×5 öffnen“ und Verschmelzen gibt es im Code nicht: kein Pity-Balken, kein ×5, Verschmelzen nur als Oberfläche („kommt bald“).
 const SPIN = { steps: 16, startMs: 40, growMs: 12 };
 let spinning = false, lastPull = null, lastIsNew = false;   // lastPull: Ergebnis-Karte bleibt bis zum nächsten Zug stehen
-const el = (tag: string, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
 const CHEST_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3 10h18v10H3zM3 10l2-5h14l2 5M10 13h4v3h-4z"/></svg>';
 const STAFF_SVG = '<svg viewBox="0 0 12 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 46V10"/><circle cx="6" cy="6" r="4"/></svg>';
 

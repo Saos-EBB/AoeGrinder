@@ -31,9 +31,9 @@ import { syncPause } from './menus';
 import { uiSettings, setUi } from './uiSettings';
 import { t } from '../i18n';
 import './heroWindow.css';
+import { el } from './dom';
 
 export type Tab = 'waffen' | Slot | 'kosmetik';
-const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
 
 document.body.insertAdjacentHTML('beforeend', `<div id="heroModal" class="modal" role="dialog" aria-labelledby="hwName">
   <div id="hwBox">
