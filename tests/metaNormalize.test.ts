@@ -30,7 +30,7 @@ describe('normalizeMeta', () => {
     expect(m.gear.arme[0].s.element).toBe('none');
     expect(SLOTS.flatMap(s => m.gear[s]).map((g: any) => g.id)).toEqual([1, 4, 5]);   // doppelte Id 1 und Id 0 neu vergeben
     expect(m.nextGear).toBe(5);
-    expect(m.wear).toEqual({ kopf: 1, hals: 1, ruecken: null, arme: null, koerper: null });   // hals zeigt noch auf Id 1 (vor dem Neu-Vergeben gesäubert)
+    expect(m.wear).toEqual({ kopf: 1, hals: 4, ruecken: null, arme: null, koerper: null });   // hals folgt seinem Teil auf die neue Id 4
     expect(m.looks).toEqual(['pappkrone']);
     expect(m.lookWear.kopf).toBe('pappkrone');
     expect(m.schema).toBe(META_SCHEMA);
@@ -42,11 +42,44 @@ describe('normalizeMeta', () => {
     const once = structuredClone(m);
     expect(normalizeMeta(m)).toEqual(once);
   });
-  it('Ist-Stand, kein Fix (E10-Fund): doppelte Id über Slots, angelegtes Teil bekommt neue Id, wear zeigt noch auf die alte', () => {
+  it('doppelte Id über Slots: beide angelegten Teile bleiben angelegt, eine Säuberung reicht (E10-Fund behoben)', () => {
     const m: any = normalizeMeta(old());
+    expect(m.gear.kopf[0].id).toBe(1);
     expect(m.gear.hals[0].id).toBe(4);
-    expect(m.wear.hals).toBe(1);                          // zeigt ins Leere: worn('hals') findet nichts, das Teil gilt als abgelegt
-    expect(normalizeMeta(m).wear.hals).toBe(null);        // erst die zweite Säuberung räumt den Verweis weg
+    expect(m.wear.kopf).toBe(1);
+    expect(m.wear.hals).toBe(4);                          // wear folgt dem Teil auf die neue Id
+    const once = structuredClone(m);
+    expect(normalizeMeta(m)).toEqual(once);
+  });
+  it('doppelte Id im selben Slot und Id 0 angelegt: das angelegte Teil (erstes mit der Id, wie worn()) bleibt angelegt', () => {
+    const a: any = old();
+    a.gear = { kopf: [gear(2, 'kopf'), gear(2, 'kopf', { value: 'Leben' })], arme: [gear(0, 'arme')], hals: [gear(2, 'hals')] };
+    a.wear = { kopf: 2, arme: 0, hals: 2 }; a.nextGear = 2;
+    const m: any = normalizeMeta(a);
+    expect(m.gear.kopf.map((g: any) => g.id)).toEqual([2, 3]);
+    expect(m.wear.kopf).toBe(2);
+    expect(m.gear.kopf.find((g: any) => g.id === m.wear.kopf).s.value).toBe('Schaden');
+    expect(m.wear.arme).toBe(m.gear.arme[0].id);
+    expect(m.wear.hals).toBe(m.gear.hals[0].id);
+    expect(new Set(SLOTS.flatMap(s => m.gear[s]).map((g: any) => g.id)).size).toBe(4);
+  });
+  it('wiederholbar: normalize(normalize(x)) == normalize(x) für 300 zufällige kaputte Stände', () => {
+    let seed = 12345;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    const of = <T>(a: T[]) => a[Math.floor(rnd() * a.length)];
+    const IDS = [0, 1, 2, 3, 3, 7, -1, 2.5, 'x', null, undefined];
+    const item = () => ({ id: of(IDS), v: of([1, 1, 2]), slot: of([...SLOTS, 'bein']), r: of([0, 3, 4, 5, 9]),
+      s: { value: of(['Schaden', 'Leben', 'Quatsch', undefined]), maker: of(['stern', 'xx', undefined]), element: of(['feuer', 'gift', 'none', undefined]), ...(rnd() < 0.4 ? { focus: of(['nova', 'weg']) } : {}) } });
+    const list = () => Array.from({ length: Math.floor(rnd() * 4) }, item);
+    for (let k = 0; k < 300; k++) {
+      const x: any = { ...old(), gear: Object.fromEntries(SLOTS.filter(() => rnd() < 0.8).map(s => [s, list()])),
+        wear: Object.fromEntries(SLOTS.map(s => [s, of(IDS)])), gearOver: list(), nextGear: of([0, 2, 5, undefined, 'a']) };
+      const once = structuredClone(normalizeMeta(x));
+      expect(normalizeMeta(structuredClone(once))).toEqual(once);
+      for (const s of SLOTS) if (once.wear[s] != null) expect(once.gear[s].filter((g: any) => g.id === once.wear[s])).toHaveLength(1);
+      const ids = [...SLOTS.flatMap(s => once.gear[s]), ...once.gearOver].map((g: any) => g.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
   });
   it('leerer Stand lädt', () => {
     const m: any = normalizeMeta({});

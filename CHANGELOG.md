@@ -4,6 +4,7 @@ Alle Änderungen, neueste oben. Warum etwas so gebaut wurde, steht in [docs/buil
 
 ## 2026-11-11
 
+- fix(save): Alter Spielstand oder Spielstand-Code, in dem dieselbe Gear-Id in zwei Slots steht: das angelegte Teil bleibt beim Laden angelegt (vorher bekam es eine neue Id und galt danach als abgelegt)
 - fix(items): Gear des Seuchenmagiers (ab Blau) würfelt den Fokus jetzt aus allen zehn Seuchen-Spells (Schlammwurf, Schleimfalle, Schleimwelle, Schwarzes Loch, Giftwolke, Klebefaden, Zusammenziehen, Entziehen, Platzen, Zerfließen) statt immer Platzen, mit dem Phiolen-Emblem; ebenso Waffen mit Seuchen-Kopf (Speischädel, Phiolen). Andere Schulen unverändert
 - fix(seuche): Alle Seuchen-Spells zählen jetzt zur Schule Seuche (vorher fehlte 9 von 11 das Tag „Seuche“, nur Platzen und Pestilenz hatten es). Der Seuchenmagier bekommt dadurch Rang-Karten für alle seine Spells statt nur für Platzen (auch für gelernte wie Schleimfalle, Schwarzes Loch, Giftwolke, Klebefaden) und die Support-Karten Konzentration und Weite für seine Flächen-Spells; Fässer reagieren auf alle Seuchen-Spells mit der Giftwolke statt mit Explosion und Rückstoß; Spell-Karten zeigen das Tag Seuche. Rangliste v38
 - fix(modell): Der Lichtrand des Kriegers hat jetzt dieselbe Farbe wie bei Magiern und Mobs (kühles Blaugrau `0.5, 0.55, 0.65` statt hellgrau `0.62, 0.62, 0.68`): sein Rand ist etwas dunkler und leicht bläulich, die Figur bleibt im Dunkeln lesbar

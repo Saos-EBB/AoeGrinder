@@ -26,9 +26,12 @@ export function normalizeMeta(m: any) {
     m.gear = Object.fromEntries(SLOTS.map((s): [string, unknown[]] => [s, []])); m.wear = Object.fromEntries(SLOTS.map((s): [string, null] => [s, null])); m.gearOver = []; m.looks = []; m.lookWear = {};
     if (!Number.isInteger(m.nextGear)) m.nextGear = 0;
   });
-  // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben
+  // Ids doppelt oder fehlend (alter Stand ohne Zähler): neu vergeben. Das angelegte Teil je Slot (wie worn() in gear/inventory.ts: erstes mit der Id)
+  // wird vorher gemerkt und wear danach auf seine Id gestellt, sonst zeigte wear nach dem Neu-Vergeben ins Leere (E10-Fund, bis 2026-11-11)
+  const wornItem = Object.fromEntries(SLOTS.map(s => [s, m.gear[s].find((g: any) => g.id === m.wear[s])]));
   const seen = new Set();
   for (const g of [...SLOTS.flatMap(s => m.gear[s]), ...m.gearOver]) { if (!g.id || seen.has(g.id)) g.id = ++m.nextGear; seen.add(g.id); }
+  for (const s of SLOTS) m.wear[s] = wornItem[s]?.id ?? null;
   // Schema-Version (storage.ts): fehlt = 0, nach dem Säubern gilt der heutige Stand. Gespeichert wird sie mit dem nächsten saveMeta
   m.schema = Math.max(metaSchemaOf(m), META_SCHEMA);
   return m;
