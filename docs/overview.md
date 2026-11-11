@@ -9,13 +9,17 @@ npm install
 npm run dev          # Spiel, dazu VFX-Labor /vfx.html und Figuren-Test /strich.html
 npm run check        # tsc
 npm run check:i18n   # alle Texte in DE und EN
+npm test             # vitest, u. a. Seed-Snapshot (gleicher Seed = gleiche Map)
+npm run check:cycles # Import-Kreise, darf nicht steigen
 npm run build        # eine dist/index.html
 ```
 
 ## Aufbau
 | Teil | Was es macht | Details |
 |---|---|---|
-| `src/main.ts`, `state.ts`, `config.ts` | Loop, Zustand, alle Spielzahlen | [Code-Karte](handoff.md#code-karte) |
+| `src/main.ts`, `state.ts`, `config.ts` | Loop und Start-Reihenfolge, typisierter Zustand, Grundzahlen (weitere Zahlen-Tabellen pro Modul) | [architecture](architecture.md) |
+| `src/hooks.ts`, `feedback.ts`, `storage.ts`, `figureTable.ts` | Rückwege und Events ohne Import-Kreise, Meldungen an die UI, alle Speicher-Keys, eine Tabelle pro Figur/Schule | [architecture](architecture.md#rückwege-e6-ein-muster) |
+| `src/run.ts`, `src/player/` | Run-Lebenszyklus (Start, Reset, Map-Wechsel, Ende), Bewegung, Schaden, XP | [Code-Karte](handoff.md#code-karte) |
 | `src/mapgen/` | Map-Generator: 4 Layouts aus Seed, 5 Themes (Wald, Wüste, Kanäle, Kathedrale, Hölle), Arena, Freischaltung | [map-umbau](handoffs/map-umbau.md) |
 | `src/portal.ts`, `src/ui/worldMap.ts` | Portale im Run (neue Map, gleiches Theme), Weltkarte im Hauptmenü mit Seed-Feld | [map-umbau-2](handoffs/map-umbau-2.md) |
 | `src/objects/` | Schreine, Truhen mit Mimic, Explosiv-Fässer, Schatzdieb, ein Objekt pro Theme; Taste „Benutzen“ | [map-umbau-2](handoffs/map-umbau-2.md) |
@@ -23,23 +27,25 @@ npm run build        # eine dist/index.html
 | `src/mobs.ts`, `mobKinds.ts`, `abilities.ts` | Mobs = Kategorie + Zusatz + Theme-Skin, Spawn auf Pack-Plätzen | [map-umbau](handoffs/map-umbau.md) |
 | `src/boss.ts`, `waves.ts`, `champions.ts` | Bosse, Wellen-Modus, Champion-Packs mit Affixen | [boss-kader](handoffs/boss-kader.md) |
 | `src/spells/`, `cards.ts` | Spells, Runen, Relikte, Level-Karten | [spells-spec](spells-spec.md) |
-| `src/gear.ts`, `loot.ts`, `models/gearParts.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, 25 Gear-Formen an der Figur, Erfolge | [items](handoffs/items.md), [gear-modelle](handoffs/gear-modelle.md) |
-| `src/ui/heroWindow.ts`, `ui/heroStats.ts`, `ui/itemThumb.ts` | Ein Fenster für Figur, Werte und Inventar (Taste X oder I), Baum nach Art und Schule, 3D-Bilder aller Items, ganz ohne Maus bedienbar | [fenster](handoffs/fenster.md) |
+| `src/gear/`, `loot.ts`, `models/gearParts.ts`, `ui/lootView.ts` | Gear in 5 Slots, 4 Sets, Drops am Boden, 25 Gear-Formen an der Figur, Erfolge | [items](handoffs/items.md), [gear-modelle](handoffs/gear-modelle.md) |
+| `src/ui/heroWindow/`, `ui/heroStats.ts`, `ui/itemThumb.ts` | Ein Fenster für Figur, Werte und Inventar (Taste X oder I), Baum nach Art und Schule, 3D-Bilder aller Items, ganz ohne Maus bedienbar | [fenster](handoffs/fenster.md) |
 | `src/models/kosmetikParts.ts`, `src/figEvents.ts` | 25 Kosmetik-Teile (20 aus der Box, 5 über Meilensteine), reagieren auf Spiel-Ereignisse wie Kill, Crit, Treffer | [kosmetik](handoffs/kosmetik.md) |
-| `src/skins.ts`, `skinFx.ts`, `src/models/` | Figuren, Skins, Mob-Rigs, Waffen-Baukasten | [skins](handoffs/skins.md) |
+| `src/skins.ts`, `trailEffects.ts`, `src/models/` | Figuren (`heroModel`), Skins, Mob-Rigs, Waffen-Baukasten, Bausätze `strichKit`/`partKit` | [skins](handoffs/skins.md) |
 | `src/realMen.ts`, `melee.ts`, `wucht.ts` | Nahkampf des Strichkriegers, Treffer-Gefühl | [Code-Karte](handoff.md#code-karte) |
 | `src/fx/`, `src/vfx/`, `render.ts`, `dunkel.ts` | Effekte, Sound, Bloom, dunkles Licht mit Lampe | [Code-Karte](handoff.md#code-karte) |
 | `src/ui/`, `src/ui/flavors/` | Menüs, HUD, Fenster, drei UI-Looks (Höllenfeste, Krypta, Schlachtbank); HUD-Teile einzeln aus einem anderen Look kombinierbar | [ui-mix](handoffs/ui-mix.md) |
 | `src/score.ts`, `leaderboard.ts` | Punkte, Zeit, Rangliste pro Map mit Seed | [score-spec](score-spec.md) |
-| `src/meta.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, Shop, Waffen-Kiste, Spielstand-Code | [pool-liste](pool-liste.md) |
+| `src/meta.ts`, `metaNormalize.ts`, `ui/shop.ts`, `weaponRolls.ts`, `ui/saveCode.ts` | Knochenstaub, Shop, Waffen-Kiste, Spielstand-Code; eine Säuberung für Start und Code-Import | [pool-liste](pool-liste.md) |
 
 ## ⚠ Besonderheiten
 - Grundregel: NIE Pay-to-win, der Shop läuft nur über erspielten Staub → [AGENTS.md](../AGENTS.md)
 - Jede Map und jeder Run bekommt einen neuen Seed. `?seed=` oder das Seed-Feld der Weltkarte halten ihn fest, auch hinter Portalen (für Speedruns auf einem Seed) → [rng.ts](../src/mapgen/rng.ts)
 - Alte Handbau-Zonen gibt es nur noch über Dev → Zone oder `?zone=<id>`, nicht auf der Weltkarte → [map-umbau](handoffs/map-umbau.md)
-- Krieger-Skins kommen mit den Waffen. Magier-Skins (einer pro Schule) gibt es nur über das volle Set 5/5: Erfolg, danach dauerhaft wählbar → [skins.ts](../src/skins.ts), [gear.ts](../src/gear.ts)
+- Krieger-Skins kommen mit den Waffen. Magier-Skins (einer pro Schule) gibt es nur über das volle Set 5/5: Erfolg, danach dauerhaft wählbar → [skins.ts](../src/skins.ts), [gear/sets.ts](../src/gear/sets.ts)
 - Mit Skin bleiben die Schul-Effekte aus, die den ganzen Körper bedecken. Ausnahme ist der Frost-Skin, der babyblau einfriert → [strichMagier.ts](../src/models/strichMagier.ts)
-- `gear.ts` säubert den Spielstand erst über `initGear()` aus `main.ts`, nicht beim Laden des Moduls (Import-Zyklen) → [main.ts](../src/main.ts)
+- Der Spielstand wird erst gesäubert, wenn alle Module geladen sind: `main.ts` ruft `initGear(normalizeMeta)`. Kaputte Stände werden als Backup-Key gesichert, nie leer überschrieben → [metaNormalize.ts](../src/metaNormalize.ts), [meta.ts](../src/meta.ts)
+- Logik ruft die UI nie direkt: Rückwege über `hooks.ts`/`feedback.ts`, Fenster bauen DOM und Listener erst in `mount()`, `main.ts` ruft sie in fester Reihenfolge. Neue `.css`-Dateien oben in `main.ts` eintragen → [architecture](architecture.md#rückwege-e6-ein-muster)
+- Gespeicherte IDs (Mod-, Bind-, Spell-, Kosmetik-IDs, Feld `r`, `frostgrind.*`-Keys) nie umbenennen, Code-Namen laufen über `figureTable.ts` → [architecture](architecture.md#begriffe-im-code-glossar-e7)
 - Drops normaler Kills sind absichtlich fast null, die Drops kommen aus Bossen, Champions, Truhen und Großen (Werte `// PH`) → [loot.ts](../src/loot.ts)
 - Nach dem letzten Boss wird alles am Boden automatisch aufgehoben, das Waffen-Inventar darf dabei überlaufen → [loot.ts](../src/loot.ts)
 - Handy ist gesperrt („In Arbeit“), der Code bleibt; `?mobile=1` öffnet ihn trotzdem → [boot.ts](../src/boot.ts)
@@ -48,16 +54,17 @@ npm run build        # eine dist/index.html
 - Kein UI-Element darf unter den Zierrahmen-Ecken liegen: Abstand über `--fg-safe` pro UI-Look → [base.css](../src/ui/flavors/base.css)
 - `SCORE_VERSION` erhöhen, sobald eine Änderung die Punkte beeinflusst → [handoff](handoff.md#regeln)
 - Das Spiel läuft immer dunkel, Helligkeit stellt man in den Einstellungen ein. Mobs hinter dem Nebel werden nicht gezeichnet → [dunkel.ts](../src/dunkel.ts)
-- Kosmetik geht vor Gear: angezeigt wird `look[slot] ?? gear[slot]`, Meilensteine zählen Kills und Staub über alle Runs in `meta.stats` → [gear.ts](../src/gear.ts)
+- Kosmetik geht vor Gear: angezeigt wird `kosmetik[slot] ?? gear[slot]`, Meilensteine zählen Kills und Staub über alle Runs in `meta.stats` → [gear/shown.ts](../src/gear/shown.ts)
 - Gear-Teile werden an die Bones ins Körper-Mesh der Figur gemergt, kosten also keine Draw Calls; Set-Skin 5/5 verdeckt sie → [gearParts.ts](../src/models/gearParts.ts)
 - Mob-Modelle sind ein SkinnedMesh pro Material, die Gelenk-Gruppen dienen als Knochen → [creatures.ts](../src/models/creatures.ts)
 - Die meisten Zahlen sind Platzhalter (`// PH`) → [handoff](handoff.md#offen)
 - Spell-Icons kommen als SVG aus dem Spell-Viewer, `ui/spellIcons.ts` wird erzeugt und nicht von Hand geändert → [icons.ts](../src/ui/icons.ts)
-- Geparkter Code (z. B. eine frühere dritte Klasse) liegt in `maybeLater/` und wird nicht gebaut → [maybeLater](../maybeLater/README.md)
+- Geparkter Code (z. B. eine frühere dritte Klasse) liegt in `maybeLater/` und wird nicht gebaut; seine i18n-Keys sind seit 11.11. entfernt → [maybeLater](../maybeLater/README.md)
 
 ## Wo steht was
 - Offene Punkte → [handoff.md](handoff.md#offen)
-- Code-Audit (Schwachstellen, Fahrplan zum Aufräumen) → [audit/gesamt.md](audit/gesamt.md)
+- Code-Audit, Etappen E1–E10 erledigt, offene Reste → [audit/gesamt.md](audit/gesamt.md)
+- Schichten, Glossar, Rückwege → [architecture.md](architecture.md)
 - Aufträge pro Feature → [docs/handoffs/](handoffs/), Vorlagen und Viewer → [docs/ref/](ref/)
 - Alle Änderungen → [CHANGELOG.md](../CHANGELOG.md)
 - Warum etwas so gebaut wurde → [build-log.md](build-log.md)
