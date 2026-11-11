@@ -555,15 +555,15 @@ hooks.boss.set({ start: () => startBoss(), active: bossActive, busy: bossBusy })
 // Boss-Leiste einhängen (E10): main.ts ruft mount() nach ui/scoreHud.ts (gleicher z-index 2, Stapel wie früher)
 export function mount() {
   document.head.insertAdjacentHTML('beforeend', `<style>
-    #bossBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); width: min(56vw, 760px); z-index: 2; pointer-events: none; text-align: center; display: none;
-      font-family: Georgia, serif; color: #f3e2c0; text-shadow: 0 2px 4px #000; }
-    #bossBar .name { font-size: 26px; letter-spacing: 2px; margin-bottom: 4px; }
-    #bossBar .bar { height: 14px; background: rgba(0,0,0,0.65); border: 1px solid #8a6a3a; border-radius: 2px; overflow: hidden; position: relative; }
-    #bossBar .lag { position: absolute; inset: 0 auto 0 0; background: #e8c070; }
-    #bossBar .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c8302a, #7a1410); }
-    #bossBar .sub { font-size: 14px; margin-top: 4px; color: #d8c8a8; }
-    #bossBar.won .name { font-size: 40px; color: #ffd27a; letter-spacing: 4px; }
-    body.menu #bossBar { display: none !important; }
-  </style>`);
+  #bossBar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); width: min(56vw, 760px); z-index: 2; pointer-events: none; text-align: center; display: none;
+    font-family: Georgia, serif; color: #f3e2c0; text-shadow: 0 2px 4px #000; }
+  #bossBar .name { font-size: 26px; letter-spacing: 2px; margin-bottom: 4px; }
+  #bossBar .bar { height: 14px; background: rgba(0,0,0,0.65); border: 1px solid #8a6a3a; border-radius: 2px; overflow: hidden; position: relative; }
+  #bossBar .lag { position: absolute; inset: 0 auto 0 0; background: #e8c070; }
+  #bossBar .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c8302a, #7a1410); }
+  #bossBar .sub { font-size: 14px; margin-top: 4px; color: #d8c8a8; }
+  #bossBar.won .name { font-size: 40px; color: #ffd27a; letter-spacing: 4px; }
+  body.menu #bossBar { display: none !important; }
+</style>`);
   document.body.appendChild(bar);
 }
