@@ -41,7 +41,6 @@ export const paletteOf = (id: string): string => FIGURES[id as FigureId]?.palett
 // Figur zu den aktiven Mod-IDs: die erste passende, sonst der ?-Magier
 export const figureOfMods = (ids: readonly string[]): Figure => FIGURE_LIST.find(f => f.mod && ids.includes(f.mod)) ?? FIGURES.zufall;
 export const figureOfSet = (setId: string): FigureId | null => FIGURE_LIST.find(f => f.set === setId)?.id ?? null;
-export const elementOfFigure = (id: string | null): ElementId | null => FIGURES[id as FigureId]?.element ?? null;
 
 // Spell-Tag bzw. Schule eines Waffenkopfs (HEADS) → Element. Arkan ist keine Figur, aber Element (Gegenstände)
 const TAG_ELEMENT: Record<string, ElementId> = { ...Object.fromEntries(FIGURE_LIST.filter(f => f.element).map(f => [f.tag, f.element])), Arkan: 'arkan' };

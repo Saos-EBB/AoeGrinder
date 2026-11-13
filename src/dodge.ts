@@ -57,11 +57,11 @@ function startCombo(perfect) {
 }
 
 // Stapel des Perfekt-Buffs (v31): Schaden in core.ts, Tempo in realMen.ts und beim Zaubern
-export const pdStacks = () => state.pdBuff && state.pdBuff.until > state.now ? state.pdBuff.stacks : 0;
+const pdStacks = () => state.pdBuff && state.pdBuff.until > state.now ? state.pdBuff.stacks : 0;
 export const pdDmgMul = () => 1 + DG.perfect.dmg * pdStacks();
 export const pdRateMul = () => 1 + DG.perfect.rate * pdStacks();
 
-export function resetDodge() {
+function resetDodge() {
   state.pdBuff = null;
   dodge = null; lastEnd = -1e9; combo = null;
   charges = Array(DG.charges).fill(0);

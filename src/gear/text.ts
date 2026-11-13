@@ -26,7 +26,7 @@ export function kosmetikSource(id: string) {
 }
 export const kosmetikHint = (id: string) => (KOSMETIK[id]?.name.startsWith('look.') ? t(`look.${id}.hint`) : '');
 
-export const valueKey = (g: GearItem) => VALUE_KEY[g.s.value];
+export const valueKey = (g: GearItem) => VALUE_KEY[g.s.value as keyof typeof VALUE_KEY];
 // Name folgt der Form an der Figur (Slot × Wertgruppe, wie im Gear-Baukasten), wird nicht gespeichert: alte Teile heißen beim Laden gleich richtig.
 // Set-Teile behalten ihre eigenen Namen; ohne Wert (sollte nach cleanGearItem nicht vorkommen) der alte Grundname nach Id
 export const gearName = (g: GearItem) => {
@@ -38,12 +38,12 @@ export const slotName = (slot: string) => t(`gear.slot.${slot}`);
 // Werte-Zeilen wie effectLines bei der Waffe: Wert, ggf. Fokus, Element, Hersteller
 export function gearRows(g: GearItem): { kind: string; text: string; color?: string }[] {
   const f = factor(g.r) * GEAR.mul, rows = [];
-  const k = valueKey(g); rows.push({ kind: 'value', text: `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k] * f)} ${t(`wval.${k}`)}` });
+  const k = valueKey(g); rows.push({ kind: 'value', text: `${pct((k === 'cd' ? -1 : 1) * ROLLS.values[k as keyof typeof ROLLS.values] * f)} ${t(`wval.${k}`)}` });
   if (g.s.focus) rows.push({ kind: 'focus', text: t('wrow.focusText', { name: SPELLS[g.s.focus].name, dmg: pct(ROLLS.focus.dmg * f), radius: pct(ROLLS.focus.radius * f) }) });
-  if (g.s.element !== 'none') rows.push({ kind: 'element', text: t('wrow.perHit', { name: ELEMENTS[g.s.element].name, fx: ELEMENTS[g.s.element].fx, pct: pct(ROLLS.procChance * f).slice(1) }), color: elementColor(g.s.element) });
-  if (makerOf(g)) rows.push({ kind: 'maker', text: t('gear.makerHalf', { name: MAKERS[g.s.maker].name, trait: MAKERS[g.s.maker].trait }) });
+  if (g.s.element !== 'none') rows.push({ kind: 'element', text: t('wrow.perHit', { name: ELEMENTS[g.s.element as keyof typeof ELEMENTS].name, fx: ELEMENTS[g.s.element as Exclude<keyof typeof ELEMENTS, 'none'>].fx, pct: pct(ROLLS.procChance * f).slice(1) }), color: elementColor(g.s.element) });
+  if (makerOf(g)) rows.push({ kind: 'maker', text: t('gear.makerHalf', { name: MAKERS[g.s.maker as keyof typeof MAKERS].name, trait: MAKERS[g.s.maker as keyof typeof MAKERS].trait }) });
   return rows;
 }
 export const gearLines = (g: GearItem) => gearRows(g).map(r => r.text);
 // Hauptwert als Zahl (wie die Zeile 'value' oben), für ▲/▼ und Sortierung im Charakterfenster
-export const gearMainValue = (g: GearItem): MainValue => mainOf(valueKey(g), ROLLS.values[valueKey(g)] * factor(g.r) * GEAR.mul);
+export const gearMainValue = (g: GearItem): MainValue => mainOf(valueKey(g), ROLLS.values[valueKey(g) as keyof typeof ROLLS.values] * factor(g.r) * GEAR.mul);

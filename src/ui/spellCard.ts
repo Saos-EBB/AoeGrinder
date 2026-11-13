@@ -19,11 +19,11 @@ import { t, fmtNum } from '../i18n';
 // Schule eines Spells (Feld cls bzw. school), Seuche-Spells: cls 'plague' (spells/plague.ts)
 const SCHOOL_NAME = Object.fromEntries(['frost', 'fire', 'arcane', 'lightning', 'plague', 'shadow', 'bone', 'util', 'warrior'].map(k => [k, t(`school.${k}`)]));
 const num = (v: number) => fmtNum(Math.round(v * 100) / 100);
-const sec = ms => `${fmtNum(Math.round(ms / 10) / 100)} s`;
-const unit = id => paysLife(id) ? t('cost.life') : batteryMode() ? t('res.charge') : player.rageMax === 1 ? '' : player.rageMax ? t('res.rage') : t('cost.mana');
+const sec = (ms: number) => `${fmtNum(Math.round(ms / 10) / 100)} s`;
+const unit = (id: string) => paysLife(id) ? t('cost.life') : batteryMode() ? t('res.charge') : player.rageMax === 1 ? '' : player.rageMax ? t('res.rage') : t('cost.mana');
 
 // Rang = gewählte Rang-Karten dieses Spells (ids „spell-wert“)
-function runShare(id) {
+function runShare(id: string) {
   const all = Object.values<any>(run.dmgBySource ?? {}).reduce((a, b) => a + b, 0), mine = run.dmgBySource?.[id] ?? 0;
   return all ? `${Math.round(mine / all * 100)} %` : '—';
 }
@@ -55,7 +55,7 @@ export function spellTip(id: string, label?: string): TipData | null {
   return {
     label: label ?? t(relic ? 'cardui.relic' : 'sc.spell'), title: s.name, icon: ICONS[id], color, relic, border: color,
     right: relic ? t('cardui.relic') : rank ? t('sc.rank', { n: rank + 1 }) : '',
-    sub: [SCHOOL_NAME[school] ?? school, ...(s.tags ?? []).map(x => t(`tag.${x}`))].filter(Boolean).join(' · '),
+    sub: [SCHOOL_NAME[school] ?? school, ...(s.tags ?? []).map((x: string) => t(`tag.${x}`))].filter(Boolean).join(' · '),
     stats, short: markWords(s.desc ?? ''), rows,
     flavor: relic ? '[FLAVOR]' : undefined,
     facts: relic ? [] : [[t('sc.runShare'), runShare(id)]],
@@ -69,7 +69,7 @@ export function attachSpellCard(el: HTMLElement, id: string, label?: string) {
 }
 
 // Zeile kleiner Spell-Felder mit Icon oder Kurznamen, Hovern zeigt die Karte
-export function renderKit(box, ids) {
+export function renderKit(box: HTMLElement, ids: string[]) {
   box.textContent = '';
   for (const id of ids) {
     if (!id || !SPELLS[id]) continue;

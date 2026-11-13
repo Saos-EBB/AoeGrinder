@@ -28,6 +28,8 @@ export const prefab = groups => groups.map(([mat, geos]) => ({ mat, geo: mergeGe
 
 const SIGHT_HEIGHT = 2;   // PH: ab dieser Höhe versperrt ein Objekt die Sichtlinie
 
+// Bau-Kontext für zone.props(ctx) (world.ts)
+export type PropCtx = ReturnType<typeof makeCtx>;
 export function makeCtx(group, obstacles, heightAt) {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
   return {

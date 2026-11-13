@@ -3,6 +3,8 @@ import { state, player } from '../state';
 import { flameStrikeLook, fireField } from '../vfx/fireLook';
 import { mobsInRadius, addField, hasRune } from './core';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const AFTER_BLINK = 5000, WANDER_SPEED = 3;   // PH
 
@@ -15,7 +17,7 @@ export const flame = {
     { id: 'wide', name: t('spell.flame.runes.wide.name'), desc: t('spell.flame.runes.wide.desc'), radius: 16 },
   ],
   instantCast: () => hasRune('flame', 'blink') && state.now - player.lastBlink < AFTER_BLINK,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const wide = hasRune('flame', 'wide'), radius = c.radius(wide ? 16 : flame.radius), k = wide ? 0.5 : 1;
     for (const m of mobsInRadius(point, radius)) c.hit(m, rand(flame.min, flame.max) * k);
     flameStrikeLook(point, radius);

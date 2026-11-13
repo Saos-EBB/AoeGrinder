@@ -7,6 +7,8 @@ import { knockbackMob } from '../mobs';
 import { mobsInRadius, addField, hasRune, schedule } from './core';
 import { meteorLook, fireField } from '../vfx/fireLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const SWARM = { n: 3, offset: 7, k: 0.5, gap: 300 }, STARS = { n: 6, offset: 8, k: 0.4, gap: 200 }, LONG_BURN = 2, KNOCK = 8;   // PH
 const STARFALL = { perHeat: 25, ms: 2000, min: 5000 };   // PH: Sternenfall
@@ -20,8 +22,8 @@ export const meteor = {
     { id: 'impact', name: t('spell.meteor.runes.impact.name'), desc: t('spell.meteor.runes.impact.desc') },
     { id: 'stars', name: t('spell.meteor.runes.stars.name'), desc: t('spell.meteor.runes.stars.desc') },
   ],
-  effect(c, point) {
-    const strike = (pos, k, delay) => {
+  effect(c: CastCtx, point: Vector3) {
+    const strike = (pos: Vector3, k: number, delay: number) => {
       const r = c.radius(meteor.radius) * k;
       meteorLook(pos, r, delay / 1000);
       schedule(delay, () => {

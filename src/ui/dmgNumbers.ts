@@ -21,7 +21,7 @@ const live = [];
 const merging = new WeakMap();
 
 // Flavor der Zahlen und Meldungen: wie der UI-Flavor oder fest gewählt
-export const numberFlavor = () => uiSettings.numFlavor === 'flavor' ? activeFlavor() : flavorById(uiSettings.numFlavor);
+const numberFlavor = () => uiSettings.numFlavor === 'flavor' ? activeFlavor() : flavorById(uiSettings.numFlavor);
 
 const sizeOf = dmg => {
   const k = clamp(Math.log(Math.max(1, dmg) / UI.dmg.refLow) / Math.log(UI.dmg.refHigh / UI.dmg.refLow), 0, 1);

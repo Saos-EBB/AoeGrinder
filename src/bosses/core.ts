@@ -11,11 +11,10 @@ import { addTrauma, decal, debris } from '../wucht';
 import { hitstop } from '../fx/impact';
 import { combatText } from '../feedback';
 import { fx, em, killFx, boom, ring as eRing, sparks, PAL, gy as groundY } from '../vfx/energy';
-import { V, clamp, outC as ease, rand as rnd, wrap, dist2d as dist2 } from '../util';
+import { V, clamp, outC as ease, rand as rnd, wrap, dist2d as dist2, TAU } from '../util';
 
-// V, clamp, ease (= outC), rnd, wrap, dist2 (= dist2d) aus util.ts, hier nur weitergereicht (bosses/* importieren von hier)
-export { V, clamp, ease, rnd, wrap, dist2 };
-export const TAU = Math.PI * 2;
+// V, clamp, ease (= outC), rnd, wrap, dist2 (= dist2d), TAU aus util.ts, hier nur weitergereicht (bosses/* importieren von hier)
+export { V, clamp, ease, rnd, wrap, dist2, TAU };
 export const easeIn = k => k * k;
 export const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
 // Boden für Boss-Effekte: Probe 2 über p (vfx/energy.ts gy mit up = 2)

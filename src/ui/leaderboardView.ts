@@ -4,7 +4,7 @@ import { afterRun } from './shop';
 import { charCard } from './mainMenu';
 import { run } from '../score';
 import { SPELLS } from '../config';
-import { spellColor } from './colors';
+import { spellColor, COLORS } from './colors';
 import { META, meta } from '../meta';
 import { MODES, MODIFIERS } from '../modifiers';
 import { setLevel } from '../run';
@@ -81,7 +81,7 @@ export function showRunResult() {
   const award = afterRun(!!player.won);
   $('runResult').innerHTML = `
     <div class="endTime">${fmtT(entry.time)}</div>
-    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? '#6ee7a0' : '#f87171'}">${t('end.best', { d: fmtDiff(diff) })}</span> · ` : typeof t100 === 'number' ? `<span style="color:#6ee7a0">${t('end.firstTime')}</span> · ` : ''}${t('end.rank', { a: rank, b: same.length })}${rank === 1 && entry.score > 0 ? ` · <b>${t('end.record')}</b>` : ''}</div>
+    <div class="endRank">${diff !== null ? `<span style="color:${diff <= 0 ? COLORS.up : COLORS.down}">${t('end.best', { d: fmtDiff(diff) })}</span> · ` : typeof t100 === 'number' ? `<span style="color:${COLORS.up}">${t('end.firstTime')}</span> · ` : ''}${t('end.rank', { a: rank, b: same.length })}${rank === 1 && entry.score > 0 ? ` · <b>${t('end.record')}</b>` : ''}</div>
     <div class="endStats">${stat(fmt(entry.kills), t('end.kills'))}${stat(fmt(b.total), t('end.points'))}${stat(fmt(entry.bestCombo), t('end.combo'))}${stat(`×${entry.bestMulti}`, t('end.multi'))}${stat(player.won ? 0 : 1, t('end.deaths'))}</div>
     <div class="endPoints">${t('end.breakdown', { kills: fmt(b.kills), mult: fmtMult(entry.mult), pull: fmt(entry.bestPull), pullPts: fmt(b.pull), time: fmt(b.time), cause: esc(entry.cause) })}</div>
     <div class="endCols">

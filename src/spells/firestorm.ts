@@ -7,12 +7,14 @@ import { mobsInRadius, addField, burnLeft } from './core';
 import { nearestTarget } from './target';
 import { firestormLance, firestormJump } from '../vfx/fireLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Mob } from '../state';
 
 // PH: 1,5 Einheiten aufs Ziel, je 3 Nachbarn in 5 yd, höchstens 30 Sprünge; Brand der Sprünge 6 s mit 0,5 Einheiten pro Sekunde (Wert nicht vorgegeben)
 const S = { dmg: 1.5, range: 30, per: 3, radius: 5, maxJumps: 30, burnMs: 6000, burnDps: 0.5 };
 
 // Brand als eigene kleine Fläche, die am Mob klebt; ihre Ticks setzen mob.burn (core.ts) wie jeder Feuer-Dauerschaden
-export function igniteMob(c, m, dps = S.burnDps * UNIT, ms = S.burnMs) {
+export function igniteMob(c: CastCtx, m: Mob, dps = S.burnDps * UNIT, ms = S.burnMs) {
   m.burn = { dps, until: state.now + ms };
   addField(c, { pos: m.pos, radius: 0.1, dur: ms,
     onTick: () => { if (!m.dead) c.hit(m, dps); },
@@ -24,7 +26,7 @@ export const firestorm = {
   name: t('spell.firestorm.name'), desc: t('spell.firestorm.desc'), ranks: ['dmg', 'mana'], tags: ['Feuer', 'Kette'], cls: 'fire',
   mana: 90, cd: 8000, range: S.range, showDmg: S.dmg * UNIT,   // PH
   canCast: () => nearestTarget(S.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const target = nearestTarget(S.range);
     if (!target) return;
     const burning = burnLeft(target) > 0;

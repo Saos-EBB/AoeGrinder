@@ -6,6 +6,7 @@ import { combatText } from '../feedback';
 import { mobsInRadius, addField, hasRune, burnLeft } from './core';
 import { detonateLook, fireField } from '../vfx/fireLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const BOOM = { mul: 1.5, radius: 3, big: 5 }, CHAIN = { dmg: 10, dur: 4000 }, HEAL = 0.01;   // PH
 
@@ -18,7 +19,7 @@ export const detonate = {
     { id: 'glow', name: t('spell.detonate.runes.glow.name'), desc: t('spell.detonate.runes.glow.desc') },
   ],
   canCast: () => mobsInRadius(player.pos, detonate.radius, Infinity).some(m => burnLeft(m) > 0) ? null : t('msg.noBurning'),
-  effect(c) {
+  effect(c: CastCtx) {
     const burning = mobsInRadius(player.pos, c.radius(detonate.radius), Infinity).filter(m => burnLeft(m) > 0);
     const r = c.radius(hasRune('detonate', 'big') ? BOOM.big : BOOM.radius);
     // Erst alle Brände löschen, dann zünden: sonst zählt eine Explosion den Brand des Nachbarn mit

@@ -9,6 +9,7 @@ import { TYPES, HEADS, ELEMENTS, MAKERS } from './models/weapons/baukasten';
 import { STANDARD, cleanSkins, cleanAch, skinsFor, skinLock, setAch, type HeroClass, type SkinId } from './skins';
 import { KEYS, readRaw, writeRaw, write, remove, keysWith } from './storage';
 import { emit } from './hooks';
+import type { GearItem } from './gear/data';
 
 export const META = {
   backups: 3,                                          // so viele Sicherungen eines unlesbaren Stands bleiben liegen
@@ -35,6 +36,17 @@ const FREE = ['grün'];
 // skins: gewählter Look pro Figur (skins.ts), fehlt oder kaputt → Standard. achievements: freigeschaltete Erfolge (skins.ts ACHIEVEMENTS), fehlt in alten Ständen.
 // Nie einen echten Stand durch einen leeren ersetzen: Ist der Text kein JSON-Objekt, wird er unter KEYS.metaBackup + <ISO-Zeit> gesichert (höchstens
 // META.backups Stück), dann Start mit Standard. Die Säuberung läuft Schritt für Schritt: schlägt einer fehl, fällt nur sein Feld auf Standard, der Rest bleibt.
+// Waffe im Inventar: neue (v 2) mit Baukasten-Werten s, alte mit Modell m und Werten e (cleanWeapon, ui/saveCode.ts)
+export interface WeaponItem { id: number; v?: number; r: number; s?: any; m?: any; e?: any; [k: string]: any }
+// Spielstand (KEYS.meta). Form der Felder wie nach load()/normalizeMeta; was nicht genau feststeht, bleibt any (Index-Signatur).
+export interface MetaState {
+  dust: number; unlocked: string[]; bought: Record<string, number>; bestTier: number; offer: string[];
+  inv: WeaponItem[]; equipped: number | null; nextWeapon: number;
+  skins: Record<string, string>; achievements: string[]; stats: { kills: number; dust: number }; maps: string[];
+  gear: Record<string, GearItem[]>; wear: Record<string, number | null>; gearOver: GearItem[]; nextGear: number;
+  looks: string[]; lookWear: Record<string, string>; schema?: number;
+  [k: string]: any;
+}
 const metaDefaults = () => ({ dust: 0, unlocked: [], bought: {}, bestTier: 0, offer: [], inv: [], equipped: null, nextWeapon: 0 });
 let saveBlocked = false;   // Backup ließ sich nicht schreiben: dann den alten Text im Speicher nicht überschreiben
 function backupMeta(raw: string, why: string) {
@@ -48,7 +60,7 @@ function backupMeta(raw: string, why: string) {
   for (const k of old.slice(0, Math.max(0, old.length - META.backups))) remove(k);
   console.warn(`[meta] Spielstand ${why}, Rohtext gesichert unter ${key}`);
 }
-function load() {
+function load(): MetaState {
   const raw = readRaw(KEYS.meta);
   let saved: any = {}, backedUp = false;
   const backup = (why: string) => { if (!backedUp && raw) backupMeta(raw, why); backedUp = true; };

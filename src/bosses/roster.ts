@@ -5,7 +5,7 @@
 import { t } from '../i18n';
 
 // Verdorbene Figuren: Viewer-Strichmännchen als Platzhalter; im Spiel baut boss.ts das echte Spielermodell der Figur (evil = Skin-ID)
-const evil = (skin, p) => ({ t: 'evil', skin, p: { color: 0x2a0a0e, glow: 0xff2a2a, scale: 1.5, ...p } });
+const evil = (skin: string, p: object) => ({ t: 'evil', skin, p: { color: 0x2a0a0e, glow: 0xff2a2a, scale: 1.5, ...p } });
 export const BOSSES: any[] = [
  // früh
  {id:'hogger',nr:1,name:t('boss.hogger.name'),from:t('boss.hogger.from'),tier:'frueh',desc:t('boss.hogger.desc'),
@@ -153,13 +153,13 @@ const RULE_P = {
   sif: { hinken: { hp: .25, speed: .6, wind: 1.3 } },                         // unter 25 % HP Tempo ×0,6, Ausholen ×1,3
   duriel: { slowAura: { pct: .3 } },
 };
-for (const b of BOSSES) for (const r of b.rules) r.p = { ...(r.p || {}), ...(RULE_P[b.id]?.[r.k] || {}) };
+for (const b of BOSSES) for (const r of b.rules) r.p = { ...(r.p || {}), ...((RULE_P as Record<string, Record<string, object>>)[b.id]?.[r.k] || {}) };
 
 // Phase-2-Angriffe aus dem Namen ablesen
 for (const b of BOSSES) for (const a of b.attacks) a.p2 ||= /\(P2\)/.test(a.n);   // p2 steht fest an den Angriffen, der Name ist übersetzt
 
 // Prototyp aus v23 (Branch boss) als Roster-Eintrag: Modell = nächstes Mob-Modell der Zone, Angriffe wie bisher
-export const PROTOTYPE = {
+const PROTOTYPE = {
   id: 'prototyp', name: t('boss.prototyp.name'), from: t('boss.prototyp.from'), tier: 'proto', desc: t('boss.prototyp.desc'), zoneModel: true,
   attacks: [
     { n: t('boss.prototyp.attacks.0.n'), k: 'kette', p: { hits: [.8, .5, 1.0], r: 6, ang: 90, gap: 1.2 } },
@@ -167,12 +167,12 @@ export const PROTOTYPE = {
     { n: t('boss.prototyp.attacks.2.n'), k: 'ansturm', p: { len: 15, w: 3, warn: .7, gap: 1.0 } },
     { n: t('boss.prototyp.attacks.3.n'), k: 'faecher', p: { n: 5, spread: 60, speed: 8, size: .5, warn: .7, gap: .8 }, p2: true },
   ],
-  rules: [],
+  rules: [] as typeof BOSSES[number]['rules'],
 };
-export const ALL_BOSSES = [...BOSSES, PROTOTYPE];
-export const bossById = id => ALL_BOSSES.find(b => b.id === id);
+const ALL_BOSSES = [...BOSSES, PROTOTYPE];
+export const bossById = (id: string) => ALL_BOSSES.find(b => b.id === id);
 // Boss-Termine (Level 15, 30, …, 90 und 100): Stufe nach Level
-export const TIER_OF_LEVEL = lv => lv >= 100 ? 'final' : lv >= 75 ? 'spaet' : lv >= 45 ? 'mittel' : 'frueh';
+export const TIER_OF_LEVEL = (lv: number) => lv >= 100 ? 'final' : lv >= 75 ? 'spaet' : lv >= 45 ? 'mittel' : 'frueh';
 export const TIERS = [['frueh', t('boss.tier.frueh')], ['mittel', t('boss.tier.mittel')], ['spaet', t('boss.tier.spaet')], ['final', t('boss.tier.final')]];
 // Stärke pro Stufe (Kader 08.11.), alle PH. wind: Ausholzeiten ×, pause: s zwischen zwei Angriffen, hit: Treffer = Anteil max. Leben.
 // Gilt für jeden Boss am Termin; Verdorbene bekommen die Werte des Termins, nicht ihre eigene Stufe
@@ -184,4 +184,4 @@ export const TIER = {
 };
 export const EVIL_CHANCE = 1 / 6;   // PH: 5 Bosse der Stufe + 1 Platz „Verdorbener“
 // Run-Pool einer Stufe: die 5 Bosse der Stufe, ohne Verdorbene und ohne 'aus'
-export const poolOf = tier => BOSSES.filter(b => b.tier === tier && !b.evil);
+export const poolOf = (tier: string) => BOSSES.filter(b => b.tier === tier && !b.evil);

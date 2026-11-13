@@ -14,7 +14,7 @@ export const glow = (c: number | THREE.Color): Mat => ({ c: new THREE.Color(c as
 export const ds = (m: Mat): Mat => (m ? { ...m, ds: true } : m);
 
 // Beleuchtete Teile dunkler als im Viewer: die Lampe (dunkel.ts) und der Rand heben sie sonst über die Bloom-Schwelle // PH
-export const PART_LIGHT = {
+const PART_LIGHT = {
   lit: 0.45,        // Faktor auf die Viewer-Farbe
   cap: 0.36,        // hellster Kanal beleuchteter Teile (linear), sonst blüht Kristall/Gold weiß aus
 };
@@ -60,7 +60,7 @@ export function limbFrame(a: THREE.Vector3, b: THREE.Vector3) {
   const y = a.clone().sub(b).normalize(), z0 = V(0, 0, 1), z = z0.sub(y.clone().multiplyScalar(y.dot(z0))).normalize(), x = y.clone().cross(z);
   return new THREE.Matrix4().makeBasis(x, y, z).setPosition(a);
 }
-export const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen (Viewer DoubleSide): Dreiecke umdrehen, Normalen umkehren
+const flip = (g: THREE.BufferGeometry) => {   // Rückseite für offene Flächen (Viewer DoubleSide): Dreiecke umdrehen, Normalen umkehren
   const f = (g.index ? g.toNonIndexed() : g.clone()), p = f.attributes.position, n = f.attributes.normal;
   for (let i = 0; i < p.count; i += 3) for (const a of [p, n]) { if (!a) continue; const t = [a.getX(i + 1), a.getY(i + 1), a.getZ(i + 1)]; a.setXYZ(i + 1, a.getX(i + 2), a.getY(i + 2), a.getZ(i + 2)); a.setXYZ(i + 2, t[0], t[1], t[2]); }
   if (n) for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));

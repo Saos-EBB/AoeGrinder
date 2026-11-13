@@ -120,7 +120,7 @@ hooks.figSay.set(text => combatText(player.pos, text, 'info', 3.2));   // Sprech
 hooks.switchZone.set(switchZone);   // Portal (portal.ts)
 mountDev();   // Dev-Panel-Blöcke (ui/devGame.ts)
 
-function update(dt) {
+function update(dt: number) {
   updatePadCamera(dt);
   updatePlayer(dt);
   for (const m of state.mobs) updateMob(m, dt);
@@ -147,7 +147,7 @@ function update(dt) {
   updateCardQueue();
 }
 
-function updateVisuals(dt) {
+function updateVisuals(dt: number) {
   syncObjects();   // neue Map / neuer Run: Objekte neu setzen (auch im Hauptmenü)
   updateAutoCam(dt, mouseBtn.left);
   updateDunkel(dt);
@@ -212,7 +212,7 @@ function updateVisuals(dt) {
 }
 
 let last = performance.now(), frameNo = 0;
-function loop(t) {
+function loop(t: number) {
   const dt = Math.min(50, t - last);
   last = t;
   pollGamepad();

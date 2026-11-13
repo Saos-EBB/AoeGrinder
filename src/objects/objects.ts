@@ -163,7 +163,7 @@ function buildMap() {
 
 // ---------- Treffer, Benutzen, Berühren ----------
 // Element des Treffers (config.ts spellElement); ohne Schul-Tag und Arkan (keine Objekt-Reaktion): 'nah'
-export const elementOf = (spellId: string | null): Element => { const e = spellElement(spellId); return e === 'none' || e === 'arkan' ? 'nah' : e; };
+const elementOf = (spellId: string | null): Element => { const e = spellElement(spellId); return e === 'none' || e === 'arkan' ? 'nah' : e; };
 onSpellArea((center, r, spellId) => {
   if (!objs.length) return;
   for (const o of objs) if (o.alive && o.kind.onHit && dist2d(center, o) <= r + o.kind.radius) o.kind.onHit(o, elementOf(spellId), spellId);

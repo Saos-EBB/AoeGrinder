@@ -5,13 +5,14 @@ import { attachTip, TipData } from './tooltip';
 import { COLORS } from './colors';
 import { mainDelta, fmtDelta, deltaColor, fmtMain } from './compare';
 import { t } from '../i18n';
+import type { WeaponItem } from '../meta';
 
 // Werte-Block: jede Schicht in fester Zeile, links farbiges Etikett, Zahlen in derselben Farbe. Fehlende Schichten bleiben als „—“ stehen.
-export function weaponStats(w) {
+export function weaponStats(w: Pick<WeaponItem, 'v' | 'r' | 's' | 'm' | 'e'>) {   // auch Vorschau ohne id (Dev-Schmied)
   const grid = document.createElement('div');
   Object.assign(grid.style, { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', alignItems: 'baseline', textAlign: 'left', whiteSpace: 'normal' });
   for (const r of effectRows(w)) {
-    const color = r.text ? r.color ?? COLORS.weaponRow[r.kind] : COLORS.dim;
+    const color = r.text ? r.color ?? COLORS.weaponRow[r.kind as keyof typeof COLORS.weaponRow] : COLORS.dim;
     const label = document.createElement('span');
     label.textContent = r.label;
     Object.assign(label.style, { color, font: '700 10px system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '.5px', borderLeft: `3px solid ${color}`, paddingLeft: '5px', opacity: r.text ? '1' : '.45' });
@@ -34,7 +35,7 @@ export function weaponStats(w) {
 
 // Hover-Karte einer Waffe (Mockup T1): Name in Seltenheitsfarbe, großer Hauptwert, ▲/▼ gegenüber der ausgerüsteten Waffe,
 // Affixe blau (Element in seiner Farbe), Legendär-Effekt orange, Combo-Zeile, „Zerlegen +x Staub“. Vergleich: diese Waffe links, ausgerüstete rechts.
-function weaponTip(w): TipData {
+function weaponTip(w: WeaponItem): TipData {
   const rar = rarityOf(w), rows = effectRows(w), byKind = Object.fromEntries(rows.map(r => [r.kind, r]));
   const main = mainValue(w);
   const lines: string[] = [];
@@ -57,12 +58,12 @@ function weaponTip(w): TipData {
   };
 }
 // Karte mit Vergleich zur ausgerüsteten Waffe (auch für Tastatur-Auswahl im Fenster heroWindow.ts)
-export function weaponCardData(w): TipData {
+export function weaponCardData(w: WeaponItem): TipData {
   const d = weaponTip(w), eq = equipped();
   if (eq && eq !== w) Object.assign(d, { compare: weaponTip(eq), compareLabels: [t('wcard.this'), t('shop.equipped')] });
   else d.label = eq === w ? t('shop.equipped') : t('wcard.weapon');
   return d;
 }
-export function attachWeaponCard(el: HTMLElement, w) {
+export function attachWeaponCard(el: HTMLElement, w: WeaponItem) {
   attachTip(el, () => weaponCardData(w));
 }

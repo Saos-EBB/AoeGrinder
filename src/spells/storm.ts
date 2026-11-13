@@ -5,6 +5,8 @@ import { stormField, stormHit } from '../vfx/boltLook';
 import { groundAt } from '../collision';
 import { mods } from '../config';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const FOLLOW_SPEED = 4, BIG = 12;   // PH
 
@@ -17,7 +19,7 @@ export const storm = {
     { id: 'big', name: t('spell.storm.runes.big.name'), desc: t('spell.storm.runes.big.desc'), radius: 12 },
     { id: 'hail', name: t('spell.storm.runes.hail.name'), desc: t('spell.storm.runes.hail.desc') },
   ],
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const radius = c.radius(hasRune('storm', 'big') ? BIG : storm.radius);
     addField(c, { pos: point, radius, dur: storm.dur, tickMs: storm.tickMs, visual: stormField(),
       onUpdate(f, dt) {

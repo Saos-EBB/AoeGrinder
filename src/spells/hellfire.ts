@@ -5,6 +5,8 @@ import { combatText } from '../feedback';
 import { mobsInRadius, startChannel, stopChannel, hasRune } from './core';
 import { hellfireLook } from '../vfx/fireLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { PlayerChannel } from '../state';
 
 const HEAL_PER_KILL = 0.05, GROW_PER_S = 1, HEAL_PER_TICK = 0.01, LIFE_PER_TICK = 0.03;   // PH: heilt 1 %, kostet 3 % max. Leben pro Tick (v31 statt Mana)
 
@@ -17,14 +19,14 @@ export const hellfire = {
     { id: 'grow', name: t('spell.hellfire.runes.grow.name'), desc: t('spell.hellfire.runes.grow.desc') },
   ],
   canCast: () => player.hp <= maxHp() * LIFE_PER_TICK ? t('msg.noLife') : null,
-  effect(c) {
+  effect(c: CastCtx) {
     const ch = startChannel(c, player.pos, hellfire.channel);
     ch.mobile = hasRune('hellfire', 'walk');
     ch.radius = c.radius(hellfire.radius);
     ch.visual = hellfireLook();
     ch.visual.update(player.pos, ch.radius);
   },
-  tick(ch) {
+  tick(ch: PlayerChannel) {
     if (player.hp <= maxHp() * LIFE_PER_TICK) return stopChannel(true);
     player.hp = Math.min(maxHp(), player.hp - maxHp() * LIFE_PER_TICK + maxHp() * HEAL_PER_TICK);
     const dmg = hellfire.tickDmg * (ch.mobile ? 0.5 : 1);
@@ -36,9 +38,9 @@ export const hellfire = {
       }
     }
   },
-  channelUpdate(ch, dt) {
+  channelUpdate(ch: PlayerChannel, dt: number) {
     if (hasRune('hellfire', 'grow')) ch.radius += GROW_PER_S * dt / 1000;
     ch.visual.update(player.pos, ch.radius);
   },
-  onChannelEnd(ch) { ch.visual.remove(); },
+  onChannelEnd(ch: PlayerChannel) { ch.visual.remove(); },
 };

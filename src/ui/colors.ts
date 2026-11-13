@@ -14,6 +14,6 @@ export const COLORS = {
 };
 
 // Schulfarbe eines Spells (school, sonst cls), undefined ohne Eintrag
-export const schoolColor = (id: string): string | undefined => { const s = SPELLS[id]; return COLORS.school[s?.school ?? s?.cls]; };
+export const schoolColor = (id: string): string | undefined => { const s = SPELLS[id]; return COLORS.school[(s?.school ?? s?.cls) as keyof typeof COLORS.school]; };
 // Farbe eines Spells für die UI: Relikte gold, sonst Schulfarbe, sonst fallback
 export const spellColor = (id: string, fallback: string | undefined = COLORS.text): string | undefined => SPELLS[id]?.relic ? COLORS.relic : schoolColor(id) ?? fallback;

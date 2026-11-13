@@ -13,7 +13,7 @@ const boarGeo = {
   tail: new THREE.BoxGeometry(0.06, 0.06, 0.3),
 };
 
-export function buildBoar(level) {
+export function buildBoar(level: number) {
   const bodyMat = M(0x6b4426), legMat = M(0x3b2614), tuskMat = M(0xf2ecd8), snoutMat = M(0xc08a7a);
   const root = new THREE.Group();
   const body = joint(root, 0, 0.82, 0);
@@ -35,10 +35,10 @@ export function buildBoar(level) {
     return hip;
   });
   let phase = rand(0, 6);
-  const j = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: 0 };
-  return finish(root, (dt, a) => {
+  const j: Record<string, number> = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: 0 };
+  return finish(root, (dt: number, a: { state: string; speed: number; attack: number }) => {
     const s = dt / 1000;
-    const t = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: Math.sin(performance.now() / 200) * 0.4 };
+    const t: Record<string, number> = { legs: 0, neckX: 0, bodyY: 0.82, rollZ: 0, tail: Math.sin(performance.now() / 200) * 0.4 };
     if (a.state === 'run') {
       phase += s * a.speed * 2.2;
       t.legs = Math.sin(phase) * 0.8;

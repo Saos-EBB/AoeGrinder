@@ -7,19 +7,19 @@ import { PERF, VFX_QUALITY } from '../config';
 // Uhr aller Effekte. scale ist die Zeitlupe im VFX-Labor.
 export const fxClock = { now: 0, last: performance.now(), scale: 1 };
 export const vfxOld = () => PERF.vfxOld;
-export const quality = () => VFX_QUALITY[PERF.vfx];
+export const quality = () => VFX_QUALITY[PERF.vfx as keyof typeof VFX_QUALITY];
 
 // Nahtlos kachelndes Rauschen: pro Oktave ein periodisches Gitter
-function bakeNoise(size) {
+function bakeNoise(size: number) {
   const data = new Uint8Array(size * size * 4);
   const octaves = [[4, 0.5], [8, 0.27], [16, 0.15], [32, 0.08]];   // PH: Gitter, Gewicht
   const layers = octaves.map(([cells]) => Float32Array.from({ length: cells * cells }, () => Math.random()));
-  const smooth = t => t * t * (3 - 2 * t);
+  const smooth = (t: number) => t * t * (3 - 2 * t);
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     let v = 0;
     octaves.forEach(([cells, weight], o) => {
       const fx = x / size * cells, fy = y / size * cells, ix = Math.floor(fx), iy = Math.floor(fy);
-      const at = (a, b) => layers[o][(a % cells) + (b % cells) * cells];
+      const at = (a: number, b: number) => layers[o][(a % cells) + (b % cells) * cells];
       const u = smooth(fx - ix), w = smooth(fy - iy);
       v += weight * ((at(ix, iy) * (1 - u) + at(ix + 1, iy) * u) * (1 - w) + (at(ix, iy + 1) * (1 - u) + at(ix + 1, iy + 1) * u) * w);
     });

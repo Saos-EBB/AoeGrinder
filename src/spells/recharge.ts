@@ -7,7 +7,7 @@ import { batteryCharge } from '../battery';
 import { t } from '../i18n';
 
 export const recharge = {
-  name: t('spell.recharge.name'), cls: 'lightning', desc: t('spell.recharge.desc'), tags: [],
+  name: t('spell.recharge.name'), cls: 'lightning', desc: t('spell.recharge.desc'), tags: [] as string[],
   mana: 0, charge: 0, cd: 0, fixed: true,   // PH
   canCast: () => player.grounded ? null : t('msg.notInAir'),
   effect() {

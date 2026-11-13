@@ -70,7 +70,7 @@ export function showError(msg) {
 
 // HUD-DOM nur bei Änderung anfassen: Text und Füllstand (--v, 0..1) merken
 export function put(el: HTMLElement, text: string) { if (lastText.get(el) !== text) { lastText.set(el, text); el.textContent = text; } }
-export function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if (lastVar.get(el) !== s) { lastVar.set(el, s); el.style.setProperty('--v', s); } }
+function fillTo(el: HTMLElement, v: number) { const s = v.toFixed(3); if (lastVar.get(el) !== s) { lastVar.set(el, s); el.style.setProperty('--v', s); } }
 const $q = (sel: string) => document.querySelector(sel) as HTMLElement;
 
 

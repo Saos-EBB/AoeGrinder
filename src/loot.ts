@@ -25,7 +25,7 @@ import { zone } from './world';
 import { addUseSource } from './useKey';
 
 // Alle Zahlen PH. kill: gemessen per Skript (docs/handoffs/items.md, Test), Schnitt ~25 pro Run bis Level 100
-export const DROP = {
+const DROP = {
   kill: 0.0007, champ: 0.7, boss: 3,   // 10.11. Kevin „bisschen nach oben“, je ~+40 % (vorher 0.0005 / 0.5 / 2). Kills bleiben selten (~1640 Kills/Run → ~1 Teil) // PH
   pickR: 2.5,                         // yd: so nah drüberlaufen hebt auf
   spread: 1.5,                        // yd um den Mob
@@ -148,7 +148,7 @@ export function collectAll(overfill = false) {
 }
 
 // Run-Start (resetGame): Boden leer, Fundliste leer
-export function resetLoot() {
+function resetLoot() {
   drops = [];
   state.finds = [];
 }

@@ -15,8 +15,9 @@ import { addXpMul } from './xpBonus';
 import { t } from './i18n';
 import { portalMapSeed } from './mapgen/rng';
 import { hooks, onRunReset } from './hooks';
+import type { Spot } from './mapgen/types';
 
-export const PORTAL = {
+const PORTAL = {
   levels: [25, 50, 75],       // PH: Packs
   minFromPlayer: 40,          // PH: yd, Platz nicht direkt neben dir
   enterR: 2.2,                // PH: yd, so nah = durchgehen
@@ -59,11 +60,11 @@ function findGlow() {
 function pickSpot() {
   const spots = zone.layout?.portalSpots ?? [];
   if (!spots.length) return null;
-  const ok = spots.filter(s => dist2d(s, player.pos) >= PORTAL.minFromPlayer);
-  return ok[0] ?? spots.reduce((a, b) => dist2d(a, player.pos) >= dist2d(b, player.pos) ? a : b);
+  const ok = spots.filter((s: Spot) => dist2d(s, player.pos) >= PORTAL.minFromPlayer);
+  return ok[0] ?? spots.reduce((a: Spot, b: Spot) => dist2d(a, player.pos) >= dist2d(b, player.pos) ? a : b);
 }
 
-export function openPortal() {
+function openPortal() {
   if (!zone.gen || portal) return false;
   const s = pickSpot();
   if (!s) return false;
@@ -129,7 +130,7 @@ addXpMul(() => lazy() ? PORTAL.lazyXp : 1);
 export const portalPos = () => portal?.pos ?? null;
 
 // Run-Start (resetGame)
-export function resetPortal() {
+function resetPortal() {
   closePortal();
   done = 0; taken = 0; wasBoss = false; fading = false;
   veil.style.opacity = '0';

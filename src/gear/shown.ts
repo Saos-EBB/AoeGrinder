@@ -4,9 +4,9 @@ import { SHAFTS, MAKERS } from '../models/weapons/baukasten';
 import { SLOTS, GROUP_OF_SHAFT, type Slot, type GearItem, type GearGroup } from './data';
 import { worn, isMageFigure, forcedSkin, kosmetikIn } from './inventory';
 
-const shaftOf = (value: string) => Object.keys(SHAFTS).find(k => SHAFTS[k].values.includes(value)) ?? null;
+const shaftOf = (value: string) => Object.keys(SHAFTS).find(k => SHAFTS[k as keyof typeof SHAFTS].values.includes(value)) ?? null;
 // Für Fenster und Modell: fehlt der Wert oder der Hersteller (sollte nach cleanGear nicht vorkommen) → null
-export const groupOf = (g: GearItem | null): GearGroup | null => { const sh = g?.s?.value != null ? shaftOf(g.s.value) : null; return sh ? GROUP_OF_SHAFT[sh] : null; };
+export const groupOf = (g: GearItem | null): GearGroup | null => { const sh = g?.s?.value != null ? shaftOf(g.s.value) : null; return sh ? GROUP_OF_SHAFT[sh as keyof typeof GROUP_OF_SHAFT] : null; };
 export const makerOf = (g: GearItem | null): string | null => (g?.s?.maker && g.s.maker in MAKERS ? g.s.maker : null);
 
 // Gear an der Figur (models/gearParts.ts über heroModel.ts → buildStrichMagier opts.gear): je Slot Form (Wertgruppe) und Schichten des angelegten Teils.

@@ -105,5 +105,5 @@ export function noteSplits(fromLevel) {
     el.style.color = typeof best !== 'number' ? '' : state.now <= best ? COLORS.good : COLORS.bad;
   }
 }
-export function resetSplits() { const el = $('hSplit'); el.textContent = '–'; el.style.color = ''; }
+function resetSplits() { const el = $('hSplit'); el.textContent = '–'; el.style.color = ''; }
 onRunReset(resetSplits, 180);   // Run-Reset (hooks.ts runReset)

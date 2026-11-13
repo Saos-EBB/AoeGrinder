@@ -11,7 +11,7 @@ import { THEMES } from './themes';
 import type { ThemeId } from './types';
 import { ORDER, cleanMaps } from './mapOrder';
 
-export { ORDER, cleanMaps };   // in mapOrder.ts (ohne Laufzeit-Imports, für metaNormalize.ts)
+export { ORDER };   // in mapOrder.ts (ohne Laufzeit-Imports, für metaNormalize.ts)
 export const UNLOCK_LEVEL = 100;   // PH
 
 let devOpen = readRaw(KEYS.devMapsOpen) === '1' || /[?&]maps=all/.test(location.search);
@@ -21,9 +21,9 @@ export function setDevAllMapsUnlocked(on: boolean) { devOpen = on; writeRaw(KEYS
 meta.maps = cleanMaps(meta.maps);
 
 export const isThemeUnlocked = (id: ThemeId) => devOpen || meta.maps.includes(id);
-export const nextTheme = (id: ThemeId) => ORDER[ORDER.indexOf(id) + 1] ?? null;
+const nextTheme = (id: ThemeId) => ORDER[ORDER.indexOf(id) + 1] ?? null;
 
-export function unlockTheme(id: ThemeId) {
+function unlockTheme(id: ThemeId) {
   if (meta.maps.includes(id)) return false;
   meta.maps = cleanMaps([...meta.maps, id]);
   saveMeta();

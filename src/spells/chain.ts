@@ -11,6 +11,7 @@ const TEMPEST = { every: 6, radius: 8, angle: Math.PI, dmg: 5, stunMs: 1000 }, K
 import { boltFx } from './fx';
 import { t } from '../i18n';
 import { HV_FORK } from '../gear/data';
+import type { CastCtx } from './registry';
 
 const STEP_DELAY = 45, MORE = 40, KILL = 10;   // MORE: Rune Überschlag, KILL: Rune Entladung (v30 verdoppelt)   // PH: ms je Sprung, damit man die Kette sieht
 
@@ -55,7 +56,7 @@ export const chain = {
   ],
   canCast: () => nearestMob(chain.range) ? null : t('msg.noTarget'),
   instantCast: () => (state.keeper ?? 0) > 0,
-  effect(c) {
+  effect(c: CastCtx) {
     const first = nearestMob(chain.range);
     if (!first) return;
     const k = (state.keeper ?? 0) > 0 ? KEEPER_MUL : 1;

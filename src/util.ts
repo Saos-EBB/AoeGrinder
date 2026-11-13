@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Kleinhelfer, einzige Quelle (Mathe, Easing, Vektoren). vfx/energy.ts und bosses/core.ts reichen einige davon weiter.
 export const $ = id => document.getElementById(id);
+export const TAU = Math.PI * 2;   // voller Kreis (vfx/energy.ts und bosses/core.ts reichen ihn weiter)
 export const rand = (a, b) => a + Math.random() * (b - a);
 export const randInt = (a, b) => Math.floor(rand(a, b + 1));
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

@@ -17,11 +17,14 @@ import { mobsInRadius, addField, schedule } from './core';
 import { runChain, nearestMob } from './chain';
 import { fieldDecal, areaParticles, burstFx, boltFx, visuals, FIRE, EMBER, SHADOW, VOID, ICE, ICE_WHITE } from './fx';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
+import type { Mob } from '../state';
 
 export const ragnaros = {
   name: t('spell.ragnaros.name'), relic: true, desc: t('spell.ragnaros.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 200, cd: 25000, dmg: 150, radius: 15, knock: 15,
-  effect(c) {
+  effect(c: CastCtx) {
     const r = c.radius(ragnaros.radius);
     for (const m of mobsInRadius(player.pos, r)) if (c.hit(m, ragnaros.dmg)) knockbackMob(m, player.pos, ragnaros.knock, 800);
     if (vfxOld()) burstFx(player.pos, r, [FIRE, EMBER], 0xffa040); else ragnarosNew(player.pos, r);
@@ -32,7 +35,7 @@ export const ragnaros = {
 export const desecrate = {
   name: t('spell.desecrate.name'), relic: true, desc: t('spell.desecrate.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Dunkel', 'Fläche'], cls: 'shadow',
   mana: 250, cd: 40000, dur: 10000, tickDmg: 20, range: 30, radius: 6, grow: 0.6, ground: true,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     if (!vfxOld()) desecrateOpen(point, c.radius(desecrate.radius));
     const floor = fieldDecal(blightTex, SHADOW, 0.55, 0.15);
     addField(c, { pos: point, radius: c.radius(desecrate.radius), dur: desecrate.dur, visual: vfxOld() ? floor : visuals(floor, vortexVisual(SHADOW, VOID, 2.6, { top: 0.9, scroll: 0.8, peak: 0.45, spin: 0.6, dens: 0.38 })),
@@ -46,7 +49,7 @@ export const desecrate = {
 };
 
 // Sichtlinie: Strecke darf kein Hindernis schneiden. Generierte Maps (src/mapgen): Wände stehen nicht in obstacles, sondern im Zellraster
-function lineOfSight(a, b) {
+function lineOfSight(a: Vector3, b: Vector3) {
   const g = zone.gen ? zone.layout?.grid : null;
   if (g && !g.sightClear(a.x, a.z, b.x, b.z)) return false;
   const dx = b.x - a.x, dz = b.z - a.z, len2 = dx * dx + dz * dz;
@@ -59,7 +62,7 @@ function lineOfSight(a, b) {
 export const frostbreath = {
   name: t('spell.frostbreath.name'), relic: true, desc: t('spell.frostbreath.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Frost', 'Fläche'], cls: 'frost',
   mana: 300, cd: 60000, dmg: 200, delay: 3000, radius: 30,
-  effect(c) {
+  effect(c: CastCtx) {
     const r = c.radius(frostbreath.radius);
     if (vfxOld()) ringFx(player.pos, r, ICE_WHITE, frostbreath.delay); else frostChargeNew(player.pos, r, frostbreath.delay);
     schedule(frostbreath.delay, () => {
@@ -76,19 +79,19 @@ export const froststrike = {
   name: t('spell.froststrike.name'), relic: true, desc: t('spell.froststrike.desc'), ranks: ['dmg', 'mana'], tags: ['Frost', 'Kette'], cls: 'frost',
   mana: 200, cd: 45000, dmg: 60, root: 4000, jumpRange: 10, range: 30,
   canCast: () => nearestMob(froststrike.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const first = nearestMob(froststrike.range);
     if (!first) return;
     if (!vfxOld()) froststrikeOpen(first.pos);
     runChain(c, first, { jumps: Infinity, range: froststrike.jumpRange, dmg: froststrike.dmg, boltColor: vfxOld() ? undefined : ICE,
-      onHit: m => { if (!vfxOld()) frostHit(m.pos); if (!m.dead) applyRoot(m, froststrike.root, 'ice'); } });
+      onHit: (m: Mob) => { if (!vfxOld()) frostHit(m.pos); if (!m.dead) applyRoot(m, froststrike.root, 'ice'); } });
   },
 };
 
 export const firenova = {
   name: t('spell.firenova.name'), relic: true, desc: t('spell.firenova.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Nova'], cls: 'fire',
   mana: 280, cd: 30000, dmg: 120, radius: 40, speed: 20,
-  effect(c) {
+  effect(c: CastCtx) {
     const maxR = c.radius(firenova.radius), done = new Set();
     if (!vfxOld()) firenovaOpen(player.pos);
     addField(c, { pos: player.pos, radius: 0, dur: maxR / firenova.speed * 1000, visual: vfxOld() ? undefined : fireWallVisual(),
@@ -105,7 +108,7 @@ export const firenova = {
 };
 
 const boneGeo = new THREE.ConeGeometry(0.35, 3.2, 5);
-function boneRing(pos, radius) {
+function boneRing(pos: Vector3, radius: number) {
   const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.95, 0.88, 0.7) }), n = Math.ceil(radius * 3);
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2, x = pos.x + Math.cos(a) * radius, z = pos.z + Math.sin(a) * radius;
@@ -121,7 +124,7 @@ function boneRing(pos, radius) {
 export const bonecage = {
   name: t('spell.bonecage.name'), relic: true, desc: t('spell.bonecage.desc'), ranks: ['mana', 'radius'], tags: ['Knochen', 'Fläche'], cls: 'bone',
   mana: 150, cd: 35000, dur: 6000, range: 30, radius: 8, ground: true,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const radius = c.radius(bonecage.radius), caught = mobsInRadius(point, radius);
     const f = addField(c, { pos: point, radius, dur: bonecage.dur, visual: vfxOld() ? boneRing(point, radius) : boneRingNew(point, radius),
       onUpdate(field) {

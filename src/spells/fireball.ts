@@ -8,6 +8,7 @@ import { t } from '../i18n';
 import { state } from '../state';
 import { GIANT_FB } from '../gear/data';
 import { kosmetikWeapon } from '../gear/inventory';
+import type { CastCtx } from './registry';
 
 const SPLASH_MUL = 0.5, BIG = 1.75, SWIFT_DMG = 0.6, SPLIT = { n: 2, k: 0.7 };   // PH: Splitterball +2 Projektile mit je 70 %
 
@@ -21,7 +22,7 @@ export const fireball = {
   ],
   instantCast: () => hasRune('fireball', 'swift'),
   canCast: () => nearestTarget(fireball.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const target = nearestTarget(fireball.range);
     if (!target) return;
     if (kosmetikWeapon() === 'haarspray') sprayJet(target.pos);   // Kosmetik: nur die Wurf-Animation

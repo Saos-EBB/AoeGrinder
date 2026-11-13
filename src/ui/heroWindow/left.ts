@@ -31,7 +31,7 @@ import { render } from './index';
 // ---------- Gear: Hersteller und Gruppe (gear/shown.ts makerOf/groupOf) ----------
 export const gearMaker = (g: GearItem) => makerOf(g);
 const gearGroup = (g: GearItem) => groupOf(g);
-const makerName = (id: string | null) => id ? MAKERS[id]?.name ?? id : '—';
+const makerName = (id: string | null) => id ? MAKERS[id as keyof typeof MAKERS]?.name ?? id : '—';
 const groupName = (id: string | null) => id ? t(`hw.group.${id}`) : '—';
 
 // ▲/▼ eines Gear-Teils gegenüber dem angelegten im selben Slot (Regel in compare.ts)
@@ -65,7 +65,7 @@ const TYPE_SVG = {
   book: '<rect x="3" y="26" width="22" height="30" rx="2"/><path d="M3 30h22M14 26v30"/><circle cx="14" cy="14" r="5"/>',
   relic: '<circle cx="14" cy="36" r="10"/><circle cx="14" cy="36" r="4"/><path d="M14 22v-8M14 50v8M4 36H0M28 36h-4"/>',
 };
-export const typeSvg = (type: string, color: string) => `<svg aria-hidden="true" viewBox="0 0 28 70" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TYPE_SVG[type] ?? TYPE_SVG.staff}</svg>`;
+export const typeSvg = (type: string, color: string) => `<svg aria-hidden="true" viewBox="0 0 28 70" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TYPE_SVG[type as keyof typeof TYPE_SVG] ?? TYPE_SVG.staff}</svg>`;
 // Gear-Slots als Umrisse passend zu den Gear-Formen (models/gearParts.ts), auf ~24 px erkennbar, viewBox 24 // PH
 const SLOT_SVG: Record<string, string> = {
   kopf: '<path d="M2.5 19.5c3 1.6 16 1.6 19 0"/><path d="M6 19 10.5 7.5C11.5 5 13.5 3.5 17 4.5l2 .8-3.3.4L18 19"/><path d="M7.4 15.5h9.4"/>',   // Spitzhut

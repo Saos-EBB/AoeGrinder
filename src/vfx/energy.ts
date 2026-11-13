@@ -8,11 +8,10 @@ import { scene } from '../render';
 import { particles } from '../fx/particles';
 import { groundAt } from '../collision';
 import { player } from '../state';
-import { V, clamp, outC, outBack, rand as rnd } from '../util';
+import { V, clamp, outC, outBack, rand as rnd, TAU } from '../util';
 
-export const TAU = Math.PI * 2;
-// clamp, outC, outBack, rnd kommen aus util.ts und werden hier nur weitergereicht (alte Importe aus energy bleiben gültig)
-export { clamp, outC, outBack, rnd };
+// clamp, outC, outBack, rnd, TAU kommen aus util.ts und werden hier nur weitergereicht (alte Importe aus energy bleiben gültig)
+export { clamp, outC, outBack, rnd, TAU };
 // Bodenhöhe unter p, gesucht ab p.y + up (Treppen, Brücken); bosses/core.ts nimmt up = 2
 export const gy = (p, up = 1) => groundAt(p.x, p.z, (p.y ?? 0) + up);
 export const onGround = (p, up = 1) => V(p.x, gy(p, up), p.z);
@@ -118,7 +117,7 @@ export function lay(m: THREE.Mesh, c: THREE.Vector3, r: number, lift = .06) {
 }
 
 // ───────────────────────── Geteilte Formen (einmal angelegt)
-export const G = {
+const G = {
   sph: new THREE.SphereGeometry(1, 22, 16),
   hemi: new THREE.SphereGeometry(1, 28, 10, 0, TAU, 0, Math.PI / 2),
   cone: new THREE.ConeGeometry(1, 1, 14, 4, true).translate(0, .5, 0),                       // Spitze oben, Basis am Boden
@@ -145,7 +144,7 @@ function geoOf(name: GeoName) {
   if (!g) { g = new THREE.RingGeometry(.62, 1, 48, 3, Math.PI / 2 - th / 2, th); arcGeos.set(th, g); }
   return g;
 }
-export const arcName = (th: number): GeoName => `arc${Math.round(th * 100)}`;
+const arcName = (th: number): GeoName => `arc${Math.round(th * 100)}`;
 
 // ───────────────────────── Pool
 const POOL_N: Record<string, number> = { cone: 160, sph: 64, ring: 32, disk: 32, cyl: 48, gring: 40, gdisk: 32 };   // PH: Meshes pro Form, sonst 16
@@ -314,13 +313,6 @@ export function arc(c: THREE.Vector3, q: THREE.Quaternion, r: number, th: number
   return fx(dur, (k, _dt, e) => {
     if (!e.ms.length) { const m = em(e, arcName(th), pal, { sc: 3, core: 0, local: true, flow: [0, 0, 0], side: THREE.DoubleSide }); m.position.copy(c); m.quaternion.copy(q); }
     const m = e.ms[0]; m.scale.setScalar(r * (1 + .25 * k)); uK(m, 1 - k * k);
-  });
-}
-// Linie von a nach b auf Höhe y (Strichschnitt, Iaido)
-export function streak(a: THREE.Vector3, b: THREE.Vector3, w: number, pal: Pal, dur = .4) {
-  return fx(dur, (k, _dt, e) => {
-    if (!e.ms.length) { const m = em(e, 'streak', pal, { sc: 3, core: .3, local: true, flow: [0, 0, 0] }); m.position.lerpVectors(a, b, .5); m.lookAt(b); m.scale.set(w * 1.6, w * .6, a.distanceTo(b)); m.userData.w = w; }
-    const m = e.ms[0]; uK(m, 1 - k); m.scale.x = m.userData.w * 1.6 * (1 - .6 * k); m.scale.y = m.userData.w * .6 * (1 - .6 * k);
   });
 }
 // Treffer-Funke im Energie-Look (Blitz)

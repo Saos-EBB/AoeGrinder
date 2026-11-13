@@ -12,18 +12,18 @@ export const batteryMode = () => !!modValue('battery');
 export const batteryMax = () => B.max + (mods.condenser ?? 0);
 export const overcharged = () => batteryMode() && !!player.overcharged;
 
-export function resetBattery() {
+function resetBattery() {
   if (!batteryMode()) { player.overcharged = false; return; }
   player.rageMax = batteryMax();
   player.mana = B.start;
   player.overcharged = false;
 }
 onRunReset(resetBattery, 130);   // Run-Reset (hooks.ts runReset)
-function add(v) {
+function add(v: number) {
   player.mana = Math.min(batteryMax(), player.mana + v);
   if (player.mana >= batteryMax()) player.overcharged = true;
 }
-export function updateBattery(dt) {
+export function updateBattery(dt: number) {
   if (!batteryMode() || player.dead) return;
   player.rageMax = batteryMax();
   if (!player.overcharged) add(B.regenPerS * dt / 1000);
@@ -31,13 +31,13 @@ export function updateBattery(dt) {
 }
 // Pro getroffenem Gegner eines Blitz-Zaubers
 export function batteryHit() { if (batteryMode() && !player.overcharged) add(B.perHitTarget); }
-export const batteryCharge = v => { if (batteryMode()) add(v); };
+export const batteryCharge = (v: number) => { if (batteryMode()) add(v); };
 // Ein Blitz-Zauber wird wirksam: war die Batterie voll, ist er überladen und sie danach leer
-export function consumeOvercharge(tags) {
+export function consumeOvercharge(tags: string[]) {
   if (!overcharged() || !tags?.includes('Blitz')) return false;
   player.overcharged = false;
   player.mana = 0;
   return true;
 }
 // Kosten in Ladung
-export const batteryCost = s => s.charge ?? Math.round((s.mana ?? 0) / B.costDiv);
+export const batteryCost = (s: { charge?: number; mana?: number }) => s.charge ?? Math.round((s.mana ?? 0) / B.costDiv);

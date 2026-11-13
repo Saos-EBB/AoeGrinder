@@ -13,19 +13,19 @@ modal.innerHTML = `<div class="frame panel" role="alertdialog" aria-labelledby="
   </div>
 </div>`;
 document.body.appendChild(modal);
-const el = id => modal.querySelector<HTMLElement>(`#${id}`);
-let done = null;
-function close(ok) {
+const el = (id: string) => modal.querySelector<HTMLElement>(`#${id}`);
+let done: ((ok: boolean) => void) | null = null;
+function close(ok: boolean) {
   modal.classList.remove('show');
   removeEventListener('keydown', onKey, true);
   done?.(ok);
   done = null;
 }
-const onKey = e => { if (e.code === 'Escape') { e.stopImmediatePropagation(); close(false); } };
+const onKey = (e: KeyboardEvent) => { if (e.code === 'Escape') { e.stopImmediatePropagation(); close(false); } };
 el('askNo').addEventListener('click', () => close(false));
 el('askYes').addEventListener('click', () => close(true));
 
-export function askConfirm(title, text, yes = t('ui.yes')) {
+export function askConfirm(title: string, text: string, yes = t('ui.yes')) {
   if (done) close(false);
   el('askTitle').textContent = title;
   el('askText').textContent = text;

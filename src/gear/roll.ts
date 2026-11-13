@@ -8,9 +8,10 @@ import { pick } from '../util';
 import { FIGURES } from '../figureTable';
 import { SLOTS, GEAR, BOX, type Slot, type GearItem } from './data';
 import { setOfFigure, anySlotFull, takeGear, kosmetikBoxLeft, kosmetikOwned } from './inventory';
+import type { FigureId } from '../figureTable';
 
 // Schule des gespielten Magiers (heroModel.figureId) → Tag der Spells für den Fokus (figureTable.ts). ?-Magier und Krieger: alle Schulen
-const schoolTag = (skin: string | null) => (FIGURES[skin]?.element ? FIGURES[skin].tag : undefined);
+const schoolTag = (skin: string | null) => (FIGURES[skin as FigureId]?.element ? FIGURES[skin as FigureId].tag : undefined);
 
 // rarity: feste Seltenheit (Dev, Tests), skin: gespielter Magier (Fokus aus seiner Schule)
 export function rollGear(slot: Slot = pick([...SLOTS]), rarity: number | null = null, skin: string | null = null): GearItem {

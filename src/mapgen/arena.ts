@@ -9,6 +9,7 @@ import { t } from '../i18n';
 import { colored } from './build';
 import * as M from './models';
 import { hooks } from '../hooks';
+import type { PropCtx } from '../props';
 
 const A = { r: 40, wallR: 42, pillars: 16, pillarR: 34, braziers: 8, bossDelay: 3000 };
 
@@ -29,7 +30,7 @@ export const arena: any = {
     c.copy(floorA).lerp(floorB, 0.5 + 0.5 * Math.sin(r * 0.6));    // Ringe im Pflaster
     if (Math.abs(r - A.r + 3) < 1 || Math.abs(r - 12) < 0.8) c.lerp(ring, 0.8);
   },
-  props(ctx) {
+  props(ctx: PropCtx) {
     const mat = toonMat({ vertexColors: true });
     // Außenwand: Ring aus Blöcken
     const N = 28, segW = A.wallR * 2 * Math.PI / N + 0.6;

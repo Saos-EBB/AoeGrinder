@@ -17,7 +17,7 @@ import { renderMenu } from './mainMenu';
 import { html } from './dom';
 
 // Dev: Set des Schul-Magiers anlegen (n Teile, Rest leer), ohne Staub und Limit. Seltenheit lila
-export function devWearSet(setId: string, n: number = SLOTS.length) {
+function devWearSet(setId: string, n: number = SLOTS.length) {
   SLOTS.forEach((slot, i) => {
     if (i >= n) { wearMap()[slot] = null; return; }
     const g = rollGear(slot, 4, figureOfSet(setId));
@@ -30,7 +30,7 @@ export function devWearSet(setId: string, n: number = SLOTS.length) {
 }
 
 // Dev: Set-Erfolg (= Set-Skin frei) setzen oder entfernen, ohne Gear
-export function devSetAch(setId: string, on: boolean) {
+function devSetAch(setId: string, on: boolean) {
   const a = setAch(setId);
   meta.achievements = meta.achievements.filter(x => x !== a);
   if (on) meta.achievements.push(a);

@@ -14,9 +14,9 @@ import { t } from '../i18n';
 const SAVE_CODE = { version: 1, checkLen: 4 };
 
 // Prüfsumme: einfacher Hash über den Base64-Teil, 4 Hex-Zeichen
-const check = s => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 65521; return h.toString(16).padStart(SAVE_CODE.checkLen, '0'); };
-const toB64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
-const fromB64 = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+const check = (s: string) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 65521; return h.toString(16).padStart(SAVE_CODE.checkLen, '0'); };
+const toB64 = (s: string) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const fromB64 = (s: string) => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
 
 function exportCode() {
   const data = { v: SAVE_CODE.version, d: meta.dust, u: meta.unlocked, b: meta.bought, t: meta.bestTier, o: meta.offer,
@@ -27,7 +27,7 @@ function exportCode() {
 }
 
 // Gibt eine Fehlermeldung zurück oder null, wenn der Code passt. replace: wirklich laden.
-function importCode(code, replace = true) {
+function importCode(code: string, replace = true) {
   const s = String(code).replace(/\s+/g, '');
   if (s.length <= SAVE_CODE.checkLen) return t('code.short');
   const b64 = s.slice(0, -SAVE_CODE.checkLen);
@@ -37,7 +37,7 @@ function importCode(code, replace = true) {
   if (data?.v !== SAVE_CODE.version) return t('code.version', { a: data?.v ?? '?', b: SAVE_CODE.version });
   if (!replace) return null;
   // Alte Waffen als [Effekt, Seltenheit, Modell], Baukasten-Waffen als { r, s }
-  const inv = (data.i ?? []).map((w, n) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : cleanWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
+  const inv = (data.i ?? []).map((w: any, n: number) => Array.isArray(w) ? { id: n + 1, e: w[0], r: w[1], m: w[2] } : cleanWeapon({ id: n + 1, v: 2, r: w.r, s: w.s }));
   Object.assign(meta, { dust: data.d ?? 0, unlocked: data.u ?? [], bought: data.b ?? {}, bestTier: data.t ?? 0, offer: data.o ?? [], inv,
     equipped: inv[data.q]?.id ?? null, nextWeapon: inv.length, skins: data.k, achievements: data.ac,
     gear: data.g, wear: data.w, gearOver: data.go, nextGear: data.ng, looks: data.lk, lookWear: data.lw, maps: data.mp, stats: data.st });
@@ -53,7 +53,7 @@ function importCode(code, replace = true) {
 // Fenster: Textfeld, Kopieren oder Laden. Gebaut in mount (main.ts)
 let modal: HTMLElement;
 let mode = 'show';
-function open(m) {
+function open(m: string) {
   mode = m;
   const text = $('codeText') as HTMLTextAreaElement;
   $('codeTitle').textContent = t(m === 'show' ? 'code.title' : 'code.enter');

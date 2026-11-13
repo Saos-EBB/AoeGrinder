@@ -16,7 +16,7 @@ export type HudElementId = 'timer' | 'runinfo' | 'xp' | 'hp' | 'mana' | 'cast' |
 export type Placement = { anchor: Anchor; x: number; y: number; scale: number; hidden?: boolean; variant?: string };
 export type HudLayout = { id: string; elements: Partial<Record<HudElementId, Placement>> };
 
-export const HUD_NAMES: Record<HudElementId, string> = {
+const HUD_NAMES: Record<HudElementId, string> = {
   timer: t('hudEl.timer'), runinfo: t('hudEl.runinfo'), xp: t('hudEl.xp'), hp: t('hudEl.hp'), mana: t('hudEl.mana'), cast: t('hudEl.cast'), hotbar: t('hudEl.hotbar'), killmeter: t('hudEl.killmeter'), combo: t('hudEl.combo'), buffs: t('hudEl.buffs'), relics: t('hudEl.relics'), minimap: t('hudEl.minimap'), compass: t('hudEl.compass'), splits: t('hudEl.splits'), tracker: t('hudEl.tracker'), unitframe: t('hudEl.unitframe'),
   micro: t('hudEl.micro'), feats: t('hudEl.feats'),
 };
@@ -25,7 +25,7 @@ const SNAP = 0.5;   // Raster in %
 
 // Layout = Standard-Layout des aktiven UI-Flavors; ein HUD-Teil (presets.ts HUD_PARTS) kann aus einem anderen Flavor kommen (uiSettings.hudMix).
 // Eigene Änderungen gelten pro UI-Flavor, bei einem fremden Teil pro Paar „UI-Flavor+Teil-Flavor“ (Schlüssel hoellenfeste+krypta)
-export function elementFlavor(id: HudElementId): Flavor {
+function elementFlavor(id: HudElementId): Flavor {
   const part = partOf(id), pick = part && uiSettings.hudMix?.[part];
   return pick && pick !== 'flavor' && FLAVORS.some(f => f.id === pick) ? flavorById(pick) : activeFlavor();
 }
@@ -52,7 +52,7 @@ function saveOverride(id: HudElementId, p: Placement | null) {
 
 // Wrapper um ein vorhandenes Element. Die Position setzt nur applyLayout
 const wrappers = new Map<HudElementId, HTMLElement>();
-export function registerHudElement(id: HudElementId, inner: HTMLElement) {
+function registerHudElement(id: HudElementId, inner: HTMLElement) {
   const w = document.createElement('div');
   w.className = 'hudEl';
   w.dataset.hud = id;
@@ -78,7 +78,7 @@ function place(id: HudElementId) {
   if (p.variant) w.dataset.variant = p.variant; else delete w.dataset.variant;
   w.classList.toggle('fg-panel', !!p.variant?.split(' ').includes('panel'));   // Panel mit den Ornamenten des Flavors
 }
-export function applyLayout() {
+function applyLayout() {
   for (const id of wrappers.keys()) place(id);
   keepOutOfCorners();
 }

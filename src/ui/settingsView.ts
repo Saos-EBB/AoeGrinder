@@ -11,7 +11,7 @@ import { HUD_PARTS, type HudPart } from './hud/presets';
 import { t, locale, lang, LANGS, setLang, Lang } from '../i18n';
 
 let tab = 'interface';
-function showTab(id) {
+function showTab(id: string) {
   tab = id;
   for (const b of $('setTabs').querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.tab === id);
   for (const s of $('settingsBox').querySelectorAll<HTMLElement>('section[data-tab]')) s.hidden = s.dataset.tab !== id;
@@ -87,7 +87,7 @@ function flavorCards() {
 }
 
 // ---------- Eigene UI-Stände (4 Plätze) ----------
-const fmtAt = iso => { const d = new Date(iso); return `${d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`; };
+const fmtAt = (iso: string) => { const d = new Date(iso); return `${d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`; };
 function profileRows() {
   const box = document.createElement('div');
   box.className = 'setProfiles';

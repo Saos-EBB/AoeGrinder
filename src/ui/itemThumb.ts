@@ -11,7 +11,7 @@ import { kosmetikTree } from '../models/kosmetikParts';
 import type { Mat } from '../models/partKit';
 import { KOSMETIK, type GearItem } from '../gear/data';
 import { groupOf, makerOf } from '../gear/shown';
-import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot } from './weaponThumb';
+import { snapMany, thumbCache as cache, weaponKey, weaponShot, type Shot, type ThumbWeapon } from './weaponThumb';
 import { V } from '../util';
 
 const THUMB = { px: 128, yaw: 0.5, pitch: 0.22, pad: 1.1, splinter: 0.85, budget: 6, batch: 8 };   // Bildgröße, Blick leicht schräg von vorn und oben, Rand; Nachladen: ms Aufbau und Bilder pro Frame // PH
@@ -152,7 +152,7 @@ function thumbHtml(key: string, make: () => Shot | null, fallback: string) {
 // HTML fürs Feld: Bild des Teils bzw. Looks, bis es fertig ist (oder wenn das Rendern scheitert) das SVG. Waffen im Raster ebenso
 export const gearThumbHtml = (g: GearItem, fallback: string) => thumbHtml(gearKey(g), () => gearShot(g), fallback);
 export const kosmetikThumbHtml = (id: string, fallback: string) => thumbHtml(`k:${id}`, () => kosmetikShot(id), fallback);
-export const weaponThumbHtml = (w, fallback: string) => thumbHtml(weaponKey(w), () => weaponShot(w), fallback);
+export const weaponThumbHtml = (w: ThumbWeapon, fallback: string) => thumbHtml(weaponKey(w), () => weaponShot(w), fallback);
 
 // Renderer und Shader vorab anlegen (im Hauptmenü, wenn der Browser Luft hat), damit das erste Öffnen des Fensters nicht stockt.
 // when(): nur dann (z. B. nicht im Run); sonst beim nächsten Leerlauf erneut fragen, höchstens bis es einmal geklappt hat

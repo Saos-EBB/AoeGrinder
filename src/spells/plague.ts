@@ -19,6 +19,8 @@ import { mark, markStacks, popMark, poison, poisoned } from '../plagueMarks';
 import { t } from '../i18n';
 import { onMobDeath, onAnyHit, onRunReset } from '../hooks';
 import { plagueSpell } from './plagueSpell';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const GREEN = [0.5, 1.6, 0.25], SICK = [0.25, 0.5, 0.08], DARK = [0.15, 0.08, 0.2];
 const heal = v => { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + v); };
@@ -47,7 +49,7 @@ export function meltScale() {
   return Math.max(0.1, 1 - (t - liquid.start) / 600 * 0.9);
 }
 export const plagueRooted = () => liquid.end > state.now;
-export function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUntil = 0; }
+function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUntil = 0; }
 onRunReset(resetPlague, 140);   // Run-Reset (hooks.ts runReset)
 
 // Jeden Frame aus updatePlayer: Gift-Ticks
@@ -95,7 +97,7 @@ export const sludge = spell({
   name: t('spell.sludge.name'), desc: t('spell.sludge.desc'), tags: ['Geschoss'],
   lifePct: 0.01, mana: 40, cd: 0, range: P.sludge.range, showDmg: P.sludge.dmg * UNIT,
   canCast: () => nearestTarget(P.sludge.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const t = nearestTarget(P.sludge.range);
     if (!t) return;
     sludgeLook(t.pos, c.radius(P.sludge.radius));
@@ -106,7 +108,7 @@ export const sludge = spell({
 export const slimetrap = spell({
   name: t('spell.slimetrap.name'), desc: t('spell.slimetrap.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.02, mana: 80, cd: 8000, range: P.trap.range, radius: P.trap.radius, ground: true,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const seen = new Set();
     addField(c, { pos: point, radius: c.radius(P.trap.radius), dur: P.trap.ms, tickMs: 250, visual: slimeTrapField(),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) { if (seen.has(m)) continue; seen.add(m); applyRoot(m, P.trap.rootMs + 1000 * mods.toughSlime, 'glue'); mark(m); } },
@@ -117,7 +119,7 @@ export const slimetrap = spell({
 export const slimewave = spell({
   name: t('spell.slimewave.name'), desc: t('spell.slimewave.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.03, mana: 110, cd: 6000, showDmg: P.wave.dmg * UNIT,
-  effect(c) {
+  effect(c: CastCtx) {
     const f = forward(), a = player.pos.clone(), len = c.radius(P.wave.length), b = { x: a.x + f.x * len, y: a.y, z: a.z + f.z * len };
     for (const m of mobsOnLine(a, b, c.radius(P.wave.width))) {
       if (!c.hit(m, P.wave.dmg * UNIT) || m.dead) continue;
@@ -132,7 +134,7 @@ export const slimewave = spell({
 export const blackhole = spell({
   name: t('spell.blackhole.name'), desc: t('spell.blackhole.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.05, mana: 200, cd: 20000, range: P.hole.range, radius: P.hole.radius, ground: true, showDmg: P.hole.dmg * UNIT,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const caught = new Set<any>();
     addField(c, { pos: point, radius: c.radius(P.hole.radius), dur: P.hole.ms, visual: blackHoleField(),
       onUpdate(f, dt) {
@@ -160,7 +162,7 @@ export const blackhole = spell({
 export const poisoncloud = spell({
   name: t('spell.poisoncloud.name'), desc: t('spell.poisoncloud.desc'), tags: ['Fläche'],
   lifePct: 0.03, mana: 120, cd: 10000, range: P.cloud.range, radius: P.cloud.radius, ground: true, showDmg: P.cloud.dps * UNIT,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     addField(c, { pos: point, radius: c.radius(P.cloud.radius), dur: P.cloud.ms, visual: poisonCloudField(),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) if (c.hit(m, P.cloud.dps * UNIT) && !m.dead) mark(m); },
     });
@@ -170,7 +172,7 @@ export const poisoncloud = spell({
 export const web = spell({
   name: t('spell.web.name'), desc: t('spell.web.desc'), tags: ['Fläche', 'Kontrolle'],
   lifePct: 0.04, mana: 150, cd: 30000, range: P.web.range, radius: P.web.radius, ground: true,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const list = mobsInRadius(point, c.radius(P.web.radius));
     for (const m of list) {
       const links = list.filter(o => o !== m).sort((a, b) => dist2d(a.pos, m.pos) - dist2d(b.pos, m.pos)).slice(0, P.web.links);
@@ -185,27 +187,27 @@ export const contract = spell({
   name: t('spell.contract.name'), desc: t('spell.contract.desc'), tags: ['Kontrolle'],
   lifePct: 0.03, mana: 100, cd: 10000,
   canCast: () => marked(P.contract.radius).length ? null : t('msg.noMarked'),
-  effect(c) { contractAll(c, marked(c.radius(P.contract.radius))); },
+  effect(c: CastCtx) { contractAll(c, marked(c.radius(P.contract.radius))); },
 });
 
 export const drain = spell({
   name: t('spell.drain.name'), desc: t('spell.drain.desc'), tags: ['Heilung'],
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
   canCast: () => marked(P.drain.radius).length ? null : t('msg.noMarked'),
-  effect(c) { drainAll(c, marked(c.radius(P.drain.radius))); },
+  effect(c: CastCtx) { drainAll(c, marked(c.radius(P.drain.radius))); },
 });
 
 export const burst = spell({
   name: t('spell.burst.name'), desc: t('spell.burst.desc'),
   lifePct: 0.02, mana: 90, cd: 6000, showDmg: P.drain.dmg * UNIT,
   canCast: () => marked(P.burst.radius).length ? null : t('msg.noMarked'),
-  effect(c) { burstAll(withScale(c), marked(c.radius(P.burst.radius))); },
+  effect(c: CastCtx) { burstAll(withScale(c), marked(c.radius(P.burst.radius))); },
 });
 
 export const melt = spell({
   name: t('spell.melt.name'), desc: t('spell.melt.desc'), tags: ['Bewegung', 'Fläche', 'Kontrolle'],
   lifePct: 0.1, mana: 300, cd: 45000, ranks: ['mana', 'radius'],
-  effect(c) {
+  effect(c: CastCtx) {
     const M = P.melt, pos = player.pos.clone(), R = c.radius(M.radius);
     liquid.start = state.now; liquid.end = state.now + M.ms;
     player.meltUntil = liquid.end;

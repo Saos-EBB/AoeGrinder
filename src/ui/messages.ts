@@ -14,7 +14,7 @@ import { activeFlavor, flavorById } from './flavors';
 import { t } from '../i18n';
 import { fmtDiff } from './fmt';
 
-export const FEATS = ['multi3', 'multi5', 'multi10', 'multi20', 'combo25', 'combo50', 'combo100', 'combo200',
+const FEATS = ['multi3', 'multi5', 'multi10', 'multi20', 'combo25', 'combo50', 'combo100', 'combo200',
   'untouched', 'elite', 'boss', 'meterFull', 'levelUp', 'split', 'megaCrit', 'closeCall'] as const;
 export type FeatId = typeof FEATS[number];
 
@@ -68,7 +68,7 @@ function tickQueue(now: number) {
 
 // ---------- Auslöser ----------
 let kills = 0, burst: number[] = [], multiDone = 0, combo = 0, level = 0, hurtAt = 0, streakKills = 0, untouchedDone = false;
-let meterFull = false, splitsSeen = 0, bestAtStart: Record<number, number> = {}, lowest = 1, armed = false, pollAt = 0, runSplits = null;
+let meterFull = false, splitsSeen = 0, bestAtStart: Record<number, number> = {}, lowest = 1, armed = false, pollAt = 0, runSplits: object | null = null;
 const packs = new Map<number, number>(), bossDone = new WeakSet();
 
 // Treffer am Spieler (dmgNumbers.ts hurtNumber)

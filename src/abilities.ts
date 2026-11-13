@@ -34,9 +34,9 @@ function emit(mob, rate, dt, color) {
 
 // Geschoss als Partikelspur: fliegt gerade auf die Stelle, an der der Spieler beim Abschuss stand.
 // Trifft nur, wenn es unterwegs näher als SHOT.hitR am Spieler vorbeikommt, sonst verfällt es am Ziel (seitlich laufen weicht aus).
-export const SHOT = { hitR: 1.2, size: 0.5, glow: 1.35, trail: 4 };   // PH
+const SHOT = { hitR: 1.2, size: 0.5, glow: 1.35, trail: 4 };   // PH
 const projectiles = [];
-export function shoot(mob, color, speed, onHit, size = SHOT.size) {
+function shoot(mob, color, speed, onHit, size = SHOT.size) {
   mob.attackAt = state.now;
   const x = mob.pos.x, y = mob.pos.y + 1.6, z = mob.pos.z;
   const tx = player.pos.x, ty = player.pos.y + 1.2, tz = player.pos.z, len = Math.hypot(tx - x, ty - y, tz - z) || 1;
@@ -88,7 +88,7 @@ export function clearAbilities() {
 }
 
 // Fernkämpfer: über max ranlaufen, sonst stehen bleiben und zum Spieler drehen. Kein Weglaufen mehr (Fairness, map-umbau Phase 0b)
-export function holdRange(mob, dt, max) {
+function holdRange(mob, dt, max) {
   const d = dist2d(mob.pos, player.pos);
   if (d > max) moveMob(mob, player.pos, dt);
   faceMob(mob, player.pos);
@@ -329,7 +329,7 @@ function dust(mob, r, n = 40) {
 }
 // Lauerer: im Blick, wenn er (von der Kamera aus) vor dir steht und auf dem Bild ist
 const vv = new THREE.Vector3();
-export function inView(mob) {
+function inView(mob) {
   const fx = player.pos.x - camera.position.x, fz = player.pos.z - camera.position.z, fl = Math.hypot(fx, fz) || 1;
   const mx = mob.pos.x - player.pos.x, mz = mob.pos.z - player.pos.z, ml = Math.hypot(mx, mz);
   if (ml > 0.5 && (fx * mx + fz * mz) / (fl * ml) < K.lurk.cos) return false;
@@ -442,7 +442,7 @@ const Z = { r: 10, healPct: 0.05, healCd: 3000, castMs: 1000, shieldCd: 6000, ha
 const near = (mob, f) => state.mobs.filter(m => !m.dead && m.kind && dist2d(m.pos, mob.pos) <= Z.r && f(m));
 const bubbleGeo = (() => { const g = new THREE.SphereGeometry(1, 16, 12); g.dispose = () => {}; return g; })();
 const bubbleMat = (() => { const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 0.9, 2.2), transparent: true, opacity: 0.22, depthWrite: false }); m.dispose = () => {}; return m; })();
-export function giveShield(m) {
+function giveShield(m) {
   if (m.kindShield) return;
   const s = m.model.root.scale.y || 1, h = m.model.height / s;
   const b = new THREE.Mesh(bubbleGeo, bubbleMat);

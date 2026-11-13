@@ -8,6 +8,7 @@ import { buildLayout, groundColor, type Look } from './build';
 import type { ThemeInfo, PackSpot, Spot } from './types';
 import { dist2d } from '../util';
 import { state } from '../state';
+import type { PropCtx } from '../props';
 
 export const GEN = { tries: 10, waterSlow: 0.8, lavaDps: 40, edgeMin: 30 };   // PH: Wasser bremst 20 %, Lava wie BRD (zones.ts)
 
@@ -51,7 +52,7 @@ export function generate(def: GenDef, seed: number): { layout: Layout; tries: nu
 }
 
 export function genZone(def: GenDef) {
-  let pathDist: ((x: number, z: number) => number) | undefined, ground = null, edges: Spot[] = [];
+  let pathDist: ((x: number, z: number) => number) | undefined, ground: ((c: THREE.Color, x: number, z: number) => void) | null = null, edges: Spot[] = [];
   const zone: any = {
     gen: true, id: def.id, name: def.name, theme: def.theme, env: def.env, toon: true, mobs: def.mobs, packs: def.packs, storm: def.storm,
     seed: 0, tries: 0, layout: null as Layout, packSpots: [] as PackSpot[], spawn: { x: 0, z: 0 }, bounds: null, meshes: [] as THREE.Object3D[],
@@ -65,7 +66,7 @@ export function genZone(def: GenDef) {
     },
     height(x: number, z: number) { return zone.layout?.height?.(x, z) ?? 0; },
     ground(c: THREE.Color, x: number, z: number) { ground?.(c, x, z); },
-    props(ctx) {
+    props(ctx: PropCtx) {
       const rng = makeRng(mixSeed(def.theme.id, zone.seed, 'deko'));
       zone.meshes = buildLayout(ctx, zone.layout, def.look, rng, ctx.heightAt);
       state.fogExtra = def.fogExtra ?? 0;

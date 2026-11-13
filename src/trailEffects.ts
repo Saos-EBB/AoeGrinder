@@ -19,7 +19,7 @@ export function updateTrailEffects() {
   for (const p of zones) { x0 = Math.min(x0, p.x - p.r); x1 = Math.max(x1, p.x + p.r); z0 = Math.min(z0, p.z - p.r); z1 = Math.max(z1, p.z + p.r); }
   for (const m of state.mobs) {
     if (m.dead || m.pos.x < x0 || m.pos.x > x1 || m.pos.z < z0 || m.pos.z > z1) continue;
-    if (!zones.some(p => (m.pos.x - p.x) ** 2 + (m.pos.z - p.z) ** 2 < p.r * p.r)) continue;
+    if (!zones.some((p: { x: number; z: number; r: number }) => (m.pos.x - p.x) ** 2 + (m.pos.z - p.z) ** 2 < p.r * p.r)) continue;
     if (fx.slow) applySlow(m, fx.slow, fx.slowMs);
     if (fx.dps && state.now >= (m.trailTickAt ?? -Infinity)) {
       m.trailTickAt = state.now + FIRE_TICK;

@@ -3,6 +3,8 @@ import { hasRune } from './core';
 import { mods } from '../config';
 import { runChain, nearestMob } from './chain';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Mob } from '../state';
 
 const SHOCK = 5000, SPARK = 8, MORE = 6;   // v30: Sprünge verdoppelt   // PH: Dauer, Sprünge pro Stufe der Rune Funkenregen
 
@@ -17,10 +19,10 @@ export const arc = {
     { id: 'spark', name: t('spell.arc.runes.spark.name'), desc: t('spell.arc.runes.spark.desc'), stages: 2 },
   ],
   canCast: () => nearestMob(arc.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const first = nearestMob(arc.range);
     if (!first) return;
     runChain(c, first, { jumps: (arc.jumps + (hasRune('arc', 'more') ? MORE : 0) + mods.arcJumps + (hasRune('arc', 'spark') ? SPARK * (state.cardPicks['rune-arc-spark'] || 1) : 0)) * mods.jumpMul, range: arc.jumpRange, dmg: arc.dmg, overCorpses: hasRune('arc', 'corpses'),
-      onHit: hasRune('arc', 'shock') ? m => { m.shockUntil = state.now + SHOCK; } : null });
+      onHit: hasRune('arc', 'shock') ? (m: Mob) => { m.shockUntil = state.now + SHOCK; } : null });
   },
 };

@@ -7,6 +7,7 @@ import { iceAge } from '../figures';
 import { mobsOnLine, forward } from '../melee';
 import { capsuleLook } from '../vfx/frostLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const CAPSULE = { len: 15, width: 3, freezeMs: 3000 };   // PH: Eiszeit
 
@@ -21,7 +22,7 @@ export const coc = {
     { id: 'freeze', name: t('spell.coc.runes.freeze.name'), desc: t('spell.coc.runes.freeze.desc') },
     { id: 'reap', name: t('spell.coc.runes.reap.name'), desc: t('spell.coc.runes.reap.desc') },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     if (iceAge()) {
       const f = forward(), to = { x: player.pos.x + f.x * CAPSULE.len, y: player.pos.y, z: player.pos.z + f.z * CAPSULE.len };
       for (const m of mobsOnLine(player.pos, to, CAPSULE.width)) if (c.hit(m, rand(coc.min, coc.max)) && !m.dead) applyRoot(m, CAPSULE.freezeMs, 'ice');

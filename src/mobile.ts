@@ -275,7 +275,7 @@ function showCd(b: Btn, id: string) {
 }
 
 // ---------- Einstellungen → Steuerung: Zoom und Tastenbelegung ----------
-export const ZOOM = { min: 7, max: 14, def: 10 };   // PH: Kameraabstand in yd, dunkel.ts deckelt bei 14
+const ZOOM = { min: 7, max: 14, def: 10 };   // PH: Kameraabstand in yd, dunkel.ts deckelt bei 14
 let zoomDist = ZOOM.def;
 function loadZoom() {
   zoomDist = Number(readRaw(KEYS.mobileZoom)) || ZOOM.def;

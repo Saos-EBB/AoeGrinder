@@ -14,18 +14,20 @@ import { onMapObjects, addDevButton, devAhead } from './objects';
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
 import { onMobDeath } from '../hooks';
+import type { Mob } from '../state';
+import type { PackSpot, Spot } from '../mapgen/types';
 
-export const THIEF = { chance: 0.3, escapeMs: 15000, speed: 0.95, dust: [60, 100], repickMs: 1500, sparkMs: 120 };
+const THIEF = { chance: 0.3, escapeMs: 15000, speed: 0.95, dust: [60, 100], repickMs: 1500, sparkMs: 120 };
 const GOLD = [2.6, 2.0, 0.6];
 
 const thiefAbility = {
-  onCombatStart(m) { m.thiefEnd ??= state.now + THIEF.escapeMs; combatText(m.pos, t('thief.spotted'), 'crit', 3); },
-  onUpdate(m, dt) {
+  onCombatStart(m: Mob) { m.thiefEnd ??= state.now + THIEF.escapeMs; combatText(m.pos, t('thief.spotted'), 'crit', 3); },
+  onUpdate(m: Mob, dt: number) {
     if (state.now >= m.thiefEnd) { escape(m); return true; }
     // Ziel: Pack-Platz weit weg von dir, nicht zu weit vom Dieb; alle repickMs neu
     if (!m.fleeTo || state.now >= m.fleeAt) {
       const spots = zone.packSpots ?? [];
-      m.fleeTo = spots.length ? spots.reduce((a, b) => score(m, a) >= score(m, b) ? a : b) : { x: m.pos.x * 2 - player.pos.x, z: m.pos.z * 2 - player.pos.z };
+      m.fleeTo = spots.length ? spots.reduce((a: PackSpot, b: PackSpot) => score(m, a) >= score(m, b) ? a : b) : { x: m.pos.x * 2 - player.pos.x, z: m.pos.z * 2 - player.pos.z };
       m.fleeAt = state.now + THIEF.repickMs;
     }
     const to = new THREE.Vector3(m.fleeTo.x, 0, m.fleeTo.z);
@@ -34,9 +36,9 @@ const thiefAbility = {
     return true;   // greift nie an
   },
 };
-const score = (m, s) => dist2d(s, player.pos) - 0.6 * dist2d(s, m.pos);
+const score = (m: Mob, s: Spot) => dist2d(s, player.pos) - 0.6 * dist2d(s, m.pos);
 
-function escape(m) {
+function escape(m: Mob) {
   ringFx(m.pos, 3, [1.9, 0.5, 2.6], 900);
   for (let i = 0; i < 30; i++) particles.spawn({ x: m.pos.x, y: m.pos.y + rand(0, 2), z: m.pos.z, vx: rand(-2, 2), vy: rand(1, 4), vz: rand(-2, 2), life: 0.8, color: [1.9, 0.5, 2.6], size: rand(0.3, 0.5) });
   combatText(m.pos, t('thief.gone'), 'miss', 3);
@@ -47,7 +49,7 @@ function escape(m) {
   stats.escaped++;
 }
 
-export function spawnThief(x: number, z: number) {
+function spawnThief(x: number, z: number) {
   if (!zone.theme) return null;
   const m: any = spawnKind(zone.theme.id, 'schnell', 'none', new THREE.Vector3(x, 0, z), player.level, ++state.packCounter);
   if (!m) return null;

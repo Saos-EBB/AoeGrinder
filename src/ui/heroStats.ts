@@ -36,14 +36,14 @@ const intSigned = (v: number) => `${v < 0 ? '−' : '+'}${fmtInt(Math.abs(v))}`;
 // Formel mit diesen mods auswerten (echte Funktionen aus formulas.ts), danach die echten mods zurück
 function withMods<T>(snap: Snap, fn: () => T): T {
   const keep = { ...mods };
-  for (const k of Object.keys(mods)) delete mods[k];
+  for (const k of Object.keys(mods) as (keyof typeof mods)[]) delete mods[k];
   Object.assign(mods, snap);
-  try { return fn(); } finally { for (const k of Object.keys(mods)) delete mods[k]; Object.assign(mods, keep); }
+  try { return fn(); } finally { for (const k of Object.keys(mods) as (keyof typeof mods)[]) delete mods[k]; Object.assign(mods, keep); }
 }
 // mods nach Basis, nach Waffe und nach Gear als reine Rechnung (E8, ARCH-05): Waffe und Gear schreiben wie beim Run-Start,
 // aber in eine Kopie (frische mods, Kopie der spellStats, eigenes state-Stück), die echten mods/state bleiben unberührt.
 // Schlägt etwas fehl: keine Aufschlüsselung
-export function computeModLayers(weaponOn: boolean, figureId: string | null): { base: Snap; weapon: Snap; gear: Snap } | null {
+function computeModLayers(weaponOn: boolean, figureId: string | null): { base: Snap; weapon: Snap; gear: Snap } | null {
   try {
     const stats = structuredClone(state.spellStats ?? {});
     const to: ModTarget = { mods: freshMods(), stat: id => stats[id] ??= { dmg: 1, mana: 1, radius: 1 }, state: { poolExtra: [] } };
@@ -82,7 +82,7 @@ const DEFS: Record<string, Def> = {
   regenCombat: { id: 'regenCombat', label: () => t('hw.st.regenCombat'), v: () => mods.castRegen, fmt: pctAbs, dfmt: pctSigned, show: () => !player.rageMax },
   cost: { id: 'cost', label: () => t('hw.st.cost'), v: () => 1 - mods.manaCostMul * modFactor('manaCost'), fmt: pctAbs, dfmt: pctSigned },
 };
-export const MAIN = ['dmg', 'crit', 'cd', 'radius', 'hp', 'mana'];
+const MAIN = ['dmg', 'crit', 'cd', 'radius', 'hp', 'mana'];
 
 // Zeile mit Aufschlüsselung. L = Stufen (oder null), cur = mods, wie sie gerade gelten (Run) bzw. nach Gear (Hauptmenü)
 function statRow(def: Def, L: ReturnType<typeof layers>, live: boolean): StatRow {
@@ -104,7 +104,7 @@ function elementRows(live: boolean): StatRow[] {
   if (mag && !set) for (const s of SLOTS) { const g = worn(s); if (g && g.s.element !== 'none') fromG[g.s.element] = (fromG[g.s.element] ?? 0) + ROLLS.procChance * factor(g.r) * GEAR.mul; }
   const rows: StatRow[] = Object.keys(ELEMENTS).filter(k => k !== 'none').map(k => {
     const a = fromW[k] ?? 0, b = fromG[k] ?? 0;
-    return { id: `el.${k}`, label: t('hw.st.elProc', { el: ELEMENTS[k].name }), color: elementColor(k), value: a + b ? pctAbs(a + b) : DASH,
+    return { id: `el.${k}`, label: t('hw.st.elProc', { el: ELEMENTS[k as keyof typeof ELEMENTS].name }), color: elementColor(k), value: a + b ? pctAbs(a + b) : DASH,
       parts: a + b ? [[t('hw.br.weapon'), a ? pctSigned(a) : '±0'], [t('hw.br.gear'), b ? pctSigned(b) : '±0']] : undefined };
   });
   const has = (k: string) => !!(fromW[k] || fromG[k]), E = ROLLS.element;
