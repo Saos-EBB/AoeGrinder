@@ -14,5 +14,6 @@ export interface Fig {
   bones: THREE.Bone[]; parts: any[];
   root: THREE.Group; hips: THREE.Bone; chest: THREE.Bone; neck: THREE.Bone; head: THREE.Bone;
   armL: WarArm; armR: WarArm; legL: WarLeg; legR: WarLeg; clothAnchor: THREE.Object3D;
+  fxGroup: THREE.Group; gy: () => number;   // Effekt-Gruppe (eigene Szene-Wurzel), Boden unter der Figur
   bp: { pHips: any; pChest: any; pNeck: any; pHead: any; pBelt: any };   // Grund-Teile, die Skins umfärben oder rauswerfen
 }
