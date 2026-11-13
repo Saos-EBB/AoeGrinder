@@ -16,7 +16,7 @@ const fire = () => meterSchool() === 'Feuer';
 export const meterValue = () => fire() ? meter.heat / H.max : meter.value;
 export const meterHeat = () => fire() ? meter.heat : 0;
 export const meterOverheated = () => fire() && meter.over;
-// Stufe fürs Modell (models/strichMagier.ts): 0–24 %, 25–49 %, 50–99 %, voll; -1 ohne Anzeige. Überhitzt zählt als voll
+// Stufe fürs Modell (models/strichMagier/): 0–24 %, 25–49 %, 50–99 %, voll; -1 ohne Anzeige. Überhitzt zählt als voll
 export const meterStage = () => { if (!meterSchool()) return -1; const v = meterValue(); return v >= 1 || meterOverheated() ? 3 : v >= 0.5 ? 2 : v >= 0.25 ? 1 : 0; };
 const full = school => meter.value >= 1 && meterSchool() === school;
 

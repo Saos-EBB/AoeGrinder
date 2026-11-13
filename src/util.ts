@@ -57,7 +57,7 @@ export function mergeByJoint(root, keep) {
   }
 }
 
-// Zickzack-Linie von a nach b für Blitze: depth-mal halbieren, Mitte um len × amp zufällig versetzen (vfx/boltLook.ts, models/strichMagier.ts)
+// Zickzack-Linie von a nach b für Blitze: depth-mal halbieren, Mitte um len × amp zufällig versetzen (vfx/boltLook.ts, models/strichMagier/)
 export function jag(a: THREE.Vector3, b: THREE.Vector3, depth = 4, amp = .22) {
   let pts = [a.clone(), b.clone()];
   for (let d = 0; d < depth; d++) {

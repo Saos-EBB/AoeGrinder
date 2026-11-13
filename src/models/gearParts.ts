@@ -2,7 +2,7 @@
 // Kanäle: Slot → Silhouette · Wertgruppe → Form (5 × 5) · Hersteller → Stoff in Hausfarbe + Ornamente im Material · Element → Leuchtkante/Funken
 // · Fokus-Schule → Emblem · Seltenheit → grau/weiß matt, ab Blau Leuchtkante, ab Lila 2 Splitter, Orange Aura.
 // Die Formen sind aus dem Viewer übernommen (BUILD), gebaut in Viewer-Koordinaten als Object3D-Baum ohne Material: jedes Teil trägt in userData
-// Geometrie und Farbe (geo, mat = { c, g }). gearPieces wandelt den Baum in Teile für das Körper-Mesh von strichMagier.ts (wie buildLook):
+// Geometrie und Farbe (geo, mat = { c, g }). gearPieces wandelt den Baum in Teile für das Körper-Mesh von strichMagier/ (wie buildLook):
 // alles an Bones, Leuchtteile als Glühen (aGlow), 0 Draw Calls extra. Bewegte Gruppen (userData.sway, spinZ, orbit …) bekommen eigene Bones.
 // Weniger Segmente als im Viewer (die Figur ist Low-Poly), keine Inverted-Hull-Outline (toon.ts-Rand), Kristall ohne Transparenz.
 
@@ -264,7 +264,7 @@ export const orbitPos = (u, t: number, out = V()) => { const a = u.a + t * 1.2;
   return u.flat ? out.set(Math.cos(a) * u.r, u.y + Math.sin(a) * u.r, u.back) : out.set(Math.cos(a) * u.r, u.y + Math.sin(t * 2 + u.a) * 0.02, Math.sin(a) * u.r); };
 function orbitStart(root: THREE.Object3D) { root.traverse(o => { if (o.userData.orbit) orbitPos(o.userData.orbit, 0, o.position); }); }
 
-// ---------------- Viewer-Raum → Bones der Figur (strichMagier.ts) ----------------
+// ---------------- Viewer-Raum → Bones der Figur (strichMagier/) ----------------
 // Maße (FIT), Arm-Rahmen (limbFrame) und Umwandlung (convert) in partKit.ts. Arme über Rahmen je Ober-/Unterarm (Ursprung Schulter bzw. Ellbogen,
 // y zum Gelenk darüber), Länge auf A1/A2 skaliert. Bewegte Gruppen (ANIM_KEYS) und Aura-Anker bekommen eigene Bones.
 const ANIM_KEYS = ['orbit', 'spinZ', 'spinY', 'sway', 'bob', 'tail', 'wobble'];

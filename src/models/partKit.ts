@@ -1,5 +1,5 @@
 // Bausatz der Gear- und Kosmetik-Teile (Audit E9, DUP-10): Material-Beschreibung, Geometrie-Helfer und Viewer-Maße aus den Viewern
-// (Gear-Baukasten, Kosmetik-Viewer), dazu die Umwandlung eines Teilbaums in Teile fürs Körper-Mesh von strichMagier.ts (convert).
+// (Gear-Baukasten, Kosmetik-Viewer), dazu die Umwandlung eines Teilbaums in Teile fürs Körper-Mesh von strichMagier/ (convert).
 // Quelle ist gearParts.ts (älter, schon exportiert); kosmetikParts.ts und ui/itemThumb.ts nutzen dasselbe.
 // Ein Teil ist ein Object3D in Viewer-Koordinaten ohne echtes Material: userData.geo (Geometrie) und userData.mat (Mat).
 // Segmentzahlen bleiben je Aufrufer (seg/torso/tube haben sie als Parameter): gleiche Zahlen, gleiches Bild.

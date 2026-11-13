@@ -61,7 +61,7 @@ let skinId = STANDARD, gk = '';   // gk: angelegtes Gear, nach dem gebaut wurde 
 const skinNeedOf = id => (id === 'krieger' ? warLegendary() ?? warBase(warWeapon) : id);   // Magier: Skins hängen an der Schule (= Skin-ID)
 const skinOfFigure = id => forcedSkin(id) ?? skinOf(classOf(id), skinNeedOf(id));   // Set 5/5 angelegt: Set-Skin erzwungen (gear/), die Wahl bleibt gespeichert
 
-// Funken des Waffen-Elements (strichMagier.ts): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
+// Funken des Waffen-Elements (strichMagier/): ins Partikel-System des Spiels, das zeichnet mit Waffe ohnehin (Glimmen am Stab, fx/spellFx.ts)
 const SPARK = { vy: .5, life: [.42, .84], size: .14, grav: -.3, spread: .12, bright: 1.6 };   // Werte der Viewer-Partikel, bright wie die Relikt-Aura // PH
 const sparkCol = new THREE.Color();
 function spark(p, color) {
@@ -70,7 +70,7 @@ function spark(p, color) {
   particles.spawn({ x: p.x + j(), y: p.y + j(), z: p.z + j(), vx: (Math.random() - .5) * .6, vy: SPARK.vy + (Math.random() - .5) * .4, vz: (Math.random() - .5) * .6, life, color: [sparkCol.r * SPARK.bright, sparkCol.g * SPARK.bright, sparkCol.b * SPARK.bright], size: SPARK.size, grav: SPARK.grav });
 }
 
-// Kosmetik (strichMagier.ts opts): Partikel ins Partikel-System des Spiels, Sprechblasen über die schwebende Schrift (figEvents.ts figSay), Werte pro Frame
+// Kosmetik (strichMagier/ opts): Partikel ins Partikel-System des Spiels, Sprechblasen über die schwebende Schrift (figEvents.ts figSay), Werte pro Frame
 const PUFF = { bright: 1.3 };   // PH
 function puff(p, v, color, size, life, grav) {
   sparkCol.setHex(color);

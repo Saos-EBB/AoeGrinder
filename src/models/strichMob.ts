@@ -1,4 +1,4 @@
-// Mobs im Strich-Stil (Vorlage docs/ref/mob-viewer.html, Look wie strichMagier.ts): dunkler Körper (ink), eine Akzentfarbe (ac),
+// Mobs im Strich-Stil (Vorlage docs/ref/mob-viewer.html, Look wie strichMagier/): dunkler Körper (ink), eine Akzentfarbe (ac),
 // Leuchten nur für Augen und Magie (gl). Builder: h Mensch, q Vierbeiner, b Flieger, k Käfer.
 // Pro Mob 1 SkinnedMesh (Körper + Leuchtteile über aGlow) und nur bei Flügel-Häuten/Schatten ein zweites, durchsichtiges.
 // Schnittstelle wie models/creatures.ts: { root, height, update(dt, anim) }, dazu pose = { windup, spin, still }, die Fähigkeiten setzen (abilities.ts).

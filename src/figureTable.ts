@@ -13,7 +13,7 @@ export interface Figure {
   mod: string | null;      // Mod-ID in MODIFIERS (gespeichert in Runs/Rangliste), null = ?-Magier (Modus normal)
   element: ElementId | null;
   tag: string | null;      // Spell-Tag = onlyTag der Mod ('Frost' …), Krieger 'Krieger'
-  palette: string | null;  // Viewer-Skin der Strichmagier (strichMagier.ts ANIM/PAL), Krieger: eigenes Modell
+  palette: string | null;  // Viewer-Skin der Strichmagier (strichMagier/ ANIM/PAL), Krieger: eigenes Modell
   cls: string | null;      // Spell-Feld cls der Schule (spellCard SCHOOL_NAME, COLORS.school)
   set: string | null;      // Set-ID in gear/sets.ts SETS = Skin-ID des Set-Skins
   heroClass: HeroClass;    // Klasse = Präfix der Skin-IDs (look.<klasse>.<id>.name) und Key in meta.skins

@@ -1,8 +1,8 @@
 // Kosmetik-Teile an der Figur (Kosmetik-Viewer docs/ref/kosmetik-viewer.html, Handoff docs/handoffs/kosmetik.md): 25 Teile, 5 je Slot, nur Aussehen.
 // Die Formen sind aus dem Viewer (COS) übernommen und wie gearParts.ts als Object3D-Baum in Viewer-Koordinaten gebaut (userData geo, mat).
-// kosmetikPieces wandelt die Bäume in Teile für das Körper-Mesh von strichMagier.ts: alles an Bones, Leuchtteile als Glühen, 0 Draw Calls extra.
+// kosmetikPieces wandelt die Bäume in Teile für das Körper-Mesh von strichMagier/: alles an Bones, Leuchtteile als Glühen, 0 Draw Calls extra.
 // Bewegte Gruppen (key()) bekommen eigene Bones; die Reaktion auf ein Spiel-Ereignis (figEvents.ts) dreht, schiebt oder skaliert nur diese Bones
-// (Größe 1e-4 = unsichtbar). Partikel gehen ins Partikelsystem des Spiels (opts.puff in strichMagier.ts).
+// (Größe 1e-4 = unsichtbar). Partikel gehen ins Partikelsystem des Spiels (opts.puff in strichMagier/).
 // Ausnahmen mit je höchstens +1 Draw Call pro Figur: Glas (Fischglas, Limo-Flaschen, Rucksack-Fenster) in einem gemeinsamen transparenten Mesh,
 // die Zahl der Kill-Flagge als Canvas-Textur auf eigenem Mesh. Muster (Kuh-Flecken, Karo) als Farbe je Dreieck, keine Textur (Karo: Gitter der Geometrie = Gitter des Musters).
 // Abweichungen zum Viewer: keine Inverted-Hull-Outline (toon.ts-Rand), Sprites (Glanz, Halo, Blitz) als Partikel oder Glüh-Teil,
@@ -201,7 +201,7 @@ const COS: Record<string, { slot: string; build: (ctx: Ctx) => void }> = {
     ctx.tick(K => { const k = K.since('cast') / 0.45, l = k < 1 ? Math.sin(Math.PI * k) : 0; hh.at(0.04, -0.1, 0.13 + l * 0.1).rot(-l * 0.4); tgh.size(1, 1, Math.sin(K.t * 7) > 0.6 || l > 0.1 ? 1 : 0.01); }); } },
 
   // ---------------- Rücken ----------------
-  killflagge: { slot: 'ruecken', build(ctx) {   // zeigt die Kills im Run als Zahl (Textur auf eigenem Mesh, strichMagier.ts)
+  killflagge: { slot: 'ruecken', build(ctx) {   // zeigt die Kills im Run als Zahl (Textur auf eigenem Mesh, strichMagier/)
     const b = ctx.body; seg(V(0.12, 0.95, -0.17), V(0.13, 2.28, -0.2), 0.011, 0.009, MAT.holz, b, false); mesh(new THREE.SphereGeometry(0.02, 8, 6), MAT.gold, b, 0.13, 2.29, -0.2);
     tube([V(-0.15, 1.42, 0.02), V(0, 1.3, -0.16), V(0.12, 1.1, -0.18)], 0.008, MAT.schwarz, b);
     const fg = group(b, 0.13, 2.15, -0.2), fh = key(fg); ctx.flag(fh);

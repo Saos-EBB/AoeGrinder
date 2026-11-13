@@ -5,7 +5,7 @@ import { FIGURES, FIGURE_LIST, figureOfMods, figureOfSet, paletteOf, elementOfTa
 // Stand vor E7 (6378962); seit E7 Schritt 2 heißt die Figur-ID blut → seuche (unten über NEW_ID abgebildet)
 const NEW_ID = (id: string) => (id === 'blut' ? 'seuche' : id);
 const OLD = {
-  SKIN_OF: { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'qm', blitz: 'blitz', blut: 'plague' },   // strichMagier.ts
+  SKIN_OF: { alle: 'base', feuer: 'fire', frost: 'ice', arkan: 'arcane', zufall: 'qm', blitz: 'blitz', blut: 'plague' },   // strichMagier/
   SCHOOL_TAG: { frost: 'Frost', feuer: 'Feuer', blitz: 'Blitz', blut: 'Seuche' },   // gear.ts
   SCHOOL_OF_TAG: { Frost: 'frost', Feuer: 'feuer', Blitz: 'blitz', Seuche: 'seuche' },   // gearParts.ts
   TAG_EL: [['Feuer', 'feuer'], ['Frost', 'frost'], ['Blitz', 'blitz'], ['Seuche', 'seuche']],   // objects.ts
