@@ -23,7 +23,8 @@ const _sd = V(), _bd = V();
 const GLOW_C = [...col(0x3d7bff).toArray(), .22], CORE_C = [...col(0x9ff3ff).toArray(), 1];
 export function updateBolts(F, m, dt) {
   const B = F.bolts;
-  B.list = B.list.filter(x => (x.life -= dt) > 0);
+  for (const x of B.list) x.life -= dt;
+  B.list = B.list.filter(x => x.life > 0);
   const src = [F.armL.hand, F.armR.hand, F.head, F.armL.ua, F.armR.ua].map(b => b.getWorldPosition(V()));
   src[2].y += .28; src.push(F.crystal.getWorldPosition(V()));
   const want = F.dead ? 0 : Math.round(1 + 14 * m + (m >= .98 ? 8 : 0));

@@ -173,7 +173,8 @@ export function updateLook(F, s, sp) {
   }
   if (L.look === 'seuche') {
     const k = SK.seuche;
-    if ((L.markT -= s) <= 0) {   // markierte Mobs zählen (plagueMarks.ts), nur lesen
+    L.markT -= s;
+    if (L.markT <= 0) {   // markierte Mobs zählen (plagueMarks.ts), nur lesen
       L.markT = k.every; let n = 0;
       for (const m of state.mobs) if (!m.dead && markStacks(m) > 0) n++;
       L.marks = n;
