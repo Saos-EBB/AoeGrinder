@@ -4,6 +4,8 @@ import { applyRoot } from '../mobs';
 import { mobsInRadius, hasRune, schedule } from './core';
 import { burstFx, ICE, ICE_WHITE } from './fx';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const AFTERSHOCK = { ms: 2000, mul: 0.5 }, WIDE = 1.5;   // PH
 
@@ -15,9 +17,9 @@ export const glacier = {
     { id: 'after', name: t('spell.glacier.runes.after.name'), desc: t('spell.glacier.runes.after.desc') },
     { id: 'wide', name: t('spell.glacier.runes.wide.name'), desc: t('spell.glacier.runes.wide.desc') },
   ],
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const wide = hasRune('glacier', 'wide'), r = c.radius(glacier.radius) * (wide ? WIDE : 1), delay = hasRune('glacier', 'fast') ? 0 : glacier.delay;
-    const erupt = k => {
+    const erupt = (k: number) => {
       for (const m of mobsInRadius(point, r)) if (c.hit(m, rand(glacier.min, glacier.max) * k) && !m.dead && !wide) applyRoot(m, glacier.root, 'ice');
       burstFx(point, r, [ICE, ICE_WHITE], 0x9fdcff);
     };

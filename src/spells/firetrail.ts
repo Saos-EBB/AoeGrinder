@@ -5,11 +5,13 @@ import { UNIT } from '../config';
 import { mobsInRadius, addField } from './core';
 import { trailField } from '../vfx/fireLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 // PH: 10 s, Spur hält 10 s, 0,8 Einheiten pro Sekunde, alle 0,5 s ein Stück 1,6 yd, Tempo +5 % → +15 %
 const T = { ms: 10000, segMs: 10000, dps: 0.8, dropMs: 500, segRadius: 1.6, manaPerS: 15, speed: [0.05, 0.15] };
 
-function segment(c, pos) {
+function segment(c: CastCtx, pos: Vector3) {
   addField(c, { pos, radius: T.segRadius, dur: T.segMs, visual: trailField(),
     onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) c.hit(m, T.dps * UNIT); },
   });
@@ -19,7 +21,7 @@ export const firetrail = {
   name: t('spell.firetrail.name'), desc: t('spell.firetrail.desc'), ranks: ['dmg', 'radius'], tags: ['Feuer', 'Fläche', 'Bewegung'], cls: 'fire',
   mana: 0, cd: 12000, showDmg: T.dps * UNIT,   // PH: Kosten laufen pro Sekunde
   canCast: () => player.mana < T.manaPerS ? 'Nicht genug Mana' : null,
-  effect(c) {
+  effect(c: CastCtx) {
     addField(c, { pos: player.pos, radius: 0.1, dur: T.ms, tickMs: T.dropMs, start: state.now,
       onTick: f => {
         const cost = T.manaPerS * T.dropMs / 1000;

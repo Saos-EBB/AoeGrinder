@@ -6,6 +6,8 @@ import { mobsInRadius, applySlow, addField } from './core';
 import { canisterLook, oilField, igniteLook } from '../vfx/fireLook';
 import { t } from '../i18n';
 import { onFireHit } from '../hooks';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 // PH: Lache 6 yd 8 s, 30 % Slow; gezündet 6 s Brand mit 1,5 Einheiten pro Sekunde
 const G = { radius: 6, ms: 8000, slow: 0.3, burnMs: 6000, burn: 1.5, slowTickMs: 500 };
@@ -13,7 +15,7 @@ const G = { radius: 6, ms: 8000, slow: 0.3, burnMs: 6000, burn: 1.5, slowTickMs:
 export const gasoline = {
   name: t('spell.gasoline.name'), desc: t('spell.gasoline.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Feuer', 'Fläche'], cls: 'fire',
   mana: 120, cd: 10000, range: 30, radius: G.radius, ground: true, showDmg: G.burn * UNIT,   // PH
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     canisterLook(point);
     const f = addField(c, { pos: point, radius: c.radius(G.radius), dur: G.ms, tickMs: G.slowTickMs, visual: oilField(), gas: true,
       onTick: f => {

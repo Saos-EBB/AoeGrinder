@@ -8,6 +8,7 @@ import { iceAge } from '../figures';
 const BEAK = { range: 25, speed: 18, width: 4, k: 1.5, freezeMs: 2000 };   // PH: Eiszeit, Schaden 1,5 × Explosion der Kugel
 import { frostOrbField, frostSplinter, frostBoom, beakField } from '../vfx/frostLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const SPEED = 8, RANGE = 20, HOLD = 4000, SPLINTER_SLOW = 0.3;   // PH
 
@@ -20,7 +21,7 @@ export const frostorb = {
     { id: 'hold', name: t('spell.frostorb.runes.hold.name'), desc: t('spell.frostorb.runes.hold.desc') },
     { id: 'chill', name: t('spell.frostorb.runes.chill.name'), desc: t('spell.frostorb.runes.chill.desc') },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     const dir = new THREE.Vector3(Math.sin(player.facing), 0, Math.cos(player.facing));
     if (iceAge()) {
       const seen = new Set();

@@ -8,6 +8,8 @@ import { mods } from '../config';
 import { batteryCharge } from '../battery';
 import { fieldDecal, areaParticles, ICE, ICE_WHITE } from './fx';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const COLD = { radius: 6, dur: 6000, slow: 0.3, min: 30, max: 36 };   // PH: Kalter Boden
 const NOVA = { radius: 8, min: 19, max: 21, root: 6000 };              // PH
@@ -16,7 +18,7 @@ const BODY_RADIUS = 0.45, SWEEP_STEP = 0.25, SWEEP_MARGIN = 0.05;   // PH: Rand,
 
 // Läuft die Strecke ab und bleibt vor dem ersten Hindernis stehen. Über Stufen und Rampen geht es mit nach oben, die Höhe sinkt erst beim Landen.
 // Liegt das Ziel auf einer begehbaren Fläche, zählt deren Seite nicht als Wand: Die Figur landet oben. Massive Objekte stoppen immer.
-export function blinkTo(endX, endZ) {
+export function blinkTo(endX: number, endZ: number) {
   const start = player.pos, end = clampToMap({ x: endX, z: endZ });   // Kartenrand: Kreis oder Rechteck der generierten Map
   endX = end.x; endZ = end.z;
   const len = Math.hypot(endX - start.x, endZ - start.z), steps = Math.max(1, Math.ceil(len / SWEEP_STEP));
@@ -43,7 +45,7 @@ export function blinkTo(endX, endZ) {
   }
 }
 
-function coldGround(c, pos) {
+function coldGround(c: CastCtx, pos: Vector3) {
   const radius = c.radius(COLD.radius);
   for (const m of mobsInRadius(pos, radius)) c.hit(m, rand(COLD.min, COLD.max));
   addField(c, { pos, radius, dur: COLD.dur, visual: fieldDecal(iceTex, ICE, 0.45), tickMs: 500,
@@ -60,7 +62,7 @@ export const blink = {
     { id: 'nova', name: t('spell.blink.runes.nova.name'), desc: t('spell.blink.runes.nova.desc') },
     { id: 'charges', name: t('spell.blink.runes.charges.name'), desc: t('spell.blink.runes.charges.desc'), charges: 2 },
   ],
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const from = player.pos.clone();
     player.lastBlink = state.now;
     const dist = blink.dist + (stat('blink').range ?? 0);   // Rang-Karten Reichweite

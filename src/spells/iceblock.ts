@@ -25,7 +25,7 @@ export function updateIceBlock() {
 }
 
 export const iceblock = {
-  name: t('spell.iceblock.name'), figRelic: true, desc: t('spell.iceblock.desc'), ranks: [], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
+  name: t('spell.iceblock.name'), figRelic: true, desc: t('spell.iceblock.desc'), ranks: [] as string[], tags: ['Frost'], onlyMode: 'Frost', cls: 'frost',
   mana: 0, cd: ICEBLOCK.cd,
   press() {
     if (block) return endIceBlock();

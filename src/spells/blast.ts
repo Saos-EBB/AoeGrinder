@@ -4,6 +4,7 @@ import { blastLook, fireRingField } from '../vfx/fireLook';
 import { knockbackMob, pullMob } from '../mobs';
 import { mobsInRadius, applySlow, addField, hasRune } from './core';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const RING = { dur: 5000, width: 1.5, dmg: 14 };   // PH
 
@@ -15,7 +16,7 @@ export const blast = {
     { id: 'ring', name: t('spell.blast.runes.ring.name'), desc: t('spell.blast.runes.ring.desc') },
     { id: 'quick', name: t('spell.blast.runes.quick.name'), desc: t('spell.blast.runes.quick.desc'), cdMul: 0.5 },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     const r = c.radius(blast.radius), center = player.pos.clone();
     for (const m of mobsInRadius(center, r)) {
       if (!c.hit(m, rand(blast.min, blast.max)) || m.dead) continue;

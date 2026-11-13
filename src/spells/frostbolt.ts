@@ -7,6 +7,7 @@ import { mobsInRadius, applySlow, hasRune, bounceShot } from './core';
 import { nearestTarget } from './target';
 import { frostboltLook } from '../vfx/frostLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 // PH: 1,2 Einheiten, 30 % Slow 2 s; Runen: +2 Projektile je 70 %, Explosion 4 yd mit 60 %, sofort mit −30 %
 const F = { dmg: 1.2, range: 30, slow: 0.3, slowMs: 2000, split: { n: 2, k: 0.7 }, bomb: { radius: 4, k: 0.6 }, swift: 0.7 };
@@ -21,7 +22,7 @@ export const frostbolt = {
   ],
   instantCast: () => hasRune('frostbolt', 'swift'),
   canCast: () => nearestTarget(F.range) ? null : t('msg.noTarget'),
-  effect(c) {
+  effect(c: CastCtx) {
     const target = nearestTarget(F.range);
     if (!target) return;
     const k = hasRune('frostbolt', 'swift') ? F.swift : 1;

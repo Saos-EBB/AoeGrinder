@@ -3,7 +3,7 @@ import { t } from '../i18n';
 
 export const iceage = {
   name: t('spell.iceage.name'), desc: t('spell.iceage.desc'),
-  ranks: [], tags: ['Frost'], cls: 'frost', fixed: true, mana: 0, cd: 0,
+  ranks: [] as string[], tags: ['Frost'], cls: 'frost', fixed: true, mana: 0, cd: 0,
   canCast: () => 'Passiv',
   effect() {},
 };

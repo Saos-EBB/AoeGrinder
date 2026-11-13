@@ -8,6 +8,8 @@ import { mobsInRadius, applySlow, addField, cdEnd, startCd, noteCastStart, makeC
 import { runChain, nearestMob, chain } from './chain';
 import { quakeField, keeperLook, staticLook, elementalField } from '../vfx/boltLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 // Alle Werte PH
 const QUAKE = { radius: 8, ms: 8000, tickMs: 500, dmg: 0.8, slow: 0.2 };
@@ -17,7 +19,7 @@ const ELEM = { ms: 15000, cd: 90000, everyMs: 1000, jumps: 20, range: 30, side: 
 export const quake = {
   name: t('spell.quake.name'), desc: t('spell.quake.desc'), ranks: ['dmg', 'mana', 'radius'], tags: ['Blitz', 'Fläche'], cls: 'lightning',
   mana: 320, charge: 40, cd: 10000, range: 30, radius: QUAKE.radius, ground: true, showDmg: QUAKE.dmg * UNIT,
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     addField(c, { pos: point, radius: c.radius(QUAKE.radius), dur: QUAKE.ms, tickMs: QUAKE.tickMs, visual: quakeField(),
       onTick: f => { for (const m of mobsInRadius(f.pos, f.radius)) { if (c.hit(m, QUAKE.dmg * UNIT) && !m.dead) applySlow(m, QUAKE.slow, 700); } },
     });
@@ -35,7 +37,7 @@ export const keeper = {
 export const staticfield = {
   name: t('spell.staticfield.name'), desc: t('spell.staticfield.desc'), ranks: ['mana', 'radius'], tags: ['Blitz', 'Nova'], cls: 'lightning',
   mana: 160, charge: 20, cd: 6000,
-  effect(c) {
+  effect(c: CastCtx) {
     const r = c.radius(STATIC.radius);
     for (const m of mobsInRadius(player.pos, r)) {
       enterCombat(m, true);
@@ -47,7 +49,7 @@ export const staticfield = {
 
 // Relikt: Sturmelementar schwebt 15 s neben dir und wirft jede Sekunde einen Kettenblitz mit 20 Sprüngen
 export const stormelem = {
-  name: t('spell.stormelem.name'), figRelic: true, desc: t('spell.stormelem.desc'), ranks: [], tags: ['Blitz'], cls: 'lightning',
+  name: t('spell.stormelem.name'), figRelic: true, desc: t('spell.stormelem.desc'), ranks: [] as string[], tags: ['Blitz'], cls: 'lightning',
   mana: 0, cd: ELEM.cd,
   press() {
     if (cdEnd('stormelem') > state.now) return showError(t('msg.notReady'));

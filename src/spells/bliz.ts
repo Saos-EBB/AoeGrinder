@@ -8,6 +8,8 @@ import { groundAt } from '../collision';
 import { applyRoot } from '../mobs';
 import { mobsInRadius, applySlow, startChannel, hasRune, addField } from './core';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const FIELD = { radius: 10, ms: 8000 }, EYE_MS = 8000, STORM_EYE_MS = 300;   // PH: Eisfeld, Frostauge, Sturmauge pro Rang
 
@@ -33,7 +35,7 @@ export const bliz = {
     { id: 'wander', name: t('spell.bliz.runes.wander.name'), desc: t('spell.bliz.runes.wander.desc') },
     { id: 'lastfreeze', name: t('spell.bliz.runes.lastfreeze.name'), desc: t('spell.bliz.runes.lastfreeze.desc') },
   ],
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     // Eiszeit: Eisfeld. Frostauge: solange eine Frostkugel fliegt, läuft der Blizzard von selbst
     const eye = mods.frostEye && state.fields.some(f => f.orb);
     if (iceAge() || eye) {

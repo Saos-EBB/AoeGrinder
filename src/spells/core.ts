@@ -29,6 +29,7 @@ import { loadRuns, saveRuns } from '../leaderboard';
 import { SUPPORTS } from './supports';
 import { meterDmgMul, meterSlow, meterFrostFull, meterHeatHit, meterCast } from '../schoolMeter';
 import { t } from '../i18n';
+import type { CastCtx, FieldOpts, SpellField } from './registry';
 
 // Regeln der aktiven Modifikatoren. Funktionen statt Konstanten: index.ts ruft resetSpells, während der Import-Kreis mit formulas.ts noch läuft.
 function activeMods() { return MODIFIERS.filter(m => activeModIds().includes(m.id)); }
@@ -278,8 +279,8 @@ function scheduleEchoes(id, point, key) {
 }
 
 // Fläche mit Ticks und optionalem onUpdate pro Frame
-export function addField(c, f) {
-  const field = { c, tickMs: 1000, ...f, pos: f.pos.clone(), start: state.now, end: state.now + c.duration(f.dur), nextTick: state.now + (f.tickMs ?? 1000) };
+export function addField(c: CastCtx, f: FieldOpts): SpellField {
+  const field: SpellField = { c, tickMs: 1000, ...f, pos: f.pos.clone(), start: state.now, end: state.now + c.duration(f.dur), nextTick: state.now + (f.tickMs ?? 1000) };
   state.fields.push(field);
   field.visual?.update(field.pos, field.radius);
   return field;

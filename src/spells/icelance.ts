@@ -7,6 +7,7 @@ import { iceAge } from '../figures';
 const PARTISAN = { n: 5, spread: 40 * Math.PI / 180, k: 0.6 };   // PH: Eiszeit
 import { lanceLook } from '../vfx/frostLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const CHILL = { slow: 0.4, ms: 3000 }, SWIFT_DMG = 0.75, WIDE = 2, FROZEN_MUL = 2;   // PH
 
@@ -19,7 +20,7 @@ export const icelance = {
     { id: 'chill', name: t('spell.icelance.runes.chill.name'), desc: t('spell.icelance.runes.chill.desc') },
     { id: 'swift', name: t('spell.icelance.runes.swift.name'), desc: t('spell.icelance.runes.swift.desc'), cdMul: 0.5 },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     const from = player.pos, k = hasRune('icelance', 'swift') ? SWIFT_DMG : 1;
     const dirs = iceAge() ? Array.from({ length: PARTISAN.n }, (_, i) => player.facing + (i / (PARTISAN.n - 1) - 0.5) * PARTISAN.spread) : [player.facing];
     for (const yaw of dirs) {

@@ -8,13 +8,15 @@ import { UNIT } from '../config';
 import { iceAge } from '../figures';
 import { coneOfColdFx } from '../fx/spellFx';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const SABER = { range: 4, angle: 120 * Math.PI / 180, dmg: 3 };   // PH: Eiszeit
 
 const FOLLOW_SPEED = 5, PULL_PER_S = 2, SMALL_OFFSET = 5;   // PH
 
 // Boden und niedriger Trichter; alte Optik nur der Boden
-function spawnWhirl(c, pos, radius, k) {
+function spawnWhirl(c: CastCtx, pos: Vector3, radius: number, k: number) {
   addField(c, { pos, radius, dur: whirl.dur, visual: whirlField(k), tickMs: 1000,
     onUpdate(f, dt) {
       if (hasRune('whirl', 'follow')) {
@@ -41,7 +43,7 @@ export const whirl = {
     { id: 'three', name: t('spell.whirl.runes.three.name'), desc: t('spell.whirl.runes.three.desc') },
     { id: 'pull', name: t('spell.whirl.runes.pull.name'), desc: t('spell.whirl.runes.pull.desc') },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     if (iceAge()) {
       const r = c.radius(SABER.range);
       for (const m of mobsInRadius(player.pos, r)) {

@@ -5,6 +5,8 @@ import { mobsInRadius, hasRune, schedule } from './core';
 import { mods } from '../config';
 import { strikeLook } from '../vfx/boltLook';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
+import type { Vector3 } from 'three';
 
 const DOUBLE = { delay: 400, k: 0.5 }, WIDE = 2, LONG_STUN = 1500, TRIPLE = { n: 3, k: 0.6, gap: 250 };   // PH
 
@@ -18,9 +20,9 @@ export const strike = {
     { id: 'long', name: t('spell.strike.runes.long.name'), desc: t('spell.strike.runes.long.desc') },
     { id: 'triple', name: t('spell.strike.runes.triple.name'), desc: t('spell.strike.runes.triple.desc') },
   ],
-  effect(c, point) {
+  effect(c: CastCtx, point: Vector3) {
     const r = c.radius(strike.radius) * (hasRune('strike', 'wide') ? WIDE : 1), stun = hasRune('strike', 'long') ? LONG_STUN : strike.stun;
-    const hit = k => {
+    const hit = (k: number) => {
       for (const m of mobsInRadius(point, r)) if (c.hit(m, rand(strike.min, strike.max) * k) && !m.dead) applyRoot(m, stun);
       strikeLook(point, r);
       shakeCamera(0.15);

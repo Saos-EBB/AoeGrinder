@@ -5,12 +5,13 @@ import { ballField } from '../vfx/boltLook';
 import { mods } from '../config';
 import { state } from '../state';
 import { t } from '../i18n';
+import type { CastCtx } from './registry';
 
 const ORBIT = { yd: 4, max: 3, ms: 10000, turn: 2 };   // PH: Rune Orbit, rad/s
 
 const BIG = 1.4, SLOW = 0.5, TWIN_ANGLE = 0.5;   // PH
 
-function launch(c, angle, k) {
+function launch(c: CastCtx, angle: number, k: number) {
   const speed = ball.speed * (hasRune('ball', 'slow') ? SLOW : 1), dir = { x: Math.sin(angle), z: Math.cos(angle) };
   const radius = c.radius(ball.radius) * (hasRune('ball', 'big') ? BIG : 1);
   const pos = player.pos.clone();
@@ -21,7 +22,7 @@ function launch(c, angle, k) {
 }
 
 // Rune Orbit: kreist um den Spieler, die älteste weicht, wenn eine vierte kommt
-function orbit(c) {
+function orbit(c: CastCtx) {
   const mine = state.fields.filter(f => f.orbit).sort((a, b) => a.start - b.start);
   while (mine.length >= ORBIT.max) mine.shift().end = state.now;
   const phase = Math.random() * Math.PI * 2;
@@ -41,7 +42,7 @@ export const ball = {
     { id: 'fast', name: t('spell.ball.runes.fast.name'), desc: t('spell.ball.runes.fast.desc') },
     { id: 'orbit', name: t('spell.ball.runes.orbit.name'), desc: t('spell.ball.runes.orbit.desc') },
   ],
-  effect(c) {
+  effect(c: CastCtx) {
     if (hasRune('ball', 'orbit')) return orbit(c);
     if (!hasRune('ball', 'twin')) return launch(c, player.facing, 1);
     for (const s of [-1, 1]) launch(c, player.facing + s * TWIN_ANGLE, 0.7);
