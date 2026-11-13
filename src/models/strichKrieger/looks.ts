@@ -1,6 +1,7 @@
 // Skins des Strichkriegers am Körper (KOMP-04): je Skin ein Block `if (look === …)`, Teile über partKit (gleiches Körper-Mesh). Aus strichKrieger.ts herausgezogen, Werte unverändert.
 import * as THREE from 'three';
-import { TAU, M4, col, hp, tube, HOLZ, partKit } from './parts';
+import { V } from '../../util';
+import { TAU, M4, col, hp, tube, HOLZ, partKit, showTag, tintTag } from './parts';
 import type { Fig } from './fig';
 
 // Skins (src/skins.ts): Teile mit part(bone, …) wie oben, je Skin ein Block `if (look === …)`. Vorlage docs/ref/set-skins-krieger.html (SKINS).
@@ -126,4 +127,20 @@ export function lookBody(F: Fig, look: string) {
     }
   }
   return { cloth0, TALK };
+}
+// Skin-Gags pro Frame (nur Optik)
+export function lookTick(F: Fig, s: number, anim) {
+  const { look, head, lookW, bodyT, swordMesh } = F, { emit } = F.fx;
+  if (look === 'klapse') head.rotation.z = Math.sin(F.anim.T * 7) * .04 + (Math.sin(F.anim.T * .9) > .85 ? .25 : 0);   // ruckartiges Kopf-Zucken // PH
+  // Holzfäller: Kerben, goldener Stiel, Sprössling, Scheite nach Kills im Run (anim.kills), nur bei Änderung
+  if (look === 'holz' && (anim.kills ?? 0) !== F.anim.kills) {
+    F.anim.kills = anim.kills ?? 0;
+    for (let i = 0; i < HOLZ.notches; i++) showTag(lookW, `n${i}`, i < F.anim.kills);
+    tintTag(lookW, 'wood', col(F.anim.kills >= HOLZ.gold ? 0xe8b23a : 0xd8a868));
+    showTag(lookW, 'sprout', F.anim.kills >= HOLZ.sprout);
+    const logs = Math.min(HOLZ.logs, Math.floor(F.anim.kills / HOLZ.perLog));
+    for (let i = 0; i < HOLZ.logs; i++) showTag(bodyT, `log${i}`, i < logs);
+  }
+  // Classic: roter Verzauberungs-Schein an der Klinge, über die Partikel der Figur (0 Draw Calls extra)
+  if (look === 'classic' && swordMesh.visible && Math.random() < s * 18) emit(swordMesh.localToWorld(V((Math.random() - .5) * .22, .35 + Math.random() * 1.5, 0)), 1, .15, 0xff3a2a, -.6, .55);   // PH
 }

@@ -16,7 +16,10 @@ export interface Fig {
   root: THREE.Group; hips: THREE.Bone; chest: THREE.Bone; neck: THREE.Bone; head: THREE.Bone;
   armL: WarArm; armR: WarArm; legL: WarLeg; legR: WarLeg; clothAnchor: THREE.Object3D;
   fxGroup: THREE.Group; gy: () => number;   // Effekt-Gruppe (eigene Szene-Wurzel), Boden unter der Figur
-  weapon: string;                               // eingebaute Waffe: 'sword' | 'axe' | 'mace'
+  look: string; weapon: string;                 // Skin (look) und eingebaute Waffe: 'sword' | 'axe' | 'mace'
+  sword: THREE.Group; swordMesh: THREE.Mesh;    // Schwert-Rahmen (y Klinge, x Schneide) und eigenes Waffen-Mesh
+  lookW: any; bodyT: any;                       // getaggte Merges (parts.ts mergeTagged): Waffen-Look, Körper
+  meat: THREE.Mesh; aura: THREE.SkinnedMesh; auraMat: any;   // Fleischkeule (Sitzen), Wut-Hülle und ihr Energie-Material
   fx: ReturnType<typeof buildWarFx>;            // Effekte (fx.ts)
   tipPos: () => THREE.Vector3;                  // Treffer-Spitze der Waffe (Welt)
   hitTip: (kind: string, i?: number) => void;   // Treffer-Moment an der Spitze → model.onHit

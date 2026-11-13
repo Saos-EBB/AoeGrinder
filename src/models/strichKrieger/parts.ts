@@ -6,6 +6,7 @@ import { prep as kitPrep } from '../strichKit';
 import type { Fig } from './fig';
 
 export const TAU = Math.PI * 2;
+export const L1 = .5, L2 = .48, A1 = .35, A2 = .33;   // Ober-/Unterschenkel, Ober-/Unterarm
 export const C = { ink: new THREE.Color(0x2b2b33), plate: new THREE.Color(0x5a1a14), cloth: new THREE.Color(0xa3151b),
   iron: new THREE.Color(0x4a4d54), edge: new THREE.Color(0xc4c8cd), wrap: new THREE.Color(0x7a1a14), guard: new THREE.Color(0x26231f) };
 // flat: harte Kanten (Low-Poly-Look der Skins), strichKit.ts prep
