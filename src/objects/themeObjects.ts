@@ -20,7 +20,7 @@ import { registerKind, planObjects, redraw, removeObj, onMapObjects, type Obj } 
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
 
-export const THEME_OBJ = {
+const THEME_OBJ = {
   flood: { ms: 10000, r: 10, slow: 0.45, cdMs: 30000, color: 0x3a8ac8 },          // Schleuse
   lava: { ms: 10000, r: 9, dps: 0.12, cdMs: 30000, color: 0xff6a20 },             // Lava-Rinne: × Mob-Leben pro s
   bell: { r: 60, cdMs: 30000 },

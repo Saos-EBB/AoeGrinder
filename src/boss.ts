@@ -40,7 +40,7 @@ import { t } from './i18n';
 import { bossDrops, collectAll } from './loot';
 
 // Alle Zahlen PH. Zeiten in ms, Wege in yd
-export const B = {
+const B = {
   every: 15,                // PH: Boss bei Level 15, 30, …, 90 (Packs); dazu der finale bei 100
   arena: 20,                // PH: Radius der Arena um den Spieler
   hpMul: 15,                // PH: × Mob-Leben des Levels (Handoff: Start 40; der Prototyp hat 15 gemessen: 40 dauerten 245 s mit Start-Kit)
@@ -61,7 +61,7 @@ export const B = {
 
 // Laufender Kampf oder null
 let boss: any = null;
-export const bossActive = () => !!boss;
+const bossActive = () => !!boss;
 let lastLevel = 1;
 let lockOn = true;
 
@@ -297,7 +297,7 @@ export function startBoss(id?: string, stage?: string) {
 }
 let barBase = '';
 // Körper in die Arena holen: fällt herab (intro) oder steht auf (sleep → active)
-export function awaken(b, intro = false) {
+function awaken(b, intro = false) {
   const level = player.level;
   if (!b.mob) {
     b.mob = spawnBody(boss.def, b.spec, b.home, b.hp, level);
@@ -316,7 +316,7 @@ function focus() {
   for (const b of boss.bodies) if (b.mob && !b.mob.dead) { const d = dist2d(b.mob.pos, player.pos) + (b.state === 'active' && !b.submerged ? 0 : 100); if (d < bd) { bd = d; best = b; } }
   return best ?? boss.bodies[0];
 }
-export const bossHp = () => { let hp = 0, max = 0; for (const b of boss.bodies) { max += b.hp; hp += b.mob ? Math.max(0, b.mob.dead ? 0 : b.mob.hp) : b.hp; } return { hp, max }; };
+const bossHp = () => { let hp = 0, max = 0; for (const b of boss.bodies) { max += b.hp; hp += b.mob ? Math.max(0, b.mob.dead ? 0 : b.mob.hp) : b.hp; } return { hp, max }; };
 
 // Spieler und Bosse bleiben in der Arena, der Spieler steckt nie im Boss
 function keepInside() {

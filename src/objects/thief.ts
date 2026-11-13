@@ -15,7 +15,7 @@ import { dist2d, rand } from '../util';
 import { t } from '../i18n';
 import { onMobDeath } from '../hooks';
 
-export const THIEF = { chance: 0.3, escapeMs: 15000, speed: 0.95, dust: [60, 100], repickMs: 1500, sparkMs: 120 };
+const THIEF = { chance: 0.3, escapeMs: 15000, speed: 0.95, dust: [60, 100], repickMs: 1500, sparkMs: 120 };
 const GOLD = [2.6, 2.0, 0.6];
 
 const thiefAbility = {
@@ -47,7 +47,7 @@ function escape(m) {
   stats.escaped++;
 }
 
-export function spawnThief(x: number, z: number) {
+function spawnThief(x: number, z: number) {
   if (!zone.theme) return null;
   const m: any = spawnKind(zone.theme.id, 'schnell', 'none', new THREE.Vector3(x, 0, z), player.level, ++state.packCounter);
   if (!m) return null;

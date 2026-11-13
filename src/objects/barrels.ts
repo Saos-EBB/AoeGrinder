@@ -18,7 +18,7 @@ import { colored } from '../mapgen/build';
 import { registerKind, planObjects, removeObj, objects, addDevButton, devAhead, spawnObj, type Obj, type Element } from './objects';
 import { dist2d, rand } from '../util';
 
-export const BARREL = {
+const BARREL = {
   perMap: 8,
   r: 5, chainR: 6, chainMs: 160,           // yd Wirkradius, Kettenreichweite, Verzögerung pro Glied
   dmg: 0.6,                                // × Mob-Leben auf dem Spielerlevel (inkl. Theme-Schwierigkeit)
@@ -48,7 +48,7 @@ function hurtPlayer(p: { x: number; z: number }, r: number, k = 1) {
   if (!player.dead && dist2d(player.pos, p) <= r) damagePlayer(Math.round(maxHp() * BARREL.player * k), false, 'barrel');
 }
 
-export function explode(o: Obj, el: Element) {
+function explode(o: Obj, el: Element) {
   if (!o.alive) return;
   removeObj(o);
   const pos = new THREE.Vector3(o.x, o.y + 0.5, o.z), C = BARREL.colors[el], R = BARREL.r;

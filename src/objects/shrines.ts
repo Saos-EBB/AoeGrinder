@@ -17,7 +17,7 @@ import { registerKind, planObjects, redraw, type Obj } from './objects';
 import { rand } from '../util';
 import { t } from '../i18n';
 
-export const SHRINE = {
+const SHRINE = {
   perMap: 3, ms: 30000,
   types: {
     xp:      { color: [2.4, 1.9, 0.5],  buff: { xp: 1 } },        // Erfahrung ×2

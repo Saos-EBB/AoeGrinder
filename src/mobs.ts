@@ -36,7 +36,7 @@ import { xpBonusMul } from './xpBonus';
 import { countKill } from './meta';
 
 // Mobs der Zone, die auf diesem Spielerlevel spawnen. Der Start-Mob steht vorne.
-export const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+const unlockedMobs = level => zone.mobs.slice(0, 1 + LEVEL_UNLOCKS.filter(l => level >= l).length);
 
 // Einblendung, wenn der Sprung von fromLevel neue Mobs freigeschaltet hat. Die Anzeige steckt in ui/scoreHud.ts.
 export function announceNewMobs(fromLevel) {

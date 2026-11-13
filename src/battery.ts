@@ -12,7 +12,7 @@ export const batteryMode = () => !!modValue('battery');
 export const batteryMax = () => B.max + (mods.condenser ?? 0);
 export const overcharged = () => batteryMode() && !!player.overcharged;
 
-export function resetBattery() {
+function resetBattery() {
   if (!batteryMode()) { player.overcharged = false; return; }
   player.rageMax = batteryMax();
   player.mana = B.start;

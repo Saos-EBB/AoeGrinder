@@ -49,7 +49,7 @@ export function rollLegend(element) {
   if (Math.random() >= LEG.dropChance) return null;
   return pickLegend(element);
 }
-export const pickLegend = element => pick(Object.keys(LEGENDS).filter(id => LEGENDS[id].kind === 'mage' && (!LEGENDS[id].element || LEGENDS[id].element === element)));
+const pickLegend = element => pick(Object.keys(LEGENDS).filter(id => LEGENDS[id].kind === 'mage' && (!LEGENDS[id].element || LEGENDS[id].element === element)));
 
 // Aktive Legende des Runs: Magier über die angelegte Waffe, Nahkampf über die Waffenwahl
 function activeLegend() {
@@ -60,7 +60,7 @@ function activeLegend() {
 
 // ---------- Combo ----------
 const combo = { step: 0, until: 0, readyAt: 0 };
-export function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; if (egg.mesh) egg.mesh.visible = false; }
+function resetLegends() { combo.step = 0; combo.until = 0; combo.readyAt = 0; state.leeroyUntil = 0; egg.until = 0; if (egg.mesh) egg.mesh.visible = false; }
 onRunReset(resetLegends, 90);   // Run-Reset (hooks.ts runReset)
 addEventListener('keydown', e => {
   if (e.repeat || state.paused || player.dead || !activeLegend()) return;

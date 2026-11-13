@@ -22,7 +22,7 @@ import type { PackSpot, ThemeId, ThemeInfo } from './mapgen/types';
 import { onMobDeath } from './hooks';
 
 // Kategorien relativ zu Normal: Leben, Schaden, Tempo, XP, Fähigkeit (abilities.ts). flee: Hexer und Zauberer fliehen (abilities.ts flee)
-export const KINDS: Record<string, { hp: number; dmg: number; spd: number; xp: number; ability: string | null; flee?: boolean }> = {
+const KINDS: Record<string, { hp: number; dmg: number; spd: number; xp: number; ability: string | null; flee?: boolean }> = {
   normal:   { hp: 1,   dmg: 1,   spd: 1,   xp: 1,   ability: null },
   schnell:  { hp: 0.6, dmg: 0.7, spd: 1.4, xp: 0.8, ability: 'k_schnell' },
   stark:    { hp: 1.8, dmg: 1.6, spd: 0.8, xp: 1.8, ability: 'k_stark' },
@@ -37,7 +37,7 @@ export const KIND_IDS = Object.keys(KINDS);
 export const ZUSATZ_IDS = ['heal', 'shield', 'haste', 'fliegt', 'platzt', 'teilt'];
 const SUPPORT = ['heal', 'shield', 'haste'];           // höchstens 1 pro Pack
 // Freischalten über die Level wie pickMobType: am Anfang Normal + 2, ab jedem LEVEL_UNLOCKS-Level eine mehr
-export const UNLOCK_ORDER = ['normal', 'schnell', 'werfer', 'stark', 'zauberer', 'aoe', 'hexer'];
+const UNLOCK_ORDER = ['normal', 'schnell', 'werfer', 'stark', 'zauberer', 'aoe', 'hexer'];
 export const THEME_DIFF: Record<ThemeId, 1 | 2 | 3 | 4 | 5> = { wald: 1, wueste: 2, kanaele: 3, kathedrale: 4, hoelle: 5 };
 
 const P = {
@@ -104,7 +104,7 @@ export function spawnKind(theme: string, cat: string, zus: string, pos, level: n
 }
 
 // Pack-Zusammensetzung: Normal + 1–2 andere freigeschaltete Kategorien
-export const unlockedKinds = (level: number) => UNLOCK_ORDER.slice(0, 3 + LEVEL_UNLOCKS.filter(l => level >= l).length);
+const unlockedKinds = (level: number) => UNLOCK_ORDER.slice(0, 3 + LEVEL_UNLOCKS.filter(l => level >= l).length);
 // Einblendung „Neuer Gegner“ (mobs.ts announceNewMobs) auf generierten Maps: Namen der Kategorien, die zwischen fromLevel und level frei wurden (nur mit Skin im Theme)
 export function newKindNames(theme: string, fromLevel: number, level: number) {
   return unlockedKinds(level).slice(unlockedKinds(fromLevel).length).filter(c => skinOf(theme, c)).map(c => kindType(theme, c, 'none').name);
@@ -115,7 +115,7 @@ export function addKind(level: number) {
 }
 // Packgröße wie bei den alten Packs (mobs.ts rollPackSize: Level, Zonen-Bonus, Modifikatoren)
 const packSize = () => Math.max(2, Math.round(rollPackSize()));
-export function rollPackCats(level: number, size = packSize()) {
+function rollPackCats(level: number, size = packSize()) {
   const others = unlockedKinds(level).slice(1), chosen: string[] = [];
   const nCats = Math.min(others.length, randInt(1, 2));
   while (chosen.length < nCats) { const c = pick(others); if (!chosen.includes(c)) chosen.push(c); }
@@ -124,7 +124,7 @@ export function rollPackCats(level: number, size = packSize()) {
   return cats.sort(() => Math.random() - 0.5);
 }
 // Zusatz pro Mob: ~15 %, höchstens 1 Unterstützer (heal/shield/haste) pro Pack
-export function rollZusatz(cats: string[]) {
+function rollZusatz(cats: string[]) {
   let support = false;
   return cats.map(c => {
     if (c === 'lauerer' || Math.random() >= P.zusatz) return 'none';
@@ -190,7 +190,7 @@ function rollLurker(theme: ThemeInfo, level: number) {
   if (Math.random() < 1 - Math.pow(1 - P.lurkPerMin, min)) spawnLurker(theme.id, level);
 }
 // Taucht 6 yd hinter dir auf (von der Kamera aus gesehen)
-export function spawnLurker(theme: string, level: number) {
+function spawnLurker(theme: string, level: number) {
   const fx = player.pos.x - camera.position.x, fz = player.pos.z - camera.position.z, l = Math.hypot(fx, fz) || 1;
   const pos = new THREE.Vector3(player.pos.x - fx / l * P.lurkDist, player.pos.y, player.pos.z - fz / l * P.lurkDist);
   const m = spawnKind(theme, 'lauerer', 'none', pos, level, ++state.packCounter);
@@ -232,7 +232,7 @@ function lightPillar(pos) {
 
 // ───────── Dev: Pack spawnen (Block in ui/devGame.ts)
 // Vor dem Spieler (Blickrichtung der Kamera), 12 yd
-export function devSpot(dist = 12): PackSpot {
+function devSpot(dist = 12): PackSpot {
   const fx = player.pos.x - camera.position.x, fz = player.pos.z - camera.position.z, l = Math.hypot(fx, fz) || 1;
   return { x: player.pos.x + fx / l * dist, z: player.pos.z + fz / l * dist, r: 4 };
 }

@@ -9,6 +9,6 @@ import { pick } from '../util';
 import { SETS } from './sets';
 import { cleanGearWith, type CleanRules } from './clean';
 
-export const gearRules = (): CleanRules => ({ values: VALUE_KEY, makers: MAKERS, elements: ELEMENTS, spells: SPELLS, sets: SETS, rarities: CARD_RARITIES.length, pick });
+const gearRules = (): CleanRules => ({ values: VALUE_KEY, makers: MAKERS, elements: ELEMENTS, spells: SPELLS, sets: SETS, rarities: CARD_RARITIES.length, pick });
 // Säubern mit den echten Tabellen (metaNormalize.ts)
 export const cleanGear = (m: any) => cleanGearWith(m, gearRules());

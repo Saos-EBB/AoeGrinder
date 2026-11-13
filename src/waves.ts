@@ -16,7 +16,7 @@ import { hooks, onRunReset } from './hooks';
 const ui = hooks.ui;   // Fenster und Menüs (hooks.ts UiApi, ui/connect.ts setzt ein)
 
 // Gegner pro Welle = base + perWave × (Welle − 1); kommen mit perSecond pro Sekunde, höchstens maxPerFrame pro Frame
-export const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
+const WAVES = { base: 50, perWave: 50, perSecond: 4, edgeR: 90 * WORLD_K, maxPerFrame: 3, pauseMs: 2500, goal: 10 };   // PH
 
 const CHOICES = [
   { name: t('mobmode.packs'), mode: 'packs', title: t('mobmode.packsTip') },
@@ -78,7 +78,7 @@ export function updateWaves(dt) {
   if (hud.textContent !== text) hud.textContent = text;
 }
 
-export function resetWaves() { step = 'pause'; toSpawn = 0; due = 0; stepAt = -1e9; }
+function resetWaves() { step = 'pause'; toSpawn = 0; due = 0; stepAt = -1e9; }
 onRunReset(resetWaves, 170);   // Run-Reset (hooks.ts runReset)
 
 document.head.insertAdjacentHTML('beforeend', `<style>#siegeHud { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none; font: 700 14px system-ui, sans-serif; color: #ff9a7a; text-shadow: 0 1px 3px #000; }</style>`);

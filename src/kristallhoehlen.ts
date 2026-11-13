@@ -21,7 +21,7 @@ const KH = {
 };
 
 // Kristalle der aktuellen Karte für die Spiegelung: { x, z, r }
-export const crystals: { x: number; z: number; r: number }[] = [];
+const crystals: { x: number; z: number; r: number }[] = [];
 
 // Gestrecktes Oktaeder mit harten Bändern: Farbe je Dreieck nach der Höhe seiner Mitte
 function shard(h, w, x, z, tilt, ry, pal) {
@@ -118,7 +118,7 @@ function caveProps(ctx) {
 }
 
 // Spiegelung: erster Kristall auf der Strecke from → Ziel. Gibt { at, target } (target null = geschluckt) oder null ohne Kristall
-export function reflectShot(from, mob) {
+function reflectShot(from, mob) {
   const dx = mob.pos.x - from.x, dz = mob.pos.z - from.z, len = Math.hypot(dx, dz);
   if (len < 0.5) return null;
   const ux = dx / len, uz = dz / len;

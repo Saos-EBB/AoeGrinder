@@ -43,7 +43,7 @@ function withMods<T>(snap: Snap, fn: () => T): T {
 // mods nach Basis, nach Waffe und nach Gear als reine Rechnung (E8, ARCH-05): Waffe und Gear schreiben wie beim Run-Start,
 // aber in eine Kopie (frische mods, Kopie der spellStats, eigenes state-Stück), die echten mods/state bleiben unberührt.
 // Schlägt etwas fehl: keine Aufschlüsselung
-export function computeModLayers(weaponOn: boolean, figureId: string | null): { base: Snap; weapon: Snap; gear: Snap } | null {
+function computeModLayers(weaponOn: boolean, figureId: string | null): { base: Snap; weapon: Snap; gear: Snap } | null {
   try {
     const stats = structuredClone(state.spellStats ?? {});
     const to: ModTarget = { mods: freshMods(), stat: id => stats[id] ??= { dmg: 1, mana: 1, radius: 1 }, state: { poolExtra: [] } };
@@ -82,7 +82,7 @@ const DEFS: Record<string, Def> = {
   regenCombat: { id: 'regenCombat', label: () => t('hw.st.regenCombat'), v: () => mods.castRegen, fmt: pctAbs, dfmt: pctSigned, show: () => !player.rageMax },
   cost: { id: 'cost', label: () => t('hw.st.cost'), v: () => 1 - mods.manaCostMul * modFactor('manaCost'), fmt: pctAbs, dfmt: pctSigned },
 };
-export const MAIN = ['dmg', 'crit', 'cd', 'radius', 'hp', 'mana'];
+const MAIN = ['dmg', 'crit', 'cd', 'radius', 'hp', 'mana'];
 
 // Zeile mit Aufschlüsselung. L = Stufen (oder null), cur = mods, wie sie gerade gelten (Run) bzw. nach Gear (Hauptmenü)
 function statRow(def: Def, L: ReturnType<typeof layers>, live: boolean): StatRow {

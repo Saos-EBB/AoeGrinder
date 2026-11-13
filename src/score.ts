@@ -8,7 +8,7 @@ import { onRunReset } from './hooks';
 
 export const run: any = {};
 
-export function resetScore() {
+function resetScore() {
   Object.assign(run, { killPoints: 0, kills: 0, combo: 0, bestCombo: 0, lastKill: -1e9, casts: {}, lastMulti: 0, multiAt: -1e9, bestMulti: 0, bestPull: 0, dmgBySource: {}, splits: {}, wave: 0 });
 }
 resetScore();

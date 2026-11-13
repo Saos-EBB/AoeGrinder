@@ -20,7 +20,7 @@ const WQ = {
 // Seen außerhalb der Karte fallen weg (WORLD_K 1 = kleine Karte)
 const LAKES = WQ.lakes.filter(([x, z]) => Math.hypot(x, z) < 84 * WORLD_K);
 const lakeDist = (x, z) => Math.min(...LAKES.map(([cx, cz, r]) => Math.hypot(x - cx, z - cz) - r));
-export const onIce = (x, z) => lakeDist(x, z) < 0;
+const onIce = (x, z) => lakeDist(x, z) < 0;
 
 // Geometrie einfärben, damit Teile mit eigener Farbe in einem InstancedMesh landen
 function paint(geo, hex) {
@@ -150,7 +150,7 @@ export const winterquell = {
 };
 
 // Eis: Mobs rutschen. moveMob setzt nur die Wunsch-Geschwindigkeit (iceWant), slideMob gleitet einmal pro Frame dahin
-export function slideMob(mob, dt) {
+function slideMob(mob, dt) {
   if (!onIce(mob.pos.x, mob.pos.z)) { mob.iceV = null; return false; }
   const v = mob.iceV ??= { x: mob.iceWant?.x ?? 0, z: mob.iceWant?.z ?? 0 }, want = mob.iceWant ?? { x: 0, z: 0 }, k = Math.min(1, WQ.ice.grip * dt / 1000);
   v.x += (want.x - v.x) * k; v.z += (want.z - v.z) * k;
@@ -158,4 +158,4 @@ export function slideMob(mob, dt) {
   mob.iceWant = null;
   return true;
 }
-export const iceKnockMul = (x, z) => onIce(x, z) ? WQ.ice.knockMul : 1;
+const iceKnockMul = (x, z) => onIce(x, z) ? WQ.ice.knockMul : 1;

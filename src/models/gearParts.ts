@@ -14,7 +14,7 @@ import { V } from '../util';
 import { type Mat, type PartPiece, lit, glow, ds, mesh, torso as kitTorso, tube as kitTube, helix, plate, spike, alongArm, VP, FIT, limbFrame, convert as kitConvert } from './partKit';
 
 // ---------------- Daten aus dem Viewer ----------------
-export const GP = {   // Optik-Zahlen // PH (Helligkeit beleuchteter Teile: PART_LIGHT in partKit.ts)
+const GP = {   // Optik-Zahlen // PH (Helligkeit beleuchteter Teile: PART_LIGHT in partKit.ts)
   ghost: 0.6,       // Geisterklingen: im Viewer additiv mit 55 % Deckkraft, hier opakes Glühen in Elementfarbe × ghost
   line: 0.85,       // Linien des Runenkreises (Viewer 85 % Deckkraft)
 };
@@ -260,7 +260,7 @@ export function buildGearTree(slot: string, group: string, item: GearShownItem):
   const root = new THREE.Group(); fn(root, M); orbitStart(root); return root;
 }
 // Kreisende Teile (Splitter, Bücher) stehen in der Bind-Pose dort, wo die Bahn des Viewers bei t = 0 liegt
-export const orbitPos = (u, t: number, out = V()) => { const a = u.a + t * 1.2;
+const orbitPos = (u, t: number, out = V()) => { const a = u.a + t * 1.2;
   return u.flat ? out.set(Math.cos(a) * u.r, u.y + Math.sin(a) * u.r, u.back) : out.set(Math.cos(a) * u.r, u.y + Math.sin(t * 2 + u.a) * 0.02, Math.sin(a) * u.r); };
 function orbitStart(root: THREE.Object3D) { root.traverse(o => { if (o.userData.orbit) orbitPos(o.userData.orbit, 0, o.position); }); }
 

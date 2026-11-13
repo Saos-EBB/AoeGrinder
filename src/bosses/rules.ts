@@ -21,7 +21,7 @@ import { t } from '../i18n';
 const hpFrac = f => { const { hp, max } = f.hp(); return hp / Math.max(1, max); };
 const mainBody = f => f.bodies.find(b => b.mob && !b.mob.dead) ?? f.bodies[0];
 
-export const RULE: Record<string, (f: any, p: any) => void> = {
+const RULE: Record<string, (f: any, p: any) => void> = {
   // Enrage: ab HP-Schwelle (hp) oder nach Zeit (after s). Tempo (Laufen und Ausholen) und Schaden steigen. Zeit-Enrage zeigt einen Timer an der Leiste
   enrage(f, p) {
     let on = false;

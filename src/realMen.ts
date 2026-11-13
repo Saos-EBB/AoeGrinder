@@ -149,7 +149,7 @@ const runeStage = (id, r) => hasRune(id, r) ? state.cardPicks[`rune-${id}-${r}`]
 
 
 // Taste oder Pad-Knopf des Slots, in dem die Attacke liegt
-export function held(id) {
+function held(id) {
   const action = actionOfSpell(id);   // Platz auf der Leiste (hotbar.ts)
   return !!action && (act(action) || !!pad.down[padBinds[action]]);
 }
@@ -184,7 +184,7 @@ export function rageOnHit() { if (isWarrior()) gainRage(R.rage.perHitTaken); }
 const rageMul = () => (1 + R.mult.rage * player.mana / R.rage.max) * (1 + R.mult.hp * clamp(1 - player.hp / maxHp(), 0, 1));
 
 // Nach dem Zurücksetzen von Leben und Mana im Run-Start
-export function resetRealMen() {
+function resetRealMen() {
   const on = isWarrior();
   player.rageMax = on ? R.rage.max : undefined;
   $('manaFill').style.background = on ? 'linear-gradient(#e0503c, #8a1a10)' : '';

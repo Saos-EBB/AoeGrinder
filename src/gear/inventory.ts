@@ -20,7 +20,7 @@ export const gearInv = (slot: Slot): GearItem[] => {
 export const wearMap = () => { if (!meta.wear || typeof meta.wear !== 'object') meta.wear = {}; return meta.wear; };
 export const overflow = (): GearItem[] => { if (!Array.isArray(meta.gearOver)) meta.gearOver = []; return meta.gearOver; };
 export const worn = (slot: Slot): GearItem | null => gearInv(slot).find(g => g.id === wearMap()[slot]) ?? null;
-export const slotFull = (slot: Slot) => gearInv(slot).length >= GEAR.invMax;
+const slotFull = (slot: Slot) => gearInv(slot).length >= GEAR.invMax;
 export const anySlotFull = () => SLOTS.some(slotFull);
 
 // ---------- Sets ----------

@@ -15,7 +15,7 @@ export interface SkinDef { id: SkinId; name: string; weapon?: string; school?: s
 export const STANDARD = 'standard';
 const def = (heroClass: HeroClass, id: SkinId, need?: string): SkinDef => ({ id, name: id === STANDARD ? 'look.standard.name' : `look.${heroClass}.${id}.name`, ...(need ? (heroClass === 'krieger' ? { weapon: need } : { school: need }) : {}) });
 
-export const SKIN_LIST: Record<HeroClass, SkinDef[]> = {
+const SKIN_LIST: Record<HeroClass, SkinDef[]> = {
   magier: [def('magier', STANDARD), ...['blitz', 'seuche', 'frost14', 'glut'].map(id => def('magier', id, figureOfSet(id)))],   // Hochspannung, Pestbringer, Splitterkönig, Glutprophet
   krieger: [def('krieger', STANDARD), def('krieger', 'klapse', 'sword'), def('krieger', 'classic', 'leeroy'), def('krieger', 'holz', 'sion')],   // Ausbrecher, Classic-Krieger 55, Holzfäller
 };

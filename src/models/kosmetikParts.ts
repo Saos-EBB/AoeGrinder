@@ -41,7 +41,7 @@ const foot = (o: THREE.Object3D) => { o.userData.foot = true; return o; };
 
 // ---------------- Bewegte Gruppen: eigener Bone, Reaktion über Bone-Rotation/-Lage/-Größe ----------------
 const _q = new THREE.Quaternion(), _e = new THREE.Euler();
-export class Handle {
+class Handle {
   bone: THREE.Bone | null = null; pos = V(); quat = new THREE.Quaternion(); scl = V(1, 1, 1);
   rot(x: number, y = 0, z = 0) { if (this.bone) this.bone.quaternion.copy(this.quat).multiply(_q.setFromEuler(_e.set(x, y, z))); return this; }
   at(x: number, y: number, z: number) { this.bone?.position.set(x, y, z); return this; }     // Lage im Raum der Eltern-Gruppe (Viewer-Maß)

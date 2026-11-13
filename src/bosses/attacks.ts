@@ -254,7 +254,7 @@ export const ATT = {
 };
 
 // Ring läuft von c auf r in dur s. Trifft einmal, wenn die Front den Spieler überholt (auch beim Entgegenlaufen). skipIfHit: wer gerade getroffen wurde, bleibt verschont
-export function ringWave(run, b, c, r, dur, color, skipIfHit = false) {
+function ringWave(run, b, c, r, dur, color, skipIfHit = false) {
   const e = fx(1e9), m = em(e, 'gring', palOf(color), { sc: 2, core: 0, flow: [0, 0, 0] });
   let t = 0, outside = dist2(player.pos, c) > .3, hit = skipIfHit && !!b.slamHit;
   b.slamHit = false;

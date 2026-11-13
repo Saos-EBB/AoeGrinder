@@ -159,7 +159,7 @@ for (const b of BOSSES) for (const r of b.rules) r.p = { ...(r.p || {}), ...(RUL
 for (const b of BOSSES) for (const a of b.attacks) a.p2 ||= /\(P2\)/.test(a.n);   // p2 steht fest an den Angriffen, der Name ist übersetzt
 
 // Prototyp aus v23 (Branch boss) als Roster-Eintrag: Modell = nächstes Mob-Modell der Zone, Angriffe wie bisher
-export const PROTOTYPE = {
+const PROTOTYPE = {
   id: 'prototyp', name: t('boss.prototyp.name'), from: t('boss.prototyp.from'), tier: 'proto', desc: t('boss.prototyp.desc'), zoneModel: true,
   attacks: [
     { n: t('boss.prototyp.attacks.0.n'), k: 'kette', p: { hits: [.8, .5, 1.0], r: 6, ang: 90, gap: 1.2 } },
@@ -169,7 +169,7 @@ export const PROTOTYPE = {
   ],
   rules: [],
 };
-export const ALL_BOSSES = [...BOSSES, PROTOTYPE];
+const ALL_BOSSES = [...BOSSES, PROTOTYPE];
 export const bossById = id => ALL_BOSSES.find(b => b.id === id);
 // Boss-Termine (Level 15, 30, …, 90 und 100): Stufe nach Level
 export const TIER_OF_LEVEL = lv => lv >= 100 ? 'final' : lv >= 75 ? 'spaet' : lv >= 45 ? 'mittel' : 'frueh';

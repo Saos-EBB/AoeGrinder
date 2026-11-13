@@ -25,9 +25,8 @@ const PALS: Record<string, [number[], number[]]> = {
   blitz: [[...new THREE.Color(0x3d7bff).toArray(), .22], [...new THREE.Color(0x9ff3ff).toArray(), 1]],
   slime: [[...new THREE.Color(0x3f8f2a).toArray(), .25], [...new THREE.Color(0xc8ff8a).toArray(), 1]],
 };
-export { jag };   // Quelle util.ts (auch strichMagier nutzt sie)
 // Ein Blitz von a nach b, mit 60 % ein Ast. life in s, w Breite
-export function zap(a: THREE.Vector3, b: THREE.Vector3, life = rnd(.08, .16), w = 1, branch = true, pal: 'blitz' | 'slime' = 'blitz') {
+function zap(a: THREE.Vector3, b: THREE.Vector3, life = rnd(.08, .16), w = 1, branch = true, pal: 'blitz' | 'slime' = 'blitz') {
   if (list.length > 300) list.shift();
   const pts = jag(a, b, a.distanceTo(b) > 6 ? 5 : 4), [glow, core] = PALS[pal];
   list.push({ pts, life, max: life, w, glow, core });
@@ -67,7 +66,7 @@ export function zapLook(from: { x: number; y: number; z: number }, to: { x: numb
 }
 // Bildschirm-Blitz: kurz hell über allem
 let flashEl: HTMLDivElement = null;
-export function screenFlash(op = .35, ms = 90) {
+function screenFlash(op = .35, ms = 90) {
   if (!flashEl) { flashEl = document.createElement('div'); flashEl.style.cssText = 'position:fixed;inset:0;background:#eef6ff;pointer-events:none;z-index:5;opacity:0;transition:opacity .12s'; document.body.appendChild(flashEl); }
   flashEl.style.transition = 'none'; flashEl.style.opacity = String(op);
   setTimeout(() => { flashEl.style.transition = 'opacity .15s'; flashEl.style.opacity = '0'; }, ms);

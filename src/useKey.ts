@@ -7,7 +7,7 @@ export type UseTarget = { dist: number; label: string; act: () => void };
 const sources: (() => UseTarget | null)[] = [];
 export const addUseSource = (fn: () => UseTarget | null) => { sources.push(fn); };
 
-export function nearestUse(): UseTarget | null {
+function nearestUse(): UseTarget | null {
   if (player.dead || state.paused) return null;
   let best: UseTarget | null = null;
   for (const fn of sources) { const u = fn(); if (u && (!best || u.dist < best.dist)) best = u; }

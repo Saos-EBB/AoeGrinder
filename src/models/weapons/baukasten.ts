@@ -13,7 +13,7 @@ import { V, rand as rnd } from '../../util';
 // Daten aus dem Viewer. Die Spielwerte (Regeln, Zahlen) stehen in weaponRolls.ts
 const RARITY = CARD_RARITIES;   // Seltenheitsfarbe am Modell, Quelle config.ts
 // Kopf = Schule des Fokus-Spells, zwei Formen je Schule (Kevin 2026-11-08). Jeder Kopf geht an jedem Typ
-export const ALL_HEADS = ['frostorb', 'sichel', 'glutschaedel', 'dreizack', 'wolke', 'spulen', 'speischaedel', 'phiole', 'ring', 'auge'];
+const ALL_HEADS = ['frostorb', 'sichel', 'glutschaedel', 'dreizack', 'wolke', 'spulen', 'speischaedel', 'phiole', 'ring', 'auge'];
 export const TYPES = {
   staff: { name: t('wtype.staff.name'), noun: 'stab', g: 'm', slot: t('wtype.staff.slot'), rule: t('wtype.staff.rule'), heads: ALL_HEADS },
   wand: { name: t('wtype.wand.name'), noun: 'zauberstab', g: 'm', slot: t('wtype.wand.slot'), rule: t('wtype.wand.rule'), heads: ALL_HEADS },

@@ -13,7 +13,7 @@ const figure = () => currentFigure().tag;
 
 // ---------- Frost: Eissplitter ----------
 // Jeder Treffer auf einen eingefrorenen Gegner gibt 1 Splitter. Maximum 15, Splitterhagel hebt es, nie über 50 // PH
-export const SHARDS = { max: 15, cap: 50 };
+const SHARDS = { max: 15, cap: 50 };
 export const shardMax = () => Math.min(SHARDS.cap, SHARDS.max + (mods.shardMax ?? 0));
 export function takeShards() { const n = state.shards ?? 0; state.shards = 0; return n; }
 onAnyHit((m, id, dmg, frozen) => {
@@ -23,14 +23,14 @@ onAnyHit((m, id, dmg, frozen) => {
 
 // ---------- Frost: gefrorener Boden (Eiszeit) ----------
 // Spieler darauf +20 % Tempo (player/move.ts liest iceGroundUntil), Gegner −40 % // PH
-export const ICE_GROUND = { playerSpeed: 1.2, mobSlow: 0.4 };
+const ICE_GROUND = { playerSpeed: 1.2, mobSlow: 0.4 };
 export const iceAge = () => !!mods.iceAge && figure() === 'Frost';
 export function frozenGroundTick(f) {
   for (const m of mobsInRadius(f.pos, f.radius)) applySlow(m, ICE_GROUND.mobSlow, 300);
   if (Math.hypot(player.pos.x - f.pos.x, player.pos.z - f.pos.z) <= f.radius) player.iceGroundUntil = state.now + 150;
 }
 
-export function resetFigures() {
+function resetFigures() {
   state.shards = 0;
   state.keeper = 0; state.chainCount = 0;
   player.iceGroundUntil = 0;

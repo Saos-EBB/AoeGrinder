@@ -127,9 +127,9 @@ export async function copySeed(msgEl?: HTMLElement) {
   catch { /* ohne Zwischenablage: die Zahl steht sichtbar da */ }
 }
 
-export const worldOpen = () => $('worldModal').classList.contains('show');
-export function openWorld() { render(); $('worldModal').classList.add('show'); }
-export function closeWorld() { $('worldModal').classList.remove('show'); renderMenu(); }
+const worldOpen = () => $('worldModal').classList.contains('show');
+function openWorld() { render(); $('worldModal').classList.add('show'); }
+function closeWorld() { $('worldModal').classList.remove('show'); renderMenu(); }
 $('worldClose').addEventListener('click', closeWorld);
 $('menuMap').addEventListener('click', openWorld);
 

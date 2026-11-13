@@ -47,7 +47,7 @@ export function meltScale() {
   return Math.max(0.1, 1 - (t - liquid.start) / 600 * 0.9);
 }
 export const plagueRooted = () => liquid.end > state.now;
-export function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUntil = 0; }
+function resetPlague() { liquid.start = liquid.end = -1e9; player.meltUntil = 0; }
 onRunReset(resetPlague, 140);   // Run-Reset (hooks.ts runReset)
 
 // Jeden Frame aus updatePlayer: Gift-Ticks

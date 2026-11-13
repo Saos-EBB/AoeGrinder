@@ -14,7 +14,7 @@ import { activeFlavor, flavorById } from './flavors';
 import { t } from '../i18n';
 import { fmtDiff } from './fmt';
 
-export const FEATS = ['multi3', 'multi5', 'multi10', 'multi20', 'combo25', 'combo50', 'combo100', 'combo200',
+const FEATS = ['multi3', 'multi5', 'multi10', 'multi20', 'combo25', 'combo50', 'combo100', 'combo200',
   'untouched', 'elite', 'boss', 'meterFull', 'levelUp', 'split', 'megaCrit', 'closeCall'] as const;
 export type FeatId = typeof FEATS[number];
 

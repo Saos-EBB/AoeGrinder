@@ -70,7 +70,7 @@ export function loadProfile(i: number) {
 }
 
 // Klassen auf <body>; Module mit eigener Darstellung hören auf das Ereignis 'uisettings'
-export function applyUi() {
+function applyUi() {
   document.body.classList.toggle('font-fraktur', uiSettings.font === 'fraktur');
   dispatchEvent(new Event('uisettings'));
 }

@@ -10,7 +10,7 @@ import type { Rng } from './rng';
 import type { Deco } from './types';
 
 // ---------- Geometrie-Helfer: Teile mit Vertex-Farbe, zu einer Geometrie verschmolzen ----------
-export function paint(geo: THREE.BufferGeometry, hex: number) {
+function paint(geo: THREE.BufferGeometry, hex: number) {
   const g = geo.index ? geo.toNonIndexed() : geo;
   if (g.attributes.uv) g.deleteAttribute('uv');
   const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
@@ -58,7 +58,7 @@ function instanced(ctx: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material, lis
 }
 
 // Wandzellen (und Löcher) zeilenweise zu Rechtecken zusammenfassen: wenige große Boxen statt hunderter kleiner
-export function wallBoxes(g: Grid) {
+function wallBoxes(g: Grid) {
   const used = new Uint8Array(g.n * g.n), out: { i: number; j: number; w: number; h: number }[] = [];
   const solid = (i, j) => g.get(i, j) !== FLOOR;
   for (let j = 0; j < g.n; j++) for (let i = 0; i < g.n; i++) {

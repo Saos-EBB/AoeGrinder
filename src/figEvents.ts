@@ -19,7 +19,7 @@ export const figVals = { mana: 0, kills: 0, element: null as string | null, spri
 const subs: ((e: FigEvent, on?: boolean) => void)[] = [];
 export const onFigEvent = (fn: (e: FigEvent, on?: boolean) => void) => { subs.push(fn); };
 const lastAt: Partial<Record<FigEvent, number>> = {}, counts: Partial<Record<FigEvent, number>> = {};   // counts: Tests
-export function figEvent(e: FigEvent, on?: boolean) {
+function figEvent(e: FigEvent, on?: boolean) {
   const now = performance.now();
   if (now - (lastAt[e] ?? -1e9) < FIG_EV.gap[e]) return;
   lastAt[e] = now;

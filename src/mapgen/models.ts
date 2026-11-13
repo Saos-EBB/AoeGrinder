@@ -8,11 +8,6 @@ import { CELL } from './grid';
 
 const dodeca = (r: number, x = 0, y = 0, z = 0, sx = 1, sy = 1, sz = 1) => { const g = new THREE.DodecahedronGeometry(r).toNonIndexed(); g.scale(sx, sy, sz); g.translate(x, y, z); return g; };
 
-// ---------- Wände (eine Rand-Wandzelle, 8 × 8 yd) ----------
-export const wallBlock = (stone: number, top: number, h = 9, glowLine = false): Prop => ({
-  geo: colored([[box(CELL, h, CELL, 0, h / 2, 0), stone], [box(CELL + 0.3, 0.8, CELL + 0.3, 0, h + 0.4, 0), top], [box(CELL + 0.1, 0.6, CELL + 0.1, 0, 0.3, 0), top]]),
-  glow: glowLine ? plain([box(CELL + 0.12, 0.12, CELL + 0.12, 0, 2.2, 0)]) : undefined,
-});
 // Kanäle: Ziegel mit Rohr und Gitter
 export const sewerWall = (): Prop => ({
   geo: colored([[box(CELL, 10, CELL, 0, 5, 0), 0x3a4440], [box(CELL + 0.2, 0.6, CELL + 0.2, 0, 1.2, 0), 0x2a3230], [box(CELL + 0.3, 0.9, CELL + 0.3, 0, 10.2, 0), 0x4a5450],
