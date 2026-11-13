@@ -8,11 +8,10 @@ import { scene } from '../render';
 import { particles } from '../fx/particles';
 import { groundAt } from '../collision';
 import { player } from '../state';
-import { V, clamp, outC, outBack, rand as rnd } from '../util';
+import { V, clamp, outC, outBack, rand as rnd, TAU } from '../util';
 
-export const TAU = Math.PI * 2;
-// clamp, outC, outBack, rnd kommen aus util.ts und werden hier nur weitergereicht (alte Importe aus energy bleiben gültig)
-export { clamp, outC, outBack, rnd };
+// clamp, outC, outBack, rnd, TAU kommen aus util.ts und werden hier nur weitergereicht (alte Importe aus energy bleiben gültig)
+export { clamp, outC, outBack, rnd, TAU };
 // Bodenhöhe unter p, gesucht ab p.y + up (Treppen, Brücken); bosses/core.ts nimmt up = 2
 export const gy = (p, up = 1) => groundAt(p.x, p.z, (p.y ?? 0) + up);
 export const onGround = (p, up = 1) => V(p.x, gy(p, up), p.z);
