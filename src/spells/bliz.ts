@@ -10,6 +10,7 @@ import { mobsInRadius, applySlow, startChannel, hasRune, addField } from './core
 import { t } from '../i18n';
 import type { CastCtx } from './registry';
 import type { Vector3 } from 'three';
+import type { PlayerChannel } from '../state';
 
 const FIELD = { radius: 10, ms: 8000 }, EYE_MS = 8000, STORM_EYE_MS = 300;   // PH: Eisfeld, Frostauge, Sturmauge pro Rang
 
@@ -17,7 +18,7 @@ const WANDER_SPEED = 3;     // PH: yd/s
 const LAST_TICK_ROOT = 4000;   // PH
 
 // Ein Blizzard-Tick, auch für Eisfeld und Frostauge. Sturmauge: jeder Tick kürzt die Frostkugel-Abklingzeit
-function tickAt(c, point, radius, last, k = 1) {
+function tickAt(c: CastCtx, point: Vector3, radius: number, last: boolean, k = 1) {
   for (const m of mobsInRadius(point, radius)) {
     if (!c.hit(m, bliz.tickDmg * k) || m.dead) continue;
     if (mods.blizSlow > 0) applySlow(m, mods.blizSlow, 1500);
@@ -50,10 +51,10 @@ export const bliz = {
     ch.mobile = hasRune('bliz', 'walk');
     blizStart(point, blizRadius());
   },
-  tick(ch) {
+  tick(ch: PlayerChannel) {
     tickAt(ch.c, ch.point, blizRadius(), ch.nextTick > ch.end, ch.mobile ? 0.5 : 1);
   },
-  channelUpdate(ch, dt) {
+  channelUpdate(ch: PlayerChannel, dt: number) {
     if (!hasRune('bliz', 'wander')) return;
     const dx = player.pos.x - ch.point.x, dz = player.pos.z - ch.point.z, d = Math.hypot(dx, dz);
     if (d < 0.1) return;

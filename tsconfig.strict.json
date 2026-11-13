@@ -145,6 +145,24 @@
     "src/vfx/plagueLook.ts",
     "src/vfx/warLook.ts",
     "src/waves.ts",
-    "src/xpBonus.ts"
+    "src/xpBonus.ts",
+    "src/battery.ts",
+    "src/bosses/roster.ts",
+    "src/camera.ts",
+    "src/champions.ts",
+    "src/fx/shaders.ts",
+    "src/fx/softPass.ts",
+    "src/gear/text.ts",
+    "src/mapgen/build.ts",
+    "src/models/boar.ts",
+    "src/objects/thief.ts",
+    "src/plagueMarks.ts",
+    "src/schoolMeter.ts",
+    "src/spells/bliz.ts",
+    "src/ui/confirm.ts",
+    "src/ui/minimap.ts",
+    "src/ui/saveCode.ts",
+    "src/ui/spellCard.ts",
+    "src/ui/weaponCard.ts"
   ]
 }

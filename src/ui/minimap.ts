@@ -8,6 +8,7 @@ import { cam } from '../camera';
 import { placementOf } from './hud/layout';
 import { zone } from '../world';
 import { portalPos } from '../portal';
+import type { Layout } from '../mapgen/grid';
 
 const MINIMAP = {
   px: 150,               // Kantenlänge in CSS-Pixeln, die Größe im Spiel kommt aus dem HUD-Layout (Mausrad)
@@ -25,8 +26,8 @@ let size = 0, last = -1e9;
 
 // Raster der generierten Map als Bild: Rand-Wände hell, Wasser blau, Lava orange. WALL_PX Pixel pro Zelle
 const WALL_PX = 8, WATER_C = '#3a8ac8', LAVA_C = '#ff7a2a';
-let wallFor = null, wallCanvas: HTMLCanvasElement = null;
-function wallImage(l) {
+let wallFor: Layout | null = null, wallCanvas: HTMLCanvasElement = null;
+function wallImage(l: Layout) {
   if (wallFor === l) return wallCanvas;
   const g = l.grid, cv = wallCanvas ??= document.createElement('canvas'), x = cv.getContext('2d'), f = WALL_PX / 4;
   cv.width = cv.height = g.n * WALL_PX;
@@ -62,7 +63,7 @@ export function updateMinimap() {
   const c = ctx, r = size / 2, k = r / MINIMAP.yd, yaw = player.facing + cam.offset;
   const sin = Math.sin(yaw), cos = Math.cos(yaw), px = player.pos.x, pz = player.pos.z;
   // Welt → Karte: oben = Blickrichtung (sin, cos), rechts = Kamera-rechts (−cos, sin)
-  const toMap = (x, z) => { const dx = x - px, dz = z - pz; return [r + (-dx * cos + dz * sin) * k, r - (dx * sin + dz * cos) * k]; };
+  const toMap = (x: number, z: number) => { const dx = x - px, dz = z - pz; return [r + (-dx * cos + dz * sin) * k, r - (dx * sin + dz * cos) * k]; };
 
   const round = !placementOf('minimap')?.variant?.startsWith('square');
   c.clearRect(0, 0, size, size);

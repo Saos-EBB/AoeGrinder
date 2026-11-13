@@ -8,7 +8,7 @@ import { quality, vfxOld } from './shaders';
 
 export const softScene = new THREE.Scene();
 export const softUniforms = {
-  tDepth: { value: null }, uDepthRes: { value: new THREE.Vector2(1, 1) }, uSoft: { value: 1 },
+  tDepth: { value: null as THREE.Texture | null }, uDepthRes: { value: new THREE.Vector2(1, 1) }, uSoft: { value: 1 },
   uNear: { value: camera.near }, uFar: { value: camera.far },
 };
 export const SOFT_GLSL = /* glsl */`
@@ -35,7 +35,7 @@ class SoftPass extends Pass {
   }));
   active = () => true;
   constructor() { super(); this.needsSwap = false; }
-  render(renderer, _write, read) {
+  render(renderer: THREE.WebGLRenderer, _write: THREE.WebGLRenderTarget, read: THREE.WebGLRenderTarget) {
     if (!this.active()) return;
     const res = vfxOld() ? 1 : quality().particleRes, w = Math.max(1, Math.round(read.width * res)), h = Math.max(1, Math.round(read.height * res));
     if (this.rt.width !== w || this.rt.height !== h) this.rt.setSize(w, h);

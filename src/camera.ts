@@ -7,6 +7,7 @@ import { addTrauma, shakeOffset } from './wucht';
 import { device } from './device';
 import { wrap } from './util';
 import { hooks } from './hooks';
+import type { Spot } from './mapgen/types';
 
 // Kamera wie in WoW: Orbit um den Spieler
 export const cam = { offset: 0, pitch: 0.45, dist: 16 };
@@ -14,10 +15,10 @@ export const cam = { offset: 0, pitch: 0.45, dist: 16 };
 export const MOBILE_YAW = Math.PI, MOBILE_PITCH = 0.95;   // PH
 
 // Kamera-Wackeln: Trauma-Modell in wucht.ts, amount wie bisher (0,1 klein … 1 stark)
-export function shakeCamera(amount) { addTrauma(amount); }
+export function shakeCamera(amount: number) { addTrauma(amount); }
 
 // Anteil t (0..1) auf der Strecke a→b (nur x/z), an dem sie den Kreis trifft; 1 = kein Treffer
-function segmentHitsCircle(a, b, c, r) {
+function segmentHitsCircle(a: Spot, b: Spot, c: Spot, r: number) {
   const dx = b.x - a.x, dz = b.z - a.z, fx = a.x - c.x, fz = a.z - c.z;
   const A = dx * dx + dz * dz, B = 2 * (fx * dx + fz * dz), C = fx * fx + fz * fz - r * r;
   if (C < 0) return 1;                                   // Spieler steht selbst unter dem Baum
@@ -32,11 +33,11 @@ function segmentHitsCircle(a, b, c, r) {
 const AUTO_CAM_RATE = 3;   // PH: 1/s
 let autoCam = readRaw(KEYS.autoCam) === '1';
 export const autoCamOn = () => autoCam;
-export function setAutoCam(on) {
+export function setAutoCam(on: boolean) {
   autoCam = on;
   writeRaw(KEYS.autoCam, on ? '1' : '0');
 }
-export function updateAutoCam(dt, dragging) {
+export function updateAutoCam(dt: number, dragging: boolean) {
   if (!autoCam || state.paused || player.moveState === 'idle' || dragging) return;
   const target = player.moveState === 'back' || !player.grounded ? 0 : wrap(Math.atan2(player.vel.x, player.vel.z) - player.facing);
   const now = wrap(cam.offset);

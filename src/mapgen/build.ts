@@ -42,7 +42,7 @@ const LIGHT_R = 6;   // PH: Radius der Lichtinsel in yd
 const glowMat = (c: THREE.Color) => new THREE.MeshBasicMaterial({ color: c, fog: false });
 const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
 
-function instanced(ctx: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material, list: { x: number; z: number; y?: number; ry?: number; s?: number; sy?: number; color?: THREE.Color }[], heightAt) {
+function instanced(ctx: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material, list: { x: number; z: number; y?: number; ry?: number; s?: number; sy?: number; color?: THREE.Color }[], heightAt: (x: number, z: number) => number) {
   if (!list.length) return null;
   const inst = new THREE.InstancedMesh(geo, mat, list.length);
   list.forEach((p, i) => {
@@ -60,7 +60,7 @@ function instanced(ctx: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material, lis
 // Wandzellen (und Löcher) zeilenweise zu Rechtecken zusammenfassen: wenige große Boxen statt hunderter kleiner
 function wallBoxes(g: Grid) {
   const used = new Uint8Array(g.n * g.n), out: { i: number; j: number; w: number; h: number }[] = [];
-  const solid = (i, j) => g.get(i, j) !== FLOOR;
+  const solid = (i: number, j: number) => g.get(i, j) !== FLOOR;
   for (let j = 0; j < g.n; j++) for (let i = 0; i < g.n; i++) {
     if (used[j * g.n + i] || !solid(i, j)) continue;
     let w = 1;
@@ -97,7 +97,7 @@ function fineMesh(g: Grid, kind: number, y: number) {
 }
 
 // Baut alles. Gibt die Meshes zurück (Zählung der Draw Calls im Test).
-export function buildLayout(ctx: Ctx, l: Layout, look: Look, rng: Rng, heightAt) {
+export function buildLayout(ctx: Ctx, l: Layout, look: Look, rng: Rng, heightAt: (x: number, z: number) => number) {
   const g = l.grid, out: THREE.Object3D[] = [];
   const keep = (o: THREE.Object3D | null) => { if (o) out.push(o); };
   const mat = toonMat({ vertexColors: true });
@@ -107,7 +107,7 @@ export function buildLayout(ctx: Ctx, l: Layout, look: Look, rng: Rng, heightAt)
   for (const b of wallBoxes(g)) addBox(g.x0 + (b.i + b.w / 2) * CELL, g.z0 + (b.j + b.h / 2) * CELL, b.w * CELL, b.h * CELL, 0);
 
   const byKind = new Map<string, { x: number; z: number; y?: number; ry?: number; s?: number; color?: THREE.Color }[]>();
-  const put = (kind: string, p) => { if (!byKind.has(kind)) byKind.set(kind, []); byKind.get(kind)!.push(p); };
+  const put = (kind: string, p: { x: number; z: number; y?: number; ry?: number; s?: number; color?: THREE.Color }) => { if (!byKind.has(kind)) byKind.set(kind, []); byKind.get(kind)!.push(p); };
   const tint = () => new THREE.Color().setScalar(rng.range(0.82, 1.08));
 
   // Wände: Block pro Rand-Wandzelle, oder (Offen) Bäume/Felsen dicht gestreut

@@ -11,6 +11,7 @@ import { schedule } from './spells/core';
 import { hitstop } from './fx/impact';
 import { W, addTrauma, decal } from './wucht';
 import { t, has } from './i18n';
+import type { Mob } from './state';
 
 // Alle Zahlen PH
 export const C = {
@@ -40,8 +41,8 @@ export function rollAffixes() {
 }
 
 // Macht aus einem frisch gespawnten Mob einen Champion
-export function makeChampion(m, affixes) {
-  const A = C.affixes, has = a => affixes.includes(a);
+export function makeChampion(m: Mob, affixes: string[]) {
+  const A = C.affixes, has = (a: string) => affixes.includes(a);
   m.champion = { affixes };
   m.hp = m.maxHp = Math.round(m.maxHp * C.hp);
   m.dmgMulC = C.dmg * (has('strong') ? A.strong.dmg : 1);
@@ -51,18 +52,18 @@ export function makeChampion(m, affixes) {
   m.plate.style.color = C.plateColor;
   const line = document.createElement('div');
   line.className = 'champAffix';
-  line.textContent = affixes.map(a => A[a].name).join(' · ');
+  line.textContent = affixes.map(a => A[a as keyof typeof A].name).join(' · ');
   Object.assign(line.style, { fontSize: '10px', color: C.plateColor, textAlign: 'center', lineHeight: '1.1' });
   m.plate.appendChild(line);
 }
 
 // Treffer eines Champions am Spieler (mobs.ts hitPlayer)
-export function championHitPlayer(m) {
+export function championHitPlayer(m: Mob) {
   if (m.champion?.affixes.includes('cold')) player.slowUntil = Math.max(player.slowUntil, state.now + C.affixes.cold.slowMs);
 }
 
 // Tod eines Champions (mobs.ts killMob): Wucht, Feuer-Explosion, Text beim letzten des Packs
-export function championDied(m, damagePlayer) {
+export function championDied(m: Mob, damagePlayer: (amount: number) => void) {
   hitstop(W.hitstop.championMs);
   addTrauma(C.trauma);
   decal(m.pos, 3, W.decal.champion);
