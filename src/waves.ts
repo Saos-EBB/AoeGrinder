@@ -26,7 +26,7 @@ const CHOICES = [
 
 // step: spawn (Gegner kommen), clear (alle da, Rest töten), boss (Boss läuft), pause (kurz bis zur nächsten Welle)
 let step = 'pause', toSpawn = 0, due = 0, stepAt = 0, fps = 60, lastFrame = performance.now();
-const waveSize = n => WAVES.base + WAVES.perWave * (n - 1);
+const waveSize = (n: number) => WAVES.base + WAVES.perWave * (n - 1);
 const waveLeft = () => state.mobs.filter(m => !m.dead && m.wave === run.wave).length + toSpawn;
 
 function spawnFromEdge() {
@@ -49,7 +49,7 @@ function startWave() {
   step = 'spawn';
 }
 
-export function updateWaves(dt) {
+export function updateWaves(dt: number) {
   const hud = $('siegeHud');
   hud.hidden = mobMode !== 'waves';
   if (mobMode !== 'waves' || player.dead) return;

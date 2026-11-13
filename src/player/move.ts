@@ -43,11 +43,11 @@ export function startDodge() {
   novaFx(from, N.radius);
 }
 // Fire only: Der Dodge legt Feuerspur wie die Schritte der Figur
-const dodgeTrail = d => heroModel.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
+const dodgeTrail = (d: { dx: number; dz: number; side?: number }) => heroModel.trail?.add(player.pos.x, player.pos.y, player.pos.z, Math.atan2(d.dx, d.dz), (d.side = -(d.side ?? 1)));
 
 // Bewegung wie in WoW: A/D drehen, Q/E (oder A/D mit rechter Maus) seitwärts,
 // kein Lenken in der Luft, Rückwärts langsamer.
-export function updatePlayer(dt) {
+export function updatePlayer(dt: number) {
   const s = dt / 1000;
   const mirror = state.mirrorUntil > state.now ? -1 : 1;   // Wahnsinn (Yogg-Saron, bosses/rules.ts): links und rechts vertauscht
   const turn = ((act('turnLeft') ? 1 : 0) - (act('turnRight') ? 1 : 0)) * mirror;

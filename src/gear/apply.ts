@@ -25,7 +25,7 @@ const PERFECT: Record<string, (v: number, to: ModTarget) => void> = {
   burstTick: (v, { mods }) => { mods.burstTick += v; },
 };
 // Hersteller-Trait mit makerMul (Werte aus ROLLS.maker, Wege wie applyRunWeapon)
-const halfMaker = (id: string) => Object.fromEntries(Object.entries(ROLLS.maker[id] ?? {}).map(([k, v]) => [k, (v as number) * GEAR.makerMul])) as Record<string, number>;
+const halfMaker = (id: string) => Object.fromEntries(Object.entries(ROLLS.maker[id as keyof typeof ROLLS.maker] ?? {}).map(([k, v]) => [k, (v as number) * GEAR.makerMul])) as Record<string, number>;
 
 // Run-Start nach applyRunWeapon (mods frisch aus resetMods, spellStats aus resetSpells): Werte über mods/stat, Element-Proc über den Treffer-Hook
 export function applyRunGear(skin: string | null, to: ModTarget = runTarget()) {
@@ -39,7 +39,7 @@ export function applyRunGear(skin: string | null, to: ModTarget = runTarget()) {
     if (!g) continue;
     if (set) { const [k, v] = SETS[set].perfect[slot]; PERFECT[k](v, to); continue; }   // 5/5: Perfekt-Wert statt eigenem Roll
     const f = factor(g.r) * GEAR.mul;
-    applyValue(valueKey(g), ROLLS.values[valueKey(g)] * f, to);
+    applyValue(valueKey(g), ROLLS.values[valueKey(g) as keyof typeof ROLLS.values] * f, to);
     if (g.s.focus) applyFocus(g.s.focus, f, { s: { fv: 1 } }, to);
     const M = makerOf(g) ? halfMaker(g.s.maker) : {};
     if (M.dmg) mods.dmg += M.dmg;

@@ -28,8 +28,8 @@ export const FOCUS_SPELLS = ['nova', 'bliz', 'coc', 'blink', 'flame', 'blast', '
   'sludge', 'slimetrap', 'slimewave', 'blackhole', 'poisoncloud', 'web', 'contract', 'drain', 'burst', 'melt'];
 export const VALUE_KEY = { Schaden: 'dmg', Crit: 'crit', Abklingzeit: 'cd', Mana: 'mana', Leben: 'hp', 'Regen im Kampf': 'regen', Lauftempo: 'speed', Radius: 'radius', Dauereffekte: 'dur' };
 
-export const factor = rarity => CARD_RARITIES[rarity].mult;
-export const pct = v => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
+export const factor = (rarity: number) => CARD_RARITIES[rarity].mult;
+export const pct = (v: number) => `${v < 0 ? '−' : '+'}${fmtNum(Math.round(Math.abs(v) * 1000) / 10)} %`;
 // Hauptwert als Zahl für ▲/▼ und Sortierung (ui/compare.ts): v in Prozent wie angezeigt (auf 0,1 gerundet), Abklingzeit negativ
 export type MainValue = { key: string; v: number };
 export const mainOf = (key: string, raw: number): MainValue => ({ key, v: (key === 'cd' ? -1 : 1) * Math.round(raw * 1000) / 10 });

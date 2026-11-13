@@ -18,7 +18,7 @@ import { t } from '../i18n';
 import { emit } from '../hooks';
 import { die } from '../run';
 
-export function damagePlayer(amount, dot = false, source = '') {
+export function damagePlayer(amount: number, dot = false, source = '') {
   if (player.dead || warriorUntouchable() || iceBlocked() || player.invulnUntil > state.now) return;   // invulnUntil: Phönix
   if (!dot && dodgeIframes()) { perfectDodge(); return; }   // Dodge: Angriffe und Geschosse gehen durch (perfekt), Gift und Lava nicht
   amount = Math.max(1, Math.round(amount * takenMul()));
@@ -57,13 +57,13 @@ function pushbackChannel() {
   if (ch.end <= state.now) stopChannel();
 }
 
-export function spendMana(cost) {
+export function spendMana(cost: number) {
   if (cost <= 0) return;
   player.mana -= cost;
   player.lastManaUse = state.now;              // startet die 5-Sekunden-Regel
 }
 
-export function regenerate(dt) {
+export function regenerate(dt: number) {
   if (state.now >= player.nextRegen) {         // Tick alle 2 s
     player.nextRegen += CFG.regenTick;
     let mana = manaRegenPerTick();

@@ -6,7 +6,7 @@ import type { FlavorId } from '../flavors';
 
 export const W = 1280, H = 720, CX = 640;
 const FRAC: Record<Anchor, [number, number]> = { tl: [0, 0], t: [0.5, 0], tr: [1, 0], l: [0, 0.5], c: [0.5, 0.5], r: [1, 0.5], bl: [0, 1], b: [0.5, 1], br: [1, 1] };
-const r2 = v => Math.round(v * 100) / 100;
+const r2 = (v: number) => Math.round(v * 100) / 100;
 export function pt(anchor: Anchor, ax: number, ay: number, scale = 1, variant?: string): Placement {
   const [fx, fy] = FRAC[anchor];
   return { anchor, x: r2((ax - W * fx) / W * 100), y: r2((ay - H * fy) / H * 100), scale: r2(scale), ...(variant ? { variant } : {}) };

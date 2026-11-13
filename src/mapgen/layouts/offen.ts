@@ -52,7 +52,7 @@ export function offen(rng: Rng): Layout {
     edges.push(best); inTree.push(best[1]);
   }
   if (clear.length > 3) {
-    const extra = [];
+    const extra: [number, number][] = [];
     for (let a = 0; a < clear.length; a++) for (let b = a + 1; b < clear.length; b++) if (!edges.some(([p, q]) => (p === a && q === b) || (p === b && q === a))) extra.push([a, b]);
     extra.sort((p, q) => dist(clear[p[0]], clear[p[1]]) - dist(clear[q[0]], clear[q[1]]));
     if (extra.length) edges.push(extra[0]);

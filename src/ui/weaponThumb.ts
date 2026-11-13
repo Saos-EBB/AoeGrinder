@@ -5,6 +5,9 @@
 
 import * as THREE from 'three';
 import { buildWeaponOf } from '../weaponRolls';
+import type { WeaponItem } from '../meta';
+// Bild-Quelle: Waffe aus dem Inventar oder eine Look-Waffe ({ id: 'look:…', m })
+export type ThumbWeapon = Pick<WeaponItem, 'v' | 's' | 'm' | 'e'> & { id: number | string };
 
 const W = 96, H = 240;   // Pixel des Bilds, angezeigt etwa halb so groß // PH
 const ATLAS = 2048;      // Breite des Sammelbilds
@@ -83,9 +86,9 @@ export function snapMany(shots: Shot[]): string[] {
   return out;
 }
 
-export const weaponKey = w => `w:${w.id}:${JSON.stringify(w.s ?? w.m ?? w.e)}`;
+export const weaponKey = (w: ThumbWeapon) => `w:${w.id}:${JSON.stringify(w.s ?? w.m ?? w.e)}`;
 // Waffe als Bild vorbereiten: längste Achse senkrecht, leicht gedreht
-export function weaponShot(w): Shot {
+export function weaponShot(w: ThumbWeapon): Shot {
   const built = buildWeaponOf(w);
   built.update?.(0, 0);
   const root = built.root;
@@ -97,7 +100,7 @@ export function weaponShot(w): Shot {
   return { root, w: W, h: H, done: () => built.dispose?.() };
 }
 
-export function weaponThumb(w): string {
+export function weaponThumb(w: ThumbWeapon): string {
   const key = weaponKey(w), hit = thumbCache.get(key);
   if (hit !== undefined) return hit;
   let url = '';

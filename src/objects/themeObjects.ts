@@ -19,6 +19,7 @@ import { colored, plain } from '../mapgen/build';
 import { registerKind, planObjects, redraw, removeObj, onMapObjects, type Obj } from './objects';
 import { dist2d, rand } from '../util';
 import { t } from '../i18n';
+import type { PackSpot } from '../mapgen/types';
 
 const THEME_OBJ = {
   flood: { ms: 10000, r: 10, slow: 0.45, cdMs: 30000, color: 0x3a8ac8 },          // Schleuse
@@ -32,7 +33,7 @@ const lifeOf = () => mobMaxHp(player.level) * hpMulOf(zone.theme);
 const mobsNear = (p: { x: number; z: number }, r: number) => state.mobs.filter(m => !m.dead && dist2d(m.pos, p) <= r);
 // Wirkfläche der Hebel: der Pack-Platz am nächsten zum Hebel (da kommen Mobs vorbei), sonst der Hebel selbst
 const areaOf = (o: Obj) => {
-  const s = (zone.packSpots ?? []).reduce((a, b) => !a || dist2d(b, o) < dist2d(a, o) ? b : a, null);
+  const s = (zone.packSpots ?? []).reduce((a: PackSpot | null, b: PackSpot) => !a || dist2d(b, o) < dist2d(a, o) ? b : a, null);
   return s && dist2d(s, o) < 25 ? { x: s.x, z: s.z } : { x: o.x, z: o.z };
 };
 
@@ -44,7 +45,7 @@ function surface(o: Obj, color: number, r: number, ms: number, k = 0.55) {
   const a = areaOf(o), y = heightAt(a.x, a.z) + 0.12;
   const mesh = new THREE.Mesh(new THREE.CircleGeometry(r, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(color === THEME_OBJ.lava.color ? 2.2 : 1), transparent: true, opacity: 0, depthWrite: false }));
   mesh.position.set(a.x, y, a.z);
-  addEffect(mesh, ms, f => { mesh.material.opacity = k * Math.min(1, f * 8, (1 - f) * 8); mesh.scale.setScalar(Math.min(1, 0.3 + f * 6)); });
+  addEffect(mesh, ms, (f: number) => { mesh.material.opacity = k * Math.min(1, f * 8, (1 - f) * 8); mesh.scale.setScalar(Math.min(1, 0.3 + f * 6)); });
   return a;
 }
 function leverUse(o: Obj, kind: 'flood' | 'lava') {

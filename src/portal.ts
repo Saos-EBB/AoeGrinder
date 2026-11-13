@@ -15,6 +15,7 @@ import { addXpMul } from './xpBonus';
 import { t } from './i18n';
 import { portalMapSeed } from './mapgen/rng';
 import { hooks, onRunReset } from './hooks';
+import type { Spot } from './mapgen/types';
 
 const PORTAL = {
   levels: [25, 50, 75],       // PH: Packs
@@ -59,8 +60,8 @@ function findGlow() {
 function pickSpot() {
   const spots = zone.layout?.portalSpots ?? [];
   if (!spots.length) return null;
-  const ok = spots.filter(s => dist2d(s, player.pos) >= PORTAL.minFromPlayer);
-  return ok[0] ?? spots.reduce((a, b) => dist2d(a, player.pos) >= dist2d(b, player.pos) ? a : b);
+  const ok = spots.filter((s: Spot) => dist2d(s, player.pos) >= PORTAL.minFromPlayer);
+  return ok[0] ?? spots.reduce((a: Spot, b: Spot) => dist2d(a, player.pos) >= dist2d(b, player.pos) ? a : b);
 }
 
 function openPortal() {

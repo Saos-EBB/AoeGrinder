@@ -8,6 +8,7 @@ import { mobsInRadius, applySlow } from './spells/core';
 import { renderActionbar } from './feedback';
 import { t } from './i18n';
 import { onAnyHit, onRunReset } from './hooks';
+import type { SpellField } from './spells/registry';
 
 const figure = () => currentFigure().tag;
 
@@ -25,7 +26,7 @@ onAnyHit((m, id, dmg, frozen) => {
 // Spieler darauf +20 % Tempo (player/move.ts liest iceGroundUntil), Gegner −40 % // PH
 const ICE_GROUND = { playerSpeed: 1.2, mobSlow: 0.4 };
 export const iceAge = () => !!mods.iceAge && figure() === 'Frost';
-export function frozenGroundTick(f) {
+export function frozenGroundTick(f: SpellField) {
   for (const m of mobsInRadius(f.pos, f.radius)) applySlow(m, ICE_GROUND.mobSlow, 300);
   if (Math.hypot(player.pos.x - f.pos.x, player.pos.z - f.pos.z) <= f.radius) player.iceGroundUntil = state.now + 150;
 }

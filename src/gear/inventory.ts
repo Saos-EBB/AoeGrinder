@@ -8,6 +8,7 @@ import { FIGURES } from '../figureTable';
 import { SLOTS, GEAR, KOSMETIK, KOSMETIK_POOL, type Slot, type GearItem } from './data';
 import { SETS } from './sets';
 import { resetMigrated, migratedCount } from './clean';
+import type { FigureId } from '../figureTable';
 
 export const isMageFigure = (skin: string | null) => !!skin && skin !== 'krieger';
 
@@ -24,7 +25,7 @@ const slotFull = (slot: Slot) => gearInv(slot).length >= GEAR.invMax;
 export const anySlotFull = () => SLOTS.some(slotFull);
 
 // ---------- Sets ----------
-export const setOfFigure = (skin: string | null) => FIGURES[skin]?.set ?? null;
+export const setOfFigure = (skin: string | null) => FIGURES[skin as FigureId]?.set ?? null;
 export const setCount = (setId: string) => SLOTS.filter(s => worn(s)?.s.setId === setId).length;
 // Aktives Set des gespielten Magiers: alle 5 Teile angelegt und die Schule passt
 export const fullSet = (skin: string | null) => { const id = setOfFigure(skin); return id && setCount(id) === SLOTS.length ? id : null; };

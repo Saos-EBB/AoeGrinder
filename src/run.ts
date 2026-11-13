@@ -75,7 +75,7 @@ onRunReset(() => {
 }, 190);
 
 // Dev: Zone wechseln. Mobs weg, Welt neu, Spieler in die Mitte; Level und Karten bleiben
-export function switchZone(id) {
+export function switchZone(id: string) {
   for (const m of state.mobs) removeMob(m);
   clearAbilities();
   state.mobs = [];
@@ -95,7 +95,7 @@ export function switchZone(id) {
 }
 
 // Dev: Level setzen. Mobs kommen neu, damit die Freischaltung sofort zu sehen ist. Im Run gibt es nach oben die Karten des Kartentakts, ohne Lücke; bisherige Karten bleiben
-export function setLevel(level) {
+export function setLevel(level: number) {
   const fromLevel = player.level;
   player.level = level;
   player.xp = 0;
@@ -113,7 +113,7 @@ export function setLevel(level) {
 }
 
 // Abschluss: Level 100 bei Packs, Zeitziel in der Belagerung. Läuft durch den normalen Ergebnis-Screen.
-export function completeRun(reason) {
+export function completeRun(reason: string) {
   if (player.dead) return;
   player.won = true;
   player.lastHitBy = reason;

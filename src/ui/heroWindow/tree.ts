@@ -31,7 +31,7 @@ const subOf = (e: Entry): string => {
   return elm in ELEMENTS ? elm : 'none';
 };
 const SUBS = (x: Tab): string[] => x === 'kosmetik' ? [...KOSMETIK_SLOTS] : [...Object.keys(ELEMENTS).filter(k => k !== 'none'), 'none'];   // „Ohne Element“ zuletzt
-const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('hw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub]?.name ?? sub;
+const subName = (x: Tab, sub: string) => x === 'kosmetik' ? (sub === 'waffe' ? t('hw.weapon') : slotName(sub as Slot)) : sub === 'none' ? t('hw.noElement') : ELEMENTS[sub as keyof typeof ELEMENTS]?.name ?? sub;
 const subColor = (x: Tab, sub: string) => x === 'kosmetik' || sub === 'none' ? '' : elementColor(sub);
 type TreeRow = { key: string; tab: Tab; depth: 0 | 1 | 2; parent?: string; folder?: string; sub?: string; n?: [number, number]; entry?: Entry };
 // Sichtbare Zeilen von oben nach unten (auch für die Pfeiltasten). Unterordner nur, wenn sie Einträge haben

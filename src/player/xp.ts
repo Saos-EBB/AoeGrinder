@@ -23,7 +23,7 @@ export function levelRefill() {       // Ding heilt wenig und füllt Mana auf, a
   player.hp = Math.min(maxHp(), player.hp + maxHp() * LEVEL_UP_HEAL);
   if (!modRule('noDrink') && !player.rageMax) player.mana = maxMana();
 }
-export function gainXp(xp) {
+export function gainXp(xp: number) {
   if (hooks.xpHold.fn()) { heldXp += xp; return; }
   const fromLevel = player.level;
   player.xp += xp;
@@ -44,7 +44,7 @@ export function gainXp(xp) {
 }
 
 const cardPace = () => CARD_PACES.find(p => p.id === cardPaceId);
-export function cardAtLevel(level) {
+export function cardAtLevel(level: number) {
   return level % cardPace().levels.find(b => level <= b.to).every === 0;
 }
 

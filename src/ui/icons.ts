@@ -25,7 +25,7 @@ const placeholder = (name: string, color: string) => `<svg xmlns="http://www.w3.
 const cache: Record<string, string> = {};
 function iconUrl(id: string): string | undefined {
   if (cache[id]) return cache[id];
-  const s = SPELLS[id], name: string | undefined = s?.name ?? RANDOM_MAGE.drinks[id]?.name;
+  const s = SPELLS[id], name: string | undefined = s?.name ?? RANDOM_MAGE.drinks[id as keyof typeof RANDOM_MAGE.drinks]?.name;
   if (!name) return undefined;   // SPELLS füllt sich erst beim Import von spells/index.ts
   const key = ICON_KEY[id];
   return cache[id] = dataUrl(key ? SPELL_ICONS[key] : placeholder(name, schoolColor(id) ?? COLORS.text));

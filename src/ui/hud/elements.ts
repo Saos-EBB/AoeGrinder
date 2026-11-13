@@ -16,10 +16,11 @@ import { bestSplits } from '../../leaderboard';
 import { placementOf } from './layout';
 import { fmtTime, fmtDiff } from '../fmt';
 import { lastText, lastVar } from '../dom';
+import type { HudElementId } from './layout';
 
 const put = (el: Element, text: string) => { if (lastText.get(el) !== text) { lastText.set(el, text); el.textContent = text; } };
 const fill = (el: HTMLElement, v: number) => { const s = Math.max(0, Math.min(1, v)).toFixed(3); if (lastVar.get(el) !== s) { lastVar.set(el, s); el.style.setProperty('--v', s); } };
-const shown = (id) => { const p = placementOf(id); return !!p && !p.hidden; };
+const shown = (id: HudElementId) => { const p = placementOf(id); return !!p && !p.hidden; };
 const figureName = () => charCard()?.name ?? '';
 
 // Beim ersten Frame, wenn alle Module ihr Markup eingehängt haben: Tracker übernimmt #siegeHud (waves.ts schreibt hinein)
@@ -67,7 +68,7 @@ cmp.innerHTML = `${DIRS.map(([d]) => `<span class="cDir${d.length > 1 ? ' small'
 const dirEls = [...cmp.querySelectorAll<HTMLElement>('.cDir')];
 const marks: HTMLElement[] = [];
 // Rechts im Bild liegt, was yaw − Winkel > 0 hat (wie die Minimap: rechts = Kamera-rechts)
-const xOf = (a, yaw) => { const d = wrap(yaw - a); return Math.abs(d) > COMPASS.span / 2 ? null : 50 + d / COMPASS.span * 100; };
+const xOf = (a: number, yaw: number) => { const d = wrap(yaw - a); return Math.abs(d) > COMPASS.span / 2 ? null : 50 + d / COMPASS.span * 100; };
 let cmpAt = -1e9;
 function updateCompass() {
   const now = performance.now();
