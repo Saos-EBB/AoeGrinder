@@ -8,8 +8,13 @@ import { clamp, lerpTo as lerp, inOut, outC, V } from '../util';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { eMat, PAL, fx as efx, em, uK as setK, arc as eArc, ring as eRing, lay } from '../vfx/energy';
-import { grad, capDown, prep as kitPrep, RIM, rimChunk, ik } from './strichKit';
+import { grad, capDown, RIM, rimChunk, ik } from './strichKit';
 import { makePointPool } from '../fx/pointPool';
+import type { Fig } from './strichKrieger/fig';
+import { TAU, C, prep, partKit, mergeTagged, showTag, tintTag, col, HOLZ } from './strichKrieger/parts';
+import { lookBody } from './strichKrieger/looks';
+import { WEAPON_SHAPE, swordGeo, axeGeo, maceGeo, maceGlowGeo, lookWeapon } from './strichKrieger/weapons';
+export type { Fig, WarAnim } from './strichKrieger/fig';
 
 // Dauern in ms. Die Spielregeln stehen in REALMEN (realMen.ts)
 export const STRICH_TIMING = {
@@ -21,27 +26,11 @@ export const STRICH_TIMING = {
     mace: { q: [450, 450, 450, 450], pose: [0, 1, 2, 0], e: 950, exec: 1100 },   // Tempo +30 % gibt das Spiel über anim.rate
   },
 };
-// Form der Waffen: Spitze (Treffer) und linke Hand ab dem Griff. Das Schwert ersetzt im Spiel das Schlachtblech (models/heroModel.ts)
-const WEAPON_SHAPE = { sword: { tip: 1.95, grip: .24 }, axe: { tip: 1.75, grip: .34 }, mace: { tip: 1.6, grip: .3 } };   // PH
-
-// Figur: was die Teile (Moves, Effekte, Pro-Frame) gemeinsam lesen und schreiben. anim = die früher losen let
-export interface WarAnim {
-  lift: number; spinAng: number; rage: number; flare: number; qPal: string | null; fin: { s: number; tor: number };
-  tipLen: number; gripLen: number; baseTip: number; baseGrip: number; lastGrip: number[];
-  eatK: { s: number; k: number }; act: any; actKey: string; lastPose: any; blendFrom: any; blendT: number; runPh: number; T: number; lastLoco: string; ready: boolean; kills: number;
-}
-export interface Fig { anim: WarAnim }
-
 const inC = t => t * t * t;
 const EASE = { io: inOut, out: outC, in: inC, lin: t => t };
-const TAU = Math.PI * 2;
 const FX_LIGHT = 0xf2efe6, FX_DARK = 0x0c0a08;          // Tusche des Viewers wäre auf dunklem Boden unsichtbar, nur die Risse bleiben dunkel
 
 const L1 = .5, L2 = .48, A1 = .35, A2 = .33;
-const C = { ink: new THREE.Color(0x2b2b33), plate: new THREE.Color(0x5a1a14), cloth: new THREE.Color(0xa3151b),
-  iron: new THREE.Color(0x4a4d54), edge: new THREE.Color(0xc4c8cd), wrap: new THREE.Color(0x7a1a14), guard: new THREE.Color(0x26231f) };
-// flat: harte Kanten (Low-Poly-Look der Skins), strichKit.ts prep
-const prep = (geo, color, m?, flat = false) => kitPrep(geo, color, m, { flat });
 function mix(a, b, u) {
   const o: any = {};
   for (const k of KEYS) o[k] = Array.isArray(a[k]) ? a[k].map((v, i) => lerp(v, b[k][i], u)) : lerp(a[k], b[k], u);
@@ -70,17 +59,12 @@ export function buildStrichKrieger({ bloom = false, weapon = 'sword', skinId: lo
       `outgoingLight += ${rimChunk(RIM.color, RIM.power)};\n#include <opaque_fragment>`);
   };
   // Geteilter Animations-Zustand der Figur (vorher lose let im Builder)
-  const F: Fig = { anim: { lift: 0, spinAng: 0, rage: 0, flare: 0, qPal: null, fin: { s: 1, tor: 0 }, tipLen: 0, gripLen: 0, baseTip: 0, baseGrip: 0, lastGrip: null,
-    eatK: { s: 0, k: 0 }, act: null, actKey: '', lastPose: null, blendFrom: null, blendT: 0, runPh: 0, T: 0, lastLoco: 'idle', ready: false, kills: -1 } };
+  const bones = [], parts = [];
+  const F = { bones, parts, anim: { lift: 0, spinAng: 0, rage: 0, flare: 0, qPal: null, fin: { s: 1, tor: 0 }, tipLen: 0, gripLen: 0, baseTip: 0, baseGrip: 0, lastGrip: null,
+    eatK: { s: 0, k: 0 }, act: null, actKey: '', lastPose: null, blendFrom: null, blendT: 0, runPh: 0, T: 0, lastLoco: 'idle', ready: false, kills: -1 } } as Fig;
   const gy = () => root.position.y - F.anim.lift;             // Boden unter der Figur
-const bones = [], parts = [];
 function B(p, x = 0, y = 0, z = 0) { const b = new THREE.Bone(); b.position.set(x, y, z); p.add(b); bones.push(b); return b; }
-const M4 = (pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => new THREE.Matrix4().compose(V(...pos), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), V(...scl));
-// pm: Matrix einer Teile-Gruppe davor (Skins). Rückgabe: Eintrag, Skins färben ihn um (color), werfen ihn raus (drop) oder markieren ihn (tag)
-function part(bone, geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1], pm = null) {
-  const e: any = { bone, geo, color, m: pm ? pm.clone().multiply(M4(pos, rot, scl)) : M4(pos, rot, scl) };
-  parts.push(e); return e;
-}
+const { part } = partKit(F);   // strichKrieger/parts.ts
 const root = new THREE.Group();
 const hips = B(root, 0, 1.04, 0);
 const pHips = part(hips, new THREE.SphereGeometry(.19, 7, 4), C.ink, [0, 0, 0], [0, 0, 0], [1.25, .8, .9]);
@@ -121,160 +105,10 @@ function leg(side) {
   return { th, sh, ft, side, pt, ps, pf };
 }
 const armL = arm(1), armR = arm(-1), legL = leg(1), legR = leg(-1);
-// Skins (src/skins.ts): Teile mit part(bone, …) wie oben, je Skin ein Block `if (look === …)`. Vorlage docs/ref/set-skins-krieger.html (SKINS).
-// Alles landet im selben Körper-Mesh (0 Draw Calls extra). Kopf-Maße des Viewers mit hp() aufs Spiel umrechnen (Kopf hier r .15 statt .12)
-// Viewer-Farben gedimmt: das Spiel-Licht ist auf die dunkle Tusche abgestimmt, helle Stoffe würden sonst ausbrennen (Bloom)
-const LOOK_DIM = .5;   // PH
-const col = (hex: number) => new THREE.Color(hex).multiplyScalar(LOOK_DIM);
-const drop = (...es) => { for (const e of es.flat()) { const i = parts.indexOf(e); if (i >= 0) parts.splice(i, 1); } };
-const paint = (c, ...es) => { for (const e of es.flat()) e.color = c; };
-const hp = (x, y, z) => [x * 1.3, .13 + y * 1.3, z * 1.38];   // PH
-// Stab von a nach b (Punkte im Bone-Raum)
-function rod(bone, a, b, r, c, r2 = r, seg = 5) {
-  const d = V(...b).sub(V(...a)), q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), d.clone().normalize());
-  const e = part(bone, new THREE.CylinderGeometry(r2, r, d.length(), seg), c);
-  e.m = new THREE.Matrix4().compose(V(...a).add(d.multiplyScalar(.5)), q, V(1, 1, 1)); return e;
-}
-const band = (bone, pos, r, t, c, scl = [1, 1, 1], seg = 12) => part(bone, new THREE.TorusGeometry(r, t, 4, seg), c, pos, [Math.PI / 2, 0, 0], scl);
-const ext = (pts, depth) => new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y))), { depth, bevelEnabled: false }).translate(0, 0, -depth / 2);
-const tube = (pts, r, seg = 12, rs = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => V(...p))), seg, r, rs);
-// Holzfäller-Gags: Kerben = Kills im Run (höchstens notches sichtbar), ab gold goldener Stiel, ab sprout ein Sprössling, alle perLog Kills ein Scheit
-const HOLZ = { notches: 40, gold: 100, sprout: 500, perLog: 20, logs: 15 };   // PH
-let cloth0 = { color: 0xa3151b, w: 1 };   // Stoffbahn hinten: Farbe, Breite
-const TALK: any = {};                      // Sprechblasen (ui/skinTalk.ts): kind, keys, plate
-if (look === 'klapse') {
-  // Ausbrecher: Zwangsjacke, linker Ärmel aufgerissen, Gurte, Krankenhaus-Hose, Schlappen, wirre Haare, Pflaster, Glubschaugen
-  const jacket = col(0xe8e4d8), pants = col(0xa8c0c8), strap = col(0x6a5a48), skin = col(0xe8ccb0), ink = col(0x15121a);
-  drop(armL.plate);
-  paint(jacket, pChest, armL.pu, armR.pu, armR.pf);
-  paint(skin, pNeck, pHead, armL.pf, armL.ph, armR.ph);
-  paint(pants, pHips, legL.pt, legL.ps, legR.pt, legR.ps);
-  paint(col(0x8aa0b0), legL.pf, legR.pf);
-  paint(strap, pBelt);
-  // ausgefranster Saum am Ellbogen links
-  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; part(armL.fa, new THREE.ConeGeometry(.03, .1 + (i % 2) * .04, 4), jacket, [Math.cos(a) * .085, -.04, Math.sin(a) * .085], [Math.PI, 0, 0]); }
-  // drei Gurte um die Brust mit Schnallen vorne (Radien am Brust-Profil)
-  for (const [y, r] of [[.42, .28], [.26, .215], [.1, .16]]) {
-    band(chest, [0, y, 0], r, .018, strap, [1.15, .7, 1], 16);
-    part(chest, new THREE.BoxGeometry(.05, .045, .03), col(0xb0b0b8), [.06, y, r * .7 + .01]);
-  }
-  // baumelnde Gurte vorne (fest), der hinten ist die Stoffbahn
-  part(chest, new THREE.BoxGeometry(.035, .34, .012), strap, [-.12, -.15, .13], [.1, 0, .12]);
-  part(chest, new THREE.BoxGeometry(.035, .44, .012), strap, [.14, -.2, .12], [.08, 0, -.1]);
-  cloth0 = { color: 0x6a5a48, w: .35 };
-  // wirre Haare, Pflaster-Kreuz, Glubschaugen, schiefes Grinsen
-  const hair = col(0x5a4a3a);
-  for (let i = 0; i < 9; i++) { const a = i / 9 * TAU; part(head, new THREE.ConeGeometry(.05, .17, 5), hair, hp(Math.cos(a) * .07, .1 + Math.sin(i * 3) * .02, Math.sin(a) * .07 - .02), [Math.sin(a) * .9, 0, -Math.cos(a) * .9]); }
-  for (const r of [.5, -.5]) part(head, new THREE.BoxGeometry(.08, .026, .015), col(0xf2ece0), hp(.04, .06, .108), [0, 0, r]);
-  for (const [x, r] of [[-.042, .042], [.042, .034]]) { part(head, new THREE.SphereGeometry(r, 8, 6), col(0xffffff), [x * 1.3, .13, .145], [0, 0, 0], [1, 1, .45]); part(head, new THREE.SphereGeometry(.011, 5, 4), ink, [x * 1.3 + .005, .132, .163]); }
-  part(head, new THREE.TorusGeometry(.055, .011, 3, 10, Math.PI), ink, [0, .065, .142], [0, 0, Math.PI + .15]);
-  Object.assign(TALK, { kind: 'whisper', keys: [1, 2, 3, 4, 5, 6, 7].map(i => `look.krieger.klapse.say${i}`) });
-}
-if (look === 'classic') {
-  // Classic-Krieger 55, „Clownsuit“: jedes Teil aus einem anderen Dungeon. Low-Poly mit harten Kanten (flat)
-  const purple = col(0x5a3a8a), purple2 = col(0x7a5ab0), red = col(0xa8231c), gold = col(0xc9a640), steel = col(0x8a929c),
-    green = col(0x5a7a3a), yel = col(0xd8e03a), pink = col(0xff5ab0), brown = col(0x6a4022), navy = col(0x2a3a6a), skin = col(0xe0b898), ink = col(0x15121a);
-  const n0 = parts.length;
-  drop(armL.plate, pHead);
-  paint(purple, pChest); paint(skin, pNeck); paint(col(0x3a3a46), armL.pu, armR.pu);
-  paint(yel, armL.pf, armR.pf, armL.ph, armR.ph); paint(green, pHips, legL.pt, legL.ps, legR.pt, legR.ps); paint(navy, legL.pf, legR.pf);
-  paint(brown, pBelt);
-  // Brustplatte: zwei Wölbungen, Goldgrat, Goldring unten
-  for (const x of [-.11, .11]) part(chest, new THREE.SphereGeometry(.14, 7, 5), purple2, [x, .33, .1], [0, 0, 0], [1, .75, .55]);
-  part(chest, new THREE.BoxGeometry(.06, .42, .06), gold, [0, .25, .17]);
-  band(chest, [0, .06, 0], .155, .02, gold, [1.15, .7, 1], 8);
-  // riesige rote Dorn-Schultern, zweilagig, Goldrand (beide Seiten, am Oberarm wie die Schulterplatte des Standards)
-  for (const a of [armL, armR]) {
-    const s = a.side, g = M4([s * .04, .05, 0], [0, 0, -s * .25]);
-    part(a.ua, new THREE.SphereGeometry(.24, 8, 5, 0, TAU, 0, Math.PI / 2), red, [0, 0, 0], [0, 0, 0], [1.15, .8, 1], g);
-    part(a.ua, new THREE.SphereGeometry(.2, 8, 4, 0, TAU, 0, Math.PI / 2), red, [s * .05, -.1, 0], [0, 0, 0], [1.2, .7, 1.05], g);
-    part(a.ua, new THREE.TorusGeometry(.27, .02, 4, 10), gold, [0, 0, 0], [Math.PI / 2, 0, 0], [1, 1, 1], g);
-    for (let i = 0; i < 3; i++) part(a.ua, new THREE.ConeGeometry(.05, .28 - i * .05, 5), steel, [s * (.02 + i * .07), .16 - i * .03, (i - 1) * .1], [0, 0, -s * (.25 + i * .25)], [1, 1, 1], g);
-    // knallgelbe Stulpen mit pinkem Saum
-    part(a.fa, new THREE.CylinderGeometry(.115, .095, .2, 6), yel, [0, -.23, 0]);
-    part(a.fa, new THREE.TorusGeometry(.115, .024, 4, 8), pink, [0, -.13, 0], [Math.PI / 2, 0, 0]);
-  }
-  // Riesenschnalle mit grünem Stein (Stein im Körper-Mesh, leuchtet nicht: Körper hat kein Glüh-Mesh)
-  part(hips, new THREE.BoxGeometry(.16, .13, .05), gold, [0, .06, .22]);
-  part(hips, new THREE.OctahedronGeometry(.035), col(0xb4ff9a), [0, .06, .25]);
-  // Kniebuckel mit Dorn, klobige blaue Stiefel mit hochgezogener Spitze
-  for (const l of [legL, legR]) {
-    part(l.sh, new THREE.SphereGeometry(.11, 6, 4), steel, [0, 0, .05], [0, 0, 0], [1, 1, .7]);
-    part(l.sh, new THREE.ConeGeometry(.03, .12, 4), steel, [0, 0, .15], [Math.PI / 2, 0, 0]);
-    part(l.ft, new THREE.CylinderGeometry(.1, .115, .2, 6), navy, [0, .05, .01]);
-    part(l.ft, new THREE.ConeGeometry(.065, .14, 4), navy, [0, -.02, .26], [Math.PI / 2 - .5, 0, 0]);
-  }
-  // Helm: grauer Topf mit T-Schlitz, Goldkamm, Bronze-Stierhörner
-  part(head, new THREE.IcosahedronGeometry(.15, 1), steel, [0, .13, 0], [0, 0, 0], [1.08, 1.14, 1.1]);
-  part(head, new THREE.BoxGeometry(.22, .032, .03), ink, [0, .145, .16]);
-  part(head, new THREE.BoxGeometry(.04, .13, .03), ink, [0, .08, .155]);
-  part(head, new THREE.BoxGeometry(.04, .1, .34), gold, [0, .29, 0]);
-  for (const s of [-1, 1]) {
-    const pts = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => { const t = i / 8; return hp(s * (.1 + t * .2), .03 + Math.pow(t, 2.5) * .22, -t * .04); });
-    part(head, tube(pts, .06, 10, 6), col(0xa8783a));
-    const e = pts[8]; part(head, new THREE.ConeGeometry(.06, .13, 6), col(0xe8dcc0), [e[0], e[1] + .05, e[2]], [0, 0, -s * .2]);
-  }
-  for (let i = n0; i < parts.length; i++) parts[i].flat = true;
-  for (const e of [pChest, pHips, armL.pu, armR.pu, armL.pf, armR.pf, legL.pt, legL.ps, legR.pt, legR.ps, legL.pf, legR.pf]) e.flat = true;
-  // Umhang (passt natürlich auch nicht): türkis, ab den Schultern
-  cloth0 = { color: 0x2a9a9a, w: 2.3 };
-  chest.add(clothAnchor); clothAnchor.position.set(0, .52, -.28);
-  Object.assign(TALK, { kind: 'shout', keys: [1, 2, 3, 4].map(i => `look.krieger.classic.say${i}`), plate: 'look.krieger.classic.plate' });
-}
-if (look === 'holz') {
-  // Holzfäller: kariertes Hemd (Karo als dunkle Streifen, Vertex-Farben statt Textur), Ärmel hochgekrempelt, Hosenträger, Jeans mit Umschlag,
-  // Arbeitsstiefel, Strickmütze mit Bommel, Vollbart, Kraxe mit Holzstapel auf dem Rücken
-  const plaid = col(0xb8241c), dark = col(0x1a1214), jeans = col(0x3a5a8a), skin = col(0xe8bc98), boot = col(0x6a4022), beard = col(0x7a3a1a), wood = col(0x5a3a20);
-  drop(armL.plate);
-  paint(plaid, pChest, armL.pu, armR.pu); paint(skin, pNeck, pHead, armL.pf, armR.pf, armL.ph, armR.ph);
-  paint(jeans, pHips, legL.pt, legL.ps, legR.pt, legR.ps); paint(boot, legL.pf, legR.pf); paint(col(0x3a2414), pBelt);
-  for (const [y, r] of [[.48, .29], [.32, .23], [.16, .17]]) band(chest, [0, y, 0], r, .016, dark, [1.15, .68, 1], 16);   // Karo quer
-  for (const a of [armL, armR]) {
-    for (const y of [-.1, -.24]) band(a.ua, [0, y, 0], .1, .014, dark, [1, 1, 1], 8);
-    band(a.fa, [0, -.03, 0], .1, .032, plaid, [1, 1, 1], 8);   // hochgekrempelt
-  }
-  for (const x of [-.11, .11]) { rod(chest, [x, -.02, .1], [x * 1.1, .55, .2], .016, col(0x8a2a1a)); rod(chest, [x, -.02, -.1], [x * 1.1, .55, -.19], .016, col(0x8a2a1a)); }   // Hosenträger
-  for (const l of [legL, legR]) { band(l.sh, [0, -.4, 0], .1, .028, col(0x6a8ab0), [1, 1, 1], 10); part(l.ft, new THREE.CylinderGeometry(.1, .095, .14, 8), boot, [0, .03, .01]); }   // Umschlag, Stiefelschaft
-  // Strickmütze mit Bommel
-  const hat = col(0x2a4a3a);
-  part(head, new THREE.SphereGeometry(.17, 10, 6, 0, TAU, 0, Math.PI * .55), hat, [0, .19, 0], [0, 0, 0], [1, 1.15, 1.04]);
-  band(head, [0, .19, 0], .155, .033, hat, [1, 1.04, 1], 14);
-  part(head, new THREE.SphereGeometry(.06, 7, 5), col(0xf2ece0), [0, .4, 0]);
-  // Augen, Brauen, Vollbart, Schnauzer
-  for (const x of [-.055, .055]) { part(head, new THREE.SphereGeometry(.018, 6, 4), col(0x15121a), [x, .135, .15], [0, 0, 0], [1, 1.1, .5]); part(head, new THREE.BoxGeometry(.065, .016, .014), col(0x6a3a1a), [x, .165, .152], [0, 0, x > 0 ? .35 : -.35]); }
-  part(head, new THREE.SphereGeometry(.143, 9, 6), beard, [0, .0, .062], [0, 0, 0], [1, .7, .85]);
-  part(head, new THREE.BoxGeometry(.13, .026, .026), beard, [0, .085, .152]);
-  // Kraxe auf dem Rücken: Gestell fest, Scheite einzeln markiert (tag) und je nach Kills eingeblendet (lookTick)
-  const kz = -.22, ky = .28;
-  for (const x of [-.17, .17]) rod(chest, [x, ky - .3, kz - .02], [x, ky + .45, kz - .02], .014, wood);
-  part(chest, new THREE.BoxGeometry(.38, .03, .18), wood, [0, ky - .3, kz - .1]);
-  for (let i = 0; i < HOLZ.logs; i++) {
-    const row = Math.floor(i / 3), c = i % 3, z = kz - .06 - c * .1 + (row % 2) * .03, y = ky - .24 + row * .1;
-    part(chest, new THREE.CylinderGeometry(.055, .055, .4, 7), col(0x8a5a32), [0, y, z], [0, 0, Math.PI / 2]).tag = `log${i}`;
-    for (const sx of [-1, 1]) part(chest, new THREE.CircleGeometry(.05, 7), col(0xe8c890), [sx * .201, y, z], [0, sx * Math.PI / 2, 0]).tag = `log${i}`;
-  }
-}
+Object.assign(F, { root, hips, chest, neck, head, armL, armR, legL, legR, clothAnchor, bp: { pHips, pChest, pNeck, pHead, pBelt } });
+// Skins (src/skins.ts) am Körper: strichKrieger/looks.ts. Stoffbahn (Farbe, Breite) und Sprechblasen kommen vom Skin
+const { cloth0, TALK } = lookBody(F, look);
 root.updateMatrixWorld(true);
-// Ränge je tag (Vertex-Anfang, Anzahl) im gemergten Mesh: Skins blenden Teile aus (zusammenfallen lassen) oder färben sie um, ohne Draw Call
-function mergeTagged(list) {
-  const ranges = {}; let o = 0;
-  for (const { g, tag } of list) { const n = g.attributes.position.count; if (tag) (ranges[tag] ??= []).push([o, n]); o += n; }
-  const geo = mergeGeometries(list.map(x => x.g));
-  return { geo, ranges, orig: geo.attributes.position.array.slice() };
-}
-function showTag(tg, tag, on) {
-  const a = tg.geo.attributes.position.array;
-  for (const [o, n] of tg.ranges[tag] ?? []) {
-    if (on) a.set(tg.orig.subarray(o * 3, (o + n) * 3), o * 3);
-    else for (let i = 0; i < n; i++) a.set(tg.orig.subarray(o * 3, o * 3 + 3), (o + i) * 3);
-  }
-  tg.geo.attributes.position.needsUpdate = true;
-}
-function tintTag(tg, tag, c) {
-  const a = tg.geo.attributes.color.array;
-  for (const [o, n] of tg.ranges[tag] ?? []) for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], (o + i) * 3);
-  tg.geo.attributes.color.needsUpdate = true;
-}
 const bodyT = mergeTagged(parts.map(p => {
   const g = prep(p.geo, p.color, p.bone.matrixWorld.clone().multiply(p.m), p.flat);
   const n = g.attributes.position.count, bi = bones.indexOf(p.bone);
@@ -292,99 +126,10 @@ body.frustumCulled = false; root.add(body); body.bind(new THREE.Skeleton(bones))
 const AURA_E = eMat(PAL.wut, { sc: 4, core: .2, inf: .04, puff: .02, flow: [0, 2.5, 0], k: 0 });
 const aura = new THREE.SkinnedMesh(bodyGeo, AURA_E);
 aura.frustumCulled = false; root.add(aura); aura.bind(body.skeleton, body.bindMatrix); aura.renderOrder = -1;
-function swordGeo() {
-  // ca. 1,2× Körperhöhe gesamt: Klinge 1,9 m, 0,36 m breit, 7 cm dick, kurzer Griff
-  const W = .36, L0 = .12, L = 1.9, X0 = -.15, X1 = X0 + W;
-  const s = new THREE.Shape();
-  s.moveTo(X0, L0);
-  s.lineTo(X0 - .01, L0 + .62); s.lineTo(X0 - .09, L0 + .7); s.lineTo(X0 - .01, L0 + .8); // Haken am Rücken
-  s.lineTo(X0 - .01, L0 + L - .14);
-  s.lineTo(X0 + .08, L0 + L);                 // Spitze, schräg
-  s.lineTo(X1, L0 + L - .34);
-  for (const y of [1.35, .95, .55]) { s.lineTo(X1, L0 + y + .06); s.lineTo(X1 - .06, L0 + y); s.lineTo(X1, L0 + y - .06); } // Kerben
-  s.lineTo(X1 - .02, L0);
-  s.lineTo(X0, L0);
-  const blade = new THREE.ExtrudeGeometry(s, { depth: .07, bevelEnabled: false }); blade.translate(0, 0, -.035);
-  const edge = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(X1 - .035, L0 + .02), new THREE.Vector2(X1 + .005, L0 + .02), new THREE.Vector2(X1 + .005, L0 + L - .36), new THREE.Vector2(X1 - .035, L0 + L - .36)]), { depth: .076, bevelEnabled: false });
-  edge.translate(0, 0, -.038);
-  const guard = new THREE.BoxGeometry(.56, .08, .12).translate(.03, .08, 0);
-  const grip = new THREE.CylinderGeometry(.038, .042, .44, 5).translate(0, -.15, 0);
-  const pommel = new THREE.IcosahedronGeometry(.07, 0).translate(0, -.4, 0);
-  return mergeGeometries([prep(blade, C.iron), prep(edge, C.edge), prep(guard, C.guard), prep(grip, C.wrap), prep(pommel, C.guard)]);
-}
+// Das Schwert wird immer gebaut (auch unter Look oder Axt): jede Geometrie würfelt beim Bau ihre uuid mit Math.random, gleiche Zahl Aufrufe = gleiche Effekte bei festem Seed
 const SWORD_GEO = swordGeo();
-// Holzfälleraxt: langer Holzstiel, kurzer breiter Kopf ganz oben, Schneide auf +x, Spaltkeil hinten
-function axeGeo() {
-  const wood = new THREE.Color(0x6b4a2a), leather = new THREE.Color(0x3a2a1c);
-  const shaft = new THREE.CylinderGeometry(.034, .04, 2.1, 6).translate(0, .75, 0);
-  const wraps = [-.18, -.05, .08].map(y => prep(new THREE.CylinderGeometry(.046, .046, .07, 6).translate(0, y, 0), leather));
-  const notch = [.5, .62, .74].map(y => prep(new THREE.BoxGeometry(.075, .012, .075).translate(0, y, 0), leather));
-  const s = new THREE.Shape([[.03, 1.36], [.34, 1.18], [.6, 1.34], [.68, 1.6], [.6, 1.88], [.34, 2.0], [.03, 1.84]].map(([x, y]) => new THREE.Vector2(x, y)));
-  const head = new THREE.ExtrudeGeometry(s, { depth: .05, bevelEnabled: false }).translate(0, 0, -.025);
-  const edge = new THREE.ExtrudeGeometry(new THREE.Shape([[.58, 1.32], [.68, 1.6], [.58, 1.9], [.54, 1.87], [.63, 1.6], [.54, 1.35]].map(([x, y]) => new THREE.Vector2(x, y))), { depth: .056, bevelEnabled: false }).translate(0, 0, -.028);
-  const wedge = new THREE.ConeGeometry(.1, .28, 4).rotateZ(Math.PI / 2).translate(-.16, 1.6, 0);
-  const cap = new THREE.BoxGeometry(.12, .56, .08).translate(0, 1.6, 0);
-  return mergeGeometries([prep(shaft, wood), ...wraps, ...notch, prep(head, C.iron), prep(edge, C.edge), prep(wedge, C.iron), prep(cap, C.guard)]);
-}
-// Streitkolben: beschlagener Stiel, Kopf mit 6 Flanschen. Die blauen Risse liegen im Glüh-Mesh
-function maceGeo() {
-  const shaft = new THREE.CylinderGeometry(.038, .044, 1.75, 6).translate(0, .6, 0);
-  const bands = [-.15, .35, .85, 1.3].map(y => prep(new THREE.CylinderGeometry(.052, .052, .06, 6).translate(0, y, 0), C.edge));
-  const core = prep(new THREE.IcosahedronGeometry(.15, 0).scale(1, 1.25, 1).translate(0, 1.6, 0), C.iron);
-  const flanges = [0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.035, .34, .15).translate(0, 1.6, .15).rotateY(i / 6 * Math.PI * 2 + Math.PI / 6), C.guard));
-  const spike = prep(new THREE.ConeGeometry(.05, .16, 5).translate(0, 1.86, 0), C.edge);
-  const pommel = prep(new THREE.IcosahedronGeometry(.06, 0).translate(0, -.27, 0), C.guard);
-  return mergeGeometries([prep(shaft, C.wrap), ...bands, core, ...flanges, spike, pommel]);
-}
-function maceGlowGeo() {
-  const blue = new THREE.Color(0x6fc8ff);
-  return mergeGeometries([0, 1, 2, 3, 4, 5].map(i => prep(new THREE.BoxGeometry(.012, .26, .02).translate(0, 1.6, .2).rotateY(i / 6 * Math.PI * 2), blue)));
-}
-// Waffen-Look der Skins: reiner Look über dem Waffen-Modell (Treffer, Spitze, Griff bleiben die der Waffe). Viewer-Maße, Griff im Ursprung, Klinge +y, Schneide +x.
-// top: oberes Ende, wird auf die Treffer-Spitze der Waffe skaliert. Teile mit tag blendet der Skin im Spiel ein und aus.
-// Leuchtteile (wg): der Krieger hat ohne Kolben kein Glüh-Mesh, darum im Waffen-Mesh mit überhellen Farben, die Bloom aufgreift (0 Draw Calls extra)
-const LW: any = { list: [], top: 0 };
-const GLOW_K = bloom ? 3 : 1.6;   // PH
-const wp = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1], tag = null, flat = false) => LW.list.push({ g: prep(geo, c, M4(pos, rot, scl), flat), tag });
-const wg = (geo, c, pos = [0, 0, 0], rot = [0, 0, 0], scl = [1, 1, 1]) => LW.list.push({ g: prep(geo, c.clone().multiplyScalar(GLOW_K), M4(pos, rot, scl)) });
-if (look === 'klapse') {
-  // Brechstange statt Schwert: so lang wie die Klinge (Viewer 0,84 m wäre neben den Treffern zu kurz), Haken oben, Rost, Tape am Griff
-  const steel = col(0x3a3e46);
-  wp(new THREE.CylinderGeometry(.034, .034, 2.15, 6), steel, [0, .675, 0]);
-  wp(tube([0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => { const a = i / 8 * Math.PI * 1.1; return [-.12 + Math.cos(a) * .12, 1.75 + Math.sin(a) * .12, 0]; }), .034, 12), steel);
-  wp(new THREE.BoxGeometry(.08, .065, .04), steel, [-.25, 1.69, 0], [0, 0, -.5]);
-  wp(new THREE.BoxGeometry(.09, .05, .035), steel, [.03, -.44, 0], [0, 0, .4]);
-  for (const y of [.45, 1.25]) wp(new THREE.BoxGeometry(.076, .11, .076), col(0x8a4a2a), [0, y, 0]);
-  wp(new THREE.BoxGeometry(.078, .26, .078), col(0xf2ece0), [0, .02, 0]);
-  LW.top = 1.87;
-}
-if (look === 'classic') {
-  // klobiger Zweihänder, Low-Poly, rotes Verzauberungs-Glühen: Stein und Runenstrich im Glüh-Mesh, der rote Schein als Partikel (lookTick)
-  const lo = (geo, c, pos?, rot?, scl?) => wp(geo, col(c), pos, rot, scl, null, true);
-  lo(new THREE.CylinderGeometry(.04, .04, .5, 6), 0x4a2a1a, [0, -.05, 0]);
-  for (let i = 0; i < 4; i++) lo(new THREE.CylinderGeometry(.046, .046, .025, 6), 0xb08a3a, [0, -.25 + i * .13, 0]);
-  lo(new THREE.OctahedronGeometry(.085), 0xb08a3a, [0, -.34, 0]);
-  lo(ext([[-.34, .2], [-.24, .32], [0, .26], [.24, .32], [.34, .2], [0, .17]], .1), 0x6a6e78);
-  lo(ext([[.13, .28], [.15, .7], [.12, .75], [.14, 1.35], [.1, 1.42], [.11, 1.75], [0, 1.98], [-.11, 1.75], [-.1, 1.42], [-.14, 1.35], [-.12, .75], [-.15, .7], [-.13, .28]], .06), 0xa8b0bc);
-  lo(new THREE.BoxGeometry(.035, 1.45, .066), 0x6a7280, [0, 1.0, 0]);
-  const glowRed = new THREE.Color(0xd9372b);
-  for (const z of [.06, -.06]) wg(new THREE.OctahedronGeometry(.06), glowRed, [0, .25, z]);
-  for (const z of [.04, -.04]) wg(new THREE.BoxGeometry(.016, 1.3, .006), new THREE.Color(0xff3a2a), [0, 1.0, z]);
-  LW.top = 1.98;
-}
-if (look === 'holz') {
-  // saubere Fällaxt: heller Holzstiel, Stahl-Keilkopf, polierte Schneide, roter Nacken-Streifen. Kerben, Gold und Sprössling sind markiert (tag)
-  const wood = col(0xd8a868);
-  wp(tube([[0, -.45, 0], [.03, .2, 0], [-.02, .9, 0], [.02, 1.3, 0]], .036, 16, 7), wood, [0, 0, 0], [0, 0, 0], [1, 1, 1], 'wood');
-  wp(new THREE.SphereGeometry(.05, 8, 6), wood, [0, -.46, 0], [0, 0, 0], [1, .6, 1], 'wood');
-  wp(ext([[-.12, 1.18], [.08, 1.2], [.36, 1.08], [.38, 1.4], [.08, 1.33], [-.12, 1.34]], .08), col(0x8a929c));
-  wp(ext([[.33, 1.08], [.38, 1.06], [.4, 1.42], [.35, 1.4]], .084), col(0xf2f6fa));
-  wp(new THREE.BoxGeometry(.06, .04, .085), col(0xd9372b), [-.1, 1.26, 0]);
-  for (let i = 0; i < HOLZ.notches; i++) wp(new THREE.TorusGeometry(.038, .007, 3, 8), col(0x3a2414), [.008, -.34 + i * .026, 0], [Math.PI / 2, 0, 0], [1, 1, 1], `n${i}`);
-  wp(new THREE.CylinderGeometry(.006, .008, .17, 4), col(0x3a7a2a), [.01, 1.4, 0], [0, 0, .12], [1, 1, 1], 'sprout');
-  for (const sx of [-1, 1]) wp(new THREE.SphereGeometry(.04, 6, 4), col(0x5ab83a), [sx * .04, 1.46, 0], [0, 0, sx * .4], [1, .4, .6], 'sprout');
-  LW.top = 1.42;
-}
+// Waffen-Look der Skins (strichKrieger/weapons.ts), top: oberes Ende, wird auf die Treffer-Spitze der Waffe skaliert
+const LW = lookWeapon(look, bloom);
 const lookW = LW.list.length ? mergeTagged(LW.list) : null;
 // Schwert-Rahmen: y = Klinge, x = Schneide, Griff im Ursprung. Darin das eigene Schwert oder eine Waffe aus models/weapons (setWeapon)
 const sword = new THREE.Group(); root.add(sword);
