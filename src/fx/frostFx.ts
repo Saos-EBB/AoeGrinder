@@ -1,66 +1,16 @@
 // Neue Frost-Optik. Alle Werte PH.
 
 import * as THREE from 'three';
-import { rand, pick, perFrame } from '../util';
-import { player } from '../state';
+import { rand, perFrame } from '../util';
 import { groundAt } from '../collision';
 import { scene } from '../render';
 import { particles } from './particles';
 import { softScene, softUniforms, SOFT_GLSL, premultipliedBlend } from './softPass';
 import { fxUniforms, fxMaterial, GLSL, quality } from './shaders';
-import { impact } from './impact';
 import { playSound } from './sound';
-import { addEffect, iceTex, FROST, FROST_WHITE, MIST } from './spellFx';
-import { waveFx, markFx, shellFx, flareFx, iceSpikesFx, sparksFx, groundDisc } from './prims';
+import { iceTex, FROST_WHITE } from './spellFx';
+import { groundDisc } from './prims';
 import { blizRadius } from '../formulas';
-
-export function novaNew(pos, radius) {
-  impact(pos, 0x9fdcff, { radius, power: 320, kickBy: 0.3, sound: 'frost' });
-  flareFx(pos, 0xbfe6ff, radius * 0.9, 320);
-  waveFx(pos, radius, [1.8, 2.3, 2.9], FROST, { dur: 480, width: 0.34 });
-  shellFx(pos, radius * 1.02, [0.7, 1.4, 2.4], { dur: 420 });
-  markFx(iceTex, pos, radius, [0.72, 0.92, 1.15], 3800, { peak: 0.5, grow: 0.07, rim: [1.2, 1.9, 2.8] });
-  iceSpikesFx(pos, radius, 34, {});
-  sparksFx(pos, 130, [FROST, FROST_WHITE], 21, { up: 2, size: 0.5 });
-  sparksFx(pos, 26, [MIST], 8, { up: 0.5, life: 1.8, size: 3.4, drag: 1.4, grow: 1.1 });
-}
-
-// handL: linke Hand der Figur (heroModel.anchors.handL), vom Aufrufer (ARCH-11: fx/ importiert kein Modell)
-export function coneNew(range, angle, handL: THREE.Object3D) {
-  const hand = new THREE.Vector3();
-  handL.getWorldPosition(hand);
-  const f = player.facing, start = f - Math.PI / 2 - angle / 2;
-  // Fächer: scrollendes Rauschen läuft von der Hand weg, die Form entsteht im Shader
-  const geo = new THREE.RingGeometry(0.02, 1, 64, 10, start, angle).rotateX(-Math.PI / 2);
-  const mat = fxMaterial({ side: THREE.DoubleSide, uniforms: { uT: { value: 0 } },
-    vertexShader: 'varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: `${GLSL.common} uniform float uT; varying vec3 vP;
-      void main() {
-        float r = length(vP.xz);
-        float front = 1.0 - pow(1.0 - uT, 2.5);
-        float n = noise2(vP.xz / max(r, 0.001) * 0.45 + vec2(r * 0.9) + scrollUv(vec2(0.0), vec2(-1.2)));
-        float body = smoothstep(0.25, 0.75, n) * (1.0 - smoothstep(front - 0.12, front, r)) * (1.0 - smoothstep(0.86, 1.0, r));
-        float a = body * pow(1.0 - uT, 1.2);
-        gl_FragColor = vec4(mix(vec3(0.3, 0.95, 2.0), vec3(1.8, 2.2, 2.9), body * body) * a, 1.0);
-      }` });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(player.pos.x, player.pos.y + 0.9, player.pos.z);
-  mesh.scale.setScalar(range * 1.05);
-  addEffect(mesh, 520, t => { mat.uniforms.uT.value = t; });
-  const tip = { x: player.pos.x + Math.sin(f) * range * 0.55, y: player.pos.y, z: player.pos.z + Math.cos(f) * range * 0.55 };
-  impact(tip, 0x9fdcff, { radius: range * 0.7, power: 220, kickBy: 0.18, sound: 'frost' });
-  flareFx(hand, 0xbfe6ff, 2.5, 200, 0);
-  for (let i = 0; i < 140; i++) {
-    const a = f + rand(-angle / 2, angle / 2), sp = rand(14, 26);
-    particles.spawn({ x: hand.x, y: hand.y, z: hand.z, vx: Math.sin(a) * sp, vy: rand(-2, 1.5), vz: Math.cos(a) * sp,
-      drag: 2.4, life: rand(0.45, 0.8), color: pick([FROST, FROST_WHITE, FROST]), size: rand(0.25, 0.6) });
-  }
-  for (let i = 0; i < 18; i++) {
-    const a = f + rand(-angle / 2, angle / 2), sp = rand(5, 11);
-    particles.spawn({ x: hand.x, y: hand.y - 0.5, z: hand.z, vx: Math.sin(a) * sp, vz: Math.cos(a) * sp,
-      drag: 1.2, life: rand(1.1, 1.7), color: MIST, size: rand(2.2, 3.4), grow: 1.2 });
-  }
-}
 
 // ---------- Blizzard: Wolke aus weichen Rausch-Bällen, Splitter mit Schweif, beide im Shader animiert ----------
 const MAX_SHARDS = 180, MAX_PUFFS = 22;

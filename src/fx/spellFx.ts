@@ -10,7 +10,7 @@ import { glowSprite, particles } from '../fx/particles';
 import { heroModel } from '../models/heroModel';
 import { shakeCamera } from '../camera';
 import { fxClock, fxUniforms, vfxOld } from './shaders';
-import { novaNew, coneNew, blizStartNew, blizMoveNew, blizStopNew, blizUpdateNew } from './frostFx';
+import { blizUpdateNew } from './frostFx';
 import { updateImpact } from './impact';
 import { novaLook, coneLook, blizLook, blizMoveLook, blizStopLook } from '../vfx/frostLook';
 import { blinkLook } from '../vfx/arcaneLook';
